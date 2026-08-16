@@ -7,6 +7,13 @@
  *
  * Extracted from AlloFlowANTI.txt lines 21632-21694 (May 2026).
  *
+ * D4 (2026-08-16): this modal is now the ONE place AlloFlow keeps what it has told
+ * you. A second tab replays the toast log. Toasts auto-dismiss on a reading-length
+ * timer and several of them carry information that matters (a save failed, a format
+ * was unavailable, an export landed) — a slower reader lost them permanently. Rather
+ * than build a parallel notification centre, the toast log rides the mechanism that
+ * already existed for the "did you know" hint history.
+ *
  * Required props:
  *   handleApplyHint                — apply a brainstorm hint
  *   handleGenerateLessonIdeas      — generate new extension ideas
@@ -17,6 +24,10 @@
  *   isGeneratingExtension          — bool for spinner state
  *   renderFormattedText            — markdown/format renderer
  *   t                              — translation function
+ * Optional props:
+ *   toastHistory                   — array of { id, message, type, timestamp }
+ *   onClearToastHistory            — clears the toast log
+ *   initialTab                     — 'hints' | 'messages' (defaults to 'hints')
  *
  * Icons (read from window globals): Lightbulb, RefreshCw, Save, Sparkles, X
  */
@@ -30,6 +41,9 @@ function HintsModal({
   isGeneratingExtension,
   renderFormattedText,
   t,
+  toastHistory,
+  onClearToastHistory,
+  initialTab,
 }) {
   const Lightbulb = window.Lightbulb || (() => null);
   const RefreshCw = window.RefreshCw || (() => null);
@@ -37,9 +51,13 @@ function HintsModal({
   const Sparkles = window.Sparkles || (() => null);
   const X = window.X || (() => null);
   const dialogRef = React.useRef(null);
+  const messages = Array.isArray(toastHistory) ? toastHistory : [];
+  const [tab, setTab] = React.useState(initialTab === 'messages' && messages.length ? 'messages' : 'hints');
   const hintStatus = isGeneratingExtension
     ? t('hints.synthesizing')
     : `${t('hints.title')}: ${hintHistory.length}`;
+  const messagesLabel = (t('hints.tab_messages') || 'Messages') + (messages.length ? ` (${messages.length})` : '');
+  const tabButtonStyle = (id) => `min-h-11 rounded-lg px-3 py-2 text-xs font-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-600 ${tab === id ? 'bg-yellow-600 text-white' : 'bg-white text-yellow-800 border border-yellow-200 hover:bg-yellow-100'}`;
 
   React.useEffect(() => {
     const dialog = dialogRef.current;
@@ -90,6 +108,50 @@ function HintsModal({
           </h3>
           <button type="button" onClick={handleSetShowHintsModalToFalse} className="min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-full hover:bg-yellow-100 text-yellow-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-600" aria-label={t?.('common.close') || 'Close'}><X size={20} aria-hidden="true"/></button>
         </div>
+        {/* D4: hints and replayed toasts share one door. Two plain buttons, not a
+            tab widget, so the arrow-key semantics of a real tablist are not implied. */}
+        <div role="group" aria-label={t('hints.sections_aria') || 'What AlloFlow has told you'} className="flex shrink-0 gap-2 border-b border-yellow-100 bg-yellow-50/60 px-4 py-2">
+          <button type="button" aria-pressed={tab === 'hints'} onClick={() => setTab('hints')} className={tabButtonStyle('hints')}>{t('hints.tab_ideas') || 'Ideas'}</button>
+          <button type="button" aria-pressed={tab === 'messages'} onClick={() => setTab('messages')} className={tabButtonStyle('messages')}>{messagesLabel}</button>
+        </div>
+        {tab === 'messages' ? (
+          <>
+            <div className="flex-1 overflow-y-auto p-6 custom-scrollbar" role="region" aria-label={t('hints.tab_messages') || 'Messages'} tabIndex={messages.length > 0 ? 0 : undefined}>
+              <p className="mb-4 text-xs leading-relaxed text-slate-600">{t('hints.messages_intro') || 'Every notice AlloFlow showed you this session, newest first. Notices disappear on their own so they do not sit on top of your work; they are kept here so you can read them again.'}</p>
+              {messages.length === 0 ? (
+                <div className="py-10 text-center italic text-slate-600">{t('hints.messages_empty') || 'No notices yet.'}</div>
+              ) : (
+                <ul className="space-y-3">
+                  {messages.slice().reverse().map((entry) => (
+                    <li key={entry.id} className={`rounded-xl border-l-4 p-3 shadow-sm ${
+                      entry.type === 'error' ? 'border-red-400 bg-red-50' :
+                      entry.type === 'warning' ? 'border-amber-400 bg-amber-50' :
+                      entry.type === 'success' ? 'border-emerald-400 bg-emerald-50' :
+                      'border-indigo-400 bg-indigo-50'}`}>
+                      <div className="mb-1 flex items-baseline justify-between gap-3">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600">
+                          {t('hints.message_kind_' + (entry.type || 'info')) || (entry.type || 'info')}
+                        </span>
+                        <span className="shrink-0 text-[11px] text-slate-600">{new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      </div>
+                      <p className="text-sm font-medium leading-relaxed text-slate-800">{entry.message}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div className="shrink-0 border-t border-slate-100 bg-slate-50 p-4">
+              <button
+                type="button"
+                onClick={onClearToastHistory}
+                disabled={!messages.length || typeof onClearToastHistory !== 'function'}
+                className="min-h-11 w-full rounded-xl border-2 border-slate-300 py-3 font-bold text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-500 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {t('hints.messages_clear') || 'Clear this list'}
+              </button>
+            </div>
+          </>
+        ) : (<>
         <div className="flex-1 overflow-y-auto p-6 custom-scrollbar" role="region" aria-label={t?.('hints.title') || 'Hints'} tabIndex={hintHistory.length > 0 ? 0 : undefined}>
           {hintHistory.length === 0 ? (
             <div className="text-center py-10 text-slate-600 italic">
@@ -146,6 +208,7 @@ function HintsModal({
             {isGeneratingExtension ? t('hints.synthesizing') : t('hints.generate_extensions')}
           </button>
         </div>
+        </>)}
         <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{hintStatus}</div>
       </div>
     </div>

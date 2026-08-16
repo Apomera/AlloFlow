@@ -3104,8 +3104,14 @@
     var displayedFormItem=formResult&&formResult.item||queuedFormItem;
     var formItem=displayedFormItem;
     var displayedFormReview=displayedFormItem?(progress.formReviews||[]).filter(function(review){return review&&review.id===displayedFormItem.reviewId;})[0]||null:null;
-    var labItem=labItems[labIndex]||labItems[0]||null;
-    var labChoices=useMemo(function(){return listeningChoices(labItems,labIndex);},[labItems,labIndex]);
+    // One resolved index for the whole listening lab. labItem used to fall back to
+    // labItems[0] while listeningChoices clamped to the last item, so on the frame
+    // after labItems shrank (target language changed, a saved word removed) the audio
+    // and the graded answer came from one item and the options from another. The
+    // effect below resets labIndex, but only after that frame has already painted.
+    var labSafeIndex=labItems.length?Math.max(0,Math.min(labItems.length-1,Math.floor(Number(labIndex)||0))):0;
+    var labItem=labItems[labSafeIndex]||null;
+    var labChoices=useMemo(function(){return listeningChoices(labItems,labSafeIndex);},[labItems,labSafeIndex]);
     var summary=languageSummary(progress,profile.target,Date.now());
     var forecast=reviewForecast(progress.saved||[],profile.target,Date.now());
     var journal=activityHistory(progress,profile.target,Date.now(),7);
@@ -3915,7 +3921,7 @@ useEffect(function(){
       if(!currentPracticeSet||currentPracticeSet.archived||PRACTICE_TABS.indexOf(tab)<0)return null;
       var checkpoint=Object.assign({},currentPracticeCheckpointScope(),{tab:tab,updatedAt:Date.now()});
       if(tab==='forms'&&queuedFormItem){checkpoint.itemId=queuedFormItem.reviewId;checkpoint.index=formIndex;}
-      else if(tab==='listening'&&labItem){checkpoint.itemId=labItem.id;checkpoint.index=labIndex;}
+      else if(tab==='listening'&&labItem){checkpoint.itemId=labItem.id;checkpoint.index=labSafeIndex;}
       else if(tab==='speak'&&phrase){checkpoint.itemId=pronunciationSource;checkpoint.index=index;}
       else if(tab==='conversation'&&convo){checkpoint.itemId=conversationTurnId(convo);checkpoint.index=turn;}
       return checkpoint;

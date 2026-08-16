@@ -114,6 +114,11 @@ function StudentSaveAdventurePanel({
   handleSetShowSubmitModalToTrue,
   handleStartAdventure,
   hasSavedAdventure,
+  // Lesson-scoped by the host: the whole Adventure section is dropped when the
+  // current lesson does not carry an adventure, so a lesson without one does not
+  // imply the teacher was supposed to include it. Undefined means an older host
+  // that does not send the prop, in which case the section shows as before.
+  isAdventureAvailable,
   initiateSaveStudentProject,
   isResumingAdventure,
   isSaveActionPulsing,
@@ -123,23 +128,25 @@ function StudentSaveAdventurePanel({
   t
 }) {
   const noop = () => null;
-  const Save = window.Save || noop;
-  const FolderOpen = window.FolderOpen || window.AlloIcons && window.AlloIcons.FolderOpen || noop;
-  const Download = window.Download || noop;
-  const Send = window.Send || noop;
-  const MapIcon = window.MapIcon || noop;
-  const CheckCircle2 = window.CheckCircle2 || noop;
-  const Lock = window.Lock || noop;
-  const RefreshCw = window.RefreshCw || noop;
-  const History = window.History || noop;
-  const Sparkles = window.Sparkles || noop;
-  const Wifi = window.Wifi || noop;
+  const icon = (name) => window.AlloIcons && window.AlloIcons[name] || window[name] || noop;
+  const Save = icon("Save");
+  const FolderOpen = icon("FolderOpen");
+  const Download = icon("Download");
+  const Send = icon("Send");
+  const MapIcon = icon("MapIcon");
+  const CheckCircle2 = icon("CheckCircle2");
+  const Lock = icon("Lock");
+  const RefreshCw = icon("RefreshCw");
+  const History = icon("History");
+  const Sparkles = icon("Sparkles");
+  const Wifi = icon("Wifi");
   const saveTitleId = "student-save-panel-title";
   const adventureTitleId = "student-adventure-panel-title";
   const adventureProgressId = "student-adventure-progress-label";
   const unlockXp = Math.max(1, Number(studentProjectSettings?.adventureUnlockXP || 1));
   const boundedPoints = Math.max(0, Math.min(globalPoints, unlockXp));
   const adventureProgress = Math.min(100, boundedPoints / unlockXp * 100);
+  const adventureAvailable = isAdventureAvailable !== false;
   const themeContext = React.useContext(window.AlloThemeContext || StudentSaveThemeFallbackContext);
   const styles = getStudentSaveThemeStyles(themeContext);
   return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
@@ -184,7 +191,7 @@ function StudentSaveAdventurePanel({
       " ",
       t("common.submit")
     ))
-  ), /* @__PURE__ */ React.createElement("section", { className: cx(styles.adventurePanel, "rounded-3xl shadow-lg overflow-hidden shrink-0 mb-4"), "aria-labelledby": adventureTitleId }, /* @__PURE__ */ React.createElement("div", { className: cx(styles.adventureHeader, "p-3 flex justify-between items-center") }, /* @__PURE__ */ React.createElement("div", { id: adventureTitleId, className: cx("text-sm font-bold flex items-center gap-2", styles.adventureTitle) }, /* @__PURE__ */ React.createElement(MapIcon, { size: 16, "aria-hidden": "true" }), " ", t("adventure.title")), globalPoints >= studentProjectSettings.adventureUnlockXP && /* @__PURE__ */ React.createElement("span", { className: cx("text-[11px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1", styles.unlockedBadge), role: "status" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 10, "aria-hidden": "true" }), " ", t("adventure.unlocked"))), /* @__PURE__ */ React.createElement("div", { className: "p-4" }, globalPoints < studentProjectSettings.adventureUnlockXP ? /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-3 mb-2", styles.muted) }, /* @__PURE__ */ React.createElement("div", { className: cx("p-2 rounded-full", styles.iconBubble), "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Lock, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "text-xs" }, /* @__PURE__ */ React.createElement("strong", { className: cx("block", styles.adventureTitle) }, t("adventure.locked_status")), t("adventure.earn"), " ", /* @__PURE__ */ React.createElement("span", { className: cx("font-bold", styles.accentText) }, studentProjectSettings.adventureUnlockXP, " XP"), " ", t("adventure.to_unlock"))), /* @__PURE__ */ React.createElement(
+  ), adventureAvailable && /* @__PURE__ */ React.createElement("section", { className: cx(styles.adventurePanel, "rounded-3xl shadow-lg overflow-hidden shrink-0 mb-4"), "aria-labelledby": adventureTitleId }, /* @__PURE__ */ React.createElement("div", { className: cx(styles.adventureHeader, "p-3 flex justify-between items-center") }, /* @__PURE__ */ React.createElement("div", { id: adventureTitleId, className: cx("text-sm font-bold flex items-center gap-2", styles.adventureTitle) }, /* @__PURE__ */ React.createElement(MapIcon, { size: 16, "aria-hidden": "true" }), " ", t("adventure.title")), globalPoints >= studentProjectSettings.adventureUnlockXP && /* @__PURE__ */ React.createElement("span", { className: cx("text-[11px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1", styles.unlockedBadge), role: "status" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 10, "aria-hidden": "true" }), " ", t("adventure.unlocked"))), /* @__PURE__ */ React.createElement("div", { className: "p-4" }, globalPoints < studentProjectSettings.adventureUnlockXP ? /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-3 mb-2", styles.muted) }, /* @__PURE__ */ React.createElement("div", { className: cx("p-2 rounded-full", styles.iconBubble), "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Lock, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "text-xs" }, /* @__PURE__ */ React.createElement("strong", { className: cx("block", styles.adventureTitle) }, t("adventure.locked_status")), t("adventure.earn"), " ", /* @__PURE__ */ React.createElement("span", { className: cx("font-bold", styles.accentText) }, studentProjectSettings.adventureUnlockXP, " XP"), " ", t("adventure.to_unlock"))), /* @__PURE__ */ React.createElement(
     "div",
     {
       className: cx("w-full rounded-full h-2.5 overflow-hidden", styles.progressTrack),
@@ -211,7 +218,7 @@ function StudentSaveAdventurePanel({
       disabled: isResumingAdventure,
       className: cx("w-full py-3 rounded-xl font-bold transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2", styles.primaryPurple, styles.focusPurple, styles.focusOffset)
     },
-    isResumingAdventure ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 18, className: "animate-spin", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(History, { size: 18, "aria-hidden": "true" }),
+    isResumingAdventure ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 18, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(History, { size: 18, "aria-hidden": "true" }),
     t("adventure.resume")
   ), /* @__PURE__ */ React.createElement(
     "button",

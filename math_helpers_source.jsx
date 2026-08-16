@@ -134,7 +134,14 @@ Return ONLY the hint text as a single paragraph (no JSON, no markdown). Keep it 
 };
 
 const handleMathEdit = async (editInstruction, deps) => {
-  const { generatedContent, leveledTextLanguage, gradeLevel, mathSubject, setIsMathEditingChat, setGeneratedContent, setMathEditInput, callGemini, cleanJson, safeJsonParse, addToast, warnLog } = deps;
+  const { generatedContent, leveledTextLanguage, translationMode, resolveTranslationPolicy, currentUiLanguage, gradeLevel, mathSubject, setIsMathEditingChat, setGeneratedContent, setMathEditInput, callGemini, cleanJson, safeJsonParse, addToast, warnLog } = deps;
+  // Resolved once from the host-threaded policy. Falls back to the historical
+  // rule (gloss into English when the content is not English) if an older host
+  // has not threaded the resolver yet, so a stale CDN never silently changes
+  // what teachers get.
+  const _xlate = (typeof resolveTranslationPolicy === 'function')
+    ? resolveTranslationPolicy(translationMode, leveledTextLanguage, currentUiLanguage)
+    : { enabled: !!leveledTextLanguage && leveledTextLanguage !== 'English' && leveledTextLanguage !== 'All Selected Languages', target: 'English', mode: 'auto' };
   try { if (window._DEBUG_MATH_HELPERS) console.log("[MathHelpers] handleMathEdit fired"); } catch(_) {}
       if (!editInstruction.trim() || !generatedContent?.data?.problems) return;
       setIsMathEditingChat(true);
@@ -144,7 +151,7 @@ const handleMathEdit = async (editInstruction, deps) => {
           ).join("\n");
           const prompt = `
               You are an Expert Math Curriculum Designer.
-              ${leveledTextLanguage && leveledTextLanguage !== 'English' ? 'IMPORTANT: Generate ALL text content (questions, explanations, steps, real-world applications) in ' + leveledTextLanguage + '. After each text field, include an English translation in parentheses. Keep mathematical expressions and JSON keys in English.' : ''}
+              ${leveledTextLanguage && leveledTextLanguage !== 'English' ? 'IMPORTANT: Generate ALL text content (questions, explanations, steps, real-world applications) in ' + leveledTextLanguage + '.' + (_xlate.enabled ? ' After each text field, include a ' + _xlate.target + ' translation in parentheses.' : ' Do NOT add a translation in parentheses or anywhere else.') + ' Keep mathematical expressions and JSON keys in English.' : ''}
               A teacher has an existing problem set and wants to modify it.
 
               CURRENT PROBLEMS (the [bracket] tag is the taskType — preserve unless edit specifically changes the action):

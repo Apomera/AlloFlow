@@ -172,7 +172,14 @@ const _estimateFullPackCapacity = (aiCalls, imageCalls, profile = {}) => {
 };
 
 const handleGenerateMath = async (inputOverride = null, switchView = true, modeOverride = null, deps) => {
-  const { mathInput, history, inputText, useMathSourceContext, studentInterests, gradeLevel, mathMode, mathSubject, mathQuantity, autoAttachManipulatives, leveledTextLanguage, isMathGraphEnabled, autoSnapshotManipulatives, setIsProcessing, setGenerationStep, setError, setGeneratedContent, setActiveView, setShowMathAnswers, setHistory, setToolSnapshots, addToast, t, callGemini, cleanJson, safeJsonParse, warnLog, verifyMathProblems, flyToElement } = deps;
+  const { mathInput, history, inputText, useMathSourceContext, studentInterests, gradeLevel, mathMode, mathSubject, mathQuantity, autoAttachManipulatives, leveledTextLanguage, translationMode, resolveTranslationPolicy, currentUiLanguage, isMathGraphEnabled, autoSnapshotManipulatives, setIsProcessing, setGenerationStep, setError, setGeneratedContent, setActiveView, setShowMathAnswers, setHistory, setToolSnapshots, addToast, t, callGemini, cleanJson, safeJsonParse, warnLog, verifyMathProblems, flyToElement } = deps;
+  // Resolved once from the host-threaded policy. Falls back to the historical
+  // rule (gloss into English when the content is not English) if an older host
+  // has not threaded the resolver yet, so a stale CDN never silently changes
+  // what teachers get.
+  const _xlate = (typeof resolveTranslationPolicy === 'function')
+    ? resolveTranslationPolicy(translationMode, leveledTextLanguage, currentUiLanguage)
+    : { enabled: !!leveledTextLanguage && leveledTextLanguage !== 'English' && leveledTextLanguage !== 'All Selected Languages', target: 'English', mode: 'auto' };
   try { if (window._DEBUG_GEN_HELPERS) console.log("[GenerationHelpers] handleGenerateMath fired"); } catch(_) {}
       const problemToSolve = typeof inputOverride === 'string' ? inputOverride : mathInput;
       const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
@@ -210,7 +217,7 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
           if (effectiveMode === 'Freeform Builder') {
               prompt = `
                 You are an Expert Math Curriculum Designer creating a CUSTOM problem set.
-                ${leveledTextLanguage && leveledTextLanguage !== 'English' ? 'IMPORTANT: Generate ALL text content (questions, explanations, steps, real-world applications) in ' + leveledTextLanguage + '. After each text field, include an English translation in parentheses. Keep mathematical expressions and JSON keys in English.' : ''}
+                ${leveledTextLanguage && leveledTextLanguage !== 'English' ? 'IMPORTANT: Generate ALL text content (questions, explanations, steps, real-world applications) in ' + leveledTextLanguage + '.' + (_xlate.enabled ? ' After each text field, include a ' + _xlate.target + ' translation in parentheses.' : ' Do NOT add a translation in parentheses or anywhere else.') + ' Keep mathematical expressions and JSON keys in English.' : ''}
                 Teacher's Request: "${problemToSolve}"
                 ${mathContextPrompt}
                 Subject: ${mathSubject}
@@ -273,7 +280,7 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
           } else if (effectiveMode === 'Problem Set Generator') {
               prompt = `
                 You are an expert Math Curriculum Designer.
-                ${leveledTextLanguage && leveledTextLanguage !== 'English' ? 'IMPORTANT: Generate ALL text content (questions, explanations, steps, real-world applications) in ' + leveledTextLanguage + '. After each text field, include an English translation in parentheses. Keep mathematical expressions and JSON keys in English.' : ''}
+                ${leveledTextLanguage && leveledTextLanguage !== 'English' ? 'IMPORTANT: Generate ALL text content (questions, explanations, steps, real-world applications) in ' + leveledTextLanguage + '.' + (_xlate.enabled ? ' After each text field, include a ' + _xlate.target + ' translation in parentheses.' : ' Do NOT add a translation in parentheses or anywhere else.') + ' Keep mathematical expressions and JSON keys in English.' : ''}
                 Topic/Skill: "${problemToSolve}"
                 ${mathContextPrompt}
                 Instruction: Create EXACTLY the number and types of problems described in the Topic/Skill above. Match the count, types, and difficulty the user specified. If no specific count is given, create 5 problems.
@@ -306,7 +313,7 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
           } else {
               prompt = `
                 You are an Expert Math & Science Tutor.
-                ${leveledTextLanguage && leveledTextLanguage !== 'English' ? 'IMPORTANT: Generate ALL text content (explanations, steps, real-world applications) in ' + leveledTextLanguage + '. After each text field, include an English translation in parentheses. Keep mathematical expressions and JSON keys in English.' : ''}
+                ${leveledTextLanguage && leveledTextLanguage !== 'English' ? 'IMPORTANT: Generate ALL text content (explanations, steps, real-world applications) in ' + leveledTextLanguage + '.' + (_xlate.enabled ? ' After each text field, include a ' + _xlate.target + ' translation in parentheses.' : ' Do NOT add a translation in parentheses or anywhere else.') + ' Keep mathematical expressions and JSON keys in English.' : ''}
                 Subject: ${mathSubject}
                 Mode: ${mathMode}
                 Problem: "${problemToSolve}",
@@ -457,7 +464,14 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
 };
 
 const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
-  const { isProcessing, fullPackTargetGroup, rosterKey, gradeLevel, leveledTextLanguage, studentInterests, dokLevel, differentiationRange, differentiationTypes, differentiationCustomGrades, generationSignal, leveledTextCustomInstructions, selectedLanguages, targetStandards, useEmojis, textFormat, history, inputText, sourceTopic, standardsInput, standardsContext, resourceCount, isAutoConfigEnabled, quizCustomInstructions, adventureCustomInstructions, frameCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, timelineTopic, lessonCustomAdditions, conceptInput, glossaryCustomInstructions, personaCustomInstructions, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, setIsProcessing, setGenerationStep, setFullPackTargetGroup, setGradeLevel, setLeveledTextLanguage, setStudentInterests, setDokLevel, setLeveledTextCustomInstructions, setSelectedLanguages, setTargetStandards, setUseEmojis, setTextFormat, setPersistedLessonDNA, setFullPackRun, setError, addToast, t, warnLog, handleApplyRosterGroup, handleGenerate, autoConfigureSettings, applyDetailedAutoConfig, getGroupDifferentiationContext, getAssetManifest, getDifferentiationGrades, aiProviderProfile } = deps;
+  const { isProcessing, fullPackTargetGroup, rosterKey, gradeLevel, leveledTextLanguage, translationMode, resolveTranslationPolicy, currentUiLanguage, studentInterests, dokLevel, differentiationRange, differentiationTypes, differentiationCustomGrades, generationSignal, leveledTextCustomInstructions, selectedLanguages, targetStandards, useEmojis, textFormat, history, inputText, sourceTopic, standardsInput, standardsContext, resourceCount, isAutoConfigEnabled, quizCustomInstructions, adventureCustomInstructions, frameCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, timelineTopic, lessonCustomAdditions, conceptInput, glossaryCustomInstructions, personaCustomInstructions, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, setIsProcessing, setGenerationStep, setFullPackTargetGroup, setGradeLevel, setLeveledTextLanguage, setStudentInterests, setDokLevel, setLeveledTextCustomInstructions, setSelectedLanguages, setTargetStandards, setUseEmojis, setTextFormat, setPersistedLessonDNA, setFullPackRun, setError, addToast, t, warnLog, handleApplyRosterGroup, handleGenerate, autoConfigureSettings, applyDetailedAutoConfig, getGroupDifferentiationContext, getAssetManifest, getDifferentiationGrades, aiProviderProfile } = deps;
+  // Resolved once from the host-threaded policy. Falls back to the historical
+  // rule (gloss into English when the content is not English) if an older host
+  // has not threaded the resolver yet, so a stale CDN never silently changes
+  // what teachers get.
+  const _xlate = (typeof resolveTranslationPolicy === 'function')
+    ? resolveTranslationPolicy(translationMode, leveledTextLanguage, currentUiLanguage)
+    : { enabled: !!leveledTextLanguage && leveledTextLanguage !== 'English' && leveledTextLanguage !== 'All Selected Languages', target: 'English', mode: 'auto' };
   try { if (window._DEBUG_GEN_HELPERS) console.log("[GenerationHelpers] handleGenerateFullPack fired"); } catch(_) {}
     const _fullPackStartedAt = Date.now();
     const _fullPackRunId = 'full-pack-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
@@ -1066,7 +1080,14 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
 };
 
 const handleComplexityAdjustment = async (deps) => {
-  const { complexityLevel, generatedContent, gradeLevel, leveledTextLanguage, saveOriginalOnAdjust, generatedTerms, setIsProcessing, setGeneratedContent, setHistory, setError, setComplexityLevel, setWordSoundsCustomTerms, setWsPreloadedWords, callGemini, cleanJson, addToast, t, warnLog, extractSourceTextForProcessing, generateBilingualText, getDefaultTitle } = deps;
+  const { complexityLevel, generatedContent, gradeLevel, leveledTextLanguage, translationMode, resolveTranslationPolicy, currentUiLanguage, saveOriginalOnAdjust, generatedTerms, setIsProcessing, setGeneratedContent, setHistory, setError, setComplexityLevel, setWordSoundsCustomTerms, setWsPreloadedWords, callGemini, cleanJson, addToast, t, warnLog, extractSourceTextForProcessing, generateBilingualText, getDefaultTitle } = deps;
+  // Resolved once from the host-threaded policy. Falls back to the historical
+  // rule (gloss into English when the content is not English) if an older host
+  // has not threaded the resolver yet, so a stale CDN never silently changes
+  // what teachers get.
+  const _xlate = (typeof resolveTranslationPolicy === 'function')
+    ? resolveTranslationPolicy(translationMode, leveledTextLanguage, currentUiLanguage)
+    : { enabled: !!leveledTextLanguage && leveledTextLanguage !== 'English' && leveledTextLanguage !== 'All Selected Languages', target: 'English', mode: 'auto' };
   try { if (window._DEBUG_GEN_HELPERS) console.log("[GenerationHelpers] handleComplexityAdjustment fired"); } catch(_) {}
     const supportedTypes = ['simplified', 'quiz', 'sentence-frames', 'glossary'];
     if (complexityLevel === 5 || !generatedContent || !supportedTypes.includes(generatedContent.type)) return;
@@ -1184,7 +1205,7 @@ const handleComplexityAdjustment = async (deps) => {
                 - ${isSimpler ? "Simplify vocabulary, focus on direct recall (DOK 1), ensure distractors are clearly incorrect/distinct." : "Increase vocabulary rigor, focus on inference/analysis (DOK 2-3), make distractors more plausible to test deep understanding."}
                 - Keep the same number of questions.
                 - Maintain the exact JSON structure.
-                ${leveledTextLanguage !== 'English' ? `Ensure translations (suffix _en) match the new difficulty.` : ''}
+                ${_xlate.enabled ? `Ensure the ${_xlate.target} translations (suffix _en) match the new difficulty.` : 'Do NOT add translation fields.'}
                 Return ONLY JSON: { "questions": [...] }
             `;
         }

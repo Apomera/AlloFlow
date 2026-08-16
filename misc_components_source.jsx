@@ -83,20 +83,33 @@ const wsHighlightTarget = (text, target) => {
   );
 };
 
-const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswers, displayWord }) => {
+const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswers, displayWord, passageWord }) => {
   const { t } = useContext(LanguageContext);
-  const _solved = displayWord || targetWord;
-  const [val, setVal] = useState(isSolved ? _solved : '');
+  // The word that belongs in THIS blank is the one the blank replaced, which is
+  // `passageWord`. It used to be derived from the lesson's language setting
+  // instead (`displayWord`), which is wrong whenever an occurrence does not
+  // match that setting: a Spanish passage that still carries the English term
+  // in one sentence got the Spanish term wedged back in on solve.
+  const _passage = passageWord || displayWord || targetWord;
+  // What the learner themselves put in the blank, once it was accepted. Kept so
+  // a correct answer is never silently rewritten into another language. Typing
+  // the English term into a Spanish lesson used to flip the blank to Spanish,
+  // which reads as "you were corrected" rather than "you were right".
+  const [entered, setEntered] = useState('');
+  const [val, setVal] = useState(isSolved ? _passage : '');
   const [status, setStatus] = useState(isSolved ? 'success' : 'neutral');
   useEffect(() => {
       if (isSolved) {
-          setVal(_solved);
+          // On a fresh mount of an already-solved blank (reload, remount) there
+          // is no learner input to preserve, so the passage word stands in.
+          setVal(entered || _passage);
           setStatus('success');
       } else {
           setVal('');
+          setEntered('');
           setStatus('neutral');
       }
-  }, [isSolved, _solved]);
+  }, [isSolved, _passage, entered]);
   // The old normalizer was `replace(/[^a-z0-9]/g, '')`, which deletes every
   // character outside ASCII. For Russian, Arabic, Chinese, Thai — any
   // non-Latin script — BOTH the answer and the target collapsed to '', so
@@ -130,19 +143,16 @@ const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswer
   // is translated, the term in the passage's language. A student is right
   // whichever one they drag or type.
   const acceptedList = (Array.isArray(acceptedAnswers) ? acceptedAnswers : [])
-    .concat([targetWord])
+    .concat([targetWord, _passage])
     .filter(Boolean);
   const isAcceptedAnswer = (value) => acceptedList.some((ans) => answerMatches(value, ans));
-  // What lands in the blank once solved: the word that belongs in THIS
-  // passage, so a Spanish text does not end up with an English word wedged
-  // into the sentence.
-  const solvedWord = displayWord || targetWord;
   const handleDrop = (e) => {
     e.preventDefault();
     if (status === 'success') return;
-    const droppedText = e.dataTransfer.getData("text/plain");
+    const droppedText = String(e.dataTransfer.getData("text/plain") || '').trim();
     if (isAcceptedAnswer(droppedText)) {
-        setVal(solvedWord);
+        setVal(droppedText);
+        setEntered(droppedText);
         setStatus('success');
         if (onCorrect) onCorrect(targetWord);
     } else {
@@ -164,13 +174,23 @@ const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswer
       const newVal = e.target.value;
       setVal(newVal);
       if (isAcceptedAnswer(newVal)) {
+          setEntered(newVal);
           setStatus('success');
           if (onCorrect) onCorrect(targetWord);
       }
   };
   // Size to the longest word the blank will hold, so a translated term does
   // not overflow a box measured against the English one.
-  const width = Math.max(80, Math.max(String(targetWord || '').length, String(solvedWord || '').length) * 12) + 'px';
+  const width = Math.max(80, Math.max(String(targetWord || '').length, String(_passage || '').length) * 12) + 'px';
+  // When the learner was right in a different language than the passage, the
+  // sentence still has to read correctly. Show their answer in the blank and
+  // the passage's own form beside it, rather than replacing one with the other.
+  const _passageForm = String(_passage || '').trim();
+  // answerMatches, not a bare normalize comparison: for a script the engine
+  // cannot classify both sides normalize to '' and would compare equal, which
+  // would silently suppress the annotation.
+  const showPassageForm = status === 'success' && !!_passageForm && !!val
+    && !answerMatches(val, _passageForm);
   return (
       <span
         className="inline-block mx-1 relative align-middle"
@@ -199,8 +219,21 @@ const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswer
           {status === 'success' && (
               <span aria-hidden="true" className="absolute -top-2 -right-2 text-green-500 bg-white rounded-full shadow-sm animate-in motion-reduce:animate-none zoom-in duration-300"><CheckCircle2 size={16} className="fill-green-100"/></span>
           )}
+          {showPassageForm && (
+              <span
+                className="ms-1 align-middle text-[11px] font-semibold text-green-700 whitespace-nowrap"
+                title={t('games.fill_blank.passage_form', { word: _passageForm }) || `In the passage: ${_passageForm}`}
+              >
+                  ({_passageForm})
+              </span>
+          )}
           <span role="status" aria-live="polite" className="sr-only">
-              {status === 'error' ? (t('games.fill_blank.incorrect') || 'Incorrect answer. Try again.') : status === 'success' ? (t('games.fill_blank.correct') || 'Correct answer.') : ''}
+              {status === 'error' ? (t('games.fill_blank.incorrect') || 'Incorrect answer. Try again.')
+                : status === 'success' ? [
+                    (t('games.fill_blank.correct') || 'Correct answer.'),
+                    showPassageForm ? (t('games.fill_blank.passage_form', { word: _passageForm }) || `In the passage: ${_passageForm}`) : ''
+                  ].filter(Boolean).join(' ')
+                : ''}
           </span>
       </span>
   );

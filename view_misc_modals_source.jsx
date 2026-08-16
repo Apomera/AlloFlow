@@ -942,8 +942,19 @@ function PlatformDiagnosticsSection(props) {
         <button type="button" data-help-ignore="true" data-a11y-ignore="diagnostic-confirm" onClick={runDialogProbe} className="bg-white text-violet-700 border-2 border-violet-200 px-3 py-2 rounded-xl font-bold text-xs hover:bg-violet-50">
           🧪 {t('platform_diag.dialog') || 'Test dialog'}
         </button>
+        {/* N5 (2026-08-16): the device-storage PROBE lives here now, with the other
+            diagnostics, instead of behind a Settings button labelled "Manage local
+            storage". It answers "does this browser keep what we write", which was
+            answered long ago; it is not a manager and never showed saved work.
+            Folding it in rather than deleting it keeps the one thing it is good for
+            (Canvas storage-persistence bug reports) without a second door wearing
+            the storage manager's label. Ctrl+Alt+Shift+D still opens it too. */}
+        <button type="button" data-help-ignore="true" onClick={() => { if (typeof window.__alloOpenDeviceStorageProbe === 'function') window.__alloOpenDeviceStorageProbe(); }} className="bg-white text-violet-700 border-2 border-violet-200 px-3 py-2 rounded-xl font-bold text-xs hover:bg-violet-50">
+          💾 {t('platform_diag.storage_probe') || 'Test device storage'}
+        </button>
       </div>
       <p className="text-[10px] text-slate-500 mt-2">Use this when a feature behaves differently across environments. Copy the report and include it when asking for help.</p>
+      <p className="text-[10px] text-slate-500 mt-1">{t('platform_diag.storage_probe_hint') || 'Test device storage only checks whether this browser can keep data. To see, restore, or erase your saved resource packs, use Local storage and downloads above.'}</p>
       {platProbe && (
         <>
           <div className="mt-3 bg-white border border-slate-300 rounded-lg p-2 text-[11px]" role="region" aria-labelledby="ai-platform-results-title">
@@ -1744,8 +1755,12 @@ function AIBackendModalBody(props) {
       window.__alloAddToast(_skewNotice, 'info');
       return;
     }
-    // Last resort on a host predating even the toast.
-    if (typeof window.__alloOpenDeviceStorageProbe === 'function') window.__alloOpenDeviceStorageProbe();
+    // N5 (2026-08-16): the last-resort fall-through to __alloOpenDeviceStorageProbe is
+    // gone. It was the last remaining path where one label ("Manage local storage")
+    // could open two different things, and the thing it opened was the diagnostic
+    // harness. On a host too old for both bridges, saying nothing beats opening the
+    // wrong screen; the probe now has its own labelled button in Platform Diagnostics.
+    try { console.warn('[Storage] Storage and recovery manager bridge unavailable on this host build.'); } catch (_) {}
   };
   return (
         <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAIBackendModal(false)}>
@@ -1783,11 +1798,11 @@ function AIBackendModalBody(props) {
                   <section id="ai-backend-guided-storage-shortcut" className="rounded-xl border border-cyan-200 bg-cyan-50 p-3" aria-labelledby="ai-backend-guided-storage-title">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div>
-                        <h4 id="ai-backend-guided-storage-title" className="text-xs font-black text-cyan-950">Local storage & downloads</h4>
-                        <p className="mt-1 text-[11px] leading-relaxed text-cyan-900">Review space used by saved work and offline models such as Whisper and Kokoro, export a backup, or erase local data.</p>
+                        <h4 id="ai-backend-guided-storage-title" className="text-xs font-black text-cyan-950">{t('canvas_settings.local_storage_title') || 'Saved work on this device'}</h4>
+                        <p className="mt-1 text-[11px] leading-relaxed text-cyan-900">{t('canvas_settings.local_storage_hint') || 'Open your saved resource packs to restore, pin, export, or erase them. Also shows space used and the offline voice models such as Whisper and Kokoro.'}</p>
                       </div>
                       <button type="button" data-help-key="ai_backend_guided_storage_btn" onClick={openDeviceStorageManager} className="min-h-11 shrink-0 rounded-xl border-2 border-cyan-600 bg-white px-4 py-2 text-sm font-black text-cyan-900 hover:bg-cyan-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2">
-                        Manage local storage
+                        {t('canvas_settings.local_storage_btn') || 'Open saved work'}
                       </button>
                     </div>
                   </section>

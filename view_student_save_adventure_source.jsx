@@ -9,7 +9,7 @@
  * Extracted from AlloFlowANTI.txt lines 21439-21548 (May 2026).
  *
  * Required props (14):
- *   activeSessionCode, globalPoints, handleResumeAdventure,
+ *   activeSessionCode, globalPoints, handleResumeAdventure, isAdventureAvailable,
  *   handleSetShowSubmitModalToTrue, handleStartAdventure, hasSavedAdventure,
  *   initiateSaveStudentProject, isResumingAdventure, isSaveActionPulsing,
  *   projectFileInputRef, sessionData, studentProjectSettings, t
@@ -127,6 +127,11 @@ function StudentSaveAdventurePanel({
   handleSetShowSubmitModalToTrue,
   handleStartAdventure,
   hasSavedAdventure,
+  // Lesson-scoped by the host: the whole Adventure section is dropped when the
+  // current lesson does not carry an adventure, so a lesson without one does not
+  // imply the teacher was supposed to include it. Undefined means an older host
+  // that does not send the prop, in which case the section shows as before.
+  isAdventureAvailable,
   initiateSaveStudentProject,
   isResumingAdventure,
   isSaveActionPulsing,
@@ -136,23 +141,32 @@ function StudentSaveAdventurePanel({
   t,
 }) {
   const noop = () => null;
-  const Save = window.Save || noop;
-  const FolderOpen = window.FolderOpen || (window.AlloIcons && window.AlloIcons.FolderOpen) || noop;
-  const Download = window.Download || noop;
-  const Send = window.Send || noop;
-  const MapIcon = window.MapIcon || noop;
-  const CheckCircle2 = window.CheckCircle2 || noop;
-  const Lock = window.Lock || noop;
-  const RefreshCw = window.RefreshCw || noop;
-  const History = window.History || noop;
-  const Sparkles = window.Sparkles || noop;
-  const Wifi = window.Wifi || noop;
+  // AlloIcons first, bare window second. Several of these names collide with DOM
+  // built-ins — window.History is the History interface constructor, window.Save
+  // is nothing at all — and the host only shadows them by Object.assign'ing the
+  // Lucide set onto window at AlloFlowANTI.txt:11082. Reading the registry first
+  // means this panel does not depend on a DOM global having been clobbered, and
+  // it renders standalone. React calls a bare class as a function component, so
+  // getting History wrong is a crash, not a missing glyph.
+  const icon = (name) => (window.AlloIcons && window.AlloIcons[name]) || window[name] || noop;
+  const Save = icon('Save');
+  const FolderOpen = icon('FolderOpen');
+  const Download = icon('Download');
+  const Send = icon('Send');
+  const MapIcon = icon('MapIcon');
+  const CheckCircle2 = icon('CheckCircle2');
+  const Lock = icon('Lock');
+  const RefreshCw = icon('RefreshCw');
+  const History = icon('History');
+  const Sparkles = icon('Sparkles');
+  const Wifi = icon('Wifi');
   const saveTitleId = 'student-save-panel-title';
   const adventureTitleId = 'student-adventure-panel-title';
   const adventureProgressId = 'student-adventure-progress-label';
   const unlockXp = Math.max(1, Number(studentProjectSettings?.adventureUnlockXP || 1));
   const boundedPoints = Math.max(0, Math.min(globalPoints, unlockXp));
   const adventureProgress = Math.min(100, (boundedPoints / unlockXp) * 100);
+  const adventureAvailable = isAdventureAvailable !== false;
   const themeContext = React.useContext(window.AlloThemeContext || StudentSaveThemeFallbackContext);
   const styles = getStudentSaveThemeStyles(themeContext);
 
@@ -199,6 +213,7 @@ function StudentSaveAdventurePanel({
           </button>
         </div>
       </section>
+      {adventureAvailable && (
       <section className={cx(styles.adventurePanel, 'rounded-3xl shadow-lg overflow-hidden shrink-0 mb-4')} aria-labelledby={adventureTitleId}>
         <div className={cx(styles.adventureHeader, 'p-3 flex justify-between items-center')}>
           <div id={adventureTitleId} className={cx('text-sm font-bold flex items-center gap-2', styles.adventureTitle)}>
@@ -284,6 +299,7 @@ function StudentSaveAdventurePanel({
           )}
         </div>
       </section>
+      )}
     </>
   );
 }

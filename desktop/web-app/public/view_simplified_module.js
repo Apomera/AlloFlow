@@ -2530,7 +2530,53 @@ function SimplifiedView(props) {
     size: 16
   }) : /*#__PURE__*/React.createElement(Copy, {
     size: 16
-  }), /*#__PURE__*/React.createElement("span", null, saveOriginalOnAdjust ? t('common.keep_original') : t('common.overwrite_version'))))), generatedContent.levelCheck && /*#__PURE__*/React.createElement("div", {
+  }), /*#__PURE__*/React.createElement("span", null, saveOriginalOnAdjust ? t('common.keep_original') : t('common.overwrite_version'))))), generatedContent.localStats && !generatedContent.levelCheck && (() => {
+    const measured = Number(generatedContent.localStats.score);
+    if (!Number.isFinite(measured)) return null;
+    const targetGrade = generatedContent.targetGradeLevel || '';
+    const GRADE_NUMBERS = {
+      'Kindergarten': 0,
+      '1st Grade': 1,
+      '2nd Grade': 2,
+      '3rd Grade': 3,
+      '4th Grade': 4,
+      '5th Grade': 5,
+      '6th Grade': 6,
+      '7th Grade': 7,
+      '8th Grade': 8,
+      '9th Grade': 9,
+      '10th Grade': 10,
+      '11th Grade': 11,
+      '12th Grade': 12
+    };
+    const targetNumber = GRADE_NUMBERS[targetGrade];
+    // Only claim "above" or "below" when there is a numeric target to compare
+    // against. College and Graduate Level have no Flesch-Kincaid equivalent, so
+    // the number is shown without a verdict rather than judged against a guess.
+    const gap = typeof targetNumber === 'number' ? measured - targetNumber : null;
+    const isOver = gap !== null && gap > 1;
+    const isUnder = gap !== null && gap < -1;
+    const tone = gap === null ? 'bg-slate-50 border-slate-200 text-slate-700' : isOver ? 'bg-amber-50 border-amber-200 text-amber-900' : isUnder ? 'bg-blue-50 border-blue-200 text-blue-900' : 'bg-green-50 border-green-200 text-green-900';
+    const verdict = gap === null ? '' : isOver ? t('simplified.measured_above', {
+      grade: targetGrade
+    }) || `Above the ${targetGrade} target` : isUnder ? t('simplified.measured_below', {
+      grade: targetGrade
+    }) || `Below the ${targetGrade} target` : t('simplified.measured_on_target', {
+      grade: targetGrade
+    }) || `On target for ${targetGrade}`;
+    return /*#__PURE__*/React.createElement("div", {
+      className: `mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border px-3 py-2 text-xs ${tone}`
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-bold uppercase tracking-wider"
+    }, t('simplified.measured_level_label') || 'Measured reading level'), /*#__PURE__*/React.createElement("span", {
+      className: "font-mono font-bold text-sm",
+      title: `${t('analysis.readability.formula') || 'Flesch-Kincaid'}: (0.39 × ASL) + (11.8 × ASW) - 15.59\n${t('analysis.readability.words') || 'Words'}: ${generatedContent.localStats.words}\n${t('analysis.readability.sentences') || 'Sentences'}: ${generatedContent.localStats.sentences}\n${t('analysis.readability.syllables') || 'Syllables'}: ${generatedContent.localStats.syllables}`
+    }, generatedContent.localStats.score), verdict && /*#__PURE__*/React.createElement("span", {
+      className: "font-semibold"
+    }, verdict), /*#__PURE__*/React.createElement("span", {
+      className: "text-[11px] opacity-80"
+    }, t('simplified.measured_note') || 'Flesch-Kincaid, measured on this passage. Use Check Level for a fuller review.'));
+  })(), generatedContent.levelCheck && /*#__PURE__*/React.createElement("div", {
     className: "mb-6 bg-indigo-50 border border-indigo-100 p-4 rounded-lg animate-in motion-reduce:animate-none slide-in-from-top-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-start gap-3"

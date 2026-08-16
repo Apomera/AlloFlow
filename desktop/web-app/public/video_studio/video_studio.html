@@ -491,8 +491,15 @@
       </div>
       <div class="status" id="demoStatus" role="status" aria-live="polite" aria-atomic="true"></div>
     </div>
-    <details id="coachPanel" open style="border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:0 0 8px">
-      <summary style="cursor:pointer;font-weight:700">🧭 Screen Coach (beta) — AI guidance for ANY captured tab</summary>
+    <!-- Collapsed by default since 2026-08-16. It was expanded when this panel was
+         the only way to reach the coach; the standalone IT Coach
+         (it_coach/it_coach.html, command "open_it_coach") now carries that job and
+         owns the discoverability. Keeping this one expanded put a beta AI coach
+         with six controls above the fold of a tool you opened to record a video.
+         The controls are unchanged: coaching DURING a recording still lives here
+         and only here. -->
+    <details id="coachPanel" style="border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:0 0 8px">
+      <summary style="cursor:pointer;font-weight:700">🧭 Screen Coach (beta) — AI guidance while you record. To be coached through another website, use IT Coach instead.</summary>
       <p class="status" style="margin-top:8px">Pick any tab or window with <strong>Watch without recording</strong> (nothing is saved) or capture it with Start recording, tell the coach your goal, and it suggests the next step with a highlight drawn on the preview. The coach can only <strong>advise — you do the clicking</strong>; it cannot touch the other page, and highlight positions are AI estimates. Each suggestion sends ONE downscaled frame of the captured surface to Gemini.</p>
       <label class="status" style="display:block;margin:6px 0"><input type="checkbox" id="coachPrivacyAck"> I checked that the captured surface shows no student-identifying information</label>
       <div class="row" style="margin-top:6px">
@@ -532,13 +539,14 @@
     <div class="card edit-focus-card">
       <div>
         <h2>Editor focus</h2>
-        <div class="status" id="editorFocusStatus" role="status" aria-live="polite" aria-atomic="true">Lesson polish tools are visible.</div>
+        <div class="status" id="editorFocusStatus" role="status" aria-live="polite" aria-atomic="true">Showing the basics: takes, timeline, trim, and captions. Change Focus above for more tools.</div>
       </div>
       <div class="row">
         <label for="editorFocusMode">Focus</label>
         <select id="editorFocusMode" style="background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:7px 9px">
+          <option value="basics" selected>Just the basics</option>
           <option value="all">All tools</option>
-          <option value="record" selected>Lesson polish</option>
+          <option value="record">Lesson polish</option>
           <option value="caption">Caption cleanup</option>
           <option value="narrate">Narration/audio</option>
           <option value="describe">Visual accessibility</option>
@@ -4931,15 +4939,21 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   };
   var EDITOR_FOCUS_GROUPS = {
     all: Object.keys(EDITOR_SURFACE_TARGETS),
+    // Landing view. Nine cards on arrival was too much to read at once; these
+    // four are the whole minimum path: pick a take, see it, cut it, caption it.
+    // Nothing is removed, everything else is one selection away, and picking a
+    // workflow template still opens the fuller "Lesson polish" set.
+    basics: ['takes', 'timeline', 'trim', 'captions'],
     record: ['takes', 'timeline', 'trim', 'zooms', 'inserts', 'audio', 'captions', 'chapters', 'ai'],
     caption: ['takes', 'timeline', 'captions', 'transcript', 'chapters', 'localization', 'ai'],
     narrate: ['takes', 'timeline', 'audio', 'narration', 'captions', 'transcript', 'localization'],
     describe: ['takes', 'timeline', 'inserts', 'visual', 'chapters', 'captions', 'localization'],
     family: ['takes', 'timeline', 'inserts', 'captions', 'transcript', 'chapters', 'localization', 'ai']
   };
-  var EDITOR_FOCUS_DEFAULT = 'record';
+  var EDITOR_FOCUS_DEFAULT = 'basics';
   var EDITOR_FOCUS_COPY = {
     all: 'All editor tools are visible.',
+    basics: 'Showing the basics: takes, timeline, trim, and captions. Change Focus above for more tools.',
     record: 'Lesson polish tools are visible: trim, timeline, zooms, inserts, audio, captions, and chapters.',
     caption: 'Showing caption cleanup tools: captions, transcript, chapters, localization, and review.',
     narrate: 'Showing narration and audio tools with captions nearby for script support.',

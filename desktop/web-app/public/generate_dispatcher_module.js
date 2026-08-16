@@ -1484,7 +1484,7 @@ function normalizeStandardsDimension(rawReports, configuredStandards, options) {
 
 
 const handleGenerate = async (type, langOverride = null, keepLoading = false, textOverride = null, configOverride = {}, switchView = true, deps) => {
-  const { gradeLevel, outlineType, visualStyle, visualCustomStyle, visualLayoutMode, quizMcqCount, persistedLessonDNA, leveledTextCustomInstructions, quizCustomInstructions, glossaryCustomInstructions, frameCustomInstructions, adventureCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, lessonCustomAdditions, timelineTopic, sourceTopic, history, inputText, differentiationRange, leveledTextLanguage, selectedLanguages, studentInterests: _ambientStudentInterests, guidedMode, guidedStep, standardsInput, standardsContext: _ambientStandardsContext, targetStandards, dokLevel, sourceLength, sourceTone, textFormat, useEmojis, fullPackTargetGroup, rosterKey, imageGenerationStyle, imageAspectRatio, enableEmojiInline, cellGameDifficulty, includeSourceCitations, includeBibliography, currentUiLanguage, sourceCustomInstructions, sourceVocabulary, sourceLevel, generatedContent, mathSubject, mathMode, mathInput, mathQuantity, isAutoConfigEnabled, resourceCount, isParentMode, isIndependentMode, isTeacherMode, frameType, fillInTheBlank, vocabularyType, enableFactionResources, factionResourceMode, isAdventureStoryMode, isSocialStoryMode, isImmersiveMode, adventureChanceMode, adventureConsistentCharacters, adventureFreeResponseEnabled, adventureLanguageMode, adventureInputMode, apiKey, setIsMapLocked, setIsProcessing, setGenerationStep, setInteractionMode, setDefinitionData, setSelectionMenu, setRevisionData, setIsReviewGame, setReviewGameState, setGuidedStep, setGeneratedContent, setActiveView, setHistory, setError, setShowKokoroOfferModal, alloBotRef, pdfFixResult, addToast, t, warnLog, debugLog, callGemini: callGeminiBase, cleanJson, safeJsonParse, callImagen, extractSourceTextForProcessing, formatLessonDNA, getDifferentiationGrades, getGroupDifferentiationContext, flyToElement, fisherYatesShuffle, sanitizeTruncatedCitations, normalizeCitationPlacement, fixCitationPlacement, generateBibliographyString, processGrounding, parseFlowChartData, verifyMathProblems, normalizeResourceLinks, detectClimaxArchetype, handleGenerateLessonPlan, handleGenerateMath, handleGenerateSource, autoConfigureSettings, applyDetailedAutoConfig, getAssetManifest, getLessonContext, buildLessonPlanPrompt, buildStudyGuidePrompt, buildParentGuidePrompt, GUIDED_STEPS, LENGTH_THRESHOLDS, TIMELINE_MODE_DEFINITIONS, audioRef, autoRemoveWords, bridgeSimType, bridgeStepCount, conceptImageMode, conceptItemCount, conceptSortImageStyle, creativeMode, faqCount, glossaryDefinitionLevel, glossaryImageStyle, glossaryTier2Count, glossaryTier3Count, includeCharts, includeEtymology, includeTimelineVisuals, isBotVisible, isMathGraphEnabled, keepCitations, leveledTextLength, noText, passAnalysisToQuiz, quizReflectionCount, selectedConcepts: _ambientSelectedConcepts, standardsPromptString: _ambientStandardsPromptString, timelineImageStyle, timelineItemCount, timelineMode, useLowQualityVisuals, setGameMode, setGlossarySearchTerm, setIsConceptMapReady, setIsEditingAnalysis, setIsEditingBrainstorm, setIsEditingFaq, setIsEditingGlossary, setIsEditingLeveledText, setIsEditingOutline, setIsEditingQuiz, setIsEditingScaffolds, setIsGeneratingPersona, setIsInteractiveVenn, setIsMatchingGame, setIsMemoryGame, setIsPlaying, setIsPresentationMode, setIsSideBySide, setIsStudentBingoGame, setIsVennPlaying, setPersonaState, setPresentationState, setProcessingProgress, setShowQuizAnswers, setStickers, calculateReadability, callGeminiImageEdit, checkAccuracyWithSearch, chunkText, countWords, executeVisualPlan, filterEducationalSources, formatMathQuestion, generateHelpfulHint, generateVisualPlan, getDefaultTitle, performDeepVerification, repairGeneratedText, resetPersonaInterviewState, validateSequenceStructure, universalImageStyle, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, personaCustomInstructions, differentiationTypes, differentiationCustomGrades } = deps;
+  const { gradeLevel, outlineType, visualStyle, visualCustomStyle, visualLayoutMode, quizMcqCount, persistedLessonDNA, leveledTextCustomInstructions, quizCustomInstructions, glossaryCustomInstructions, frameCustomInstructions, adventureCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, lessonCustomAdditions, timelineTopic, sourceTopic, history, inputText, differentiationRange, leveledTextLanguage, translationMode, resolveTranslationPolicy, selectedLanguages, studentInterests: _ambientStudentInterests, guidedMode, guidedStep, standardsInput, standardsContext: _ambientStandardsContext, targetStandards, dokLevel, sourceLength, sourceTone, textFormat, useEmojis, fullPackTargetGroup, rosterKey, imageGenerationStyle, imageAspectRatio, enableEmojiInline, cellGameDifficulty, includeSourceCitations, includeBibliography, currentUiLanguage, sourceCustomInstructions, sourceVocabulary, sourceLevel, generatedContent, mathSubject, mathMode, mathInput, mathQuantity, isAutoConfigEnabled, resourceCount, isParentMode, isIndependentMode, isTeacherMode, frameType, fillInTheBlank, vocabularyType, enableFactionResources, factionResourceMode, isAdventureStoryMode, isSocialStoryMode, isImmersiveMode, adventureChanceMode, adventureConsistentCharacters, adventureFreeResponseEnabled, adventureLanguageMode, adventureInputMode, apiKey, setIsMapLocked, setIsProcessing, setGenerationStep, setInteractionMode, setDefinitionData, setSelectionMenu, setRevisionData, setIsReviewGame, setReviewGameState, setGuidedStep, setGeneratedContent, setActiveView, setHistory, setError, setShowKokoroOfferModal, alloBotRef, pdfFixResult, addToast, t, warnLog, debugLog, callGemini: callGeminiBase, cleanJson, safeJsonParse, callImagen, extractSourceTextForProcessing, formatLessonDNA, getDifferentiationGrades, getGroupDifferentiationContext, flyToElement, fisherYatesShuffle, sanitizeTruncatedCitations, normalizeCitationPlacement, fixCitationPlacement, generateBibliographyString, processGrounding, parseFlowChartData, verifyMathProblems, normalizeResourceLinks, detectClimaxArchetype, handleGenerateLessonPlan, handleGenerateMath, handleGenerateSource, autoConfigureSettings, applyDetailedAutoConfig, getAssetManifest, getLessonContext, buildLessonPlanPrompt, buildStudyGuidePrompt, buildParentGuidePrompt, GUIDED_STEPS, LENGTH_THRESHOLDS, TIMELINE_MODE_DEFINITIONS, audioRef, autoRemoveWords, bridgeSimType, bridgeStepCount, conceptImageMode, conceptItemCount, conceptSortImageStyle, creativeMode, faqCount, glossaryDefinitionLevel, glossaryImageStyle, glossaryTier2Count, glossaryTier3Count, includeCharts, includeEtymology, includeTimelineVisuals, isBotVisible, isMathGraphEnabled, keepCitations, leveledTextLength, noText, passAnalysisToQuiz, quizReflectionCount, selectedConcepts: _ambientSelectedConcepts, standardsPromptString: _ambientStandardsPromptString, timelineImageStyle, timelineItemCount, timelineMode, useLowQualityVisuals, setGameMode, setGlossarySearchTerm, setIsConceptMapReady, setIsEditingAnalysis, setIsEditingBrainstorm, setIsEditingFaq, setIsEditingGlossary, setIsEditingLeveledText, setIsEditingOutline, setIsEditingQuiz, setIsEditingScaffolds, setIsGeneratingPersona, setIsInteractiveVenn, setIsMatchingGame, setIsMemoryGame, setIsPlaying, setIsPresentationMode, setIsSideBySide, setIsStudentBingoGame, setIsVennPlaying, setPersonaState, setPresentationState, setProcessingProgress, setShowQuizAnswers, setStickers, calculateReadability, callGeminiImageEdit, checkAccuracyWithSearch, chunkText, countWords, executeVisualPlan, filterEducationalSources, formatMathQuestion, generateHelpfulHint, generateVisualPlan, getDefaultTitle, performDeepVerification, repairGeneratedText, resetPersonaInterviewState, validateSequenceStructure, universalImageStyle, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, personaCustomInstructions, differentiationTypes, differentiationCustomGrades } = deps;
   try { if (window._DEBUG_GEN_DISPATCHER) console.log("[GenDispatcher] handleGenerate fired:", type); } catch(_) {}
     // Batch callers pass a run-local history snapshot so later resources see
     // earlier resources even though React state updates are asynchronous.
@@ -1825,6 +1825,36 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
     const languageDirective = (effectiveLanguage && effectiveLanguage !== 'English' && effectiveLanguage !== 'All Selected Languages')
         ? `LANGUAGE: Write ALL generated student-facing text in ${effectiveLanguage}. Keep JSON keys, machine-role id values, and code/math notation in English. ${dialectInstruction}`
         : '';
+    // ── Translations (Lane 4, 2026-08-16) ────────────────────────────────
+    // Resolved ONCE per generation, from the same resolver the settings panel
+    // renders against. Every translation site below reads `_xlate.enabled` and
+    // `_xlate.target` — none of them tests a language string itself any more.
+    // That was the actual defect: twenty-six sites each deciding for themselves
+    // whether a translation was wanted, twenty-five of them hardcoding the
+    // literal 'English' as the destination, and one reading the app UI language
+    // instead of the output language.
+    //
+    // Read as a resolved OBJECT, never as `mode !== 'off'`. A multi-state
+    // setting compared that way has already caused a lockout in this codebase:
+    // an unrecognised value read as "on" for everybody. Here an unrecognised
+    // value resolves to the documented 'auto' default inside the resolver, and
+    // callers cannot get it wrong because they never see the raw string.
+    const _resolveXlate = deps.resolveTranslationPolicy || ((mode, out, ui) => ({
+        // Defensive fallback only: if the host did not thread the resolver, do
+        // what the app did before this setting existed rather than silently
+        // dropping every translation.
+        enabled: !!out && out !== 'English' && out !== 'All Selected Languages',
+        target: 'English',
+        mode: 'auto',
+    }));
+    const _xlateChoices = [currentUiLanguage, 'English', ...(selectedLanguages || [])]
+        .map(v => String(v == null ? '' : v).trim())
+        .filter(v => v && v !== 'All Selected Languages' && v.toLowerCase() !== String(effectiveLanguage || '').trim().toLowerCase())
+        .filter((v, i, arr) => arr.findIndex(o => o.toLowerCase() === v.toLowerCase()) === i);
+    const _xlate = _resolveXlate(translationMode, effectiveLanguage, currentUiLanguage, _xlateChoices);
+    // Prompt fragment for the JSON-field style ("_en" siblings). Named for what
+    // it does, not for English, because the destination is no longer fixed.
+    const glossLang = _xlate.target;
     // Shared cross-cutting directives. Each collapses to '' when its setting is
     // unset, so adding one to a prompt changes NOTHING for a teacher who has not
     // touched that setting. Same idiom as languageDirective — a shared fragment
@@ -1994,10 +2024,25 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
              levelContext = `Write definitions simplified for a ${glossaryDefinitionLevel} student.`;
         }
         let prompt = '';
-        const langsReq = [...selectedLanguages];
+        // Glossary was already the one language-agnostic path: its translations
+        // come from the teacher's own language list rather than a hardcoded
+        // 'English'. The translation setting is layered ON TOP without taking
+        // that away — 'off' clears the list, and the resolved gloss language is
+        // added so the glossary agrees with every other resource about which
+        // second language a teacher gets. The chip summary in the Glossary
+        // panel keeps reading `selectedLanguages`, which is still the truth
+        // about what the teacher added; this list is what gets requested.
+        let langsReq = [...selectedLanguages];
         if (effectiveLanguage !== 'English' && effectiveLanguage !== 'All Selected Languages' && !langsReq.includes(effectiveLanguage)) {
             langsReq.push(effectiveLanguage);
         }
+        if (!_xlate.enabled) {
+            langsReq = [];
+        } else if (!langsReq.some(l => String(l).toLowerCase() === String(_xlate.target).toLowerCase())) {
+            langsReq.push(_xlate.target);
+        }
+        // Never ask for a "translation" into the language the terms are in.
+        langsReq = langsReq.filter(l => String(l).trim().toLowerCase() !== String(effectiveLanguage || '').trim().toLowerCase());
         if (usesLocalTextBackend) {
             const localTermLimit = Math.max(1, Math.min(totalTerms, 8));
             const localLangInstruction = langsReq.length > 0
@@ -2069,10 +2114,10 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                  - K-5: simple sentences like "Comes from the Greek word photo meaning light — the same root appears in photograph and photon."
                  - 6-12: break into prefix/root/suffix, name source languages, and mention entry-into-English date if known.
                  - Skip terms with no meaningful etymology (proper nouns, brand names, very recent coinages). If so, OMIT the etymology, etymologyByLang, roots, AND any related fields together.
-                 MULTI-LANGUAGE PROSE: Produce the etymology prose up front in ALL of these languages: ${['English', ...langsReq].join(', ')}. Put each translation into the "etymologyByLang" object keyed by the English language name. Keep root morphemes in their source-language script (e.g. Greek "photo" stays as "photo" in every language version). Each language's prose should be 2-4 idiomatic sentences at roughly the same reading level — not a word-for-word translation of the English.
+                 MULTI-LANGUAGE PROSE: Produce the etymology prose up front in ALL of these languages: ${[effectiveLanguage, ...langsReq].filter((v, i, a) => v && a.indexOf(v) === i).join(', ')}. Put each translation into the "etymologyByLang" object keyed by the English language name. Keep root morphemes in their source-language script (e.g. Greek "photo" stays as "photo" in every language version). Each language's prose should be 2-4 idiomatic sentences at roughly the same reading level — not a word-for-word translation of the English.
                  Output structure — add to each qualifying term:
                    "etymology": "English prose version (legacy field, mirrors etymologyByLang.English)",
-                   "etymologyByLang": { ${['English', ...langsReq].map(L => `"${L}": "prose in ${L}"`).join(', ')} },
+                   "etymologyByLang": { ${[effectiveLanguage, ...langsReq].filter((v, i, a) => v && a.indexOf(v) === i).map(L => `"${L}": "prose in ${L}"`).join(', ')} },
                    "roots": [
                      { "root": "photo",     "lang": "Greek", "meaning": "light",              "related": ["photograph", "photon", "photogenic"] },
                      { "root": "synthesis", "lang": "Greek", "meaning": "putting together",   "related": ["synthetic", "synthesize"] }
@@ -2304,6 +2349,48 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             - Target an educated, adult audience.
             `;
         }
+        // ── Measurable grade calibration (C1, 2026-08-16) ────────────────────
+        // The guides above are qualitative for every band except Kindergarten and
+        // 1st Grade, which are the only two that carry a hard number. Everything
+        // from 2nd Grade up said things like "sentences can be slightly longer",
+        // which a model can satisfy while landing two grades high. That is the
+        // reported symptom: a 5th Grade request coming back around 7th.
+        //
+        // The source generator (content_engine_source.jsx) already compensates for
+        // the same overshoot with an explicit ladder. The adaptation path had no
+        // equivalent, so this is the counterpart, expressed as the two inputs the
+        // app can actually measure afterwards: average sentence length and average
+        // syllables per word, the two terms of the Flesch-Kincaid grade formula
+        // AlloFlow computes in calculateReadability(). Stating the target in the
+        // same terms as the check means the instruction and the measurement agree.
+        //
+        // No regeneration loop: this shapes the single generation, it does not
+        // retry it.
+        const _gradeCalibration = {
+            'Kindergarten':   { asl: 6,  asw: 1.15, fk: '0 to 1' },
+            '1st Grade':      { asl: 8,  asw: 1.20, fk: '1 to 2' },
+            '2nd Grade':      { asl: 10, asw: 1.25, fk: '2 to 3' },
+            '3rd Grade':      { asl: 12, asw: 1.30, fk: '3 to 4' },
+            '4th Grade':      { asl: 14, asw: 1.35, fk: '4 to 5' },
+            '5th Grade':      { asl: 15, asw: 1.40, fk: '5 to 6' },
+            '6th Grade':      { asl: 16, asw: 1.45, fk: '6 to 7' },
+            '7th Grade':      { asl: 17, asw: 1.50, fk: '7 to 8' },
+            '8th Grade':      { asl: 18, asw: 1.55, fk: '8 to 9' },
+            '9th Grade':      { asl: 19, asw: 1.60, fk: '9 to 10' },
+            '10th Grade':     { asl: 20, asw: 1.62, fk: '10 to 11' },
+            '11th Grade':     { asl: 21, asw: 1.65, fk: '11 to 12' },
+            '12th Grade':     { asl: 22, asw: 1.68, fk: '11 to 13' },
+        }[effectiveGrade];
+        if (_gradeCalibration) {
+            complexityGuide += `
+            MEASURABLE TARGETS FOR ${effectiveGrade} (these are checked after generation):
+            - Average sentence length: at most ${_gradeCalibration.asl} words. Individual sentences may vary, but the average across the whole passage must not exceed this.
+            - Average syllables per word: at most ${_gradeCalibration.asw}. Prefer the shorter of two words that mean the same thing.
+            - Flesch-Kincaid grade level of the finished passage: ${_gradeCalibration.fk}.
+            - Every Tier 3 term you keep must be defined in the same sentence it first appears, in plain words.
+            - CALIBRATION: writing to a grade label alone reliably lands one to two grades above it. Write to the numbers above, not to the label, and when a sentence is borderline, split it.
+            `;
+        }
         let targetWords = countWords(textToProcess);
         let lengthInstruction = "";
         const percentageMatch = leveledTextLength.match(/\((\d+)%\)/);
@@ -2334,7 +2421,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             - Use clear character labels (e.g. "**Character Name:** ...").
             - Include stage directions in italics or parentheses.
             - Ensure the educational content is explained through the natural conversation.
-            - CRITICAL FOR TRANSLATION: In the English translation section, do NOT include the target language terms in parentheses. Keep the English text fully English.
+            ${_xlate.enabled ? `- CRITICAL FOR TRANSLATION: In the ${glossLang} translation section, do NOT include the ${effectiveLanguage} terms in parentheses. Keep the ${glossLang} text fully ${glossLang}.` : ''}
             `;
         } else if (textFormat === 'Mock Advertisement') {
             formatInstruction = `
@@ -2516,11 +2603,11 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
       };
       const translateCitationSafe = async (sourceText, stage) => {
           return runCitationGuardedTransform(sourceText, async (protectedText, isRetry) => callGemini(`
-              Translate the following ${effectiveLanguage} text into English.
+              Translate the following ${effectiveLanguage} text into ${glossLang}.
               Maintain the formatting, tone, emojis, and every protected citation token exactly.
               Each token matching ⟦ALLOFLOW_CITATION_####⟧ must appear exactly once.
               Do not add, remove, duplicate, reorder, translate, or alter a citation token.
-              Return ONLY the English translation.
+              Return ONLY the ${glossLang} translation.
               ${isRetry ? 'RETRY: The prior response failed citation validation. Copy every protected token exactly once.' : ''}
               Text to Translate:
               "${protectedText}"
@@ -2564,7 +2651,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               ${dialectInstruction}
               ${differentiationContext}
               ${isRetry ? 'RETRY: The prior response failed citation validation. Copy every protected token exactly once.' : ''}
-              CRITICAL: Return ONLY the ${effectiveLanguage} text. Do NOT provide an English translation yet.
+              CRITICAL: Return ONLY the ${effectiveLanguage} text.${_xlate.enabled ? ` Do NOT provide a ${glossLang} translation yet.` : ' Do NOT add a translation into any other language.'}
               Text Segment: "${protectedSegment}"
           `), `adapt-section-${i + 1}`, chunks[i]);
           let targetResult = targetTransform.text;
@@ -2572,7 +2659,10 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               setGenerationTaskProgress(1, 1, t('status_steps.adapting_text'));
           }
           fullTargetText += targetResult + "\n\n";
-          if (effectiveLanguage !== 'English') {
+          // Translations off means the second LLM round trip per chunk is not
+          // spent at all, not merely discarded. On a five-chunk adaptation that
+          // is five fewer calls.
+          if (_xlate.enabled) {
               if (isMultiChunk) setGenerationStep(`Translating section ${i + 1} of ${chunks.length}...`);
               else setGenerationStep(t('status_steps.translating') || 'Translating...');
               const translation = await translateCitationSafe(targetResult, `translate-section-${i + 1}`);
@@ -2590,7 +2680,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           if (keepCitations) {
               currentTargetDisplay = sanitizeTruncatedCitations(currentTargetDisplay);
               currentTargetDisplay = normalizeCitationPlacement(currentTargetDisplay);
-              if (effectiveLanguage !== 'English') {
+              if (_xlate.enabled) {
                   currentEnglishDisplay = sanitizeTruncatedCitations(currentEnglishDisplay);
                   currentEnglishDisplay = normalizeCitationPlacement(currentEnglishDisplay);
               }
@@ -2609,7 +2699,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               currentTargetDisplay,
               currentEnglishDisplay,
               isLast && keepCitations ? extractedReferences : '',
-              effectiveLanguage !== 'English' && bilingualTranslationValid
+              _xlate.enabled && bilingualTranslationValid
           );
           const updatedItem = {
               ...tempItem,
@@ -2662,7 +2752,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           // can set `repaired = null` to bail out of the second.
           let repairedEnglish = '';
           if (repaired) {
-              if (effectiveLanguage !== 'English') {
+              if (_xlate.enabled) {
                   setGenerationStep(t('status_steps.translating') || 'Translating refined text...');
                   const repairedTranslation = await translateCitationSafe(repaired, 'length-repair-translation');
                   if (repairedTranslation.valid) {
@@ -2680,7 +2770,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               if (keepCitations) {
                   repairedTarget = sanitizeTruncatedCitations(repairedTarget);
                   repairedTarget = normalizeCitationPlacement(repairedTarget);
-                  if (effectiveLanguage !== 'English') {
+                  if (_xlate.enabled) {
                       repairedEnglish = sanitizeTruncatedCitations(repairedEnglish);
                       repairedEnglish = normalizeCitationPlacement(repairedEnglish);
                   }
@@ -2694,7 +2784,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                   repairedTarget,
                   repairedEnglish,
                   keepCitations ? extractedReferences : '',
-                  effectiveLanguage !== 'English'
+                  _xlate.enabled
               );
               metaInfo = `${effectiveGrade} - ${effectiveLanguage} ${textFormat !== 'Standard Text' ? `(${textFormat})` : ''} (Refined)`;
               const refinedItem = {
@@ -2708,6 +2798,31 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                   setGeneratedContent(refinedItem);
               }
               setHistory(prev => prev.map(item => item.id === newId ? refinedItem : item));
+          }
+      }
+      // ── Measured level, reported rather than discarded (C1, 2026-08-16) ──
+      // calculateReadability already ran on the ANALYSIS resource and its result
+      // was rendered there, but the adapted text (the one place the target grade
+      // is the whole point) never computed it at all. The teacher only found out
+      // where the passage actually landed by clicking Check Level, which costs two
+      // model calls. This measures it locally, for free, and hands it to the view.
+      //
+      // English only, deliberately. Flesch-Kincaid is defined on English syllable
+      // and sentence statistics; running it over Spanish or Vietnamese would return
+      // a number that looks authoritative and means nothing. When the adaptation is
+      // not in English, no measurement is claimed.
+      if (effectiveLanguage === 'English') {
+          const _measured = calculateReadability(fullTargetText);
+          if (_measured) {
+              finalAdaptedItem = {
+                  ...finalAdaptedItem,
+                  localStats: _measured,
+                  targetGradeLevel: effectiveGrade
+              };
+              if (switchView || (generatedContent && generatedContent.id === newId)) {
+                  setGeneratedContent(finalAdaptedItem);
+              }
+              setHistory(prev => prev.map(item => item.id === newId ? finalAdaptedItem : item));
           }
       }
       addToast(`${getDefaultTitle(type)} generated!`, "success");
@@ -2789,7 +2904,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           ${useEmojis ? 'Include a relevant emoji at the start of every "main", "title", and "item" field to serve as a visual anchor.' : 'Do not use emojis.'}
           ${dialectInstruction}
           Return ONLY JSON matching this structure exactly (conceptually map the requested type to this hierarchy):
-          { "main": "Central Topic/Goal/Problem", ${effectiveLanguage !== 'English' ? '"main_en": "...", ' : ''}"branches": [{ ${effectiveOutlineType === 'Cause and Effect' ? '"role": "cause|effect|chain", ' : ''}${['Venn Diagram', 'T-Chart', 'Frayer Model', 'KWL Chart', 'Claim-Evidence-Reasoning', 'Story Map', 'See-Think-Wonder'].includes(effectiveOutlineType) ? '"sectionRole": "stable English machine role", ' : ''}"title": "Category/Step/Solution/Cause", ${effectiveLanguage !== 'English' ? '"title_en": "...", ' : ''}"items": ["Detail/Substep/Effect"], ${effectiveLanguage !== 'English' ? '"items_en": ["..."], ' : ''}${effectiveOutlineType === 'Flow Chart' ? '"connections": [{ "target": 1, "label": "Yes" }]' : ''} }] }
+          { "main": "Central Topic/Goal/Problem", ${_xlate.enabled ? `"main_en": "${glossLang} translation", ` : ''}"branches": [{ ${effectiveOutlineType === 'Cause and Effect' ? '"role": "cause|effect|chain", ' : ''}${['Venn Diagram', 'T-Chart', 'Frayer Model', 'KWL Chart', 'Claim-Evidence-Reasoning', 'Story Map', 'See-Think-Wonder'].includes(effectiveOutlineType) ? '"sectionRole": "stable English machine role", ' : ''}"title": "Category/Step/Solution/Cause", ${_xlate.enabled ? `"title_en": "${glossLang} translation", ` : ''}"items": ["Detail/Substep/Effect"], ${_xlate.enabled ? `"items_en": ["${glossLang} translations"], ` : ''}${effectiveOutlineType === 'Flow Chart' ? '"connections": [{ "target": 1, "label": "Yes" }]' : ''} }] }
           Note: Flow Chart "connections" use valid 0-based target indices and optional concise route labels; legacy "connectsTo" arrays are accepted and repaired automatically. Machine roles must remain stable English identifiers even when visible text is translated.
           ${differentiationContext}
           Text: "${usesLocalTextBackend ? localExcerpt(textToProcess, 6500) : textToProcess}"
@@ -3143,12 +3258,12 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             return (_modeItemMix[key] || 0) > 0;
         }).map(function (key) {
             const example = Object.assign({}, _jsonExamplesByType[key]);
-            if (effectiveLanguage !== 'English') {
-                example.question_en = 'English translation of the question';
-                if (key === 'mcq' || key === 'multi-select') example.options_en = ['English A', 'English B', 'English C', 'English D'];
+            if (_xlate.enabled) {
+                example.question_en = glossLang + ' translation of the question';
+                if (key === 'mcq' || key === 'multi-select') example.options_en = ['A in ' + glossLang, 'B in ' + glossLang, 'C in ' + glossLang, 'D in ' + glossLang];
                 if (key === 'answer-evidence') {
-                    example.answerOptions_en = ['English answer A', 'English answer B', 'English answer C', 'English answer D'];
-                    example.evidenceOptions_en = ['English evidence A', 'English evidence B', 'English evidence C', 'English evidence D'];
+                    example.answerOptions_en = ['answer A in ' + glossLang, 'answer B in ' + glossLang, 'answer C in ' + glossLang, 'answer D in ' + glossLang];
+                    example.evidenceOptions_en = ['evidence A in ' + glossLang, 'evidence B in ' + glossLang, 'evidence C in ' + glossLang, 'evidence D in ' + glossLang];
                 }
             }
             return example;
@@ -3156,7 +3271,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         const _jsonShape = JSON.stringify({
             questions: _jsonExampleQuestions,
             reflections: _includeReflections
-                ? [effectiveLanguage !== 'English' ? { text: 'Reflection prompt', text_en: 'English reflection prompt' } : 'Reflection prompt']
+                ? [_xlate.enabled ? { text: 'Reflection prompt', text_en: glossLang + ' reflection prompt' } : 'Reflection prompt']
                 : [],
         }, null, 2);
         let result = '';
@@ -3227,7 +3342,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           ${lessonDNA ? `Instruction: Ensure questions align with the "Core Concepts" and test the "Required Vocabulary" listed in the Lesson DNA above.` : ''}
           ${useEmojis ? 'Include relevant emojis in questions and options to support understanding.' : 'Do not use emojis.'}
           ${effCustomInstructions ? `Custom Instructions: ${effCustomInstructions}` : ''}
-          ${effectiveLanguage !== 'English' ? 'For every question, option, and reflection, provide an English translation field (suffix _en).' : ''}
+          ${_xlate.enabled ? `For every question, option, and reflection, provide a ${glossLang} translation field (suffix _en). The "_en" suffix is a fixed field name, not a language code — put the ${glossLang} text in it.` : 'Do NOT provide translation fields of any kind.'}
           ${dialectInstruction}
           Return ONLY valid JSON: ${_jsonShape}
           ${differentiationContext}
@@ -3346,7 +3461,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                         - Use **bold** for the headers as specified.
                         - Keep the explanation concise.
                         - Write the explanation in ${effectiveLanguage}.
-                        ${effectiveLanguage !== 'English' ? `- After the explanation, add a new line "--- English Translation ---" and provide the explanation in English.` : ''}
+                        ${_xlate.enabled ? `- After the explanation, add a new line "--- English Translation ---" (a fixed marker) and provide the explanation in ${glossLang}.` : ''}
                         ${dialectInstruction}
                     `;
                     try {
@@ -3590,8 +3705,15 @@ ${_itemsBlock}`;
             }
         }
         setGenerationStep(isSearchActive ? t('status_steps.synthesizing_analysis') : t('status_steps.analyzing_structure'));
-        const targetUiLang = currentUiLanguage || 'English';
-        const isTranslatedAnalysis = targetUiLang !== 'English' && !usesLocalTextBackend;
+        // 2026-08-16 (L4): this read currentUiLanguage, which meant the whole
+        // analysis came back in the app's INTERFACE language and ignored the
+        // Output language setting entirely. It is the leak Aaron suspected.
+        // The analysis prose now follows effectiveLanguage like every other
+        // resource; the extra full-text translation follows the translation
+        // setting. Local backends still opt out: the twin local prompt has no
+        // room for a second full rendering of the source.
+        const targetUiLang = _xlate.target || effectiveLanguage;
+        const isTranslatedAnalysis = _xlate.enabled && !usesLocalTextBackend;
         const prompt = `
           Analyze the following text for an educator.
           ${verificationContext ? `
@@ -3611,6 +3733,7 @@ ${_itemsBlock}`;
           3. Estimated Accuracy (e.g. "High", "Moderate", with a short explanation).
           4. Potential Grammar/Spelling Issues (list specific examples or say "None detected")
           ${isTranslatedAnalysis ? `5. Translated Text: A full, fluent translation of the source text into ${targetUiLang}.` : ''}
+          ${languageDirective ? `Write the analysis prose (explanations, concepts, accuracy reason, grammar notes) in ${effectiveLanguage}.` : ''}
           CRITICAL OUTPUT INSTRUCTION:
           You MUST return VALID JSON. Do not wrap the JSON in markdown code blocks.
           *** CITATION RETENTION RULE ***:
@@ -3619,14 +3742,14 @@ ${_itemsBlock}`;
           - Incorrect: "The text claims X, but sources say Y.",
           ${isTranslatedAnalysis ? `
           LANGUAGE INSTRUCTIONS:
-          - Translate all analysis fields (concepts, explanations, accuracy reasons, grammar notes) into ${targetUiLang}.
-          - Include the "translatedText" field with the text translated into ${targetUiLang}.
-          - CRITICAL: Calculate the "readingLevel" based on the complexity of the ORIGINAL English source text, NOT the translation.
+          - Also supply a ${targetUiLang} rendering of every analysis field (concepts, explanations, accuracy reasons, grammar notes).
+          - Include the "translatedText" field with the source text translated into ${targetUiLang}.
+          - CRITICAL: Calculate the "readingLevel" from the complexity of the ORIGINAL SOURCE text, NOT of any translation.
           --- BILINGUAL ARRAYS REQUIREMENT ---
           For the "discrepancies" and "verifiedFacts" arrays specifically:
-          You MUST provide both the ${targetUiLang} translation AND the original English text for every item.
-          Format each string exactly like this:
-          "${targetUiLang} Version... [1] --- ENGLISH TRANSLATION --- Original English Version... [1]"
+          You MUST provide both the ${targetUiLang} text AND the original source-language text for every item.
+          Format each string exactly like this (the "--- ENGLISH TRANSLATION ---" marker is a fixed separator token, not a claim about the language):
+          "${targetUiLang} Version... [1] --- ENGLISH TRANSLATION --- Original Version... [1]"
           ` : ''}
           Required JSON Structure:
           {
@@ -3882,9 +4005,9 @@ ${_itemsBlock}`;
             ${studentInterests.length > 0 ? `Integrate metaphors or examples related to "${studentInterests.join(', ')}" where helpful.` : ''}
             ${useEmojis ? 'Include relevant emojis in the questions and answers.' : 'Do not use emojis.'}
             ${effCustomInstructions ? `Custom Instructions: ${effCustomInstructions}` : ''}
-            ${effectiveLanguage !== 'English' ? 'Provide English translations for every question and answer.' : ''}
+            ${_xlate.enabled ? `Provide ${glossLang} translations for every question and answer.` : 'Do NOT provide translations.'}
             ${dialectInstruction}
-            Format: Return ONLY a JSON array of objects with "question", "answer" ${effectiveLanguage !== 'English' ? ', "question_en", "answer_en"' : ''} keys.
+            Format: Return ONLY a JSON array of objects with "question", "answer" ${_xlate.enabled ? ', "question_en", "answer_en"' : ''} keys.
             Example: [{"question": "Why is the sky blue? ☁️", "answer": "...", "question_en": "...", "answer_en": "..."}]
             ${differentiationContext}
             Text: "${textToProcess}"
@@ -4045,7 +4168,7 @@ ${_itemsBlock}`;
             ${studentInterests.length > 0 ? `Context: Relate to ${studentInterests.join(', ')} if possible.` : ''}
             ${effCustomInstructions ? `Instructions: ${effCustomInstructions}` : ''}
             ${standardsPromptString ? `Design scaffolds to support the skills required by Standards: "${standardsPromptString}".` : ''}
-            ${effectiveLanguage !== 'English' ? 'Provide English translations for all text.' : 'Do NOT provide translations.'}
+            ${_xlate.enabled ? `Provide ${glossLang} translations for all text.` : 'Do NOT provide translations.'}
             ${dialectInstruction}
             ${useEmojis ? 'Include relevant emojis in the sentence starters or prompts.' : 'Do not use emojis.'}
             Output Requirements:
@@ -4059,8 +4182,8 @@ ${_itemsBlock}`;
             Return ONLY a JSON object with this structure:
             {
                 "mode": "list" (for Starters/Prompts) OR "paragraph" (for Frame),
-                "items": [{ "text": "..."${effectiveLanguage !== 'English' ? ', "text_en": "..."' : ''} }] (if mode is list),
-                "text": "..." (if mode is paragraph)${effectiveLanguage !== 'English' ? ', "text_en": "..."' : ''},
+                "items": [{ "text": "..."${_xlate.enabled ? ', "text_en": "..."' : ''} }] (if mode is list),
+                "text": "..." (if mode is paragraph)${_xlate.enabled ? ', "text_en": "..."' : ''},
                 "rubric": "Markdown string of the rubric table",
             }
             ${differentiationContext}
@@ -4742,19 +4865,19 @@ ${modeListForAuto}
              [ ] For every pair of items, can I definitively say which is "earlier/smaller/lower" on this axis?
              [ ] If I shuffled these items, would an informed student find exactly ONE correct arrangement?
              [ ] Are all items self-contained with no pronouns or relative words?
-             ${effectiveLanguage !== 'English' ? 'Provide English translations for all labels and descriptions.' : ''}
+             ${_xlate.enabled ? `Provide ${glossLang} translations for all labels and descriptions.` : 'Do NOT provide translations.'}
              ${dialectInstruction}
              Return ONLY a JSON object with this structure:
              {
                  ${isAutoMode ? '"detectedMode": "<one of: chronological, procedural, lifecycle, size, hierarchy, cause-effect, intensity, narrative>",' : ''}
                  "progressionLabel": "AXIS: [Criterion Name] ([Low End] → [High End])",
-                 ${effectiveLanguage !== 'English' ? '"progressionLabel_en": "English translation of the label",' : ''}
+                 ${_xlate.enabled ? `"progressionLabel_en": "${glossLang} translation of the label",` : ''}
                  "items": [
                      {
                          "date": "Specific Position (e.g., '1776', 'Step 1', '10 cm')",
-                         ${effectiveLanguage !== 'English' ? '"date_en": "...",' : ''}
+                         ${_xlate.enabled ? '"date_en": "...",' : ''}
                          "event": "Complete, standalone description of this item",
-                         ${effectiveLanguage !== 'English' ? '"event_en": "..."' : ''}
+                         ${_xlate.enabled ? '"event_en": "..."' : ''}
                      }
                  ]
              }
@@ -4914,7 +5037,7 @@ ${modeListForAuto}
           } else if (mode === 'Problem Set Generator') {
               prompt = `
                 You are an expert Math Curriculum Designer.
-                ${effectiveLanguage && effectiveLanguage !== 'English' ? 'IMPORTANT: Generate ALL text content (questions, explanations, steps, real-world applications) in ' + effectiveLanguage + '. After each text field, include an English translation in parentheses. Keep mathematical expressions and JSON keys in English.' : ''}
+                ${languageDirective ? 'IMPORTANT: Generate ALL text content (questions, explanations, steps, real-world applications) in ' + effectiveLanguage + '.' + (_xlate.enabled ? ' After each text field, include a ' + glossLang + ' translation in parentheses.' : ' Do NOT add a translation in parentheses or anywhere else.') + ' Keep mathematical expressions and JSON keys in English.' : ''}
                 Topic/Skill: "${problemToSolve}"
                 ${mathContextPrompt}
                 Instruction: Create EXACTLY the number and types of problems described in the Topic/Skill above. Match the count, types, and difficulty the user specified. If no specific count is given, create 5 problems.
@@ -4941,7 +5064,7 @@ ${modeListForAuto}
           } else {
               prompt = `
                 You are an Expert Math & Science Tutor.
-                ${effectiveLanguage && effectiveLanguage !== 'English' ? 'IMPORTANT: Generate ALL text content (explanations, steps, real-world applications) in ' + effectiveLanguage + '. After each text field, include an English translation in parentheses. Keep mathematical expressions and JSON keys in English.' : ''}
+                ${languageDirective ? 'IMPORTANT: Generate ALL text content (explanations, steps, real-world applications) in ' + effectiveLanguage + '.' + (_xlate.enabled ? ' After each text field, include a ' + glossLang + ' translation in parentheses.' : ' Do NOT add a translation in parentheses or anywhere else.') + ' Keep mathematical expressions and JSON keys in English.' : ''}
                 Subject: ${subject}
                 Mode: ${mode}
                 Problem: "${problemToSolve}"
@@ -5501,7 +5624,7 @@ Return ONLY JSON:
         setGenerationStep(t('status_steps.designing_adventure'));
         let langInstruction = "Language: English.";
         if (effectiveLanguage !== 'English') {
-             langInstruction = `Language: ${effectiveLanguage}. Do NOT provide English translations for this JSON output.`;
+             langInstruction = `Language: ${effectiveLanguage}. Do NOT provide ${glossLang || 'other-language'} translations for this JSON output.`;
         }
         const toneInstruction = isAdventureStoryMode
             ? "TONE: Story Time Mode (Family Friendly). Focus on exploration, mystery, and puzzles. Avoid combat."

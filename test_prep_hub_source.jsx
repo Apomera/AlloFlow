@@ -21,6 +21,22 @@ const TEST_PREP_FETCH_TIMEOUT_MS = 12000;
 const TEST_PREP_HANDS_FREE_ACTION_CONFIDENCE_MIN = 0.6;
 const TEST_PREP_HANDS_FREE_PROMPT_MODE_KEY = 'alloflow_test_prep_hands_free_prompt_mode_v1';
 const TEST_PREP_HANDS_FREE_SYNTHESIS_TIMEOUT_MS = 15000;
+// V7: the microphone is CLOSED for the whole synthesis wait, so this budget is
+// dead air the user is talking into. A flat 15s is right for narrating a whole
+// question (which is prefetched anyway) and badly wrong for "Selected B.", the
+// short interstitials that carry the conversation and are never cached. Scale
+// the wait to the utterance and fall back to browser speech quickly on the
+// short ones. Aaron's report that hands-free "works best with browser
+// text-to-speech" is this: browser TTS has no synthesis wait at all.
+const TEST_PREP_HANDS_FREE_SYNTHESIS_MIN_TIMEOUT_MS = 3500;
+const TEST_PREP_HANDS_FREE_SYNTHESIS_MS_PER_CHAR = 45;
+function testPrepHandsFreeSynthesisTimeoutMs(text) {
+  const length = String(text || '').length;
+  return Math.max(
+    TEST_PREP_HANDS_FREE_SYNTHESIS_MIN_TIMEOUT_MS,
+    Math.min(TEST_PREP_HANDS_FREE_SYNTHESIS_TIMEOUT_MS, Math.ceil(length * TEST_PREP_HANDS_FREE_SYNTHESIS_MS_PER_CHAR)),
+  );
+}
 const TEST_PREP_HANDS_FREE_PLAYBACK_MIN_TIMEOUT_MS = 30000;
 const TEST_PREP_HANDS_FREE_PLAYBACK_MAX_TIMEOUT_MS = 240000;
 const TEST_PREP_VOICE_CONTROL_EVENT = 'alloflow:test-prep-voice-control';
@@ -4870,6 +4886,30 @@ function TestPrepHub(props) {
     }
   }
 
+  // V7: one guarantee, in one place, that the microphone always comes back.
+  //
+  // Every command path used to be individually responsible for restarting
+  // recognition, because the only restart lived in finishSpokenRequest. Paths
+  // that ACT WITHOUT SPEAKING therefore left the loop silently dead until the
+  // user toggled hands-free off and on: "start practice", "choose set N",
+  // "another set", "next question" in a timed simulation, and any command
+  // handler that threw before it reached its speakTestPrepText. That is a real
+  // defect, not the latency Aaron suspected, and it looks identical from the
+  // outside. Calling this after every dispatch makes it structural rather than
+  // a rule each future command has to remember.
+  function ensureHandsFreeListening(delayMs = 120) {
+    if (!handsFreeEnabledRef.current) return;
+    if (handsFreeRecognitionRef.current) return;          // already listening
+    if (handsFreeRestartTimerRef.current) return;         // a restart is queued
+    // Speech in flight owns the restart; finishSpokenRequest schedules it when
+    // playback ends, and jumping in now would transcribe our own narration.
+    if (readAloudAudioRef.current || readAloudUtteranceRef.current || readAloudAbortRef.current) return;
+    handsFreeRestartTimerRef.current = setTimeout(() => {
+      handsFreeRestartTimerRef.current = null;
+      startHandsFreeListening();
+    }, delayMs);
+  }
+
   function startHandsFreeListening() {
     if (!handsFreeEnabledRef.current || !SpeechRecognitionCtor || readAloudAudioRef.current || readAloudUtteranceRef.current || readAloudAbortRef.current) return;
     stopHandsFreeRecognition(false);
@@ -4904,7 +4944,9 @@ function TestPrepHub(props) {
         Promise.resolve(handsFreeCommandHandlerRef.current && handsFreeCommandHandlerRef.current(transcript, { command, confidenceDecision })).catch(() => {
           setHandsFreeError('That voice command could not be completed.');
           speakTestPrepText('That command could not be completed. Say help to hear the available commands.');
-        });
+        // V7: hand the microphone back no matter which path the command took,
+        // including the ones that act silently and the ones that threw.
+        }).then(ensureHandsFreeListening, ensureHandsFreeListening);
       };
       recognition.onerror = (event) => {
         const code = String(event && event.error || 'unavailable');
@@ -5120,7 +5162,10 @@ function TestPrepHub(props) {
     const controller = typeof AbortController === 'function' ? new AbortController() : null;
     readAloudAbortRef.current = controller || { abort: () => {} };
     setReadAloudStatus('loading');
-    if (handsFreeEnabledRef.current) setHandsFreeStatus('speaking');
+    // V7: "speaking" while a neural voice is still being synthesised is a false
+    // statement to someone waiting in silence, and it is exactly the moment
+    // they need to know the microphone is closed. Say what is happening.
+    if (handsFreeEnabledRef.current) setHandsFreeStatus('preparing audio');
     try {
       let audioUrl = cached && cached.url ? cached.url : null;
       if (!audioUrl && cached && cached.promise) {
@@ -5146,7 +5191,7 @@ function TestPrepHub(props) {
             readAloudSynthesisTimerRef.current = null;
             try { if (controller) controller.abort(); } catch (_) {}
             resolve(null);
-          }, TEST_PREP_HANDS_FREE_SYNTHESIS_TIMEOUT_MS);
+          }, testPrepHandsFreeSynthesisTimeoutMs(safeText));
           readAloudSynthesisTimerRef.current = synthesisTimer;
         });
         try { audioUrl = await Promise.race([synthesis, timeout]); }

@@ -536,6 +536,19 @@ const handleResumeAdventure = async (deps) => {
               return;
           }
           const { _adventureConfig: savedConfig = {}, ...parsed } = savedRecord;
+          // The device holds one adventure save. Refuse to load one that belongs
+          // to a different lesson, so a student cannot be pulled back into last
+          // week's story instead of attending to today's. A save with no
+          // lessonKey predates the stamp and is still allowed through rather than
+          // stranding a story someone is part way into.
+          const _lessonKeyOf = window._alloAdventureLessonKey;
+          const savedLessonKey = String(savedConfig.lessonKey || '');
+          const currentLessonKey = typeof _lessonKeyOf === 'function' ? _lessonKeyOf(history, inputText) : '';
+          if (savedLessonKey && currentLessonKey && savedLessonKey !== currentLessonKey) {
+              addToast(t('toasts.adventure_other_lesson'), "error");
+              setHasSavedAdventure(false);
+              return;
+          }
           if (typeof setAdventureDifficulty === 'function' && savedConfig.difficulty) setAdventureDifficulty(savedConfig.difficulty);
           if (typeof setAdventureInputMode === 'function' && savedConfig.inputMode) setAdventureInputMode(savedConfig.inputMode);
           if (typeof setAdventureLanguageMode === 'function' && savedConfig.languageMode) setAdventureLanguageMode(savedConfig.languageMode);

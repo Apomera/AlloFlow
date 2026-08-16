@@ -226,6 +226,62 @@ const BotConfettiBurst = ({ onComplete }) => {
       </div>
   );
 };
+// ── A4: microphone input meter ──────────────────────────────────────────────
+// Aaron: "There is no indication that the microphone is picking the user up."
+// Five bars driven by the shared analyser in AlloCommands.micLevelMonitor. It
+// subscribes rather than opening its own capture, so there is still exactly one
+// microphone stream and one browser recording indicator.
+//
+// aria-hidden by design: a bar chart of instantaneous loudness is noise to a
+// screen reader. The equivalent information for assistive tech is the labelled
+// mic control and its live state announcement (A5), not this.
+const MIC_METER_BARS = 5;
+const AlloMicMeter = React.memo(({ active, motionDisabled, placement = 'below' }) => {
+  const [level, setLevel] = useState(0);
+  useEffect(() => {
+      if (!active) { setLevel(0); return undefined; }
+      const monitor = (window.AlloModules && window.AlloModules.AlloCommands && window.AlloModules.AlloCommands.micLevelMonitor) || window.__alloMicLevelMonitor || null;
+      if (monitor && typeof monitor.subscribe === 'function') {
+          return monitor.subscribe((detail) => setLevel(detail && typeof detail.value === 'number' ? detail.value : 0));
+      }
+      // Older host without the shared monitor: the window event is the fallback
+      // contract, so a future publisher (dictation) needs no change here.
+      const onLevel = (event) => {
+          const value = event && event.detail && typeof event.detail.value === 'number' ? event.detail.value : 0;
+          setLevel(value);
+      };
+      try { window.addEventListener('alloflow:mic-level', onLevel); } catch (_) { return undefined; }
+      return () => { try { window.removeEventListener('alloflow:mic-level', onLevel); } catch (_) {} };
+  }, [active]);
+  if (!active) return null;
+  // Reduced motion still gets a meter, just a stepped one: the point is
+  // reassurance that the mic is live, and that survives losing the easing.
+  const lit = Math.round(Math.max(0, Math.min(1, level)) * MIC_METER_BARS);
+  return (
+      <div
+        aria-hidden="true"
+        data-allo-mic-meter="true"
+        data-allo-mic-level={lit}
+        className={placement === 'inline'
+            ? 'pointer-events-none inline-flex items-end gap-[2px] align-middle'
+            : 'pointer-events-none absolute -bottom-5 left-1/2 flex -translate-x-1/2 items-end gap-[2px] rounded-full bg-slate-900/70 px-1.5 py-1 shadow-sm'}
+      >
+        {Array.from({ length: MIC_METER_BARS }).map((_, index) => {
+            const on = index < lit;
+            return (
+              <span
+                key={index}
+                className={`w-[3px] rounded-full ${on ? 'bg-emerald-300' : 'bg-white/25'}`}
+                style={{
+                    height: `${4 + index * 2}px`,
+                    transition: motionDisabled ? 'none' : 'background-color 90ms linear',
+                }}
+              />
+            );
+        })}
+      </div>
+  );
+});
 const spokenEventIds = new Set();
 const lastGlobalSpeech = { text: '', time: 0 };
 let introFiredGlobal = false;
@@ -319,6 +375,25 @@ const isAlloBotTtsOff = () => {
   try {
     return JSON.parse(safeGetItem('alloflow_ai_config') || '{}').ttsProvider === 'off';
   } catch (_) { return false; }
+};
+
+// ── A3: AlloBot must never silence someone else's speech ────────────────────
+// window.speechSynthesis.cancel() is GLOBAL. AlloBot called it on unmount and
+// on every silence path, so dismissing the bot with its X (or the header
+// toggle, or the 3-minute idle sleep) killed whatever else was speaking:
+// Read This Page mid-narration, a voice-loop reply, a read-aloud a student had
+// just started. That is what made "hide the bot" read as "turn off TTS".
+// Fix: track whether the CURRENT browser utterance is ours, and only cancel
+// then. The Web Speech API has no per-utterance stop, so the flag is the only
+// way to scope it.
+let _alloBotOwnsBrowserSpeech = false;
+const alloBotClaimBrowserSpeech = () => { _alloBotOwnsBrowserSpeech = true; };
+const alloBotReleaseBrowserSpeech = () => { _alloBotOwnsBrowserSpeech = false; };
+const cancelAlloBotBrowserSpeech = () => {
+  if (!_alloBotOwnsBrowserSpeech) return false;
+  _alloBotOwnsBrowserSpeech = false;
+  try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (_) {}
+  return true;
 };
 
 const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, onHide, isListening, isIdleDisabled = false, disableAnimations = false, stemLabTool = null, showStemLab = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voiceVolume = 1, onGenerateAudio, theme = 'light', colorOverlay = 'none', onSpeechEnd, onSpeechStart, activeView, isFlying = false, isSystemAudioActive = false, history = [], isParentMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic, canPlayIntro = true, aimAt = null, idleSleepMs = 180000 }, ref) => {
@@ -602,7 +677,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
               releaseAlloBotAudioUrl(lastAudioUrlRef.current);
               lastAudioUrlRef.current = null;
           }
-          try { window.speechSynthesis?.cancel(); } catch (_) {}
+          cancelAlloBotBrowserSpeech();
           setIsTalking(false);
       }
   }, [soundEnabled]);
@@ -621,7 +696,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           lastAudioUrlRef.current = null;
       }
       if (speechTimeoutRef.current) clearTimeout(speechTimeoutRef.current);
-      try { window.speechSynthesis?.cancel(); } catch (_) {}
+      cancelAlloBotBrowserSpeech();
   }, []);
   useEffect(() => {
       try { safeSetItem('allo_bot_pos_v2', JSON.stringify(position)); } catch(e) { warnLog('localStorage write failed', e); }
@@ -825,7 +900,8 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           lastAudioUrlRef.current = null;
       }
       if (speechTimeoutRef.current) clearTimeout(speechTimeoutRef.current);
-      if (window.speechSynthesis) window.speechSynthesis.cancel();
+      // Only our own previous line, not whatever else the app is narrating.
+      cancelAlloBotBrowserSpeech();
       if (onSpeechStart) onSpeechStart();
       if (!motionDisabled) {
           setWobbleState({ active: true, deg: 3 });
@@ -961,7 +1037,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
               // longer "on the way", so merely having a loader must not suppress it.
               try {
                   if (window.speechSynthesis && ttsText && ttsText.length > 0) {
-                      window.speechSynthesis.cancel();
+                      cancelAlloBotBrowserSpeech();
                       const utter = new SpeechSynthesisUtterance(ttsText);
                       utter.rate = Math.max(0.1, Math.min(10, Number(voiceSpeed) || 1));
                       utter.volume = Math.max(0, Math.min(1, Number.isFinite(Number(voiceVolume)) ? Number(voiceVolume) : 1));
@@ -973,8 +1049,9 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                           const matchingVoice = voices.find(v => String(v.lang || '').toLowerCase().split('-')[0] === baseLanguage);
                           if (matchingVoice) utter.voice = matchingVoice;
                       } catch (_) {}
-                      utter.onend = resetState;
-                      utter.onerror = () => { resetState(); };
+                      utter.onend = () => { alloBotReleaseBrowserSpeech(); resetState(); };
+                      utter.onerror = () => { alloBotReleaseBrowserSpeech(); resetState(); };
+                      alloBotClaimBrowserSpeech();
                       window.speechSynthesis.speak(utter);
                       audioStarted = true;
                       cloudSuccess = true;
@@ -1038,7 +1115,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           lastAudioUrlRef.current = null;
       }
       if (speechTimeoutRef.current) { clearTimeout(speechTimeoutRef.current); speechTimeoutRef.current = null; }
-      try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (_) {}
+      cancelAlloBotBrowserSpeech();
   }, []);
   const fallAsleep = useCallback(() => {
       if (isSleepingRef.current) return;
@@ -1088,6 +1165,24 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
   // of being torn down and rebuilt on every mood/talking flip — a re-created
   // interval would reset its own countdown and the bot would never reach the
   // threshold on a chatty screen.
+  // ── A5: announce the recording state, do not just colour it ────────────────
+  // Red-for-live with no announcement is a WCAG failure twice over: colour as
+  // the sole channel, and a live state change no assistive tech is told about.
+  // This routes through window.alloAnnounce, the app's REAL announcer (it owns
+  // the #allo-live-polite region). A component-local announcer would write to
+  // state nothing reads and every announcement would be silently dropped.
+  const micStateAnnouncedRef = useRef(null);
+  useEffect(() => {
+      const next = !!isListening;
+      // Skip the first pass: describing the resting state on mount is chatter.
+      if (micStateAnnouncedRef.current === null) { micStateAnnouncedRef.current = next; return; }
+      if (micStateAnnouncedRef.current === next) return;
+      micStateAnnouncedRef.current = next;
+      const message = next
+          ? (t('bot.mic_live_announce') || 'Microphone on. AlloBot is listening.')
+          : (t('bot.mic_off_announce') || 'Microphone off. AlloBot has stopped listening.');
+      try { if (typeof window !== 'undefined' && window.alloAnnounce) window.alloAnnounce(message, 'polite'); } catch (_) {}
+  }, [isListening, t]);
   const idleBusyRef = useRef(false);
   idleBusyRef.current = !!(isTalking || isDragging || isListening || isSystemAudioActive || effectiveMood === 'thinking' || isPoofing);
   useEffect(() => {
@@ -2125,6 +2220,10 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
           >
               <JetpackParticles active={isFlightActive} />
               <LandingDust active={!motionDisabled && isLanding} />
+              {/* A4: sits OUTSIDE the satellite ring on purpose. The satellites
+                  are opacity-0 until hover on a fine pointer, and a meter you
+                  have to hover to see cannot tell you the mic is picking you up. */}
+              <AlloMicMeter active={!!isListening && !isPoofing} motionDisabled={motionDisabled} />
               {!isDragging && !isPoofing && !isSleeping && (
                   <>
                     <button data-help-key="bot_sleep_btn"
@@ -2183,7 +2282,12 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                             }}
                             onTouchStart={stopTouch}
                             onPointerDown={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}
-                            className={`${satellitePos.bl} ${satelliteBase} focus:ring-2 focus:ring-indigo-400 ${isListening ? 'bg-red-700 text-white border-red-400 animate-pulse motion-reduce:animate-none' : 'bg-white hover:bg-indigo-50 text-slate-600 hover:text-indigo-500 border-slate-100'}`}
+                            // A5: the state was carried by colour alone (red versus not-red).
+                            // aria-pressed makes it a real toggle for assistive tech, the
+                            // ring makes "live" readable without colour vision, and the
+                            // announcement below reports every change to a screen reader.
+                            aria-pressed={isListening ? 'true' : 'false'}
+                            className={`${satellitePos.bl} ${satelliteBase} focus:ring-2 focus:ring-indigo-400 ${isListening ? 'bg-red-700 text-white border-red-400 ring-2 ring-offset-1 ring-red-500 animate-pulse motion-reduce:animate-none' : 'bg-white hover:bg-indigo-50 text-slate-600 hover:text-indigo-500 border-slate-100'}`}
                             title={isListening ? t('bot.mic_stop_title') : t('bot.mic_start_title')}
                             aria-label={isListening ? t('bot.mic_stop_aria') : t('bot.mic_start_aria')}
                         >

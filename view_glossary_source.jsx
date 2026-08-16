@@ -148,6 +148,41 @@
   var Volume2 = _lazyIcon('Volume2');
   var X = _lazyIcon('X');
   var XCircle = _lazyIcon('XCircle');
+  // ── Theme-safe hover surface for the term rows ───────────────────────────
+  // Measured (Chromium, .theme-dark, real computed styles): the term row
+  // carried `hover:bg-slate-50 focus-within:bg-slate-50` and NO base bg
+  // utility. The generated dark layer only emits selectors for base
+  // utilities, so the hover kept its light value (#f8fafc) while the row text
+  // was remapped to #f1f5f9. That is **1.05:1** on hover and 1.42:1 for the
+  // definition cell: exactly the 'row turns white and the text disappears'
+  // Aaron reported.
+  //
+  // Rows that DO carry a base bg utility were never affected, because the
+  // remap sets it !important and that beats the non-important hover rule.
+  // Only elements with no surface of their own are exposed.
+  //
+  // Done in CSS rather than by branching on the theme in JS: a hook reads the
+  // theme one frame late on first paint and re-renders the whole table on a
+  // theme change for something purely presentational. A stylesheet is right
+  // before the first paint and cannot drift from the theme class.
+  var GLOSSARY_HOVER_STYLE_ID = 'allo-glossary-hover-styles';
+  var GLOSSARY_HOVER_CSS = [
+    '.allo-vghov-row:hover,.allo-vghov-row:focus-within{background-color:#f1f5f9 !important;}',
+    '.theme-dark .allo-vghov-row:hover,.theme-dark .allo-vghov-row:focus-within{background-color:#334155 !important;}',
+    '.theme-contrast .allo-vghov-row:hover,.theme-contrast .allo-vghov-row:focus-within{background-color:#000000 !important;outline:2px solid #ffff00;outline-offset:-2px;}'
+  ].join('\n');
+  function ensureGlossaryHoverStyles() {
+    try {
+      if (typeof document === 'undefined' || !document.head) return;
+      if (document.getElementById(GLOSSARY_HOVER_STYLE_ID)) return;
+      var el = document.createElement('style');
+      el.id = GLOSSARY_HOVER_STYLE_ID;
+      el.textContent = GLOSSARY_HOVER_CSS;
+      document.head.appendChild(el);
+    } catch (_e) { /* no document */ }
+  }
+  ensureGlossaryHoverStyles();
+
   function GlossaryView(props) {
     // Pure data + state reads
     var t = props.t;
@@ -192,6 +227,11 @@
     var flashcardOptions = props.flashcardOptions;
     var flashcardFeedback = props.flashcardFeedback;
     var quizSelectedOption = props.quizSelectedOption;
+    // Host-owned single source of truth for the flashcard answer. The green
+    // highlight below must not re-derive it: the old local `opt === item.def`
+    // ignored deck mode, so in the Language Deck no option ever highlighted and
+    // the student's correct pick was painted red while the chime said correct.
+    var flashcardCorrectAnswer = props.flashcardCorrectAnswer || window.flashcardCorrectAnswer;
     var isInteractiveFlashcards = props.isInteractiveFlashcards;
     // Per-term generation state (objects keyed by index)
     var isGeneratingTermImage = props.isGeneratingTermImage;
@@ -759,6 +799,80 @@
       if (typeof handleSetGlossaryFilterToAll === 'function') handleSetGlossaryFilterToAll();
       if (typeof setGlossarySearchTerm === 'function') setGlossarySearchTerm('');
     }
+    // ── G6: the phantom "no words match your search" ────────────────────────
+    // The old empty state claimed "No terms match this search or vocabulary
+    // filter" whenever the table came out empty, including when no search had
+    // ever been typed. Three separate things can empty this table and only one
+    // of them is a search:
+    //
+    //   1. A sticky vocabulary filter. `glossaryFilter` lives in the host's
+    //      glossary reducer (AlloFlowANTI.txt:8627). Its `GLOSS_RESET` action
+    //      has NO call site anywhere in the monolith, so the filter survives a
+    //      tool switch, a history load and a fresh generation.
+    //   2. A glossary whose entries carry no tier at all. The target-terms
+    //      generator at AlloFlowANTI.txt:53891 writes
+    //      `tier: <valid> ? <valid> : undefined`, so with a tier filter left on
+    //      from a previous glossary, every row is excluded and no search is
+    //      involved.
+    //   3. A search term the user never typed.
+    //      `handleOpenCurrentFlashcardInGlossary` (this file) writes the
+    //      flashcard's term into `glossarySearchTerm` when a student opens a
+    //      card in the glossary.
+    //
+    // This version names only the constraints actually in effect, so the word
+    // "search" cannot appear unless a non-empty query really is present, and
+    // each active constraint gets its own clear action.
+    function glossaryEmptyStateInfo() {
+      var query = typeof glossarySearchTerm === 'string' ? glossarySearchTerm.trim() : '';
+      var allTerms = Array.isArray(generatedContent && generatedContent.data) ? generatedContent.data : [];
+      var tierActive = glossaryFilter === 'academic' || glossaryFilter === 'domain';
+      var tierLabel = glossaryFilter === 'academic'
+        ? (t('glossary.tier2') || 'Academic vocabulary')
+        : (t('glossary.tier3') || 'Subject vocabulary');
+      return {
+        hasQuery: query.length > 0,
+        query: query,
+        tierActive: tierActive,
+        tierLabel: tierLabel,
+        // Every entry missing a tier is a data shape problem, not something the
+        // teacher did. Saying "no terms match your filter" would send them
+        // hunting for a filter they set correctly.
+        tierless: tierActive && allTerms.length > 0 && allTerms.every(function (item) { return !item || !item.tier; })
+      };
+    }
+    function renderGlossaryEmptyState() {
+      var info = glossaryEmptyStateInfo();
+      // bg-blue-700 is a base utility, so the dark remap already sets it
+      // !important and the hover shade is safe in every theme.
+      var clearButton = 'min-h-11 rounded-lg bg-blue-700 px-4 py-2 text-sm font-bold text-white hover:bg-blue-800 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2';
+      if (info.tierless) {
+        return <>
+          <span className="text-sm font-bold text-slate-800">{t('glossary.empty_no_tiers') || 'These terms are not sorted into academic and subject vocabulary yet.'}</span>
+          <button type="button" onClick={handleSetGlossaryFilterToAll} className={clearButton}>{t('glossary.empty_show_all') || 'Show all terms'}</button>
+        </>;
+      }
+      if (info.hasQuery && info.tierActive) {
+        return <>
+          <span className="text-sm font-bold text-slate-800">{t('glossary.empty_search_and_filter', { query: info.query, filter: info.tierLabel }) || ('No terms match "' + info.query + '" inside ' + info.tierLabel + '.')}</span>
+          <button type="button" onClick={clearGlossaryFilters} className={clearButton}>{t('glossary.empty_clear_both') || 'Clear the search and show all terms'}</button>
+        </>;
+      }
+      if (info.hasQuery) {
+        return <>
+          <span className="text-sm font-bold text-slate-800">{t('glossary.empty_search_only', { query: info.query }) || ('No terms match "' + info.query + '".')}</span>
+          <button type="button" onClick={function () { if (typeof setGlossarySearchTerm === 'function') setGlossarySearchTerm(''); }} className={clearButton}>{t('glossary.empty_clear_search') || 'Clear the search'}</button>
+        </>;
+      }
+      if (info.tierActive) {
+        return <>
+          <span className="text-sm font-bold text-slate-800">{t('glossary.empty_filter_only', { filter: info.tierLabel }) || ('No terms in this glossary are ' + info.tierLabel + '.')}</span>
+          <button type="button" onClick={handleSetGlossaryFilterToAll} className={clearButton}>{t('glossary.empty_show_all') || 'Show all terms'}</button>
+        </>;
+      }
+      // Nothing is filtering and the list is still empty: a data problem, and
+      // there is no filter to offer to clear.
+      return <span className="text-sm font-medium text-slate-700">{t('glossary.no_terms')}</span>;
+    }
     function toggleGlossaryToolPanel(panel) {
       setGlossaryToolsOpen(function (current) {
         return Object.assign({}, current, { [panel]: !current[panel] });
@@ -982,10 +1096,10 @@
                           return item.term;
                         }
                         return item.term;
-                      })()}</h2><h3 className="text-xs font-bold mb-4 text-white/80 uppercase tracking-widest">{flashcardFeedback === 'correct' ? t('flashcards.correct_msg') : flashcardFeedback === 'incorrect' ? t('flashcards.try_again') : t('flashcards.select_match')}</h3><div className="flex flex-col gap-3 w-full overflow-y-auto custom-scrollbar max-h-[65%] pr-1">{flashcardOptions.map((opt, idx) => {
+                      })()}</h2><h3 role="status" aria-live="polite" aria-atomic="true" className="text-xs font-bold mb-4 text-white/80 uppercase tracking-widest">{flashcardFeedback === 'correct' ? t('flashcards.correct_msg') : flashcardFeedback === 'incorrect' ? t('flashcards.try_again') : t('flashcards.select_match')}</h3><div className="flex flex-col gap-3 w-full overflow-y-auto custom-scrollbar max-h-[65%] pr-1">{flashcardOptions.map((opt, idx) => {
                         const isSelected = quizSelectedOption === opt;
                         const currentItem = generatedContent?.data[flashcardIndex];
-                        const isCorrectAnswer = opt === currentItem.def;
+                        const isCorrectAnswer = typeof flashcardCorrectAnswer === 'function' ? opt === flashcardCorrectAnswer(currentItem, flashcardMode, flashcardLang) : opt === currentItem.def;
                         let btnClass = "bg-white/10 hover:bg-white/20 text-white border-2 border-white/20";
                         let icon = null;
                         if (quizSelectedOption) {
@@ -1114,7 +1228,7 @@
                   const idx = item._originalIdx;
                   const isTier2 = item.tier === 'Academic';
                   const isTier3 = item.tier === 'Domain-Specific';
-                  return <tr key={getGlossaryEntryKey(item, idx)} className="hover:bg-slate-50 focus-within:bg-slate-50 group/row">{isEditingGlossary && <td className="p-4 border-b border-slate-100 text-center align-top"><input aria-label={t('common.toggle_is_selected_false')} type="checkbox" className="mt-1.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4 cursor-pointer" checked={item.isSelected !== false} onChange={() => handleGlossarySelectionChange(idx)} title={t('glossary.tooltips.select_highlight')} /></td>}<td className="p-4 font-bold text-slate-800 align-top min-w-[200px]"><div className="flex flex-col gap-2 items-center">{!isEditingGlossary && item.tier && <span className={`text-[11px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-full border mb-1 ${isTier2 ? 'bg-blue-50 text-blue-700 border-blue-200' : isTier3 ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>{isTier2 ? 'Academic vocabulary' : isTier3 ? 'Subject vocabulary' : item.tier}</span>}{isEditingGlossary ? <div className="w-full flex flex-col gap-2"><select aria-label={(t('glossary.edit_tier_placeholder') || 'Vocabulary type') + ': ' + item.term} value={item.tier || ''} onChange={e => handleGlossaryChange(idx, 'tier', e.target.value)} className="text-[11px] font-bold uppercase tracking-wider w-full border border-slate-400 rounded px-1 py-1  focus:ring-1 focus:ring-indigo-500 bg-slate-50 text-slate-600" data-help-key="glossary_edit_tier"><option value="">{t('glossary.edit_tier_placeholder')}</option><option value="Academic">{t('glossary.edit_tier_academic')}</option><option value="Domain-Specific">{t('glossary.edit_tier_domain')}</option></select><div className="flex items-start gap-2 w-full"><textarea aria-label={t('glossary.edit_term') || 'Edit glossary term'} value={item.term} onChange={e => handleGlossaryChange(idx, 'term', e.target.value)} rows={getRows(item.term, 25)} className="w-full bg-white border border-blue-300 rounded px-2 py-1  focus:ring-2 focus:ring-blue-200 resize-y text-sm font-bold text-center" /><button type="button" aria-label={'Delete term: ' + item.term} onClick={() => handleDeleteGlossaryItem(idx)} className="min-h-11 min-w-11 inline-flex items-center justify-center bg-red-50 text-red-600 hover:bg-red-100 rounded transition-colors shrink-0" title={t('glossary.tooltips.delete_term')}><Trash2 size={14} /></button></div></div> : <div className="px-2 py-1 font-bold text-slate-800 whitespace-pre-wrap text-center">{item.term}</div>}<div className="mt-1 px-1">{item.image ? <div className="flex flex-col gap-2"><div className="relative group/image inline-block w-fit"><img loading="lazy" src={item.image} alt={`${item.term} icon`} style={{
+                  return <tr key={getGlossaryEntryKey(item, idx)} className="group/row allo-vghov-row">{isEditingGlossary && <td className="p-4 border-b border-slate-100 text-center align-top"><input aria-label={t('common.toggle_is_selected_false')} type="checkbox" className="mt-1.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4 cursor-pointer" checked={item.isSelected !== false} onChange={() => handleGlossarySelectionChange(idx)} title={t('glossary.tooltips.select_highlight')} /></td>}<td className="p-4 font-bold text-slate-800 align-top min-w-[200px]"><div className="flex flex-col gap-2 items-center">{!isEditingGlossary && item.tier && <span className={`text-[11px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-full border mb-1 ${isTier2 ? 'bg-blue-50 text-blue-700 border-blue-200' : isTier3 ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>{isTier2 ? 'Academic vocabulary' : isTier3 ? 'Subject vocabulary' : item.tier}</span>}{isEditingGlossary ? <div className="w-full flex flex-col gap-2"><select aria-label={(t('glossary.edit_tier_placeholder') || 'Vocabulary type') + ': ' + item.term} value={item.tier || ''} onChange={e => handleGlossaryChange(idx, 'tier', e.target.value)} className="text-[11px] font-bold uppercase tracking-wider w-full border border-slate-400 rounded px-1 py-1  focus:ring-1 focus:ring-indigo-500 bg-slate-50 text-slate-600" data-help-key="glossary_edit_tier"><option value="">{t('glossary.edit_tier_placeholder')}</option><option value="Academic">{t('glossary.edit_tier_academic')}</option><option value="Domain-Specific">{t('glossary.edit_tier_domain')}</option></select><div className="flex items-start gap-2 w-full"><textarea aria-label={t('glossary.edit_term') || 'Edit glossary term'} value={item.term} onChange={e => handleGlossaryChange(idx, 'term', e.target.value)} rows={getRows(item.term, 25)} className="w-full bg-white border border-blue-300 rounded px-2 py-1  focus:ring-2 focus:ring-blue-200 resize-y text-sm font-bold text-center" /><button type="button" aria-label={'Delete term: ' + item.term} onClick={() => handleDeleteGlossaryItem(idx)} className="min-h-11 min-w-11 inline-flex items-center justify-center bg-red-50 text-red-600 hover:bg-red-100 rounded transition-colors shrink-0" title={t('glossary.tooltips.delete_term')}><Trash2 size={14} /></button></div></div> : <div className="px-2 py-1 font-bold text-slate-800 whitespace-pre-wrap text-center">{item.term}</div>}<div className="mt-1 px-1">{item.image ? <div className="flex flex-col gap-2"><div className="relative group/image inline-block w-fit"><img loading="lazy" src={item.image} alt={`${item.term} icon`} style={{
                                 width: `${glossaryImageSize}px`,
                                 height: `${glossaryImageSize}px`
                               }} className="rounded-lg border border-slate-400 object-contain bg-white shadow-sm transition-all duration-200" decoding="async" /><div className="absolute inset-0 bg-black/60 rounded-lg flex items-center justify-center opacity-100 sm:opacity-0 sm:group-hover/image:opacity-100 sm:group-focus-within/image:opacity-100 transition-opacity gap-2 backdrop-blur-[1px]"><button type="button" aria-label={'Regenerate image for ' + item.term} aria-busy={!!isGeneratingTermImage[idx]} onClick={() => handleGenerateTermImage(idx, item.term)} className="min-h-11 min-w-11 inline-flex items-center justify-center text-white hover:text-yellow-300 bg-white/10 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-white" title={t('common.regenerate')} disabled={isGeneratingTermImage[idx]} data-help-key="glossary_regen_image">{isGeneratingTermImage[idx] ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : <RefreshCw size={12} />}</button><button type="button" aria-label={'Delete image for ' + item.term} onClick={() => handleDeleteTermImage(idx)} className="min-h-11 min-w-11 inline-flex items-center justify-center text-white hover:text-red-300 bg-white/10 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-white" title={t('common.delete')} data-help-key="glossary_delete_image"><Trash2 size={12} /></button></div></div>{isEditingGlossary && <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 mt-1"><button aria-label={t('common.refresh')} onClick={() => handleRefineGlossaryImage(idx, "Remove all text, labels, letters, and words from the image. Keep the illustration clean.")} disabled={isGeneratingTermImage[idx]} className="w-full mb-1.5 text-[11px] bg-red-50 text-red-600 hover:bg-red-100 border border-red-100 px-2 py-1 rounded flex items-center justify-center gap-1 transition-colors font-bold shadow-sm" title={t('glossary.auto_remove_tooltip')} data-help-key="glossary_remove_words">{isGeneratingTermImage[idx] ? <RefreshCw size={10} className="animate-spin motion-reduce:animate-none" /> : <Ban size={10} />} {t('glossary.remove_words_btn')}</button><div className="flex gap-1"><input aria-label={t('common.glossary_custom_edit_placeholder')} type="text" value={glossaryRefinementInputs[idx] || ''} onChange={e => setGlossaryRefinementInputs(prev => ({
@@ -1578,7 +1692,7 @@
                           }
                           return null;
                         })()}</div></td>)}</tr>;
-                })}{filteredGlossaryData.length === 0 && <tr><td colSpan={2 + displayLanguages.length + (isEditingGlossary ? 1 : 0)} className="p-10 text-center text-slate-600"><div className="flex flex-col items-center gap-3"><span className="text-4xl allo-empty-float select-none" aria-hidden="true">📖</span>{generatedContent?.data.length === 0 ? <span className="text-sm font-medium text-slate-700">{t('glossary.no_terms')}</span> : <><span className="text-sm font-bold text-slate-800">No terms match this search or vocabulary filter.</span><button type="button" onClick={clearGlossaryFilters} className="min-h-11 rounded-lg bg-blue-700 px-4 py-2 text-sm font-bold text-white hover:bg-blue-800 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2">Clear filters</button></>}</div></td></tr>}</tbody></table></div></div>}{
+                })}{filteredGlossaryData.length === 0 && <tr><td colSpan={2 + displayLanguages.length + (isEditingGlossary ? 1 : 0)} className="p-10 text-center text-slate-600"><div className="flex flex-col items-center gap-3"><span className="text-4xl allo-empty-float select-none" aria-hidden="true">📖</span>{generatedContent?.data.length === 0 ? <span className="text-sm font-medium text-slate-700">{t('glossary.no_terms')}</span> : renderGlossaryEmptyState()}</div></td></tr>}</tbody></table></div></div>}{
         // ── Phonics popup (sibling) ──
         // Mirrors the simplified-view popup at view_simplified_module.js:784–865.
         // Renders only when the host has set phonicsData (via handlePhonicsClick),

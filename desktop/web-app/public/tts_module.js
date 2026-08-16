@@ -328,10 +328,16 @@ const createTTS = deps => {
     if (msg.includes('No audio data received')) return true;
     return /failed to fetch|networkerror|network error|load failed|connection|socket hang up|econnreset|err_network/i.test(msg);
   };
-  // Waking an already-downloaded Kokoro means decoding ~88MB into WASM. Long
-  // enough for a real cold start on a school laptop, short enough that a
-  // wedged init cannot hold the reader open.
+  // Waking an already-downloaded Kokoro means decoding ~88MB into WASM. This
+  // is now a STALL budget, not a total budget: how long the loader may sit
+  // without its progress moving before the current utterance stops waiting.
+  // See ensureKokoroTts for why the total-time version broke every first
+  // request.
   const KOKORO_ENSURE_TIMEOUT_MS = 15000;
+  // Absolute ceiling on one utterance's wait, however healthy the progress
+  // looks. Past this the load continues in the background and serves the
+  // next sentence.
+  const KOKORO_ENSURE_MAX_MS = 60000;
   // In-flight joins older than this are presumed wedged and REPLACED —
   // background joiners must not inherit a zombie either.
   const CALLTTS_JOIN_MAX_AGE_MS = 20000;
@@ -822,15 +828,49 @@ const createTTS = deps => {
         _ttsTrace('calltts:kokoro-background-download', null);
         return null;
       }
-      // A cached model still has to decode into WASM, which is seconds,
-      // not milliseconds. Bound the wait so one wedged init cannot hold a
-      // waiting reader open — the load keeps running, so the NEXT sentence
-      // gets the real voice even when this one falls through.
-      const budget = Number.isFinite(timeoutMs) ? timeoutMs : KOKORO_ENSURE_TIMEOUT_MS;
-      const engine = await Promise.race([kokoroLoadPromise, new Promise(resolve => setTimeout(() => resolve(undefined), budget))]);
+      // ── V2 (cold start): wait on PROGRESS, not on a stopwatch ──
+      // A cached model still has to be read out of device storage,
+      // decoded into WASM and warmed with one inference. On a school
+      // laptop that is routinely 20-45s, so the old flat 15s deadline
+      // expired on the FIRST request every time: that utterance fell
+      // through to another engine (or, keyless with the browser-fallback
+      // checkbox off, to silence), and only the SECOND request found
+      // ready=true. That is exactly the "works on the second try"
+      // report.
+      //
+      // A stopwatch cannot tell a slow-but-healthy wake from a wedged
+      // one; forward progress can. Keep waiting while the loader is
+      // still moving, give up only after it has been STALLED for the
+      // stall budget, and cap the whole thing so nothing waits forever.
+      const stallBudget = Number.isFinite(timeoutMs) ? timeoutMs : KOKORO_ENSURE_TIMEOUT_MS;
+      const engine = await Promise.race([kokoroLoadPromise, new Promise(resolve => {
+        const startedAt = Date.now();
+        let lastPct = -1;
+        let lastMovedAt = startedAt;
+        const tick = setInterval(() => {
+          let pct = -1;
+          try {
+            pct = Number(window._kokoroTTS && window._kokoroTTS.progress);
+          } catch (_) {}
+          if (Number.isFinite(pct) && pct > lastPct) {
+            lastPct = pct;
+            lastMovedAt = Date.now();
+          }
+          const stalledFor = Date.now() - lastMovedAt;
+          const elapsed = Date.now() - startedAt;
+          if (stalledFor >= stallBudget || elapsed >= KOKORO_ENSURE_MAX_MS) {
+            clearInterval(tick);
+            resolve(undefined);
+          }
+        }, 500);
+        // The winning branch of the race leaves this interval
+        // running otherwise; kokoroLoadPromise always settles.
+        Promise.resolve(kokoroLoadPromise).catch(() => {}).then(() => clearInterval(tick));
+      })]);
       if (engine === undefined) {
         _ttsTrace('calltts:kokoro-ensure-timeout', {
-          budgetMs: budget
+          stallBudgetMs: stallBudget,
+          maxMs: KOKORO_ENSURE_MAX_MS
         });
         return null;
       }
@@ -922,6 +962,23 @@ const createTTS = deps => {
         chars: String(text || '').length
       });
       return null;
+    }
+    // ── V6: the device voice is a narrator CHOICE, not only a fallback ──
+    // "browser" is not a Gemini voice name, so _resolveGeminiVoice() used to
+    // rewrite it to the default cloud voice and the cloud spoke instead —
+    // picking it in the narrator panel did nothing. Signal the existing
+    // browser-required contract instead: callers already treat that as
+    // "speak this with speechSynthesis", and unlike a plain null it does not
+    // depend on the browser-fallback checkbox. The trade Aaron is buying
+    // here is deliberate: a plainer voice that starts instantly.
+    if (String(voiceName || '').toLowerCase() === 'browser') {
+      _ttsTrace('calltts:browser-voice-selected', {
+        chars: String(text || '').length
+      });
+      const browserVoiceRequest = new Error('The device voice is selected for narration.');
+      browserVoiceRequest.code = 'BROWSER_TTS_REQUIRED';
+      browserVoiceRequest.useBrowserTts = true;
+      throw browserVoiceRequest;
     }
     // Spoken math pre-pass (no-op unless delimited math is present)
     text = await _mathToSpeakable(text, _language, _callOpts.mathSpeech || null);
@@ -1568,6 +1625,41 @@ const createTTS = deps => {
       }
     }
     warnLog("[TTS] All retries exhausted for:", text?.substring(0, 30), lastError?.message);
+    // ── V4: non-English had no engine between the cloud and the checkbox ──
+    // English fails soft: Gemini -> Kokoro -> browser, and Kokoro is tried
+    // inside this function. Every other language went Gemini -> (nothing) ->
+    // the "Browser-voice fallback" checkbox, which is off by default. So
+    // when Gemini declined a Spanish sentence the learner got silence, and
+    // ticking a checkbox labelled "browser voice" appeared to be what made
+    // Gemini work. It never was: it was the only remaining leg.
+    //
+    // Piper is the multilingual local engine and it was already installed,
+    // but it was only reachable from the Canvas branch and from keyless /
+    // "Local TTS" installs. Reach it from the cloud path too, so the
+    // checkbox goes back to meaning what it says.
+    if (!_isEnglish) {
+      try {
+        const piperLast = window._piperTTS || (await ensurePiperTts());
+        const piperLastLanguage = languageToTTSCode(_language);
+        if (piperLast?.supportsLanguage?.(piperLastLanguage)) {
+          const piperLastUrl = await piperLast.speak(cleanTextForLocalTTS(text), piperLastLanguage, speed, {
+            signal: _signal
+          });
+          if (piperLastUrl) {
+            _routeNote('piper', 'cloud voice declined; local multilingual voice served ' + piperLastLanguage);
+            return _emitResolvedProfile(piperLastUrl, _resolutionProfile('local', 'piper-browser', null, _resolvedPiperVoice(piperLastLanguage), 1, {
+              languageCode: piperLastLanguage,
+              fallbackFrom: 'gemini'
+            }));
+          }
+        }
+      } catch (piperLastError) {
+        if (_isAbortError(piperLastError)) throw piperLastError;
+        // Piper reports its own failures to the console and returns
+        // null; a raw engine message must never reach a learner.
+        _routeNote('piper-failed', 'local multilingual voice could not serve this sentence');
+      }
+    }
     throw lastError;
   };
   const callTTSDirect = async (text, voiceName, speed = 1, maxRetries = 2) => {

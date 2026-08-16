@@ -208,6 +208,36 @@ var Trash2 = _lazyIcon('Trash2');
 var Volume2 = _lazyIcon('Volume2');
 var X = _lazyIcon('X');
 var XCircle = _lazyIcon('XCircle');
+// ── Theme-safe hover surface for the term rows ───────────────────────────
+// Measured (Chromium, .theme-dark, real computed styles): the term row
+// carried `hover:bg-slate-50 focus-within:bg-slate-50` and NO base bg
+// utility. The generated dark layer only emits selectors for base
+// utilities, so the hover kept its light value (#f8fafc) while the row text
+// was remapped to #f1f5f9. That is **1.05:1** on hover and 1.42:1 for the
+// definition cell: exactly the 'row turns white and the text disappears'
+// Aaron reported.
+//
+// Rows that DO carry a base bg utility were never affected, because the
+// remap sets it !important and that beats the non-important hover rule.
+// Only elements with no surface of their own are exposed.
+//
+// Done in CSS rather than by branching on the theme in JS: a hook reads the
+// theme one frame late on first paint and re-renders the whole table on a
+// theme change for something purely presentational. A stylesheet is right
+// before the first paint and cannot drift from the theme class.
+var GLOSSARY_HOVER_STYLE_ID = 'allo-glossary-hover-styles';
+var GLOSSARY_HOVER_CSS = ['.allo-vghov-row:hover,.allo-vghov-row:focus-within{background-color:#f1f5f9 !important;}', '.theme-dark .allo-vghov-row:hover,.theme-dark .allo-vghov-row:focus-within{background-color:#334155 !important;}', '.theme-contrast .allo-vghov-row:hover,.theme-contrast .allo-vghov-row:focus-within{background-color:#000000 !important;outline:2px solid #ffff00;outline-offset:-2px;}'].join('\n');
+function ensureGlossaryHoverStyles() {
+  try {
+    if (typeof document === 'undefined' || !document.head) return;
+    if (document.getElementById(GLOSSARY_HOVER_STYLE_ID)) return;
+    var el = document.createElement('style');
+    el.id = GLOSSARY_HOVER_STYLE_ID;
+    el.textContent = GLOSSARY_HOVER_CSS;
+    document.head.appendChild(el);
+  } catch (_e) {/* no document */}
+}
+ensureGlossaryHoverStyles();
 function GlossaryView(props) {
   // Pure data + state reads
   var t = props.t;
@@ -252,6 +282,11 @@ function GlossaryView(props) {
   var flashcardOptions = props.flashcardOptions;
   var flashcardFeedback = props.flashcardFeedback;
   var quizSelectedOption = props.quizSelectedOption;
+  // Host-owned single source of truth for the flashcard answer. The green
+  // highlight below must not re-derive it: the old local `opt === item.def`
+  // ignored deck mode, so in the Language Deck no option ever highlighted and
+  // the student's correct pick was painted red while the chime said correct.
+  var flashcardCorrectAnswer = props.flashcardCorrectAnswer || window.flashcardCorrectAnswer;
   var isInteractiveFlashcards = props.isInteractiveFlashcards;
   // Per-term generation state (objects keyed by index)
   var isGeneratingTermImage = props.isGeneratingTermImage;
@@ -1107,6 +1142,103 @@ function GlossaryView(props) {
     if (typeof handleSetGlossaryFilterToAll === 'function') handleSetGlossaryFilterToAll();
     if (typeof setGlossarySearchTerm === 'function') setGlossarySearchTerm('');
   }
+  // ── G6: the phantom "no words match your search" ────────────────────────
+  // The old empty state claimed "No terms match this search or vocabulary
+  // filter" whenever the table came out empty, including when no search had
+  // ever been typed. Three separate things can empty this table and only one
+  // of them is a search:
+  //
+  //   1. A sticky vocabulary filter. `glossaryFilter` lives in the host's
+  //      glossary reducer (AlloFlowANTI.txt:8627). Its `GLOSS_RESET` action
+  //      has NO call site anywhere in the monolith, so the filter survives a
+  //      tool switch, a history load and a fresh generation.
+  //   2. A glossary whose entries carry no tier at all. The target-terms
+  //      generator at AlloFlowANTI.txt:53891 writes
+  //      `tier: <valid> ? <valid> : undefined`, so with a tier filter left on
+  //      from a previous glossary, every row is excluded and no search is
+  //      involved.
+  //   3. A search term the user never typed.
+  //      `handleOpenCurrentFlashcardInGlossary` (this file) writes the
+  //      flashcard's term into `glossarySearchTerm` when a student opens a
+  //      card in the glossary.
+  //
+  // This version names only the constraints actually in effect, so the word
+  // "search" cannot appear unless a non-empty query really is present, and
+  // each active constraint gets its own clear action.
+  function glossaryEmptyStateInfo() {
+    var query = typeof glossarySearchTerm === 'string' ? glossarySearchTerm.trim() : '';
+    var allTerms = Array.isArray(generatedContent && generatedContent.data) ? generatedContent.data : [];
+    var tierActive = glossaryFilter === 'academic' || glossaryFilter === 'domain';
+    var tierLabel = glossaryFilter === 'academic' ? t('glossary.tier2') || 'Academic vocabulary' : t('glossary.tier3') || 'Subject vocabulary';
+    return {
+      hasQuery: query.length > 0,
+      query: query,
+      tierActive: tierActive,
+      tierLabel: tierLabel,
+      // Every entry missing a tier is a data shape problem, not something the
+      // teacher did. Saying "no terms match your filter" would send them
+      // hunting for a filter they set correctly.
+      tierless: tierActive && allTerms.length > 0 && allTerms.every(function (item) {
+        return !item || !item.tier;
+      })
+    };
+  }
+  function renderGlossaryEmptyState() {
+    var info = glossaryEmptyStateInfo();
+    // bg-blue-700 is a base utility, so the dark remap already sets it
+    // !important and the hover shade is safe in every theme.
+    var clearButton = 'min-h-11 rounded-lg bg-blue-700 px-4 py-2 text-sm font-bold text-white hover:bg-blue-800 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2';
+    if (info.tierless) {
+      return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
+        className: "text-sm font-bold text-slate-800"
+      }, t('glossary.empty_no_tiers') || 'These terms are not sorted into academic and subject vocabulary yet.'), /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        onClick: handleSetGlossaryFilterToAll,
+        className: clearButton
+      }, t('glossary.empty_show_all') || 'Show all terms'));
+    }
+    if (info.hasQuery && info.tierActive) {
+      return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
+        className: "text-sm font-bold text-slate-800"
+      }, t('glossary.empty_search_and_filter', {
+        query: info.query,
+        filter: info.tierLabel
+      }) || 'No terms match "' + info.query + '" inside ' + info.tierLabel + '.'), /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        onClick: clearGlossaryFilters,
+        className: clearButton
+      }, t('glossary.empty_clear_both') || 'Clear the search and show all terms'));
+    }
+    if (info.hasQuery) {
+      return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
+        className: "text-sm font-bold text-slate-800"
+      }, t('glossary.empty_search_only', {
+        query: info.query
+      }) || 'No terms match "' + info.query + '".'), /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        onClick: function () {
+          if (typeof setGlossarySearchTerm === 'function') setGlossarySearchTerm('');
+        },
+        className: clearButton
+      }, t('glossary.empty_clear_search') || 'Clear the search'));
+    }
+    if (info.tierActive) {
+      return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
+        className: "text-sm font-bold text-slate-800"
+      }, t('glossary.empty_filter_only', {
+        filter: info.tierLabel
+      }) || 'No terms in this glossary are ' + info.tierLabel + '.'), /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        onClick: handleSetGlossaryFilterToAll,
+        className: clearButton
+      }, t('glossary.empty_show_all') || 'Show all terms'));
+    }
+    // Nothing is filtering and the list is still empty: a data problem, and
+    // there is no filter to offer to clear.
+    return /*#__PURE__*/React.createElement("span", {
+      className: "text-sm font-medium text-slate-700"
+    }, t('glossary.no_terms'));
+  }
   function toggleGlossaryToolPanel(panel) {
     setGlossaryToolsOpen(function (current) {
       return Object.assign({}, current, {
@@ -1802,13 +1934,16 @@ function GlossaryView(props) {
     }
     return item.term;
   })()), /*#__PURE__*/React.createElement("h3", {
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
     className: "text-xs font-bold mb-4 text-white/80 uppercase tracking-widest"
   }, flashcardFeedback === 'correct' ? t('flashcards.correct_msg') : flashcardFeedback === 'incorrect' ? t('flashcards.try_again') : t('flashcards.select_match')), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-3 w-full overflow-y-auto custom-scrollbar max-h-[65%] pr-1"
   }, flashcardOptions.map((opt, idx) => {
     const isSelected = quizSelectedOption === opt;
     const currentItem = generatedContent?.data[flashcardIndex];
-    const isCorrectAnswer = opt === currentItem.def;
+    const isCorrectAnswer = typeof flashcardCorrectAnswer === 'function' ? opt === flashcardCorrectAnswer(currentItem, flashcardMode, flashcardLang) : opt === currentItem.def;
     let btnClass = "bg-white/10 hover:bg-white/20 text-white border-2 border-white/20";
     let icon = null;
     if (quizSelectedOption) {
@@ -2440,7 +2575,7 @@ function GlossaryView(props) {
     const isTier3 = item.tier === 'Domain-Specific';
     return /*#__PURE__*/React.createElement("tr", {
       key: getGlossaryEntryKey(item, idx),
-      className: "hover:bg-slate-50 focus-within:bg-slate-50 group/row"
+      className: "group/row allo-vghov-row"
     }, isEditingGlossary && /*#__PURE__*/React.createElement("td", {
       className: "p-4 border-b border-slate-100 text-center align-top"
     }, /*#__PURE__*/React.createElement("input", {
@@ -3317,13 +3452,7 @@ function GlossaryView(props) {
     "aria-hidden": "true"
   }, "📖"), generatedContent?.data.length === 0 ? /*#__PURE__*/React.createElement("span", {
     className: "text-sm font-medium text-slate-700"
-  }, t('glossary.no_terms')) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
-    className: "text-sm font-bold text-slate-800"
-  }, "No terms match this search or vocabulary filter."), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    onClick: clearGlossaryFilters,
-    className: "min-h-11 rounded-lg bg-blue-700 px-4 py-2 text-sm font-bold text-white hover:bg-blue-800 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
-  }, "Clear filters"))))))))),
+  }, t('glossary.no_terms')) : renderGlossaryEmptyState()))))))),
   // ── Phonics popup (sibling) ──
   // Mirrors the simplified-view popup at view_simplified_module.js:784–865.
   // Renders only when the host has set phonicsData (via handlePhonicsClick),

@@ -27,6 +27,10 @@ const UNIVERSAL_SETTING_COVERAGE = {
   interests: ['simplified', 'glossary', 'outline', 'quiz', 'faq', 'brainstorm', 'sentence-frames', 'timeline', 'math', 'concept-sort', 'lesson-plan', 'adventure'],
   dok: ['simplified', 'glossary', 'outline', 'quiz', 'faq', 'brainstorm', 'sentence-frames', 'timeline', 'math', 'concept-sort', 'dbq', 'lesson-plan', 'adventure', 'note-taking', 'anchor-chart'],
   emoji: ['simplified', 'glossary', 'outline', 'image', 'quiz', 'faq', 'sentence-frames', 'timeline', 'math', 'concept-sort', 'adventure', 'note-taking', 'anchor-chart'],
+  // N6 (2026-08-16): every measured type, so a control can name what it does NOT
+  // reach and not only what it does. Same source as the lists above
+  // (docs/resource_setting_coverage.json, backend 'local'), same drift test.
+  allTypes: ['simplified', 'glossary', 'outline', 'image', 'quiz', 'analysis', 'faq', 'brainstorm', 'sentence-frames', 'timeline', 'math', 'gemini-bridge', 'concept-sort', 'dbq', 'lesson-plan', 'adventure', 'persona', 'note-taking', 'anchor-chart'],
 };
 
 const UNIVERSAL_GRADE_CHOICES = [
@@ -54,35 +58,97 @@ const SIDEBAR_PANEL_UI = Object.freeze({
 const TOOL_CATALOG_PURPOSE_FILTERS = [['essentials', 'Recommended'], ['access', 'Make accessible'], ['engage', 'Engage'], ['assess', 'Assess & deliver'], ['all', 'All tools']];
 
 // Controlled presentation: host retains catalog state, visibility, Guided Mode, focus, and routing.
+//
+// N4 (2026-08-16). Three changes, each with a reason.
+//
+//  1. RENAMED. The heading said "Create a resource" but the panel creates nothing:
+//     it narrows which of the ~20 tool cards below are visible, by purpose group or
+//     search. The card you then press is what creates. It is now "Find a tool", which
+//     is also what its own search label already said.
+//
+//  2. UNSTUCK. It was `sticky top-0 z-20`, so it rode the scroll and permanently spent
+//     the top ~64px of a narrow, tall column. It is a set-it-then-browse control, not
+//     one you adjust continuously, and while stuck it sits exactly where Guided Mode
+//     scrolls the pulsing tool card to (`block: 'center'` can land under a sticky
+//     header on a short viewport). It is now an ordinary block at the top of the list.
+//
+//  3. DISMISSIBLE, BUT ONLY WHEN INERT. Aaron's guardrail was that dismissal must never
+//     leave a hidden filter quietly narrowing what the teacher sees. So Hide is offered
+//     only when the filter is showing everything (group 'all', no search text). While a
+//     filter is active the same button reads "Show all tools" and clears it; press it
+//     again and it says Hide. Two presses, but no state where tools are missing and the
+//     reason is off screen. The host additionally renders a restore bar that names the
+//     active filter whenever the panel is hidden.
 function ToolCatalogControls(props) {
-  const { allEditorsExpanded, group, isExpanded, onCollapse, onGroupChange, onOpen, onQueryChange, onToggleAll, query, selectedLabel, shownCount, t } = props;
+  const { allEditorsExpanded, group, isExpanded, onCollapse, onGroupChange, onOpen, onQueryChange, onToggleAll, onHide, query, selectedLabel, shownCount, totalCount, t } = props;
   const translate = typeof t === 'function' ? t : () => '';
   const toggleAllLabel = allEditorsExpanded ? (translate('sidebar.collapse_all') || 'Collapse editors') : (translate('sidebar.expand_all') || 'Expand all editors');
   const toggleAllTitle = allEditorsExpanded ? translate('sidebar.collapse_tooltip') : translate('sidebar.expand_tooltip');
+  const filterActive = !!String(query || '').trim() || (group && group !== 'all');
+  const canHide = typeof onHide === 'function';
+  const clearFilter = () => { onQueryChange(''); onGroupChange('all'); };
   return (
-    <section data-testid="tool-catalog-controls" aria-labelledby="tool-catalog-title" className={`sticky top-0 z-20 rounded-2xl border border-slate-200 bg-white/95 shadow-sm backdrop-blur motion-reduce:backdrop-blur-none ${isExpanded ? 'p-3' : 'px-3 py-2'}`}>
+    <section id="tour-tool-finder" data-testid="tool-catalog-controls" aria-labelledby="tool-catalog-title" className={`rounded-2xl border border-slate-200 bg-white shadow-sm ${isExpanded ? 'p-3' : 'px-3 py-2'}`}>
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <h2 id="tool-catalog-title" className="text-sm font-black text-slate-900">Create a resource</h2>
+          <h2 id="tool-catalog-title" className="text-sm font-black text-slate-900">{translate('sidebar.tool_finder_title') || 'Find a tool'}</h2>
+          {/* "Every tool is listed below" must never appear while a filter is on. The
+              collapsed panel said exactly that, one line above a banner reporting
+              8 of 22 shown. Caught in a Chromium render, 2026-08-16. */}
           <p className="mt-0.5 truncate text-xs leading-relaxed text-slate-600" aria-live="polite">
-            {isExpanded ? 'Choose a purpose or find the tool you need.' : (selectedLabel ? <>Selected: <span className="font-bold text-indigo-700">{selectedLabel}</span></> : 'Browse the complete tool catalog.')}
+            {isExpanded
+              ? (translate('sidebar.tool_finder_hint') || 'Narrow the list below by purpose, or search it.')
+              : (selectedLabel
+                ? <>{translate('sidebar.tool_finder_selected') || 'Selected'}: <span className="font-bold text-indigo-700">{selectedLabel}</span></>
+                : (filterActive
+                  ? (translate('sidebar.tool_finder_open_hint') || 'Open this to change or clear the filter.')
+                  : (translate('sidebar.tool_finder_browse') || 'Every tool is listed below.')))}
           </p>
         </div>
-        <button type="button" aria-expanded={isExpanded} aria-controls="tool-catalog-discovery-controls" onClick={isExpanded ? onCollapse : onOpen} className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-800 transition-colors hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
-          {isExpanded ? 'Collapse' : (selectedLabel ? 'Change tool' : 'Browse tools')}
+        <button type="button" aria-expanded={isExpanded} aria-controls="tool-catalog-discovery-controls" onClick={isExpanded ? onCollapse : onOpen} className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-800 transition-colors motion-reduce:transition-none hover:bg-indigo-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2">
+          {isExpanded ? (translate('sidebar.tool_finder_collapse') || 'Collapse') : (selectedLabel ? (translate('sidebar.tool_finder_change') || 'Change tool') : (translate('sidebar.tool_finder_open') || 'Find a tool'))}
           <ChevronDown size={15} aria-hidden="true" className={isExpanded ? 'rotate-180' : ''} />
         </button>
       </div>
+      {/* Filter state is stated in the panel whether it is open or closed, so a
+          collapsed panel can never be the reason a tool "disappeared". */}
+      {/* One row, not three. The first Chromium render put the filter banner, the Hide
+          action and the "N shown" chip on three separate right-aligned lines, which is
+          precisely the busyness this pass is meant to remove. */}
+      {(filterActive || canHide) && (
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+          {filterActive ? (
+            <p className="min-w-0 flex-1 rounded-lg bg-amber-50 px-2 py-1.5 text-[11px] font-semibold leading-snug text-amber-900">
+              {(translate('sidebar.tool_finder_filtered') || 'A filter is on: showing {shown} of {total} tools.')
+                .replace('{shown}', String(shownCount)).replace('{total}', String(totalCount || shownCount))}
+            </p>
+          ) : <span aria-hidden="true" />}
+          {canHide && (
+            <button
+              type="button"
+              onClick={filterActive ? clearFilter : onHide}
+              title={filterActive
+                ? (translate('sidebar.tool_finder_hide_blocked') || 'Show every tool first, so hiding this panel cannot leave a filter running out of sight.')
+                : (translate('sidebar.tool_finder_hide_title') || 'Hide this panel. Every tool stays listed below.')}
+              className="min-h-10 shrink-0 rounded-lg px-2 text-xs font-bold text-slate-700 transition-colors motion-reduce:transition-none hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-indigo-500"
+            >
+              {filterActive ? (translate('sidebar.tool_finder_show_all') || 'Show all tools') : (translate('sidebar.tool_finder_hide') || 'Hide this panel')}
+            </button>
+          )}
+        </div>
+      )}
       <div id="tool-catalog-discovery-controls" hidden={!isExpanded}>
-        <div className="mt-3 flex justify-end"><span className="shrink-0 rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-600" aria-live="polite">{shownCount} shown</span></div>
-        <label htmlFor="tool-catalog-search" className="mt-2 block text-xs font-bold text-slate-700">Find a tool</label>
+        <div className="mt-3 flex items-baseline justify-between gap-2">
+          <label htmlFor="tool-catalog-search" className="text-xs font-bold text-slate-700">{translate('sidebar.tool_finder_search_label') || 'Search by name'}</label>
+          <span className="shrink-0 rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-600" aria-live="polite">{(translate('sidebar.tool_finder_shown') || '{n} shown').replace('{n}', String(shownCount))}</span>
+        </div>
         <div className="relative mt-1">
           <Search size={16} aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-          <input id="tool-catalog-search" type="search" value={query} onChange={(event) => onQueryChange(event.target.value)} placeholder="Search glossary, visuals, assessment..." className="min-h-11 w-full rounded-xl border border-slate-300 bg-white py-2 ps-9 pe-3 text-base text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 sm:text-sm" />
+          <input id="tool-catalog-search" type="search" value={query} onChange={(event) => onQueryChange(event.target.value)} placeholder={translate('sidebar.tool_finder_search_placeholder') || 'Search glossary, visuals, assessment...'} className="min-h-11 w-full rounded-xl border border-slate-300 bg-white py-2 ps-9 pe-3 text-base text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 sm:text-sm" />
         </div>
-        <div role="group" aria-label="Filter creation tools by purpose" className="mt-3 flex flex-wrap gap-2">
+        <div role="group" aria-label={translate('sidebar.tool_finder_group_aria') || 'Narrow the tool list by purpose'} className="mt-3 flex flex-wrap gap-2">
           {TOOL_CATALOG_PURPOSE_FILTERS.map(([id, label]) => (
-            <button key={id} type="button" aria-pressed={!query && group === id} onClick={() => onGroupChange(id)} className={`min-h-10 rounded-xl border px-3 py-2 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${!query && group === id ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-slate-300 bg-white text-slate-700 hover:border-indigo-300 hover:bg-indigo-50'}`}>{label}</button>
+            <button key={id} type="button" aria-pressed={!query && group === id} onClick={() => onGroupChange(id)} className={`min-h-10 rounded-xl border px-3 py-2 text-xs font-bold transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${!query && group === id ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-slate-300 bg-white text-slate-700 hover:border-indigo-300 hover:bg-indigo-50'}`}>{translate('sidebar.tool_finder_group_' + id) || label}</button>
           ))}
         </div>
         <div className="mt-2 flex justify-end">
@@ -138,6 +204,10 @@ function UniversalApplicability({ settingKey, t }) {
     const key = entry && entry.sidebarKey;
     return (key && t(key)) || id;
   };
+  // N6: naming the excluded types too. "Applies to 17 of 19" left the teacher to work
+  // out which two, and the specific confusion Aaron hit was believing a setting reached
+  // Analyze Source Material (it reaches none of them: analysis is in no coverage list).
+  const excluded = (UNIVERSAL_SETTING_COVERAGE.allTypes || []).filter((id) => !list.includes(id));
   return (
     <details className="mt-1">
       <summary className="text-[10px] text-slate-500 cursor-pointer select-none hover:text-indigo-600 transition-colors motion-reduce:transition-none list-none flex items-center gap-1">
@@ -145,6 +215,11 @@ function UniversalApplicability({ settingKey, t }) {
         {(t('universal.applies') || 'Applies to {n} of {m} resource types').replace('{n}', String(list.length)).replace('{m}', String(total))}
       </summary>
       <p className="text-[10px] text-slate-500 leading-snug mt-1 pl-3 border-l-2 border-slate-200">{list.map(label).join(', ')}</p>
+      {excluded.length > 0 && (
+        <p className="text-[10px] text-amber-700 leading-snug mt-1 pl-3 border-l-2 border-amber-200">
+          <span className="font-bold">{t('universal.not_used_by') || 'Not used by'}:</span> {excluded.map(label).join(', ')}
+        </p>
+      )}
     </details>
   );
 }
@@ -408,8 +483,30 @@ function UniversalSettingsPanel(props) {
     differentiationTypes, setDifferentiationTypes,
     differentiationCustomGrades, setDifferentiationCustomGrades,
     languageInput, setLanguageInput, addLanguage, removeLanguage, handleKeyDown,
-    setSourceTopic
+    setSourceTopic,
+    translationMode, setTranslationMode, currentUiLanguage,
+    resolveTranslationPolicy, isTranslationControlRelevant, translationTargetChoices
   } = props;
+  // ── Translations control ─────────────────────────────────────────────
+  // Reads the SAME resolver the generators read, passed down from the host.
+  // The panel deliberately owns no interpretation of the stored value: it
+  // renders whatever the resolver says the mode is, so a stale or unknown
+  // setting shows the teacher the state generation will actually use rather
+  // than a state only the panel believes in.
+  const translationChoices = typeof translationTargetChoices === 'function'
+    ? translationTargetChoices(leveledTextLanguage, currentUiLanguage, selectedLanguages)
+    : [];
+  const translationPolicy = typeof resolveTranslationPolicy === 'function'
+    ? resolveTranslationPolicy(translationMode, leveledTextLanguage, currentUiLanguage, translationChoices)
+    : { enabled: false, target: '', mode: 'auto' };
+  const translationAutoTarget = typeof resolveTranslationPolicy === 'function'
+    ? resolveTranslationPolicy('auto', leveledTextLanguage, currentUiLanguage, translationChoices).target
+    : '';
+  // Hidden for the English-in / English-out majority, which is the whole point:
+  // a teacher who never works in another language never sees this control.
+  const showTranslationControl = typeof isTranslationControlRelevant === 'function'
+    && typeof setTranslationMode === 'function'
+    && isTranslationControlRelevant(translationMode, leveledTextLanguage, currentUiLanguage, translationChoices);
   // Open state lives in the host: this panel sits inside the 'create' tab
   // subtree, so component-local state re-collapsed the card on every tab switch.
   const isOpen = !!isUniversalSettingsOpen;
@@ -518,12 +615,21 @@ function UniversalSettingsPanel(props) {
                   <div className="text-sm font-bold text-indigo-900 flex gap-2 items-center">
                     <Settings2 size={16} className="shrink-0"/> {t('universal.title') || 'Universal Settings'}
                   </div>
-                  <p className="text-[11px] text-indigo-700/80 mt-0.5 truncate">{isOpen ? (t('universal.subtitle') || 'Apply to every resource you generate') : summaryBits.join(' · ')}</p>
+                  <p className="text-[11px] text-indigo-700/80 mt-0.5 truncate">{isOpen ? (t('universal.subtitle') || 'Apply to most resources you generate') : summaryBits.join(' · ')}</p>
                 </div>
                 <ChevronDown size={16} className={`text-indigo-400 shrink-0 transition-transform motion-reduce:transition-none ${isOpen ? 'rotate-180' : ''}`}/>
               </button>
               {isOpen && (
                 <div className="animate-in space-y-3.5 border-t border-slate-200/80 bg-slate-50/60 p-3.5 motion-reduce:animate-none slide-in-from-top-2 duration-200">
+                    {/* N6 (2026-08-16): Aaron asked whether Analyze Source Material should move
+                        ABOVE this panel, since these settings do not govern it. Order is a weak
+                        signal and moving the card would not stop a teacher assuming grade level
+                        steered the analysis; a stated scope does. Analyze Source Material appears
+                        in none of the six measured coverage lists, so it is named here explicitly,
+                        and every control's chip now also lists what it does not reach. */}
+                    <p className="rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-2 text-[11px] leading-relaxed text-amber-900">
+                      {t('universal.scope_note') || 'These steer what AlloFlow writes for you. Analyze Source Material is not affected: it reads your text exactly as written and reports the level it actually finds. Each setting below lists the resources it reaches.'}
+                    </p>
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
                         <div>
                             <label className={SIDEBAR_PANEL_UI.label}>{t('wizard.grade_level')}</label>
@@ -603,6 +709,46 @@ function UniversalSettingsPanel(props) {
                                     {selectedLanguages.length === 0 && <span className="text-xs text-slate-600 italic">{t('glossary.no_languages')}</span>}
                                 </div>
                             </div>
+                            {/* One selector, two questions. "Include translations?"
+                                and "into which language?" are genuinely separate,
+                                but a second widget for the second question would
+                                sit there greyed out for everyone who never turns
+                                the first one off. Folding "None" into the same
+                                list answers both with one control, and the list
+                                is built from the teacher's own languages so
+                                nothing here treats English as the destination.
+                                It sits directly under Output language because it
+                                is meaningless without one. */}
+                            {showTranslationControl && (
+                            <div className="mt-2" data-help-key="universal_translations">
+                                <label className={SIDEBAR_PANEL_UI.label} htmlFor="universal-translations-select">
+                                    {t('universal.translations') || 'Translations'}
+                                </label>
+                                <select
+                                    id="universal-translations-select"
+                                    value={translationPolicy.mode}
+                                    onChange={(e) => setTranslationMode(e.target.value)}
+                                    className={SIDEBAR_PANEL_UI.control}
+                                >
+                                    <option value="auto">
+                                        {translationAutoTarget
+                                            ? (t('universal.translations_auto') || 'Automatic ({language})').replace('{language}', translationAutoTarget)
+                                            : (t('universal.translations_auto_plain') || 'Automatic')}
+                                    </option>
+                                    <option value="off">{t('universal.translations_none') || 'None'}</option>
+                                    {translationChoices.map(lang => (
+                                        <option key={lang} value={lang}>{lang}</option>
+                                    ))}
+                                </select>
+                                <p className="text-[10px] text-slate-500 leading-snug mt-1">
+                                    {translationPolicy.enabled
+                                        ? (t('universal.translations_on_hint') || 'Resources in {output} will also include a {target} version.')
+                                            .replace('{output}', leveledTextLanguage).replace('{target}', translationPolicy.target)
+                                        : (t('universal.translations_off_hint') || 'Resources will be in {output} only, with no second-language version.')
+                                            .replace('{output}', leveledTextLanguage)}
+                                </p>
+                            </div>
+                            )}
                         </div>
                         <div>
                             <label className={`${SIDEBAR_PANEL_UI.label} flex items-center gap-1`}>

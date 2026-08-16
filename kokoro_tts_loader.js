@@ -154,6 +154,38 @@
                 self.postMessage(Object.assign({ type: 'allo-model-cache', id }, payload), transfer || []);
             });
         }
+        // ── Cached-bytes integrity gate (added 2026-08-16) ───────────────────
+        // A cache HIT was trusted unconditionally. Two things can be sitting in
+        // durable storage that are not a model: an HTTP error page saved by an
+        // earlier build, and a short row left by a write that was interrupted
+        // mid-way. Either one is then handed to onnxruntime on EVERY later
+        // session, which fails identically forever, and nothing in the app can
+        // get out of that state. This repo has already shipped one truncated-
+        // model-in-durable-storage incident.
+        //
+        // Two cheap checks, both of which can only reject a bad blob:
+        //   - an .onnx model file is megabytes; anything under 1 MB is not one
+        //   - a model never begins with '<' or '{' (an HTML or JSON error body)
+        // A rejected hit falls through to the network, and the fresh bytes
+        // overwrite the bad row through the normal put path, so the cache
+        // self-heals without any new storage API.
+        // The size floor applies ONLY to the graph files. Kokoro's per-voice
+        // style vectors are legitimately small .bin files, so a blanket
+        // megabyte floor would refuse to cache them and re-download the voice
+        // pack every session.
+        const _MIN_MODEL_BYTES = 1048576;
+        const _GRAPH_FILE_RE = /\\.onnx(_data)?(\\?|$)/i;
+        function _looksLikeModel(url, buffer) {
+            try {
+                if (!buffer || buffer.byteLength < 16) return false;
+                if (_GRAPH_FILE_RE.test(url) && buffer.byteLength < _MIN_MODEL_BYTES) return false;
+                const head = new Uint8Array(buffer, 0, Math.min(8, buffer.byteLength));
+                // '<' = 0x3C (HTML), '{' = 0x7B (JSON error body)
+                if (head[0] === 0x3C || head[0] === 0x7B) return false;
+                return true;
+            } catch (_) { return false; }
+        }
+
         const _nativeFetch = self.fetch.bind(self);
         self.fetch = async function (input, init) {
             let url = '';
@@ -163,15 +195,29 @@
             try {
                 const hit = await _askMain({ op: 'get', url });
                 if (hit && hit.ok && hit.buffer) {
-                    return new Response(hit.buffer, { status: 200, headers: { 'content-type': hit.contentType || 'application/octet-stream' } });
+                    if (_looksLikeModel(url, hit.buffer)) {
+                        return new Response(hit.buffer, { status: 200, headers: { 'content-type': hit.contentType || 'application/octet-stream' } });
+                    }
+                    self.postMessage({
+                        type: 'progress',
+                        stage: 'Repairing the saved voice model',
+                        pct: 0.1
+                    });
+                    console.warn('[Kokoro TTS] Cached model file is truncated or is not a model (' +
+                        ((hit.buffer && hit.buffer.byteLength) || 0) + ' bytes) — re-downloading it.');
                 }
             } catch (_) {}
             const res = await _nativeFetch(input, init);
             try {
                 if (res && res.ok) {
                     const buf = await res.clone().arrayBuffer();
-                    // Transfer the copy; the Response the caller gets is untouched.
-                    _askMain({ op: 'put', url, buffer: buf, contentType: res.headers.get('content-type') || '' }, [buf]);
+                    // Never write back something that failed the same test we
+                    // just applied on read, or the bad row is simply replaced
+                    // with another bad row.
+                    if (_looksLikeModel(url, buf)) {
+                        // Transfer the copy; the Response the caller gets is untouched.
+                        _askMain({ op: 'put', url, buffer: buf, contentType: res.headers.get('content-type') || '' }, [buf]);
+                    }
                 }
             } catch (_) {}
             return res;

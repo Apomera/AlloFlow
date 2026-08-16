@@ -200,6 +200,12 @@ const highlightGlossaryTerms = (text, glossary, isCloze = false, isDarkBg = fals
                           targetWord={item.term}
                           acceptedAnswers={_translated ? [item.term, _translated] : [item.term]}
                           displayWord={_translated || item.term}
+                          // The exact text this blank replaced. `displayWord` is
+                          // inferred from the lesson language and is wrong for any
+                          // occurrence that does not match it — an English term
+                          // still sitting in a Spanish passage got replaced by the
+                          // Spanish one on solve. `part` is the ground truth.
+                          passageWord={part}
                           isSolved={clozeInstanceSet.has(uniqueId)}
                           onCorrect={(word) => {
                               if (!clozeInstanceSet.has(uniqueId)) {

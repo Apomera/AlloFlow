@@ -515,7 +515,7 @@ const handleBatchGenerateForRoster = async (resourceTypes = ['simplified'], deps
 };
 
 const handleGenerateLessonPlan = async (switchView = true, deps) => {
-  const { inputText, gradeLevel, isIndependentMode, isParentMode, currentUiLanguage, lessonCustomAdditions, history, alloBotRef, setIsProcessing, setGenerationStep, setGeneratedContent, setActiveView, setHistory, setError, addToast, t, callGemini, cleanJson, safeJsonParse, warnLog, getLessonContext, getAssetManifest, buildStudyGuidePrompt, buildParentGuidePrompt, buildLessonPlanPrompt, flyToElement } = deps;
+  const { inputText, gradeLevel, isIndependentMode, isParentMode, currentUiLanguage, leveledTextLanguage, lessonCustomAdditions, history, alloBotRef, setIsProcessing, setGenerationStep, setGeneratedContent, setActiveView, setHistory, setError, addToast, t, callGemini, cleanJson, safeJsonParse, warnLog, getLessonContext, getAssetManifest, buildStudyGuidePrompt, buildParentGuidePrompt, buildLessonPlanPrompt, flyToElement } = deps;
   try { if (window._DEBUG_CMAP_HANDLERS) console.log("[CmapHandlers] handleGenerateLessonPlan fired"); } catch(_) {}
         if (!inputText.trim()) return;
         setIsProcessing(true);
@@ -535,12 +535,21 @@ const handleGenerateLessonPlan = async (switchView = true, deps) => {
             const context = getLessonContext();
             const assetManifest = getAssetManifest(history);
             let prompt;
+            // 2026-08-16 (L4): these three passed currentUiLanguage — the app
+            // INTERFACE language — while the dispatcher's lesson-plan branch
+            // passed the Output language setting. Same builder, same prompt,
+            // two different languages depending on whether the teacher used the
+            // sidebar button or Full Pack. That is the mechanism behind the
+            // "lesson plan is inconsistent about honouring a non-English output
+            // language" report; it was never model flakiness. Both entry points
+            // now send leveledTextLanguage.
+            const planLanguage = leveledTextLanguage || currentUiLanguage || 'English';
             if (isIndependentMode) {
-                prompt = buildStudyGuidePrompt(context, currentUiLanguage);
+                prompt = buildStudyGuidePrompt(context, planLanguage);
             } else if (isParentMode) {
-                prompt = buildParentGuidePrompt(context, currentUiLanguage);
+                prompt = buildParentGuidePrompt(context, planLanguage);
             } else {
-                prompt = buildLessonPlanPrompt(context, assetManifest, currentUiLanguage, lessonCustomAdditions);
+                prompt = buildLessonPlanPrompt(context, assetManifest, planLanguage, lessonCustomAdditions);
             }
             const result = await callGemini(prompt, true);
             let content;

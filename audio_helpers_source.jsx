@@ -410,6 +410,17 @@ const handleDownloadAudio = async (rawText, filename, contentId, deps) => {
     } catch (err) {
         if (err?.name === 'AbortError') {
             addToast(t('common.audio_cancelled'), "info");
+        } else if (err?.code === 'BROWSER_TTS_REQUIRED' || err?.useBrowserTts === true) {
+            // The device voice is now a first-class narrator choice (V6), but it
+            // speaks through speechSynthesis, which produces no audio stream and
+            // therefore no file. Say that, rather than the generic failure — the
+            // user picked this voice deliberately and the fix is one dropdown away.
+            warnLog("Download Audio: device voice cannot produce a file");
+            addToast(
+                t('common.audio_device_voice_no_file')
+                || 'The device voice reads aloud but cannot be saved as a file. Pick a cloud or on-device voice in the narrator settings to download audio.',
+                "info"
+            );
         } else {
             warnLog("Download Audio Error:", err);
             addToast(t('common.audio_failed'), "error");

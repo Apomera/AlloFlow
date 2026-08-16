@@ -963,6 +963,15 @@ var createContentEngine = function(deps) {
                // first+final instructions, and the reading-level / tone /
                // structure guidance that used to live on the legacy single-call
                // path is merged in here so short text doesn't lose quality.
+               //
+               // C1 (2026-08-16): that merge only ever reached the N=1 branch. Any
+               // source longer than one chunk (chunkCapacity = 600 words, so most
+               // real passages) went down the N>1 branch, which carried NO reading
+               // level guidance, no complexity guard, no tone instruction, and told
+               // the model to "write detailed, rigorous paragraphs". A 5th grade
+               // request routinely landed around 7th, and worse with research on,
+               // because the research brief supplied adult vocabulary into a prompt
+               // with nothing pushing back. Both branches now carry the guidance.
                const isSingleSection = sections.length === 1;
                const toneSpecificInstruction = (effTone === 'Persuasive' || effTone === 'Persuasive / Opinion')
                    ? 'Write a compelling argumentative piece with clear claims, evidence, and a call to action.'
@@ -994,6 +1003,7 @@ var createContentEngine = function(deps) {
                    ${researchEvidenceJson}
                    ------------------------------------------------
                    IMPORTANT: This brief is for context. You MUST still use Google Search independently to verify and cite every fact you write.
+                   READING LEVEL OVERRIDE: the brief and the sources it came from are written for adults. Take the FACTS from them and re-express them at the reading level required below. Do not carry a term, a phrase, or a sentence shape over from the brief just because it appeared there. Research raises reading level when it is copied; it must not here.
                    ` : ''}
                    This is a single self-contained article — write an engaging opening AND a summary conclusion. Structure the body with short '## ' section headers exactly as the Structure instruction below specifies.
                    ${effStandards ? `STANDARD ALIGNMENT: This article supports "${effStandards}". Embed examples, vocabulary, and rhetorical structures that let a student demonstrate the skills/knowledge in the standard — don't just touch the topic. If the standard calls for a cognitive move (compare, cite evidence, analyze structure, evaluate, etc.), the prose should model that move explicitly so a student reading it sees the skill in action.` : ''}
@@ -1028,6 +1038,7 @@ ${outlineSnapshot}
                    ${researchEvidenceJson}
                    ------------------------------------------------
                    IMPORTANT: This brief is for context. You MUST still use Google Search independently to verify and cite every fact you write.
+                   READING LEVEL OVERRIDE: the brief and the sources it came from are written for adults. Take the FACTS from them and re-express them at the reading level required below. Do not carry a term, a phrase, or a sentence shape over from the brief just because it appeared there. Research raises reading level when it is copied; it must not here.
                    ` : ''}
                    ${i === 0 ? 'This is the FIRST section. Write an engaging opening that sets up the article.' : `
 --- PREVIOUSLY WRITTEN SECTIONS (READ CAREFULLY — DO NOT REPEAT) ---
@@ -1050,9 +1061,14 @@ You MUST:
                    3. Do not defer citations to later sections - cite facts as you introduce them.
                    4. Verify claims with web sources before including them.
                    ` : ''}
-                   5. Write detailed, rigorous paragraphs. Do NOT summarize.
+                   5. Write developed paragraphs at the reading level below. Do NOT summarize. "Detailed" means covering the ground thoroughly, never raising the vocabulary or sentence length.
                    6. Include a header "## ${sectionTitle}".
                    7. ${i === sections.length - 1 ? 'This IS the final section — end with a conclusion paragraph.' : 'Do NOT write a conclusion; more sections follow.'}
+                   ${toneSpecificInstruction}
+                   ${effVocabulary ? `Key Vocabulary to Include: ${effVocabulary}` : ''}
+                   ${effCustomInstructions ? `Custom Instructions: ${effCustomInstructions}` : ''}
+                   ${readingLevelGuidance}
+                   ${complexityGuard}
                    ${dialectInstruction}
                    ${sourceLanguageInstruction}
                    Return ONLY the section text. Do not wrap in markdown code blocks.

@@ -56,7 +56,7 @@ function EvaluationPortalQr(props) {
       <div className="flex min-h-44 min-w-44 items-center justify-center rounded-xl border-2 border-violet-200 bg-white p-3" aria-label="Educator Evaluation district portal QR code">
         {state.status === 'ready' && state.svg
           ? <div className="h-40 w-40 [&_svg]:h-full [&_svg]:w-full" dangerouslySetInnerHTML={{ __html: state.svg }} />
-          : <span className="px-3 text-center text-xs font-bold text-violet-800">{state.status === 'error' ? 'QR unavailable' : 'Preparing QR code?'}</span>}
+          : <span className="px-3 text-center text-xs font-bold text-violet-800">{state.status === 'error' ? 'QR unavailable' : 'Preparing QR code…'}</span>}
       </div>
       <div>
         <p className="text-xs font-black uppercase tracking-wider text-violet-700">Portal QR code</p>
@@ -74,6 +74,12 @@ function ProjectSettingsView(props) {
   var studentProjectSettings = props.studentProjectSettings || {};
   var setStudentProjectSettings = props.setStudentProjectSettings;
   var isTeacherMode = props.isTeacherMode;
+  // Family mode and independent mode both run with isTeacherMode true, so
+  // "is this a school user?" is isTeacherMode AND neither of these. Anything
+  // school-only in this modal has to test isSchoolRole, not isTeacherMode.
+  var isParentMode = props.isParentMode === true;
+  var isIndependentMode = props.isIndependentMode === true;
+  var isSchoolRole = isTeacherMode && !isParentMode && !isIndependentMode;
   var handleSetIsProjectSettingsOpenToFalse = props.handleSetIsProjectSettingsOpenToFalse;
   var onOpenPrincipalEvaluation = props.onOpenPrincipalEvaluation;
   var evaluationPortalUrl = props.evaluationPortalUrl || '';
@@ -283,21 +289,31 @@ function ProjectSettingsView(props) {
         </header>
 
         <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-5 py-5 sm:px-6">
-          {isTeacherMode && typeof onOpenPrincipalEvaluation === 'function' && (
+          {/* School role only. A parent running a lesson for their own child has
+              no use for a district personnel-evaluation portal, and offering
+              them a field for a district Apps Script URL is actively confusing. */}
+          {isSchoolRole && typeof onOpenPrincipalEvaluation === 'function' && (
             <section aria-labelledby="principal-evaluation-title" className="rounded-2xl border border-indigo-200 bg-gradient-to-r from-indigo-50 via-white to-violet-50 p-4 shadow-sm sm:p-5">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-xs font-black uppercase tracking-wider text-indigo-700">{isEvaluationPortalConnected ? 'District portal connected' : 'Local preview available'}</p>
+                  {/* Two genuinely different things behind one card, so the badge,
+                      the button and the prose all have to say which one you are
+                      about to get. Before this the not-connected state read
+                      "Local preview available", which does not tell a principal
+                      whether the tool is ready to use on real staff. */}
+                  <p className={`text-xs font-black uppercase tracking-wider ${isEvaluationPortalConnected ? 'text-indigo-700' : 'text-amber-700'}`}>{isEvaluationPortalConnected ? 'District portal connected' : 'Demonstration only, not connected'}</p>
                   <h4 id="principal-evaluation-title" className="mt-1 text-base font-black text-slate-900">Principal Evaluation</h4>
                   <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-600">
-                    {isEvaluationPortalConnected ? 'Open the Google-authenticated district portal for walkthroughs, formal observations, SPM/SLO workflow, feedback, and trends.' : 'Connect the district Apps Script portal below. Until then, this button opens the local demonstration workspace only.'}
+                    {isEvaluationPortalConnected
+                      ? 'Opens the Google-authenticated district portal for walkthroughs, formal observations, SPM and SLO workflow, feedback, and trends. Sign-in and server-side assignments decide what each person sees.'
+                      : 'No district portal is connected, so this opens a demonstration you can click through. Anything you type stays in this browser, is visible to anyone using this device, and is not a personnel record. Do not enter real staff information here.'}
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={onOpenPrincipalEvaluation}
-                  className="shrink-0 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-black text-white shadow-sm transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                >{isEvaluationPortalConnected ? 'Open district portal' : 'Open local preview'}</button>
+                  className={`shrink-0 rounded-xl px-4 py-2.5 text-sm font-black shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${isEvaluationPortalConnected ? 'bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500' : 'border border-amber-500 bg-white text-amber-800 hover:bg-amber-50 focus:ring-amber-500'}`}
+                >{isEvaluationPortalConnected ? 'Open district portal' : 'Open the demonstration'}</button>
               </div>
               {typeof onSaveEvaluationPortalUrl === 'function' && (
                 <>
@@ -325,6 +341,24 @@ function ProjectSettingsView(props) {
                   </p>
 
                   </form>
+                  {/* The setup steps used to live only in
+                      apps_script/educator_evaluation/README.md, a repo file no
+                      principal will ever open. The field above asked for a URL
+                      and never said where to get one. */}
+                  <details className="mt-4 rounded-xl border border-slate-200 bg-white/70 p-3">
+                    <summary className="cursor-pointer text-xs font-black text-slate-800">Where does this URL come from?</summary>
+                    <div className="mt-2 space-y-2 text-xs leading-relaxed text-slate-600">
+                      <p><strong>This is not a self-serve setup.</strong> The portal is a Google Apps Script web app that a district-controlled Workspace account deploys and owns. It holds personnel records, so your district has to review and approve it first.</p>
+                      <ol className="ml-4 list-decimal space-y-1">
+                        <li>Your district creates an Apps Script project from the AlloFlow Educator Evaluation package and reviews the source and its permissions.</li>
+                        <li>They deploy it as a Web app with <strong>Execute as: the district owner</strong> and <strong>Who has access: users in your domain</strong>. Never "Anyone".</li>
+                        <li>They run the one-time setup with your school's staff list, evaluator assignments, and roles.</li>
+                        <li>They give you the deployment URL ending in <code>/exec</code>. Paste it above.</li>
+                      </ol>
+                      <p>AlloFlow stores only that launcher address, on this device. It never holds the records. Access is decided by Google sign-in and the assignments your district configured, so sharing the link or the QR code does not give anyone access they do not already have.</p>
+                      <p>The full setup and compliance checklist ships with the package, at <code>apps_script/educator_evaluation/README.md</code>.</p>
+                    </div>
+                  </details>
                   <EvaluationPortalQr url={isEvaluationPortalConnected ? evaluationPortalUrl : ''} />
                 </>
               )}
@@ -369,7 +403,7 @@ function ProjectSettingsView(props) {
                 {/* Process Provenance opt-in. Without this the ledger is never
                     created at all — the student-side collection gate reads it
                     off the assignment packet. */}
-                {renderFeatureToggle('proj-work-story', 'workStoryEnabled', tx('project_settings.work_story', 'Include a Work Story with student submissions'), tx('project_settings.work_story_desc', 'Students see a plain-language record of how their work came together and choose whether to send it. You see time, revision pattern and which AlloFlow supports were used — never a score, and never what they typed.'), false)}
+                {renderFeatureToggle('proj-work-story', 'workStoryEnabled', tx('project_settings.work_story', 'Include a Work Story with student submissions'), tx('project_settings.work_story_desc', 'Students see a plain-language record of how their work came together and choose whether to send it. You see time, revision pattern and which AlloFlow supports were used, never a score, and never what they typed.'), false)}
               </div>
               <div className='sm:col-span-2'>
                 {renderFeatureToggle(
@@ -456,6 +490,12 @@ function ProjectSettingsView(props) {
               <fieldset>
                 <legend className="text-xs font-black uppercase tracking-wider text-slate-600">{t('project_settings.permissions_header')}</legend>
                 <p className="mt-1 text-xs text-slate-600">{tx('project_settings.permissions_desc', 'Control which Adventure setup choices students may change.')}</p>
+                {/* Governs the whole feature, so it sits above the per-choice
+                    permissions. Off hides the Adventure panel from students
+                    entirely, for lessons that do not have an adventure. */}
+                <div className="mt-3">
+                  {renderFeatureToggle('proj-adventure-enabled', 'adventureEnabled', tx('project_settings.enable_adventure', 'Include Adventure in this assignment'), tx('project_settings.enable_adventure_desc', 'Off hides the Adventure panel from students. Use this when the lesson has no adventure.'), true)}
+                </div>
                 <div className="mt-3 grid gap-2 sm:grid-cols-2">
                   {renderPermissionToggle('proj-perm-difficulty', 'allowDifficultySwitch', t('project_settings.perm_difficulty'), tx('project_settings.perm_difficulty_desc', 'Change the challenge level.'), true)}
                   {renderPermissionToggle('proj-perm-mode', 'allowModeSwitch', t('project_settings.perm_mode'), tx('project_settings.perm_mode_desc', 'Choose how responses are entered.'), false)}

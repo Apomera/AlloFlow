@@ -695,8 +695,8 @@
 
   function nodeShapeElement(h, node, position, selected) {
     var common = {
-      fill: selected ? 'var(--accent, #dbeafe)' : 'var(--card, #ffffff)',
-      stroke: selected ? 'var(--primary, #2563eb)' : 'var(--border, #64748b)',
+      fill: selected ? '#dbeafe' : '#ffffff',
+      stroke: selected ? '#2563eb' : '#64748b',
       strokeWidth: selected ? 4 : 2,
       vectorEffect: 'non-scaling-stroke'
     };
@@ -966,11 +966,11 @@
       width: '100%',
       role: 'img',
       'aria-labelledby': ids.svgTitle + ' ' + ids.svgDescription,
-      style: { display: 'block', width: '100%', minWidth: layout.width, height: 'auto', minHeight: 260, maxHeight: 720, background: 'var(--background, #f8fafc)', border: '1px solid var(--border, #cbd5e1)', borderRadius: 8 }
+      style: { display: 'block', width: '100%', minWidth: layout.width, height: 'auto', minHeight: 260, maxHeight: 720, background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: 8 }
     },
     h('defs', null,
       h('marker', { id: markerId, viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse' },
-        h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: 'var(--muted-foreground, #475569)' })
+        h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#475569' })
       )
     ),
     h('title', { id: ids.svgTitle }, tr('learning_web_explorer.diagram.title', 'Learning Web relationship diagram')),
@@ -983,14 +983,14 @@
       return h('g', { key: edge.id, 'data-edge-id': edge.id, 'data-selected': active ? 'true' : 'false' },
         h('line', {
           x1: from.x, y1: from.y, x2: to.x, y2: to.y,
-          stroke: active ? 'var(--primary, #2563eb)' : 'var(--muted-foreground, #64748b)',
+          stroke: active ? '#2563eb' : '#64748b',
           strokeWidth: active ? 4 : 1.5,
           strokeDasharray: /evidence|align|assess/i.test(edge.type) ? '7 4' : undefined,
           markerEnd: edge.direction === 'symmetric' ? undefined : 'url(#' + markerId + ')',
           vectorEffect: 'non-scaling-stroke'
         }),
-        h('rect', { x: mx - 38, y: my - 10, width: 76, height: 18, rx: 3, fill: 'var(--background, #f8fafc)', opacity: 0.9 }),
-        h('text', { x: mx, y: my + 3, textAnchor: 'middle', fill: 'var(--foreground, #0f172a)', fontSize: 11 }, shortLabel(humanize(edge.type)))
+        h('rect', { x: mx - 38, y: my - 10, width: 76, height: 18, rx: 3, fill: '#f8fafc', opacity: 0.9 }),
+        h('text', { x: mx, y: my + 3, textAnchor: 'middle', fill: '#0f172a', fontSize: 11 }, shortLabel(humanize(edge.type)))
       );
     }),
     visualGraph.nodes.map(function (node) {
@@ -1000,9 +1000,9 @@
       var current = isCurrentResourceNode(node);
       return h('g', { key: node.id, 'data-node-id': node.id, 'data-node-type': node.type, 'data-node-shape': position.shape, 'data-selected': active ? 'true' : 'false', 'data-current-resource': current ? 'true' : 'false' },
         nodeShapeElement(h, node, position, active),
-        h('text', { x: position.x, y: position.y - 2, textAnchor: 'middle', fill: 'var(--foreground, #0f172a)', fontSize: 12, fontWeight: 500 }, shortLabel(node.label)),
-        h('text', { x: position.x, y: position.y + 15, textAnchor: 'middle', fill: 'var(--muted-foreground, #475569)', fontSize: 11 }, shortLabel(humanize(node.type))),
-        current ? h('text', { x: position.x, y: position.y + 47, textAnchor: 'middle', fill: 'var(--foreground, #0f172a)', fontSize: 11, fontWeight: 500 }, tr('learning_web_explorer.current_resource', 'Current resource')) : null
+        h('text', { x: position.x, y: position.y - 2, textAnchor: 'middle', fill: '#0f172a', fontSize: 12, fontWeight: 500 }, shortLabel(node.label)),
+        h('text', { x: position.x, y: position.y + 15, textAnchor: 'middle', fill: '#475569', fontSize: 11 }, shortLabel(humanize(node.type))),
+        current ? h('text', { x: position.x, y: position.y + 47, textAnchor: 'middle', fill: '#0f172a', fontSize: 11, fontWeight: 500 }, tr('learning_web_explorer.current_resource', 'Current resource')) : null
       );
     }));
 
@@ -1068,6 +1068,23 @@
         ? tr('learning_web_explorer.empty.filtered', 'No Learning Web items match these filters.')
         : tr('learning_web_explorer.empty.default', 'No Learning Web connections are available yet.'));
 
+    // Colours here are literal on purpose. Do not reintroduce CSS custom properties.
+    //
+    // This module was the only one in AlloFlow styled against shadcn design tokens
+    // (background / card / foreground / primary / border / accent / muted-foreground).
+    // AlloFlow defines none of those names; its own custom properties are the
+    // allo-stem family. Standalone that was harmless, since every reference carried an
+    // inline fallback. Embedded in Gemini Canvas it was not: the shell page defines
+    // those same names, so the modal inherited the SHELL's palette instead of its own.
+    // The background resolved transparent, the overlay painted no surface, and the
+    // explorer's contents appeared on top of the still-visible page with no modal
+    // behind them.
+    //
+    // The geometry was never the problem. position, inset and z-index were correct all
+    // along and are pinned in tests/learning_web_explorer.test.js. Only the surface
+    // failed to paint. A component that can be embedded must not inherit its own
+    // surface colours from whatever page it happens to land in.
+    // Regression gate: tests/learning_web_explorer_tokens.test.js
     return h('section', {
       ref: rootRef,
       className: 'learning-web-explorer',
@@ -1080,8 +1097,8 @@
       style: isModal ? {
         position: 'fixed', inset: 0, width: '100%', height: '100%', maxWidth: '100vw', maxHeight: '100vh', overflowY: 'auto',
         zIndex: 2147483000, boxSizing: 'border-box', padding: '24px',
-        background: 'var(--background, #f8fafc)', color: 'var(--foreground, #0f172a)'
-      } : { color: 'var(--foreground, #0f172a)' }
+        background: '#f8fafc', color: '#0f172a'
+      } : { color: '#0f172a' }
     },
       h('header', { style: { display: 'flex', alignItems: 'start', justifyContent: 'space-between', gap: 12 } },
         h('div', null,

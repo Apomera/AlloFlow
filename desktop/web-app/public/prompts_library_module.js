@@ -97,8 +97,22 @@ const createPromptsLibrary = ({ STEM_TOOL_REGISTRY } = {}) => {
     }));
   };
 
+  // Translation policy, resolved by the HOST and passed in. These three
+  // builders are reached from two different entry points (the sidebar button
+  // via concept_map_handlers, and Full Pack via the dispatcher) which used to
+  // disagree about which language variable to send. Taking the resolved policy
+  // as a parameter means neither entry point can re-derive it differently.
+  // A missing policy reproduces the historical behaviour: gloss into English
+  // whenever the content is not English.
+  const _xlateFor = (policy, language) => {
+    if (policy && typeof policy === 'object') return policy;
+    const lang = String(language == null ? '' : language).trim();
+    const on = !!lang && lang !== 'English' && lang !== 'All Selected Languages';
+    return { enabled: on, target: on ? 'English' : '', mode: 'auto' };
+  };
 
-  const buildLessonPlanPrompt = ({ context, assetManifest, language, customAdditions, gradeLevel, sourceTopic }) => {
+  const buildLessonPlanPrompt = ({ context, assetManifest, language, customAdditions, gradeLevel, sourceTopic, translationPolicy }) => {
+    const _x = _xlateFor(translationPolicy, language);
     const hasCustom = customAdditions && customAdditions.trim().length > 0;
     const extensionInstruction = hasCustom
       ? `USER CUSTOM REQUESTS: "${customAdditions}"\nTASK: Generate 3 specific, actionable lesson extensions/activities STRICTLY based on these requests. Do not generate unrelated generic ideas. If the request is singular, break it down into 3 distinct variations or steps.`
@@ -145,19 +159,24 @@ const createPromptsLibrary = ({ STEM_TOOL_REGISTRY } = {}) => {
            If no tools are relevant, omit the field entirely.
         INSTRUCTION:
         For every section of the lesson plan (except extensions), check the CONTEXT provided. If a generated resource exists for that section, specifically name it and explain how to use it.
-        ${language !== 'English' ? `
+        ${_x.enabled ? `
         BILINGUAL FORMATTING RULES (CRITICAL):
+        The delimiter text "--- ENGLISH TRANSLATION ---" is a FIXED MACHINE MARKER. Use it verbatim
+        even though the translation below it is in ${_x.target}. Do not rename or translate the marker.
         1. For "essentialQuestion", "hook", "directInstruction", "guidedPractice", "independentPractice", "closure":
            - Write the content in ${language} FIRST.
            - Add a new line with exactly: "--- ENGLISH TRANSLATION ---"
-           - Write the English translation below it.
+           - Write the ${_x.target} translation below it.
         2. For "objectives" AND "materialsNeeded" (Arrays):
            - Each item in the array must be a single string containing BOTH languages separated by the delimiter.
-           - Format: "${language} Text... --- ENGLISH TRANSLATION --- English Text..."
+           - Format: "${language} Text... --- ENGLISH TRANSLATION --- ${_x.target} Text..."
         3. For "extensions" (Array of Objects):
-           - "title": "${language} Title --- ENGLISH TRANSLATION --- English Title"
-           - "description": "${language} Description... --- ENGLISH TRANSLATION --- English Description..."
-        ` : ''}
+           - "title": "${language} Title --- ENGLISH TRANSLATION --- ${_x.target} Title"
+           - "description": "${language} Description... --- ENGLISH TRANSLATION --- ${_x.target} Description..."
+        ` : `
+        SINGLE LANGUAGE OUTPUT: write every field in ${language} only. Do NOT add a translation
+        into any other language, and do NOT emit the "--- ENGLISH TRANSLATION ---" delimiter.
+        `}
         NEGATIVE CONSTRAINTS:
         - Do NOT include "Note:" or meta-commentary about the user's request (e.g. "Since the user requested None...").
         - Do NOT summarize what you are doing. Just provide the content.
@@ -185,7 +204,8 @@ const createPromptsLibrary = ({ STEM_TOOL_REGISTRY } = {}) => {
       `;
   };
 
-  const buildParentGuidePrompt = ({ context, language, gradeLevel, sourceTopic, customAdditions }) => {
+  const buildParentGuidePrompt = ({ context, language, gradeLevel, sourceTopic, customAdditions, translationPolicy }) => {
+    const _x = _xlateFor(translationPolicy, language);
     // customAdditions added 2026-07-28: the Lesson Plan panel's instructions box
     // is one field, but only the default mode's builder read it, so the same box
     // silently did nothing once a teacher switched to Family or Study Guide.
@@ -201,15 +221,15 @@ const createPromptsLibrary = ({ STEM_TOOL_REGISTRY } = {}) => {
         INSTRUCTIONS:
         Translate complex educational jargon into simple, fun, everyday language for a parent.
         The goal is to foster connection and curiosity, not just drill facts.
-        ${language !== 'English' ? `
+        ${_x.enabled ? `
         BILINGUAL FORMATTING RULES (CRITICAL):
         1. For "essentialQuestion", "hook", "directInstruction", "guidedPractice", "independentPractice", "closure":
            - Write the content in ${language} FIRST.
            - Add a new line with exactly: "--- ENGLISH TRANSLATION ---"
-           - Write the English translation below it.
+           - Write the ${_x.target} translation below it.
         2. For "objectives" (Array):
            - Each item in the array must be a single string containing BOTH languages separated by the delimiter.
-           - Format: "${language} Objective text... --- ENGLISH TRANSLATION --- English Objective text..."
+           - Format: "${language} Objective text... --- ENGLISH TRANSLATION --- ${_x.target} Objective text..."
         ` : ''}
         MAPPING REQUIREMENTS (You MUST use these exact JSON keys to fit the app structure, but write content for parents):
         1. "objectives": List 2-3 simple bullet points on "What your child is learning today".
@@ -233,7 +253,8 @@ const createPromptsLibrary = ({ STEM_TOOL_REGISTRY } = {}) => {
       `;
   };
 
-  const buildStudyGuidePrompt = ({ context, language, gradeLevel, sourceTopic, customAdditions }) => {
+  const buildStudyGuidePrompt = ({ context, language, gradeLevel, sourceTopic, customAdditions, translationPolicy }) => {
+    const _x = _xlateFor(translationPolicy, language);
     // See buildParentGuidePrompt — same one-field/three-builders gap.
     const hasCustom = customAdditions && customAdditions.trim().length > 0;
     return `
@@ -247,15 +268,15 @@ const createPromptsLibrary = ({ STEM_TOOL_REGISTRY } = {}) => {
         - Write directly to the student using "You".
         - Keep the tone encouraging, clear, and structured.
         - Focus on what they need to know for a test or project.
-        ${language !== 'English' ? `
+        ${_x.enabled ? `
         BILINGUAL FORMATTING RULES (CRITICAL):
         1. For "essentialQuestion", "hook", "directInstruction", "guidedPractice", "independentPractice", "closure":
            - Write the content in ${language} FIRST.
            - Add a new line with exactly: "--- ENGLISH TRANSLATION ---"
-           - Write the English translation below it.
+           - Write the ${_x.target} translation below it.
         2. For "objectives" (Array):
            - Each item in the array must be a single string containing BOTH languages separated by the delimiter.
-           - Format: "${language} Objective text... --- ENGLISH TRANSLATION --- English Objective text..."
+           - Format: "${language} Objective text... --- ENGLISH TRANSLATION --- ${_x.target} Objective text..."
         ` : ''}
         MAPPING REQUIREMENTS (You MUST use these exact JSON keys to fit the app structure, but the content should match the new section titles):
         1. "objectives": List 2-3 bullet points on "What you will master today".

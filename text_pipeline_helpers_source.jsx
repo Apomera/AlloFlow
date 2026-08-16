@@ -6,7 +6,125 @@
 //
 // Note: generateBibliographyString depends on filterEducationalSources (within-module).
 
-const generateBilingualText = async (basePrompt, targetLang, callGeminiFn) => {
+// ── Translation policy (Lane 4, 2026-08-16) ──────────────────────────────
+// ONE resolver for "does this generation carry a translation, and into what".
+// Every prompt builder in the app must go through this rather than testing a
+// language string itself, because the app previously answered that question
+// twenty-six different ways: some paths tested effectiveLanguage, one tested
+// currentUiLanguage, and every one of them hardcoded the literal 'English' as
+// the destination.
+//
+// Deliberately NOT a boolean, and deliberately NOT read by string comparison
+// at the call sites. A prior incident in this codebase came from testing a
+// multi-state setting with `!== 'off'`: an unrecognised value then read as
+// "on" and locked users out. So the contract here is:
+//   - callers receive a RESOLVED OBJECT and read .enabled / .target,
+//   - the only value that disables translations is the exact string 'off',
+//   - every other value, including undefined, null, '' and anything
+//     unrecognised, resolves through the documented 'auto' rule.
+// 'auto' is the safe landing spot because "unset" is the majority state: a
+// teacher who has never opened this control must get the behaviour the app
+// always had.
+const TRANSLATION_MODE_AUTO = 'auto';
+const TRANSLATION_MODE_OFF = 'off';
+
+const _normLangName = (value) => String(value == null ? '' : value).trim();
+
+// Language names arrive from three places (a baked option list, a free-text
+// "add a language" field capped at 40 chars, and saved profiles), so compare
+// case- and accent-insensitively rather than by identity. 'Spanish' typed into
+// the chip field must not read as a different language from 'spanish'.
+const isSameLanguage = (a, b) => {
+  const fold = (s) => _normLangName(s)
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ');
+  const x = fold(a);
+  const y = fold(b);
+  return x !== '' && x === y;
+};
+
+// mode: the stored setting. outputLanguage: the language the CONTENT is in
+// (leveledTextLanguage / effectiveLanguage). uiLanguage: the language the
+// teacher reads the app in, used as the 'auto' destination so the default is
+// "gloss into the language you read" rather than "gloss into English".
+// allowedTargets: the destinations the picker currently offers. Supplying it
+// makes the read EXHAUSTIVE — a stored language that is no longer on offer
+// (the teacher deleted it from the shared language list, or it became the
+// output language) falls back to auto instead of being sent to the model as a
+// language nobody chose. Callers that genuinely do not have the list may omit
+// it; the mode is then trusted as a language name.
+const resolveTranslationPolicy = (mode, outputLanguage, uiLanguage, allowedTargets) => {
+  const output = _normLangName(outputLanguage);
+  const ui = _normLangName(uiLanguage) || 'English';
+  const off = (resolvedMode) => ({ enabled: false, target: '', mode: resolvedMode });
+  // Anything that is not a string is not a setting this app ever wrote. Reject
+  // by TYPE before any string coercion, so a stray number or object cannot
+  // become a language named "42" or "[object Object]".
+  let raw = typeof mode === 'string' ? mode.trim() : '';
+  const lowered = raw.toLowerCase();
+  if (lowered === TRANSLATION_MODE_OFF) return off(TRANSLATION_MODE_OFF);
+  let isAuto = raw === '' || lowered === TRANSLATION_MODE_AUTO;
+  // An explicit language that is not among the offered destinations is stale,
+  // not a preference. Auto is the safe landing spot: it is the behaviour a
+  // teacher who never touched this control gets.
+  if (!isAuto && Array.isArray(allowedTargets)) {
+    // Match loosely but return the CANONICAL spelling from the offered list.
+    // A stored 'spanish' has to come back as the 'Spanish' the picker renders,
+    // or the select finds no matching option and draws itself blank — the
+    // exact failure the DoK "Mixed" option hit in this same panel.
+    const canonical = allowedTargets.find((candidate) => isSameLanguage(candidate, raw));
+    if (canonical) raw = _normLangName(canonical);
+    else isAuto = true;
+  }
+  const resolvedMode = isAuto ? TRANSLATION_MODE_AUTO : raw;
+  const target = isAuto ? ui : raw;
+  // No output language resolved yet (or the multi-language fan-out placeholder,
+  // which re-enters per language with a concrete langOverride) — nothing to
+  // translate FROM, so emit nothing rather than guessing.
+  if (!output || output === 'All Selected Languages') return off(resolvedMode);
+  // A translation into the language the content is already in is not a
+  // translation. This is the case that hides the control for the large
+  // majority of users: English UI + English output.
+  if (isSameLanguage(output, target)) return off(resolvedMode);
+  if (!target) return off(resolvedMode);
+  return { enabled: true, target: target, mode: resolvedMode };
+};
+
+// The control is worth showing only when a translation is actually possible,
+// which is Aaron's "it would probably only want to come up when you are doing
+// other languages". Second clause: a teacher who has already chosen 'off' or a
+// specific language must keep seeing the control, or they cannot undo it.
+const isTranslationControlRelevant = (mode, outputLanguage, uiLanguage, allowedTargets) => {
+  // Read through the resolver, never by comparing the raw string here — a
+  // second, looser copy of the mode logic is exactly how a setting starts
+  // meaning one thing to the writer and another to the reader.
+  const resolved = resolveTranslationPolicy(mode, outputLanguage, uiLanguage, allowedTargets);
+  if (resolved.mode !== TRANSLATION_MODE_AUTO) return true;
+  return resolved.enabled;
+};
+
+// The candidate destinations offered by the picker: the UI language, English,
+// and whatever the teacher added to the shared language list, minus the
+// language the content is already in. English appears as one candidate among
+// several, never as a privileged default.
+const translationTargetChoices = (outputLanguage, uiLanguage, selectedLanguages) => {
+  const out = [];
+  const push = (value) => {
+    const v = _normLangName(value);
+    if (!v || v === 'All Selected Languages') return;
+    if (isSameLanguage(v, outputLanguage)) return;
+    if (out.some((existing) => isSameLanguage(existing, v))) return;
+    out.push(v);
+  };
+  push(uiLanguage);
+  push('English');
+  (Array.isArray(selectedLanguages) ? selectedLanguages : []).forEach(push);
+  return out;
+};
+
+const generateBilingualText = async (basePrompt, targetLang, callGeminiFn, translationPolicy) => {
     const stripFences = (s) => String(s || "")
         .replace(/^```[a-zA-Z]*\n/i, '')
         .replace(/^```\s*/, '')
@@ -23,28 +141,48 @@ URL PRESERVATION (CRITICAL — applies to every citation link [⁽N⁾](url)):
 - Do NOT truncate URLs. Every citation link must have its closing ")" on the same line as its opening "(".
 - The opening superscript "⁽" and closing "⁾" on the citation number must both be preserved.
 `.trim();
+    // Callers that predate the translation setting pass no policy; resolving
+    // undefined through the resolver reproduces the historical rule (translate
+    // into English whenever the content is not English) rather than silently
+    // dropping the second block.
+    const policy = (translationPolicy && typeof translationPolicy === 'object')
+        ? translationPolicy
+        : resolveTranslationPolicy(TRANSLATION_MODE_AUTO, targetLang, 'English');
     if (!targetLang || targetLang === 'English') {
         const raw = await callGeminiFn(basePrompt + '\n\n' + urlPreservationRules);
         return stripFences(raw);
     }
-    const targetPrompt = `${basePrompt}\n\n${urlPreservationRules}\n\nCRITICAL: Return ONLY the ${targetLang} text. Do NOT provide an English translation yet.`;
+    const targetPrompt = `${basePrompt}\n\n${urlPreservationRules}\n\nCRITICAL: Return ONLY the ${targetLang} text.${policy.enabled ? ` Do NOT provide a ${policy.target} translation yet.` : ''}`;
     const targetResult = stripFences(await callGeminiFn(targetPrompt));
+    // Translations off (or nothing sensible to translate into): one call, one
+    // block, no delimiter. Every downstream consumer already handles a string
+    // without the delimiter — that is the English-output case they see today.
+    if (!policy.enabled) return targetResult;
     // Use triple-pipe fences instead of "..." wrapping so trailing ")" on the last citation
     // doesn't butt up against a closing quote (which Gemini sometimes eats).
     const translationPrompt = `
-Translate the ${targetLang} text between the fences into English.
+Translate the ${targetLang} text between the fences into ${policy.target}.
 Maintain the formatting, tone, emojis, and citation markers exactly.
 
 ${urlPreservationRules}
 
-Return ONLY the English translation — no preamble, no fences in your output.
+Return ONLY the ${policy.target} translation — no preamble, no fences in your output.
 
 |||BEGIN ${targetLang.toUpperCase()}|||
 ${targetResult}
 |||END ${targetLang.toUpperCase()}|||
     `;
-    const englishResult = stripFences(await callGeminiFn(translationPrompt));
-    return `${targetResult}\n\n--- ENGLISH TRANSLATION ---\n\n${englishResult}`;
+    const translatedResult = stripFences(await callGeminiFn(translationPrompt));
+    // The delimiter stays the literal '--- ENGLISH TRANSLATION ---' whatever the
+    // destination language is. It is a MACHINE TOKEN, not user-facing copy: it
+    // is parsed by extractSourceTextForProcessing, BilingualFieldRenderer,
+    // ENGLISH_TRANSLATION_DELIMITER_RE in AlloFlowANTI, the cloze repair path in
+    // phase_k_helpers, and content_engine's edit pipeline. Renaming it per
+    // language would silently break every one of those parsers, which is a far
+    // worse failure than an English-named token nobody reads. The visible LABEL
+    // is localized separately (output.translation_block, with the language
+    // interpolated), so what the teacher SEES is language-correct.
+    return `${targetResult}\n\n--- ENGLISH TRANSLATION ---\n\n${translatedResult}`;
 };
 
 const extractSourceTextForProcessing = (text, preferEnglish = true) => {
@@ -1279,6 +1417,12 @@ const parseTaggedContent = (text) => {
 // Factory: takes no parameters (all helpers are pure). Returns the registry.
 const createTextPipelineHelpers = () => ({
   generateBilingualText,
+  resolveTranslationPolicy,
+  isTranslationControlRelevant,
+  translationTargetChoices,
+  isSameLanguage,
+  TRANSLATION_MODE_AUTO,
+  TRANSLATION_MODE_OFF,
   extractSourceTextForProcessing,
   scrambleWord,
   toSuperscript,

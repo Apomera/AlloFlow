@@ -112,7 +112,7 @@
     }
   }) : /*#__PURE__*/React.createElement("span", {
     className: "px-3 text-center text-xs font-bold text-violet-800"
-  }, state.status === 'error' ? 'QR unavailable' : 'Preparing QR code?')), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+  }, state.status === 'error' ? 'QR unavailable' : 'Preparing QR code…')), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-black uppercase tracking-wider text-violet-700"
   }, "Portal QR code"), /*#__PURE__*/React.createElement("h5", {
     className: "mt-1 text-sm font-black text-slate-900"
@@ -131,6 +131,12 @@ function ProjectSettingsView(props) {
   var studentProjectSettings = props.studentProjectSettings || {};
   var setStudentProjectSettings = props.setStudentProjectSettings;
   var isTeacherMode = props.isTeacherMode;
+  // Family mode and independent mode both run with isTeacherMode true, so
+  // "is this a school user?" is isTeacherMode AND neither of these. Anything
+  // school-only in this modal has to test isSchoolRole, not isTeacherMode.
+  var isParentMode = props.isParentMode === true;
+  var isIndependentMode = props.isIndependentMode === true;
+  var isSchoolRole = isTeacherMode && !isParentMode && !isIndependentMode;
   var handleSetIsProjectSettingsOpenToFalse = props.handleSetIsProjectSettingsOpenToFalse;
   var onOpenPrincipalEvaluation = props.onOpenPrincipalEvaluation;
   var evaluationPortalUrl = props.evaluationPortalUrl || '';
@@ -339,23 +345,23 @@ function ProjectSettingsView(props) {
     size: 20
   }))), /*#__PURE__*/React.createElement("div", {
     className: "min-h-0 flex-1 space-y-6 overflow-y-auto px-5 py-5 sm:px-6"
-  }, isTeacherMode && typeof onOpenPrincipalEvaluation === 'function' && /*#__PURE__*/React.createElement("section", {
+  }, isSchoolRole && typeof onOpenPrincipalEvaluation === 'function' && /*#__PURE__*/React.createElement("section", {
     "aria-labelledby": "principal-evaluation-title",
     className: "rounded-2xl border border-indigo-200 bg-gradient-to-r from-indigo-50 via-white to-violet-50 p-4 shadow-sm sm:p-5"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
-    className: "text-xs font-black uppercase tracking-wider text-indigo-700"
-  }, isEvaluationPortalConnected ? 'District portal connected' : 'Local preview available'), /*#__PURE__*/React.createElement("h4", {
+    className: `text-xs font-black uppercase tracking-wider ${isEvaluationPortalConnected ? 'text-indigo-700' : 'text-amber-700'}`
+  }, isEvaluationPortalConnected ? 'District portal connected' : 'Demonstration only, not connected'), /*#__PURE__*/React.createElement("h4", {
     id: "principal-evaluation-title",
     className: "mt-1 text-base font-black text-slate-900"
   }, "Principal Evaluation"), /*#__PURE__*/React.createElement("p", {
     className: "mt-1 max-w-2xl text-sm leading-relaxed text-slate-600"
-  }, isEvaluationPortalConnected ? 'Open the Google-authenticated district portal for walkthroughs, formal observations, SPM/SLO workflow, feedback, and trends.' : 'Connect the district Apps Script portal below. Until then, this button opens the local demonstration workspace only.')), /*#__PURE__*/React.createElement("button", {
+  }, isEvaluationPortalConnected ? 'Opens the Google-authenticated district portal for walkthroughs, formal observations, SPM and SLO workflow, feedback, and trends. Sign-in and server-side assignments decide what each person sees.' : 'No district portal is connected, so this opens a demonstration you can click through. Anything you type stays in this browser, is visible to anyone using this device, and is not a personnel record. Do not enter real staff information here.')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: onOpenPrincipalEvaluation,
-    className: "shrink-0 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-black text-white shadow-sm transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-  }, isEvaluationPortalConnected ? 'Open district portal' : 'Open local preview')), typeof onSaveEvaluationPortalUrl === 'function' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("form", {
+    className: `shrink-0 rounded-xl px-4 py-2.5 text-sm font-black shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${isEvaluationPortalConnected ? 'bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500' : 'border border-amber-500 bg-white text-amber-800 hover:bg-amber-50 focus:ring-amber-500'}`
+  }, isEvaluationPortalConnected ? 'Open district portal' : 'Open the demonstration')), typeof onSaveEvaluationPortalUrl === 'function' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("form", {
     className: "mt-4 border-t border-indigo-100 pt-4",
     onSubmit: function (event) {
       event.preventDefault();
@@ -391,7 +397,15 @@ function ProjectSettingsView(props) {
   }, "Disconnect")), /*#__PURE__*/React.createElement("p", {
     id: "principal-evaluation-portal-help",
     className: "mt-2 text-xs leading-relaxed text-slate-500"
-  }, isEvaluationPortalConnected ? 'This device will open the exact district /exec deployment in a separate tab. Google sign-in and server assignments control access; emailed links do not.' : 'Paste the district-owned HTTPS Apps Script deployment URL ending in /exec. AlloFlow stores only this launcher address on this device.')), /*#__PURE__*/React.createElement(EvaluationPortalQr, {
+  }, isEvaluationPortalConnected ? 'This device will open the exact district /exec deployment in a separate tab. Google sign-in and server assignments control access; emailed links do not.' : 'Paste the district-owned HTTPS Apps Script deployment URL ending in /exec. AlloFlow stores only this launcher address on this device.')), /*#__PURE__*/React.createElement("details", {
+    className: "mt-4 rounded-xl border border-slate-200 bg-white/70 p-3"
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "cursor-pointer text-xs font-black text-slate-800"
+  }, "Where does this URL come from?"), /*#__PURE__*/React.createElement("div", {
+    className: "mt-2 space-y-2 text-xs leading-relaxed text-slate-600"
+  }, /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("strong", null, "This is not a self-serve setup."), " The portal is a Google Apps Script web app that a district-controlled Workspace account deploys and owns. It holds personnel records, so your district has to review and approve it first."), /*#__PURE__*/React.createElement("ol", {
+    className: "ml-4 list-decimal space-y-1"
+  }, /*#__PURE__*/React.createElement("li", null, "Your district creates an Apps Script project from the AlloFlow Educator Evaluation package and reviews the source and its permissions."), /*#__PURE__*/React.createElement("li", null, "They deploy it as a Web app with ", /*#__PURE__*/React.createElement("strong", null, "Execute as: the district owner"), " and ", /*#__PURE__*/React.createElement("strong", null, "Who has access: users in your domain"), ". Never \"Anyone\"."), /*#__PURE__*/React.createElement("li", null, "They run the one-time setup with your school's staff list, evaluator assignments, and roles."), /*#__PURE__*/React.createElement("li", null, "They give you the deployment URL ending in ", /*#__PURE__*/React.createElement("code", null, "/exec"), ". Paste it above.")), /*#__PURE__*/React.createElement("p", null, "AlloFlow stores only that launcher address, on this device. It never holds the records. Access is decided by Google sign-in and the assignments your district configured, so sharing the link or the QR code does not give anyone access they do not already have."), /*#__PURE__*/React.createElement("p", null, "The full setup and compliance checklist ships with the package, at ", /*#__PURE__*/React.createElement("code", null, "apps_script/educator_evaluation/README.md"), "."))), /*#__PURE__*/React.createElement(EvaluationPortalQr, {
     url: isEvaluationPortalConnected ? evaluationPortalUrl : ''
   }))), /*#__PURE__*/React.createElement("fieldset", null, /*#__PURE__*/React.createElement("legend", {
     className: "text-xs font-black uppercase tracking-wider text-slate-600"
@@ -426,7 +440,7 @@ function ProjectSettingsView(props) {
     className: "sm:col-span-2"
   }, renderFeatureToggle('proj-hide-student-ai', 'hideStudentAiFeatures', tx('project_settings.hide_student_ai', 'Hide student AI tools'), tx('project_settings.hide_student_ai_desc', 'Remove student-facing AI controls from this project. Teacher authoring tools remain available.'), false)), /*#__PURE__*/React.createElement("div", {
     className: "sm:col-span-2"
-  }, renderFeatureToggle('proj-work-story', 'workStoryEnabled', tx('project_settings.work_story', 'Include a Work Story with student submissions'), tx('project_settings.work_story_desc', 'Students see a plain-language record of how their work came together and choose whether to send it. You see time, revision pattern and which AlloFlow supports were used — never a score, and never what they typed.'), false)), /*#__PURE__*/React.createElement("div", {
+  }, renderFeatureToggle('proj-work-story', 'workStoryEnabled', tx('project_settings.work_story', 'Include a Work Story with student submissions'), tx('project_settings.work_story_desc', 'Students see a plain-language record of how their work came together and choose whether to send it. You see time, revision pattern and which AlloFlow supports were used, never a score, and never what they typed.'), false)), /*#__PURE__*/React.createElement("div", {
     className: "sm:col-span-2"
   }, renderFeatureToggle('proj-allow-student-byok-ai', 'allowStudentByokAi', tx('project_settings.allow_student_byok_ai', 'Allow students to connect their own AI provider'), tx('project_settings.allow_student_byok_ai_desc', 'QR and Class Mailbox links stay AI-off by default. Enable only when school or district policy permits student-managed provider accounts and charges. Students must verify their own session-only key; your API key is never shared.'), false)), renderFeatureToggle('proj-dictation', 'allowDictation', t('project_settings.enable_dictation'), t('project_settings.dictation_desc'), true), renderFeatureToggle('proj-socratic', 'allowSocraticTutor', t('project_settings.enable_socratic'), t('project_settings.socratic_desc'), true), renderFeatureToggle('proj-free-response', 'allowFreeResponse', t('project_settings.enable_free_response'), t('project_settings.free_response_desc'), true), renderFeatureToggle('proj-persona-free', 'allowPersonaFreeResponse', t('project_settings.enable_persona_free'), t('project_settings.persona_free_desc'), true))), /*#__PURE__*/React.createElement("details", {
     className: "group rounded-xl border border-slate-200 bg-slate-50"
@@ -548,6 +562,8 @@ function ProjectSettingsView(props) {
   }, t('project_settings.permissions_header')), /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-xs text-slate-600"
   }, tx('project_settings.permissions_desc', 'Control which Adventure setup choices students may change.')), /*#__PURE__*/React.createElement("div", {
+    className: "mt-3"
+  }, renderFeatureToggle('proj-adventure-enabled', 'adventureEnabled', tx('project_settings.enable_adventure', 'Include Adventure in this assignment'), tx('project_settings.enable_adventure_desc', 'Off hides the Adventure panel from students. Use this when the lesson has no adventure.'), true)), /*#__PURE__*/React.createElement("div", {
     className: "mt-3 grid gap-2 sm:grid-cols-2"
   }, renderPermissionToggle('proj-perm-difficulty', 'allowDifficultySwitch', t('project_settings.perm_difficulty'), tx('project_settings.perm_difficulty_desc', 'Change the challenge level.'), true), renderPermissionToggle('proj-perm-mode', 'allowModeSwitch', t('project_settings.perm_mode'), tx('project_settings.perm_mode_desc', 'Choose how responses are entered.'), false), renderPermissionToggle('proj-perm-language', 'allowLanguageSwitch', tx('project_settings.perm_language', 'Change language'), tx('project_settings.perm_language_desc', 'Choose from teacher-provided languages.'), true), renderPermissionToggle('proj-perm-custom', 'allowCustomInstructions', t('project_settings.perm_custom'), tx('project_settings.perm_custom_desc', 'Add custom story guidance.'), false), renderPermissionToggle('proj-perm-visuals', 'allowVisualsToggle', t('project_settings.perm_visuals'), tx('project_settings.perm_visuals_desc', 'Change visual-generation quality settings.'), true), renderPermissionToggle('proj-perm-cloud', 'allowCloudImageStorage', tx('project_settings.perm_cloud', 'Allow cloud image storage'), tx('project_settings.perm_cloud_desc', 'Privacy-sensitive: allow generated Adventure images to be stored online.'), false)), /*#__PURE__*/React.createElement("div", {
     className: "mt-3"

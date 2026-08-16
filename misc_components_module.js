@@ -85,20 +85,22 @@ const wsHighlightTarget = (text, target) => {
     (p, i) => p.toLowerCase() === tw.toLowerCase() ? /* @__PURE__ */ React.createElement("strong", { key: i, className: "text-sky-800 font-black" }, p) : p
   );
 };
-const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswers, displayWord }) => {
+const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswers, displayWord, passageWord }) => {
   const { t } = useContext(LanguageContext);
-  const _solved = displayWord || targetWord;
-  const [val, setVal] = useState(isSolved ? _solved : "");
+  const _passage = passageWord || displayWord || targetWord;
+  const [entered, setEntered] = useState("");
+  const [val, setVal] = useState(isSolved ? _passage : "");
   const [status, setStatus] = useState(isSolved ? "success" : "neutral");
   useEffect(() => {
     if (isSolved) {
-      setVal(_solved);
+      setVal(entered || _passage);
       setStatus("success");
     } else {
       setVal("");
+      setEntered("");
       setStatus("neutral");
     }
-  }, [isSolved, _solved]);
+  }, [isSolved, _passage, entered]);
   const normalize = (str) => {
     if (!str) return "";
     let s = String(str).toLowerCase().trim();
@@ -120,15 +122,15 @@ const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswer
     const raw = (s) => String(s || "").toLowerCase().trim();
     return raw(target).length > 0 && raw(input) === raw(target);
   };
-  const acceptedList = (Array.isArray(acceptedAnswers) ? acceptedAnswers : []).concat([targetWord]).filter(Boolean);
+  const acceptedList = (Array.isArray(acceptedAnswers) ? acceptedAnswers : []).concat([targetWord, _passage]).filter(Boolean);
   const isAcceptedAnswer = (value) => acceptedList.some((ans) => answerMatches(value, ans));
-  const solvedWord = displayWord || targetWord;
   const handleDrop = (e) => {
     e.preventDefault();
     if (status === "success") return;
-    const droppedText = e.dataTransfer.getData("text/plain");
+    const droppedText = String(e.dataTransfer.getData("text/plain") || "").trim();
     if (isAcceptedAnswer(droppedText)) {
-      setVal(solvedWord);
+      setVal(droppedText);
+      setEntered(droppedText);
       setStatus("success");
       if (onCorrect) onCorrect(targetWord);
     } else {
@@ -150,11 +152,14 @@ const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswer
     const newVal = e.target.value;
     setVal(newVal);
     if (isAcceptedAnswer(newVal)) {
+      setEntered(newVal);
       setStatus("success");
       if (onCorrect) onCorrect(targetWord);
     }
   };
-  const width = Math.max(80, Math.max(String(targetWord || "").length, String(solvedWord || "").length) * 12) + "px";
+  const width = Math.max(80, Math.max(String(targetWord || "").length, String(_passage || "").length) * 12) + "px";
+  const _passageForm = String(_passage || "").trim();
+  const showPassageForm = status === "success" && !!_passageForm && !!val && !answerMatches(val, _passageForm);
   return /* @__PURE__ */ React.createElement(
     "span",
     {
@@ -182,7 +187,20 @@ const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswer
       }
     ),
     status === "success" && /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "absolute -top-2 -right-2 text-green-500 bg-white rounded-full shadow-sm animate-in motion-reduce:animate-none zoom-in duration-300" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 16, className: "fill-green-100" })),
-    /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", className: "sr-only" }, status === "error" ? t("games.fill_blank.incorrect") || "Incorrect answer. Try again." : status === "success" ? t("games.fill_blank.correct") || "Correct answer." : "")
+    showPassageForm && /* @__PURE__ */ React.createElement(
+      "span",
+      {
+        className: "ms-1 align-middle text-[11px] font-semibold text-green-700 whitespace-nowrap",
+        title: t("games.fill_blank.passage_form", { word: _passageForm }) || `In the passage: ${_passageForm}`
+      },
+      "(",
+      _passageForm,
+      ")"
+    ),
+    /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", className: "sr-only" }, status === "error" ? t("games.fill_blank.incorrect") || "Incorrect answer. Try again." : status === "success" ? [
+      t("games.fill_blank.correct") || "Correct answer.",
+      showPassageForm ? t("games.fill_blank.passage_form", { word: _passageForm }) || `In the passage: ${_passageForm}` : ""
+    ].filter(Boolean).join(" ") : "")
   );
 });
 const WordSoundsReviewPanel = ({

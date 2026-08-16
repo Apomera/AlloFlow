@@ -1,16 +1,234 @@
+// ═══════════════════════════════════════════════════════════════════════════
+// Token hygiene and script support, shared by every letter-based activity.
+//
+// A glossary term arrives carrying two things the activity must not treat as
+// letters: the emoji the model was told to add when Universal Settings has
+// emoji on ("Include a relevant emoji for each term",
+// generate_dispatcher_source.jsx:2080/2121 — the glossary schema has no
+// separate emoji field, so it lands inside `term`), and whatever punctuation
+// the source text carried in. Anything that scrambles, matches, or fills a
+// grid works on LETTERS; the surrounding UI still shows the term as written.
+//
+// Two traps these helpers exist to close:
+//
+//   1. `str.split('')` and `str[i]` iterate UTF-16 code UNITS. Every
+//      pictographic emoji is non-BMP, so a code-unit split tears it into two
+//      lone surrogates, which render as the question-mark-in-a-box glyph.
+//      ZWJ sequences (family emoji) and skin-tone modifiers tear the same way
+//      even under a code-POINT split. Use gameGraphemes().
+//
+//   2. `/[^A-ZÀ-ÿ]/` keeps ASCII plus Latin-1 and deletes everything else. It
+//      silently erases every letter of Arabic, Chinese, Cyrillic, Greek,
+//      Hebrew, Hindi, Japanese, Korean and Thai, and also of Latin-script
+//      languages whose letters sit above U+00FF: Vietnamese (ơ ư ạ), Polish
+//      (ł ą ę), Turkish (ğ ş ı), Czech, Romanian. Use \p{L} with the u flag.
+//
+// Note for future greps: \b in a JS regex is ASCII-only. It does not mark a
+// word boundary next to any of the letters above, so never reach for it here.
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Whole emoji presentation sequences: keycaps, regional-indicator flag pairs,
+// and a pictographic base plus any variation selectors / skin-tone modifiers /
+// ZWJ continuations. Matching the whole sequence is what stops a naive split
+// from tearing a family emoji into three people and two invisible joiners.
+//
+// Built from a string rather than a literal so the invisible code points stay
+// as reviewable escapes: 200D is the zero-width joiner, FE0E/FE0F are the
+// text/emoji variation selectors, 20E3 is the combining enclosing keycap, and
+// 1F3FB-1F3FF are the five skin-tone modifiers. A literal one of any of these
+// is a zero-width character in the source that nobody can see in a diff.
+var GAME_EMOJI_MODIFIERS = '[\\uFE0E\\uFE0F\\u{1F3FB}-\\u{1F3FF}]*';
+var GAME_EMOJI_SEQUENCE_RE = new RegExp(
+  '(?:[#*0-9]\\uFE0F?\\u20E3'
+  + '|[\\u{1F1E6}-\\u{1F1FF}]{2}'
+  + '|\\p{Extended_Pictographic}' + GAME_EMOJI_MODIFIERS
+  + '(?:\\u200D\\p{Extended_Pictographic}' + GAME_EMOJI_MODIFIERS + ')*'
+  + ')', 'gu');
+var GAME_EMOJI_JOINER_RE = new RegExp('[\\u200D\\uFE0E\\uFE0F]', 'g');
+
+var stripGameEmoji = function(value) {
+  if (value === null || value === undefined) return '';
+  return String(value)
+    .replace(GAME_EMOJI_SEQUENCE_RE, '')
+    .replace(GAME_EMOJI_JOINER_RE, ''); // orphaned joiners / variation selectors
+};
+
+// The decoration itself, so an activity can keep showing it beside the word.
+var firstGameEmoji = function(value) {
+  if (value === null || value === undefined) return '';
+  var found = String(value).match(GAME_EMOJI_SEQUENCE_RE);
+  return found && found.length ? found[0] : '';
+};
+
+// Grapheme clusters, not code points. Intl.Segmenter keeps Devanagari matras,
+// Thai vowel signs, Arabic harakat and Hangul jamo attached to their base, so
+// one entry really is one printed cell. Array.from is the fallback: still code
+// points, still better than split('').
+var _gameSegmenter;
+var gameGraphemes = function(value) {
+  var text = (value === null || value === undefined) ? '' : String(value);
+  if (!text) return [];
+  if (_gameSegmenter === undefined) {
+    try {
+      _gameSegmenter = (typeof Intl !== 'undefined' && typeof Intl.Segmenter === 'function')
+        ? new Intl.Segmenter(undefined, { granularity: 'grapheme' })
+        : null;
+    } catch (_e) { _gameSegmenter = null; }
+  }
+  if (_gameSegmenter) {
+    try {
+      return Array.from(_gameSegmenter.segment(text), function(part) { return part.segment; });
+    } catch (_e) { /* fall through */ }
+  }
+  return Array.from(text);
+};
+
+// Letters, marks and digits only. Digits stay because real terms carry them
+// (H2O, 1st Amendment) and the word search has always allowed them.
+var gameWordLetters = function(value) {
+  var bare = stripGameEmoji(value);
+  if (!bare) return '';
+  try { bare = bare.normalize('NFC'); } catch (_e) { /* older engine, use as-is */ }
+  return bare.replace(/[^\p{L}\p{M}\p{N}]/gu, '');
+};
+
+// Case folding for answer checks. toLowerCase is a no-op for scripts without
+// case (CJK, Arabic, Hebrew, Thai, Devanagari), which is the correct behaviour
+// rather than a special case.
+var gameFoldAnswer = function(value) {
+  return gameWordLetters(value).toLowerCase();
+};
+
+// Split a raw glossary term into the parts each activity needs:
+//   display  the term exactly as authored, for headings and review screens
+//   emoji    the decoration, to render beside the word rather than inside it
+//   plain    the term minus emoji, still spaced and punctuated
+//   letters  letters only, the string an activity may scramble or grid-fill
+//   cells    those letters as grapheme clusters, one per printed square
+var gameTermParts = function(rawTerm) {
+  var display = ((rawTerm === null || rawTerm === undefined) ? '' : String(rawTerm)).trim();
+  var letters = gameWordLetters(display);
+  return {
+    display: display,
+    emoji: firstGameEmoji(display),
+    plain: stripGameEmoji(display).replace(/\s+/g, ' ').trim(),
+    letters: letters,
+    cells: gameGraphemes(letters)
+  };
+};
+
+// ── Script classification ──────────────────────────────────────────────────
+// Used to pick a grid direction, a sensible minimum word length, and to be
+// honest in the UI about what a letter grid can and cannot represent.
+var GAME_SCRIPT_TESTS = [
+  { id: 'han',        rtl: false, re: /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]/u },
+  { id: 'hangul',     rtl: false, re: /\p{Script=Hangul}/u },
+  { id: 'arabic',     rtl: true,  re: /\p{Script=Arabic}/u },
+  { id: 'hebrew',     rtl: true,  re: /\p{Script=Hebrew}/u },
+  { id: 'thaana',     rtl: true,  re: /\p{Script=Thaana}/u },
+  { id: 'thai',       rtl: false, re: /[\p{Script=Thai}\p{Script=Lao}\p{Script=Khmer}\p{Script=Myanmar}]/u },
+  { id: 'indic',      rtl: false, re: /[\p{Script=Devanagari}\p{Script=Bengali}\p{Script=Gujarati}\p{Script=Gurmukhi}\p{Script=Kannada}\p{Script=Malayalam}\p{Script=Tamil}\p{Script=Telugu}\p{Script=Sinhala}\p{Script=Oriya}]/u },
+  { id: 'cyrillic',   rtl: false, re: /\p{Script=Cyrillic}/u },
+  { id: 'greek',      rtl: false, re: /\p{Script=Greek}/u },
+  { id: 'ethiopic',   rtl: false, re: /\p{Script=Ethiopic}/u },
+  { id: 'georgian',   rtl: false, re: /\p{Script=Georgian}/u },
+  { id: 'armenian',   rtl: false, re: /\p{Script=Armenian}/u },
+  { id: 'latin',      rtl: false, re: /\p{Script=Latin}/u }
+];
+
+// Dominant script of a word list, by letter count rather than first hit, so a
+// stray Latin brand name inside an Arabic glossary does not flip the grid.
+var gameScriptOf = function(value) {
+  var letters = gameWordLetters(value);
+  if (!letters) return 'unknown';
+  var best = 'unknown';
+  var bestCount = 0;
+  for (var i = 0; i < GAME_SCRIPT_TESTS.length; i++) {
+    var test = GAME_SCRIPT_TESTS[i];
+    var count = 0;
+    var chars = Array.from(letters);
+    for (var c = 0; c < chars.length; c++) if (test.re.test(chars[c])) count++;
+    if (count > bestCount) { bestCount = count; best = test.id; }
+  }
+  return best;
+};
+
+var gameScriptIsRtl = function(scriptId) {
+  for (var i = 0; i < GAME_SCRIPT_TESTS.length; i++) {
+    if (GAME_SCRIPT_TESTS[i].id === scriptId) return GAME_SCRIPT_TESTS[i].rtl;
+  }
+  return false;
+};
+
+// Scripts where a written word is normally two to four printed characters, so
+// the alphabetic "at least three letters" floor would reject nearly everything.
+// Measured: with a floor of 3, a Hindi list of प्रकाश / पौधा / जल placed one
+// word and no intersections, because जल is two grapheme clusters. Devanagari
+// and its siblings pack a consonant and its vowel sign into one cluster, so
+// they count like CJK, not like an alphabet.
+var GAME_SHORT_WORD_SCRIPTS = { han: true, hangul: true, thai: true, indic: true };
+
+var gameMinGridLength = function(scriptId) {
+  return GAME_SHORT_WORD_SCRIPTS[scriptId] ? 2 : 3;
+};
+
+// The letter-grid equivalent of case folding: forms that a writer varies
+// freely but a puzzle must treat as one square.
+//   Arabic  strip harakat and tatweel, unify the alef and yeh variants
+//   Hebrew  final forms become their medial form (a letter mid-word is medial)
+// Combining marks are invisible in source, so these ranges are built from
+// escapes rather than typed as literals:
+//   0610-061A, 064B-065F, 0670, 06D6-06ED  Arabic harakat and Quranic marks
+//   0640                                   tatweel, a pure stretch character
+//   0622/0623/0625/0671 -> 0627            alef variants collapse to bare alef
+//   0649 -> 064A                           alef maqsura collapses to yeh
+//   0591-05C7                              Hebrew niqqud and cantillation
+//   05DA/05DD/05DF/05E3/05E5               Hebrew final forms -> medial forms
+var GAME_ARABIC_MARKS_RE = new RegExp('[\\u0610-\\u061A\\u064B-\\u065F\\u0670\\u06D6-\\u06ED\\u0640]', 'g');
+var GAME_ARABIC_ALEF_RE = new RegExp('[\\u0622\\u0623\\u0625\\u0671]', 'g');
+var GAME_ARABIC_YEH_RE = new RegExp('\\u0649', 'g');
+var GAME_ARABIC_BARE_ALEF = '\u0627';
+var GAME_ARABIC_BARE_YEH = '\u064A';
+var GAME_HEBREW_MARKS_RE = new RegExp('[\\u0591-\\u05BD\\u05BF\\u05C1\\u05C2\\u05C4\\u05C5\\u05C7]', 'g');
+var GAME_HEBREW_FINALS_RE = new RegExp('[\\u05DA\\u05DD\\u05DF\\u05E3\\u05E5]', 'g');
+var GAME_HEBREW_FINALS = {
+  '\u05DA': '\u05DB', '\u05DD': '\u05DE', '\u05DF': '\u05E0',
+  '\u05E3': '\u05E4', '\u05E5': '\u05E6'
+};
+
+var gameNormalizeGridLetters = function(value, scriptId) {
+  var letters = gameWordLetters(value);
+  if (!letters) return '';
+  if (scriptId === 'arabic') {
+    letters = letters
+      .replace(GAME_ARABIC_MARKS_RE, '')
+      .replace(GAME_ARABIC_ALEF_RE, GAME_ARABIC_BARE_ALEF)
+      .replace(GAME_ARABIC_YEH_RE, GAME_ARABIC_BARE_YEH);
+  } else if (scriptId === 'hebrew') {
+    letters = letters
+      .replace(GAME_HEBREW_MARKS_RE, '')
+      .replace(GAME_HEBREW_FINALS_RE, function(ch) { return GAME_HEBREW_FINALS[ch] || ch; });
+  }
+  return letters.toUpperCase();
+};
+
 // Keep scrambling bounded: a repeated-character term such as "AAA" has no
 // alternate ordering and must never recurse forever.
 var SCRAMBLE_MAX_SHUFFLE_ATTEMPTS = 16;
+// Scrambles graphemes, so a term whose letters carry combining marks (Hindi,
+// Thai, Arabic) shuffles whole printed characters instead of detaching a
+// vowel sign from its consonant.
 var canScrambleWord = function(word) {
-  if (!word || String(word).trim().length < 2) return false;
-  var chars = Array.from(String(word)).filter(function(char) { return char.trim().length > 0; });
+  var letters = gameWordLetters(word);
+  if (!letters) return false;
+  var chars = gameGraphemes(letters);
   return chars.length > 1 && new Set(chars.map(function(char) { return char.toLocaleLowerCase(); })).size > 1;
 };
 var scrambleWord = function(word) {
-  if (!word || word.length < 2 || !canScrambleWord(word)) return word;
-  var original = String(word);
+  var original = gameWordLetters(word);
+  if (!original || !canScrambleWord(original)) return original;
   for (var attempt = 0; attempt < SCRAMBLE_MAX_SHUFFLE_ATTEMPTS; attempt++) {
-    var arr = Array.from(original);
+    var arr = gameGraphemes(original);
     for (var i = arr.length - 1; i > 0; i--) {
       var j = Math.floor(Math.random() * (i + 1));
       var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
@@ -18,7 +236,7 @@ var scrambleWord = function(word) {
     var result = arr.join('');
     if (result !== original) return result;
   }
-  var fallback = Array.from(original);
+  var fallback = gameGraphemes(original);
   for (var swapIndex = 1; swapIndex < fallback.length; swapIndex++) {
     if (fallback[swapIndex] !== fallback[0]) {
       var swap = fallback[0];
@@ -80,6 +298,49 @@ const speakText = (text) => {
   if (player && typeof player.speak === 'function') {
     player.speak(String(text));
   }
+};
+
+// ── Theme-safe hover surfaces ─────────────────────────────────────────────
+// Measured problem (Chromium, .theme-dark .allo-docsuite, real computed
+// styles): the generated dark layer in app_styles_source.jsx only ever emits
+// selectors for BASE utilities, e.g. `.theme-dark .allo-docsuite .bg-white`.
+// Tailwind compiles `hover:bg-slate-50` to `.hover:bg-slate-50:hover`, which
+// that selector cannot match, so a hover colour keeps its LIGHT value in dark
+// mode. Two consequences, both measured rather than reasoned about:
+//
+//   * An element that ALSO carries a base bg utility is accidentally safe: the
+//     remap sets it `!important`, which beats the non-important hover rule. It
+//     simply loses its hover feedback in dark mode.
+//   * An element with NO base bg or text utility is exposed. The crossword clue
+//     buttons carry only `hover:text-indigo-700`, and on the dark panel that
+//     measured **1.85:1**. That is the "crossword looks too dark" report.
+//
+// Fixed in CSS rather than by branching on the theme in JS. A JS hook reads the
+// theme at render time, which is a frame too late on first paint and re-renders
+// every game on a theme change for a purely presentational concern. A
+// stylesheet is correct before the first paint, costs nothing, and cannot get
+// out of step with the theme class.
+//
+// `allo-ghov-link` deliberately changes no colour at all. An underline reads as
+// hover in every theme and in high contrast, and no remap layer can break it.
+var GAME_HOVER_STYLE_ID = 'allo-game-hover-styles';
+var GAME_HOVER_CSS = [
+  '.allo-ghov-soft:hover{background-color:#e2e8f0 !important;}',
+  '.allo-ghov-tint:hover{background-color:#e0e7ff !important;}',
+  '.theme-dark .allo-ghov-soft:hover{background-color:#334155 !important;}',
+  '.theme-dark .allo-ghov-tint:hover{background-color:#3730a3 !important;}',
+  '.theme-contrast .allo-ghov-soft:hover,.theme-contrast .allo-ghov-tint:hover{background-color:#000000 !important;outline:2px solid #ffff00;outline-offset:-2px;}',
+  '.allo-ghov-link:hover{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px;}'
+].join('\n');
+var ensureGameHoverStyles = function() {
+  try {
+    if (typeof document === 'undefined' || !document.head) return;
+    if (document.getElementById(GAME_HOVER_STYLE_ID)) return;
+    var el = document.createElement('style');
+    el.id = GAME_HOVER_STYLE_ID;
+    el.textContent = GAME_HOVER_CSS;
+    document.head.appendChild(el);
+  } catch (_e) { /* no document: SSR smoke harness */ }
 };
 
 // ── Theme toggle for game headers ──
@@ -871,7 +1132,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                     onClick={toggleAudioHints}
                     aria-pressed={audioHintsEnabled}
                     aria-label={`${t('a11y.read_aloud') || 'Read aloud'}: ${audioHintsEnabled ? 'on' : 'off'}`}
-                    className={`min-h-11 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-full transition-colors focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${audioHintsEnabled ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:bg-white'}`}
+                    className={`min-h-11 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-full transition-colors focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${audioHintsEnabled ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 allo-ghov-soft'}`}
                     title={audioHintsEnabled ? 'Audio hints on' : 'Audio hints off'}
                     data-help-key="matching_audio_hints"
                 >
@@ -881,7 +1142,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                 </button>
                 <button type="button"
                     onClick={reset}
-                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors"
+                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-indigo-600 allo-ghov-tint rounded-full transition-colors"
                     title={t('matching.reset_aria')}
                     aria-label={t('matching.reset_aria')}
                     data-help-key="matching_reset_btn"
@@ -892,7 +1153,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                     ref={matchingCloseRef}
                     type="button"
                     onClick={onClose}
-                    className="min-w-11 min-h-11 inline-flex items-center justify-center hover:bg-red-50 rounded-full text-slate-600 hover:text-red-500 transition-colors focus:ring-2 focus:ring-indigo-500"
+                    className="min-w-11 min-h-11 inline-flex items-center justify-center allo-ghov-soft rounded-full text-slate-600 transition-colors focus:ring-2 focus:ring-indigo-500"
                     title={t('common.close')}
                     aria-label={t('matching.close_aria')}
                 >
@@ -999,7 +1260,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                         role="button"
                                         aria-label={`${t('matching.select_term_aria')}: ${item.term}`}
                                         aria-pressed={keyboardSelectedTerm === item.id}
-                                        className={`bg-indigo-50 border-2 border-indigo-100 p-3 rounded-lg w-full shadow-sm text-sm font-bold text-indigo-900 flex items-center justify-center text-center h-full print:border-slate-300 print:bg-white select-none cursor-pointer hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-400 transition-all ${keyboardSelectedTerm === item.id ? 'ring-4 ring-yellow-200 border-yellow-400 bg-yellow-50' : ''}`}
+                                        className={`bg-indigo-50 border-2 border-indigo-100 p-3 rounded-lg w-full shadow-sm text-sm font-bold text-indigo-900 flex items-center justify-center text-center h-full print:border-slate-300 print:bg-white print:text-black select-none cursor-pointer hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-400 transition-all ${keyboardSelectedTerm === item.id ? 'ring-4 ring-yellow-200 border-yellow-400 bg-yellow-50' : ''}`}
                                         data-help-key="matching_term_item"
                                     >
                                         {item.term}
@@ -1054,7 +1315,7 @@ const MatchingGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
                                         tabIndex={0}
                                         role="button"
                                         aria-label={`${t('matching.connect_def_aria')}: ${def.text}`}
-                                        className={`bg-white border border-slate-400 p-3 rounded-lg w-full shadow-sm text-xs text-slate-600 flex items-center h-full overflow-y-auto leading-snug print:border-slate-300 select-none cursor-pointer hover:bg-slate-50 focus:ring-2 focus:ring-indigo-400 transition-colors ${keyboardSelectedTerm ? 'hover:border-indigo-300 hover:shadow-md' : ''}`}
+                                        className={`bg-white border border-slate-400 p-3 rounded-lg w-full shadow-sm text-xs text-slate-600 flex items-center h-full overflow-y-auto leading-snug print:border-slate-300 print:bg-white print:text-black select-none cursor-pointer hover:bg-slate-50 focus:ring-2 focus:ring-indigo-400 transition-colors ${keyboardSelectedTerm ? 'hover:border-indigo-300 hover:shadow-md' : ''}`}
                                         data-help-key="matching_def_item"
                                     >
                                         {def.text}
@@ -4576,6 +4837,75 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
     </div>
   );
 });
+// ── Crossword word preparation ────────────────────────────────────────────
+// Pure, so the test suite can feed it real Arabic / Chinese / Vietnamese word
+// lists without rendering anything. Was inline in the build effect, where the
+// only way to observe it was to look at a grid.
+//
+// Each word carries `cells`: grapheme clusters, one per printed square. The
+// old code indexed the term with word[i], which is a UTF-16 code unit, and
+// filtered it through /[^A-ZA-y]/ (Latin-1 only), so every letter of Arabic,
+// Chinese, Cyrillic, Greek, Hebrew, Hindi, Thai and of Vietnamese / Polish /
+// Turkish was deleted before it reached the grid. The list then came out
+// empty and the puzzle rendered as a blank page with no explanation.
+var CROSSWORD_GRID_SIZE = 20;
+var CROSSWORD_MAX_CELLS = 15;
+// A keystroke counts as a letter if the whole key is exactly one printed
+// character made only of letters and their combining marks. The old test was
+// /^[a-zA-ZA-y]$/, which rejected every Arabic, Chinese, Cyrillic, Greek,
+// Hebrew, Hindi, Thai and Vietnamese letter, so the grid could not be typed
+// into even when it had been filled correctly.
+var isCrosswordLetterKey = function(key) {
+  if (typeof key !== 'string' || !key) return false;
+  if (gameGraphemes(key).length !== 1) return false; // 'Enter', 'Shift', 'Process'
+  return gameWordLetters(key).length > 0;
+};
+var buildCrosswordWords = function(data, crosswordLang) {
+  var out = { words: [], script: 'unknown', isRtl: false, considered: 0, skippedNoTranslation: 0, skippedLength: 0 };
+  if (!Array.isArray(data) || data.length === 0) return out;
+  var picked = [];
+  for (var i = 0; i < data.length; i++) {
+    var item = data[i];
+    if (!item) continue;
+    var term = item.term;
+    var def = item.def;
+    if (crosswordLang && crosswordLang !== 'English') {
+      var trans = item.translations ? item.translations[crosswordLang] : null;
+      if (!trans) { out.skippedNoTranslation++; continue; }
+      var splitIdx = trans.indexOf(':');
+      if (splitIdx !== -1) {
+        term = trans.substring(0, splitIdx).trim();
+        def = trans.substring(splitIdx + 1).trim();
+      } else if (gameGraphemes(trans).length < 20) {
+        term = trans;
+      } else {
+        out.skippedNoTranslation++;
+        continue;
+      }
+    }
+    if (!term) continue;
+    picked.push({ term: String(term), def: def || '' });
+  }
+  out.considered = picked.length;
+  if (picked.length === 0) return out;
+  var script = gameScriptOf(picked.map(function(p) { return p.term; }).join(' '));
+  var minCells = gameMinGridLength(script);
+  for (var p = 0; p < picked.length; p++) {
+    var cells = gameGraphemes(gameNormalizeGridLetters(picked[p].term, script));
+    if (cells.length < minCells || cells.length > CROSSWORD_MAX_CELLS) { out.skippedLength++; continue; }
+    out.words.push({
+      cells: cells,
+      word: cells.join(''),
+      clue: picked[p].def,
+      original: picked[p].term
+    });
+  }
+  out.words.sort(function(a, b) { return b.cells.length - a.cells.length; });
+  out.script = script;
+  out.isRtl = gameScriptIsRtl(script);
+  return out;
+};
+
 const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete }) => {
   const { t } = useContext(LanguageContext);
   const reducedMotion = useReducedMotion();
@@ -4591,6 +4921,9 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
   const [hintsUsed, setHintsUsed] = useState(0);
   const [announcement, setAnnouncement] = useState('');
   const [crosswordLang, setCrosswordLang] = useState('English');
+  // Script of the word list currently laid out, plus how many of the terms
+  // actually made it onto the grid. Drives grid direction and the empty state.
+  const [layout, setLayout] = useState({ script: 'unknown', isRtl: false, considered: 0, placed: 0 });
   const crosswordDialogRef = useRef(null);
   const crosswordCloseRef = useRef(null);
   const crosswordGridRef = useRef(null);
@@ -4609,65 +4942,40 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
   }, [data]);
   useEffect(() => {
     if (!data || data.length === 0) return;
-    const words = data.reduce((acc, item) => {
-        let term = item.term;
-        let def = item.def;
-        if (crosswordLang !== 'English') {
-            const trans = item.translations?.[crosswordLang];
-            if (trans) {
-                if (trans.includes(':')) {
-                    const splitIdx = trans.indexOf(':');
-                    term = trans.substring(0, splitIdx).trim();
-                    def = trans.substring(splitIdx + 1).trim();
-                } else {
-                    if (trans.length < 20) term = trans;
-                    else return acc;
-                }
-            } else {
-                return acc;
-            }
-        }
-        const cleanWord = term
-            .toUpperCase()
-            .replace(/\s+/g, '')
-            .replace(/[^A-ZÀ-ÿ]/g, '');
-        if (cleanWord.length > 2 && cleanWord.length < 15) {
-            acc.push({
-                word: cleanWord,
-                clue: def,
-                original: term
-            });
-        }
-        return acc;
-    }, []).sort((a, b) => b.word.length - a.word.length);
+    const prepared = buildCrosswordWords(data, crosswordLang);
+    const words = prepared.words;
+    setLayout({ script: prepared.script, isRtl: prepared.isRtl, considered: prepared.considered, placed: 0 });
     if (words.length === 0) {
         setGrid([]);
         setClues({ across: [], down: [] });
+        setAnnouncement(t('games.crossword.empty_body') || 'No terms can be laid out on a crossword grid.');
         return;
     }
-    const gridSize = 20;
+    const gridSize = CROSSWORD_GRID_SIZE;
     const tempGrid = Array(gridSize).fill(null).map(() => Array(gridSize).fill(null));
     const placedWords = [];
-    const canPlace = (word, row, col, dir) => {
+    // `cells` is a grapheme array. Everything below indexes cells, never the
+    // string, so a combining mark can never be split across two squares.
+    const canPlace = (cells, row, col, dir) => {
       if (dir === 'across') {
-        if (col + word.length > gridSize) return false;
+        if (col + cells.length > gridSize) return false;
         if (col > 0 && tempGrid[row][col-1] !== null) return false;
-        if (col + word.length < gridSize && tempGrid[row][col+word.length] !== null) return false;
-        for (let i = 0; i < word.length; i++) {
+        if (col + cells.length < gridSize && tempGrid[row][col+cells.length] !== null) return false;
+        for (let i = 0; i < cells.length; i++) {
           const cell = tempGrid[row][col+i];
-          if (cell !== null && cell.char !== word[i]) return false;
+          if (cell !== null && cell.char !== cells[i]) return false;
           if (cell === null) {
             if (row > 0 && tempGrid[row-1][col+i] !== null) return false;
             if (row < gridSize-1 && tempGrid[row+1][col+i] !== null) return false;
           }
         }
       } else {
-        if (row + word.length > gridSize) return false;
+        if (row + cells.length > gridSize) return false;
         if (row > 0 && tempGrid[row-1][col] !== null) return false;
-        if (row + word.length < gridSize && tempGrid[row+word.length][col] !== null) return false;
-        for (let i = 0; i < word.length; i++) {
+        if (row + cells.length < gridSize && tempGrid[row+cells.length][col] !== null) return false;
+        for (let i = 0; i < cells.length; i++) {
           const cell = tempGrid[row+i][col];
-          if (cell !== null && cell.char !== word[i]) return false;
+          if (cell !== null && cell.char !== cells[i]) return false;
           if (cell === null) {
              if (col > 0 && tempGrid[row+i][col-1] !== null) return false;
              if (col < gridSize-1 && tempGrid[row+i][col+1] !== null) return false;
@@ -4677,11 +4985,11 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
       return true;
     };
     const place = (wordObj, row, col, dir) => {
-      const { word } = wordObj;
-      for (let i = 0; i < word.length; i++) {
+      const cells = wordObj.cells;
+      for (let i = 0; i < cells.length; i++) {
         const r = dir === 'across' ? row : row + i;
         const c = dir === 'across' ? col + i : col;
-        if (!tempGrid[r][c]) tempGrid[r][c] = { char: word[i], startOf: [] };
+        if (!tempGrid[r][c]) tempGrid[r][c] = { char: cells[i], startOf: [] };
       }
       if (tempGrid[row][col]) {
           tempGrid[row][col].startOf.push({ ...wordObj, dir, number: 0 });
@@ -4690,7 +4998,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
     };
     const center = Math.floor(gridSize / 2);
     const firstWord = words[0];
-    const startCol = center - Math.floor(firstWord.word.length / 2);
+    const startCol = center - Math.floor(firstWord.cells.length / 2);
     place(firstWord, center, startCol, 'across');
     for (let i = 1; i < words.length; i++) {
       const current = words[i];
@@ -4698,17 +5006,17 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
       const targets = fisherYatesShuffle(placedWords);
       for (const target of targets) {
         if (placed) break;
-        for (let j = 0; j < current.word.length; j++) {
+        for (let j = 0; j < current.cells.length; j++) {
           if (placed) break;
-          const char = current.word[j];
-          for (let k = 0; k < target.word.length; k++) {
-             if (target.word[k] === char) {
+          const char = current.cells[j];
+          for (let k = 0; k < target.cells.length; k++) {
+             if (target.cells[k] === char) {
                const r = target.dir === 'across' ? target.row : target.row + k;
                const c = target.dir === 'across' ? target.col + k : target.col;
                const newDir = target.dir === 'across' ? 'down' : 'across';
                const newRow = newDir === 'across' ? r : r - j;
                const newCol = newDir === 'across' ? c - j : c;
-               if (newRow >= 0 && newCol >= 0 && canPlace(current.word, newRow, newCol, newDir)) {
+               if (newRow >= 0 && newCol >= 0 && canPlace(current.cells, newRow, newCol, newDir)) {
                  place(current, newRow, newCol, newDir);
                  placed = true;
                  break;
@@ -4726,13 +5034,14 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
         if (cell && cell.startOf && cell.startOf.length > 0) {
            cell.number = clueCounter++;
            cell.startOf.forEach(w => {
-              newClues[w.dir].push({ number: cell.number, clue: w.clue, word: w.word, row: r, col: c });
+              newClues[w.dir].push({ number: cell.number, clue: w.clue, word: w.word, cells: w.cells, original: w.original, row: r, col: c });
            });
         }
       }
     }
     setGrid(tempGrid);
     setClues(newClues);
+    setLayout({ script: prepared.script, isRtl: prepared.isRtl, considered: prepared.considered, placed: placedWords.length });
     setUserState({});
     setIsWon(false);
     setWasRevealed(false);
@@ -4774,32 +5083,41 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
            while (prevR >= 0 && !grid[prevR][c]) prevR--;
            if (prevR >= 0 && grid[prevR][c]) setSelectedCell({ r: prevR, c });
        }
-    } else if (e.key.length === 1 && /^[a-zA-ZÀ-ÿ]$/.test(e.key)) {
-       const char = e.key.toUpperCase();
+    } else if (isCrosswordLetterKey(e.key)) {
+       // gameNormalizeGridLetters applies the same folding the grid was built
+       // with, so a typed alef-with-hamza matches a plain alef square and a
+       // typed lowercase letter matches its uppercase square.
+       const char = gameNormalizeGridLetters(e.key, layout.script);
+       if (!char) return;
        setUserState(prev => ({ ...prev, [`${r}-${c}`]: char }));
        setAnnouncement(t('games.crossword.announce_typed', { char }));
        if (direction === 'across') {
          let nextC = c + 1;
-         while (nextC < 20 && !grid[r][nextC]) nextC++;
-         if (grid[r][nextC]) setSelectedCell({ r, c: nextC });
+         while (nextC < CROSSWORD_GRID_SIZE && !grid[r][nextC]) nextC++;
+         if (nextC < CROSSWORD_GRID_SIZE && grid[r][nextC]) setSelectedCell({ r, c: nextC });
        } else {
          let nextR = r + 1;
-         while (nextR < 20 && !grid[nextR][c]) nextR++;
-         if (grid[nextR][c]) setSelectedCell({ r: nextR, c });
+         while (nextR < CROSSWORD_GRID_SIZE && !grid[nextR][c]) nextR++;
+         if (nextR < CROSSWORD_GRID_SIZE && grid[nextR][c]) setSelectedCell({ r: nextR, c });
        }
-    } else if (e.key === 'ArrowRight') {
-       let nextC = c + 1;
-       while (nextC < 20 && !grid[r][nextC]) nextC++;
-       if (nextC < 20 && grid[r][nextC]) {
-           setSelectedCell({ r, c: nextC });
-           setAnnouncement(t('games.crossword.selected_cell', { r: r + 1, c: nextC + 1 }));
-       }
-    } else if (e.key === 'ArrowLeft') {
-       let prevC = c - 1;
-       while (prevC >= 0 && !grid[r][prevC]) prevC--;
-       if (prevC >= 0 && grid[r][prevC]) {
-           setSelectedCell({ r, c: prevC });
-           setAnnouncement(t('games.crossword.selected_cell', { r: r + 1, c: prevC + 1 }));
+    } else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+       // In an RTL grid, column 0 paints on the right, so the physical arrow
+       // the student pressed has to be mapped to the logical column step.
+       const forward = layout.isRtl ? (e.key === 'ArrowLeft') : (e.key === 'ArrowRight');
+       if (forward) {
+           let nextC = c + 1;
+           while (nextC < CROSSWORD_GRID_SIZE && !grid[r][nextC]) nextC++;
+           if (nextC < CROSSWORD_GRID_SIZE && grid[r][nextC]) {
+               setSelectedCell({ r, c: nextC });
+               setAnnouncement(t('games.crossword.selected_cell', { r: r + 1, c: nextC + 1 }));
+           }
+       } else {
+           let prevC = c - 1;
+           while (prevC >= 0 && !grid[r][prevC]) prevC--;
+           if (prevC >= 0 && grid[r][prevC]) {
+               setSelectedCell({ r, c: prevC });
+               setAnnouncement(t('games.crossword.selected_cell', { r: r + 1, c: prevC + 1 }));
+           }
        }
     } else if (e.key === 'ArrowDown') {
        let nextR = r + 1;
@@ -4823,8 +5141,10 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
     }
   };
   const handleTouchInputChange = (e) => {
-    const chars = Array.from(e.currentTarget.value || '');
-    const char = chars.reverse().find(value => /^[a-zA-ZÀ-ÿ]$/.test(value));
+    // Grapheme clusters, so a composed CJK character from an IME or a Hindi
+    // consonant plus matra arrives as one entry instead of two.
+    const chars = gameGraphemes(e.currentTarget.value || '');
+    const char = chars.reverse().find(value => isCrosswordLetterKey(value));
     e.currentTarget.value = '';
     if (char) handleKeyDown({ key: char, preventDefault: () => {} });
   };
@@ -4911,6 +5231,20 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
     setAnnouncement(`Hint: revealed letter ${pick.char}`);
     if (playSound) playSound('click');
   };
+  // Reuses the printing mechanism the Matching worksheet and the Bingo cards
+  // already use: window.print() over the live modal, with `no-print` on the
+  // chrome and `print:` variants on the sheet. No second printer, no popup to
+  // be blocked. `showAnswerKey` reveals the solution page for that one print
+  // and is cleared afterwards, so the on-screen puzzle is never spoiled.
+  const [showAnswerKey, setShowAnswerKey] = useState(false);
+  const printCrossword = () => {
+    setShowAnswerKey(true);
+    // Let React paint the answer-key page before the print dialog samples the
+    // document; requestAnimationFrame fires after commit.
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      try { window.print(); } finally { setShowAnswerKey(false); }
+    }));
+  };
   return (
     <div ref={crosswordDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="crossword-game-title" className="fixed inset-0 z-[100] bg-white flex flex-col motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300" data-help-key="crossword_game_container">
       <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
@@ -4944,22 +5278,49 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
          </div>
       </div>
       <div className="flex-grow overflow-hidden flex flex-col md:flex-row">
-         <div className="flex-grow p-4 overflow-auto bg-slate-100 flex flex-col items-center gap-3 relative">
+         <div className="flex-grow p-4 overflow-auto bg-slate-100 flex flex-col items-center gap-3 relative print:bg-white print:overflow-visible print:p-0">
             {isWon && !wasRevealed && !reducedMotion && <ConfettiExplosion />}
+            {/* Print header, same shape the Matching worksheet uses. */}
+            <div className="hidden print:block w-full mb-6 text-center">
+              <h2 className="text-2xl font-bold text-slate-800 mb-2">{t('games.crossword_title')}</h2>
+              <div className="flex justify-between text-sm border-b-2 border-slate-800 pb-2 mb-2">
+                <span>{t('matching.print_name')}: _______________________</span>
+                <span>{t('matching.print_date')}: _______________________</span>
+              </div>
+            </div>
+            {grid.length === 0 ? (
+              <div role="status" className="max-w-md rounded-xl border border-amber-300 bg-amber-50 p-5 text-amber-900 no-print">
+                <p className="font-bold">{t('games.crossword.empty_title') || 'This word list cannot be laid out on a crossword grid.'}</p>
+                <p className="mt-1 text-sm">
+                  {t('games.crossword.empty_body') || 'A crossword needs terms of at least three letters that share letters with each other. Try Matching, Memory, or Bingo, which work with any word list.'}
+                </p>
+              </div>
+            ) : null}
             <label className="no-print inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white px-3 py-2 text-xs font-bold text-indigo-900 shadow-sm">
-              <span>Selected square</span>
-              <input ref={crosswordTouchInputRef} type="text" inputMode="text" autoCapitalize="characters" autoComplete="off" autoCorrect="off" spellCheck={false} maxLength={2} readOnly={isWon} aria-disabled={!selectedCell || isWon} onChange={handleTouchInputChange} onKeyDown={handleTouchInputKeyDown} aria-label="Enter a letter for the selected crossword square" className="h-11 w-14 rounded-lg border-2 border-indigo-300 bg-white text-center text-xl font-black uppercase text-indigo-900 focus:ring-2 focus:ring-indigo-500" />
+              <span>{t('games.crossword.selected_square_label') || 'Selected square'}</span>
+              <input ref={crosswordTouchInputRef} type="text" inputMode="text" autoComplete="off" autoCorrect="off" spellCheck={false} maxLength={4} readOnly={isWon} aria-disabled={!selectedCell || isWon} onChange={handleTouchInputChange} onKeyDown={handleTouchInputKeyDown} aria-label={t('games.crossword.selected_square_aria') || 'Enter a letter for the selected crossword square'} className="h-11 w-14 rounded-lg border-2 border-indigo-300 bg-white text-center text-xl font-black text-indigo-900 focus:ring-2 focus:ring-indigo-500" />
             </label>
+            {/* One quiet note per RTL puzzle. Arabic and Hebrew crosswords are
+                printed with one isolated letter per square and filled right to
+                left, which is the convention, but an isolated Arabic letter is
+                not the shape it takes inside a joined word. Say so once rather
+                than let a student think the rendering is broken. */}
+            {layout.isRtl && grid.length > 0 && (
+              <p className="no-print max-w-md text-center text-xs font-medium text-slate-700">
+                {t('games.crossword.rtl_note') || 'This puzzle reads right to left. Each square holds one letter on its own, so letters are not joined the way they are inside a written word.'}
+              </p>
+            )}
             <div
               ref={crosswordGridRef}
               tabIndex={0}
               role="grid"
+              dir={layout.isRtl ? 'rtl' : 'ltr'}
               aria-label={t('games.crossword.grid_capture_aria')}
               aria-rowcount={grid.length}
               aria-colcount={grid.length}
               aria-activedescendant={selectedCell ? `crossword-cell-${selectedCell.r}-${selectedCell.c}` : undefined}
               onKeyDown={handleKeyDown}
-              className="grid gap-px bg-slate-300 border-2 border-slate-400 p-1 shadow-xl focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2"
+              className="grid gap-px bg-slate-300 border-2 border-slate-400 p-1 shadow-xl focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 print:shadow-none"
               style={{
                  gridTemplateColumns: `repeat(${grid.length}, minmax(0, 1fr))`,
                  width: 'fit-content',
@@ -4984,8 +5345,9 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                           id={`crossword-cell-${r}-${c}`}
                           onClick={() => handleCellClick(r, c)}
                           className={`
-                             w-8 h-8 sm:w-10 sm:h-10 bg-white relative flex items-center justify-center text-lg font-bold uppercase cursor-pointer select-none
+                             w-8 h-8 sm:w-10 sm:h-10 bg-white relative flex items-center justify-center text-lg font-bold cursor-pointer select-none
                              ring-1 ring-slate-300 ring-inset
+                             print:bg-white print:text-black print:ring-slate-500
                              ${isSelected ? 'bg-yellow-200 ring-2 ring-yellow-400 z-10' : isActiveWord ? 'bg-yellow-50' : ''}
                              ${isError ? 'text-red-500 bg-red-50' : isCorrect ? 'text-green-600' : 'text-slate-800'}
                           `}
@@ -4995,7 +5357,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                           aria-selected={isSelected}
                           aria-label={`Row ${r+1} Column ${c+1} ${cell.number ? 'Clue ' + cell.number : ''} ${userChar ? 'Value ' + userChar : 'Empty'}`}
                         >
-                           {cell.number && <span className="absolute top-0.5 left-0.5 text-[11px] sm:text-[11px] leading-none text-slate-600 font-normal">{cell.number}</span>}
+                           {cell.number && <span className="absolute top-0.5 start-0.5 text-[11px] sm:text-[11px] leading-none text-slate-600 font-normal print:text-slate-700">{cell.number}</span>}
                            {userChar && <span key={userChar} className="inline-block animate-in motion-reduce:animate-none zoom-in duration-200">{userChar}</span>}
                         </div>
                      );
@@ -5004,57 +5366,87 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
                ))}
             </div>
          </div>
-         <div className="w-full md:w-1/3 bg-white border-s border-slate-200 flex flex-col h-1/2 md:h-full" data-help-key="crossword_clues_list">
-             <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+         <div className="w-full md:w-1/3 bg-white border-s border-slate-200 flex flex-col h-1/2 md:h-full print:w-full print:h-auto print:border-0 print:break-inside-avoid" data-help-key="crossword_clues_list">
+             <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 print:hidden">
                  <div className="text-sm font-bold text-slate-600">
-                    {clues.across.length + clues.down.length} {t('games.crossword.clues')}
+                    <div>{clues.across.length + clues.down.length} {t('games.crossword.clues')}</div>
+                    {layout.placed > 0 && layout.considered > layout.placed && (
+                      <div className="mt-0.5 text-[11px] font-medium text-slate-600">
+                        {t('games.crossword.placed_count', { placed: layout.placed, total: layout.considered })
+                          || (layout.placed + ' of ' + layout.considered + ' terms fit this grid')}
+                      </div>
+                    )}
                  </div>
                  <div className="flex gap-2" data-help-key="crossword_controls">
+                     <button type="button" onClick={printCrossword} className="min-h-11 px-3 py-2 bg-slate-100 text-slate-700 rounded text-xs font-bold hover:bg-slate-200 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center gap-1" aria-label={t('glossary.print_puzzle') || 'Print puzzle'}><Printer size={12} aria-hidden="true"/> {t('glossary.print_puzzle') || 'Print'}</button>
                      {!isWon && <><button type="button" onClick={revealHint} className="min-h-11 px-3 py-2 bg-amber-100 text-amber-800 rounded text-xs font-bold hover:bg-amber-200 focus:ring-2 focus:ring-amber-600 focus:ring-offset-2 flex items-center gap-1" aria-label={t('games.crossword.reveal_letter_hint_aria') || 'Reveal one letter hint'}><HelpCircle size={12} aria-hidden="true"/> {t('games.crossword.hint_button') || 'Hint'}{hintsUsed > 0 ? ` (${hintsUsed})` : ''}</button>
                      <button type="button" onClick={checkPuzzle} className="min-h-11 px-3 py-2 bg-indigo-100 text-indigo-800 rounded text-xs font-bold hover:bg-indigo-200 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">{t('games.crossword.check')}</button>
                      <button type="button" onClick={revealPuzzle} className="min-h-11 px-3 py-2 bg-red-100 text-red-800 rounded text-xs font-bold hover:bg-red-200 focus:ring-2 focus:ring-red-500 focus:ring-offset-2">{t('games.crossword.reveal')}</button></>}
                  </div>
              </div>
-             <div className="flex-grow overflow-y-auto p-4 space-y-6">
-                 <div>
-                     <h4 className="font-bold text-indigo-900 uppercase tracking-wider text-xs mb-2 border-b pb-1">{t('games.crossword.across')}</h4>
+             <div className="flex-grow overflow-y-auto p-4 space-y-6 print:overflow-visible print:columns-2 print:gap-8">
+                 <div className="print:break-inside-avoid">
+                     <h4 className="font-bold text-indigo-900 uppercase tracking-wider text-xs mb-2 border-b pb-1 print:text-black">{t('games.crossword.across')}</h4>
                      <ul className="space-y-2 text-sm">
                          {clues.across.map(c => (
                              <li key={'a-' + c.number} className="flex items-center gap-1">
                                <button
                                  type="button"
-                                 className={'min-h-11 flex-1 text-start cursor-pointer hover:text-indigo-700 p-2 rounded transition-colors focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ' + (selectedCell && direction === 'across' && selectedCell.r === c.row && selectedCell.c >= c.col && selectedCell.c < c.col + c.word.length ? 'bg-yellow-100 font-bold' : '')}
+                                 className={'min-h-11 flex-1 text-start cursor-pointer p-2 rounded transition-colors focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 allo-ghov-link ' + (selectedCell && direction === 'across' && selectedCell.r === c.row && selectedCell.c >= c.col && selectedCell.c < c.col + (c.cells ? c.cells.length : 0) ? 'bg-yellow-100 font-bold' : '')}
                                  onClick={() => selectCrosswordClue(c, 'across')}
                                >
                                  <span className="font-bold me-1">{c.number}.</span> {c.clue}
                                </button>
-                               <SpeakButton text={c.clue} size={11} />
+                               <span className="no-print"><SpeakButton text={c.clue} size={11} /></span>
                              </li>
                          ))}
                      </ul>
                  </div>
-                 <div>
-                     <h4 className="font-bold text-indigo-900 uppercase tracking-wider text-xs mb-2 border-b pb-1">{t('games.crossword.down')}</h4>
+                 <div className="print:break-inside-avoid">
+                     <h4 className="font-bold text-indigo-900 uppercase tracking-wider text-xs mb-2 border-b pb-1 print:text-black">{t('games.crossword.down')}</h4>
                      <ul className="space-y-2 text-sm">
                          {clues.down.map(c => (
                              <li key={'d-' + c.number} className="flex items-center gap-1">
                                <button
                                  type="button"
-                                 className={'min-h-11 flex-1 text-start cursor-pointer hover:text-indigo-700 p-2 rounded transition-colors focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ' + (selectedCell && direction === 'down' && selectedCell.c === c.col && selectedCell.r >= c.row && selectedCell.r < c.row + c.word.length ? 'bg-yellow-100 font-bold' : '')}
+                                 className={'min-h-11 flex-1 text-start cursor-pointer p-2 rounded transition-colors focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 allo-ghov-link ' + (selectedCell && direction === 'down' && selectedCell.c === c.col && selectedCell.r >= c.row && selectedCell.r < c.row + (c.cells ? c.cells.length : 0) ? 'bg-yellow-100 font-bold' : '')}
                                  onClick={() => selectCrosswordClue(c, 'down')}
                                >
                                  <span className="font-bold me-1">{c.number}.</span> {c.clue}
                                </button>
-                               <SpeakButton text={c.clue} size={11} />
+                               <span className="no-print"><SpeakButton text={c.clue} size={11} /></span>
                              </li>
                          ))}
                      </ul>
                  </div>
              </div>
-             <div className="p-2 bg-slate-50 text-[11px] text-center text-slate-600 border-t">
+             <div className="p-2 bg-slate-50 text-[11px] text-center text-slate-600 border-t no-print">
                  {t('games.crossword.footer_tip')}
              </div>
-             {isWon && <div className="p-3"><GameReviewScreen score={score} title={t('games.crossword_title')} items={[...clues.across, ...clues.down].map(c => ({ label: c.word, detail: c.clue, status: wasRevealed ? 'incorrect' : 'correct' }))} onPlayAgain={() => { setIsWon(false); setWasRevealed(false); setScore(0); setHintsUsed(0); setShowErrors(false); setSelectedCell(null); setUserState({}); }} onClose={onClose} t={t} /></div>}
+             {/* Teacher answer key, a separate printed page. Rendered only for
+                 the duration of a print so the on-screen puzzle stays unspoiled. */}
+             {showAnswerKey && (
+               <div className="hidden print:block break-before-page p-4">
+                 <h2 className="text-2xl font-bold text-slate-800 mb-4 text-center">{t('glossary.print_answer_key') || 'Answer key'}</h2>
+                 <div className="columns-2 gap-8 text-sm">
+                   {[['across', clues.across], ['down', clues.down]].map(([dirKey, list]) => (
+                     <div key={dirKey} className="break-inside-avoid mb-4">
+                       <h4 className="font-bold uppercase tracking-wider text-xs mb-2 border-b pb-1">{dirKey === 'across' ? t('games.crossword.across') : t('games.crossword.down')}</h4>
+                       <ul className="space-y-1">
+                         {list.map(c => (
+                           <li key={dirKey + '-key-' + c.number}>
+                             <span className="font-bold me-1">{c.number}.</span>
+                             <span className="font-bold">{c.original || c.word}</span>
+                             <span className="ms-2 text-slate-600">{c.clue}</span>
+                           </li>
+                         ))}
+                       </ul>
+                     </div>
+                   ))}
+                 </div>
+               </div>
+             )}
+             {isWon && <div className="p-3 no-print"><GameReviewScreen score={score} title={t('games.crossword_title')} items={[...clues.across, ...clues.down].map(c => ({ label: c.word, detail: c.clue, status: wasRevealed ? 'incorrect' : 'correct' }))} onPlayAgain={() => { setIsWon(false); setWasRevealed(false); setScore(0); setHintsUsed(0); setShowErrors(false); setSelectedCell(null); setUserState({}); }} onClose={onClose} t={t} /></div>}
          </div>
       </div>
     </div>
@@ -6126,11 +6518,23 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
   const [announcement, setAnnouncement] = useState('');
   const scrambleDialogRef = useRef(null);
   const scrambleInputRef = useRef(null);
-  const eligibleTermCount = Array.isArray(data) ? data.filter(item => item?.term && item.term.length > 2 && canScrambleWord(item.term)).length : 0;
+  // Eligibility is judged on the term's LETTERS. An emoji is not a letter, so
+  // a term like "🌊 Erosion" counts its seven letters, not its eight
+  // characters, and a term that is nothing but an emoji is correctly excluded.
+  const scrambleItems = React.useMemo(() => (Array.isArray(data) ? data : [])
+    .map(item => {
+      if (!item || !item.term) return null;
+      const parts = gameTermParts(item.term);
+      if (gameGraphemes(parts.letters).length <= 2) return null;
+      if (!canScrambleWord(parts.letters)) return null;
+      return { display: parts.display, letters: parts.letters, emoji: parts.emoji, def: item.def };
+    })
+    .filter(Boolean), [data]);
+  const eligibleTermCount = scrambleItems.length;
   useGameDialogFocus(scrambleDialogRef, scrambleInputRef, onClose);
   useEffect(() => {
     if (!data) return;
-    const items = data.filter(item => item.term && item.term.length > 2 && canScrambleWord(item.term));
+    const items = scrambleItems.slice();
     for (let i = items.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [items[i], items[j]] = [items[j], items[i]];
@@ -6144,9 +6548,9 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
     setGuess('');
     setHintLevel(0);
     if (items.length > 0) {
-        setScrambled(scrambleWord(items[0].term));
+        setScrambled(scrambleWord(items[0].letters));
     }
-  }, [data]);
+  }, [scrambleItems]);
   // Report the completion once per playthrough. Fired from an effect rather than
   // inline in nextRound because `results` is set in the same tick and would still
   // be stale there — and never from inside a setState updater, which React may
@@ -6167,14 +6571,14 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
   }, [isGameOver, results, gameItems.length, score, onGameComplete]);
   const resetScrambleGame = () => {
       setIsGameOver(false); setResults([]); setCurrentIndex(0); setScore(0); setGuess(''); setFeedback('idle'); setHintLevel(0);
-      if (gameItems.length > 0) { setScrambled(scrambleWord(gameItems[0].term)); requestAnimationFrame(() => scrambleInputRef.current?.focus()); }
+      if (gameItems.length > 0) { setScrambled(scrambleWord(gameItems[0].letters)); requestAnimationFrame(() => scrambleInputRef.current?.focus()); }
       else setScrambled('');
   };
   const nextRound = (currentScore) => {
       if (currentIndex < gameItems.length - 1) {
           const nextIdx = currentIndex + 1;
           setCurrentIndex(nextIdx);
-          setScrambled(scrambleWord(gameItems[nextIdx].term));
+          setScrambled(scrambleWord(gameItems[nextIdx].letters));
           setGuess('');
           setFeedback('idle');
           setHintLevel(0);
@@ -6190,13 +6594,13 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
   const handleCheck = () => {
       const currentItem = gameItems[currentIndex];
       if (!currentItem) return;
-      const target = currentItem.term.trim().toLowerCase();
-      const userGuess = guess.trim().toLowerCase();
-      if (userGuess === target) {
+      const target = gameFoldAnswer(currentItem.letters);
+      const userGuess = gameFoldAnswer(guess);
+      if (target && userGuess === target) {
           if (playSound) playSound('correct');
           setFeedback('correct');
           setAnnouncement(t('games.scramble.correct') || 'Correct');
-          setResults(prev => [...prev, { term: currentItem.term, def: currentItem.def, correct: true }]);
+          setResults(prev => [...prev, { term: currentItem.display, def: currentItem.def, correct: true }]);
           const newScore = score + 10;
           setScore(newScore);
           setTimeout(() => {
@@ -6212,23 +6616,25 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
   const handleSkip = () => {
       const currentItem = gameItems[currentIndex];
       if (currentItem) {
-          setResults(prev => [...prev, { term: currentItem.term, def: currentItem.def, correct: false }]);
-          setAnnouncement(`${currentItem.term}. ${t('common.skip')}`);
+          setResults(prev => [...prev, { term: currentItem.display, def: currentItem.def, correct: false }]);
+          setAnnouncement(`${currentItem.display}. ${t('common.skip')}`);
       }
       nextRound(score);
   };
   const useHint = () => {
       const currentItem = gameItems[currentIndex];
       if (!currentItem) return;
-      const maxHints = Math.max(1, currentItem.term.length - 1);
+      const cells = gameGraphemes(currentItem.letters);
+      const maxHints = Math.max(1, cells.length - 1);
       if (hintLevel >= maxHints) return;
       setHintLevel(h => h + 1);
-      setAnnouncement(`${t('games.scramble.hint_label')}: ${currentItem.term.slice(0, hintLevel + 1).toUpperCase()}`);
+      setAnnouncement(`${t('games.scramble.hint_label')}: ${cells.slice(0, hintLevel + 1).join('')}`);
       setScore(s => Math.max(0, s - 3));
       if (playSound) playSound('click');
   };
-  const hintText = hintLevel > 0 && gameItems[currentIndex]
-      ? gameItems[currentIndex].term.slice(0, hintLevel).toUpperCase() + '_ '.repeat(gameItems[currentIndex].term.length - hintLevel).trim()
+  const hintCells = gameItems[currentIndex] ? gameGraphemes(gameItems[currentIndex].letters) : [];
+  const hintText = hintLevel > 0 && hintCells.length
+      ? hintCells.slice(0, hintLevel).join('') + '_ '.repeat(Math.max(0, hintCells.length - hintLevel)).trim()
       : null;
   return (
     <div ref={scrambleDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="word-scramble-title" className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 motion-safe:animate-in motion-safe:zoom-in-95">
@@ -6268,7 +6674,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
                         />
                     </div>
                 ) : Array.isArray(data) && eligibleTermCount === 0 ? (
-                    <div role="status" className="max-w-md rounded-xl border border-amber-300 bg-amber-50 p-5 text-amber-900"><p className="font-bold">No terms are available for Word Scramble.</p><p className="mt-1 text-sm">Add a glossary term with at least two different letters, then try again.</p></div>
+                    <div role="status" className="max-w-md rounded-xl border border-amber-300 bg-amber-50 p-5 text-amber-900"><p className="font-bold">{t('games.scramble.empty_title') || 'No terms are available for Word Scramble.'}</p><p className="mt-1 text-sm">{t('games.scramble.empty_body') || 'Add a glossary term with at least three letters, not counting emoji or punctuation, then try again.'}</p></div>
                 ) : gameItems.length > 0 ? (
                     <>
                         <div className="flex items-center justify-between w-full px-4 border-b border-slate-200 pb-2">
@@ -6278,18 +6684,21 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
                         <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm max-w-lg w-full">
                             <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1 justify-center"><Search size={12} aria-hidden="true"/> {t('games.scramble.hint_label')}</h4>
                             <div className="flex items-center justify-center gap-2">
+                                {gameItems[currentIndex].emoji && (
+                                  <span className="text-2xl shrink-0" aria-hidden="true">{gameItems[currentIndex].emoji}</span>
+                                )}
                                 <p className="text-lg font-medium text-slate-700 leading-relaxed">"{gameItems[currentIndex].def}"</p>
                                 <SpeakButton text={gameItems[currentIndex].def} />
                             </div>
                         </div>
                         <div className="flex flex-wrap justify-center gap-2">
-                            {scrambled.split('').map((char, idx) => (
+                            {gameGraphemes(scrambled).map((char, idx) => (
                                 <div
                                     key={`${currentIndex}-${idx}`}
-                                    className="w-12 h-12 sm:w-16 sm:h-16 bg-white border-b-4 border-indigo-300 rounded-lg flex items-center justify-center text-2xl sm:text-4xl font-black text-indigo-900 shadow-sm motion-safe:animate-in motion-safe:zoom-in"
+                                    className="w-12 h-12 sm:w-16 sm:h-16 bg-white border-b-4 border-indigo-300 rounded-lg flex items-center justify-center text-2xl sm:text-4xl font-black text-indigo-900 shadow-sm uppercase motion-safe:animate-in motion-safe:zoom-in"
                                     style={{ animationDelay: `${idx * 50}ms` }}
                                 >
-                                    {char.toUpperCase()}
+                                    {char}
                                 </div>
                             ))}
                         </div>
@@ -6303,7 +6712,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
                                 ref={scrambleInputRef}
                                 type="text"
                                 value={guess}
-                                onChange={(e) => setGuess(e.target.value.toUpperCase())}
+                                onChange={(e) => setGuess(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleCheck()}
                                 className={`w-full text-center text-2xl font-black p-3 rounded-xl border-4 focus:ring-2 focus:ring-indigo-400 transition-all uppercase tracking-widest ${
                                     feedback === 'correct' ? 'border-green-500 bg-green-50 text-green-800' :
@@ -6315,7 +6724,7 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
                                 aria-label={t('games.scramble.input_placeholder')}
                             />
                             <div className="flex gap-2 w-full">
-                                <button type="button" onClick={useHint} className="flex-1 py-3 rounded-xl font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors flex items-center justify-center gap-1 focus:ring-2 focus:ring-amber-600 focus:ring-offset-2" aria-label={t('games.scramble.get_hint_aria') || 'Get a hint'}>
+                                <button type="button" onClick={useHint} className="flex-1 py-3 rounded-xl font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors flex items-center justify-center gap-1 focus:ring-2 focus:ring-amber-600 focus:ring-offset-2" aria-label={t('games.scramble.get_hint_aria') || 'Get a hint'}>
                                     <HelpCircle size={14} aria-hidden="true"/> {t('games.scramble.hint_button') || 'Hint'}
                                 </button>
                                 <button type="button" data-help-ignore="true"
@@ -6760,3 +7169,34 @@ const StoryMapSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
     />
   );
 });
+
+// ── Test / host surface for the shared text helpers ────────────────────────
+// The game components themselves are registered by _build_games_module.js.
+// These are the pure functions above: exposed so the vitest suite can assert
+// real Arabic / Chinese / Vietnamese / emoji inputs against them directly
+// (an SSR render runs no effects, so it cannot reach any of this), and so the
+// host can reuse the same token hygiene for the word search grid.
+// Inject the hover stylesheet once, at module load. The games are rendered
+// into the host's tree rather than a portal of their own, so there is no single
+// component to hang it off; doing it here means it is present before the first
+// game paints.
+ensureGameHoverStyles();
+
+window.AlloModules = window.AlloModules || {};
+window.AlloModules.GameTextUtils = {
+  stripGameEmoji,
+  firstGameEmoji,
+  gameGraphemes,
+  gameWordLetters,
+  gameFoldAnswer,
+  gameTermParts,
+  gameScriptOf,
+  gameScriptIsRtl,
+  gameMinGridLength,
+  gameNormalizeGridLetters,
+  canScrambleWord,
+  scrambleWord,
+  buildCrosswordWords,
+  ensureGameHoverStyles,
+  GAME_HOVER_CSS,
+};

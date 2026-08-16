@@ -2003,6 +2003,11 @@ function createCommandKernel(ctxFactory, opts = {}) {
       ok: false,
       pending: true,
       confirmationRequired: true,
+      // An OFFER is not a confirmation. The caller must let anything that is
+      // not yes/no fall through to conversation instead of re-prompting: an
+      // ignored offer is the user choosing to keep talking, which is the whole
+      // point of conversation-first intake (A1).
+      offered: !!detail.offered,
       commandId: detail.commandId,
       scopeId: detail.scopeId || null,
       narration: detail.prompt,
@@ -2010,6 +2015,12 @@ function createCommandKernel(ctxFactory, opts = {}) {
       risk: detail.risk
     };
   };
+  // Conversation-first gate (A1/A2). Defaults to the shared classifier; a host
+  // may override for a channel that genuinely wants the old act-on-match
+  // behaviour (the Ctrl+K palette, where the user already picked the command).
+  const classifyIntent = typeof opts.classifyIntent === 'function'
+    ? opts.classifyIntent
+    : (command, info) => classifyCommandIntent(command, info);
   const stopActiveExecution = (reason) => {
     const active = activeExecution;
     if (!active) return false;
@@ -2126,8 +2137,19 @@ function createCommandKernel(ctxFactory, opts = {}) {
       return { handled: true, ok: false, repeated: true, clarification: true, confirmationRequired: true, narration: pendingConfirmation.prompt };
     }
     if (/^(?:no|cancel|never mind|nevermind|stop)$/.test(text)) {
+      const wasOffer = !!pendingConfirmation.offered;
       pendingConfirmation = null;
-      return { handled: true, ok: false, cancelled: true, narration: 'Cancelled.' };
+      // Declining an OFFER is not a cancellation of anything; nothing was
+      // started. Saying so keeps the exchange conversational.
+      return { handled: true, ok: false, cancelled: true, declinedOffer: wasOffer, narration: wasOffer ? 'Okay, I will leave that alone.' : 'Cancelled.' };
+    }
+    // A1: an offer the user did not answer is the user choosing to keep
+    // talking. Drop the offer and report NOT handled so the caller routes the
+    // utterance to conversation. Re-prompting here is the "no command
+    // recognized" failure in a politer costume.
+    if (pendingConfirmation.offered) {
+      pendingConfirmation = null;
+      return { handled: false, ok: false, offerLapsed: true, converse: true };
     }
     return { handled: true, ok: false, clarification: true, confirmationRequired: true, narration: pendingConfirmation.prompt };
   }
@@ -2166,6 +2188,25 @@ function createCommandKernel(ctxFactory, opts = {}) {
     if (!scoped && text.length === 1) return null;
     const result = await routeUtterance(ctx, text, { allowAi: meta.allowAi !== false, signal: meta.signal || null, confirmed: !!meta.confirmed, routeOnly: true });
     if (result && result.routed && result.commandId) {
+      const command = buildAlloCommands(ctx).find((candidate) => candidate.id === result.commandId);
+      // A1/A2: offer before acting on anything that changes the screen. Already
+      // confirmed (the user said yes) or explicitly prefixed with "command"
+      // skips straight to execution.
+      const decision = meta.confirmed || meta.explicitCommand
+        ? 'act'
+        : classifyIntent(command, { parseConfidence: result.parseConfidence, via: result.via, explicitCommand: !!meta.explicitCommand, channel: meta.channel || defaultChannel, text });
+      if (decision === 'offer' && command) {
+        const policy = getLearnerCommandPolicy(command);
+        return rememberConfirmation({
+          commandId: command.id,
+          scopeId: null,
+          params: result.params || {},
+          prompt: commandOfferPrompt(command, ctx, result.params),
+          risk: policy.risk,
+          channel: meta.channel || defaultChannel,
+          offered: true
+        });
+      }
       return execute(result.commandId, result.params || {}, Object.assign({}, meta, {
         globalOnly: true,
         parseConfidence: result.parseConfidence,
@@ -2208,6 +2249,85 @@ function _throwIfCommandPlanningAborted(signal) {
   const error = new Error('Command planning cancelled.');
   error.name = 'AbortError';
   throw error;
+}
+
+// ── Conversation-first intake (A1/A2, 2026-08-16) ───────────────────────────
+// Free-flowing speech is the DEFAULT and must never be punished. Command
+// recognition is an enhancement layered on top of it. Two rules follow:
+//
+//   1. A command that changes what is on screen is OFFERED, never performed on
+//      a guess. Aaron's case: "build a lesson" opened Quick Start on a teacher
+//      who was long past that stage, destroying their place in a workflow. The
+//      words matched; the STAGE did not, and no matcher can see stage. Since a
+//      wrong navigation has no undo and a spoken "yes" costs one word, the
+//      asymmetry decides it.
+//   2. A quiet command (font size, tone, reading level, read-aloud transport)
+//      still fires directly on a confident match. Those are cheap to undo and
+//      making the user confirm them would be the friction Aaron is removing.
+//
+// Anything that matches nothing at all is a CONVERSATION TURN, not an error.
+// That branch lives in the callers (the voice loop and the bot chat); this pair
+// of helpers only decides act-vs-offer for the things that DID match.
+const COMMAND_ACT_CONFIDENCE = 0.8;
+// Screen-changing by id shape. Derived, not hand-listed, so a new open_*/
+// generate_* command inherits the safe default the day it is added.
+const SCREEN_CHANGING_COMMAND_RE = /^(?:open_|go_|generate_|create_|launch_|resume_|run_|onboarding_|preview_|export_|share_|submit_|zen_|app_tour|apply_lesson_template|rebuild_lesson_step|edit_assignment_directions|surprise_me_contextually|use_contextual_suggestion|clear_|switch_theme|start_test_prep_hands_free)/;
+// Exceptions: these visibly change the screen but the ask is unmistakable and
+// the state is one word away from being undone ("stop reading", "go back").
+// Confirming them would be pure friction.
+const DIRECT_ACT_COMMAND_IDS = new Set([
+  'read_this_page', 'stop_reading', 'pause_read_this_page', 'resume_read_this_page',
+  'next_read_this_page', 'previous_read_this_page', 'repeat_read_this_page', 'close_read_this_page',
+  'read_assignment_directions', 'read_media_descriptions', 'describe_current_screen',
+  'describe_current_media', 'repeat_last_response', 'go_back', 'close_current_surface',
+  'open_text_settings', 'open_voice_settings', 'list_current_actions', 'check_assignment_progress',
+  'next_assignment_step', 'show_success_criteria', 'review_teacher_feedback', 'where_is',
+  'resource_next', 'resource_previous', 'resource_read', 'resource_describe', 'resource_list',
+  'resource_exit', 'resource_read_media', 'tutorial_next', 'tutorial_previous', 'tutorial_describe',
+  'tutorial_list_actions', 'tutorial_focus', 'tutorial_exit', 'tutorial_skip', 'tutorial_review_latest',
+  'test_prep_hands_free_status', 'voice_stop',
+]);
+function commandChangesScreen(command) {
+  if (!command || !command.id) return false;
+  const id = String(command.id);
+  if (DIRECT_ACT_COMMAND_IDS.has(id)) return false;
+  if (command.opensPanel) return true;
+  // A runAsync command is a generation: slow, expensive, and it replaces the
+  // view with its result when it lands.
+  if (typeof command.runAsync === 'function') return true;
+  return SCREEN_CHANGING_COMMAND_RE.test(id);
+}
+// 'act' | 'offer'. Voice and the bot chat share this so the two channels can
+// never drift into disagreeing about what is safe to do without asking.
+function classifyCommandIntent(command, opts = {}) {
+  if (!command) return 'offer';
+  // An explicit "command <phrase>" prefix is the user taking responsibility.
+  if (opts.explicitCommand) return 'act';
+  if (command.destructive) return 'offer';
+  if (commandChangesScreen(command)) return 'offer';
+  const confidence = Number(opts.parseConfidence);
+  return Number.isFinite(confidence) && confidence >= COMMAND_ACT_CONFIDENCE ? 'act' : 'offer';
+}
+// "command open the educator hub" / "hey Allo, command bigger text". Returns
+// the stripped phrase, or null when no prefix was used.
+function stripExplicitCommandPrefix(rawText) {
+  const text = String(rawText || '').trim();
+  const m = text.match(/^(?:(?:hey|hi|ok|okay)\s+allo[,!.]?\s+)?(?:command|do this|run command)[,:]?\s+(.{2,})$/i);
+  return m ? m[1].trim() : null;
+}
+// What AlloBot says when it has a match but will not act on it. Deliberately
+// shaped as an offer with a visible exit: the user may answer, or simply keep
+// talking, and keeping talking is not a failure.
+function commandOfferPrompt(command, ctx, params) {
+  const t = _mkT(ctx && ctx.t);
+  const label = (command && command.label) ? String(command.label) : String((command && command.id) || 'that').replace(/_/g, ' ');
+  const hint = (command && command.hint) ? String(command.hint) : '';
+  const topic = params && params.topic ? String(params.topic).slice(0, 60) : '';
+  const lead = topic
+    ? t('voice_control.offer_lead_topic', 'I can {action} about {topic}.').replace('{action}', label.toLowerCase()).replace('{topic}', topic)
+    : t('voice_control.offer_lead', 'I can {action}.').replace('{action}', label.toLowerCase());
+  const detail = hint ? (' ' + hint + '.') : '';
+  return lead + detail + ' ' + t('voice_control.offer_tail', 'Say yes to do it, or just keep talking and I will listen.');
 }
 
 async function routeUtterance(ctx, rawText, opts = {}) {
@@ -3020,8 +3140,112 @@ function detectNavigationIntent(text) {
   return { isNav: true, target: target };
 }
 
+// ── A4: shared microphone input meter ───────────────────────────────────────
+// "There is no indication that the microphone is picking the user up." One
+// analyser, reference-counted, publishing a single RMS level that every surface
+// wanting a meter subscribes to. Reference counting is the whole point: if each
+// surface opened its own getUserMedia there would be several browser recording
+// indicators and, on some devices, several permission prompts, for one physical
+// microphone. Callers that ALREADY own a stream (the on-device Whisper engine)
+// hand it in and no second capture happens at all.
+const micLevelMonitor = (function () {
+  let refs = 0, stream = null, ownsStream = false, audioCtx = null, analyser = null, buf = null, timer = null;
+  let level = 0, at = 0, starting = false;
+  const listeners = new Set();
+  const SAMPLE_MS = 66; // ~15fps: responsive enough to read as live, cheap enough to ignore
+  const publish = (value) => {
+    level = value;
+    at = (typeof Date !== 'undefined' && Date.now) ? Date.now() : 0;
+    const detail = { value, at };
+    try { if (typeof window !== 'undefined') window.__alloMicLevel = detail; } catch (_) {}
+    listeners.forEach((fn) => { try { fn(detail); } catch (_) {} });
+    try {
+      if (typeof window !== 'undefined' && window.dispatchEvent && window.CustomEvent) {
+        window.dispatchEvent(new window.CustomEvent('alloflow:mic-level', { detail }));
+      }
+    } catch (_) {}
+  };
+  const tick = () => {
+    if (!analyser || !buf) return;
+    try {
+      analyser.getFloatTimeDomainData(buf);
+      let sum = 0;
+      for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
+      const rms = Math.sqrt(sum / buf.length);
+      // Conversational speech sits around 0.02-0.08 RMS, so a linear bar barely
+      // twitches. Compress so ordinary talking actually fills the meter, which
+      // is the reassurance the meter exists to give.
+      publish(Math.max(0, Math.min(1, Math.sqrt(rms) * 2.2)));
+    } catch (_) {}
+    timer = setTimeout(tick, SAMPLE_MS);
+  };
+  const teardown = () => {
+    if (timer) { try { clearTimeout(timer); } catch (_) {} timer = null; }
+    if (analyser) { try { analyser.disconnect(); } catch (_) {} analyser = null; }
+    buf = null;
+    if (audioCtx) { try { audioCtx.close(); } catch (_) {} audioCtx = null; }
+    if (stream && ownsStream) { try { stream.getTracks().forEach((tr) => tr.stop()); } catch (_) {} }
+    stream = null; ownsStream = false;
+    publish(0);
+  };
+  const wire = (incoming, owns) => {
+    const Ctx = typeof window !== 'undefined' ? (window.AudioContext || window.webkitAudioContext) : null;
+    if (!Ctx || !incoming) { if (owns) { try { incoming.getTracks().forEach((tr) => tr.stop()); } catch (_) {} } return false; }
+    try {
+      stream = incoming; ownsStream = !!owns;
+      audioCtx = new Ctx();
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 512;
+      audioCtx.createMediaStreamSource(incoming).connect(analyser);
+      buf = new Float32Array(analyser.fftSize);
+      tick();
+      return true;
+    } catch (_) { teardown(); return false; }
+  };
+  return {
+    // acquire({ stream }) -> release(). Safe to call when the browser has no
+    // media stack at all: the meter simply never reports a level.
+    acquire(acquireOpts) {
+      refs += 1;
+      let released = false;
+      const release = () => {
+        if (released) return;
+        released = true;
+        refs = Math.max(0, refs - 1);
+        if (refs === 0) teardown();
+      };
+      if (refs > 1 || analyser || starting) return release;
+      const provided = acquireOpts && acquireOpts.stream;
+      if (provided) { wire(provided, false); return release; }
+      const nav = typeof navigator !== 'undefined' ? navigator : null;
+      if (!nav || !nav.mediaDevices || typeof nav.mediaDevices.getUserMedia !== 'function') return release;
+      starting = true;
+      nav.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } })
+        .then((got) => {
+          starting = false;
+          // Released while the permission round-trip was in flight.
+          if (refs === 0) { try { got.getTracks().forEach((tr) => tr.stop()); } catch (_) {} return; }
+          wire(got, true);
+        })
+        .catch(() => { starting = false; });
+      return release;
+    },
+    subscribe(fn) {
+      if (typeof fn !== 'function') return () => {};
+      listeners.add(fn);
+      return () => { listeners.delete(fn); };
+    },
+    getLevel: () => ({ value: level, at }),
+    isActive: () => refs > 0,
+    // Test seam: drive the published level without a real microphone.
+    _publish: publish,
+  };
+})();
+try { if (typeof window !== 'undefined') window.__alloMicLevelMonitor = micLevelMonitor; } catch (_) {}
+
 function createVoiceLoop(getCtx, opts = {}) {
   let rec = null, active = false, errStreak = 0, routeController = null, routeSerial = 0, pageHideHandler = null, muteChangeHandler = null;
+  let micMeterRelease = null;
   let whisperState = null, engineName = "webspeech", standby = false, awake = false, awakeTimer = null;
   // Momentary pause: the session stays alive but the microphone is released.
   // UI callers get an indefinite pause. Spoken pauses install a bounded
@@ -3069,6 +3293,18 @@ function createVoiceLoop(getCtx, opts = {}) {
     const detail = { state, mode: "commands", label: "Allo voice commands", message: message || "" };
     if (privacy !== undefined) detail.privacy = privacy;
     try { return lease.update(detail); } catch (_) { return false; }
+  };
+  // A4: the input meter follows the microphone, not the session. It starts when
+  // the mic actually opens and stops the moment it is released, so a moving bar
+  // is always a true statement that the user is being heard.
+  const startMicMeter = (existingStream) => {
+    if (micMeterRelease) return;
+    try { micMeterRelease = micLevelMonitor.acquire(existingStream ? { stream: existingStream } : null); } catch (_) { micMeterRelease = null; }
+  };
+  const stopMicMeter = () => {
+    const release = micMeterRelease;
+    micMeterRelease = null;
+    if (release) { try { release(); } catch (_) {} }
   };
   const cancelRoute = () => {
     routeSerial++;
@@ -3348,19 +3584,50 @@ function createVoiceLoop(getCtx, opts = {}) {
     }
     speakWithBrowser();
   };
-  const announce = (msg, speak = true) => {
+  const announce = (msg, speak = true, announceOpts = {}) => {
     const c = getCtx();
     _rememberCommandNarration(msg);
     try {
       if (window.alloAnnounce) window.alloAnnounce(msg);
     } catch (_) {
     }
+    // A conversational reply is already on screen in the chat and in AlloBot's
+    // bubble; toasting the whole paragraph on top of that is noise.
     try {
-      if (c && c.addToast) c.addToast(msg, "info");
+      if (announceOpts.toast !== false && c && c.addToast) c.addToast(msg, "info");
     } catch (_) {
     }
     if (speak) speakReply(msg, c);
     else if (active) updateVoiceSession(paused ? "paused" : "listening", paused ? "Microphone paused." : "Listening for a command.");
+  };
+  // ── A1: the conversation sink ─────────────────────────────────────────────
+  // Speech that is not a command is an ordinary turn with AlloBot, never an
+  // error. The host wires ctx.converse to the SAME chat delivery path the typed
+  // box uses, so the transcript, the persona and the app context are shared and
+  // the two input modes cannot drift apart. The reply comes back as text and is
+  // spoken by THIS loop rather than by the avatar, because only this loop stops
+  // the microphone while it talks and supports barge-in. That also means a
+  // hidden AlloBot still answers out loud (A3).
+  const converseWith = async (text, ctx) => {
+    const c = ctx || getCtx() || {};
+    const t = _mkT(c && c.t);
+    if (typeof c.converse !== "function") {
+      // No conversational surface wired (an older host, or a standalone test
+      // harness). Say what is true. Do NOT report a failed command.
+      announce(t('voice_control.no_chat_surface', 'I heard you. I can only run app commands from here right now, so ask AlloBot in the chat and it will answer there.'));
+      return;
+    }
+    updateVoiceSession("processing", "Asking AlloBot.");
+    let reply = null;
+    try { reply = await Promise.resolve(c.converse(text, { channel: "voice" })); }
+    catch (_) { reply = null; }
+    if (!active) return;
+    const replyText = typeof reply === "string" ? reply : (reply && typeof reply === "object" ? reply.narration : "");
+    if (replyText && String(replyText).trim()) { announce(String(replyText).trim(), true, { toast: false }); return; }
+    // Delivered, but the answer did not come back as text (a slow model, or the
+    // chat handled it visually). Stay quiet and keep listening: silence reads
+    // as "still thinking", which is true, where an apology reads as rejection.
+    updateVoiceSession(paused ? "paused" : "listening", paused ? "Microphone paused." : "Listening.");
   };
   const armPendingConfirmation = (pending) => {
     clearPendingConfirmation();
@@ -3401,6 +3668,7 @@ function createVoiceLoop(getCtx, opts = {}) {
     if (lease && !stopOpts.skipVoiceLeaseRelease && typeof lease.release === "function") {
       try { lease.release(stopOpts.voiceReason || reason || "stopped"); } catch (_) {}
     }
+    stopMicMeter();
     if (pageHideHandler) {
       try {
         window.removeEventListener("pagehide", pageHideHandler);
@@ -3452,6 +3720,12 @@ function createVoiceLoop(getCtx, opts = {}) {
     text = String(text || "").trim();
     if (!text) return;
     const cc = getCtx();
+    // A1: "command bigger text" is the user taking responsibility for the
+    // match, so the offer step is skipped. It is an accelerator for people who
+    // already know the command, never a requirement for ordinary speech.
+    const explicitPhrase = stripExplicitCommandPrefix(text);
+    const explicitCommand = !!explicitPhrase;
+    if (explicitPhrase) text = explicitPhrase;
     if (/^(stop listening|stop voice|voice off)\b/i.test(text)) {
       stop("Voice control off — the microphone is released.");
       return;
@@ -3491,7 +3765,7 @@ function createVoiceLoop(getCtx, opts = {}) {
       if (/^(?:no|cancel(?: it)?|do not|don['’]?t|never ?mind|stop)[.!]?$/i.test(text)) {
         if (pending.kind === "kernel-command") { try { commandKernel.confirm("no", { channel: "voice" }); } catch (_) {} }
         clearPendingConfirmation();
-        announce("Cancelled. Nothing was changed.");
+        announce(pending.offered ? "Okay, I will leave that alone." : "Cancelled. Nothing was changed.");
         return;
       }
       if (/^(?:yes|confirm(?: it)?|do it|go ahead|proceed)(?: please)?[.!]?$/i.test(text)) {
@@ -3531,8 +3805,17 @@ function createVoiceLoop(getCtx, opts = {}) {
           return;
         }
       }
-      announce("I am waiting for confirmation. Say yes to continue, no to cancel, or repeat details.");
-      return;
+      // A1: an OFFER that the user did not answer lapses silently and this
+      // utterance is treated as a brand-new turn (it may be another command, or
+      // it may be conversation). A real confirmation — a destructive command or
+      // a plan the user already agreed to review — still holds the floor.
+      if (pending.offered) {
+        if (pending.kind === "kernel-command") { try { commandKernel.cancel("offer-lapsed", { pendingOnly: true, silent: true }); } catch (_) {} }
+        clearPendingConfirmation();
+      } else {
+        announce("I am waiting for confirmation. Say yes to continue, no to cancel, or repeat details.");
+        return;
+      }
     }
     if (standby && engineName === "whisper") {
       if (!awake) {
@@ -3567,33 +3850,33 @@ function createVoiceLoop(getCtx, opts = {}) {
       if (looksMultiStep(text)) {
         const steps = await planUtterance(cc, text, { signal, allowInteractive: false });
         if (!active || currentRouteSerial !== routeSerial || signal && signal.aborted) return;
-        if (!steps || steps.length < 2) {
-          announce("I could not make a safe multi-step plan from that request, so no actions ran. Try one command at a time.");
-          return;
-        }
+        // A1: a request the planner could not turn into steps is not an error.
+        // "Get me ready for tomorrow" is a perfectly good thing to say to an
+        // assistant; it just is not a plan. Hand it to conversation.
+        if (!steps || steps.length < 2) { await converseWith(text, cc); return; }
         const report = validatePlan(cc, steps, { allowInteractive: false });
-        if (!report.ok) {
-          announce("That multi-step plan is not available in the current app state, so no actions ran.");
-          return;
-        }
+        if (!report.ok) { await converseWith(text, cc); return; }
         const exactSteps = report.items.map((item) => ({ commandId: item.commandId, params: Object.freeze(Object.assign({}, item.params || {})), why: item.why || '' }));
         const prompt = voicePlanPrompt(cc, exactSteps);
         armPendingConfirmation({ kind: "plan", steps: exactSteps, prompt });
         announce(prompt);
         return;
       }
-      const r = await commandKernel.handleUtterance(text, Object.assign({}, recognitionMeta, { allowAi: true, signal, channel: "voice" }));
+      const r = await commandKernel.handleUtterance(text, Object.assign({}, recognitionMeta, { allowAi: true, signal, channel: "voice", explicitCommand }));
       if (!active || currentRouteSerial !== routeSerial || signal && signal.aborted) return;
       if (r && r.confirmationRequired && r.commandId) {
         const prompt = String(r.narration || voiceCommandPrompt(cc, r));
-        armPendingConfirmation({ kind: "kernel-command", commandId: r.commandId, scopeId: r.scopeId || null, prompt });
+        armPendingConfirmation({ kind: "kernel-command", commandId: r.commandId, scopeId: r.scopeId || null, prompt, offered: !!r.offered });
         announce(prompt);
       }
       else if (r && r.handled) announce(r.narration, !r.suppressVoiceReply);
-      else announce("Didn’t catch a command in “" + text.slice(0, 60) + "” — try “bigger text” or " + (getCommandAudience(cc) === "student" ? "“read directions”." : "“open the educator hub”."));
+      // A1, the whole point: nothing matched, so this was conversation all
+      // along. It was NEVER a failed command, and saying so out loud is what
+      // made hands-free mode feel command-first.
+      else await converseWith(text, cc);
     } catch (error) {
       if (!active || currentRouteSerial !== routeSerial || error && error.name === "AbortError") return;
-      announce("Didn’t catch a command in “" + text.slice(0, 60) + "” — try “bigger text” or " + (getCommandAudience(cc) === "student" ? "“read directions”." : "“open the educator hub”."));
+      await converseWith(text, cc);
     } finally {
       if (currentRouteSerial === routeSerial) routeController = null;
     }
@@ -3634,6 +3917,7 @@ function createVoiceLoop(getCtx, opts = {}) {
     proc.connect(gain);
     gain.connect(ac.destination);
     whisperState = { stream: stream, ac: ac, proc: proc, gain: gain, seg: seg, src: src, asr: asr };
+    startMicMeter(stream);
     updateVoiceSession("listening", "On-device recognition is listening.", "Audio stays on this device.");
   };
   const beginWebSpeech = (c, standbyWanted) => {
@@ -3686,6 +3970,7 @@ function createVoiceLoop(getCtx, opts = {}) {
         }
       };
       rec.start();
+      startMicMeter(null);
     } catch (e) {
       stop("Voice control could not start: " + (e && e.message || "unknown"));
     }
@@ -3803,6 +4088,7 @@ function createVoiceLoop(getCtx, opts = {}) {
       ? Math.max(MIN_SPOKEN_PAUSE_MS, Math.min(MAX_SPOKEN_PAUSE_MS, requestedAutoResumeMs))
       : 0;
     paused = true;
+    stopMicMeter();
     clearPauseResumeTimer();
     updateVoiceSession("paused", "Microphone paused.");
     cancelRoute();
@@ -3858,6 +4144,7 @@ function createVoiceLoop(getCtx, opts = {}) {
     } else {
       try { if (rec) rec.start(); } catch (_) {}
     }
+    startMicMeter(engineName === "whisper" && whisperState ? whisperState.stream : null);
     updateVoiceSession("listening", "Listening for a command.");
     announce("Listening again.");
     return true;

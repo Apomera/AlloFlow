@@ -152,6 +152,7 @@ ${compiled}
   window.AlloModules.JetpackParticles = (typeof JetpackParticles !== 'undefined') ? JetpackParticles : null;
   window.AlloModules.ReactionBubble = (typeof ReactionBubble !== 'undefined') ? ReactionBubble : null;
   window.AlloModules.BotConfettiBurst = (typeof BotConfettiBurst !== 'undefined') ? BotConfettiBurst : null;
+  window.AlloModules.AlloMicMeter = (typeof AlloMicMeter !== 'undefined') ? AlloMicMeter : null;
   window.AlloModules.AlloBot = AlloBot;
 
   console.log('[AlloBotModule] AlloBot registered successfully');

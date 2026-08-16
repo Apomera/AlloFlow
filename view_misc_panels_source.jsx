@@ -2102,6 +2102,14 @@ function SourceGenPanel(props) {
     targetStandards
   } = props;
   if (!(showSourceGen)) return null;
+  // N7 (2026-08-16): the standards finder inside this panel read the UNIVERSAL
+  // SETTINGS grade, even though this section carries its own target level right
+  // above it. Source text set to 5th Grade with Universal Settings still on 3rd
+  // returned 3rd grade standards, silently. Resolution order: this section's own
+  // grade first, Universal Settings only when the section has none. The user can
+  // already see and change the grade this uses, it is the "Target Level" select
+  // in this same panel, so no second control is needed here.
+  const finderGrade = sourceLevel || gradeLevel;
   return (
                   <div className="p-4 bg-indigo-50/50 border-b border-indigo-100 animate-in slide-in-from-top-2 space-y-3">
                       <div>
@@ -2186,6 +2194,13 @@ function SourceGenPanel(props) {
                             </div>
                             {standardMode === 'ai' ? (
                                 <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                                    {/* Say which grade the search will use. It was invisible before,
+                                        which is how a 3rd grade result for a 5th grade source went
+                                        unnoticed. The control that changes it is the Target Level
+                                        select in this same panel, named here so the link is obvious. */}
+                                    <p className="text-[11px] text-indigo-900/80">
+                                      {t('standards.finder_grade_note', { grade: finderGrade }) || `Searching for ${finderGrade} standards. Change the Target Level above to search a different grade.`}
+                                    </p>
                                     <div className="flex gap-2">
                                         <input aria-label={t('common.standards_region_optional')}
                                             type="text"
@@ -2198,13 +2213,13 @@ function SourceGenPanel(props) {
                                             type="text"
                                             value={aiStandardQuery}
                                             onChange={(e) => setAiStandardQuery(e.target.value)}
-                                            onKeyDown={(e) => e.key === 'Enter' && handleFindStandards(gradeLevel)}
+                                            onKeyDown={(e) => e.key === 'Enter' && handleFindStandards(finderGrade)}
                                             placeholder={t('standards.finder_placeholder')}
                                             className="flex-grow text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
                                         />
                                         <button
                                             aria-label={t('common.refresh')}
-                                            onClick={() => handleFindStandards(gradeLevel)}
+                                            onClick={() => handleFindStandards(finderGrade)}
                                             disabled={!aiStandardQuery.trim() || isFindingStandards}
                                             className="bg-indigo-600 hover:bg-indigo-700 text-white p-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                             title={t('standards.search_button_title')}

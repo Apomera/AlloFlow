@@ -24,24 +24,45 @@
     // CDN for the piper-tts-web library (mintplex-labs fork — works on jsDelivr)
     const PIPER_CDN = 'https://cdn.jsdelivr.net/npm/@mintplex-labs/piper-tts-web@1.0.4/+esm';
 
-    // Default voice per language (quality: medium for best balance)
-    // voiceId matches the PATH_MAP keys in the piper-tts-web package
+    // Default voice per language.
+    //
+    // ── 2026-08-16: seven of these ids did not exist ─────────────────────
+    // voiceId MUST be a key of the PATH_MAP that piper-tts-web ships. When it
+    // is not, the library computes `PATH_MAP[voiceId]` -> undefined and fetches
+    //   https://huggingface.co/.../resolve/main/undefined
+    //   https://huggingface.co/.../resolve/main/undefined.json
+    // Hugging Face answers 404 with the plain body "Entry not found", and the
+    // library's fetchBlob() never checks response.ok — so that error page is
+    // written into OPFS as the "voice model", the download reports Ready 100%,
+    // and the next predict() runs
+    //   JSON.parse("Entry not found")
+    //     -> SyntaxError: Unexpected token 'E', "Entry not found" is not valid JSON
+    // which is the exact string field-reported on 2026-08-16. Spanish was one of
+    // the seven (es_ES-carlfm only exists at x_low), which is why it looked like
+    // a non-English-only fault.
+    //
+    // Verified against @mintplex-labs/piper-tts-web@1.0.4 PATH_MAP (124 keys):
+    // every id below is a real key. `_resolveVoiceId` re-checks at runtime, so a
+    // future library version that drops an id degrades to "no Piper voice for
+    // this language" instead of poisoning the cache.
     const PIPER_VOICE_MAP = {
         'ar': { name: 'Arabic (Kareem)',         voiceId: 'ar_JO-kareem-medium' },
         'ca': { name: 'Catalan (Upc)',           voiceId: 'ca_ES-upc_ona-medium' },
         'cs': { name: 'Czech (Jirka)',           voiceId: 'cs_CZ-jirka-medium' },
         'da': { name: 'Danish (Talesyntese)',    voiceId: 'da_DK-talesyntese-medium' },
         'de': { name: 'German (Thorsten)',       voiceId: 'de_DE-thorsten-medium' },
-        'el': { name: 'Greek (Rapunzel)',        voiceId: 'el_GR-rapunzelina-medium' },
+        'el': { name: 'Greek (Rapunzelina)',     voiceId: 'el_GR-rapunzelina-low' },
         'en': { name: 'English (Lessac)',        voiceId: 'en_US-lessac-medium' },
-        'es': { name: 'Spanish (Carlfm)',        voiceId: 'es_ES-carlfm-medium' },
+        // Latin American Spanish: the app's Spanish users are US school
+        // families. es_ES-davefx-medium (peninsular) is the alternative.
+        'es': { name: 'Spanish (Ald)',           voiceId: 'es_MX-ald-medium' },
         'fi': { name: 'Finnish (Harri)',         voiceId: 'fi_FI-harri-medium' },
         'fr': { name: 'French (Siwis)',          voiceId: 'fr_FR-siwis-medium' },
         'hu': { name: 'Hungarian (Anna)',        voiceId: 'hu_HU-anna-medium' },
         'is': { name: 'Icelandic (Bui)',         voiceId: 'is_IS-bui-medium' },
-        'it': { name: 'Italian (Riccardo)',      voiceId: 'it_IT-riccardo-medium' },
+        'it': { name: 'Italian (Paola)',         voiceId: 'it_IT-paola-medium' },
         'ka': { name: 'Georgian (Natia)',        voiceId: 'ka_GE-natia-medium' },
-        'kk': { name: 'Kazakh (Isseke)',         voiceId: 'kk_KZ-iseke-medium' },
+        'kk': { name: 'Kazakh (Iseke)',          voiceId: 'kk_KZ-iseke-x_low' },
         'ne': { name: 'Nepali (Google)',         voiceId: 'ne_NP-google-medium' },
         'nl': { name: 'Dutch (Mls)',             voiceId: 'nl_NL-mls-medium' },
         'no': { name: 'Norwegian (Talesyntese)', voiceId: 'no_NO-talesyntese-medium' },
@@ -49,18 +70,23 @@
         'pt': { name: 'Portuguese (Faber)',      voiceId: 'pt_BR-faber-medium' },
         'ro': { name: 'Romanian (Mihai)',        voiceId: 'ro_RO-mihai-medium' },
         'ru': { name: 'Russian (Irina)',         voiceId: 'ru_RU-irina-medium' },
-        'sr': { name: 'Serbian (Srecko)',        voiceId: 'sr_RS-srecko-medium' },
+        'sr': { name: 'Serbian (Serbski Institut)', voiceId: 'sr_RS-serbski_institut-medium' },
         'sv': { name: 'Swedish (Nst)',           voiceId: 'sv_SE-nst-medium' },
         'sw': { name: 'Swahili (Lanfrica)',      voiceId: 'sw_CD-lanfrica-medium' },
         'tr': { name: 'Turkish (Dfki)',          voiceId: 'tr_TR-dfki-medium' },
-        'uk': { name: 'Ukrainian (Lada)',        voiceId: 'uk_UA-lada-medium' },
-        'vi': { name: 'Vietnamese (25hours)',    voiceId: 'vi_VN-25hours_single-medium' },
+        'uk': { name: 'Ukrainian (Ukrainian TTS)', voiceId: 'uk_UA-ukrainian_tts-medium' },
+        'vi': { name: 'Vietnamese (Vais1000)',   voiceId: 'vi_VN-vais1000-medium' },
         'zh': { name: 'Chinese (HuaYang)',       voiceId: 'zh_CN-huayan-medium' },
     };
+
+    // Preference order when the configured id is missing from a future
+    // PATH_MAP and a same-language substitute has to be picked.
+    const QUALITY_ORDER = ['-medium', '-high', '-low', '-x_low'];
 
     // ─── State ──────────────────────────────────────────────────────────
     let _currentLang = null;
     let _ready = false;
+    let _lastError = null;
     let _loadProgress = 0;
     let _onProgress = null;
     let _generation = 0;
@@ -253,6 +279,117 @@
         return promise;
     }
 
+    // ─── voiceId validation against the library's own PATH_MAP ──────────
+    // The single most important guard in this file. piper-tts-web resolves a
+    // voice through PATH_MAP[voiceId]; an id that is not a key produces the
+    // literal URL ".../resolve/main/undefined", a 404 body of "Entry not
+    // found", and a permanently poisoned OPFS entry (see PIPER_VOICE_MAP).
+    // Nothing here ever hands the library an unvalidated id.
+    let _pathMap = null;                 // filled once the library is loaded
+    const _unavailableLangs = new Set(); // proven to have no usable voice
+    const _resolvedIds = new Map();      // baseLang -> voiceId actually usable
+
+    function _resolveVoiceId(baseLang) {
+        const configured = PIPER_VOICE_MAP[baseLang];
+        if (!configured) return null;
+        if (_resolvedIds.has(baseLang)) return _resolvedIds.get(baseLang);
+        // Before the library is loaded we can only trust the table. Every id in
+        // it was checked against 1.0.4's PATH_MAP, so this is the normal path.
+        if (!_pathMap) return configured.voiceId;
+        if (Object.prototype.hasOwnProperty.call(_pathMap, configured.voiceId)) {
+            _resolvedIds.set(baseLang, configured.voiceId);
+            return configured.voiceId;
+        }
+        // The library dropped the id. Pick the best same-language substitute
+        // rather than fetching a URL we know is wrong.
+        const prefix = String(configured.voiceId).split('_')[0] + '_';
+        const candidates = Object.keys(_pathMap).filter((k) => k.indexOf(prefix) === 0);
+        let picked = null;
+        for (const suffix of QUALITY_ORDER) {
+            picked = candidates.find((k) => k.endsWith(suffix)) || null;
+            if (picked) break;
+        }
+        if (!picked) picked = candidates[0] || null;
+        if (picked) {
+            console.warn('[Piper TTS] "' + configured.voiceId + '" is not in this library build; using "' + picked + '" for ' + baseLang + '.');
+        } else {
+            console.warn('[Piper TTS] No voice model available for ' + baseLang + ' in this library build.');
+            _unavailableLangs.add(baseLang);
+        }
+        _resolvedIds.set(baseLang, picked);
+        return picked;
+    }
+
+    // The library caches whatever bytes come back, error pages included, so the
+    // config URL is checked BEFORE anything is written. A model whose config
+    // does not fetch and parse is not downloaded at all.
+    async function _configIsReal(lib, voiceId, signal) {
+        try {
+            const path = lib.PATH_MAP && lib.PATH_MAP[voiceId];
+            const base = lib.HF_BASE || 'https://huggingface.co/diffusionstudio/piper-voices/resolve/main';
+            if (!path) return false;
+            const res = await fetch(base + '/' + path + '.json', signal ? { signal } : undefined);
+            if (!res.ok) {
+                console.warn('[Piper TTS] Voice config for ' + voiceId + ' returned HTTP ' + res.status + '; skipping this voice.');
+                return false;
+            }
+            const text = await res.text();
+            JSON.parse(text); // an error page fails here, before it can be cached
+            return true;
+        } catch (e) {
+            if (e && e.name === 'AbortError') throw e;
+            console.warn('[Piper TTS] Voice config for ' + voiceId + ' is not usable:', (e && e.message) || e);
+            return false;
+        }
+    }
+
+    // ─── One-time cleanup of already-poisoned OPFS entries ──────────────
+    // Devices that ran the previous build have files in OPFS named literally
+    // "undefined" and "undefined.json" (the 404 error page saved under the
+    // last path segment of ".../resolve/main/undefined"). The library's own
+    // stored()/remove() cannot see or delete them: stored() only lists .onnx
+    // files whose key is in PATH_MAP, and remove() recomputes the same
+    // undefined path only for an id that is still broken. Correcting the voice
+    // table therefore does not un-break an already-poisoned device, so clear
+    // the bad entries directly, once per session.
+    //
+    // Also drops any cached voice file under 1 KB: a genuine .onnx is
+    // megabytes and a genuine config is hundreds of bytes of JSON, so anything
+    // that small is an error page from some other interrupted download.
+    let _purgePromise = null;
+    function _purgePoisonedEntries() {
+        if (_purgePromise) return _purgePromise;
+        _purgePromise = (async () => {
+            try {
+                if (!navigator.storage || typeof navigator.storage.getDirectory !== 'function') return 0;
+                const root = await navigator.storage.getDirectory();
+                let dir;
+                try { dir = await root.getDirectoryHandle('piper'); }
+                catch (_) { return 0; } // nothing cached yet
+                const doomed = [];
+                for await (const [name, handle] of dir.entries()) {
+                    if (!handle || handle.kind !== 'file') continue;
+                    if (name === 'undefined' || name.indexOf('undefined.') === 0) { doomed.push(name); continue; }
+                    try {
+                        const file = await handle.getFile();
+                        if (file.size < 1024) doomed.push(name);
+                    } catch (_) {}
+                }
+                for (const name of doomed) {
+                    try { await dir.removeEntry(name); } catch (_) {}
+                }
+                if (doomed.length) {
+                    console.warn('[Piper TTS] Removed ' + doomed.length + ' unusable cached voice file(s):', doomed);
+                }
+                return doomed.length;
+            } catch (e) {
+                console.warn('[Piper TTS] Could not check the voice cache:', (e && e.message) || e);
+                return 0;
+            }
+        })();
+        return _purgePromise;
+    }
+
     // ─── Download a Voice Model for a Language ──────────────────────────
     async function _ensureVoice(langCode, options) {
         const signal = options && options.signal;
@@ -263,6 +400,7 @@
             _currentLang = baseLang;
             return true;
         }
+        if (_unavailableLangs.has(baseLang)) return false;
 
         const voiceInfo = PIPER_VOICE_MAP[baseLang];
         if (!voiceInfo) {
@@ -275,12 +413,27 @@
             const generation = _generation;
             promise = (async () => {
                 try {
+                    await _purgePoisonedEntries();
                     const lib = await _ensureLibLoaded();
+                    if (!_pathMap && lib && lib.PATH_MAP) _pathMap = lib.PATH_MAP;
+                    const voiceId = _resolveVoiceId(baseLang);
+                    if (!voiceId) {
+                        _unavailableLangs.add(baseLang);
+                        return false;
+                    }
                     _fireProgress('Downloading ' + voiceInfo.name + ' voice', 0.2);
 
-                    // Pre-download the voice model into IndexedDB cache.
+                    if (!(await _configIsReal(lib, voiceId, signal))) {
+                        // Anything already sitting in OPFS for this voice came
+                        // from the same bad response, so throw it out too.
+                        await _evictVoice(lib, voiceId, baseLang);
+                        _unavailableLangs.add(baseLang);
+                        return false;
+                    }
+
+                    // Pre-download the voice model into the OPFS cache.
                     if (lib.download) {
-                        await lib.download(voiceInfo.voiceId, function (progress) {
+                        await lib.download(voiceId, function (progress) {
                             var pct = 0.2 + (progress && progress.progress ? progress.progress * 0.6 : 0);
                             _fireProgress('Downloading ' + voiceInfo.name, pct);
                         });
@@ -293,7 +446,7 @@
                     _currentLang = baseLang;
                     _ready = true;
                     _fireProgress('Ready', 1.0);
-                    console.log('[Piper TTS] Voice ready for: ' + voiceInfo.name);
+                    console.log('[Piper TTS] Voice ready for: ' + voiceInfo.name + ' (' + voiceId + ')');
                     return true;
                 } catch (e) {
                     if (e && e.name === 'AbortError') throw e;
@@ -350,7 +503,16 @@
         return /no graph was found in the protobuf/i.test(msg)
             || /can't create a session/i.test(msg)
             || /failed to load model/i.test(msg)
-            || /protobuf parsing failed/i.test(msg);
+            || /protobuf parsing failed/i.test(msg)
+            // A cached HTTP error page reaches us as a JSON parse failure on the
+            // voice CONFIG rather than an onnx session failure. Same disease,
+            // same cure: evict and re-download once. Without these patterns the
+            // 2026-08-16 "Unexpected token 'E' ... Entry not found ... is not
+            // valid JSON" state was permanent for that language.
+            || /is not valid json/i.test(msg)
+            || /unexpected token/i.test(msg)
+            || /unexpected end of json input/i.test(msg)
+            || /entry not found/i.test(msg);
     }
 
     async function _evictVoice(lib, voiceId, baseLang) {
@@ -372,6 +534,28 @@
         return evicted;
     }
 
+    // ─── Per-language session reset ─────────────────────────────────────
+    // piper-tts-web keeps ONE TtsSession in a static `_instance`. Its
+    // constructor short-circuits on a second call: it reassigns `voiceId` and
+    // returns the existing instance WITHOUT re-running init(), so the ONNX
+    // session and model config stay those of the first language loaded. The
+    // result is that the second language in a session is synthesized with the
+    // first language's model — Spanish text read by the Ukrainian voice, and so
+    // on. Dropping the static instance forces a real init for the new voice.
+    // `_instance` is a plain public static field on the exported class, so this
+    // uses only what the package exposes.
+    let _sessionVoiceId = null;
+    function _prepareSessionFor(lib, voiceId, force) {
+        try {
+            if (!force && _sessionVoiceId === voiceId) return;
+            const Session = lib && lib.TtsSession;
+            if (Session && Object.prototype.hasOwnProperty.call(Session, '_instance')) {
+                Session._instance = null;
+            }
+            _sessionVoiceId = voiceId;
+        } catch (_) { /* fall through: a stale session is still better than a throw */ }
+    }
+
     // ─── Generate Speech ────────────────────────────────────────────────
     async function speak(text, lang, speed, options) {
         if (!text || typeof text !== 'string' || text.trim().length === 0) return null;
@@ -391,20 +575,23 @@
 
             const voiceInfo = PIPER_VOICE_MAP[baseLang];
             if (!voiceInfo) return null;
+            const voiceId = _resolveVoiceId(baseLang);
+            if (!voiceId) return null;
 
-            const cacheKey = _cacheKey(text, voiceInfo.voiceId);
-            const cached = _cacheGet(cacheKey, text, voiceInfo.voiceId);
+            const cacheKey = _cacheKey(text, voiceId);
+            const cached = _cacheGet(cacheKey, text, voiceId);
             if (cached) return cached;
 
             const lib = await _awaitWithSignal(_ensureLibLoaded(), signal);
             if (signal.aborted) throw _signalAbortError(signal);
+            _prepareSessionFor(lib, voiceId);
             // predict() returns neutral-speed WAV bytes. The Audio element owns
             // playbackRate, so speed is not applied a second time here.
             let blob;
             try {
                 blob = await _awaitWithSignal(Promise.resolve(lib.predict({
                     text: text,
-                    voiceId: voiceInfo.voiceId
+                    voiceId: voiceId
                 })), signal);
             } catch (predictErr) {
                 if (predictErr && predictErr.name === 'AbortError') throw predictErr;
@@ -413,14 +600,15 @@
                 // is thrown out. Do that, re-download, and try once.
                 console.warn('[Piper TTS] Cached voice model is unusable — clearing it and re-downloading once.', predictErr);
                 _fireProgress('Repairing the ' + voiceInfo.name + ' voice download', 0.1);
-                await _evictVoice(lib, voiceInfo.voiceId, baseLang);
+                await _evictVoice(lib, voiceId, baseLang);
                 if (signal.aborted) throw _signalAbortError(signal);
                 const reloaded = await _ensureVoice(baseLang, { signal });
                 if (signal.aborted) throw _signalAbortError(signal);
                 if (!reloaded) return null;
+                _prepareSessionFor(lib, voiceId, true);
                 blob = await _awaitWithSignal(Promise.resolve(lib.predict({
                     text: text,
-                    voiceId: voiceInfo.voiceId
+                    voiceId: voiceId
                 })), signal);
                 console.log('[Piper TTS] Voice model repaired after re-download.');
             }
@@ -431,16 +619,20 @@
                 return null;
             }
 
-            const raced = _cacheGet(cacheKey, text, voiceInfo.voiceId);
+            const raced = _cacheGet(cacheKey, text, voiceId);
             if (raced) return raced;
 
             const audioUrl = URL.createObjectURL(blob);
             if (!audioUrl) return null;
-            _cacheSet(cacheKey, text, voiceInfo.voiceId, audioUrl);
+            _cacheSet(cacheKey, text, voiceId, audioUrl);
             console.log('[Piper TTS] Generated audio for:', text.substring(0, 40));
             return audioUrl;
         } catch (e) {
             if (e && e.name === 'AbortError') throw e;
+            // Piper is a FALLBACK leg. Returning null hands the utterance to the
+            // next engine; the message stays in the console and in lastError for
+            // diagnostics and is never shown to a learner.
+            _lastError = String((e && e.message) || e || 'unknown');
             console.error('[Piper TTS] Generation failed:', e);
             return null;
         } finally {
@@ -449,10 +641,24 @@
     }
 
     // ─── Language Support Check ─────────────────────────────────────────
+    // Synchronous, because the TTS cascade asks before the library is loaded.
+    // Once a language has been PROVEN to have no usable model it is excluded,
+    // so the cascade stops handing Piper work it cannot do and the utterance
+    // goes to the next engine instead of failing.
     function supportsLanguage(langCode) {
         if (!langCode) return false;
         var baseLang = langCode.split('-')[0].toLowerCase();
+        if (_unavailableLangs.has(baseLang)) return false;
         return baseLang in PIPER_VOICE_MAP;
+    }
+
+    // Has this language's model finished downloading to this device? The
+    // narrator settings panel used supportsLanguage() for this and therefore
+    // told the user "Piper Neural Voice — auto-selected" for a voice that had
+    // never been downloaded.
+    function isLanguageReady(langCode) {
+        if (!langCode) return false;
+        return _loadedVoices.has(String(langCode).split('-')[0].toLowerCase());
     }
 
     function getSupportedLanguages() {
@@ -500,6 +706,11 @@
         _libInitPromise = null;
         _loadedVoices.clear();
         _voiceLoadPromises.clear();
+        _unavailableLangs.clear();
+        _resolvedIds.clear();
+        _pathMap = null;
+        _sessionVoiceId = null;
+        _lastError = null;
     }
 
     // Drop every cached voice model so the next request downloads fresh.
@@ -521,6 +732,10 @@
         }
         _loadedVoices.clear();
         _voiceLoadPromises.clear();
+        _unavailableLangs.clear();
+        _resolvedIds.clear();
+        _sessionVoiceId = null;
+        _lastError = null;
         _ready = false;
         _currentLang = null;
         clearCache();
@@ -544,8 +759,13 @@
         // a manual escape hatch: window._piperTTS.repairVoices().
         repairVoices: repairVoices,
         supportsLanguage: supportsLanguage,
+        isLanguageReady: isLanguageReady,
         getSupportedLanguages: getSupportedLanguages,
         voiceMap: PIPER_VOICE_MAP,
+        // Diagnostics only. Nothing user-facing reads this; it exists so a
+        // support conversation can find out WHY a language went quiet without
+        // the learner ever seeing a parser error.
+        get lastError() { return _lastError; },
         get ready() { return _ready; },
         get progress() { return _loadProgress; },
         get currentLang() { return _currentLang; },

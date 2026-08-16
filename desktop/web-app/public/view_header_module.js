@@ -23,6 +23,56 @@ const _headerPortal = (node) => {
   }
   return node;
 };
+const _headerPanelSkin = (theme) => {
+  if (theme === "contrast") return {
+    panel: "bg-black border-yellow-400 text-yellow-400",
+    divider: "border-yellow-400",
+    surface: "bg-black border border-yellow-400 text-yellow-400",
+    chip: "bg-black border border-yellow-400 text-yellow-400",
+    action: "text-yellow-400 hover:text-black hover:bg-yellow-400",
+    dismiss: "text-yellow-400 hover:text-black hover:bg-yellow-400",
+    field: "bg-black border-yellow-400 text-yellow-400",
+    label: "text-yellow-400",
+    muted: "text-yellow-400",
+    ghost: "hover:bg-yellow-400 hover:text-black",
+    accent: "bg-yellow-400 text-black",
+    note: "bg-black border-yellow-400",
+    noteHead: "text-yellow-400",
+    noteBody: "text-yellow-400"
+  };
+  if (theme === "dark") return {
+    panel: "bg-slate-800 border-slate-600 text-white",
+    divider: "border-slate-700",
+    surface: "bg-slate-700 text-slate-100",
+    chip: "bg-slate-600 text-slate-100",
+    action: "text-indigo-300 hover:text-indigo-200",
+    dismiss: "text-slate-300 hover:text-red-300",
+    field: "bg-slate-900 border-slate-600 text-slate-100",
+    label: "text-slate-300",
+    muted: "text-slate-300",
+    ghost: "hover:bg-slate-700",
+    accent: "bg-indigo-900 border-indigo-400 text-indigo-100",
+    note: "bg-blue-950 border-blue-700",
+    noteHead: "text-blue-300",
+    noteBody: "text-blue-100"
+  };
+  return {
+    panel: "bg-white border-slate-200 text-slate-800",
+    divider: "border-slate-100",
+    surface: "bg-slate-100 text-slate-700",
+    chip: "bg-slate-200 text-slate-600",
+    action: "text-indigo-600 hover:text-indigo-800",
+    dismiss: "text-slate-600 hover:text-red-700",
+    field: "bg-white border-slate-400 text-slate-800",
+    label: "text-slate-600",
+    muted: "text-slate-600",
+    ghost: "hover:bg-slate-100",
+    accent: "bg-indigo-50 border-indigo-500 text-indigo-700",
+    note: "bg-blue-50 border-blue-200",
+    noteHead: "text-blue-600",
+    noteBody: "text-blue-800"
+  };
+};
 function HeaderBar(props) {
   const noop = () => null;
   const AlertCircle = window.AlertCircle || noop;
@@ -93,6 +143,7 @@ function HeaderBar(props) {
     toggleTheme,
     toggleOverlay
   } = _themeCtx;
+  const _skin = _headerPanelSkin(theme);
   const {
     APP_CONFIG,
     AnimatedNumber,
@@ -144,6 +195,7 @@ function HeaderBar(props) {
     handleToggleShowExportMenu,
     hasConnectedRef,
     hintHistory,
+    toastHistoryCount,
     isBotVisible,
     isCloudSyncEnabled,
     isExtracting,
@@ -301,7 +353,27 @@ function HeaderBar(props) {
   };
   const isDesktopBundledApp = typeof window !== "undefined" && !!window._isDesktopBundledApp;
   const isLocalVoiceMode = ai?._ttsProvider === "local" || ai?._ttsProvider !== "gemini" && ai?._ttsProvider !== "browser" && (ai?.backend === "ollama" || ai?.backend === "localai" || ai?.backend === "lmstudio");
-  const canUseKokoroVoicePicker = _isCanvasEnv || isDesktopBundledApp;
+  const kokoroCapability = React.useMemo(() => {
+    if (typeof window === "undefined") return { ok: false, reason: t("header.voice_kokoro_unavailable") || "not available here" };
+    const hasWorkers = typeof window.Worker === "function";
+    const hasWasm = typeof window.WebAssembly === "object";
+    if (!hasWorkers || !hasWasm) {
+      return { ok: false, reason: t("header.voice_kokoro_no_wasm") || "this browser cannot run on-device voices" };
+    }
+    const ua = String(window.navigator?.userAgent || "");
+    const isIOS = /iPad|iPhone|iPod/.test(ua) || /Macintosh/.test(ua) && typeof window.navigator?.maxTouchPoints === "number" && window.navigator.maxTouchPoints > 1;
+    return { ok: true, isIOS };
+  }, [t]);
+  const canUseKokoroVoicePicker = kokoroCapability.ok;
+  const renderKokoroVoiceGroup = () => {
+    if (!kokoroCapability.ok) {
+      return /* @__PURE__ */ React.createElement("optgroup", { label: (t("header.voice_kokoro_group") || "On-device voice (Kokoro)") + " (" + kokoroCapability.reason + ")" }, /* @__PURE__ */ React.createElement("option", { value: "__kokoro_unavailable", disabled: true }, t("header.voice_kokoro_cannot_run") || "Cannot run on this device"));
+    }
+    const ready = !!window._kokoroTTS?.ready;
+    const label = ready ? t("header.voice_kokoro_ready_group") || "On-device voice (Kokoro): ready, works offline" : t("header.voice_kokoro_download_group") || "On-device voice (Kokoro): 88 MB download, then works offline";
+    return /* @__PURE__ */ React.createElement("optgroup", { label: "\u{1F3A4} " + label }, KOKORO_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label, ready ? "" : " \u2B07")));
+  };
+  const renderDeviceVoiceGroup = () => /* @__PURE__ */ React.createElement("optgroup", { label: "\u26A1 " + (t("header.voice_device_group") || "Device voice: starts instantly") }, /* @__PURE__ */ React.createElement("option", { value: "browser" }, t("header.voice_device_option") || "Device voice (instant, plainer sound)"));
   const readThisPageTitle = t("read_this_page.title") || "Read This Page";
   const readThisPagePanelLabel = t("read_this_page.panel_aria") || readThisPageTitle + " panel";
   const closeLabel = t("common.close") || "Close";
@@ -542,31 +614,31 @@ function HeaderBar(props) {
     /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold hidden xl:inline" }, t("immersive.label_text")),
     showTextSettings ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 12 }) : /* @__PURE__ */ React.createElement(ChevronDown, { size: 12 })
   ), showTextSettings && _headerPortal(
-    /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[10000]", onClick: handleSetShowTextSettingsToFalse }), /* @__PURE__ */ React.createElement("div", { ref: _textSettingsRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "header-text-settings-title", className: `fixed top-28 right-20 w-72 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 motion-reduce:animate-none duration-200 ${theme === "light" ? "bg-white border-slate-200 text-slate-800" : "bg-slate-800 border-slate-600 text-white"}` }, /* @__PURE__ */ React.createElement("div", { className: "space-y-5" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2" }, /* @__PURE__ */ React.createElement("h4", { id: "header-text-settings-title", className: "font-bold text-sm" }, t("settings.text.header")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: resetFontSize, "data-help-key": "header_settings_text_reset", className: "text-[11px] text-indigo-500 hover:text-indigo-700 font-bold flex items-center gap-1" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 10 }), " ", t("common.reset")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSetShowTextSettingsToFalse, className: "min-w-6 min-h-6 rounded text-slate-500 hover:text-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2", "aria-label": t("common.close") || "Close text settings" }, "\xD7"))), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("label", { className: `text-xs font-bold flex items-center gap-1 ${theme === "light" ? "text-slate-600" : "text-slate-300"}` }, t("settings.text.font_family")), /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[10000]", onClick: handleSetShowTextSettingsToFalse }), /* @__PURE__ */ React.createElement("div", { ref: _textSettingsRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "header-text-settings-title", className: `fixed top-28 right-20 w-72 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 motion-reduce:animate-none duration-200 ${_skin.panel}` }, /* @__PURE__ */ React.createElement("div", { className: "space-y-5" }, /* @__PURE__ */ React.createElement("div", { className: `flex justify-between items-center border-b ${_skin.divider} pb-2` }, /* @__PURE__ */ React.createElement("h4", { id: "header-text-settings-title", className: "font-bold text-sm" }, t("settings.text.header")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: resetFontSize, "data-help-key": "header_settings_text_reset", className: `text-[11px] font-bold flex items-center gap-1 ${_skin.action}` }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 10 }), " ", t("common.reset")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSetShowTextSettingsToFalse, className: `min-w-6 min-h-6 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${_skin.dismiss}`, "aria-label": t("common.close") || "Close text settings" }, "\xD7"))), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("label", { className: `text-xs font-bold flex items-center gap-1 ${_skin.label}` }, t("settings.text.font_family")), /* @__PURE__ */ React.createElement(
       "select",
       {
         "aria-label": t("common.selection"),
         value: selectedFont,
         onChange: (e) => setSelectedFont(e.target.value),
         "data-help-key": "header_settings_text_font",
-        className: "w-full text-sm p-2.5 rounded-lg border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+        className: `w-full text-sm p-2.5 rounded-lg border ${_skin.field} focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all`
       },
       FONT_OPTIONS.map((font) => /* @__PURE__ */ React.createElement("option", { key: font.id, value: font.id }, font.label))
-    ), /* @__PURE__ */ React.createElement("p", { className: `text-[11px] opacity-70 p-2 rounded bg-slate-50 dark:bg-slate-700 ${FONT_OPTIONS.find((f) => f.id === selectedFont)?.cssClass || ""}` }, t("settings.text.font_preview"), " ", t("settings.text.font_preview_sample"))), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("p", { className: `text-[11px] p-2 rounded ${_skin.surface} ${FONT_OPTIONS.find((f) => f.id === selectedFont)?.cssClass || ""}` }, t("settings.text.font_preview"), " ", t("settings.text.font_preview_sample"))), /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
         "aria-label": t("common.toggle_focus_mode"),
         onClick: handleToggleFocusMode,
         "data-help-key": "header_settings_text_bionic",
-        className: `w-full flex items-center justify-between p-3 rounded-lg border-2 transition-all group ${focusMode ? "bg-indigo-50 border-indigo-500 text-indigo-700 dark:bg-indigo-900 dark:border-indigo-400 dark:text-indigo-100" : "bg-slate-50 border-transparent hover:border-slate-300 dark:bg-slate-700 dark:text-slate-200"}`
+        className: `w-full flex items-center justify-between p-3 rounded-lg border-2 transition-all group ${focusMode ? _skin.accent : `${_skin.surface} border-transparent hover:border-slate-300`}`
       },
-      /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: `p-1.5 rounded-md ${focusMode ? "bg-indigo-500 text-white" : "bg-slate-200 text-slate-500 dark:bg-slate-600 dark:text-slate-200"}` }, /* @__PURE__ */ React.createElement(Eye, { size: 16 })), /* @__PURE__ */ React.createElement("div", { className: "text-left" }, /* @__PURE__ */ React.createElement("span", { className: "block text-xs font-bold" }, t("settings.text.bionic")), /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] opacity-70" }, t("settings.text.bionic_sub")))),
-      /* @__PURE__ */ React.createElement("div", { className: `w-10 h-5 rounded-full relative transition-colors ${focusMode ? "bg-indigo-500" : "bg-slate-300"}` }, /* @__PURE__ */ React.createElement("div", { className: `absolute top-1 w-3 h-3 bg-white rounded-full shadow-sm transition-all duration-300 ${focusMode ? "left-6" : "left-1"}` }))
-    ), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { className: `text-xs font-bold flex items-center gap-1 ${theme === "light" ? "text-slate-600" : "text-slate-300"}` }, t("settings.text.size")), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-mono bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded" }, baseFontSize, "px")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3", "data-help-key": "header_settings_text_size" }, /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": t("common.minimize"), onClick: () => {
+      /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: `p-1.5 rounded-md ${focusMode ? "bg-indigo-500 text-white" : _skin.chip}` }, /* @__PURE__ */ React.createElement(Eye, { size: 16 })), /* @__PURE__ */ React.createElement("div", { className: "text-left" }, /* @__PURE__ */ React.createElement("span", { className: "block text-xs font-bold" }, t("settings.text.bionic")), /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] opacity-70" }, t("settings.text.bionic_sub")))),
+      /* @__PURE__ */ React.createElement("div", { className: `w-10 h-5 rounded-full relative transition-colors ${focusMode ? "bg-indigo-500" : theme === "contrast" ? "bg-yellow-400" : "bg-slate-500"}` }, /* @__PURE__ */ React.createElement("div", { className: `absolute top-1 w-3 h-3 bg-white rounded-full shadow-sm transition-all duration-300 ${focusMode ? "left-6" : "left-1"}` }))
+    ), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { className: `text-xs font-bold flex items-center gap-1 ${_skin.label}` }, t("settings.text.size")), /* @__PURE__ */ React.createElement("span", { className: `text-[11px] font-mono ${_skin.chip} px-1.5 py-0.5 rounded` }, baseFontSize, "px")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3", "data-help-key": "header_settings_text_size" }, /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": t("common.minimize"), onClick: () => {
       setBaseFontSize(Math.max(12, baseFontSize - 1));
       setSliderFontSize(Math.max(12, baseFontSize - 1));
-    }, className: `p-2.5 rounded-lg transition-colors ${theme === "light" ? "hover:bg-slate-100" : "hover:bg-slate-700"}` }, /* @__PURE__ */ React.createElement(Minimize, { size: 16 })), /* @__PURE__ */ React.createElement(
+    }, className: `p-2.5 rounded-lg transition-colors ${_skin.ghost}` }, /* @__PURE__ */ React.createElement(Minimize, { size: 16 })), /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-label": t("common.adjust_slider_font_size"),
@@ -583,7 +655,7 @@ function HeaderBar(props) {
     ), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": t("common.maximize"), onClick: () => {
       setBaseFontSize(Math.min(24, baseFontSize + 1));
       setSliderFontSize(Math.min(24, baseFontSize + 1));
-    }, className: `p-2.5 rounded-lg transition-colors ${theme === "light" ? "hover:bg-slate-100" : "hover:bg-slate-700"}` }, /* @__PURE__ */ React.createElement(Maximize, { size: 16 })))), /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-100 dark:border-slate-700 pt-3 mt-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { className: `text-xs font-bold flex items-center gap-1 ${theme === "light" ? "text-slate-600" : "text-slate-300"}` }, t("settings.text.line_height")), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-mono bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded" }, lineHeight)), /* @__PURE__ */ React.createElement(
+    }, className: `p-2.5 rounded-lg transition-colors ${_skin.ghost}` }, /* @__PURE__ */ React.createElement(Maximize, { size: 16 })))), /* @__PURE__ */ React.createElement("div", { className: `border-t ${_skin.divider} pt-3 mt-3` }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { className: `text-xs font-bold flex items-center gap-1 ${_skin.label}` }, t("settings.text.line_height")), /* @__PURE__ */ React.createElement("span", { className: `text-[11px] font-mono ${_skin.chip} px-1.5 py-0.5 rounded` }, lineHeight)), /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-label": t("common.adjust_line_height"),
@@ -596,7 +668,7 @@ function HeaderBar(props) {
         "data-help-key": "header_settings_text_line_height",
         className: "w-full h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
       }
-    )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { className: `text-xs font-bold flex items-center gap-1 ${theme === "light" ? "text-slate-600" : "text-slate-300"}` }, t("settings.text.spacing")), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-mono bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded" }, letterSpacing, "em")), /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { className: `text-xs font-bold flex items-center gap-1 ${_skin.label}` }, t("settings.text.spacing")), /* @__PURE__ */ React.createElement("span", { className: `text-[11px] font-mono ${_skin.chip} px-1.5 py-0.5 rounded` }, letterSpacing, "em")), /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-label": t("common.adjust_letter_spacing"),
@@ -609,7 +681,7 @@ function HeaderBar(props) {
         "data-help-key": "header_settings_text_spacing",
         className: "w-full h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
       }
-    )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { className: `text-xs font-bold flex items-center gap-1 ${theme === "light" ? "text-slate-600" : "text-slate-300"}` }, t("settings.reading_theme") || "\u{1F3A8} Reading Theme"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-mono bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded" }, selectedReadingThemeLabel)), /* @__PURE__ */ React.createElement("p", { className: `text-[11px] ${theme === "light" ? "text-slate-600" : "text-slate-300"} mb-2` }, t("settings.reading_theme_desc") || "Background & text color for all content views"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-5 gap-1.5", role: "radiogroup", "aria-label": t("header.reading_theme_aria") || "Reading theme" }, [
+    )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { className: `text-xs font-bold flex items-center gap-1 ${_skin.label}` }, t("settings.reading_theme") || "\u{1F3A8} Reading Theme"), /* @__PURE__ */ React.createElement("span", { className: `text-[11px] font-mono ${_skin.chip} px-1.5 py-0.5 rounded` }, selectedReadingThemeLabel)), /* @__PURE__ */ React.createElement("p", { className: `text-[11px] ${theme === "light" ? "text-slate-600" : "text-slate-300"} mb-2` }, t("settings.reading_theme_desc") || "Background & text color for all content views"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-5 gap-1.5", role: "radiogroup", "aria-label": t("header.reading_theme_aria") || "Reading theme" }, [
       { id: "default", label: t("header.reading_theme_default") || "Default", bg: "#ffffff", fg: "#1e293b", border: "#e2e8f0", emoji: "\u25CB" },
       { id: "warm", label: t("header.reading_theme_warm") || "Warm", bg: "#fdcba5", fg: "#432714", border: "#f97e1f", emoji: "\u2600\uFE0F" },
       { id: "sepia", label: t("header.reading_theme_sepia") || "Sepia", bg: "#d1bfa9", fg: "#2a1f13", border: "#b48950", emoji: "\u{1F4DC}" },
@@ -658,29 +730,39 @@ function HeaderBar(props) {
     /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold hidden xl:inline" }, t("immersive.label_voice")),
     showVoiceSettings ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 12 }) : /* @__PURE__ */ React.createElement(ChevronDown, { size: 12 })
   ), showVoiceSettings && _headerPortal(
-    /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[10000]", onClick: handleSetShowVoiceSettingsToFalse }), /* @__PURE__ */ React.createElement("div", { ref: _voiceSettingsRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "header-voice-settings-title", className: `fixed top-28 right-4 w-64 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 motion-reduce:animate-none duration-200 ${theme === "light" ? "bg-white border-slate-200 text-slate-800" : "bg-slate-800 border-slate-600 text-white"}` }, /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center border-b border-slate-100 dark:border-slate-700 pb-2" }, /* @__PURE__ */ React.createElement("h4", { id: "header-voice-settings-title", className: "font-bold text-sm" }, t("settings.voice.label")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSetShowVoiceSettingsToFalse, className: "min-w-6 min-h-6 rounded text-slate-500 hover:text-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2", "aria-label": t("common.close") || "Close voice settings" }, "\xD7")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[10000]", onClick: handleSetShowVoiceSettingsToFalse }), /* @__PURE__ */ React.createElement("div", { ref: _voiceSettingsRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "header-voice-settings-title", className: `fixed top-28 right-4 w-64 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 motion-reduce:animate-none duration-200 ${_skin.panel}` }, /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: `flex justify-between items-center border-b ${_skin.divider} pb-2` }, /* @__PURE__ */ React.createElement("h4", { id: "header-voice-settings-title", className: "font-bold text-sm" }, t("settings.voice.label")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSetShowVoiceSettingsToFalse, className: `min-w-6 min-h-6 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${_skin.dismiss}`, "aria-label": t("common.close") || "Close voice settings" }, "\xD7")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(
       "select",
       {
         "aria-label": t("common.selection"),
         value: selectedVoice,
         onChange: (e) => {
           const voice = e.target.value;
+          if (voice === "__kokoro_unavailable") return;
           setSelectedVoice(voice);
           if (canUseKokoroVoicePicker && KOKORO_VOICES.some((v) => v.id === voice) && !window._kokoroTTS?.ready && window.__loadKokoroTTS) {
             window.__kokoroTTSDownloading = true;
-            addToast("Downloading Kokoro voice model (~88MB, one time)...", "info");
+            window.__kokoroLoadUserInitiated = true;
+            addToast(
+              kokoroCapability.isIOS ? t("header.voice_kokoro_downloading_ios") || "Getting the on-device voice (88 MB). It reads offline afterwards, though this browser may ask for it again after a few weeks unused." : t("header.voice_kokoro_downloading") || "Getting the on-device voice (88 MB, one time). You can keep working.",
+              "info"
+            );
             window.__loadKokoroTTS().then((ok) => {
               window.__kokoroTTSDownloading = false;
-              if (ok) addToast("Kokoro voice ready!", "success");
-              else addToast("Kokoro download failed \u2014 using Gemini TTS", "error");
+              window.__kokoroLoadUserInitiated = false;
+              if (ok) addToast(t("header.voice_kokoro_ready_toast") || "On-device voice ready. It is saved on this device.", "success");
+              else addToast(t("header.voice_kokoro_failed_toast") || "The on-device voice could not be prepared. Another voice will read for now.", "error");
             });
           }
         },
         "data-help-key": "header_settings_voice_select",
-        className: "w-full text-xs p-2 rounded-lg border border-slate-400 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none"
+        className: `w-full text-xs p-2 rounded-lg border ${_skin.field} focus:ring-2 focus:ring-indigo-500 outline-none`
       },
-      _isCanvasEnv ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("optgroup", { label: "\u2728 Gemini TTS (Cloud)" }, GEMINI_VOICES.slice(0, 15).map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label || v.id))), /* @__PURE__ */ React.createElement("optgroup", { label: window._kokoroTTS?.ready ? "\u{1F3A4} Kokoro (Ready)" : "\u{1F3A4} Kokoro (tap to download ~88MB)" }, KOKORO_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label, !window._kokoroTTS?.ready ? " \u2B07" : ""))), /* @__PURE__ */ React.createElement("optgroup", { label: "\u{1F310} Browser Fallback" }, /* @__PURE__ */ React.createElement("option", { value: "browser" }, t("header.voice_browser_default") || "Browser Default"))) : isLocalVoiceMode ? /* @__PURE__ */ React.createElement(React.Fragment, null, isDesktopBundledApp && /* @__PURE__ */ React.createElement("optgroup", { label: window._kokoroTTS?.ready ? "\u{1F3A4} Kokoro (Ready)" : "\u{1F3A4} Kokoro (loading/local)" }, KOKORO_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label))), /* @__PURE__ */ React.createElement("optgroup", { label: "\u{1F3A4} Edge TTS Voices" }, EDGE_TTS_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label))), /* @__PURE__ */ React.createElement("optgroup", { label: "\u{1F507} Browser Fallback" }, /* @__PURE__ */ React.createElement("option", { value: "browser" }, t("header.voice_browser_default") || "Browser Default"))) : GEMINI_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label))
-    ), canUseKokoroVoicePicker && selectedVoice && selectedVoice.includes("_") && window._kokoroTTS && /* @__PURE__ */ React.createElement("div", { className: "mt-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-400 dark:border-slate-600" }, /* @__PURE__ */ React.createElement("p", { className: `text-[11px] ${theme === "light" ? "text-slate-600" : "text-slate-300"} m-0` }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("header.voice_model_label") || "Voice model", ":"), " ", window._kokoroTTS.ready ? t("header.voice_model_ready") || "Kokoro (~88MB) \u2014 ready on this device. Downloaded once; reads offline." : t("header.voice_model_preparing") || "Kokoro (~88MB) \u2014 preparing\u2026 a temporary voice reads aloud until it finishes.")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-400 dark:border-slate-600" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 cursor-pointer" }, /* @__PURE__ */ React.createElement(
+      _isCanvasEnv ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("optgroup", { label: "\u2728 " + (t("header.voice_cloud_group") || "Cloud voice (Gemini): most natural, needs the internet") }, GEMINI_VOICES.slice(0, 15).map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label || v.id))), renderKokoroVoiceGroup(), renderDeviceVoiceGroup()) : isLocalVoiceMode ? /* @__PURE__ */ React.createElement(React.Fragment, null, renderKokoroVoiceGroup(), /* @__PURE__ */ React.createElement("optgroup", { label: "\u{1F3A4} Edge TTS Voices" }, EDGE_TTS_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label))), renderDeviceVoiceGroup()) : (
+        /* Every other surface — the hosted web app, which is what a
+           phone loads. This branch used to be cloud voices only. */
+        /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("optgroup", { label: "\u2728 " + (t("header.voice_cloud_group") || "Cloud voice (Gemini): most natural, needs the internet") }, GEMINI_VOICES.map((v) => /* @__PURE__ */ React.createElement("option", { key: v.id, value: v.id }, v.label))), renderKokoroVoiceGroup(), renderDeviceVoiceGroup())
+      )
+    ), canUseKokoroVoicePicker && selectedVoice && selectedVoice.includes("_") && window._kokoroTTS && /* @__PURE__ */ React.createElement("div", { className: `mt-2 p-2 rounded-lg border ${_skin.surface}` }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] m-0" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, t("header.voice_model_label") || "Voice model", ":"), " ", window._kokoroTTS.ready ? t("header.voice_model_ready") || "Kokoro (~88MB) \u2014 ready on this device. Downloaded once; reads offline." : t("header.voice_model_preparing") || "Kokoro (~88MB) \u2014 preparing\u2026 a temporary voice reads aloud until it finishes.")), /* @__PURE__ */ React.createElement("div", { className: `mt-2 p-2 rounded-lg border ${_skin.surface}` }, /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 cursor-pointer" }, /* @__PURE__ */ React.createElement(
       "input",
       {
         type: "checkbox",
@@ -701,7 +783,7 @@ function HeaderBar(props) {
         },
         "aria-label": t("header.browser_tts_fallback_aria") || "Use browser voice as fallback when Gemini TTS refuses or fails"
       }
-    ), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] leading-tight" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600 dark:text-slate-200 block" }, t("header.browser_tts_fallback_label") || "Browser-voice fallback"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 dark:text-slate-400" }, t("header.browser_tts_fallback_desc") || "Read refused/failed sentences with the system voice instead of skipping.")))), _isCanvasEnv && leveledTextLanguage && leveledTextLanguage !== "English" && /* @__PURE__ */ React.createElement("div", { className: "mt-2 p-2 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] uppercase font-bold text-blue-600 dark:text-blue-400" }, "Active TTS: ", leveledTextLanguage), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-blue-800 dark:text-blue-200 mt-0.5" }, window._piperTTS?.supportsLanguage(languageToTTSCode(leveledTextLanguage)) ? "Piper Neural Voice \u2014 auto-selected" : "Browser fallback \u2014 language not yet supported"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-blue-500/70 dark:text-blue-400/70 mt-0.5" }, t("header.kokoro_english_only") || "Kokoro voice applies to English content")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mt-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("label", { className: `text-[11px] uppercase font-bold ${theme === "light" ? "text-slate-600" : "text-slate-300"} block mb-1` }, "Speed: ", voiceSpeed, "x"), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] leading-tight" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold block" }, t("header.browser_tts_fallback_label") || "Browser-voice fallback"), /* @__PURE__ */ React.createElement("span", { className: "opacity-80" }, t("header.browser_tts_fallback_desc") || "Read refused/failed sentences with the system voice instead of skipping.")))), leveledTextLanguage && leveledTextLanguage !== "English" && /* @__PURE__ */ React.createElement("div", { className: `mt-2 p-2 rounded-lg border ${_skin.note}` }, /* @__PURE__ */ React.createElement("div", { className: `text-[11px] uppercase font-bold ${_skin.noteHead}` }, t("header.voice_active_language") || "Reading language", ": ", leveledTextLanguage), /* @__PURE__ */ React.createElement("div", { className: `text-[11px] ${_skin.noteBody} mt-0.5` }, !window._piperTTS?.supportsLanguage(languageToTTSCode(leveledTextLanguage)) ? t("header.voice_lang_no_offline") || "Cloud voice, then the device voice. There is no offline voice for this language yet." : window._piperTTS?.isLanguageReady?.(languageToTTSCode(leveledTextLanguage)) ? t("header.voice_lang_offline_ready") || "An offline voice for this language is saved on this device." : t("header.voice_lang_offline_on_demand") || "Cloud voice first. An offline voice for this language downloads the first time it is needed."), /* @__PURE__ */ React.createElement("div", { className: `text-[11px] ${_skin.noteHead} mt-0.5` }, t("header.kokoro_english_only") || "Kokoro voice applies to English content")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mt-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("label", { className: `text-[11px] uppercase font-bold ${_skin.label} block mb-1` }, "Speed: ", voiceSpeed, "x"), /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-label": t("common.range_slider"),
@@ -714,7 +796,7 @@ function HeaderBar(props) {
         "data-help-key": "header_settings_voice_speed",
         className: "w-full accent-indigo-600 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
       }
-    )), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("label", { className: `text-[11px] uppercase font-bold ${theme === "light" ? "text-slate-600" : "text-slate-300"} block mb-1` }, "Volume: ", Math.round(voiceVolume * 100), "%"), /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("label", { className: `text-[11px] uppercase font-bold ${_skin.label} block mb-1` }, "Volume: ", Math.round(voiceVolume * 100), "%"), /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-label": t("common.range_slider"),
@@ -864,11 +946,11 @@ function HeaderBar(props) {
       onClick: handleSetShowHintsModalToTrue,
       "data-help-key": "hints_recall",
       className: "p-2 rounded-xl hover:bg-white/10 text-white/70 hover:text-white transition-colors relative",
-      title: t("common.recall_hints"),
-      "aria-label": t("common.recall_hints")
+      title: t("common.recall_hints_and_messages") || t("common.recall_hints"),
+      "aria-label": t("common.recall_hints_and_messages") || t("common.recall_hints")
     },
-    /* @__PURE__ */ React.createElement(Lightbulb, { size: 20, className: hintHistory.length > 0 ? "fill-yellow-500/20" : "" }),
-    hintHistory.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-white/50" })
+    /* @__PURE__ */ React.createElement(Lightbulb, { size: 20, className: hintHistory.length > 0 || (toastHistoryCount || 0) > 0 ? "fill-yellow-500/20" : "" }),
+    (hintHistory.length > 0 || (toastHistoryCount || 0) > 0) && /* @__PURE__ */ React.createElement("span", { className: "absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-white/50" })
   ), /* @__PURE__ */ React.createElement(
     "button",
     {

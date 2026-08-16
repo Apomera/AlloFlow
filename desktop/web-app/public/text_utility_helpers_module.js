@@ -165,6 +165,7 @@ const highlightGlossaryTerms = (text, glossary, isCloze = false, isDarkBg = fals
             targetWord: item.term,
             acceptedAnswers: _translated ? [item.term, _translated] : [item.term],
             displayWord: _translated || item.term,
+            passageWord: part,
             isSolved: clozeInstanceSet.has(uniqueId),
             onCorrect: (word) => {
               if (!clozeInstanceSet.has(uniqueId)) {

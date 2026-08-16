@@ -102,6 +102,21 @@ const createPersonas = (deps) => {
         return Math.max(min, Math.min(max, Math.round(numeric)));
     };
 
+    // Translation policy for persona dialogue. Read from the same live state
+    // the rest of this module reads, and resolved by the shared resolver so
+    // persona turns agree with every other resource about the gloss language.
+    const personaTranslationPolicy = (targetLang) => {
+        const live = (liveRef && liveRef.current) || {};
+        const resolver = live.resolveTranslationPolicy
+            || (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.TextPipelineHelpers
+                && window.AlloModules.TextPipelineHelpers.resolveTranslationPolicy);
+        if (typeof resolver === 'function') {
+            return resolver(live.translationMode, targetLang, live.currentUiLanguage);
+        }
+        const on = !!targetLang && targetLang !== 'English' && targetLang !== 'All Selected Languages';
+        return { enabled: on, target: on ? 'English' : '', mode: 'auto' };
+    };
+
     const resolvePersonaLanguage = (leveledTextLanguage, selectedLanguages) => {
         if (leveledTextLanguage === 'All Selected Languages') {
             return Array.isArray(selectedLanguages) && selectedLanguages.length > 0
@@ -1858,9 +1873,10 @@ const createPersonas = (deps) => {
         const charB = personaState.selectedCharacters[1];
         const targetLang = resolvePersonaLanguage(leveledTextLanguage, selectedLanguages);
         const safeTargetLang = promptData(targetLang, 100);
-        const panelTranslationInstruction = targetLang === 'English'
-            ? 'Set each dialogue turn translation field to null.'
-            : `Write every dialogue text entirely in ${safeTargetLang}. Put a complete English translation in each turn's separate translation field; do not mix English into text.`;
+        const _panelXlate = personaTranslationPolicy(targetLang);
+        const panelTranslationInstruction = !_panelXlate.enabled
+            ? 'Set each dialogue turn translation field to null. Do NOT translate the dialogue into any other language.'
+            : `Write every dialogue text entirely in ${safeTargetLang}. Put a complete ${_panelXlate.target} translation in each turn's separate translation field; do not mix ${_panelXlate.target} into text.`;
         const previousPanelSuggestions = Array.isArray(personaState.panelSuggestions)
             ? [...personaState.panelSuggestions]
             : [];
@@ -1929,8 +1945,8 @@ const createPersonas = (deps) => {
           ${panelTranslationInstruction}
           {
               "dialogue": [
-                  { "speakerId": "A", "text": "...", "translation": "English translation or null", "visualReaction": "nodding", "evidenceNote": "Source-based support or reconstruction warning" },
-                  { "speakerId": "B", "text": "...", "translation": "English translation or null", "visualReaction": "frowning", "evidenceNote": "Source-based support or reconstruction warning" }
+                  { "speakerId": "A", "text": "...", "translation": "translation into the requested gloss language, or null", "visualReaction": "nodding", "evidenceNote": "Source-based support or reconstruction warning" },
+                  { "speakerId": "B", "text": "...", "translation": "translation into the requested gloss language, or null", "visualReaction": "frowning", "evidenceNote": "Source-based support or reconstruction warning" }
               ],
               "updates": {
                   "charA": { "rapportChange": integer, "completedQuestId": "id_or_null" },
@@ -2217,7 +2233,10 @@ const createPersonas = (deps) => {
                 // Translation goes in its OWN JSON field — embedding it in
                 // "response" made TTS read both languages back-to-back and
                 // mixed languages inside one voice-consistent chunk.
-                translationInstruction = `Write your conversational response entirely in ${safeTargetLang} in the "response" field. Put a complete English translation of it in the separate "translation" field. Do NOT include any English text or translation inside "response".`;
+                const _replyXlate = personaTranslationPolicy(targetLang);
+                translationInstruction = _replyXlate.enabled
+                    ? `Write your conversational response entirely in ${safeTargetLang} in the "response" field. Put a complete ${_replyXlate.target} translation of it in the separate "translation" field. Do NOT include any ${_replyXlate.target} text or translation inside "response".`
+                    : `Write your conversational response entirely in ${safeTargetLang} in the "response" field. Set "translation" to null and do NOT translate into any other language.`;
             }
             const prompt = `
               You are roleplaying as the character described below.
@@ -2268,7 +2287,7 @@ const createPersonas = (deps) => {
               Return ONLY JSON:
               {
                   "response": "Your conversational response here (in the requested language ONLY — no translation)",
-                  "translation": "Complete English translation of the response (ONLY when the response is not in English; otherwise null)",
+                  "translation": "Complete translation of the response into the gloss language named above (null when no translation was requested)",
                   "visualReaction": "A concise visual description of your current action. This can be: 1. A facial expression (e.g., 'furrowed brow'). 2. A gesture (e.g., 'pointing at the horizon', 'shrugging', 'bowing'). 3. An interaction with an object (e.g., 'holding a map', 'examining a quill'). Keep it simple and visual.",
                   "rapportChange": integer (e.g., +5, -10),
                   "completedQuestId": "q1" (or null if none),

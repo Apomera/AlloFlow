@@ -7814,14 +7814,36 @@ function ExportPreviewView(props) {
                   </button>
                 </div>
 
-                {/* Export Mode */}
+                {/* Export Mode.
+                    "PDF" and "Worksheet" run the SAME delivery path — see
+                    export_handlers_module.js, where `mode === 'print' || mode ===
+                    'worksheet'` both open a new window and call print(). Neither
+                    one downloads a file. What differs is the DOCUMENT each one
+                    builds: worksheet mode swaps every interactive input for ruled
+                    lines and fill-in bubbles, adds a Name/Date/Score header, and
+                    turns off the reveal/accordion/drag behaviors that only make
+                    sense on a screen. Nothing in the old UI said any of that, and
+                    an action button reading "Download PDF" that actually opened a
+                    print dialog made it worse. The blurb below is the fix. */}
                 <div>
                   <div className="text-[11px] font-bold text-slate-600 uppercase mb-1.5">Format</div>
-                  <div className="flex gap-1" role="radiogroup" aria-label="Export format" onKeyDown={handleRadioGroupKeyDown}>
+                  {/* attribute order matters here: tests/document_builder_ui_a11y.test.js
+                      asserts on the literal `aria-label="Export format" onKeyDown={...}`
+                      substring, so aria-describedby goes after, not between. */}
+                  <div className="flex gap-1" role="radiogroup" aria-label="Export format" onKeyDown={handleRadioGroupKeyDown} aria-describedby="doc-builder-format-help">
                     {[['print', '📄 PDF'], ['worksheet', '📝 Worksheet'], ['html', '💻 HTML'], ['slides', '📊 Slides']].map(([m, label]) => (
                       <button key={m} role="radio" aria-checked={exportPreviewMode === m} tabIndex={exportPreviewMode === m ? 0 : -1} onClick={() => setExportPreviewMode(m)} className={`flex-1 text-xs font-bold py-1.5 rounded-lg transition-all ${exportPreviewMode === m ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-100'}`}>{label}</button>
                     ))}
                   </div>
+                  <p id="doc-builder-format-help" className="mt-1.5 text-[11px] leading-snug text-slate-600 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5" role="status">
+                    {exportPreviewMode === 'worksheet'
+                      ? (t('export_preview.format_help_worksheet') || 'A paper copy for students to write on. Answer boxes become ruled lines and answer choices become bubbles to fill in, and a name and date header is added. Opens your print window, where you can print it or save it as a PDF.')
+                      : exportPreviewMode === 'html'
+                      ? (t('export_preview.format_help_html') || 'One web page students open on a device. Highlighting, notes, drawing and typed answers all work, and save on that device.')
+                      : exportPreviewMode === 'slides'
+                      ? (t('export_preview.format_help_slides') || 'A PowerPoint file you can open in PowerPoint, Keynote or Google Slides.')
+                      : (t('export_preview.format_help_print') || 'A finished copy to read or hand out, with everything shown as it is. Opens your print window, where you can print it or save it as a PDF. Pick Worksheet instead if students need blank lines to write on.')}
+                  </p>
                 </div>
 
                 {/* ── SECTION: Appearance ── */}
@@ -7890,6 +7912,24 @@ function ExportPreviewView(props) {
                         <option key={f.id} value={f.id}>{f.label}{f.category === 'accessibility' ? ' ♿' : ''}</option>
                       ))}
                     </select>
+                  </label>
+                  {/* E3. The reader's own font picker inside the exported HTML
+                      only ever offered system-stack fonts, on purpose: an export
+                      has to keep working with no network. This opt-in adds the
+                      high-legibility web faces to that picker for teachers who
+                      know their students will be online. Off by default, because
+                      turning it on makes the handout fetch fonts when it opens. */}
+                  <label className="flex items-start gap-2 text-[11px] text-slate-700 mb-2 cursor-pointer">
+                    <input type="checkbox" className="mt-0.5 accent-indigo-600"
+                      checked={!!exportConfig.readerWebFonts}
+                      onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, readerWebFonts: e.target.checked }))}
+                      aria-describedby="doc-builder-readerfonts-help" />
+                    <span>
+                      <span className="font-bold">Let readers pick OpenDyslexic, Atkinson, Lexend or Andika</span>
+                      <span id="doc-builder-readerfonts-help" className="block text-slate-600">
+                        Adds these to the font menu inside the exported page. They are downloaded when the page opens, so leave this off for offline use or if your district blocks outside requests. The nine built-in fonts always work offline.
+                      </span>
+                    </span>
                   </label>
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-[11px] text-slate-600 shrink-0">Size:</span>
@@ -8743,7 +8783,14 @@ function ExportPreviewView(props) {
                       aria-label={exportActionBusy ? 'Export in progress' : undefined}
                       className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                       title={exportPreviewMode === 'slides' && !pptxLoaded ? 'Slides library still loading...' : ''}
-                    ><Download size={14} /> {exportPreviewMode === 'worksheet' ? 'Print Worksheet' : exportPreviewMode === 'html' ? 'Download HTML' : exportPreviewMode === 'slides' ? (pptxLoaded ? 'Export Slides' : 'Loading...') : 'Download PDF'}</button>
+                    >{/* "Download PDF" was a lie: print and worksheet mode both
+                          open the browser print window, they never download
+                          anything. Say what the button does. */}
+                      <Download size={14} /> {(exportPreviewMode === 'worksheet' || exportPreviewMode === 'print')
+                        ? (t('export_preview.action_print_pdf') || 'Print / Save as PDF')
+                        : exportPreviewMode === 'html' ? (t('export_preview.action_download_html') || 'Download HTML')
+                        : exportPreviewMode === 'slides' ? (pptxLoaded ? (t('export_preview.action_export_slides') || 'Export Slides') : 'Loading...')
+                        : (t('export_preview.action_print_pdf') || 'Print / Save as PDF')}</button>
                     {/* Slides mode: same content as an EDITABLE deck (built directly in
                         the studio — no .pptx round trip), reorder/refine, then export
                         PPTX from there with the alt-text gate in force. */}
@@ -9258,7 +9305,12 @@ const _downloadBRF = (brf) => {
                   </div>
                 )}
                 <div className="flex shrink-0 items-center gap-1 overflow-x-auto border-b border-slate-300 bg-slate-100 px-2 py-1" role="tablist" aria-label="Document Builder ribbon">
-                  {[['home', 'Home'], ['insert', 'Insert'], ['layout', 'Layout'], ['review', 'Review'], ['view', 'View'], ['expert', isAgentRunning ? 'Expert •' : 'Expert']].map(([tab, label]) => {
+                  {/* The Expert Workbench IS here and always has been — this tab
+                      panel mounts it unconditionally. It was called just "Expert",
+                      which reads as a difficulty setting rather than as the same
+                      named tool the remediation panel offers, so nobody found it.
+                      Same name in both places now. */}
+                  {[['home', 'Home'], ['insert', 'Insert'], ['layout', 'Layout'], ['review', 'Review'], ['view', 'View'], ['expert', isAgentRunning ? '🤖 Expert Workbench •' : '🤖 Expert Workbench']].map(([tab, label]) => {
                     const selected = activeRibbonTab === tab;
                     return <button key={tab} id={`builder-ribbon-tab-${tab}`} type="button" role="tab" aria-selected={selected} aria-controls={`builder-ribbon-panel-${tab}`} tabIndex={selected ? 0 : -1}
                       onClick={() => { setActiveRibbonTab(tab); setRibbonCollapsed(false); }}
@@ -9840,11 +9892,18 @@ const _downloadBRF = (brf) => {
                 )}
                 {!ribbonCollapsed && activeRibbonTab === 'expert' && (
                   <div id="builder-ribbon-panel-expert" role="tabpanel" aria-labelledby="builder-ribbon-tab-expert" className="shrink-0">
-                {/* ── Expert Workbench: Command Bar + Agent Activity (collapsible) ── */}
+                {/* Same Expert Workbench the remediation panel offers, driven by the
+                    same processExpertCommand. A one-line description because the
+                    panel previously showed only an unlabelled text box, which gives
+                    no clue what you are supposed to type into it. */}
+                <p className="bg-slate-900 px-3 py-1.5 text-[11px] leading-snug text-slate-300 border-b border-slate-700">
+                  <span className="font-bold text-purple-200">Expert Workbench.</span>{' '}
+                  {t('export_preview.workbench_help') || 'Describe a change in plain language and the assistant edits this document for you. For example: "make every heading a proper H2", "add alt text to the images", or "fix the color contrast in the table".'}
+                </p>
                 <details open className="bg-gradient-to-r from-slate-800 to-slate-900 border-b border-slate-600 group">
                   <summary className="cursor-pointer px-2 py-1.5 flex items-center gap-2 list-none select-none hover:bg-slate-800/50">
                     <span className="inline-block transition-transform group-open:rotate-90 text-slate-300 text-[10px]">▸</span>
-                    <span className="text-[11px] text-purple-200 font-bold shrink-0">{isAgentRunning ? '🤖 Agent' : '⌨️ Expert'}</span>
+                    <span className="text-[11px] text-purple-200 font-bold shrink-0">{isAgentRunning ? '🤖 Agent' : '⌨️ Command'}</span>
                     {isAgentRunning && <span className="text-[11px] text-amber-300 animate-pulse motion-reduce:animate-none">Running...</span>}
                     <span className="ml-auto text-[10px] text-slate-300">{agentActivityLog.length > 0 ? `${agentActivityLog.length} event${agentActivityLog.length === 1 ? '' : 's'}` : 'idle'}</span>
                   </summary>

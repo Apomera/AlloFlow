@@ -1715,6 +1715,7 @@ function SourceGenPanel(props) {
     targetStandards
   } = props;
   if (!showSourceGen) return null;
+  const finderGrade = sourceLevel || gradeLevel;
   return /* @__PURE__ */ React.createElement("div", { className: "p-4 bg-indigo-50/50 border-b border-indigo-100 animate-in slide-in-from-top-2 space-y-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "allo-source-topic", className: "block text-xs font-medium text-indigo-900 mb-1" }, t("input.topic")), /* @__PURE__ */ React.createElement(
     "input",
     {
@@ -1779,7 +1780,7 @@ function SourceGenPanel(props) {
       className: `px-2 py-0.5 text-[11px] font-bold rounded transition-colors ${standardMode === "manual" ? "bg-indigo-100 text-indigo-700" : "text-slate-600 hover:text-slate-600"}`
     },
     t("standards.manual")
-  ))), standardMode === "ai" ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2 animate-in fade-in slide-in-from-top-1 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
+  ))), standardMode === "ai" ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2 animate-in fade-in slide-in-from-top-1 duration-200" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-indigo-900/80" }, t("standards.finder_grade_note", { grade: finderGrade }) || `Searching for ${finderGrade} standards. Change the Target Level above to search a different grade.`), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.standards_region_optional"),
@@ -1796,7 +1797,7 @@ function SourceGenPanel(props) {
       type: "text",
       value: aiStandardQuery,
       onChange: (e) => setAiStandardQuery(e.target.value),
-      onKeyDown: (e) => e.key === "Enter" && handleFindStandards(gradeLevel),
+      onKeyDown: (e) => e.key === "Enter" && handleFindStandards(finderGrade),
       placeholder: t("standards.finder_placeholder"),
       className: "flex-grow text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
     }
@@ -1804,7 +1805,7 @@ function SourceGenPanel(props) {
     "button",
     {
       "aria-label": t("common.refresh"),
-      onClick: () => handleFindStandards(gradeLevel),
+      onClick: () => handleFindStandards(finderGrade),
       disabled: !aiStandardQuery.trim() || isFindingStandards,
       className: "bg-indigo-600 hover:bg-indigo-700 text-white p-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors",
       title: t("standards.search_button_title")

@@ -2398,6 +2398,11 @@ function createCommandKernel(ctxFactory, opts = {}) {
       ok: false,
       pending: true,
       confirmationRequired: true,
+      // An OFFER is not a confirmation. The caller must let anything that is
+      // not yes/no fall through to conversation instead of re-prompting: an
+      // ignored offer is the user choosing to keep talking, which is the whole
+      // point of conversation-first intake (A1).
+      offered: !!detail.offered,
       commandId: detail.commandId,
       scopeId: detail.scopeId || null,
       narration: detail.prompt,
@@ -2405,6 +2410,7 @@ function createCommandKernel(ctxFactory, opts = {}) {
       risk: detail.risk
     };
   };
+  const classifyIntent = typeof opts.classifyIntent === "function" ? opts.classifyIntent : (command, info) => classifyCommandIntent(command, info);
   const stopActiveExecution = (reason) => {
     const active = activeExecution;
     if (!active) return false;
@@ -2530,8 +2536,13 @@ function createCommandKernel(ctxFactory, opts = {}) {
       return { handled: true, ok: false, repeated: true, clarification: true, confirmationRequired: true, narration: pendingConfirmation.prompt };
     }
     if (/^(?:no|cancel|never mind|nevermind|stop)$/.test(text)) {
+      const wasOffer = !!pendingConfirmation.offered;
       pendingConfirmation = null;
-      return { handled: true, ok: false, cancelled: true, narration: "Cancelled." };
+      return { handled: true, ok: false, cancelled: true, declinedOffer: wasOffer, narration: wasOffer ? "Okay, I will leave that alone." : "Cancelled." };
+    }
+    if (pendingConfirmation.offered) {
+      pendingConfirmation = null;
+      return { handled: false, ok: false, offerLapsed: true, converse: true };
     }
     return { handled: true, ok: false, clarification: true, confirmationRequired: true, narration: pendingConfirmation.prompt };
   }
@@ -2566,6 +2577,20 @@ function createCommandKernel(ctxFactory, opts = {}) {
     if (!scoped && text.length === 1) return null;
     const result = await routeUtterance(ctx, text, { allowAi: meta.allowAi !== false, signal: meta.signal || null, confirmed: !!meta.confirmed, routeOnly: true });
     if (result && result.routed && result.commandId) {
+      const command = buildAlloCommands(ctx).find((candidate) => candidate.id === result.commandId);
+      const decision = meta.confirmed || meta.explicitCommand ? "act" : classifyIntent(command, { parseConfidence: result.parseConfidence, via: result.via, explicitCommand: !!meta.explicitCommand, channel: meta.channel || defaultChannel, text });
+      if (decision === "offer" && command) {
+        const policy = getLearnerCommandPolicy(command);
+        return rememberConfirmation({
+          commandId: command.id,
+          scopeId: null,
+          params: result.params || {},
+          prompt: commandOfferPrompt(command, ctx, result.params),
+          risk: policy.risk,
+          channel: meta.channel || defaultChannel,
+          offered: true
+        });
+      }
       return execute(result.commandId, result.params || {}, Object.assign({}, meta, {
         globalOnly: true,
         parseConfidence: result.parseConfidence,
@@ -2600,6 +2625,80 @@ function _throwIfCommandPlanningAborted(signal) {
   const error = new Error("Command planning cancelled.");
   error.name = "AbortError";
   throw error;
+}
+const COMMAND_ACT_CONFIDENCE = 0.8;
+const SCREEN_CHANGING_COMMAND_RE = /^(?:open_|go_|generate_|create_|launch_|resume_|run_|onboarding_|preview_|export_|share_|submit_|zen_|app_tour|apply_lesson_template|rebuild_lesson_step|edit_assignment_directions|surprise_me_contextually|use_contextual_suggestion|clear_|switch_theme|start_test_prep_hands_free)/;
+const DIRECT_ACT_COMMAND_IDS = /* @__PURE__ */ new Set([
+  "read_this_page",
+  "stop_reading",
+  "pause_read_this_page",
+  "resume_read_this_page",
+  "next_read_this_page",
+  "previous_read_this_page",
+  "repeat_read_this_page",
+  "close_read_this_page",
+  "read_assignment_directions",
+  "read_media_descriptions",
+  "describe_current_screen",
+  "describe_current_media",
+  "repeat_last_response",
+  "go_back",
+  "close_current_surface",
+  "open_text_settings",
+  "open_voice_settings",
+  "list_current_actions",
+  "check_assignment_progress",
+  "next_assignment_step",
+  "show_success_criteria",
+  "review_teacher_feedback",
+  "where_is",
+  "resource_next",
+  "resource_previous",
+  "resource_read",
+  "resource_describe",
+  "resource_list",
+  "resource_exit",
+  "resource_read_media",
+  "tutorial_next",
+  "tutorial_previous",
+  "tutorial_describe",
+  "tutorial_list_actions",
+  "tutorial_focus",
+  "tutorial_exit",
+  "tutorial_skip",
+  "tutorial_review_latest",
+  "test_prep_hands_free_status",
+  "voice_stop"
+]);
+function commandChangesScreen(command) {
+  if (!command || !command.id) return false;
+  const id = String(command.id);
+  if (DIRECT_ACT_COMMAND_IDS.has(id)) return false;
+  if (command.opensPanel) return true;
+  if (typeof command.runAsync === "function") return true;
+  return SCREEN_CHANGING_COMMAND_RE.test(id);
+}
+function classifyCommandIntent(command, opts = {}) {
+  if (!command) return "offer";
+  if (opts.explicitCommand) return "act";
+  if (command.destructive) return "offer";
+  if (commandChangesScreen(command)) return "offer";
+  const confidence = Number(opts.parseConfidence);
+  return Number.isFinite(confidence) && confidence >= COMMAND_ACT_CONFIDENCE ? "act" : "offer";
+}
+function stripExplicitCommandPrefix(rawText) {
+  const text = String(rawText || "").trim();
+  const m = text.match(/^(?:(?:hey|hi|ok|okay)\s+allo[,!.]?\s+)?(?:command|do this|run command)[,:]?\s+(.{2,})$/i);
+  return m ? m[1].trim() : null;
+}
+function commandOfferPrompt(command, ctx, params) {
+  const t = _mkT(ctx && ctx.t);
+  const label = command && command.label ? String(command.label) : String(command && command.id || "that").replace(/_/g, " ");
+  const hint = command && command.hint ? String(command.hint) : "";
+  const topic = params && params.topic ? String(params.topic).slice(0, 60) : "";
+  const lead = topic ? t("voice_control.offer_lead_topic", "I can {action} about {topic}.").replace("{action}", label.toLowerCase()).replace("{topic}", topic) : t("voice_control.offer_lead", "I can {action}.").replace("{action}", label.toLowerCase());
+  const detail = hint ? " " + hint + "." : "";
+  return lead + detail + " " + t("voice_control.offer_tail", "Say yes to do it, or just keep talking and I will listen.");
 }
 async function routeUtterance(ctx, rawText, opts = {}) {
   const text = String(rawText || "").trim();
@@ -3461,8 +3560,160 @@ function detectNavigationIntent(text) {
   if (!target || NAV_READING_RE.test(target)) return { isNav: false, target: "" };
   return { isNav: true, target };
 }
+const micLevelMonitor = /* @__PURE__ */ (function() {
+  let refs = 0, stream = null, ownsStream = false, audioCtx = null, analyser = null, buf = null, timer = null;
+  let level = 0, at = 0, starting = false;
+  const listeners = /* @__PURE__ */ new Set();
+  const SAMPLE_MS = 66;
+  const publish = (value) => {
+    level = value;
+    at = typeof Date !== "undefined" && Date.now ? Date.now() : 0;
+    const detail = { value, at };
+    try {
+      if (typeof window !== "undefined") window.__alloMicLevel = detail;
+    } catch (_) {
+    }
+    listeners.forEach((fn) => {
+      try {
+        fn(detail);
+      } catch (_) {
+      }
+    });
+    try {
+      if (typeof window !== "undefined" && window.dispatchEvent && window.CustomEvent) {
+        window.dispatchEvent(new window.CustomEvent("alloflow:mic-level", { detail }));
+      }
+    } catch (_) {
+    }
+  };
+  const tick = () => {
+    if (!analyser || !buf) return;
+    try {
+      analyser.getFloatTimeDomainData(buf);
+      let sum = 0;
+      for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
+      const rms = Math.sqrt(sum / buf.length);
+      publish(Math.max(0, Math.min(1, Math.sqrt(rms) * 2.2)));
+    } catch (_) {
+    }
+    timer = setTimeout(tick, SAMPLE_MS);
+  };
+  const teardown = () => {
+    if (timer) {
+      try {
+        clearTimeout(timer);
+      } catch (_) {
+      }
+      timer = null;
+    }
+    if (analyser) {
+      try {
+        analyser.disconnect();
+      } catch (_) {
+      }
+      analyser = null;
+    }
+    buf = null;
+    if (audioCtx) {
+      try {
+        audioCtx.close();
+      } catch (_) {
+      }
+      audioCtx = null;
+    }
+    if (stream && ownsStream) {
+      try {
+        stream.getTracks().forEach((tr) => tr.stop());
+      } catch (_) {
+      }
+    }
+    stream = null;
+    ownsStream = false;
+    publish(0);
+  };
+  const wire = (incoming, owns) => {
+    const Ctx = typeof window !== "undefined" ? window.AudioContext || window.webkitAudioContext : null;
+    if (!Ctx || !incoming) {
+      if (owns) {
+        try {
+          incoming.getTracks().forEach((tr) => tr.stop());
+        } catch (_) {
+        }
+      }
+      return false;
+    }
+    try {
+      stream = incoming;
+      ownsStream = !!owns;
+      audioCtx = new Ctx();
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 512;
+      audioCtx.createMediaStreamSource(incoming).connect(analyser);
+      buf = new Float32Array(analyser.fftSize);
+      tick();
+      return true;
+    } catch (_) {
+      teardown();
+      return false;
+    }
+  };
+  return {
+    // acquire({ stream }) -> release(). Safe to call when the browser has no
+    // media stack at all: the meter simply never reports a level.
+    acquire(acquireOpts) {
+      refs += 1;
+      let released = false;
+      const release = () => {
+        if (released) return;
+        released = true;
+        refs = Math.max(0, refs - 1);
+        if (refs === 0) teardown();
+      };
+      if (refs > 1 || analyser || starting) return release;
+      const provided = acquireOpts && acquireOpts.stream;
+      if (provided) {
+        wire(provided, false);
+        return release;
+      }
+      const nav = typeof navigator !== "undefined" ? navigator : null;
+      if (!nav || !nav.mediaDevices || typeof nav.mediaDevices.getUserMedia !== "function") return release;
+      starting = true;
+      nav.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }).then((got) => {
+        starting = false;
+        if (refs === 0) {
+          try {
+            got.getTracks().forEach((tr) => tr.stop());
+          } catch (_) {
+          }
+          return;
+        }
+        wire(got, true);
+      }).catch(() => {
+        starting = false;
+      });
+      return release;
+    },
+    subscribe(fn) {
+      if (typeof fn !== "function") return () => {
+      };
+      listeners.add(fn);
+      return () => {
+        listeners.delete(fn);
+      };
+    },
+    getLevel: () => ({ value: level, at }),
+    isActive: () => refs > 0,
+    // Test seam: drive the published level without a real microphone.
+    _publish: publish
+  };
+})();
+try {
+  if (typeof window !== "undefined") window.__alloMicLevelMonitor = micLevelMonitor;
+} catch (_) {
+}
 function createVoiceLoop(getCtx, opts = {}) {
   let rec = null, active = false, errStreak = 0, routeController = null, routeSerial = 0, pageHideHandler = null, muteChangeHandler = null;
+  let micMeterRelease = null;
   let whisperState = null, engineName = "webspeech", standby = false, awake = false, awakeTimer = null;
   let paused = false, pauseResumeTimer = null;
   const DEFAULT_SPOKEN_PAUSE_MS = 3e4;
@@ -3510,6 +3761,24 @@ function createVoiceLoop(getCtx, opts = {}) {
       return lease.update(detail);
     } catch (_) {
       return false;
+    }
+  };
+  const startMicMeter = (existingStream) => {
+    if (micMeterRelease) return;
+    try {
+      micMeterRelease = micLevelMonitor.acquire(existingStream ? { stream: existingStream } : null);
+    } catch (_) {
+      micMeterRelease = null;
+    }
+  };
+  const stopMicMeter = () => {
+    const release = micMeterRelease;
+    micMeterRelease = null;
+    if (release) {
+      try {
+        release();
+      } catch (_) {
+      }
     }
   };
   const cancelRoute = () => {
@@ -3882,7 +4151,7 @@ function createVoiceLoop(getCtx, opts = {}) {
     }
     speakWithBrowser();
   };
-  const announce = (msg, speak = true) => {
+  const announce = (msg, speak = true, announceOpts = {}) => {
     const c = getCtx();
     _rememberCommandNarration(msg);
     try {
@@ -3890,11 +4159,33 @@ function createVoiceLoop(getCtx, opts = {}) {
     } catch (_) {
     }
     try {
-      if (c && c.addToast) c.addToast(msg, "info");
+      if (announceOpts.toast !== false && c && c.addToast) c.addToast(msg, "info");
     } catch (_) {
     }
     if (speak) speakReply(msg, c);
     else if (active) updateVoiceSession(paused ? "paused" : "listening", paused ? "Microphone paused." : "Listening for a command.");
+  };
+  const converseWith = async (text, ctx) => {
+    const c = ctx || getCtx() || {};
+    const t = _mkT(c && c.t);
+    if (typeof c.converse !== "function") {
+      announce(t("voice_control.no_chat_surface", "I heard you. I can only run app commands from here right now, so ask AlloBot in the chat and it will answer there."));
+      return;
+    }
+    updateVoiceSession("processing", "Asking AlloBot.");
+    let reply = null;
+    try {
+      reply = await Promise.resolve(c.converse(text, { channel: "voice" }));
+    } catch (_) {
+      reply = null;
+    }
+    if (!active) return;
+    const replyText = typeof reply === "string" ? reply : reply && typeof reply === "object" ? reply.narration : "";
+    if (replyText && String(replyText).trim()) {
+      announce(String(replyText).trim(), true, { toast: false });
+      return;
+    }
+    updateVoiceSession(paused ? "paused" : "listening", paused ? "Microphone paused." : "Listening.");
   };
   const armPendingConfirmation = (pending) => {
     clearPendingConfirmation();
@@ -3951,6 +4242,7 @@ function createVoiceLoop(getCtx, opts = {}) {
       } catch (_) {
       }
     }
+    stopMicMeter();
     if (pageHideHandler) {
       try {
         window.removeEventListener("pagehide", pageHideHandler);
@@ -4023,6 +4315,9 @@ function createVoiceLoop(getCtx, opts = {}) {
     text = String(text || "").trim();
     if (!text) return;
     const cc = getCtx();
+    const explicitPhrase = stripExplicitCommandPrefix(text);
+    const explicitCommand = !!explicitPhrase;
+    if (explicitPhrase) text = explicitPhrase;
     if (/^(stop listening|stop voice|voice off)\b/i.test(text)) {
       stop("Voice control off \u2014 the microphone is released.");
       return;
@@ -4067,7 +4362,7 @@ function createVoiceLoop(getCtx, opts = {}) {
           }
         }
         clearPendingConfirmation();
-        announce("Cancelled. Nothing was changed.");
+        announce(pending.offered ? "Okay, I will leave that alone." : "Cancelled. Nothing was changed.");
         return;
       }
       if (/^(?:yes|confirm(?: it)?|do it|go ahead|proceed)(?: please)?[.!]?$/i.test(text)) {
@@ -4107,8 +4402,18 @@ function createVoiceLoop(getCtx, opts = {}) {
           return;
         }
       }
-      announce("I am waiting for confirmation. Say yes to continue, no to cancel, or repeat details.");
-      return;
+      if (pending.offered) {
+        if (pending.kind === "kernel-command") {
+          try {
+            commandKernel.cancel("offer-lapsed", { pendingOnly: true, silent: true });
+          } catch (_) {
+          }
+        }
+        clearPendingConfirmation();
+      } else {
+        announce("I am waiting for confirmation. Say yes to continue, no to cancel, or repeat details.");
+        return;
+      }
     }
     if (standby && engineName === "whisper") {
       if (!awake) {
@@ -4149,12 +4454,12 @@ function createVoiceLoop(getCtx, opts = {}) {
         const steps = await planUtterance(cc, text, { signal, allowInteractive: false });
         if (!active || currentRouteSerial !== routeSerial || signal && signal.aborted) return;
         if (!steps || steps.length < 2) {
-          announce("I could not make a safe multi-step plan from that request, so no actions ran. Try one command at a time.");
+          await converseWith(text, cc);
           return;
         }
         const report = validatePlan(cc, steps, { allowInteractive: false });
         if (!report.ok) {
-          announce("That multi-step plan is not available in the current app state, so no actions ran.");
+          await converseWith(text, cc);
           return;
         }
         const exactSteps = report.items.map((item) => ({ commandId: item.commandId, params: Object.freeze(Object.assign({}, item.params || {})), why: item.why || "" }));
@@ -4163,17 +4468,17 @@ function createVoiceLoop(getCtx, opts = {}) {
         announce(prompt);
         return;
       }
-      const r = await commandKernel.handleUtterance(text, Object.assign({}, recognitionMeta, { allowAi: true, signal, channel: "voice" }));
+      const r = await commandKernel.handleUtterance(text, Object.assign({}, recognitionMeta, { allowAi: true, signal, channel: "voice", explicitCommand }));
       if (!active || currentRouteSerial !== routeSerial || signal && signal.aborted) return;
       if (r && r.confirmationRequired && r.commandId) {
         const prompt = String(r.narration || voiceCommandPrompt(cc, r));
-        armPendingConfirmation({ kind: "kernel-command", commandId: r.commandId, scopeId: r.scopeId || null, prompt });
+        armPendingConfirmation({ kind: "kernel-command", commandId: r.commandId, scopeId: r.scopeId || null, prompt, offered: !!r.offered });
         announce(prompt);
       } else if (r && r.handled) announce(r.narration, !r.suppressVoiceReply);
-      else announce("Didn\u2019t catch a command in \u201C" + text.slice(0, 60) + "\u201D \u2014 try \u201Cbigger text\u201D or " + (getCommandAudience(cc) === "student" ? "\u201Cread directions\u201D." : "\u201Copen the educator hub\u201D."));
+      else await converseWith(text, cc);
     } catch (error) {
       if (!active || currentRouteSerial !== routeSerial || error && error.name === "AbortError") return;
-      announce("Didn\u2019t catch a command in \u201C" + text.slice(0, 60) + "\u201D \u2014 try \u201Cbigger text\u201D or " + (getCommandAudience(cc) === "student" ? "\u201Cread directions\u201D." : "\u201Copen the educator hub\u201D."));
+      await converseWith(text, cc);
     } finally {
       if (currentRouteSerial === routeSerial) routeController = null;
     }
@@ -4227,6 +4532,7 @@ function createVoiceLoop(getCtx, opts = {}) {
     proc.connect(gain);
     gain.connect(ac.destination);
     whisperState = { stream, ac, proc, gain, seg, src, asr };
+    startMicMeter(stream);
     updateVoiceSession("listening", "On-device recognition is listening.", "Audio stays on this device.");
   };
   const beginWebSpeech = (c, standbyWanted) => {
@@ -4278,6 +4584,7 @@ function createVoiceLoop(getCtx, opts = {}) {
         }
       };
       rec.start();
+      startMicMeter(null);
     } catch (e) {
       stop("Voice control could not start: " + (e && e.message || "unknown"));
     }
@@ -4387,6 +4694,7 @@ function createVoiceLoop(getCtx, opts = {}) {
     const requestedAutoResumeMs = Number(pauseOpts && pauseOpts.autoResumeMs);
     const autoResumeMs = hasAutoResume && Number.isFinite(requestedAutoResumeMs) ? Math.max(MIN_SPOKEN_PAUSE_MS, Math.min(MAX_SPOKEN_PAUSE_MS, requestedAutoResumeMs)) : 0;
     paused = true;
+    stopMicMeter();
     clearPauseResumeTimer();
     updateVoiceSession("paused", "Microphone paused.");
     cancelRoute();
@@ -4463,6 +4771,7 @@ function createVoiceLoop(getCtx, opts = {}) {
       } catch (_) {
       }
     }
+    startMicMeter(engineName === "whisper" && whisperState ? whisperState.stream : null);
     updateVoiceSession("listening", "Listening for a command.");
     announce("Listening again.");
     return true;
@@ -5338,6 +5647,6 @@ const AlloCommandProgress = ({ ctx }) => {
 };
 
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.AlloCommands = { _voicePure: { downsampleAudio: downsampleAudio, detectWakeCommand: detectWakeCommand, createVadSegmenter: createVadSegmenter, createBargeDetector: createBargeDetector }, detectNavigationIntent: detectNavigationIntent, modelCache: modelCache, AlloCommandPalette: AlloCommandPalette, AlloCommandProgress: AlloCommandProgress, buildAlloCommands: buildAlloCommands, getCommandAudience: getCommandAudience, getCommandAvailability: getCommandAvailability, getLocalCommandInsights: getLocalCommandInsights, mergeCommandProgressItems: mergeCommandProgressItems, scoreCommand: scoreCommand, routeUtterance: routeUtterance, executeCommand: executeCommand, cancelCommand, runCommandById: runCommandById, findReadingMatches: findReadingMatches, normalizeReadingRequest: normalizeReadingRequest, readingMatchReasons: readingMatchReasons, readingMatchWhyText: readingMatchWhyText, createVoiceLoop: createVoiceLoop, looksMultiStep: looksMultiStep, getCommandContract: getCommandContract, sanitizeCommandParams: sanitizeCommandParams, validatePlan: validatePlan, planUtterance: planUtterance, runPlan: runPlan, LEARNER_COMMAND_RISKS: LEARNER_COMMAND_RISKS, LEARNER_CONFIRMATION_POLICIES: LEARNER_CONFIRMATION_POLICIES, getLearnerCommandPolicy: getLearnerCommandPolicy, createLearnerCommandAdapter: createLearnerCommandAdapter, registerCommandScope: registerCommandScope, normalizeVoiceEditableFields: normalizeVoiceEditableFields, resolveVoiceEditableField: resolveVoiceEditableField, parseNamedFieldVoiceUtterance: parseNamedFieldVoiceUtterance, createNamedFieldCommandAdapter: createNamedFieldCommandAdapter, createTutorialCommandAdapter: createTutorialCommandAdapter, createGeneratedResourceCommandAdapter: createGeneratedResourceCommandAdapter, listActiveCommandScopes: listActiveCommandScopes, getLearnerContextSnapshot: getLearnerContextSnapshot, routeScopedUtterance: routeScopedUtterance, createCommandKernel: createCommandKernel };
+  window.AlloModules.AlloCommands = { _voicePure: { downsampleAudio: downsampleAudio, detectWakeCommand: detectWakeCommand, createVadSegmenter: createVadSegmenter, createBargeDetector: createBargeDetector }, detectNavigationIntent: detectNavigationIntent, modelCache: modelCache, micLevelMonitor: micLevelMonitor, AlloCommandPalette: AlloCommandPalette, AlloCommandProgress: AlloCommandProgress, buildAlloCommands: buildAlloCommands, getCommandAudience: getCommandAudience, getCommandAvailability: getCommandAvailability, getLocalCommandInsights: getLocalCommandInsights, mergeCommandProgressItems: mergeCommandProgressItems, scoreCommand: scoreCommand, routeUtterance: routeUtterance, executeCommand: executeCommand, cancelCommand, runCommandById: runCommandById, findReadingMatches: findReadingMatches, normalizeReadingRequest: normalizeReadingRequest, readingMatchReasons: readingMatchReasons, readingMatchWhyText: readingMatchWhyText, createVoiceLoop: createVoiceLoop, looksMultiStep: looksMultiStep, getCommandContract: getCommandContract, sanitizeCommandParams: sanitizeCommandParams, validatePlan: validatePlan, planUtterance: planUtterance, runPlan: runPlan, LEARNER_COMMAND_RISKS: LEARNER_COMMAND_RISKS, LEARNER_CONFIRMATION_POLICIES: LEARNER_CONFIRMATION_POLICIES, getLearnerCommandPolicy: getLearnerCommandPolicy, createLearnerCommandAdapter: createLearnerCommandAdapter, registerCommandScope: registerCommandScope, normalizeVoiceEditableFields: normalizeVoiceEditableFields, resolveVoiceEditableField: resolveVoiceEditableField, parseNamedFieldVoiceUtterance: parseNamedFieldVoiceUtterance, createNamedFieldCommandAdapter: createNamedFieldCommandAdapter, createTutorialCommandAdapter: createTutorialCommandAdapter, createGeneratedResourceCommandAdapter: createGeneratedResourceCommandAdapter, listActiveCommandScopes: listActiveCommandScopes, getLearnerContextSnapshot: getLearnerContextSnapshot, routeScopedUtterance: routeScopedUtterance, createCommandKernel: createCommandKernel, classifyCommandIntent: classifyCommandIntent, commandChangesScreen: commandChangesScreen, stripExplicitCommandPrefix: stripExplicitCommandPrefix, commandOfferPrompt: commandOfferPrompt };
   console.log('[CDN] AlloCommands loaded');
 })();
