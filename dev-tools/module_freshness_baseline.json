@@ -1,9 +1,9 @@
 {
   "note": "Modules known to be behind their source. A NEW entry fails check_module_freshness; a rebuilt one must be removed. Regenerate deliberately with --update.",
-  "updated": "2026-08-11",
+  "updated": "2026-08-16",
   "stale": [
     "anchor_charts_module.js",
     "research_hub_module.js",
-    "view_guided_mode_banner_module.js"
+    "test_prep_hub_module.js"
   ]
 }
