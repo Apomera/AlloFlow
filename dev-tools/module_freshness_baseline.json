@@ -3,7 +3,6 @@
   "updated": "2026-08-16",
   "stale": [
     "anchor_charts_module.js",
-    "research_hub_module.js",
-    "test_prep_hub_module.js"
+    "research_hub_module.js"
   ]
 }
