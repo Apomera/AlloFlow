@@ -21,7 +21,7 @@ Do not begin with a target such as “every teacher will use ten tools.” Featu
 
 ## Use a 30-day rollout
 
-### Days 1–5: align guardrails and the first task
+### Days 1-5: align guardrails and the first task
 
 Leadership and the implementation team should:
 
@@ -33,7 +33,7 @@ Leadership and the implementation team should:
 
 The success condition for the first week is not polished production. It is that a teacher can explain the goal, source, review gate, student route, and fallback.
 
-### Days 6–12: add accessibility and choice
+### Days 6-12: add accessibility and choice
 
 In a planning meeting:
 
@@ -45,7 +45,7 @@ In a planning meeting:
 
 An implementation team should model the actual learner route, not only demonstrate the teacher workspace.
 
-### Days 13–20: rehearse a bounded live routine
+### Days 13-20: rehearse a bounded live routine
 
 Use [Live sessions](03-live-sessions.md) to rehearse a short routine:
 
@@ -58,7 +58,7 @@ Use fictional codenames and a small test group. Rehearse the standard live path 
 
 Review the [live-session protocol on GitHub](https://github.com/Apomera/AlloFlow/blob/main/docs/LIVE_SESSION_PROTOCOL.md) with the staff member responsible for deployment support. Never make a live lesson depend on an untested network path.
 
-### Days 21–30: review evidence and refine the routine
+### Days 21-30: review evidence and refine the routine
 
 Ask teachers to bring one example of:
 

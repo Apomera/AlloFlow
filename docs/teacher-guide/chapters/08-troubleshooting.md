@@ -10,8 +10,8 @@ If the issue involves identifying or sensitive information, stop sharing and fol
 2. **Move students to the fallback.** Use the printed source, saved PDF, screenshot sequence, independent reading, partner explanation, or non-AI task you prepared.
 3. **Name the scope.** Is the problem one student, one group, the whole class, one tool, all AI features, or the entire site?
 4. **Name the stage.** Did it fail while opening, importing, generating, previewing, delivering, responding, saving, or exporting?
-5. **Check visible status.** Look for offline, sync, AI backend, microphone, loading, or retry indicators.
-6. **Turn on Help Mode.** Press **?** to reveal contextual help. Use Help Search when it is available.
+5. **Check visible status.** Look for offline, sync, AI backend, microphone, loading, or retry indicators. Status messages appear at the top of the screen and fade. If one disappeared before you could read it, you can replay recent messages from the hints panel.
+6. **Turn on Help Mode.** Press **?** to reveal contextual help. Use the help search when it is available.
 7. **Try one controlled recovery.** Repeated clicking can create duplicate jobs or make the state harder to interpret.
 
 ## Preserve work before reloading
@@ -19,6 +19,7 @@ If the issue involves identifying or sensitive information, stop sharing and fol
 Use the safest available option:
 
 - Select Save Project and download the AlloFlow project file to an approved location.
+- Check **Open saved work** for resource packs already stored on this device. You can restore, pin, export, or erase them from there. It is a different thing from **Test device storage** in Platform Diagnostics, which only checks whether the browser can keep data at all.
 - Copy teacher-authored directions or unsaved text into an approved temporary document.
 - Download an available export.
 - Record the current step, resource title, and error message.
@@ -127,7 +128,7 @@ Then perform the human review in [Privacy and responsible AI](07-privacy-and-res
 3. Remove passwords or encryption only if you are authorized to create a working copy.
 4. If the PDF is scanned, run an approved OCR workflow and check the recognized text.
 5. Split a very long file into the section needed for the lesson.
-6. Copy clean, permitted text into Direct Paste as a fallback.
+6. Copy clean, permitted text into the paste-text option in Source Material as a fallback.
 7. Review tables, formulas, columns, footnotes, and image-only content after import.
 
 Do not upload secure tests or copyrighted material that the school is not permitted to process or redistribute.
@@ -179,7 +180,7 @@ Use [Review evidence and plan next steps](05-review-and-next-steps.md) before in
 
 ## Audio, speech, or microphone features do not work
 
-1. Check AlloFlow’s global mute control.
+1. Check the **Mute All Audio** control in the header.
 2. Check the browser’s site permission for microphone or audio.
 3. Check the Windows or device-level input and output selection.
 4. Disconnect unused Bluetooth audio devices.
@@ -230,7 +231,7 @@ If a public or overly broad share was created, revoke it and follow the privacy 
 3. Press **?** for Help Mode and check the control’s accessible name.
 4. Test browser zoom before using a page-specific text-size control.
 5. Turn on reduced motion or the app’s motion controls when animation is a barrier.
-6. Use the global mute control if sound is interfering.
+6. Use the **Mute All Audio** control if sound is interfering.
 7. Try Immersive Reader or the relevant reading support after content is loaded.
 8. If keyboard focus disappears, stop and provide an alternate route rather than requiring mouse use.
 

@@ -18,9 +18,9 @@ If the app opens directly into another view, use the header or home control to r
 ## Use Help Mode and Find a Tool
 
 - Press **?** to toggle Help Mode. Hover or focus a supported control to see its purpose and, where available, its shortcut.
-- Open Help Search from the help area. **Ctrl+K** may open it in deployments that enable that shortcut.
-- Use Find a Tool when you know the task but not the product name.
-- Use the Spotlight Tour when you want a guided orientation to the current interface.
+- Open the help search from the help area. **Ctrl+K** may open a command and search palette in deployments that enable that shortcut.
+- Use **Find a tool** when you know the task but not the product name. It narrows the tool list; it does not create anything by itself. When a filter is on, the panel says so and how many tools are hidden. **Show all tools** clears it, and **Hide this panel** puts it away, with a slim bar to bring it back.
+- Take the guided tour when you want an orientation to the current interface.
 - Use the visible Retry action when a tool card reports a loading problem.
 
 Do not rely on an old screenshot to locate a feature. Hubs and routes evolve faster than the teaching workflow.
@@ -29,13 +29,15 @@ Do not rely on an old screenshot to locate a feature. Hubs and routes evolve fas
 
 | Teaching or professional need | Start with | Use with care |
 |---|---|---|
+| set the grade, language, and other defaults for a whole lesson | Universal Settings | it applies to new work only, so resources you already made keep their old settings |
 | adapt a source, build directions, or create a lesson package | Guided Mode, Source Material, configuration, lesson resources | verify every generated claim and preserve the common learning target |
-| read, understand, or discuss text | Leveled Text, glossary, visual organizers, Immersive Reader, annotation tools | do not confuse a simpler text with a simpler learning goal |
+| create a picture or diagram for the content | Lesson Images | check depictions for accuracy and stereotype, and add a text alternative |
+| read, understand, or discuss text | Text Adaptation, Glossary, Visual Organizer, Immersive Reader, annotation tools | do not confuse a simpler text with a simpler learning goal |
 | check understanding | Quiz, Exit Ticket, Polling, Concept Sort, live activities | use as formative evidence unless a reviewed assessment plan says otherwise |
 | teach a synchronized class | Live Session, Group Manager, Teacher Signal controls, Activity Pulse | verify recipients and treat missing responses as possible access problems |
 | review class patterns | Teacher Dashboard, learner progress, session summaries | trace summaries back to actual work before making decisions |
 | practice sounds, spelling, or word patterns | Word Sounds Studio | use age-respectful materials and coordinate intensive intervention with specialists |
-| explore mathematics, science, engineering, coding, or data | STEM Lab and saved STEM stations | preview simulations and require reasoning, not just successful interaction |
+| explore mathematics, science, engineering, coding, or data | STEAM Lab and saved STEAM stations | preview simulations and require reasoning, not just successful interaction |
 | teach reflection, relationships, self-management, or digital well-being | SEL Hub and saved SEL stations | do not require personal disclosure; follow school safety procedures |
 | support AAC, visual communication, schedules, or social narratives | Symbol Studio | preserve the student’s established system and involve the communication team |
 | collect and review observable behavior data | BehaviorLens | authorized team use only; no automatic diagnosis or plan |
@@ -120,9 +122,10 @@ Test-preparation tools should teach concepts and strategies. Do not upload secur
 | Item | What it is | Teacher implication |
 |---|---|---|
 | **Source Material** | the text, file, URL content, or prompt used to ground the lesson | use permitted, de-identified content and keep the authoritative original |
-| **Generated resource** | a draft lesson item such as leveled text, glossary, quiz, organizer, or activity | review before students see it |
+| **Generated resource** | a draft lesson item such as adapted text, glossary, quiz, organizer, or activity | review before students see it |
 | **History** | the resource list or activity state in the current project | titles and old drafts may still expose sensitive content |
 | **Browser draft or saved state** | local or synced state used to resume work | shared devices and profiles need an approved clearing routine |
+| **Saved resource pack** | a generated pack kept on this device, reached through **Open saved work** | restore, pin, export, or erase it there; on a shared device, erase before handing it on |
 | **AlloFlow project** | a downloadable project file containing included lesson state | store and share it like the most sensitive content inside it |
 | **Live Session** | a temporary classroom connection for delivery, pacing, activities, and evidence | use the approved deployment, recipients, code practice, and close-out routine |
 | **Session summary** | a record or local summary of participation and instructional signals | verify completeness and follow retention policy |
@@ -143,7 +146,7 @@ Save Project is the dependable teacher-controlled backup when available, but it 
 | Toggle contextual Help Mode | **?** |
 | Open Help Search | **Ctrl+K** where enabled |
 | Move within a supported menu, tour, slider, or grid | **Arrow keys** as announced by the control |
-| Silence app audio | Global Mute in the header |
+| Silence app audio | **Mute All Audio** in the header |
 | Adjust reading presentation | reading theme, text, spacing, ruler, highlighting, or Immersive Reader controls as available |
 
 Keyboard behavior can vary inside simulations and specialized editors. Turn on Help Mode, read the on-screen instructions, and provide an alternate route if a control cannot be operated with the student’s access method.
@@ -154,7 +157,11 @@ Keyboard behavior can vary inside simulations and specialized editors. Turn on H
 
 **Activity Pulse:** A teacher-facing live view of activity lifecycle or response status. It helps identify delivery and follow-up needs; it is not a mastery score.
 
+**Adapted Text:** A version of the source rewritten toward a target reading level. Produced by the Text Adaptation tool. It should change the reading load, not the learning goal.
+
 **AI backend:** The configured service or local engine that performs generation. Provider, account, data handling, availability, and capabilities depend on deployment.
+
+**AlloBot:** The in-app assistant. It answers questions in conversation and can offer to open a tool for you. Screen-changing actions are offered rather than performed, so you confirm before the view moves.
 
 **AlloFlow project:** A downloadable project file used to preserve lesson state for later loading. It may contain source and generated content and should be stored accordingly.
 
@@ -174,6 +181,8 @@ Keyboard behavior can vary inside simulations and specialized editors. Turn on H
 
 **Immersive Reader:** A reading overlay that can provide read-aloud, highlighting, spacing, focus, or other presentation supports depending on the current build.
 
+**Lesson Images:** The image generation tool. It creates pictures and diagrams for the content, and can refine or remove text inside an image. Do not confuse it with Visual Organizer, which builds concept maps and diagrams of structure, or with the AAC visual supports used for communication boards and schedules.
+
 **OCR:** Optical character recognition, which converts an image of text into machine-readable text. OCR output must be checked, especially for tables, formulas, columns, and poor scans.
 
 **Source Material:** The grounding content for generation. It remains the reference for fact and quotation checks.
@@ -190,11 +199,13 @@ Keyboard behavior can vary inside simulations and specialized editors. Turn on H
 
 **UDL:** Universal Design for Learning, a planning framework that anticipates variability through multiple routes for engagement, representation, and action or expression.
 
+**Universal Settings:** The shared defaults every generator inherits, including grade level, output language, translations, standards, interests, Depth of Knowledge, and emoji. They apply to new work only. See [Universal Settings](11-universal-settings.md).
+
 ## If you cannot find a feature
 
 1. Return to the Launch Pad and choose the route that matches the task.
 2. Press **?** for Help Mode.
-3. Use Help Search or Find a Tool.
+3. Use the help search or Find a Tool.
 4. Check whether the feature requires Teacher or Educator mode.
 5. Check loading, AI backend, microphone, or network status.
 6. Confirm that the district deployment includes and approves the feature.

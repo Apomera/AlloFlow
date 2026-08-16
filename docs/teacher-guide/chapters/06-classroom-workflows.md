@@ -10,13 +10,13 @@ Before students use any generated material, complete the review steps in [Prepar
 
 **Use when:** Students need different entry points to the same article, passage, primary source, or teacher-created explanation.
 
-**Typical preparation:** 10–20 minutes after the source is ready.
+**Typical preparation:** 10-20 minutes after the source is ready.
 
 ### Build it
 
 1. Open Guided Mode and add the source under Source Material.
 2. State the common learning target. Identify any wording, quotation, or technical vocabulary students must encounter in the original.
-3. Analyze the source, then generate a Leveled Text or a smaller chunked version.
+3. Analyze the source, then use **Text Adaptation** to generate an adapted text or a smaller chunked version.
 4. Add one representation support, such as a glossary, visual organizer, worked example, bilingual view, or read-aloud option.
 5. Compare every version with the source. Restore missing facts, qualifiers, evidence, and discipline-specific terms.
 6. Add directions that name the same thinking task for everyone.
@@ -34,12 +34,12 @@ Ask, “Did I reduce unnecessary language load, or did I reduce the idea?” If 
 
 **Use when:** A student benefits from home-language access while building English vocabulary and participation.
 
-**Typical preparation:** 10–15 minutes plus fluent review when available.
+**Typical preparation:** 10-15 minutes plus fluent review when available.
 
 ### Build it
 
 1. Add a short, accurate source rather than an entire unit at once.
-2. Set the learner’s language support and grade band in the lesson configuration.
+2. Set the output language, translations, and grade level in [Universal Settings](11-universal-settings.md) before you generate.
 3. Generate a bilingual view, glossary, sentence frames, or translated directions.
 4. Keep names, formulas, quotations, cognates, and essential academic terms visible in both languages.
 5. Ask a fluent colleague, interpreter, family liaison, or qualified reviewer to check high-stakes wording when possible.
@@ -58,7 +58,7 @@ Do not treat machine-translated wording as proof of language proficiency or use 
 
 **Use when:** A middle-school learner needs targeted phonemic awareness, phonics, syllable, spelling, or handwriting practice without elementary-looking materials.
 
-**Typical preparation:** 5–10 minutes.
+**Typical preparation:** 5-10 minutes.
 
 ### Build it
 
@@ -81,7 +81,7 @@ Use performance to plan instruction, not to diagnose a reading disorder or repla
 
 **Use when:** Students can discuss a text but need support selecting evidence, organizing a claim, or explaining reasoning.
 
-**Typical preparation:** 15–25 minutes.
+**Typical preparation:** 15-25 minutes.
 
 ### Build it
 
@@ -105,7 +105,7 @@ Read the final work. Generated feedback can miss nuance, reward formulaic writin
 
 **Use when:** You need one clear decision before moving on.
 
-**Typical preparation:** 5–10 minutes.
+**Typical preparation:** 5-10 minutes.
 
 ### Build it
 
@@ -129,11 +129,11 @@ Do not grade a missing live response until you have ruled out delivery, access, 
 
 **Use when:** Students will rotate through simulations, models, data, engineering, coding, or other STEM experiences.
 
-**Typical preparation:** 15–30 minutes, including a device test.
+**Typical preparation:** 15-30 minutes, including a device test.
 
 ### Build it
 
-1. Open Learning Tools, then STEM Lab.
+1. Open Learning Tools, then STEAM Lab.
 2. Choose one tool that directly serves the target. Test it on the same type of device students will use.
 3. Save it as a station if that option is available in your deployment.
 4. Give every station the same short reasoning frame: **notice, predict, test, explain**.
@@ -154,7 +154,7 @@ Confirm that the simulation’s assumptions and scale are appropriate for the co
 
 **Use when:** The instructional goal involves reflection, self-management, collaboration, conflict practice, digital well-being, or another school-approved SEL competency.
 
-**Typical preparation:** 10–20 minutes plus review of the school response plan.
+**Typical preparation:** 10-20 minutes plus review of the school response plan.
 
 ### Build it
 
@@ -178,7 +178,7 @@ Follow the school’s crisis, bullying, mandated-reporting, and student-support 
 
 **Use when:** You are creating or adapting a handout, flyer, slide-like visual, PDF, audio, or video resource.
 
-**Typical preparation:** 15–30 minutes, depending on the source.
+**Typical preparation:** 15-30 minutes, depending on the source.
 
 ### Build it
 
@@ -203,7 +203,7 @@ An automated audit can find some issues; it cannot certify that the resource is 
 
 **Use when:** The class shares a target but groups need different supports, examples, pacing, or response modes.
 
-**Typical preparation:** 15–20 minutes plus a short live-session preflight.
+**Typical preparation:** 15-20 minutes plus a short live-session preflight.
 
 ### Build it
 
@@ -228,7 +228,7 @@ Verify the recipient list before every targeted send. Group membership is an ins
 
 **Use when:** A learner missed the live lesson or needs to finish after the session.
 
-**Typical preparation:** 10–15 minutes.
+**Typical preparation:** 10-15 minutes.
 
 ### Build it
 
@@ -252,7 +252,7 @@ Do not assume that a generated link or code remains available after a live sessi
 
 **Use when:** A student communicates with symbols, partner-assisted scanning, a communication board, speech output, or another AAC system.
 
-**Typical preparation:** Plan with the student’s communication team; simple activity adaptation may take 10–20 minutes.
+**Typical preparation:** Plan with the student’s communication team; simple activity adaptation may take 10-20 minutes.
 
 ### Build it
 

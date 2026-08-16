@@ -14,7 +14,7 @@ Next, identify where access may break down. A barrier is a feature of the task o
 
 | Possible barrier | Planning response | Possible resource |
 | --- | --- | --- |
-| Dense background text | Clarify structure and foreground essential ideas. | Chunked or leveled text with preserved key concepts |
+| Dense background text | Clarify structure and foreground essential ideas. | Chunked or adapted text with preserved key concepts |
 | Unfamiliar academic vocabulary | Preteach a small set of terms in context. | Glossary, examples, visuals, or word practice |
 | Multi-step directions | Make sequence and completion criteria visible. | Numbered directions, checklist, or visual organizer |
 | Limited background knowledge | Build a bridge without replacing the core source. | Brief overview, timeline, concept map, or worked example |
@@ -77,7 +77,7 @@ Use concrete verbs such as compare, explain, model, revise, justify, or solve. �
 
 ### Add only useful planning constraints
 
-Set the grade band, subject, language, depth of knowledge, standards, interests, or response format when those controls are available and instructionally relevant. Do not enter a student name or confidential profile to personalize a resource. Describe a support in general terms, such as:
+Most of these live in one place. Set the grade level, output language, translations, standards, interests, and Depth of Knowledge in [Universal Settings](11-universal-settings.md) before you generate, so every part of the pack agrees. Set subject and response format where the tool offers them. Do not enter a student name or confidential profile to personalize a resource. Describe a support in general terms, such as:
 
 - “Use grade-level science vocabulary with a plain-language definition on first use.”
 - “Provide a Spanish-English glossary but keep the final explanation in English.”
@@ -104,7 +104,7 @@ You do not need a different tool for every part. A well-designed source, clear d
 
 | Output | Best use | Teacher check |
 | --- | --- | --- |
-| Leveled or clarified text | Reduce unnecessary language load while preserving the concept. | Compare line by line for omissions, changed claims, and lost evidence. |
+| Adapted text | Reduce unnecessary language load while preserving the concept. | Compare line by line for omissions, changed claims, and lost evidence. |
 | Glossary or word support | Prepare students for a small set of essential terms. | Check definitions in context, pronunciation, translations, and examples. |
 | Visual organizer | Show relationships, sequence, categories, or cause and effect. | Confirm reading order, labels, text alternatives, and logical connections. |
 | Structured directions | Make a complex task actionable. | Test the steps without relying on verbal explanation. |

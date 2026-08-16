@@ -10,16 +10,17 @@ This consolidated Markdown edition is generated for repository browsing, review,
 
 ## Contents
 
-1. [Start here: prepare your first student-ready resource](#start-here-prepare-your-first-student-ready-resource) ? Choose an entry route and prepare a first student-ready resource.
-2. [Prepare a purposeful, differentiated lesson](#prepare-a-purposeful-differentiated-lesson) ? Turn source material into a purposeful, differentiated lesson package.
-3. [Run a live lesson safely and calmly](#run-a-live-lesson-safely-and-calmly) ? Prepare, run, differentiate, and close a live lesson safely.
-4. [Accessibility and UDL: verify the learner experience](#accessibility-and-udl-verify-the-learner-experience) ? Check the real learner experience and remove barriers before sharing.
-5. [Review evidence and plan next steps](#review-evidence-and-plan-next-steps) ? Interpret classroom evidence carefully and plan useful follow-up.
-6. [Classroom workflows](#classroom-workflows) ? Use practical recipes for common middle-school teaching needs.
-7. [Privacy and responsible AI](#privacy-and-responsible-ai) ? Use student data and generated materials with appropriate judgment.
-8. [Troubleshooting](#troubleshooting) ? Recover work and diagnose common classroom problems.
-9. [Specialist and product reference](#specialist-and-product-reference) ? Find specialist surfaces, keyboard help, and product terminology.
-10. [School rollout and coaching](#school-rollout-and-coaching) ? Introduce AlloFlow as an instructional routine with shared guardrails and coaching.
+1. [Start here: prepare your first student-ready resource](#start-here-prepare-your-first-student-ready-resource) · Choose an entry route and prepare a first student-ready resource.
+2. [Prepare a purposeful, differentiated lesson](#prepare-a-purposeful-differentiated-lesson) · Turn source material into a purposeful, differentiated lesson package.
+3. [Universal Settings: set it once, not per tool](#universal-settings-set-it-once-not-per-tool) · Set grade level, language, translations, and other shared defaults once for the whole lesson.
+4. [Run a live lesson safely and calmly](#run-a-live-lesson-safely-and-calmly) · Prepare, run, differentiate, and close a live lesson safely.
+5. [Accessibility and UDL: verify the learner experience](#accessibility-and-udl-verify-the-learner-experience) · Check the real learner experience and remove barriers before sharing.
+6. [Review evidence and plan next steps](#review-evidence-and-plan-next-steps) · Interpret classroom evidence carefully and plan useful follow-up.
+7. [Classroom workflows](#classroom-workflows) · Use practical recipes for common middle-school teaching needs.
+8. [Privacy and responsible AI](#privacy-and-responsible-ai) · Use student data and generated materials with appropriate judgment.
+9. [Troubleshooting](#troubleshooting) · Recover work and diagnose common classroom problems.
+10. [Specialist and product reference](#specialist-and-product-reference) · Find specialist surfaces, keyboard help, and product terminology.
+11. [School rollout and coaching](#school-rollout-and-coaching) · Introduce AlloFlow as an instructional routine with shared guardrails and coaching.
 
 ---
 
@@ -33,7 +34,7 @@ For a first attempt, use **Guided Mode** and make one strong resource rather tha
 
 The Launch Pad offers several starting points. The wording can vary slightly by deployment or interface language.
 
-The complete-workspace card is labeled **Full AlloFlow** in the Launch Pad. Help text, voice guidance, or an older deployment may call the same route **Full Platform**; **Guided Setup** is another label you may see for the guided route.
+The complete-workspace card is labeled **Full AlloFlow** in the Launch Pad. Some interface text and older deployments still call the same route **Full Platform**; **Guided Setup** is another label you may see for the guided route.
 
 ![AlloFlow Launch Pad with Guided Mode, Full AlloFlow, Learning Tools, and Educator Tools](docs/teacher-guide/assets/screenshots/00-launch-pad.png)
 
@@ -99,7 +100,7 @@ Describe barriers and supports, not diagnoses. For example, write “provide a s
 
 #### 4. Create one anchor resource
 
-Choose one output that directly serves the learning goal. Useful first choices include a leveled or clarified text, glossary, visual organizer, structured directions, short quiz, sentence frames, or another focused support.
+Choose one output that directly serves the learning goal. Useful first choices include an adapted text, glossary, visual organizer, structured directions, short quiz, sentence frames, or another focused support.
 
 Ask:
 
@@ -203,7 +204,7 @@ Next, identify where access may break down. A barrier is a feature of the task o
 
 | Possible barrier | Planning response | Possible resource |
 | --- | --- | --- |
-| Dense background text | Clarify structure and foreground essential ideas. | Chunked or leveled text with preserved key concepts |
+| Dense background text | Clarify structure and foreground essential ideas. | Chunked or adapted text with preserved key concepts |
 | Unfamiliar academic vocabulary | Preteach a small set of terms in context. | Glossary, examples, visuals, or word practice |
 | Multi-step directions | Make sequence and completion criteria visible. | Numbered directions, checklist, or visual organizer |
 | Limited background knowledge | Build a bridge without replacing the core source. | Brief overview, timeline, concept map, or worked example |
@@ -266,7 +267,7 @@ Use concrete verbs such as compare, explain, model, revise, justify, or solve. �
 
 #### Add only useful planning constraints
 
-Set the grade band, subject, language, depth of knowledge, standards, interests, or response format when those controls are available and instructionally relevant. Do not enter a student name or confidential profile to personalize a resource. Describe a support in general terms, such as:
+Most of these live in one place. Set the grade level, output language, translations, standards, interests, and Depth of Knowledge in [Universal Settings](#universal-settings-set-it-once-not-per-tool) before you generate, so every part of the pack agrees. Set subject and response format where the tool offers them. Do not enter a student name or confidential profile to personalize a resource. Describe a support in general terms, such as:
 
 - “Use grade-level science vocabulary with a plain-language definition on first use.”
 - “Provide a Spanish-English glossary but keep the final explanation in English.”
@@ -293,7 +294,7 @@ You do not need a different tool for every part. A well-designed source, clear d
 
 | Output | Best use | Teacher check |
 | --- | --- | --- |
-| Leveled or clarified text | Reduce unnecessary language load while preserving the concept. | Compare line by line for omissions, changed claims, and lost evidence. |
+| Adapted text | Reduce unnecessary language load while preserving the concept. | Compare line by line for omissions, changed claims, and lost evidence. |
 | Glossary or word support | Prepare students for a small set of essential terms. | Check definitions in context, pronunciation, translations, and examples. |
 | Visual organizer | Show relationships, sequence, categories, or cause and effect. | Confirm reading order, labels, text alternatives, and logical connections. |
 | Structured directions | Make a complex task actionable. | Test the steps without relying on verbal explanation. |
@@ -429,6 +430,106 @@ For independent delivery, include a short message outside AlloFlow that states t
 - You know what evidence the lesson will produce and what you will do next.
 
 Continue with [Accessibility and UDL](#accessibility-and-udl-verify-the-learner-experience) for a deeper learner-experience review, [Live sessions](#run-a-live-lesson-safely-and-calmly) for synchronous delivery, or [Review evidence and plan next steps](#review-evidence-and-plan-next-steps) for using classroom evidence responsibly.
+
+---
+
+## Universal Settings: set it once, not per tool
+
+Universal Settings is one card that holds the choices every generator inherits. Set the grade level once and the glossary, the quiz, and the adapted text all target that grade. Set it per tool instead and the parts of one lesson pack quietly disagree with each other.
+
+Open it before you generate anything. That single habit prevents most of the "why does this pack feel mismatched" problems teachers report.
+
+If you have not made a resource yet, start with [Start here](#start-here-prepare-your-first-student-ready-resource). To see how these settings fit a full planning routine, see [Prepare a lesson](#prepare-a-purposeful-differentiated-lesson).
+
+### What the card controls
+
+The panel gathers the settings that would otherwise repeat in every tool.
+
+| Setting | What it does | Where you notice it |
+| --- | --- | --- |
+| **Grade level** | Sets the reading and complexity target for new resources. | Sentence length, vocabulary, and question difficulty. |
+| **Output language** | Sets the language generated content is written in. | The text students read. |
+| **Translations** | Decides whether a second-language version is attached. | A translation block beside the main content. |
+| **Standards** | Supplies the standard or framework the content should align to. | Quiz items, objectives, and lesson plans. |
+| **Student interests** | Adds a theme or context to examples. | Word problems, scenarios, and prompts. |
+| **Depth of Knowledge** | Sets the level of thinking the task should demand. | Question stems and task verbs. |
+| **Emoji** | Adds emoji as visual cues in generated material. | Glossary terms, headings, and directions. |
+
+Each control tells you how many kinds of resource actually use it. Read that number before you spend time on a setting. Some controls reach almost everything; others reach two or three tools.
+
+You can collapse the card once you are done. The summary line stays visible, so you can check your choices without opening the panel again.
+
+### The rule that surprises teachers
+
+**Universal Settings applies to new work only.**
+
+A resource keeps the settings it was built with. If you generate a glossary at grade 3, then change the grade to grade 7, the glossary you already have is still grade 3. Nothing rewrites itself.
+
+So if a pack looks inconsistent:
+
+1. Check the summary line for the settings in force now.
+2. Find the resource that looks wrong.
+3. Regenerate that resource, or regenerate the pack, so every part shares one setting.
+
+This is worth checking before you conclude a tool got something wrong. A mismatched pack is usually a settings history problem, not a generation problem.
+
+### Choose a grade level honestly
+
+The grade level is a target, not a guarantee. Generated text often lands above the grade you asked for, and asking for more research or more detail tends to push it higher still.
+
+Do this before you share:
+
+- Read a paragraph aloud and listen for sentences a student would lose track of.
+- Look for words you would have to stop and define.
+- Compare the result against something you know sits at the right grade.
+
+If it reads high, ask for a lower grade than you want and check again. Set the grade for the students who need the most access, then offer the original source to students who are ready for it. Lowering the reading load is not the same as lowering the learning goal. See [Prepare a lesson](#prepare-a-purposeful-differentiated-lesson) for how to protect the intellectual target while changing the reading level.
+
+### Set the language and decide about translations
+
+Two separate controls do two different jobs.
+
+**Output language** is the language the resource is written in. If your class works in Spanish, set it to Spanish and the content comes back in Spanish.
+
+**Translations** decides whether a second version rides along with it. It offers three kinds of answer:
+
+- **Automatic** attaches a version in the language you set the app interface to, whenever the content is in a different language. This is the default.
+- **None** turns second-language versions off everywhere.
+- **A named language** attaches a version in exactly that language.
+
+A hint line under the control always says in plain words what will happen, such as "Resources in Spanish will also include an English version." You do not have to open the list to know where you stand.
+
+The Translations control appears only when it would do something. If your interface and your output language are both English, there is nothing to translate into, so the control stays hidden. It appears as soon as the two differ.
+
+Two cautions:
+
+- A translation is generated text. Check it the way you would check any other generated content, especially for subject vocabulary. A word that is correct in general use can be wrong in a science or mathematics context.
+- Ask a proficient speaker to read anything a family will receive. A translation that is merely understandable is not the same as one that is respectful and clear.
+
+### Watch emoji around word activities
+
+Emoji make headings and glossary terms easier to scan for some students. They also carry costs worth knowing about:
+
+- Read-aloud tools may name each emoji out loud, which interrupts the sentence.
+- Emoji change how a term looks in letter-based activities such as word scrambles and crosswords.
+- Some fonts and older devices cannot display every emoji and show an empty box instead.
+
+Turn emoji on when the visual cue helps and you have previewed the result. Turn them off when the same resource will be printed, read aloud, or used in a spelling or letter puzzle.
+
+### A two-minute preflight
+
+Before you generate the first resource for a lesson:
+
+- Set the grade level for the students who need the most access.
+- Set the output language your class will read.
+- Check the Translations line and confirm it says what you expect.
+- Add a standard only if you will actually use the alignment.
+- Add an interest only if it makes the task clearer, not just more decorated.
+- Set Depth of Knowledge to the thinking the goal requires.
+- Decide about emoji based on how the resource will be used.
+- Collapse the card and confirm the summary line matches your intent.
+
+Then generate one resource and read it before making anything else. See [Accessibility and UDL](#accessibility-and-udl-verify-the-learner-experience) for the learner-experience check, and [Troubleshooting](#troubleshooting) if a setting does not seem to take effect.
 
 ---
 
@@ -1251,13 +1352,13 @@ Before students use any generated material, complete the review steps in [Prepar
 
 **Use when:** Students need different entry points to the same article, passage, primary source, or teacher-created explanation.
 
-**Typical preparation:** 10–20 minutes after the source is ready.
+**Typical preparation:** 10-20 minutes after the source is ready.
 
 #### Build it
 
 1. Open Guided Mode and add the source under Source Material.
 2. State the common learning target. Identify any wording, quotation, or technical vocabulary students must encounter in the original.
-3. Analyze the source, then generate a Leveled Text or a smaller chunked version.
+3. Analyze the source, then use **Text Adaptation** to generate an adapted text or a smaller chunked version.
 4. Add one representation support, such as a glossary, visual organizer, worked example, bilingual view, or read-aloud option.
 5. Compare every version with the source. Restore missing facts, qualifiers, evidence, and discipline-specific terms.
 6. Add directions that name the same thinking task for everyone.
@@ -1275,12 +1376,12 @@ Ask, “Did I reduce unnecessary language load, or did I reduce the idea?” If 
 
 **Use when:** A student benefits from home-language access while building English vocabulary and participation.
 
-**Typical preparation:** 10–15 minutes plus fluent review when available.
+**Typical preparation:** 10-15 minutes plus fluent review when available.
 
 #### Build it
 
 1. Add a short, accurate source rather than an entire unit at once.
-2. Set the learner’s language support and grade band in the lesson configuration.
+2. Set the output language, translations, and grade level in [Universal Settings](#universal-settings-set-it-once-not-per-tool) before you generate.
 3. Generate a bilingual view, glossary, sentence frames, or translated directions.
 4. Keep names, formulas, quotations, cognates, and essential academic terms visible in both languages.
 5. Ask a fluent colleague, interpreter, family liaison, or qualified reviewer to check high-stakes wording when possible.
@@ -1299,7 +1400,7 @@ Do not treat machine-translated wording as proof of language proficiency or use 
 
 **Use when:** A middle-school learner needs targeted phonemic awareness, phonics, syllable, spelling, or handwriting practice without elementary-looking materials.
 
-**Typical preparation:** 5–10 minutes.
+**Typical preparation:** 5-10 minutes.
 
 #### Build it
 
@@ -1322,7 +1423,7 @@ Use performance to plan instruction, not to diagnose a reading disorder or repla
 
 **Use when:** Students can discuss a text but need support selecting evidence, organizing a claim, or explaining reasoning.
 
-**Typical preparation:** 15–25 minutes.
+**Typical preparation:** 15-25 minutes.
 
 #### Build it
 
@@ -1346,7 +1447,7 @@ Read the final work. Generated feedback can miss nuance, reward formulaic writin
 
 **Use when:** You need one clear decision before moving on.
 
-**Typical preparation:** 5–10 minutes.
+**Typical preparation:** 5-10 minutes.
 
 #### Build it
 
@@ -1370,11 +1471,11 @@ Do not grade a missing live response until you have ruled out delivery, access, 
 
 **Use when:** Students will rotate through simulations, models, data, engineering, coding, or other STEM experiences.
 
-**Typical preparation:** 15–30 minutes, including a device test.
+**Typical preparation:** 15-30 minutes, including a device test.
 
 #### Build it
 
-1. Open Learning Tools, then STEM Lab.
+1. Open Learning Tools, then STEAM Lab.
 2. Choose one tool that directly serves the target. Test it on the same type of device students will use.
 3. Save it as a station if that option is available in your deployment.
 4. Give every station the same short reasoning frame: **notice, predict, test, explain**.
@@ -1395,7 +1496,7 @@ Confirm that the simulation’s assumptions and scale are appropriate for the co
 
 **Use when:** The instructional goal involves reflection, self-management, collaboration, conflict practice, digital well-being, or another school-approved SEL competency.
 
-**Typical preparation:** 10–20 minutes plus review of the school response plan.
+**Typical preparation:** 10-20 minutes plus review of the school response plan.
 
 #### Build it
 
@@ -1419,7 +1520,7 @@ Follow the school’s crisis, bullying, mandated-reporting, and student-support 
 
 **Use when:** You are creating or adapting a handout, flyer, slide-like visual, PDF, audio, or video resource.
 
-**Typical preparation:** 15–30 minutes, depending on the source.
+**Typical preparation:** 15-30 minutes, depending on the source.
 
 #### Build it
 
@@ -1444,7 +1545,7 @@ An automated audit can find some issues; it cannot certify that the resource is 
 
 **Use when:** The class shares a target but groups need different supports, examples, pacing, or response modes.
 
-**Typical preparation:** 15–20 minutes plus a short live-session preflight.
+**Typical preparation:** 15-20 minutes plus a short live-session preflight.
 
 #### Build it
 
@@ -1469,7 +1570,7 @@ Verify the recipient list before every targeted send. Group membership is an ins
 
 **Use when:** A learner missed the live lesson or needs to finish after the session.
 
-**Typical preparation:** 10–15 minutes.
+**Typical preparation:** 10-15 minutes.
 
 #### Build it
 
@@ -1493,7 +1594,7 @@ Do not assume that a generated link or code remains available after a live sessi
 
 **Use when:** A student communicates with symbols, partner-assisted scanning, a communication board, speech output, or another AAC system.
 
-**Typical preparation:** Plan with the student’s communication team; simple activity adaptation may take 10–20 minutes.
+**Typical preparation:** Plan with the student’s communication team; simple activity adaptation may take 10-20 minutes.
 
 #### Build it
 
@@ -1732,8 +1833,8 @@ If the issue involves identifying or sensitive information, stop sharing and fol
 2. **Move students to the fallback.** Use the printed source, saved PDF, screenshot sequence, independent reading, partner explanation, or non-AI task you prepared.
 3. **Name the scope.** Is the problem one student, one group, the whole class, one tool, all AI features, or the entire site?
 4. **Name the stage.** Did it fail while opening, importing, generating, previewing, delivering, responding, saving, or exporting?
-5. **Check visible status.** Look for offline, sync, AI backend, microphone, loading, or retry indicators.
-6. **Turn on Help Mode.** Press **?** to reveal contextual help. Use Help Search when it is available.
+5. **Check visible status.** Look for offline, sync, AI backend, microphone, loading, or retry indicators. Status messages appear at the top of the screen and fade. If one disappeared before you could read it, you can replay recent messages from the hints panel.
+6. **Turn on Help Mode.** Press **?** to reveal contextual help. Use the help search when it is available.
 7. **Try one controlled recovery.** Repeated clicking can create duplicate jobs or make the state harder to interpret.
 
 ### Preserve work before reloading
@@ -1741,6 +1842,7 @@ If the issue involves identifying or sensitive information, stop sharing and fol
 Use the safest available option:
 
 - Select Save Project and download the AlloFlow project file to an approved location.
+- Check **Open saved work** for resource packs already stored on this device. You can restore, pin, export, or erase them from there. It is a different thing from **Test device storage** in Platform Diagnostics, which only checks whether the browser can keep data at all.
 - Copy teacher-authored directions or unsaved text into an approved temporary document.
 - Download an available export.
 - Record the current step, resource title, and error message.
@@ -1849,7 +1951,7 @@ Then perform the human review in [Privacy and responsible AI](#privacy-and-respo
 3. Remove passwords or encryption only if you are authorized to create a working copy.
 4. If the PDF is scanned, run an approved OCR workflow and check the recognized text.
 5. Split a very long file into the section needed for the lesson.
-6. Copy clean, permitted text into Direct Paste as a fallback.
+6. Copy clean, permitted text into the paste-text option in Source Material as a fallback.
 7. Review tables, formulas, columns, footnotes, and image-only content after import.
 
 Do not upload secure tests or copyrighted material that the school is not permitted to process or redistribute.
@@ -1901,7 +2003,7 @@ Use [Review evidence and plan next steps](#review-evidence-and-plan-next-steps) 
 
 ### Audio, speech, or microphone features do not work
 
-1. Check AlloFlow’s global mute control.
+1. Check the **Mute All Audio** control in the header.
 2. Check the browser’s site permission for microphone or audio.
 3. Check the Windows or device-level input and output selection.
 4. Disconnect unused Bluetooth audio devices.
@@ -1952,7 +2054,7 @@ If a public or overly broad share was created, revoke it and follow the privacy 
 3. Press **?** for Help Mode and check the control’s accessible name.
 4. Test browser zoom before using a page-specific text-size control.
 5. Turn on reduced motion or the app’s motion controls when animation is a barrier.
-6. Use the global mute control if sound is interfering.
+6. Use the **Mute All Audio** control if sound is interfering.
 7. Try Immersive Reader or the relevant reading support after content is loaded.
 8. If keyboard focus disappears, stop and provide an alternate route rather than requiring mouse use.
 
@@ -2021,9 +2123,9 @@ If the app opens directly into another view, use the header or home control to r
 ### Use Help Mode and Find a Tool
 
 - Press **?** to toggle Help Mode. Hover or focus a supported control to see its purpose and, where available, its shortcut.
-- Open Help Search from the help area. **Ctrl+K** may open it in deployments that enable that shortcut.
-- Use Find a Tool when you know the task but not the product name.
-- Use the Spotlight Tour when you want a guided orientation to the current interface.
+- Open the help search from the help area. **Ctrl+K** may open a command and search palette in deployments that enable that shortcut.
+- Use **Find a tool** when you know the task but not the product name. It narrows the tool list; it does not create anything by itself. When a filter is on, the panel says so and how many tools are hidden. **Show all tools** clears it, and **Hide this panel** puts it away, with a slim bar to bring it back.
+- Take the guided tour when you want an orientation to the current interface.
 - Use the visible Retry action when a tool card reports a loading problem.
 
 Do not rely on an old screenshot to locate a feature. Hubs and routes evolve faster than the teaching workflow.
@@ -2032,13 +2134,15 @@ Do not rely on an old screenshot to locate a feature. Hubs and routes evolve fas
 
 | Teaching or professional need | Start with | Use with care |
 |---|---|---|
+| set the grade, language, and other defaults for a whole lesson | Universal Settings | it applies to new work only, so resources you already made keep their old settings |
 | adapt a source, build directions, or create a lesson package | Guided Mode, Source Material, configuration, lesson resources | verify every generated claim and preserve the common learning target |
-| read, understand, or discuss text | Leveled Text, glossary, visual organizers, Immersive Reader, annotation tools | do not confuse a simpler text with a simpler learning goal |
+| create a picture or diagram for the content | Lesson Images | check depictions for accuracy and stereotype, and add a text alternative |
+| read, understand, or discuss text | Text Adaptation, Glossary, Visual Organizer, Immersive Reader, annotation tools | do not confuse a simpler text with a simpler learning goal |
 | check understanding | Quiz, Exit Ticket, Polling, Concept Sort, live activities | use as formative evidence unless a reviewed assessment plan says otherwise |
 | teach a synchronized class | Live Session, Group Manager, Teacher Signal controls, Activity Pulse | verify recipients and treat missing responses as possible access problems |
 | review class patterns | Teacher Dashboard, learner progress, session summaries | trace summaries back to actual work before making decisions |
 | practice sounds, spelling, or word patterns | Word Sounds Studio | use age-respectful materials and coordinate intensive intervention with specialists |
-| explore mathematics, science, engineering, coding, or data | STEM Lab and saved STEM stations | preview simulations and require reasoning, not just successful interaction |
+| explore mathematics, science, engineering, coding, or data | STEAM Lab and saved STEAM stations | preview simulations and require reasoning, not just successful interaction |
 | teach reflection, relationships, self-management, or digital well-being | SEL Hub and saved SEL stations | do not require personal disclosure; follow school safety procedures |
 | support AAC, visual communication, schedules, or social narratives | Symbol Studio | preserve the student’s established system and involve the communication team |
 | collect and review observable behavior data | BehaviorLens | authorized team use only; no automatic diagnosis or plan |
@@ -2123,9 +2227,10 @@ Test-preparation tools should teach concepts and strategies. Do not upload secur
 | Item | What it is | Teacher implication |
 |---|---|---|
 | **Source Material** | the text, file, URL content, or prompt used to ground the lesson | use permitted, de-identified content and keep the authoritative original |
-| **Generated resource** | a draft lesson item such as leveled text, glossary, quiz, organizer, or activity | review before students see it |
+| **Generated resource** | a draft lesson item such as adapted text, glossary, quiz, organizer, or activity | review before students see it |
 | **History** | the resource list or activity state in the current project | titles and old drafts may still expose sensitive content |
 | **Browser draft or saved state** | local or synced state used to resume work | shared devices and profiles need an approved clearing routine |
+| **Saved resource pack** | a generated pack kept on this device, reached through **Open saved work** | restore, pin, export, or erase it there; on a shared device, erase before handing it on |
 | **AlloFlow project** | a downloadable project file containing included lesson state | store and share it like the most sensitive content inside it |
 | **Live Session** | a temporary classroom connection for delivery, pacing, activities, and evidence | use the approved deployment, recipients, code practice, and close-out routine |
 | **Session summary** | a record or local summary of participation and instructional signals | verify completeness and follow retention policy |
@@ -2146,7 +2251,7 @@ Save Project is the dependable teacher-controlled backup when available, but it 
 | Toggle contextual Help Mode | **?** |
 | Open Help Search | **Ctrl+K** where enabled |
 | Move within a supported menu, tour, slider, or grid | **Arrow keys** as announced by the control |
-| Silence app audio | Global Mute in the header |
+| Silence app audio | **Mute All Audio** in the header |
 | Adjust reading presentation | reading theme, text, spacing, ruler, highlighting, or Immersive Reader controls as available |
 
 Keyboard behavior can vary inside simulations and specialized editors. Turn on Help Mode, read the on-screen instructions, and provide an alternate route if a control cannot be operated with the student’s access method.
@@ -2157,7 +2262,11 @@ Keyboard behavior can vary inside simulations and specialized editors. Turn on H
 
 **Activity Pulse:** A teacher-facing live view of activity lifecycle or response status. It helps identify delivery and follow-up needs; it is not a mastery score.
 
+**Adapted Text:** A version of the source rewritten toward a target reading level. Produced by the Text Adaptation tool. It should change the reading load, not the learning goal.
+
 **AI backend:** The configured service or local engine that performs generation. Provider, account, data handling, availability, and capabilities depend on deployment.
+
+**AlloBot:** The in-app assistant. It answers questions in conversation and can offer to open a tool for you. Screen-changing actions are offered rather than performed, so you confirm before the view moves.
 
 **AlloFlow project:** A downloadable project file used to preserve lesson state for later loading. It may contain source and generated content and should be stored accordingly.
 
@@ -2177,6 +2286,8 @@ Keyboard behavior can vary inside simulations and specialized editors. Turn on H
 
 **Immersive Reader:** A reading overlay that can provide read-aloud, highlighting, spacing, focus, or other presentation supports depending on the current build.
 
+**Lesson Images:** The image generation tool. It creates pictures and diagrams for the content, and can refine or remove text inside an image. Do not confuse it with Visual Organizer, which builds concept maps and diagrams of structure, or with the AAC visual supports used for communication boards and schedules.
+
 **OCR:** Optical character recognition, which converts an image of text into machine-readable text. OCR output must be checked, especially for tables, formulas, columns, and poor scans.
 
 **Source Material:** The grounding content for generation. It remains the reference for fact and quotation checks.
@@ -2193,11 +2304,13 @@ Keyboard behavior can vary inside simulations and specialized editors. Turn on H
 
 **UDL:** Universal Design for Learning, a planning framework that anticipates variability through multiple routes for engagement, representation, and action or expression.
 
+**Universal Settings:** The shared defaults every generator inherits, including grade level, output language, translations, standards, interests, Depth of Knowledge, and emoji. They apply to new work only. See [Universal Settings](#universal-settings-set-it-once-not-per-tool).
+
 ### If you cannot find a feature
 
 1. Return to the Launch Pad and choose the route that matches the task.
 2. Press **?** for Help Mode.
-3. Use Help Search or Find a Tool.
+3. Use the help search or Find a Tool.
 4. Check whether the feature requires Teacher or Educator mode.
 5. Check loading, AI backend, microphone, or network status.
 6. Confirm that the district deployment includes and approves the feature.
@@ -2230,7 +2343,7 @@ Do not begin with a target such as “every teacher will use ten tools.” Featu
 
 ### Use a 30-day rollout
 
-#### Days 1–5: align guardrails and the first task
+#### Days 1-5: align guardrails and the first task
 
 Leadership and the implementation team should:
 
@@ -2242,7 +2355,7 @@ Leadership and the implementation team should:
 
 The success condition for the first week is not polished production. It is that a teacher can explain the goal, source, review gate, student route, and fallback.
 
-#### Days 6–12: add accessibility and choice
+#### Days 6-12: add accessibility and choice
 
 In a planning meeting:
 
@@ -2254,7 +2367,7 @@ In a planning meeting:
 
 An implementation team should model the actual learner route, not only demonstrate the teacher workspace.
 
-#### Days 13–20: rehearse a bounded live routine
+#### Days 13-20: rehearse a bounded live routine
 
 Use [Live sessions](#run-a-live-lesson-safely-and-calmly) to rehearse a short routine:
 
@@ -2267,7 +2380,7 @@ Use fictional codenames and a small test group. Rehearse the standard live path 
 
 Review the [live-session protocol on GitHub](https://github.com/Apomera/AlloFlow/blob/main/docs/LIVE_SESSION_PROTOCOL.md) with the staff member responsible for deployment support. Never make a live lesson depend on an untested network path.
 
-#### Days 21–30: review evidence and refine the routine
+#### Days 21-30: review evidence and refine the routine
 
 Ask teachers to bring one example of:
 

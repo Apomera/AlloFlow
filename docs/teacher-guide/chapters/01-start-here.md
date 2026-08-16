@@ -8,7 +8,7 @@ For a first attempt, use **Guided Mode** and make one strong resource rather tha
 
 The Launch Pad offers several starting points. The wording can vary slightly by deployment or interface language.
 
-The complete-workspace card is labeled **Full AlloFlow** in the Launch Pad. Help text, voice guidance, or an older deployment may call the same route **Full Platform**; **Guided Setup** is another label you may see for the guided route.
+The complete-workspace card is labeled **Full AlloFlow** in the Launch Pad. Some interface text and older deployments still call the same route **Full Platform**; **Guided Setup** is another label you may see for the guided route.
 
 ![AlloFlow Launch Pad with Guided Mode, Full AlloFlow, Learning Tools, and Educator Tools](../assets/screenshots/00-launch-pad.png)
 
@@ -74,7 +74,7 @@ Describe barriers and supports, not diagnoses. For example, write “provide a s
 
 ### 4. Create one anchor resource
 
-Choose one output that directly serves the learning goal. Useful first choices include a leveled or clarified text, glossary, visual organizer, structured directions, short quiz, sentence frames, or another focused support.
+Choose one output that directly serves the learning goal. Useful first choices include an adapted text, glossary, visual organizer, structured directions, short quiz, sentence frames, or another focused support.
 
 Ask:
 

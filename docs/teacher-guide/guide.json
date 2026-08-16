@@ -8,7 +8,8 @@
                       "description":  "Start with a focused, student-ready resource and a teacher review gate.",
                       "chapterSlugs":  [
                                            "start-here",
-                                           "prepare-a-lesson"
+                                           "prepare-a-lesson",
+                                           "universal-settings"
                                        ]
                   },
                   {
@@ -68,6 +69,13 @@
                          "summary":  "Turn source material into a purposeful, differentiated lesson package.",
                          "audience":  "Lesson planning",
                          "time":  "15-30 minutes"
+                     },
+                     {
+                         "source":  "chapters/11-universal-settings.md",
+                         "slug":  "universal-settings",
+                         "summary":  "Set grade level, language, translations, and other shared defaults once for the whole lesson.",
+                         "audience":  "Every teacher",
+                         "time":  "2-minute preflight"
                      },
                      {
                          "source":  "chapters/03-live-sessions.md",
