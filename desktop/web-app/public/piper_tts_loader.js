@@ -325,7 +325,13 @@
     // does not fetch and parse is not downloaded at all.
     async function _configIsReal(lib, voiceId, signal) {
         try {
-            const path = lib.PATH_MAP && lib.PATH_MAP[voiceId];
+            // Without PATH_MAP we cannot build the URL the library will use, so
+            // there is nothing to pre-flight. Do not fail closed on a library
+            // shape we do not recognise: the eviction, purge and corrupt-error
+            // guards still cover the failure, and refusing every voice because
+            // one export is missing would be worse than the bug being fixed.
+            if (!lib || !lib.PATH_MAP) return true;
+            const path = lib.PATH_MAP[voiceId];
             const base = lib.HF_BASE || 'https://huggingface.co/diffusionstudio/piper-voices/resolve/main';
             if (!path) return false;
             const res = await fetch(base + '/' + path + '.json', signal ? { signal } : undefined);

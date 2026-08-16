@@ -132,8 +132,8 @@
       "learningLibraryUrl": "./test_prep/parapro_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/parapro_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/parapro_native_qa.json",
-      "learningLibrarySha256": "16aff32e065be4e64f03e133afcb05ae0a5fbf316481dbb1280d4de6c1e6c7b6",
-      "learningLibraryQaSha256": "683c7eb3cf1dfbe838d8b4d10cf39b1d0ac94a20f66b6e033d3b672c55ac2441",
+      "learningLibrarySha256": "af0034d320e1030821b073d10ca09edc82e150a1acd38fde2e01b46e89491e02",
+      "learningLibraryQaSha256": "0ecd00f9abfba4ff988f58d4ab039bc761f3430cb960639424d09d7f5e67c022",
       "nativeQaSha256": "20da9537ddf85f3003acae3e6e83f6f0e6fba9b8edc2721c63e943abbf7c5cb8"
     },
     {
@@ -165,8 +165,8 @@
       "learningLibraryUrl": "./test_prep/special_education_5355_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/special_education_5355_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/special_education_5355_native_qa.json",
-      "learningLibrarySha256": "b1359357593aa20f819861ea0f4444ffa19adc58b8adda248e81aed419cbaa6a",
-      "learningLibraryQaSha256": "2092772b2f46a192c48e174886d6297e521e33283861f057af20b563777f07aa",
+      "learningLibrarySha256": "821a5d957aaac8736bde577ce184b8c347bf5f51811610797a24528ba74f2e1e",
+      "learningLibraryQaSha256": "5113851130fa54a8f1726dccfd05e90b99f5a7f23ec80cad129f59fbd32c902e",
       "nativeQaSha256": "cfc1d61bbe2a12a9cff33fa6addf2bf3abe65f3e9743efa469e8e2d5726a3923"
     },
     {
@@ -198,8 +198,8 @@
       "learningLibraryUrl": "./test_prep/school_counselor_5422_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/school_counselor_5422_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/school_counselor_5422_native_qa.json",
-      "learningLibrarySha256": "7c7ebb5ab856c700378d0e429d60c195dea7cfbba53d42a8d67c77b69b14344b",
-      "learningLibraryQaSha256": "37235032408976010fad19c0675879841da68e3fe27d7381884f6c998544676d",
+      "learningLibrarySha256": "a3e6a23efb20bba4eadf68cba1b7326f8672ea4a913fc6fc52fdbf10a165d770",
+      "learningLibraryQaSha256": "1bae4f281c3237342ec937181f8c6d72996396ca197b10f9bdab0637bc1a8fd0",
       "nativeQaSha256": "d259c71033fa6ac437bfbfbaa82bc2b07ec473597b8ff9f29cf420127b26cbe2"
     },
     {
@@ -231,8 +231,8 @@
       "learningLibraryUrl": "./test_prep/school_psychologist_5403_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/school_psychologist_5403_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/school_psychologist_5403_native_qa.json",
-      "learningLibrarySha256": "1780dc6f151fbf699e24490b9584e04aa35d595399d7a2fea76c0d3aba7dad73",
-      "learningLibraryQaSha256": "744bfe813228ea1f01b8276120717b0bdd4dcd05cb1b7ace5a76ff022db66b7b",
+      "learningLibrarySha256": "4c045733e64a1e9184c2290a0aae7a1021c35405777b9d3c9dd8180c90177316",
+      "learningLibraryQaSha256": "ae363aade4bdecab7b0f9017af838ad25fb918cef2b7f0e96c71b74472a74bdd",
       "nativeQaSha256": "97e209f147b8368e266578bc6fbee5075fc654175ec70ffc7e64bf093ba5e3d8"
     },
     {
@@ -264,8 +264,8 @@
       "learningLibraryUrl": "./test_prep/speech_language_pathology_5331_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/speech_language_pathology_5331_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/speech_language_pathology_5331_native_qa.json",
-      "learningLibrarySha256": "56aa036745a023e0168cd02adf437d4483475437d99c41ef38d4cb1f36b97574",
-      "learningLibraryQaSha256": "d9e7229f5c4d4c335c0460ded7e3c4bf64e1903d0c5d729ad26c6c872f31561e",
+      "learningLibrarySha256": "62066a27accebcb2e198031c811122ef60cb463808f553c97f3c44fdfb7d8478",
+      "learningLibraryQaSha256": "2abca12bd267e3395dbfd765715e576a2d5a37cc6a131172b86ed0a27c66e2a1",
       "nativeQaSha256": "b26b6eca29729491d6f51080864f8905e02a2f6b18bb07c08fadbb2e52d3970e"
     },
     {
@@ -297,8 +297,8 @@
       "learningLibraryUrl": "./test_prep/audiology_5343_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/audiology_5343_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/audiology_5343_native_qa.json",
-      "learningLibrarySha256": "fdcd1aa5e4eb4e1376456aff23f317fcc45a65aaacf107b51ccbf9e1e58bdf55",
-      "learningLibraryQaSha256": "3c654beb9cf38e3c665475b1b1241854d1dd2fb4e9653d8d74a68e5848d6c7e9",
+      "learningLibrarySha256": "e3f29e63ba06d9c8c36c52f1560ca7bbb74fd3dda36b8726f888aa343bc1fcfb",
+      "learningLibraryQaSha256": "a23202c648a8f6c8ae4c040a2824510fd4ff52e45e1984cd43a6101e35ee01de",
       "nativeQaSha256": "1c9e2ddd58209aa0d41ebd02e790fe205324d1cf578d4ddfbd265332192d41f0"
     },
     {
@@ -330,8 +330,8 @@
       "learningLibraryUrl": "./test_prep/reading_specialist_5302_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/reading_specialist_5302_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/reading_specialist_5302_native_qa.json",
-      "learningLibrarySha256": "aa54fa24d9dc0e896cadf8170ac910807939e72675c5bcd73d2bf9e355244652",
-      "learningLibraryQaSha256": "31acf6e724d8920f56e48006bfe63dff529401a5f97ccc2cdfbdfa4bf8fcf3b0",
+      "learningLibrarySha256": "cb94bb475971b064c52d5d889f26e01805f6a69907dcafa659c838fcb031a069",
+      "learningLibraryQaSha256": "4829412e7672b9787e806da0ce1a4d537427e31f785b3d3a85321497802a3813",
       "nativeQaSha256": "e541bd04fa02dea8fefe4c107d49ffd213d80d93934de4cdccfcb06bbfbff017"
     },
     {
@@ -363,8 +363,8 @@
       "learningLibraryUrl": "./test_prep/educational_leadership_5412_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/educational_leadership_5412_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/educational_leadership_5412_native_qa.json",
-      "learningLibrarySha256": "34896087c0cb6369570b768ecf9d5379203e408cf1eaca89013cbeaa8eae244e",
-      "learningLibraryQaSha256": "a3e4a8c4c024d1adad658cce9205db8015acf07d94e43b5fb9d560847b2a2d70",
+      "learningLibrarySha256": "c235ae7eef17531b3e66b2ad42d2b3281e2e571fc1a557be1139c9e69702047a",
+      "learningLibraryQaSha256": "5d89e77ebeae46e3393dc3e8f972f2fc5b7974aa50069abbe7e7885673a5edfe",
       "nativeQaSha256": "9f561818bbd46e2208836002a562f076ca52b6bd96baecb9dcab1331ff54c3f0"
     },
     {
@@ -396,8 +396,8 @@
       "learningLibraryUrl": "./test_prep/plt_k6_5622_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/plt_k6_5622_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/plt_k6_5622_native_qa.json",
-      "learningLibrarySha256": "af2db35afd0685bd78350845f539370459743e10e387615c5368923b0ffed3ba",
-      "learningLibraryQaSha256": "7a0bc920010c55cb3e9d229a70f8e946a6b43bef4bba13c7372c97d653aaa667",
+      "learningLibrarySha256": "36a054934e2b038c6056b529a2e63de35860589905c1996223d82454190b2b98",
+      "learningLibraryQaSha256": "cac4578e5b020c7519c0a33e71ddd5e38e96afffb3a9c526e3a2cea7b1258924",
       "nativeQaSha256": "879e60b6eb080ca5f3233efbb5a87a0e60445ac6e32b28bcfe9d71196d7a8f8f"
     },
     {
@@ -429,8 +429,8 @@
       "learningLibraryUrl": "./test_prep/praxis_core_5752_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/praxis_core_5752_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/praxis_core_5752_native_qa.json",
-      "learningLibrarySha256": "21f9cd72a8e62aca365148f7e8cec1dc46182966b04bafb291a0ea8fdfca3cd9",
-      "learningLibraryQaSha256": "40357d3996d4ebcf3faef9e25bf3bbfe0e2896f832d5e6ce2dd47b92b48251fd",
+      "learningLibrarySha256": "e1577181905ab167b83767e8205e46c25e06026330dc8eeee1377f4b5d2123d1",
+      "learningLibraryQaSha256": "5b7b3f42efadcaa6692b71f705ac241e5291c545fbf5c1a88cf07960d2694220",
       "nativeQaSha256": "44dfc4dc2dc8b200f8c4e5463334357646a9616d0ac14e7aedf95e9504d69680"
     },
     {
@@ -462,8 +462,8 @@
       "learningLibraryUrl": "./test_prep/esol_5362_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/esol_5362_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/esol_5362_native_qa.json",
-      "learningLibrarySha256": "9db428a7eb98796c9c486595e8fc9b83ead83962bde6915fc942259d736394c3",
-      "learningLibraryQaSha256": "f9ecaf0fcb0c66b27869ff1c83b9029cd7ec241fb85aa69810efac57cf124847",
+      "learningLibrarySha256": "1cba88018e11350069c1259cab1ef31d57f4e03ee19baca7e1f2cfcc26c11310",
+      "learningLibraryQaSha256": "5256eda6ec43391dd6286c63f357ff8ec3d06986da4316d54269309a60e5be75",
       "nativeQaSha256": "8049da30082973b0de1ec6d00af5ad7805212a1451d085db3ff20af315be2bc6"
     },
     {
@@ -495,8 +495,8 @@
       "learningLibraryUrl": "./test_prep/teaching_reading_5205_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/teaching_reading_5205_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/teaching_reading_5205_native_qa.json",
-      "learningLibrarySha256": "1d3a4fcef23eb4e8fef80cbd2d28e46b435dc70936541a56075ae2cda6027ba3",
-      "learningLibraryQaSha256": "1a7c7a0111db3278020a6b8eadc13be854c848534268303a04712c70797481a2",
+      "learningLibrarySha256": "37436e9d444d8e56efd03e9bf3cd80e98f82cd3ec798b64e52983f9aa7b2e34d",
+      "learningLibraryQaSha256": "fb2be51173f4c3336e9321a28cb53cbb9989a2e11dbcf0becb7093606d0e3892",
       "nativeQaSha256": "d45374acf5606d7583c2eab7016cd421c34a6be8c7b48d03485a1d23eb06929a"
     },
     {
@@ -528,8 +528,8 @@
       "learningLibraryUrl": "./test_prep/early_childhood_5025_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/early_childhood_5025_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/early_childhood_5025_native_qa.json",
-      "learningLibrarySha256": "1118f46adc2165f3fc98341b267bd7a4e9f42035a9d3a9d2a11e1fdd5dc30fbd",
-      "learningLibraryQaSha256": "83590db10ab7342197250400578b9494d2c5835ec5bef7f59b3024265ab58701",
+      "learningLibrarySha256": "fc24eed89a1c287c3adf72c9cd548ba1eb4acff99a07aac71dc9565c63523a0e",
+      "learningLibraryQaSha256": "f225cbf54c2746723cbb53c4ba4dcbdec99b49e05f1a5115de74101374415e5b",
       "nativeQaSha256": "056ea75e3b1f1a0d20ebfab56ea6a6f9e89c768eef073d83ac9eacacfd60dfa8"
     },
     {
@@ -561,8 +561,8 @@
       "learningLibraryUrl": "./test_prep/plt_early_childhood_5621_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/plt_early_childhood_5621_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/plt_early_childhood_5621_native_qa.json",
-      "learningLibrarySha256": "e8be113ba815165853f711162e81e44a0294046d514adf3407fc76da0da31c85",
-      "learningLibraryQaSha256": "1cf2c959ff31278e36838fe09f7a89756e2841a580afab68a6408dab8c8cb92a",
+      "learningLibrarySha256": "b86523780637ce6ae14214beca6e3a99645a6685c4aa48692835369361901fd4",
+      "learningLibraryQaSha256": "ac89cc1899af95109e0dc932a35928fcf46dd67a83c3017ab6509732af9eac98",
       "nativeQaSha256": "a63962ed7e1728b0ed8057843b7bff87040f38476d7697c0efed5d4e2047d712"
     },
     {
@@ -594,8 +594,8 @@
       "learningLibraryUrl": "./test_prep/special_education_early_childhood_5692_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/special_education_early_childhood_5692_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/special_education_early_childhood_5692_native_qa.json",
-      "learningLibrarySha256": "1a818822c9d12531f2d02e529ef8f773c6f4dc23c0d3ec4184981671a7fdcb4f",
-      "learningLibraryQaSha256": "9ff77aa977fb7011421224e238784131936eecf32cc0f70d28873d9201dad5af",
+      "learningLibrarySha256": "4f77d18b57081e78133c2fb1742fc805a80fd67b9ff75e6d541b5be36fe611e4",
+      "learningLibraryQaSha256": "2184424aef475f5e41eb2efe54908c4c8ac5ac15b66eeec5b52a55cb2d6f6bad",
       "nativeQaSha256": "c268352a96617c33773b697cbf93c4d0fa8cffa66835f8647b1e45a4b9e15bc9"
     },
     {
@@ -627,8 +627,8 @@
       "learningLibraryUrl": "./test_prep/special_education_severe_profound_5547_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/special_education_severe_profound_5547_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/special_education_severe_profound_5547_native_qa.json",
-      "learningLibrarySha256": "4e6c73548c17ecbf4afed240fd052501e2d97a01471ca6774f95ecf1bfad9d2b",
-      "learningLibraryQaSha256": "108514fff1ddfdb0724054ac944e0ccebc75a5fd2efc25972287dc08dcc4ad8f",
+      "learningLibrarySha256": "69e574a9824b24a15d3765ae647742d68575b54c54f643748ae38ba80ef9ee9a",
+      "learningLibraryQaSha256": "e2e097d78af4f52a1d74831c2a8818d6c97e5be17e944aa58bda5c372e981919",
       "nativeQaSha256": "563d2b59cc947e52927a4e664d42b6dd44ae3cbe4fc1f2fd0d836cf563de6c45"
     },
     {
@@ -660,8 +660,8 @@
       "learningLibraryUrl": "./test_prep/special_education_learning_disabilities_5383_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/special_education_learning_disabilities_5383_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/special_education_learning_disabilities_5383_native_qa.json",
-      "learningLibrarySha256": "b0c05105198382c6f6d984ebdd31945c6b2dca002a73512ae10f0c71ea575e3a",
-      "learningLibraryQaSha256": "f87571596733d70d843643740a1e24aba8e4442f9c051b192cbb0fbe6c085573",
+      "learningLibrarySha256": "2eee2c4fedb13728431f244d69710782afbb5d48c976c79e104c4a980baf10d7",
+      "learningLibraryQaSha256": "52d21b8a2e36623ff155db0b52c899b07e97083adbb295f45509b5b7d365687e",
       "nativeQaSha256": "6a4d22285ec5a5309ecea428268e4c6a2467d84dd752b77747ce44f79276f4d5"
     },
     {
@@ -693,8 +693,8 @@
       "learningLibraryUrl": "./test_prep/special_education_behavior_emotional_5372_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/special_education_behavior_emotional_5372_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/special_education_behavior_emotional_5372_native_qa.json",
-      "learningLibrarySha256": "51585c0e4da15a6d4e74bda949ec463de8ee1f36d61eb2c3e10de766c1f05167",
-      "learningLibraryQaSha256": "52b09c08787e05058d3cb7db7fc4cd13ddd916322748c7dbd74fb4c0b818c646",
+      "learningLibrarySha256": "59bc42cff076988e6a99f5bfb70b3c5cf185844015c8ec64ec99c772cc2750d9",
+      "learningLibraryQaSha256": "4db53be56a573c9f9e6a0d81873a8bd26794a89c8aa34bf054b9719d0a0527e3",
       "nativeQaSha256": "f2dbfcee0d32f45f5599a6d46d1aad13ddb457656592944d67e36c1365d2f8a7"
     },
     {
@@ -726,8 +726,8 @@
       "learningLibraryUrl": "./test_prep/special_education_intellectual_disabilities_5322_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/special_education_intellectual_disabilities_5322_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/special_education_intellectual_disabilities_5322_native_qa.json",
-      "learningLibrarySha256": "f23145bf916c9523f95033c41c3d360fe971935b6e4c97875aa44532fe355661",
-      "learningLibraryQaSha256": "9027a5a7ded35b4bd1755d54c40612704706b96a305322b763d6999a830f1351",
+      "learningLibrarySha256": "83783a5f3f59c9fd51aa07702cf2f3835f2546c236dd20889b955944fca9c134",
+      "learningLibraryQaSha256": "4f7eba816c5753ac0064807d0c1ad9dc2be7f91c881361c886741cf03eb6cf41",
       "nativeQaSha256": "05bfed34c0e2bdde38eddf87961442aa5df4f610cc2f2fc209677fd3f386c8ed"
     },
     {
@@ -759,8 +759,8 @@
       "learningLibraryUrl": "./test_prep/plt_5_9_5623_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/plt_5_9_5623_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/plt_5_9_5623_native_qa.json",
-      "learningLibrarySha256": "41a0f7a4ca8edcec1d8a4b4390cc16bd0540152c9424164660fb0691a88e10cd",
-      "learningLibraryQaSha256": "e987928de4818da28617a168eec4a8cbf3b8ba0010007de2cb58afea1213b340",
+      "learningLibrarySha256": "bc1b3e35b00400c65a35fbc430b2dead0ead11df6e1582958cd546b74c4575d4",
+      "learningLibraryQaSha256": "558bfaaa067d730d13affa5da9fcf88a009b342a08bfa393122255373f4b57b5",
       "nativeQaSha256": "3c47bcd4b2af1dee490996153fada1e0c93236dff21d508702cf29cfafd71b8c"
     },
     {
@@ -792,8 +792,8 @@
       "learningLibraryUrl": "./test_prep/plt_7_12_5624_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/plt_7_12_5624_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/plt_7_12_5624_native_qa.json",
-      "learningLibrarySha256": "dce565c7224ffb3a3ea59851e59fb8be0875f5af8a973f2254342c155fd46189",
-      "learningLibraryQaSha256": "e545048d536078b463b7a786fef6ec69f19fd0d664b58252da56c75787745beb",
+      "learningLibrarySha256": "d2c283da9d654dc414367785fbe2de52d3aa7607784127c02a608b53d42676ea",
+      "learningLibraryQaSha256": "92bce21c9e49a480de1bbebb2dc9f378db42e884ffcbdfc734881c80634a9820",
       "nativeQaSha256": "e848e43ba954790813a987acf9de9d4c8b1b761c4842c308394e88922723e76f"
     },
     {
@@ -825,8 +825,8 @@
       "learningLibraryUrl": "./test_prep/school_librarian_5312_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/school_librarian_5312_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/school_librarian_5312_native_qa.json",
-      "learningLibrarySha256": "67ebf29ec30645e2f7981e7260cd78cea9954bde17e45cc7894c5e58e6e31ce1",
-      "learningLibraryQaSha256": "59bfadffe0b71a8459e3bb9c85d55116dcc3a804423f114bd91223b285824d08",
+      "learningLibrarySha256": "9eeee966857c9d1af35550e9557251473d07ea9af45428a249063ec2e7b56d0f",
+      "learningLibraryQaSha256": "2e30c38dc9b05ec621ddf290d4b0e4b8203c8e9abaf66e1068e395544d1f4216",
       "nativeQaSha256": "315c85532da0452d9a510e2056d3cdbc9715ca5d939232d5c5bfbacbad34afd9"
     },
     {

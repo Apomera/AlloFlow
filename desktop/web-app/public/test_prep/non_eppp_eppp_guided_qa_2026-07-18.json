@@ -122,7 +122,7 @@
   },
   "snapshot": {
     "algorithm": "sha256",
-    "sha256": "437eda1faa274bd1e96543f1dd5c36c81812c674c85e8759fd63d83a5d06ebd6",
+    "sha256": "c174cb5508d06ec285a3d38e5b053afebf1ba1b2de0cc2634c300130b0f2baae",
     "dependencyCount": 125,
     "dependencies": [
       {
@@ -263,15 +263,15 @@
       },
       {
         "path": "test_prep/audiology_5343_learning_library_qa.json",
-        "sha256": "e93d6c57cef3d17a4ab4a488d7e7ae3d99469676ff4ac7ae4b219baa7b828cdb"
+        "sha256": "a23202c648a8f6c8ae4c040a2824510fd4ff52e45e1984cd43a6101e35ee01de"
       },
       {
         "path": "test_prep/audiology_5343_learning_library.json",
-        "sha256": "7902cb764c537639ef3b489660ed43d9f61198756fc6992cb12460a6729835a5"
+        "sha256": "e3f29e63ba06d9c8c36c52f1560ca7bbb74fd3dda36b8726f888aa343bc1fcfb"
       },
       {
         "path": "test_prep/audiology_5343_native_qa.json",
-        "sha256": "bb51488c6c801a263911a432751c655441587d2f7279840ecf7220ed3c055917"
+        "sha256": "1c9e2ddd58209aa0d41ebd02e790fe205324d1cf578d4ddfbd265332192d41f0"
       },
       {
         "path": "test_prep/audiology_5343_pack.json",
@@ -279,15 +279,15 @@
       },
       {
         "path": "test_prep/early_childhood_5025_learning_library_qa.json",
-        "sha256": "9e4723a528afe61ecf3a65ba9d9462d5a4dd4a2725652cacd2a0453bf924fdd2"
+        "sha256": "f225cbf54c2746723cbb53c4ba4dcbdec99b49e05f1a5115de74101374415e5b"
       },
       {
         "path": "test_prep/early_childhood_5025_learning_library.json",
-        "sha256": "3a589c9b60edd2a35fe4ac3dd829958ceba050fea642e18e5575e660036bea89"
+        "sha256": "fc24eed89a1c287c3adf72c9cd548ba1eb4acff99a07aac71dc9565c63523a0e"
       },
       {
         "path": "test_prep/early_childhood_5025_native_qa.json",
-        "sha256": "6b70eb614553e1af4daa91b4f6de06432d63fe3d135c37838ce11e67fd3f4ef8"
+        "sha256": "056ea75e3b1f1a0d20ebfab56ea6a6f9e89c768eef073d83ac9eacacfd60dfa8"
       },
       {
         "path": "test_prep/early_childhood_5025_pack.json",
@@ -295,15 +295,15 @@
       },
       {
         "path": "test_prep/educational_leadership_5412_learning_library_qa.json",
-        "sha256": "d1469f099e8ecf1e1f9fac8417d7d3687df5217af0c79f5c41d4473b033d1b11"
+        "sha256": "5d89e77ebeae46e3393dc3e8f972f2fc5b7974aa50069abbe7e7885673a5edfe"
       },
       {
         "path": "test_prep/educational_leadership_5412_learning_library.json",
-        "sha256": "294f1cbc34b1d07b7a70644c0c12bd703ddd69e103ee24db6a51a31535b42f77"
+        "sha256": "c235ae7eef17531b3e66b2ad42d2b3281e2e571fc1a557be1139c9e69702047a"
       },
       {
         "path": "test_prep/educational_leadership_5412_native_qa.json",
-        "sha256": "6bb369835abe0e917245bcb026ff561cc17f8fe97a8e850d5da4c79753931544"
+        "sha256": "9f561818bbd46e2208836002a562f076ca52b6bd96baecb9dcab1331ff54c3f0"
       },
       {
         "path": "test_prep/educational_leadership_5412_pack.json",
@@ -319,15 +319,15 @@
       },
       {
         "path": "test_prep/esol_5362_learning_library_qa.json",
-        "sha256": "ab76e008ad9bf5831eaad601b2cfa7e92c02602c0dfbda271ed4b502715fc695"
+        "sha256": "5256eda6ec43391dd6286c63f357ff8ec3d06986da4316d54269309a60e5be75"
       },
       {
         "path": "test_prep/esol_5362_learning_library.json",
-        "sha256": "602962309ec64e85967d3ee7f40e25ee9f5ae80c12a937e6e22505b21e7a3132"
+        "sha256": "1cba88018e11350069c1259cab1ef31d57f4e03ee19baca7e1f2cfcc26c11310"
       },
       {
         "path": "test_prep/esol_5362_native_qa.json",
-        "sha256": "e07792f8615fc7428b48d0c98cadd239dd0a5acf45d9d1b88f02bf0221ab5435"
+        "sha256": "8049da30082973b0de1ec6d00af5ad7805212a1451d085db3ff20af315be2bc6"
       },
       {
         "path": "test_prep/esol_5362_pack.json",
@@ -335,15 +335,15 @@
       },
       {
         "path": "test_prep/parapro_learning_library_qa.json",
-        "sha256": "2b43a853bbfcb7fd3910bd0fa26ebf9b0e21b8a1fad68da360f596a537e12376"
+        "sha256": "0ecd00f9abfba4ff988f58d4ab039bc761f3430cb960639424d09d7f5e67c022"
       },
       {
         "path": "test_prep/parapro_learning_library.json",
-        "sha256": "df71d51a6a880d992316a382dbef0ac08bbfdefa2f893d79ca1626ec6ec534f7"
+        "sha256": "af0034d320e1030821b073d10ca09edc82e150a1acd38fde2e01b46e89491e02"
       },
       {
         "path": "test_prep/parapro_native_qa.json",
-        "sha256": "50cbbfce2cc4a6caca7b0babbb0cfeb524a03bbc529084e5b86af6a8b244cda3"
+        "sha256": "20da9537ddf85f3003acae3e6e83f6f0e6fba9b8edc2721c63e943abbf7c5cb8"
       },
       {
         "path": "test_prep/parapro_pack.json",
@@ -351,15 +351,15 @@
       },
       {
         "path": "test_prep/plt_5_9_5623_learning_library_qa.json",
-        "sha256": "6a038684c276356db30e042e92a5c5b69f5a1ba5d407e0e6b40b3954fe0a73ba"
+        "sha256": "558bfaaa067d730d13affa5da9fcf88a009b342a08bfa393122255373f4b57b5"
       },
       {
         "path": "test_prep/plt_5_9_5623_learning_library.json",
-        "sha256": "aa86c98a6376e4404474a772eba1d2e1073bf90c48e2012fb4eb541d3d83b098"
+        "sha256": "bc1b3e35b00400c65a35fbc430b2dead0ead11df6e1582958cd546b74c4575d4"
       },
       {
         "path": "test_prep/plt_5_9_5623_native_qa.json",
-        "sha256": "0841a3da9d58e603f9133333d0367d677c3b2fb4f154ed65d06756016b00e734"
+        "sha256": "3c47bcd4b2af1dee490996153fada1e0c93236dff21d508702cf29cfafd71b8c"
       },
       {
         "path": "test_prep/plt_5_9_5623_pack.json",
@@ -367,15 +367,15 @@
       },
       {
         "path": "test_prep/plt_7_12_5624_learning_library_qa.json",
-        "sha256": "fcbd30a18a1b06fcb8390c4bb29a796a123984af16d8305c420d8fc225f7cd91"
+        "sha256": "92bce21c9e49a480de1bbebb2dc9f378db42e884ffcbdfc734881c80634a9820"
       },
       {
         "path": "test_prep/plt_7_12_5624_learning_library.json",
-        "sha256": "960b6282170beec63c061915aac4506460484940771d8868730fe25da18f58a3"
+        "sha256": "d2c283da9d654dc414367785fbe2de52d3aa7607784127c02a608b53d42676ea"
       },
       {
         "path": "test_prep/plt_7_12_5624_native_qa.json",
-        "sha256": "7f39e314f960a568da697cdd75317e50985c4cf35c652b61bc0d56feb2c74266"
+        "sha256": "e848e43ba954790813a987acf9de9d4c8b1b761c4842c308394e88922723e76f"
       },
       {
         "path": "test_prep/plt_7_12_5624_pack.json",
@@ -383,15 +383,15 @@
       },
       {
         "path": "test_prep/plt_early_childhood_5621_learning_library_qa.json",
-        "sha256": "61cb8b9079ed82611f2a125d238d89aeb36d4149cbfb68f74351ad95e2428e1c"
+        "sha256": "ac89cc1899af95109e0dc932a35928fcf46dd67a83c3017ab6509732af9eac98"
       },
       {
         "path": "test_prep/plt_early_childhood_5621_learning_library.json",
-        "sha256": "bc3d9be5023581e8b31856902cf31e2d1c628c6acdfc9c24388c807b1b30b8e0"
+        "sha256": "b86523780637ce6ae14214beca6e3a99645a6685c4aa48692835369361901fd4"
       },
       {
         "path": "test_prep/plt_early_childhood_5621_native_qa.json",
-        "sha256": "21828b12f7ede08ccb7c35d12dbbf18ad10c2f760b6e31fd8d13b4b0802453fa"
+        "sha256": "a63962ed7e1728b0ed8057843b7bff87040f38476d7697c0efed5d4e2047d712"
       },
       {
         "path": "test_prep/plt_early_childhood_5621_pack.json",
@@ -399,15 +399,15 @@
       },
       {
         "path": "test_prep/plt_k6_5622_learning_library_qa.json",
-        "sha256": "1b12e97affdb52d6c803ed5c4aab99e7c13875523d431f2bd1740f8bbb05c11e"
+        "sha256": "cac4578e5b020c7519c0a33e71ddd5e38e96afffb3a9c526e3a2cea7b1258924"
       },
       {
         "path": "test_prep/plt_k6_5622_learning_library.json",
-        "sha256": "207a9a6736dc093f5a88af5a9afee77da87cb568034deb0ddb9df34db1e15070"
+        "sha256": "36a054934e2b038c6056b529a2e63de35860589905c1996223d82454190b2b98"
       },
       {
         "path": "test_prep/plt_k6_5622_native_qa.json",
-        "sha256": "88ef93fcb196231480cd8973ad946343579fcc8ad314f93c27e4b278a1dc07c5"
+        "sha256": "879e60b6eb080ca5f3233efbb5a87a0e60445ac6e32b28bcfe9d71196d7a8f8f"
       },
       {
         "path": "test_prep/plt_k6_5622_pack.json",
@@ -415,15 +415,15 @@
       },
       {
         "path": "test_prep/praxis_core_5752_learning_library_qa.json",
-        "sha256": "90f238c728f1b3094c8a3a8461497774570c1f5ad2d8b5d08abda72df58d00ee"
+        "sha256": "5b7b3f42efadcaa6692b71f705ac241e5291c545fbf5c1a88cf07960d2694220"
       },
       {
         "path": "test_prep/praxis_core_5752_learning_library.json",
-        "sha256": "10e61ea222ba09e29a3c87ed765fa890942a4a98f0384c312ce88dfe1cd66118"
+        "sha256": "e1577181905ab167b83767e8205e46c25e06026330dc8eeee1377f4b5d2123d1"
       },
       {
         "path": "test_prep/praxis_core_5752_native_qa.json",
-        "sha256": "f813b69bd1ba3c3bce7349ec84d6aa10906353d2d8344f96e5b9f62461cb4248"
+        "sha256": "44dfc4dc2dc8b200f8c4e5463334357646a9616d0ac14e7aedf95e9504d69680"
       },
       {
         "path": "test_prep/praxis_core_5752_pack.json",
@@ -431,15 +431,15 @@
       },
       {
         "path": "test_prep/reading_specialist_5302_learning_library_qa.json",
-        "sha256": "b361dc083388243d2db9948096fec9247cb98a948200b573ce4a6a357b445503"
+        "sha256": "4829412e7672b9787e806da0ce1a4d537427e31f785b3d3a85321497802a3813"
       },
       {
         "path": "test_prep/reading_specialist_5302_learning_library.json",
-        "sha256": "acc650af0f90209323cc4979075cafe6ca6c1a80048fb960496d6a335b7e98b8"
+        "sha256": "cb94bb475971b064c52d5d889f26e01805f6a69907dcafa659c838fcb031a069"
       },
       {
         "path": "test_prep/reading_specialist_5302_native_qa.json",
-        "sha256": "0d22982fbbbec6d0ca1b65e7afe43ac6b5506859a46af1b6f32127e4865db036"
+        "sha256": "e541bd04fa02dea8fefe4c107d49ffd213d80d93934de4cdccfcb06bbfbff017"
       },
       {
         "path": "test_prep/reading_specialist_5302_pack.json",
@@ -447,19 +447,19 @@
       },
       {
         "path": "test_prep/reference_catalog.json",
-        "sha256": "6ee3a024c2ab19c3eddb5704cff61fab4b72d702ab1c31e3736b800d44a8567a"
+        "sha256": "194891cfd4643542900f6a286f0d18e2e0ebae1dee24040202562665fdcd93ae"
       },
       {
         "path": "test_prep/school_counselor_5422_learning_library_qa.json",
-        "sha256": "b4db3db86a51d1663ee0765ce090b3d185c4f06f157bec81c4d55962c43ac3de"
+        "sha256": "1bae4f281c3237342ec937181f8c6d72996396ca197b10f9bdab0637bc1a8fd0"
       },
       {
         "path": "test_prep/school_counselor_5422_learning_library.json",
-        "sha256": "5bbcfce6fa5104ea3b916c0380671c661ee06bf7f8b23d2d961acb56c632d175"
+        "sha256": "a3e6a23efb20bba4eadf68cba1b7326f8672ea4a913fc6fc52fdbf10a165d770"
       },
       {
         "path": "test_prep/school_counselor_5422_native_qa.json",
-        "sha256": "f3b59e53b445f25aedaf143c8cfdaefd392daf96edbcb959a490ffc75578b07f"
+        "sha256": "d259c71033fa6ac437bfbfbaa82bc2b07ec473597b8ff9f29cf420127b26cbe2"
       },
       {
         "path": "test_prep/school_counselor_5422_pack.json",
@@ -467,15 +467,15 @@
       },
       {
         "path": "test_prep/school_librarian_5312_learning_library_qa.json",
-        "sha256": "03b406ab8476d926e27b82b001e9c3120ed13d502b106b3923f839c81e007a90"
+        "sha256": "2e30c38dc9b05ec621ddf290d4b0e4b8203c8e9abaf66e1068e395544d1f4216"
       },
       {
         "path": "test_prep/school_librarian_5312_learning_library.json",
-        "sha256": "1ec162ae62d2abc2a94a97fe88313266c827ee1799ef10624931cc646f7f9b92"
+        "sha256": "9eeee966857c9d1af35550e9557251473d07ea9af45428a249063ec2e7b56d0f"
       },
       {
         "path": "test_prep/school_librarian_5312_native_qa.json",
-        "sha256": "00197319bb32bd3daa94719961e9c422a42f41c76ccd9c96b067d06523477077"
+        "sha256": "315c85532da0452d9a510e2056d3cdbc9715ca5d939232d5c5bfbacbad34afd9"
       },
       {
         "path": "test_prep/school_librarian_5312_pack.json",
@@ -483,15 +483,15 @@
       },
       {
         "path": "test_prep/school_psychologist_5403_learning_library_qa.json",
-        "sha256": "b9fb0bb6b09e32e7b1182cfd5a8f55ad67b9fc5d91c4728710bb88a3936f88fb"
+        "sha256": "ae363aade4bdecab7b0f9017af838ad25fb918cef2b7f0e96c71b74472a74bdd"
       },
       {
         "path": "test_prep/school_psychologist_5403_learning_library.json",
-        "sha256": "19186d061bf843fec24da312220347199894ba79bf8ef6d749d35c7bb34802b3"
+        "sha256": "4c045733e64a1e9184c2290a0aae7a1021c35405777b9d3c9dd8180c90177316"
       },
       {
         "path": "test_prep/school_psychologist_5403_native_qa.json",
-        "sha256": "7c275cd052364deba74bc7cf689d4a2c2d46895a050ee31470286fa68ba07efe"
+        "sha256": "97e209f147b8368e266578bc6fbee5075fc654175ec70ffc7e64bf093ba5e3d8"
       },
       {
         "path": "test_prep/school_psychologist_5403_pack.json",
@@ -499,15 +499,15 @@
       },
       {
         "path": "test_prep/special_education_5355_learning_library_qa.json",
-        "sha256": "0a7da65c565c6ba7637e18b66b26f5624b15928b7ec9aaae8b65a4a31111c464"
+        "sha256": "5113851130fa54a8f1726dccfd05e90b99f5a7f23ec80cad129f59fbd32c902e"
       },
       {
         "path": "test_prep/special_education_5355_learning_library.json",
-        "sha256": "5fa9a41a5511e08b278498862f37b4421148262831aba666cccccde071b15aa2"
+        "sha256": "821a5d957aaac8736bde577ce184b8c347bf5f51811610797a24528ba74f2e1e"
       },
       {
         "path": "test_prep/special_education_5355_native_qa.json",
-        "sha256": "57e9badaa5f5ed9baf6a85b4571327a544848b7a15bb4ce0541ea0b1e3f82288"
+        "sha256": "cfc1d61bbe2a12a9cff33fa6addf2bf3abe65f3e9743efa469e8e2d5726a3923"
       },
       {
         "path": "test_prep/special_education_5355_pack.json",
@@ -515,15 +515,15 @@
       },
       {
         "path": "test_prep/special_education_behavior_emotional_5372_learning_library_qa.json",
-        "sha256": "2e340137a7bb9d5408c68544b007e3ab298d460a24d7c1eb93c25e1a43fc0276"
+        "sha256": "4db53be56a573c9f9e6a0d81873a8bd26794a89c8aa34bf054b9719d0a0527e3"
       },
       {
         "path": "test_prep/special_education_behavior_emotional_5372_learning_library.json",
-        "sha256": "060637aa1332deb7d0e999383d5d5b1d9f9db8e1ba97d4dd081be0289ec04af3"
+        "sha256": "59bc42cff076988e6a99f5bfb70b3c5cf185844015c8ec64ec99c772cc2750d9"
       },
       {
         "path": "test_prep/special_education_behavior_emotional_5372_native_qa.json",
-        "sha256": "18459f8ed654b812e009c2d48425364769213f1c4a189df478b2ff71c8fd44a8"
+        "sha256": "f2dbfcee0d32f45f5599a6d46d1aad13ddb457656592944d67e36c1365d2f8a7"
       },
       {
         "path": "test_prep/special_education_behavior_emotional_5372_pack.json",
@@ -531,15 +531,15 @@
       },
       {
         "path": "test_prep/special_education_early_childhood_5692_learning_library_qa.json",
-        "sha256": "eda8aaef2dcdb1e319cc64ef8811929e07420e3aa67d04da5f46bc739207b6e9"
+        "sha256": "2184424aef475f5e41eb2efe54908c4c8ac5ac15b66eeec5b52a55cb2d6f6bad"
       },
       {
         "path": "test_prep/special_education_early_childhood_5692_learning_library.json",
-        "sha256": "08cda2acfa0a109ec851ba0b939b9a63ab992b38395792f47aec883bbbfa66e2"
+        "sha256": "4f77d18b57081e78133c2fb1742fc805a80fd67b9ff75e6d541b5be36fe611e4"
       },
       {
         "path": "test_prep/special_education_early_childhood_5692_native_qa.json",
-        "sha256": "da140c3ab5a434f2bc50233754cfe90040ea1e0259ad36cca64b1ee0ba4bdfba"
+        "sha256": "c268352a96617c33773b697cbf93c4d0fa8cffa66835f8647b1e45a4b9e15bc9"
       },
       {
         "path": "test_prep/special_education_early_childhood_5692_pack.json",
@@ -547,15 +547,15 @@
       },
       {
         "path": "test_prep/special_education_intellectual_disabilities_5322_learning_library_qa.json",
-        "sha256": "25bd8ef0acb8bbb4075f297f23d244ecd8f8789c655453f7c6966ac5cb8ea750"
+        "sha256": "4f7eba816c5753ac0064807d0c1ad9dc2be7f91c881361c886741cf03eb6cf41"
       },
       {
         "path": "test_prep/special_education_intellectual_disabilities_5322_learning_library.json",
-        "sha256": "2a6036ad20e88faddb236b6355e3aec489ef51083ecaf6a7e7a8366c2eda1b20"
+        "sha256": "83783a5f3f59c9fd51aa07702cf2f3835f2546c236dd20889b955944fca9c134"
       },
       {
         "path": "test_prep/special_education_intellectual_disabilities_5322_native_qa.json",
-        "sha256": "74491a573cfa76b34e5e0c99b92177fbc286a89b7c2ba4435409e4cae7807c36"
+        "sha256": "05bfed34c0e2bdde38eddf87961442aa5df4f610cc2f2fc209677fd3f386c8ed"
       },
       {
         "path": "test_prep/special_education_intellectual_disabilities_5322_pack.json",
@@ -563,15 +563,15 @@
       },
       {
         "path": "test_prep/special_education_learning_disabilities_5383_learning_library_qa.json",
-        "sha256": "8c89280287fe2c0df30c67b72ecdec752ee8b81c5d026a86ba22a93424dd1f35"
+        "sha256": "52d21b8a2e36623ff155db0b52c899b07e97083adbb295f45509b5b7d365687e"
       },
       {
         "path": "test_prep/special_education_learning_disabilities_5383_learning_library.json",
-        "sha256": "6ba938329773bd9e91d9a8b5b77b2561ec57b1651b0cbd61824f5709df20407d"
+        "sha256": "2eee2c4fedb13728431f244d69710782afbb5d48c976c79e104c4a980baf10d7"
       },
       {
         "path": "test_prep/special_education_learning_disabilities_5383_native_qa.json",
-        "sha256": "2bcae8b9a41b67b1aacae3cc05c642fca20e72d4b4aa90f3b9a9972fe0517d29"
+        "sha256": "6a4d22285ec5a5309ecea428268e4c6a2467d84dd752b77747ce44f79276f4d5"
       },
       {
         "path": "test_prep/special_education_learning_disabilities_5383_pack.json",
@@ -579,15 +579,15 @@
       },
       {
         "path": "test_prep/special_education_severe_profound_5547_learning_library_qa.json",
-        "sha256": "82a35cf33cba6837f5c179dc8d5935b0afc74838bbf15a19c78d9762fcef1304"
+        "sha256": "e2e097d78af4f52a1d74831c2a8818d6c97e5be17e944aa58bda5c372e981919"
       },
       {
         "path": "test_prep/special_education_severe_profound_5547_learning_library.json",
-        "sha256": "80b527b0d3aeb98353c1a5cd6f8dcd31b2fa0a374f5c25775f248a108a66e30e"
+        "sha256": "69e574a9824b24a15d3765ae647742d68575b54c54f643748ae38ba80ef9ee9a"
       },
       {
         "path": "test_prep/special_education_severe_profound_5547_native_qa.json",
-        "sha256": "558eda816d55ee23d0e0599ea1377981e925cbf592a853d72b08b0d6b30e7286"
+        "sha256": "563d2b59cc947e52927a4e664d42b6dd44ae3cbe4fc1f2fd0d836cf563de6c45"
       },
       {
         "path": "test_prep/special_education_severe_profound_5547_pack.json",
@@ -595,15 +595,15 @@
       },
       {
         "path": "test_prep/speech_language_pathology_5331_learning_library_qa.json",
-        "sha256": "b2d02e09273d0d17905cd22c82b0fb15b897128ffb75734e2e09e92aacb0cef6"
+        "sha256": "2abca12bd267e3395dbfd765715e576a2d5a37cc6a131172b86ed0a27c66e2a1"
       },
       {
         "path": "test_prep/speech_language_pathology_5331_learning_library.json",
-        "sha256": "dcb2f058d433845f8ba41b9946f4ede483c918d0f7851ab886964dec1e95e441"
+        "sha256": "62066a27accebcb2e198031c811122ef60cb463808f553c97f3c44fdfb7d8478"
       },
       {
         "path": "test_prep/speech_language_pathology_5331_native_qa.json",
-        "sha256": "878129602d484cd69d3c0ec52567748fbf5a67c3cbd0fe5ecb6125c8a3775eaa"
+        "sha256": "b26b6eca29729491d6f51080864f8905e02a2f6b18bb07c08fadbb2e52d3970e"
       },
       {
         "path": "test_prep/speech_language_pathology_5331_pack.json",
@@ -611,15 +611,15 @@
       },
       {
         "path": "test_prep/teaching_reading_5205_learning_library_qa.json",
-        "sha256": "cf5eaa05dc500cdf7b49ebf26d5d227b4f39fd5399411919948fb9a91c9142d3"
+        "sha256": "fb2be51173f4c3336e9321a28cb53cbb9989a2e11dbcf0becb7093606d0e3892"
       },
       {
         "path": "test_prep/teaching_reading_5205_learning_library.json",
-        "sha256": "ab83e6d309c32a7e8b68813910e0f587180bd2bf2a44af9a1c7baec43d4b8d63"
+        "sha256": "37436e9d444d8e56efd03e9bf3cd80e98f82cd3ec798b64e52983f9aa7b2e34d"
       },
       {
         "path": "test_prep/teaching_reading_5205_native_qa.json",
-        "sha256": "51068ed5aac2fc373784656fb48987e4c4168aa95ab619caa66aed218b37d6d2"
+        "sha256": "d45374acf5606d7583c2eab7016cd421c34a6be8c7b48d03485a1d23eb06929a"
       },
       {
         "path": "test_prep/teaching_reading_5205_pack.json",
@@ -903,20 +903,272 @@
     {
       "stem": "audiology_5343",
       "scope": "pack-or-library",
-      "check": "source-deploy-parity",
-      "message": "audiology_5343 library differs between source and deploy."
+      "check": "native-and-library-qa",
+      "message": "native QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "audiology_5343",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "learning-library QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "early_childhood_5025",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "native QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "early_childhood_5025",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "learning-library QA is not bound to the released source items and learning library."
     },
     {
       "stem": "educational_leadership_5412",
       "scope": "pack-or-library",
-      "check": "source-deploy-parity",
-      "message": "educational_leadership_5412 library differs between source and deploy."
+      "check": "native-and-library-qa",
+      "message": "native QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "educational_leadership_5412",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "learning-library QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "esol_5362",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "native QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "esol_5362",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "learning-library QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "parapro",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "native QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "parapro",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "learning-library QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "plt_5_9_5623",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "native QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "plt_5_9_5623",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "learning-library QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "plt_7_12_5624",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "native QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "plt_7_12_5624",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "learning-library QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "plt_early_childhood_5621",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "native QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "plt_early_childhood_5621",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "learning-library QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "plt_k6_5622",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "native QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "plt_k6_5622",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "learning-library QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "praxis_core_5752",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "native QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "praxis_core_5752",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "learning-library QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "reading_specialist_5302",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "native QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "reading_specialist_5302",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "learning-library QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "school_counselor_5422",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "native QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "school_counselor_5422",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "learning-library QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "school_librarian_5312",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "native QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "school_librarian_5312",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "learning-library QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "school_psychologist_5403",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "native QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "school_psychologist_5403",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "learning-library QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "special_education_5355",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "native QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "special_education_5355",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "learning-library QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "special_education_behavior_emotional_5372",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "native QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "special_education_behavior_emotional_5372",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "learning-library QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "special_education_early_childhood_5692",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "native QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "special_education_early_childhood_5692",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "learning-library QA is not bound to the released source items and learning library."
     },
     {
       "stem": "special_education_early_childhood_5692",
       "scope": "pack-or-library",
       "check": "credential-scope-and-semantic-integrity",
       "message": "Pack or learning library contains a known foreign-scope or malformed credential marker: /\\byoung childs\\b/i"
+    },
+    {
+      "stem": "special_education_intellectual_disabilities_5322",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "native QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "special_education_intellectual_disabilities_5322",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "learning-library QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "special_education_learning_disabilities_5383",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "native QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "special_education_learning_disabilities_5383",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "learning-library QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "special_education_severe_profound_5547",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "native QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "special_education_severe_profound_5547",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "learning-library QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "speech_language_pathology_5331",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "native QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "speech_language_pathology_5331",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "learning-library QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "teaching_reading_5205",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "native QA is not bound to the released source items and learning library."
+    },
+    {
+      "stem": "teaching_reading_5205",
+      "scope": "pack-or-library",
+      "check": "native-and-library-qa",
+      "message": "learning-library QA is not bound to the released source items and learning library."
     },
     {
       "stem": "audiology_5343",
@@ -7111,9 +7363,9 @@
       "packId": "praxis-audiology-5343",
       "title": "Audiology 5343 diagnostics",
       "packSha256": "a2600ad4ec1ea8096e2f097af121c8fbbdca87524685c300db69f00e438df48f",
-      "learningLibrarySha256": "7902cb764c537639ef3b489660ed43d9f61198756fc6992cb12460a6729835a5",
-      "nativeQaSha256": "bb51488c6c801a263911a432751c655441587d2f7279840ecf7220ed3c055917",
-      "learningLibraryQaSha256": "e93d6c57cef3d17a4ab4a488d7e7ae3d99469676ff4ac7ae4b219baa7b828cdb",
+      "learningLibrarySha256": "e3f29e63ba06d9c8c36c52f1560ca7bbb74fd3dda36b8726f888aa343bc1fcfb",
+      "nativeQaSha256": "1c9e2ddd58209aa0d41ebd02e790fe205324d1cf578d4ddfbd265332192d41f0",
+      "learningLibraryQaSha256": "a23202c648a8f6c8ae4c040a2824510fd4ff52e45e1984cd43a6101e35ee01de",
       "learningActivities": 500,
       "originalSourceItems": 200,
       "assistantAuthoredIndependentItems": 100,
@@ -7154,7 +7406,7 @@
         "uniqueReferences": 14,
         "distinctIndependentReferenceBundles": 10
       },
-      "hardFindingCount": 1,
+      "hardFindingCount": 2,
       "warningItemCount": 222,
       "warningCounts": {
         "short-prompt": 4,
@@ -7267,9 +7519,9 @@
       "packId": "praxis-early-childhood-5025",
       "title": "Early Childhood Education (5025)",
       "packSha256": "7563e2cca3148128aad09019e3b87c9920b93d64e891e77551930cee8ef90e7e",
-      "learningLibrarySha256": "3a589c9b60edd2a35fe4ac3dd829958ceba050fea642e18e5575e660036bea89",
-      "nativeQaSha256": "6b70eb614553e1af4daa91b4f6de06432d63fe3d135c37838ce11e67fd3f4ef8",
-      "learningLibraryQaSha256": "9e4723a528afe61ecf3a65ba9d9462d5a4dd4a2725652cacd2a0453bf924fdd2",
+      "learningLibrarySha256": "fc24eed89a1c287c3adf72c9cd548ba1eb4acff99a07aac71dc9565c63523a0e",
+      "nativeQaSha256": "056ea75e3b1f1a0d20ebfab56ea6a6f9e89c768eef073d83ac9eacacfd60dfa8",
+      "learningLibraryQaSha256": "f225cbf54c2746723cbb53c4ba4dcbdec99b49e05f1a5115de74101374415e5b",
       "learningActivities": 500,
       "originalSourceItems": 200,
       "assistantAuthoredIndependentItems": 100,
@@ -7310,7 +7562,7 @@
         "uniqueReferences": 7,
         "distinctIndependentReferenceBundles": 6
       },
-      "hardFindingCount": 0,
+      "hardFindingCount": 2,
       "warningItemCount": 216,
       "warningCounts": {
         "short-prompt": 0,
@@ -7424,7 +7676,7 @@
           "score": 3
         }
       ],
-      "structuralVerdict": "pass",
+      "structuralVerdict": "fail-hard-qa",
       "contentDistinctnessVerdict": "reviewed-gap-open",
       "crossPackSharedResponseKernels": 55
     },
@@ -7433,9 +7685,9 @@
       "packId": "praxis-educational-leadership-5412",
       "title": "Educational Leadership (5412)",
       "packSha256": "c00ba9ebbfde1971112e4fe9549358f0886fb585cd7e8a387cd7cad7f87bc72f",
-      "learningLibrarySha256": "294f1cbc34b1d07b7a70644c0c12bd703ddd69e103ee24db6a51a31535b42f77",
-      "nativeQaSha256": "6bb369835abe0e917245bcb026ff561cc17f8fe97a8e850d5da4c79753931544",
-      "learningLibraryQaSha256": "d1469f099e8ecf1e1f9fac8417d7d3687df5217af0c79f5c41d4473b033d1b11",
+      "learningLibrarySha256": "c235ae7eef17531b3e66b2ad42d2b3281e2e571fc1a557be1139c9e69702047a",
+      "nativeQaSha256": "9f561818bbd46e2208836002a562f076ca52b6bd96baecb9dcab1331ff54c3f0",
+      "learningLibraryQaSha256": "5d89e77ebeae46e3393dc3e8f972f2fc5b7974aa50069abbe7e7885673a5edfe",
       "learningActivities": 500,
       "originalSourceItems": 200,
       "assistantAuthoredIndependentItems": 100,
@@ -7477,7 +7729,7 @@
         "uniqueReferences": 10,
         "distinctIndependentReferenceBundles": 10
       },
-      "hardFindingCount": 1,
+      "hardFindingCount": 2,
       "warningItemCount": 233,
       "warningCounts": {
         "short-prompt": 0,
@@ -7596,9 +7848,9 @@
       "packId": "praxis-esol-5362",
       "title": "Praxis ESOL (5362)",
       "packSha256": "f914b9e4bedd0a222e23e975d0db53ba8c1438785b8b3b46949ad07329c83cb4",
-      "learningLibrarySha256": "602962309ec64e85967d3ee7f40e25ee9f5ae80c12a937e6e22505b21e7a3132",
-      "nativeQaSha256": "e07792f8615fc7428b48d0c98cadd239dd0a5acf45d9d1b88f02bf0221ab5435",
-      "learningLibraryQaSha256": "ab76e008ad9bf5831eaad601b2cfa7e92c02602c0dfbda271ed4b502715fc695",
+      "learningLibrarySha256": "1cba88018e11350069c1259cab1ef31d57f4e03ee19baca7e1f2cfcc26c11310",
+      "nativeQaSha256": "8049da30082973b0de1ec6d00af5ad7805212a1451d085db3ff20af315be2bc6",
+      "learningLibraryQaSha256": "5256eda6ec43391dd6286c63f357ff8ec3d06986da4316d54269309a60e5be75",
       "learningActivities": 500,
       "originalSourceItems": 200,
       "assistantAuthoredIndependentItems": 0,
@@ -7640,7 +7892,7 @@
         "uniqueReferences": 6,
         "distinctIndependentReferenceBundles": 2
       },
-      "hardFindingCount": 0,
+      "hardFindingCount": 2,
       "warningItemCount": 198,
       "warningCounts": {
         "short-prompt": 0,
@@ -7746,7 +7998,7 @@
           "score": 2
         }
       ],
-      "structuralVerdict": "pass",
+      "structuralVerdict": "fail-hard-qa",
       "contentDistinctnessVerdict": "reviewed-gap-open",
       "crossPackSharedResponseKernels": 0
     },
@@ -7755,9 +8007,9 @@
       "packId": "parapro-1755-practice-1",
       "title": "ParaPro diagnostic batches 1-2",
       "packSha256": "04e45afae1f32de51efea3ef5f654fc3368f37682328b46ef40d6a1a29e354da",
-      "learningLibrarySha256": "df71d51a6a880d992316a382dbef0ac08bbfdefa2f893d79ca1626ec6ec534f7",
-      "nativeQaSha256": "50cbbfce2cc4a6caca7b0babbb0cfeb524a03bbc529084e5b86af6a8b244cda3",
-      "learningLibraryQaSha256": "2b43a853bbfcb7fd3910bd0fa26ebf9b0e21b8a1fad68da360f596a537e12376",
+      "learningLibrarySha256": "af0034d320e1030821b073d10ca09edc82e150a1acd38fde2e01b46e89491e02",
+      "nativeQaSha256": "20da9537ddf85f3003acae3e6e83f6f0e6fba9b8edc2721c63e943abbf7c5cb8",
+      "learningLibraryQaSha256": "0ecd00f9abfba4ff988f58d4ab039bc761f3430cb960639424d09d7f5e67c022",
       "learningActivities": 500,
       "originalSourceItems": 200,
       "assistantAuthoredIndependentItems": 300,
@@ -7796,7 +8048,7 @@
         "uniqueReferences": 9,
         "distinctIndependentReferenceBundles": 12
       },
-      "hardFindingCount": 0,
+      "hardFindingCount": 2,
       "warningItemCount": 420,
       "warningCounts": {
         "short-prompt": 13,
@@ -7910,7 +8162,7 @@
           "score": 3
         }
       ],
-      "structuralVerdict": "pass",
+      "structuralVerdict": "fail-hard-qa",
       "contentDistinctnessVerdict": "target-met",
       "crossPackSharedResponseKernels": 26
     },
@@ -7919,9 +8171,9 @@
       "packId": "praxis-plt-grades-5-9-5623",
       "title": "PLT: Grades 5–9 (5623)",
       "packSha256": "a3d45e9116f22e61f3119587e5f4ede9fc917eafdccb1a513f022c991aab4322",
-      "learningLibrarySha256": "aa86c98a6376e4404474a772eba1d2e1073bf90c48e2012fb4eb541d3d83b098",
-      "nativeQaSha256": "0841a3da9d58e603f9133333d0367d677c3b2fb4f154ed65d06756016b00e734",
-      "learningLibraryQaSha256": "6a038684c276356db30e042e92a5c5b69f5a1ba5d407e0e6b40b3954fe0a73ba",
+      "learningLibrarySha256": "bc1b3e35b00400c65a35fbc430b2dead0ead11df6e1582958cd546b74c4575d4",
+      "nativeQaSha256": "3c47bcd4b2af1dee490996153fada1e0c93236dff21d508702cf29cfafd71b8c",
+      "learningLibraryQaSha256": "558bfaaa067d730d13affa5da9fcf88a009b342a08bfa393122255373f4b57b5",
       "learningActivities": 500,
       "originalSourceItems": 200,
       "assistantAuthoredIndependentItems": 0,
@@ -7961,7 +8213,7 @@
         "uniqueReferences": 4,
         "distinctIndependentReferenceBundles": 1
       },
-      "hardFindingCount": 0,
+      "hardFindingCount": 2,
       "warningItemCount": 198,
       "warningCounts": {
         "short-prompt": 0,
@@ -8071,7 +8323,7 @@
           "score": 2
         }
       ],
-      "structuralVerdict": "pass",
+      "structuralVerdict": "fail-hard-qa",
       "contentDistinctnessVerdict": "reviewed-gap-open",
       "crossPackSharedResponseKernels": 99
     },
@@ -8080,9 +8332,9 @@
       "packId": "praxis-plt-grades-7-12-5624",
       "title": "PLT: Grades 7–12 (5624)",
       "packSha256": "05cea30aebcc02edd48daa252a4de689ac0631cf1f890d918e421ca324cb0bae",
-      "learningLibrarySha256": "960b6282170beec63c061915aac4506460484940771d8868730fe25da18f58a3",
-      "nativeQaSha256": "7f39e314f960a568da697cdd75317e50985c4cf35c652b61bc0d56feb2c74266",
-      "learningLibraryQaSha256": "fcbd30a18a1b06fcb8390c4bb29a796a123984af16d8305c420d8fc225f7cd91",
+      "learningLibrarySha256": "d2c283da9d654dc414367785fbe2de52d3aa7607784127c02a608b53d42676ea",
+      "nativeQaSha256": "e848e43ba954790813a987acf9de9d4c8b1b761c4842c308394e88922723e76f",
+      "learningLibraryQaSha256": "92bce21c9e49a480de1bbebb2dc9f378db42e884ffcbdfc734881c80634a9820",
       "learningActivities": 500,
       "originalSourceItems": 200,
       "assistantAuthoredIndependentItems": 0,
@@ -8122,7 +8374,7 @@
         "uniqueReferences": 4,
         "distinctIndependentReferenceBundles": 1
       },
-      "hardFindingCount": 0,
+      "hardFindingCount": 2,
       "warningItemCount": 198,
       "warningCounts": {
         "short-prompt": 0,
@@ -8232,7 +8484,7 @@
           "score": 2
         }
       ],
-      "structuralVerdict": "pass",
+      "structuralVerdict": "fail-hard-qa",
       "contentDistinctnessVerdict": "reviewed-gap-open",
       "crossPackSharedResponseKernels": 99
     },
@@ -8241,9 +8493,9 @@
       "packId": "praxis-plt-early-childhood-5621",
       "title": "PLT: Early Childhood (5621)",
       "packSha256": "2c1704011e4a290e2ae6a3c455acf90e5284458cca589cc38c412ee45ed3c8cf",
-      "learningLibrarySha256": "bc3d9be5023581e8b31856902cf31e2d1c628c6acdfc9c24388c807b1b30b8e0",
-      "nativeQaSha256": "21828b12f7ede08ccb7c35d12dbbf18ad10c2f760b6e31fd8d13b4b0802453fa",
-      "learningLibraryQaSha256": "61cb8b9079ed82611f2a125d238d89aeb36d4149cbfb68f74351ad95e2428e1c",
+      "learningLibrarySha256": "b86523780637ce6ae14214beca6e3a99645a6685c4aa48692835369361901fd4",
+      "nativeQaSha256": "a63962ed7e1728b0ed8057843b7bff87040f38476d7697c0efed5d4e2047d712",
+      "learningLibraryQaSha256": "ac89cc1899af95109e0dc932a35928fcf46dd67a83c3017ab6509732af9eac98",
       "learningActivities": 500,
       "originalSourceItems": 200,
       "assistantAuthoredIndependentItems": 0,
@@ -8283,7 +8535,7 @@
         "uniqueReferences": 4,
         "distinctIndependentReferenceBundles": 1
       },
-      "hardFindingCount": 0,
+      "hardFindingCount": 2,
       "warningItemCount": 198,
       "warningCounts": {
         "short-prompt": 0,
@@ -8393,7 +8645,7 @@
           "score": 2
         }
       ],
-      "structuralVerdict": "pass",
+      "structuralVerdict": "fail-hard-qa",
       "contentDistinctnessVerdict": "reviewed-gap-open",
       "crossPackSharedResponseKernels": 78
     },
@@ -8402,9 +8654,9 @@
       "packId": "praxis-plt-k6-5622",
       "title": "PLT K–6 (5622)",
       "packSha256": "85f6d6f6777aa79f5cf94af68157814af384e43de511dcfdf55498bae8f77cfc",
-      "learningLibrarySha256": "207a9a6736dc093f5a88af5a9afee77da87cb568034deb0ddb9df34db1e15070",
-      "nativeQaSha256": "88ef93fcb196231480cd8973ad946343579fcc8ad314f93c27e4b278a1dc07c5",
-      "learningLibraryQaSha256": "1b12e97affdb52d6c803ed5c4aab99e7c13875523d431f2bd1740f8bbb05c11e",
+      "learningLibrarySha256": "36a054934e2b038c6056b529a2e63de35860589905c1996223d82454190b2b98",
+      "nativeQaSha256": "879e60b6eb080ca5f3233efbb5a87a0e60445ac6e32b28bcfe9d71196d7a8f8f",
+      "learningLibraryQaSha256": "cac4578e5b020c7519c0a33e71ddd5e38e96afffb3a9c526e3a2cea7b1258924",
       "learningActivities": 500,
       "originalSourceItems": 200,
       "assistantAuthoredIndependentItems": 0,
@@ -8444,7 +8696,7 @@
         "uniqueReferences": 12,
         "distinctIndependentReferenceBundles": 11
       },
-      "hardFindingCount": 0,
+      "hardFindingCount": 2,
       "warningItemCount": 198,
       "warningCounts": {
         "short-prompt": 0,
@@ -8554,7 +8806,7 @@
           "score": 2
         }
       ],
-      "structuralVerdict": "pass",
+      "structuralVerdict": "fail-hard-qa",
       "contentDistinctnessVerdict": "reviewed-gap-open",
       "crossPackSharedResponseKernels": 99
     },
@@ -8563,9 +8815,9 @@
       "packId": "praxis-core-5752",
       "title": "Praxis Core (5752)",
       "packSha256": "5748bf419504c9a1019877aaaa5273f71d283655a897ae5ba9e40f378949b0e4",
-      "learningLibrarySha256": "10e61ea222ba09e29a3c87ed765fa890942a4a98f0384c312ce88dfe1cd66118",
-      "nativeQaSha256": "f813b69bd1ba3c3bce7349ec84d6aa10906353d2d8344f96e5b9f62461cb4248",
-      "learningLibraryQaSha256": "90f238c728f1b3094c8a3a8461497774570c1f5ad2d8b5d08abda72df58d00ee",
+      "learningLibrarySha256": "e1577181905ab167b83767e8205e46c25e06026330dc8eeee1377f4b5d2123d1",
+      "nativeQaSha256": "44dfc4dc2dc8b200f8c4e5463334357646a9616d0ac14e7aedf95e9504d69680",
+      "learningLibraryQaSha256": "5b7b3f42efadcaa6692b71f705ac241e5291c545fbf5c1a88cf07960d2694220",
       "learningActivities": 500,
       "originalSourceItems": 200,
       "assistantAuthoredIndependentItems": 0,
@@ -8609,7 +8861,7 @@
         "uniqueReferences": 6,
         "distinctIndependentReferenceBundles": 3
       },
-      "hardFindingCount": 0,
+      "hardFindingCount": 2,
       "warningItemCount": 72,
       "warningCounts": {
         "short-prompt": 0,
@@ -8717,7 +8969,7 @@
           "score": 2
         }
       ],
-      "structuralVerdict": "pass",
+      "structuralVerdict": "fail-hard-qa",
       "contentDistinctnessVerdict": "reviewed-gap-open",
       "crossPackSharedResponseKernels": 11
     },
@@ -8726,9 +8978,9 @@
       "packId": "praxis-reading-specialist-5302",
       "title": "Reading Specialist 5302 diagnostics",
       "packSha256": "258849b0247ae5ccc805c3d1a78bc426dbb51f7fa7965cb744e0de1c7b80e4ee",
-      "learningLibrarySha256": "acc650af0f90209323cc4979075cafe6ca6c1a80048fb960496d6a335b7e98b8",
-      "nativeQaSha256": "0d22982fbbbec6d0ca1b65e7afe43ac6b5506859a46af1b6f32127e4865db036",
-      "learningLibraryQaSha256": "b361dc083388243d2db9948096fec9247cb98a948200b573ce4a6a357b445503",
+      "learningLibrarySha256": "cb94bb475971b064c52d5d889f26e01805f6a69907dcafa659c838fcb031a069",
+      "nativeQaSha256": "e541bd04fa02dea8fefe4c107d49ffd213d80d93934de4cdccfcb06bbfbff017",
+      "learningLibraryQaSha256": "4829412e7672b9787e806da0ce1a4d537427e31f785b3d3a85321497802a3813",
       "learningActivities": 500,
       "originalSourceItems": 200,
       "assistantAuthoredIndependentItems": 0,
@@ -8767,7 +9019,7 @@
         "uniqueReferences": 11,
         "distinctIndependentReferenceBundles": 11
       },
-      "hardFindingCount": 0,
+      "hardFindingCount": 2,
       "warningItemCount": 191,
       "warningCounts": {
         "short-prompt": 10,
@@ -8876,7 +9128,7 @@
           "score": 2
         }
       ],
-      "structuralVerdict": "pass",
+      "structuralVerdict": "fail-hard-qa",
       "contentDistinctnessVerdict": "reviewed-gap-open",
       "crossPackSharedResponseKernels": 87
     },
@@ -8885,9 +9137,9 @@
       "packId": "praxis-school-counselor-5422",
       "title": "School Counselor 5422 diagnostics",
       "packSha256": "dc5561407df4f77f06d613369f67fd439f2ac3daf85ce31dd031693414b46696",
-      "learningLibrarySha256": "5bbcfce6fa5104ea3b916c0380671c661ee06bf7f8b23d2d961acb56c632d175",
-      "nativeQaSha256": "f3b59e53b445f25aedaf143c8cfdaefd392daf96edbcb959a490ffc75578b07f",
-      "learningLibraryQaSha256": "b4db3db86a51d1663ee0765ce090b3d185c4f06f157bec81c4d55962c43ac3de",
+      "learningLibrarySha256": "a3e6a23efb20bba4eadf68cba1b7326f8672ea4a913fc6fc52fdbf10a165d770",
+      "nativeQaSha256": "d259c71033fa6ac437bfbfbaa82bc2b07ec473597b8ff9f29cf420127b26cbe2",
+      "learningLibraryQaSha256": "1bae4f281c3237342ec937181f8c6d72996396ca197b10f9bdab0637bc1a8fd0",
       "learningActivities": 500,
       "originalSourceItems": 200,
       "assistantAuthoredIndependentItems": 100,
@@ -8927,7 +9179,7 @@
         "uniqueReferences": 8,
         "distinctIndependentReferenceBundles": 8
       },
-      "hardFindingCount": 0,
+      "hardFindingCount": 2,
       "warningItemCount": 209,
       "warningCounts": {
         "short-prompt": 0,
@@ -9034,7 +9286,7 @@
           "score": 2
         }
       ],
-      "structuralVerdict": "pass",
+      "structuralVerdict": "fail-hard-qa",
       "contentDistinctnessVerdict": "reviewed-gap-open",
       "crossPackSharedResponseKernels": 0
     },
@@ -9043,9 +9295,9 @@
       "packId": "praxis-school-librarian-5312",
       "title": "School Librarian (5312)",
       "packSha256": "96ef7d4cf8f92f685239e4f0af7f7dbe37cca72cc8a3f26922fdb77a7a2024a3",
-      "learningLibrarySha256": "1ec162ae62d2abc2a94a97fe88313266c827ee1799ef10624931cc646f7f9b92",
-      "nativeQaSha256": "00197319bb32bd3daa94719961e9c422a42f41c76ccd9c96b067d06523477077",
-      "learningLibraryQaSha256": "03b406ab8476d926e27b82b001e9c3120ed13d502b106b3923f839c81e007a90",
+      "learningLibrarySha256": "9eeee966857c9d1af35550e9557251473d07ea9af45428a249063ec2e7b56d0f",
+      "nativeQaSha256": "315c85532da0452d9a510e2056d3cdbc9715ca5d939232d5c5bfbacbad34afd9",
+      "learningLibraryQaSha256": "2e30c38dc9b05ec621ddf290d4b0e4b8203c8e9abaf66e1068e395544d1f4216",
       "learningActivities": 500,
       "originalSourceItems": 200,
       "assistantAuthoredIndependentItems": 100,
@@ -9086,7 +9338,7 @@
         "uniqueReferences": 5,
         "distinctIndependentReferenceBundles": 4
       },
-      "hardFindingCount": 0,
+      "hardFindingCount": 2,
       "warningItemCount": 194,
       "warningCounts": {
         "short-prompt": 0,
@@ -9190,7 +9442,7 @@
           "score": 2
         }
       ],
-      "structuralVerdict": "pass",
+      "structuralVerdict": "fail-hard-qa",
       "contentDistinctnessVerdict": "reviewed-gap-open",
       "crossPackSharedResponseKernels": 0
     },
@@ -9199,9 +9451,9 @@
       "packId": "praxis-school-psychologist-5403",
       "title": "School Psychologist 5403 diagnostics",
       "packSha256": "e06f69a8b525527b76c3e1d28fd38bff7d65a3ff1ae94ea3b51962b23e1a1e53",
-      "learningLibrarySha256": "19186d061bf843fec24da312220347199894ba79bf8ef6d749d35c7bb34802b3",
-      "nativeQaSha256": "7c275cd052364deba74bc7cf689d4a2c2d46895a050ee31470286fa68ba07efe",
-      "learningLibraryQaSha256": "b9fb0bb6b09e32e7b1182cfd5a8f55ad67b9fc5d91c4728710bb88a3936f88fb",
+      "learningLibrarySha256": "4c045733e64a1e9184c2290a0aae7a1021c35405777b9d3c9dd8180c90177316",
+      "nativeQaSha256": "97e209f147b8368e266578bc6fbee5075fc654175ec70ffc7e64bf093ba5e3d8",
+      "learningLibraryQaSha256": "ae363aade4bdecab7b0f9017af838ad25fb918cef2b7f0e96c71b74472a74bdd",
       "learningActivities": 500,
       "originalSourceItems": 200,
       "assistantAuthoredIndependentItems": 100,
@@ -9241,7 +9493,7 @@
         "uniqueReferences": 9,
         "distinctIndependentReferenceBundles": 5
       },
-      "hardFindingCount": 0,
+      "hardFindingCount": 2,
       "warningItemCount": 213,
       "warningCounts": {
         "short-prompt": 1,
@@ -9348,7 +9600,7 @@
           "score": 2
         }
       ],
-      "structuralVerdict": "pass",
+      "structuralVerdict": "fail-hard-qa",
       "contentDistinctnessVerdict": "reviewed-gap-open",
       "crossPackSharedResponseKernels": 0
     },
@@ -9357,9 +9609,9 @@
       "packId": "praxis-special-education-5355",
       "title": "Special Education 5355 diagnostics",
       "packSha256": "d607452b4da41ad3d0a39cfd3145b8f2e137e95c6a3a99d479d54a1b03ae4557",
-      "learningLibrarySha256": "5fa9a41a5511e08b278498862f37b4421148262831aba666cccccde071b15aa2",
-      "nativeQaSha256": "57e9badaa5f5ed9baf6a85b4571327a544848b7a15bb4ce0541ea0b1e3f82288",
-      "learningLibraryQaSha256": "0a7da65c565c6ba7637e18b66b26f5624b15928b7ec9aaae8b65a4a31111c464",
+      "learningLibrarySha256": "821a5d957aaac8736bde577ce184b8c347bf5f51811610797a24528ba74f2e1e",
+      "nativeQaSha256": "cfc1d61bbe2a12a9cff33fa6addf2bf3abe65f3e9743efa469e8e2d5726a3923",
+      "learningLibraryQaSha256": "5113851130fa54a8f1726dccfd05e90b99f5a7f23ec80cad129f59fbd32c902e",
       "learningActivities": 500,
       "originalSourceItems": 200,
       "assistantAuthoredIndependentItems": 0,
@@ -9399,7 +9651,7 @@
         "uniqueReferences": 14,
         "distinctIndependentReferenceBundles": 10
       },
-      "hardFindingCount": 0,
+      "hardFindingCount": 2,
       "warningItemCount": 175,
       "warningCounts": {
         "short-prompt": 2,
@@ -9510,7 +9762,7 @@
           "score": 2
         }
       ],
-      "structuralVerdict": "pass",
+      "structuralVerdict": "fail-hard-qa",
       "contentDistinctnessVerdict": "reviewed-gap-open",
       "crossPackSharedResponseKernels": 95
     },
@@ -9519,9 +9771,9 @@
       "packId": "praxis-special-education-behavior-emotional-5372",
       "title": "Behavioral Disorders and Emotional Disturbances (5372)",
       "packSha256": "5a4b2e33ae55bc150f76bd9d274f57dfe3bca4f8326abec92669944b88d29832",
-      "learningLibrarySha256": "060637aa1332deb7d0e999383d5d5b1d9f9db8e1ba97d4dd081be0289ec04af3",
-      "nativeQaSha256": "18459f8ed654b812e009c2d48425364769213f1c4a189df478b2ff71c8fd44a8",
-      "learningLibraryQaSha256": "2e340137a7bb9d5408c68544b007e3ab298d460a24d7c1eb93c25e1a43fc0276",
+      "learningLibrarySha256": "59bc42cff076988e6a99f5bfb70b3c5cf185844015c8ec64ec99c772cc2750d9",
+      "nativeQaSha256": "f2dbfcee0d32f45f5599a6d46d1aad13ddb457656592944d67e36c1365d2f8a7",
+      "learningLibraryQaSha256": "4db53be56a573c9f9e6a0d81873a8bd26794a89c8aa34bf054b9719d0a0527e3",
       "learningActivities": 500,
       "originalSourceItems": 200,
       "assistantAuthoredIndependentItems": 0,
@@ -9562,7 +9814,7 @@
         "uniqueReferences": 4,
         "distinctIndependentReferenceBundles": 1
       },
-      "hardFindingCount": 0,
+      "hardFindingCount": 2,
       "warningItemCount": 174,
       "warningCounts": {
         "short-prompt": 0,
@@ -9673,7 +9925,7 @@
           "score": 2
         }
       ],
-      "structuralVerdict": "pass",
+      "structuralVerdict": "fail-hard-qa",
       "contentDistinctnessVerdict": "reviewed-gap-open",
       "crossPackSharedResponseKernels": 72
     },
@@ -9682,9 +9934,9 @@
       "packId": "praxis-special-education-early-childhood-5692",
       "title": "Special Education EC/EI (5692)",
       "packSha256": "928f145260b0721fa262891bf452702aa5c2af20deb2c00d801bfa69d2ac08bf",
-      "learningLibrarySha256": "08cda2acfa0a109ec851ba0b939b9a63ab992b38395792f47aec883bbbfa66e2",
-      "nativeQaSha256": "da140c3ab5a434f2bc50233754cfe90040ea1e0259ad36cca64b1ee0ba4bdfba",
-      "learningLibraryQaSha256": "eda8aaef2dcdb1e319cc64ef8811929e07420e3aa67d04da5f46bc739207b6e9",
+      "learningLibrarySha256": "4f77d18b57081e78133c2fb1742fc805a80fd67b9ff75e6d541b5be36fe611e4",
+      "nativeQaSha256": "c268352a96617c33773b697cbf93c4d0fa8cffa66835f8647b1e45a4b9e15bc9",
+      "learningLibraryQaSha256": "2184424aef475f5e41eb2efe54908c4c8ac5ac15b66eeec5b52a55cb2d6f6bad",
       "learningActivities": 500,
       "originalSourceItems": 200,
       "assistantAuthoredIndependentItems": 0,
@@ -9725,7 +9977,7 @@
         "uniqueReferences": 5,
         "distinctIndependentReferenceBundles": 4
       },
-      "hardFindingCount": 1,
+      "hardFindingCount": 3,
       "warningItemCount": 166,
       "warningCounts": {
         "short-prompt": 2,
@@ -9844,9 +10096,9 @@
       "packId": "praxis-special-education-intellectual-disabilities-5322",
       "title": "Teaching Students with Intellectual Disabilities (5322)",
       "packSha256": "d12f6fe3d1301a474b3a1f08f9d74e29785d66620cfddba601b3b6c58d7c6b68",
-      "learningLibrarySha256": "2a6036ad20e88faddb236b6355e3aec489ef51083ecaf6a7e7a8366c2eda1b20",
-      "nativeQaSha256": "74491a573cfa76b34e5e0c99b92177fbc286a89b7c2ba4435409e4cae7807c36",
-      "learningLibraryQaSha256": "25bd8ef0acb8bbb4075f297f23d244ecd8f8789c655453f7c6966ac5cb8ea750",
+      "learningLibrarySha256": "83783a5f3f59c9fd51aa07702cf2f3835f2546c236dd20889b955944fca9c134",
+      "nativeQaSha256": "05bfed34c0e2bdde38eddf87961442aa5df4f610cc2f2fc209677fd3f386c8ed",
+      "learningLibraryQaSha256": "4f7eba816c5753ac0064807d0c1ad9dc2be7f91c881361c886741cf03eb6cf41",
       "learningActivities": 500,
       "originalSourceItems": 200,
       "assistantAuthoredIndependentItems": 0,
@@ -9887,7 +10139,7 @@
         "uniqueReferences": 4,
         "distinctIndependentReferenceBundles": 1
       },
-      "hardFindingCount": 0,
+      "hardFindingCount": 2,
       "warningItemCount": 173,
       "warningCounts": {
         "short-prompt": 0,
@@ -9999,7 +10251,7 @@
           "score": 2
         }
       ],
-      "structuralVerdict": "pass",
+      "structuralVerdict": "fail-hard-qa",
       "contentDistinctnessVerdict": "reviewed-gap-open",
       "crossPackSharedResponseKernels": 72
     },
@@ -10008,9 +10260,9 @@
       "packId": "praxis-special-education-learning-disabilities-5383",
       "title": "Teaching Students with Learning Disabilities (5383)",
       "packSha256": "267564056f8b125b89330775f9b5cc2bf2678e94844ac7c866e6328733358b47",
-      "learningLibrarySha256": "6ba938329773bd9e91d9a8b5b77b2561ec57b1651b0cbd61824f5709df20407d",
-      "nativeQaSha256": "2bcae8b9a41b67b1aacae3cc05c642fca20e72d4b4aa90f3b9a9972fe0517d29",
-      "learningLibraryQaSha256": "8c89280287fe2c0df30c67b72ecdec752ee8b81c5d026a86ba22a93424dd1f35",
+      "learningLibrarySha256": "2eee2c4fedb13728431f244d69710782afbb5d48c976c79e104c4a980baf10d7",
+      "nativeQaSha256": "6a4d22285ec5a5309ecea428268e4c6a2467d84dd752b77747ce44f79276f4d5",
+      "learningLibraryQaSha256": "52d21b8a2e36623ff155db0b52c899b07e97083adbb295f45509b5b7d365687e",
       "learningActivities": 500,
       "originalSourceItems": 200,
       "assistantAuthoredIndependentItems": 0,
@@ -10051,7 +10303,7 @@
         "uniqueReferences": 5,
         "distinctIndependentReferenceBundles": 3
       },
-      "hardFindingCount": 0,
+      "hardFindingCount": 2,
       "warningItemCount": 153,
       "warningCounts": {
         "short-prompt": 0,
@@ -10162,7 +10414,7 @@
           "score": 2
         }
       ],
-      "structuralVerdict": "pass",
+      "structuralVerdict": "fail-hard-qa",
       "contentDistinctnessVerdict": "reviewed-gap-open",
       "crossPackSharedResponseKernels": 94
     },
@@ -10171,9 +10423,9 @@
       "packId": "praxis-special-education-severe-profound-5547",
       "title": "Special Education Severe to Profound (5547)",
       "packSha256": "fc2d4983e22d92e98ff52c5ddb5c2503cab7fd55ba4ee71ef96205ec32bc7c1c",
-      "learningLibrarySha256": "80b527b0d3aeb98353c1a5cd6f8dcd31b2fa0a374f5c25775f248a108a66e30e",
-      "nativeQaSha256": "558eda816d55ee23d0e0599ea1377981e925cbf592a853d72b08b0d6b30e7286",
-      "learningLibraryQaSha256": "82a35cf33cba6837f5c179dc8d5935b0afc74838bbf15a19c78d9762fcef1304",
+      "learningLibrarySha256": "69e574a9824b24a15d3765ae647742d68575b54c54f643748ae38ba80ef9ee9a",
+      "nativeQaSha256": "563d2b59cc947e52927a4e664d42b6dd44ae3cbe4fc1f2fd0d836cf563de6c45",
+      "learningLibraryQaSha256": "e2e097d78af4f52a1d74831c2a8818d6c97e5be17e944aa58bda5c372e981919",
       "learningActivities": 500,
       "originalSourceItems": 200,
       "assistantAuthoredIndependentItems": 0,
@@ -10213,7 +10465,7 @@
         "uniqueReferences": 4,
         "distinctIndependentReferenceBundles": 1
       },
-      "hardFindingCount": 0,
+      "hardFindingCount": 2,
       "warningItemCount": 182,
       "warningCounts": {
         "short-prompt": 0,
@@ -10324,7 +10576,7 @@
           "score": 2
         }
       ],
-      "structuralVerdict": "pass",
+      "structuralVerdict": "fail-hard-qa",
       "contentDistinctnessVerdict": "reviewed-gap-open",
       "crossPackSharedResponseKernels": 90
     },
@@ -10333,9 +10585,9 @@
       "packId": "praxis-speech-language-pathology-5331",
       "title": "Speech-Language Pathology 5331 diagnostics",
       "packSha256": "c828d1ac2df09588695b1dd962a47e73b59dda42ffbce92ebc2b8f90d1400893",
-      "learningLibrarySha256": "dcb2f058d433845f8ba41b9946f4ede483c918d0f7851ab886964dec1e95e441",
-      "nativeQaSha256": "878129602d484cd69d3c0ec52567748fbf5a67c3cbd0fe5ecb6125c8a3775eaa",
-      "learningLibraryQaSha256": "b2d02e09273d0d17905cd22c82b0fb15b897128ffb75734e2e09e92aacb0cef6",
+      "learningLibrarySha256": "62066a27accebcb2e198031c811122ef60cb463808f553c97f3c44fdfb7d8478",
+      "nativeQaSha256": "b26b6eca29729491d6f51080864f8905e02a2f6b18bb07c08fadbb2e52d3970e",
+      "learningLibraryQaSha256": "2abca12bd267e3395dbfd765715e576a2d5a37cc6a131172b86ed0a27c66e2a1",
       "learningActivities": 500,
       "originalSourceItems": 200,
       "assistantAuthoredIndependentItems": 0,
@@ -10374,7 +10626,7 @@
         "uniqueReferences": 22,
         "distinctIndependentReferenceBundles": 11
       },
-      "hardFindingCount": 0,
+      "hardFindingCount": 2,
       "warningItemCount": 185,
       "warningCounts": {
         "short-prompt": 1,
@@ -10488,7 +10740,7 @@
           "score": 3
         }
       ],
-      "structuralVerdict": "pass",
+      "structuralVerdict": "fail-hard-qa",
       "contentDistinctnessVerdict": "reviewed-gap-open",
       "crossPackSharedResponseKernels": 0
     },
@@ -10497,9 +10749,9 @@
       "packId": "praxis-teaching-reading-5205",
       "title": "Teaching Reading: Elementary (5205)",
       "packSha256": "b5e8a791d103a3a818c4b0aeccf05e53a9b2d4e85f765a4ad254e20ffaf1aaed",
-      "learningLibrarySha256": "ab83e6d309c32a7e8b68813910e0f587180bd2bf2a44af9a1c7baec43d4b8d63",
-      "nativeQaSha256": "51068ed5aac2fc373784656fb48987e4c4168aa95ab619caa66aed218b37d6d2",
-      "learningLibraryQaSha256": "cf5eaa05dc500cdf7b49ebf26d5d227b4f39fd5399411919948fb9a91c9142d3",
+      "learningLibrarySha256": "37436e9d444d8e56efd03e9bf3cd80e98f82cd3ec798b64e52983f9aa7b2e34d",
+      "nativeQaSha256": "d45374acf5606d7583c2eab7016cd421c34a6be8c7b48d03485a1d23eb06929a",
+      "learningLibraryQaSha256": "fb2be51173f4c3336e9321a28cb53cbb9989a2e11dbcf0becb7093606d0e3892",
       "learningActivities": 500,
       "originalSourceItems": 200,
       "assistantAuthoredIndependentItems": 0,
@@ -10540,7 +10792,7 @@
         "uniqueReferences": 4,
         "distinctIndependentReferenceBundles": 1
       },
-      "hardFindingCount": 0,
+      "hardFindingCount": 2,
       "warningItemCount": 185,
       "warningCounts": {
         "short-prompt": 0,
@@ -10651,7 +10903,7 @@
           "score": 2
         }
       ],
-      "structuralVerdict": "pass",
+      "structuralVerdict": "fail-hard-qa",
       "contentDistinctnessVerdict": "reviewed-gap-open",
       "crossPackSharedResponseKernels": 87
     }
