@@ -16514,6 +16514,14 @@ var createDocPipeline = function(deps) {
           if (_auditUiCurrent()) {
             addToast && addToast('♿ Audit loaded from cache (identical document seen recently)', 'info');
             setPdfAuditResult(cachedForDocument);
+          } else {
+            // (2026-08-15, field report ×2: "the modal just doesn't appear on the first try")
+            // This is one of the two silent branches that produce that symptom. The caller
+            // blanked pdfAuditResult before starting; if the document-intake epoch moved between
+            // the click and this cache read (late intake steps — project restoration, Hub/LMS
+            // attach — bump it), the publish is refused HERE and nothing reopens the modal. The
+            // result still returns to the caller. Name it in the log the teacher can copy.
+            warnLog('[PDF Audit] Cache hit NOT published — the document intake epoch changed between the click and the cache read, so the modal will not open this attempt (a second attempt after intake settles publishes normally).');
           }
           _finishAuditUi();
           return _auditCancelled() ? null : cachedForDocument;

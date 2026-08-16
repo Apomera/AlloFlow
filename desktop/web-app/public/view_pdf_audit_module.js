@@ -3258,7 +3258,29 @@ function PdfDiagnosticsLog(props) {
       } catch (_) {
       }
     }, className: "flex-1 overflow-y-auto px-3 py-2 font-mono text-[11px] leading-relaxed whitespace-pre-wrap break-words" }, rows.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "text-slate-500 italic" }, t("pdf_audit.diag.empty") || "No log entries yet \u2014 run a remediation and they will appear here live.") : rows.map((e, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: e.level === "warn" ? "text-amber-300" : "text-slate-400" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, _time(e)), " ", e.msg))),
-    /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-3 py-2 border-t border-slate-700" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: _copy, className: "px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-xs font-medium" }, t("pdf_audit.diag.copy") || "Copy"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: _clear, className: "px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs" }, t("pdf_audit.diag.clear") || "Clear"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: _diagnosticBundle, disabled: bundleBusy, className: "px-2.5 py-1 rounded bg-emerald-700 hover:bg-emerald-600 disabled:opacity-60 text-xs", title: "Download a privacy-safe developer diagnostic bundle" }, bundleBusy ? "Building..." : "Diagnostic bundle"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setOpen(false), className: "ml-auto px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs", "aria-label": t("pdf_audit.diag.close_aria") || "Close diagnostics log" }, t("pdf_audit.diag.close") || "Close"))
+    /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-3 py-2 border-t border-slate-700" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: _copy, className: "px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-xs font-medium" }, t("pdf_audit.diag.copy") || "Copy"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: _clear, className: "px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs" }, t("pdf_audit.diag.clear") || "Clear"), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: async () => {
+          try {
+            const _pipe = docPipeline || typeof window !== "undefined" && window.AlloModules && window.AlloModules.DocPipelineModule || null;
+            if (!_pipe || typeof _pipe.clearPdfDocumentCaches !== "function") {
+              addToast(t("pdf_audit.clear_cache_unavailable") || "Cache clearing is unavailable on this host version.", "warning");
+              return;
+            }
+            const _res = await _pipe.clearPdfDocumentCaches();
+            addToast("\u{1F9F9} " + ((t("pdf_audit.diag.caches_cleared") || "Document caches cleared") + (_res && Number.isFinite(_res.cleared) ? " (" + _res.cleared + ")" : "")), "success");
+          } catch (e) {
+            addToast("Cache clear failed: " + (e && e.message || e), "error");
+          }
+        },
+        className: "px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs",
+        title: t("pdf_audit.diag.forget_caches_title") || "Forget cached audit/remediation results so the next run is fully fresh (diagnostics)"
+      },
+      "\u{1F9F9} ",
+      t("pdf_audit.diag.forget_caches") || "Forget caches"
+    ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: _diagnosticBundle, disabled: bundleBusy, className: "px-2.5 py-1 rounded bg-emerald-700 hover:bg-emerald-600 disabled:opacity-60 text-xs", title: "Download a privacy-safe developer diagnostic bundle" }, bundleBusy ? "Building..." : "Diagnostic bundle"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setOpen(false), className: "ml-auto px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-xs", "aria-label": t("pdf_audit.diag.close_aria") || "Close diagnostics log" }, t("pdf_audit.diag.close") || "Close"))
   );
 }
 function PdfAuditView(props) {
@@ -3845,6 +3867,7 @@ function PdfAuditView(props) {
   }, [pdfDocumentEpoch]);
   const _oneClickRemediationBusyRef = useRef(false);
   const [oneClickRemediationBusy, setOneClickRemediationBusy] = useState(false);
+  const [pdfDiagnosticFreshRun, setPdfDiagnosticFreshRun] = useState(false);
   const _pipelineIsRemediating = React.useCallback(() => {
     try {
       return !!(_docPipeline && typeof _docPipeline.isRemediationRunning === "function" && _docPipeline.isRemediationRunning());
@@ -3876,6 +3899,14 @@ function PdfAuditView(props) {
   }, [_pipelineIsRemediating]);
   const _remediationBusy = pdfFixLoading || pipelineRunActive;
   const _oneClickOperationBusy = oneClickRemediationBusy || pdfAuditLoading || _remediationBusy || pdfAutoContinueRunning;
+  const _auditModalOpenRef = useRef(false);
+  useEffect(() => {
+    const _open = !!(pdfAuditResult || pdfAuditLoading);
+    if (_open !== _auditModalOpenRef.current) {
+      _auditModalOpenRef.current = _open;
+      _auditGateLog("audit modal " + (_open ? "OPENED" : "CLOSED"), { hasResult: !!pdfAuditResult, loading: !!pdfAuditLoading, docEpoch: pdfDocumentEpoch });
+    }
+  }, [pdfAuditResult, pdfAuditLoading, pdfDocumentEpoch]);
   const _viewDocumentJobRef = useRef({ id: 0, controller: null });
   const [webJobBusy, setWebJobBusy] = useState("");
   const _beginViewDocumentJob = () => {
@@ -4017,6 +4048,20 @@ function PdfAuditView(props) {
           json = "";
         }
         _docPipeline.logHostDiagnostic("ClickGate", event + (json ? " " + json : ""), detail || null);
+      }
+    } catch (_) {
+    }
+  };
+  const _auditGateLog = (event, detail) => {
+    try {
+      if (_docPipeline && typeof _docPipeline.logHostDiagnostic === "function") {
+        let json = "";
+        try {
+          json = JSON.stringify(detail || {});
+        } catch (_) {
+          json = "";
+        }
+        _docPipeline.logHostDiagnostic("AuditGate", event + (json ? " " + json : ""), detail || null);
       }
     } catch (_) {
     }
@@ -8171,7 +8216,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
         addToast(t("toasts.auditing_remediating_pdf"), "info");
         let _audit = null;
         try {
-          _audit = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType });
+          _audit = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType, skipCache: pdfDiagnosticFreshRun });
         } catch (auditErr) {
           if (!_oneClickDocumentIsCurrent()) return;
           setPdfAuditResult(_viewAuditFallbackResult(_auditChooserSnapshot, pendingPdfFile));
@@ -8621,7 +8666,7 @@ Return ONLY JSON:
         window.__pdfCustomStyle = style;
         addToast && addToast(t("toasts.custom_style_2") + name + '" saved & applied!', "success");
       }, className: "w-full py-1.5 bg-indigo-600 text-white rounded text-[11px] font-bold hover:bg-indigo-700 transition-colors" }, "Save & Apply Style"))));
-    })()))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 justify-center" }, /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_start_btn", disabled: pdfAuditLoading || !_auditInputReady, onClick: async () => {
+    })()))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 justify-center" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1.5 text-[11px] font-bold text-slate-600 cursor-pointer select-none mr-1", title: t("pdf_audit.fresh_run_title") || "Skip cached audit results for this run so every step executes for real (slower; useful when diagnosing)" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: pdfDiagnosticFreshRun, onChange: (e) => setPdfDiagnosticFreshRun(e.target.checked), className: "accent-indigo-600" }), t("pdf_audit.fresh_run") || "Run fresh (skip cached results)"), /* @__PURE__ */ React.createElement("button", { "data-help-key": "pdf_audit_view_start_btn", disabled: pdfAuditLoading || !_auditInputReady, onClick: async () => {
       if (!_requireAuditReady()) return;
       if (pdfAuditResult?._mediaPending) {
         addToast(t("toasts.digest_first") || "Digest the recording first (Step 0 above).", "info");
@@ -8630,11 +8675,15 @@ Return ONLY JSON:
       const _auditSnapshot = pdfAuditResult;
       const _auditEpoch = typeof capturePdfDocumentIntakeEpoch === "function" ? capturePdfDocumentIntakeEpoch() : null;
       const _auditCurrent = () => _auditEpoch == null || typeof isPdfDocumentIntakeCurrent !== "function" || isPdfDocumentIntakeCurrent(_auditEpoch);
+      _auditGateLog("audit START clicked \u2014 clearing prior result for the run", { docEpoch: _auditEpoch, freshRun: pdfDiagnosticFreshRun });
       setPdfAuditResult(null);
       addToast(t("toasts.auditing_remediating_pdf"), "info");
       try {
-        const _result = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType });
-        if (!_auditCurrent()) return;
+        const _result = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType, skipCache: pdfDiagnosticFreshRun });
+        if (!_auditCurrent()) {
+          _auditGateLog("audit result DROPPED \u2014 document intake epoch went stale mid-audit (modal will not open this attempt)", { docEpoch: _auditEpoch });
+          return;
+        }
         if (!_result) {
           setPdfAuditResult(_viewAuditFallbackResult(_auditSnapshot, pendingPdfFile));
           addToast(t("toasts.audit_retryable_error") || "The audit did not complete. Please retry.", "error");
@@ -8642,7 +8691,10 @@ Return ONLY JSON:
           addToast(t("toasts.audit_retryable_error") || "The audit could not complete. Please retry.", "error");
         }
       } catch (error) {
-        if (!_auditCurrent()) return;
+        if (!_auditCurrent()) {
+          _auditGateLog("audit ERROR result DROPPED \u2014 document intake epoch went stale mid-audit", { docEpoch: _auditEpoch });
+          return;
+        }
         setPdfAuditResult(_viewAuditFallbackResult(_auditSnapshot, pendingPdfFile));
         addToast((t("toasts.audit_retryable_error") || "The audit failed. Please retry.") + " " + (error && error.message || error || ""), "error");
       }
@@ -9022,11 +9074,15 @@ Return ONLY JSON:
       const _auditSnapshot = pdfAuditResult;
       const _auditEpoch = typeof capturePdfDocumentIntakeEpoch === "function" ? capturePdfDocumentIntakeEpoch() : null;
       const _auditCurrent = () => _auditEpoch == null || typeof isPdfDocumentIntakeCurrent !== "function" || isPdfDocumentIntakeCurrent(_auditEpoch);
+      _auditGateLog("audit RETRY clicked \u2014 fresh (skipCache)", { docEpoch: _auditEpoch });
       setPdfAuditResult(null);
       addToast(t("toasts.retrying_audit"), "info");
       try {
         const _result = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType, skipCache: true });
-        if (!_auditCurrent()) return;
+        if (!_auditCurrent()) {
+          _auditGateLog("audit RETRY result DROPPED \u2014 document intake epoch went stale mid-audit", { docEpoch: _auditEpoch });
+          return;
+        }
         if (!_result) {
           setPdfAuditResult(_viewAuditFallbackResult(_auditSnapshot, pendingPdfFile));
           addToast(t("toasts.audit_retryable_error") || "The audit retry did not complete. Please try again.", "error");
@@ -9034,7 +9090,10 @@ Return ONLY JSON:
           addToast(t("toasts.audit_retryable_error") || "The audit retry could not complete. Please try again.", "error");
         }
       } catch (error) {
-        if (!_auditCurrent()) return;
+        if (!_auditCurrent()) {
+          _auditGateLog("audit ERROR result DROPPED \u2014 document intake epoch went stale mid-audit", { docEpoch: _auditEpoch });
+          return;
+        }
         setPdfAuditResult(_viewAuditFallbackResult(_auditSnapshot, pendingPdfFile));
         addToast("Audit retry failed: " + (error && error.message || error), "error");
       }
