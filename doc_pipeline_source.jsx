@@ -23406,6 +23406,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
 
           let _fixThrottleDeferred = false;
           let _fixPassEvidence = null;
+          let _aiFixApplied = false; // did the AI fixer change ANY byte this pass (before deterministic riders)?
           try {
             // Chunked fix across the entire document (no truncation)
             const fixedHtml = await aiFixChunked(accessibleHtml, violationInstructions, `pdf-pass-${fixPass + 1}`, _routingArg, {
@@ -23420,7 +23421,8 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               onThrottleDeferred: () => { _fixThrottleDeferred = true; },
               onPassEvidence: (meta) => { _fixPassEvidence = meta || null; },
             });
-            if (fixedHtml && fixedHtml !== accessibleHtml) {
+            _aiFixApplied = !!(fixedHtml && fixedHtml !== accessibleHtml);
+            if (_aiFixApplied) {
               accessibleHtml = fixedHtml;
             }
             _consecFixErrors = 0;
@@ -23500,16 +23502,42 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // its constant floor of 2 (which minDetectable below keeps). One audit carries the same
           // information at half the loop's dominant API cost (~K_a chunks × passes calls saved).
           updateProgress(4, `Verifying improvements — checking pass ${fixPass + 1} results...`);
-          // A failed fixer wave can trip the breaker immediately. Do not launch the next audit
-          // wave into that same storm; wait for representative recovery confirmation first.
           _throttleRecoveryRetriesRemaining = 2;
-          let _verifyCalm = null;
-          try { _verifyCalm = await waitForGeminiCalm({ maxWaitMs: _alloCalmBudgetMs(120000, loopCtx.perFileDeadlineTs), shouldAbort: _shouldAbort, signal: _controlSignal, owner: _controlOwner }); } catch (_) {}
-          if ((_verifyCalm && _verifyCalm.aborted) || _shouldAbort()) break;
-          const [reVerify1, reAxe] = await Promise.all([
-            auditOutputAccessibility(accessibleHtml, { signal: _controlSignal, owner: _controlOwner, trigger: 'fix-pass-reverify' }),
-            runAxeAudit(accessibleHtml)
-          ]);
+          // (2026-08-15, field logs 5g31be/e1 + zmvw6g/e1) When the AI fixer applied NOTHING this
+          // pass — every chunk rejected or shipped-as-original — the only bytes that changed came
+          // from the deterministic cleanups above (in both field runs: one contrast attribute).
+          // The $3 byte-identity guard can't see that, so the loop paid a full 3-section AI
+          // re-audit to re-measure AI-visible content it had already measured: 3 calls per futile
+          // pass, spent mid-storm, and the resulting 1/3-section score is NULLED by the coverage
+          // guard anyway ("cannot stop the loop or promote best-so-far"). Deterministic fixes are
+          // verified by the LOCAL engine — axe still runs here, free — and the next pass that
+          // actually applies an AI chunk gets the full re-audit. reVerify1 stays null, which is the
+          // pre-existing "both AI audits failed" lane every consumer below already handles.
+          let _reAuditSkipped = false;
+          let _reVerifyFresh = null;
+          let _reAxeFresh = null;
+          if (!_aiFixApplied) {
+            _reAuditSkipped = true;
+            warnLog(`[Auto-fix] Pass ${fixPass + 1}: no AI chunk applied (deterministic-only changes) — skipping the AI re-audit; axe verifies the deterministic fixes locally (no API calls)`);
+            _reAxeFresh = await runAxeAudit(accessibleHtml);
+          } else {
+            // A failed fixer wave can trip the breaker immediately. Do not launch the next audit
+            // wave into that same storm; wait for representative recovery confirmation first.
+            let _verifyCalm = null;
+            try { _verifyCalm = await waitForGeminiCalm({ maxWaitMs: _alloCalmBudgetMs(120000, loopCtx.perFileDeadlineTs), shouldAbort: _shouldAbort, signal: _controlSignal, owner: _controlOwner }); } catch (_) {}
+            if ((_verifyCalm && _verifyCalm.aborted) || _shouldAbort()) break;
+            // Inner names deliberately match the outer consts below —
+            // tests/pdf_pipeline_quick_bugs.test.js:227 pins this exact destructuring ($1: ONE
+            // AI re-audit + axe, in parallel). The block-scoped pair is copied out one line later.
+            const [reVerify1, reAxe] = await Promise.all([
+              auditOutputAccessibility(accessibleHtml, { signal: _controlSignal, owner: _controlOwner, trigger: 'fix-pass-reverify' }),
+              runAxeAudit(accessibleHtml)
+            ]);
+            _reVerifyFresh = reVerify1;
+            _reAxeFresh = reAxe;
+          }
+          const reVerify1 = _reVerifyFresh;
+          const reAxe = _reAxeFresh;
 
           if (_shouldAbort()) break;
           const reScores = [reVerify1].map(v => v ? v.score : null).filter(s => Number.isFinite(s));
@@ -23638,7 +23666,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           if (!_reAiUsable) {
             // L4 (2026-07-03): reAxe null means axe did NOT run this pass — newAxeViolations then carries the
             // previous best (often 0), which is NOT "axe clean". Don't log/claim "axe-only clean" in that case.
-            warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI verification unavailable this pass (audit failed) — ${_reAxeUsable ? 'axe ' + newAxeViolations + ' violation(s)' : 'axe ALSO unavailable this pass'}; not treating as dual-clean`);
+            warnLog(`[Auto-fix] Pass ${fixPass + 1}: AI verification ${_reAuditSkipped ? 'skipped this pass (no AI chunk applied)' : 'unavailable this pass (audit failed)'} — ${_reAxeUsable ? 'axe ' + newAxeViolations + ' violation(s)' : 'axe ALSO unavailable this pass'}; not treating as dual-clean`);
             if (_reAxeUsable && newAxeViolations === 0 && addToast) addToast(`⚠️ Fix pass ${fixPass + 1}: AI verification unavailable — axe-only clean, continuing`, 'info');
           } else if (_passEvidenceComplete && newAxeViolations === 0 && (!reVerify.issues || reVerify.issues.length === 0)) {
             warnLog(`[Auto-fix] Pass ${fixPass + 1}: zero issues from both engines — stopping`);
@@ -23662,9 +23690,25 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           // coverage once the rate-limit eases. Exact no-op without a storm (_geminiCap ===
           // _geminiEffectiveMax and _geminiCooldownUntil 0), so the common path is unchanged.
           const _stormActive = _geminiThrottleInfo().recentlyThrottled; // L7 (2026-07-26): ONE definition of "a throttle happened recently" (was a hand-rolled cooldown||cap that stayed true for the rest of the run)
+          // ⚠ Contradicting source-pins live on this condition — read BEFORE "fixing" it.
+          // tests/output_audit_storm_resilience.test.js:88 (older, KNOWN-RED) expects
+          // `_reAxeUsable && newAxeViolations === 0` clauses here; the comment block above still
+          // half-describes them too. But tests/remediation_evidence_invariants_20260723.test.js:204-205
+          // (newer, GREEN) pins the opposite: it requires the exact substring
+          // `if (_stormActive && _rePartial)` AND forbids the axe-clause form. The 2026-07-23
+          // decision is authoritative: the early-stop fires on storm+partial regardless of axe
+          // state. A 2026-08-15 attempt to "restore the dropped clauses" from the older pin was
+          // reverted the same day — do not repeat it. (The nested `if` below exists so the 07-23
+          // pin's substring survives; do not flatten it into `&&`.)
           if (_stormActive && _rePartial) {
-            warnLog('[Auto-fix] Pass ' + (fixPass + 1) + ': AI audit is partial during a Canvas rate-limit storm; stopping semantic passes and handing ' + Math.max(0, Number(_reRequested || 0) - Number(_reAudited || 0)) + ' missing section(s) to the bounded final-audit retry queue.');
-            break;
+            // (2026-08-15) `!_reAuditSkipped`: a deliberately-skipped re-audit (no AI chunk applied
+            // this pass — deterministic-only changes) is not evidence the service is failing;
+            // nothing was asked of it. In the 2026-08-14 evening field run the very next pass
+            // landed a real 16KB fix that an early stop here would have forfeited.
+            if (!_reAuditSkipped) {
+              warnLog('[Auto-fix] Pass ' + (fixPass + 1) + ': AI audit is partial during a Canvas rate-limit storm; stopping semantic passes and handing ' + Math.max(0, Number(_reRequested || 0) - Number(_reAudited || 0)) + ' missing section(s) to the bounded final-audit retry queue.');
+              break;
+            }
           }
 
           // Plateau detection — compare against the PREVIOUS best (captured before the best*
@@ -36404,7 +36448,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         'concept-sort': { icon: '🧩', color: '#6d28d9', bg: '#f5f3ff', label: 'Concept Sort' },
       };
       const tv = typeVisuals[item.type] || { icon: '📄', color: '#475569', bg: '#f8fafc', label: '' };
-      const enhancedHeader = `<h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid ${tv.color};background:${tv.bg};display:flex;align-items:center;gap:8px;"><span aria-hidden="true" style="font-size:1.3em;">${tv.icon}</span> ${title}${item.meta ? ` <span style="font-weight:normal;font-size:0.8em;color:#64748b;">(${item.meta})</span>` : ''}</h2>`;
+      // flex-wrap + min-width:0 so the title and its "(meta)" tag drop to a second
+      // line instead of running past the card edge when the reader turns text up.
+      const enhancedHeader = `<h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid ${tv.color};background:${tv.bg};display:flex;align-items:center;flex-wrap:wrap;min-width:0;gap:8px;"><span aria-hidden="true" style="font-size:1.3em;">${tv.icon}</span> ${title}${item.meta ? ` <span style="font-weight:normal;font-size:0.8em;color:#64748b;overflow-wrap:anywhere;">(${item.meta})</span>` : ''}</h2>`;
       if (item.type === 'simplified') {
           // Reading passage. Tagged data-ka-readable so the HTML export's
           // download-time read-aloud step can convert it into inline sentence-karaoke.
@@ -36446,7 +36492,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           if (glossaryMode === 'flash-cards' || glossaryMode === 'language-cards') {
               const showTranslations = glossaryMode === 'language-cards' && hasAnyTranslations;
               const cardsHtml = `
-                  <div role="list" aria-label="Glossary flash cards" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px;">
+                  <div role="list" aria-label="Glossary flash cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,18em),1fr));gap:14px;margin-top:8px;">
                       ${item.data.map((gItem, idx) => {
                           const translationsHtml = (gItem.translations && Object.keys(gItem.translations).length > 0)
                               ? Object.entries(gItem.translations).map(([k, v]) => `<div style="margin-top:4px;font-size:0.85em;"><strong>${k}:</strong> ${v}</div>`).join('')
@@ -36519,6 +36565,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                        (rgba alpha let the parent bleed through). Switching to
                        opaque colors guarantees consistent contrast, and the
                        hover gets a subtle lift instead of just a color shift. */
+                    /* Reflow, not clip. The section is a size container, so the
+                       stacked layout below triggers on the section's own inline
+                       size measured in em — which means it fires both when the
+                       window is narrow AND when the reader turns the text up,
+                       because em grows with the text scale the A+ button sets. */
+                    .alloflow-glossary-section { container-type: inline-size; }
                     .alloflow-glossary-section table { border-collapse: separate; border-spacing: 0; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
                     .alloflow-glossary-section thead tr { background: linear-gradient(180deg, #ecfdf5, #d1fae5) !important; }
                     .alloflow-glossary-section thead th { color: #047857 !important; border-bottom: 2px solid #6ee7b7 !important; font-size: 0.78rem !important; padding: 0.65rem 1rem !important; }
@@ -36531,6 +36583,54 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     .alloflow-glossary-section tbody .gloss-img-cell img { width: var(--gloss-img) !important; height: var(--gloss-img) !important; max-width: var(--gloss-img) !important; max-height: var(--gloss-img) !important; object-fit: contain; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); transition: transform 0.18s ease, box-shadow 0.18s ease; }
                     .alloflow-glossary-section tbody tr:hover .gloss-img-cell img { box-shadow: 0 4px 12px rgba(16,185,129,0.25); }
                     @media print { .alloflow-glossary-section tbody tr:hover { background-color: inherit !important; box-shadow: none !important; } .alloflow-glossary-section tbody tr:hover .gloss-img-cell img { box-shadow: 0 1px 2px rgba(0,0,0,0.04); } }
+                    /* ── Stacked reflow ──────────────────────────────────────
+                       Below ~30em of container width, each glossary row becomes
+                       its own labelled card instead of a squeezed table row. The
+                       explicit role="table"/"row"/"cell" attributes in the markup
+                       keep the semantics intact when display flips to block, which
+                       browsers otherwise drop. Column headers are re-attached to
+                       each cell visually via ::before from data-gloss-label. */
+                    @container (max-width: 30em) {
+                      .alloflow-glossary-section table,
+                      .alloflow-glossary-section tbody,
+                      .alloflow-glossary-section tr,
+                      .alloflow-glossary-section td { display: block; width: auto; max-width: 100%; }
+                      .alloflow-glossary-section thead { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+                      .alloflow-glossary-section tbody tr { margin: 0 0 0.75em 0; border: 1.5px solid #6ee7b7; border-radius: 10px; overflow: hidden; }
+                      .alloflow-glossary-section tbody td { border: 0 !important; border-top: 1px solid #d1fae5 !important; padding: 0.6em 0.75em !important; }
+                      .alloflow-glossary-section tbody tr > td:first-child { border-top: 0 !important; }
+                      .alloflow-glossary-section tbody td[data-gloss-label]::before {
+                        content: attr(data-gloss-label) ": ";
+                        display: block; font-size: 0.72em; font-weight: 700;
+                        text-transform: uppercase; letter-spacing: 0.04em;
+                        color: #047857; margin-bottom: 0.2em;
+                      }
+                      .alloflow-glossary-section tbody .gloss-img-cell { text-align: ${align} !important; }
+                    }
+                    /* Fallback for engines without container queries: same stack,
+                       driven by viewport width. Harmless where @container works. */
+                    @supports not (container-type: inline-size) {
+                      @media (max-width: 560px) {
+                        .alloflow-glossary-section table,
+                        .alloflow-glossary-section tbody,
+                        .alloflow-glossary-section tr,
+                        .alloflow-glossary-section td { display: block; width: auto; max-width: 100%; }
+                        .alloflow-glossary-section thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+                        .alloflow-glossary-section tbody tr { margin: 0 0 0.75em 0; border: 1.5px solid #6ee7b7; border-radius: 10px; overflow: hidden; }
+                        .alloflow-glossary-section tbody td { border: 0 !important; border-top: 1px solid #d1fae5 !important; padding: 0.6em 0.75em !important; }
+                        .alloflow-glossary-section tbody td[data-gloss-label]::before { content: attr(data-gloss-label) ": "; display: block; font-size: 0.72em; font-weight: 700; text-transform: uppercase; color: #047857; }
+                      }
+                    }
+                    /* Printed glossaries always use the table grid — paper width
+                       does not change and the stacked form wastes a lot of it. */
+                    @media print {
+                      .alloflow-glossary-section table { display: table !important; }
+                      .alloflow-glossary-section tbody { display: table-row-group !important; }
+                      .alloflow-glossary-section thead { position: static !important; width: auto !important; height: auto !important; clip-path: none !important; display: table-header-group !important; }
+                      .alloflow-glossary-section tr { display: table-row !important; }
+                      .alloflow-glossary-section td { display: table-cell !important; }
+                      .alloflow-glossary-section td[data-gloss-label]::before { content: none !important; }
+                    }
                   </style>
                   ${_glossarySelfTest ? `
                     <div class="alloflow-glossary-controls" style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
@@ -36539,26 +36639,37 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         <span style="font-size:11px;color:#64748b;font-style:italic;">Self-test: try to recall each definition, then reveal to check.</span>
                     </div>
                   ` : ''}
-                  <table>
-                  <thead><tr>
-                      ${hasAnyImages ? `<th scope="col" style="text-align: center; width: ${_glossImgPx + 24}px;">${t('output.col_image') || 'Image'}</th>` : ''}
-                      <th scope="col" style="text-align: ${align};">${t('output.col_term')}</th>
-                      <th scope="col" style="text-align: ${align};">${t('output.col_def')}</th>
-                      ${hasAnyTranslations ? `<th scope="col" style="text-align: ${align};">${t('output.col_trans')}</th>` : ''}
+                  ${(() => {
+                      // Column labels are repeated onto every cell as data-gloss-label
+                      // so the stacked (narrow / large-text) layout can show them via
+                      // ::before. Explicit ARIA roles ride along because a browser
+                      // drops table semantics the moment display flips to block.
+                      const _lblImage = _escTxt(t('output.col_image') || 'Image');
+                      const _lblTerm = _escTxt(t('output.col_term') || 'Term');
+                      const _lblDef = _escTxt(t('output.col_def') || 'Definition');
+                      const _lblTrans = _escTxt(t('output.col_trans') || 'Translation');
+                      return `
+                  <table role="table">
+                  <thead role="rowgroup"><tr role="row">
+                      ${hasAnyImages ? `<th role="columnheader" scope="col" style="text-align: center; width: ${_glossImgPx + 24}px; max-width: 26%;">${_lblImage}</th>` : ''}
+                      <th role="columnheader" scope="col" style="text-align: ${align}; width: 22%;">${_lblTerm}</th>
+                      <th role="columnheader" scope="col" style="text-align: ${align};">${_lblDef}</th>
+                      ${hasAnyTranslations ? `<th role="columnheader" scope="col" style="text-align: ${align}; width: 22%;">${_lblTrans}</th>` : ''}
                   </tr></thead>
-                  <tbody>
+                  <tbody role="rowgroup">
                       ${item.data.map(gItem => `
-                      <tr>
-                          ${hasAnyImages ? `<td class="gloss-img-cell" style="text-align: center; vertical-align: middle;">${gItem.image ? `<img loading="lazy" src="${gItem.image}" alt="${_escTxt(gItem.term)}" />` : ''}</td>` : ''}
-                          <td style="text-align: ${align}">
+                      <tr role="row">
+                          ${hasAnyImages ? `<td role="cell" data-gloss-label="${_lblImage}" class="gloss-img-cell" style="text-align: center; vertical-align: middle;">${gItem.image ? `<img loading="lazy" src="${gItem.image}" alt="${_escTxt(gItem.term)}" />` : ''}</td>` : ''}
+                          <td role="cell" data-gloss-label="${_lblTerm}" style="text-align: ${align}">
                             <strong class="gloss-term">${_escTxt(gItem.term)}</strong>
                           </td>
-                          <td style="text-align: ${align}">${_hideCell(gItem.def)}</td>
-                          ${hasAnyTranslations ? `<td style="text-align: ${align}">${_hideCell(Object.entries(gItem.translations || {}).map(([k, v]) => `<strong>${k}:</strong> ${v}`).join('<br><br>'))}</td>` : ''}
+                          <td role="cell" data-gloss-label="${_lblDef}" style="text-align: ${align}">${_hideCell(gItem.def)}</td>
+                          ${hasAnyTranslations ? `<td role="cell" data-gloss-label="${_lblTrans}" style="text-align: ${align}">${_hideCell(Object.entries(gItem.translations || {}).map(([k, v]) => `<strong>${k}:</strong> ${v}`).join('<br><br>'))}</td>` : ''}
                       </tr>
                       `).join('')}
                   </tbody>
-                  </table>
+                  </table>`;
+                  })()}
                   ${wordSearchHtml}
                   ${_glossarySelfTest ? `
                     <style>
@@ -36683,10 +36794,15 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     .venn-print-wrapper * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
                     .venn-print-wrapper .venn-visual { font-size: 16px; line-height: 1.35; max-width: 100%; overflow: visible; }
                     .venn-print-wrapper .venn-visual li { overflow-wrap: anywhere; hyphens: auto; }
-                    @media (max-width: 820px) {
-                      .venn-print-wrapper { overflow-x: auto; }
-                      .venn-print-wrapper .venn-visual { min-width: 720px; }
-                    }
+                    /* The circles are a fixed 720px geometry, so the wrapper always
+                       owns the horizontal scroll rather than pushing the page
+                       sideways. Previously this only applied under an 820px
+                       viewport, which missed the case that actually bites: a normal
+                       window whose section got narrow because the reader turned the
+                       text up. Unconditional here; a no-op when there is room. */
+                    .venn-print-wrapper { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+                    .venn-print-wrapper .venn-visual { min-width: 720px; }
+                    @media print { .venn-print-wrapper { overflow-x: visible; } }
                     @media print {
                       .venn-print-wrapper { page-break-inside: avoid; break-inside: avoid; padding: 16px; }
                       .venn-print-wrapper [data-venn-circle] { box-shadow: none !important; }
@@ -39171,6 +39287,45 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       const exportFontImport = _useExportFont && appFontEntry.googleFont
         ? `@import url('https://fonts.googleapis.com/css2?family=${appFontEntry.googleFont}&display=swap');`
         : (_useExportFont && appFontEntry.id === 'opendyslexic' ? _odFontFace : '');
+      // ── Reader-side font choices (2026-08-16) ────────────────────────────
+      // The teacher's build-time font picker offers the whole 22-font app
+      // catalog, but the READER's picker inside the exported handout only ever
+      // offered six system stacks — and its "Dyslexia-friendly" entry was Comic
+      // Sans, not the OpenDyslexic a user who chose that font in the app expects.
+      //
+      // The restriction was real, not arbitrary: an AlloFlow export has to keep
+      // working with no network (FERPA no-egress, offline classrooms, a file
+      // emailed home), so a font that has to be fetched cannot be the default.
+      // Two honest fixes rather than one dishonest one:
+      //   1. Widen the always-offline list to every genuinely cross-platform
+      //      system face, and label the Comic Sans entry for what it is.
+      //   2. Offer the high-legibility web faces (OpenDyslexic, Atkinson
+      //      Hyperlegible, Lexend, Andika) as an explicit opt-in the teacher
+      //      turns on at build time, clearly marked as needing internet. Off by
+      //      default so no export starts phoning out that did not before.
+      // The document's own build-time font is always offered back to the reader,
+      // because whatever CSS that font needed already shipped inside this file.
+      const _readerWebFontsOn = cfg.readerWebFonts === true;
+      const _atkinsonImport = "@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap');";
+      const _lexendImport = "@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;700&display=swap');";
+      const _andikaImport = "@import url('https://fonts.googleapis.com/css2?family=Andika:ital,wght@0,400;0,700;1,400;1,700&display=swap');";
+      // @import must precede every other rule in a stylesheet, so the opt-in
+      // imports are emitted alongside exportFontImport at the top of the block.
+      const readerWebFontImports = _readerWebFontsOn
+        ? [_atkinsonImport, _lexendImport, _andikaImport, _odFontFace].join('\n          ')
+        : '';
+      const _docFontLabel = _useExportFont ? String(appFontEntry.label || '').replace(/[<>&"]/g, '') : '';
+      const _readerWebFontOptions = [
+        _useExportFont ? `<optgroup label="This document"><option value="document">Document font (${_docFontLabel})</option></optgroup>` : '',
+        _readerWebFontsOn
+          ? '<optgroup label="Needs internet">'
+            + '<option value="opendyslexic">OpenDyslexic</option>'
+            + '<option value="atkinson">Atkinson Hyperlegible</option>'
+            + '<option value="lexend">Lexend</option>'
+            + '<option value="andika">Andika (SIL)</option>'
+            + '</optgroup>'
+          : '',
+      ].join('');
       const exportFontSize = cfg.fontSize ? `${cfg.fontSize}px` : '16px';
       const studentTitlePrefix = isWorksheet ? '' : t('export.student_copy');
       const lessonTopic = topic || t('export.default_lesson_title');
@@ -39383,12 +39538,42 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           /* Keep downloaded HTML useful offline: only explicit teacher-selected
              web fonts are imported; default themes use system fallbacks. */
           ${exportFontImport}
+          ${readerWebFontImports}
           body { font-family: ${exportFontFamily}; font-size: ${exportFontSize};${exportFontStyleExtras} line-height: 1.7; max-width: 800px; margin: 0 auto; padding: 2rem; color: ${theme.textColor || '#334155'}; background: ${theme.bgColor}; direction: ${direction}; text-align: ${textAlign}; }
           h1, h2, h3 { color: ${theme.headingColor}; }
           h1 { font-size: 1.75rem; font-weight: 800; margin-bottom: 0.25rem; }
-          .section { margin-bottom: 2rem; page-break-inside: auto; break-inside: auto; background: ${theme.cardBg}; border-radius: 12px; padding: 1.5rem; border: 1px solid ${theme.cardBorder}; box-shadow: 0 1px 4px rgba(0,0,0,0.04); overflow: hidden; }
+          /* NO overflow:hidden here. It used to be set so the 12px radius clipped
+             children, but it also silently cut off anything wider than the card —
+             with no scrollbar and no reflow. A glossary table at the reader's 175%
+             text size lost 269px of its own width off the right edge, definitions
+             cut mid-word and the whole translation column gone. Radius clipping is
+             now done by the children that actually need it (tables have their own
+             overflow:hidden), and anything still too wide gets a real scroll region
+             from .alloflow-wide-scroll below. */
+          .section { margin-bottom: 2rem; page-break-inside: auto; break-inside: auto; background: ${theme.cardBg}; border-radius: 12px; padding: 1.5rem; border: 1px solid ${theme.cardBorder}; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
           .section > .resource-header + * { padding-top: 16px; }
           table { width: 100%; border-collapse: collapse; margin: 1rem 0; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+          /* Let a table shrink to its container instead of forcing a minimum width
+             that grows with the reader's text size. Without this, auto table layout
+             refuses to go below the longest word in each column, so every A+ press
+             pushed more of the table past the card edge. */
+          th, td { overflow-wrap: anywhere; word-break: normal; hyphens: auto; }
+          /* Percentage width hints on a column stop auto table layout from
+             starving a short column once overflow-wrap:anywhere has told it that
+             a one-character column is legal. Without them "Photosynthesis" ends
+             up broken across three lines in a 40px column. */
+          th[style*="width"] { overflow-wrap: normal; }
+          /* Cell padding was a fixed 0.7rem/1rem, which does not scale with the
+             reader's text size and ate an ever larger share of a narrow column.
+             Switch to em so it tracks the text, and tighten it on small screens. */
+          @media (max-width: 720px) { th, td { padding: 0.5em 0.55em; } .section { padding: 1rem; } }
+          /* Belt and braces: any block still wider than its card scrolls inside its
+             own region rather than being cut. Focusable so keyboard users can reach
+             the scroll (WCAG 2.1.1), labelled so screen readers announce it. */
+          .alloflow-wide-scroll { max-width: 100%; overflow-x: auto; overflow-y: visible; -webkit-overflow-scrolling: touch; }
+          .alloflow-wide-scroll:focus-visible { outline: 3px solid #4338ca; outline-offset: 2px; }
+          .alloflow-wide-scroll > table { margin-top: 0; }
+          @media print { .alloflow-wide-scroll { overflow: visible !important; } }
           /* Border bumped from 1px → 1.5px to clear WCAG 1.4.11 (3:1 non-text
              contrast) on light card backgrounds — verified across Professional
              and matchOriginal seeds. Prior 1px borders failed contrast on
@@ -39453,7 +39638,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           .card h4 { margin: 0 0 8px 0; font-size: 1em; color: #1e293b; }
           .meta { color: #64748b; font-size: 0.9rem; margin-bottom: 2rem; }
           .tag { display: inline-block; padding: 0.25rem 0.6rem; background: #eef2ff; color: #4f46e5; border-radius: 6px; font-size: 0.8rem; font-weight: 600; margin-right: 0.5rem; }
-          .resource-header { padding: 14px 18px; border-radius: 10px 10px 0 0; margin-bottom: 0; font-weight: 800; color: #334155; font-size: 1.05em; letter-spacing: -0.01em; border-bottom: 1px solid rgba(0,0,0,0.06); }
+          .resource-header { padding: 14px 18px; border-radius: 10px 10px 0 0; margin-bottom: 0; font-weight: 800; color: #334155; font-size: 1.05em; letter-spacing: -0.01em; border-bottom: 1px solid rgba(0,0,0,0.06); flex-wrap: wrap; min-width: 0; overflow-wrap: anywhere; }
           /* Quiz-box: indigo top accent + lifted shadow so quiz/FAQ blocks
              read as distinct interactive sections rather than blank panels.
              Matches the visual weight of the brainstorm card refresh. */
@@ -39646,6 +39831,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           .alloflow-rt-btn:hover { background: #e2e8f0; }
           .alloflow-rt-btn[aria-pressed="true"] { background: #4f46e5; color: white; }
           .alloflow-rt-btn:focus-visible { outline: 2px solid #6366f1; outline-offset: -2px; }
+          .alloflow-rt-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+          .alloflow-rt-btn:disabled:hover { background: transparent; }
+          /* Current text size, so a reader can see the step change and can tell
+             the end of the scale from a dead button. */
+          .alloflow-rt-readout { padding: 6px 8px; font: 700 11px/1 system-ui,-apple-system,sans-serif; color: #334155; background: #eef2ff; border-left: 1px solid #cbd5e1; align-self: stretch; display: flex; align-items: center; min-width: 44px; justify-content: center; font-variant-numeric: tabular-nums; }
+          html[data-alloflow-theme="dark"] .alloflow-rt-readout { background: #312e81; color: #e0e7ff; border-left-color: #475569; }
+          html[data-alloflow-theme="sepia"] .alloflow-rt-readout { background: #ede0c4; color: #5b4636; border-left-color: #d4c5a0; }
+          html[data-alloflow-theme="hc"] .alloflow-rt-readout { background: #ffffff; color: #000000; border-left: 2px solid #000000; }
           #alloflow-reader-line { position: fixed; left: 0; right: 0; top: 50%; height: 2.8em; transform: translateY(-50%); background: rgba(250,204,21,0.18); border-top: 2px solid rgba(202,138,4,0.72); border-bottom: 2px solid rgba(202,138,4,0.72); pointer-events: none; z-index: 9997; display: none; }
           .alloflow-reader-mask { position: fixed; left: 0; right: 0; height: 0; background: rgba(15,23,42,0.58); pointer-events: none; z-index: 9996; display: none; }
           html[data-alloflow-reader-guide="line"] #alloflow-reader-line { display: block; }
@@ -39678,7 +39871,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           /* ─── Annotation color pickers (Tier 1 parity with in-app) ─── */
           .alloflow-anno-colors { display: none; align-items: center; gap: 6px; padding: 6px 12px 8px; border-bottom: 1px solid #e2e8f0; background: #fafbfc; }
           .alloflow-reading-tools.mode-note ~ .alloflow-anno-colors-note,
+          .alloflow-reading-tools.mode-draw ~ .alloflow-anno-colors-draw,
           .alloflow-reading-tools.mode-highlight ~ .alloflow-anno-colors-hl { display: flex; }
+          .alloflow-anno-colors .alloflow-rt-btn[aria-pressed="true"] { background: #4f46e5; color: #ffffff; }
+          /* While the pen is active the page must not start a text selection or a
+             browser pan under the finger, or a drag turns into a scroll. */
+          .alloflow-draw-active, .alloflow-draw-active * { -webkit-user-select: none; user-select: none; }
+          .alloflow-draw-active { touch-action: none; cursor: crosshair; }
+          #alloflow-draw-surface { position: absolute; inset: 0; pointer-events: none; z-index: 45; overflow: visible; }
           .alloflow-anno-colors-label { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; }
           .alloflow-anno-swatch { width: 22px; height: 22px; border-radius: 6px; cursor: pointer; transition: border-color 0.12s, box-shadow 0.12s; padding: 0; }
           .alloflow-anno-swatch:hover { border-color: #4f46e5; box-shadow: 0 0 0 2px #4f46e5; }
@@ -39735,7 +39935,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           .alloflow-anno-item-del { background: transparent; border: 0; color: #6b7280; cursor: pointer; padding: 4px; border-radius: 6px; font-size: 11px; min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
           .alloflow-anno-item-del:hover { color: #dc2626; background: #ffffff; }
           .alloflow-anno-sb-close:focus-visible, .alloflow-anno-pill:focus-visible, .alloflow-anno-item-body:focus-visible, .alloflow-anno-item-del:focus-visible { outline: 3px solid #4338ca; outline-offset: 2px; }
-          .alloflow-note-popover { position: fixed; z-index: 100000; width: min(340px, calc(100vw - 24px)); max-height: min(420px, calc(100vh - 32px)); overflow: auto; background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; border-radius: 10px; box-shadow: 0 14px 34px rgba(15,23,42,0.24); font-family: system-ui,-apple-system,sans-serif; }
+          /* absolute, not fixed: the open note belongs to the page, not to the
+             viewport, so it scrolls with the mark it came from. (E6) */
+          .alloflow-note-popover { position: absolute; z-index: 100000; width: min(340px, calc(100% - 24px)); max-height: min(420px, calc(100vh - 32px)); overflow: auto; background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; border-radius: 10px; box-shadow: 0 14px 34px rgba(15,23,42,0.24); font-family: system-ui,-apple-system,sans-serif; }
           .alloflow-note-popover-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 12px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; font-size: 12px; font-weight: 800; color: #334155; }
           .alloflow-note-popover-body { padding: 12px; font-size: 14px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
           .alloflow-note-popover-meta { padding: 0 12px 12px; font-size: 11px; color: #64748b; }
@@ -40057,19 +40259,25 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           <div class="alloflow-reading-tools-group" role="group" aria-label="Font family">
             <span class="alloflow-reading-tools-label">Font</span>
             <select class="alloflow-rt-select" data-rt-font aria-label="Font family">
-              <option value="original">Original</option>
-              <option value="system">Sans</option>
-              <option value="readable">Readable</option>
-              <option value="serif">Serif</option>
-              <option value="dyslexic">Dyslexia-friendly</option>
-              <option value="mono">Monospace</option>
+              <optgroup label="Always available">
+                <option value="original">Original</option>
+                <option value="system">Sans</option>
+                <option value="readable">Readable (Verdana)</option>
+                <option value="humanist">Humanist (Tahoma)</option>
+                <option value="serif">Serif (Georgia)</option>
+                <option value="bookserif">Book serif (Palatino)</option>
+                <option value="rounded">Rounded (Trebuchet)</option>
+                <option value="dyslexic">Dyslexia-friendly (Comic Sans)</option>
+                <option value="mono">Monospace</option>
+              </optgroup>${_readerWebFontOptions}
             </select>
           </div>
           <div class="alloflow-reading-tools-group" role="group" aria-label="Text display">
             <span class="alloflow-reading-tools-label">Text</span>
             <button type="button" class="alloflow-rt-btn" data-rt-text="smaller" title="Smaller text" aria-label="Smaller text">A-</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-text="reset" title="Reset text size" aria-label="Reset text size">A</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-text="reset" title="Back to normal text size" aria-label="Back to normal text size">A</button>
             <button type="button" class="alloflow-rt-btn" data-rt-text="larger" title="Larger text" aria-label="Larger text">A+</button>
+            <span class="alloflow-rt-readout" data-rt-text-readout role="status" aria-live="polite">100%</span>
             <button type="button" class="alloflow-rt-btn" data-rt-text="spacing" title="Cycle line spacing" aria-label="Line spacing">Spacing</button>
             <button type="button" class="alloflow-rt-btn" data-rt-text="letter" title="Cycle letter spacing" aria-label="Letter spacing">Letter</button>
           </div>
@@ -40085,11 +40293,24 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             <button type="button" class="alloflow-rt-btn" data-rt-anno="note" aria-pressed="false" title="Add a sticky note">\u{1F4DD} Note</button>
             <button type="button" class="alloflow-rt-btn" data-rt-anno="highlight" aria-pressed="false" title="Highlight text">\u{1F58D} Highlight</button>
             <button type="button" class="alloflow-rt-btn" data-rt-anno="voice" aria-pressed="false" title="Voice note: click to start recording (max 60s, stays on your device)">\u{1F3A4} Voice</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-anno="draw" aria-pressed="false" title="Draw: press and drag to draw freehand on the page">\u{270F}️ Draw</button>
             <button type="button" class="alloflow-rt-btn" data-rt-anno-undo disabled style="opacity:0.4;cursor:not-allowed;" title="Undo last annotation (Ctrl/Cmd+Z)">\u{21A9} Undo</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-anno-clear="mine" title="Clear my notes/highlights (teacher annotations stay)">\u{1F9F9} Mine</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-anno-clear="mine" disabled title="Erase everything you have marked on this page. Your teacher's marks stay.">\u{1F9F9} Erase my marks</button>
             <button type="button" class="alloflow-rt-btn" data-rt-anno-list aria-expanded="false" aria-controls="alloflow-annotation-sidebar" title="Show all annotations">\u{1F4CB} List</button>
             <button type="button" class="alloflow-rt-btn" data-rt-anno-download title="Download my annotations as JSON">\u{2B07} Save mine</button>
           </div>
+        </div>
+        <div class="alloflow-anno-colors alloflow-anno-colors-draw">
+          <span class="alloflow-anno-colors-label">Pen:</span>
+          <button type="button" class="alloflow-anno-swatch" data-rt-draw-color="red" aria-label="Red pen" aria-pressed="true" style="background:#dc2626;border:2px solid #dc2626;"></button>
+          <button type="button" class="alloflow-anno-swatch" data-rt-draw-color="blue" aria-label="Blue pen" aria-pressed="false" style="background:#2563eb;border:2px solid #2563eb;"></button>
+          <button type="button" class="alloflow-anno-swatch" data-rt-draw-color="green" aria-label="Green pen" aria-pressed="false" style="background:#16a34a;border:2px solid #16a34a;"></button>
+          <button type="button" class="alloflow-anno-swatch" data-rt-draw-color="yellow" aria-label="Yellow pen" aria-pressed="false" style="background:#ca8a04;border:2px solid #ca8a04;"></button>
+          <button type="button" class="alloflow-anno-swatch" data-rt-draw-color="black" aria-label="Black pen" aria-pressed="false" style="background:#111827;border:2px solid #111827;"></button>
+          <span class="alloflow-anno-colors-label" style="border-left:1px solid #cbd5e1;padding-left:10px;">Size:</span>
+          <button type="button" class="alloflow-rt-btn" data-rt-draw-width="2" aria-pressed="false" title="Thin pen">Thin</button>
+          <button type="button" class="alloflow-rt-btn" data-rt-draw-width="4" aria-pressed="true" title="Medium pen">Medium</button>
+          <button type="button" class="alloflow-rt-btn" data-rt-draw-width="8" aria-pressed="false" title="Thick pen">Thick</button>
         </div>
         <div class="alloflow-anno-colors alloflow-anno-colors-note">
           <span class="alloflow-anno-colors-label">Note color:</span>
@@ -40302,13 +40523,28 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             var SCALES = [0.9, 1, 1.15, 1.3, 1.5, 1.75];
             var LEADS = [1.5, 1.8, 2.1];
             var LETTERS = [0, 0.03, 0.06, 0.1];
+            // 'original' and 'document' both mean "leave the document's own font
+            // alone" — 'document' is the labelled entry a reader picks to get back
+            // to whatever the teacher chose at build time.
             var FONTS = {
               original: '',
+              document: '',
               system: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
               readable: 'Verdana, Geneva, Tahoma, Arial, sans-serif',
-              serif: 'Georgia, "Times New Roman", serif',
-              dyslexic: '"Comic Sans MS", "Trebuchet MS", Arial, sans-serif',
-              mono: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace'
+              humanist: 'Tahoma, Verdana, Geneva, Arial, sans-serif',
+              serif: 'Georgia, "Times New Roman", Times, serif',
+              bookserif: 'Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif',
+              rounded: '"Trebuchet MS", "Segoe UI", Candara, Optima, sans-serif',
+              dyslexic: '"Comic Sans MS", "Trebuchet MS", Verdana, Arial, sans-serif',
+              mono: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace',
+              // Opt-in web faces. Their @font-face / @import only ships when the
+              // teacher enabled reader web fonts, so these entries are only offered
+              // in the picker in that case. Each keeps a system fallback so the
+              // page stays readable if the font never loads.
+              opendyslexic: "'OpenDyslexic', 'Comic Sans MS', Verdana, sans-serif",
+              atkinson: "'Atkinson Hyperlegible', Verdana, system-ui, sans-serif",
+              lexend: "'Lexend', system-ui, sans-serif",
+              andika: "'Andika', Verdana, system-ui, sans-serif"
             };
             var st = { s: 1, l: 0, c: 0, f: 'original' };
             function clampIndex(v, len, fallback) {
@@ -40351,12 +40587,27 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   fallbacks[fi].removeAttribute('data-auto-opened');
                 }
               }
+              // Show where the reader actually is in the scale, and stop the end
+              // buttons from silently doing nothing at the limits. The old control
+              // gave no feedback at all: A+ at maximum looked identical to A+ that
+              // worked, which reads as a broken button.
+              var readout = document.querySelector('[data-rt-text-readout]');
+              if (readout) readout.textContent = Math.round((SCALES[st.s] || 1) * 100) + '%';
+              var smallerBtn = document.querySelector('[data-rt-text="smaller"]');
+              var largerBtn = document.querySelector('[data-rt-text="larger"]');
+              if (smallerBtn) smallerBtn.disabled = (st.s <= 0);
+              if (largerBtn) largerBtn.disabled = (st.s >= SCALES.length - 1);
               if (save) { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }
+              // Every one of these settings reflows the document, which moves the
+              // words an annotation was placed on. Tell the annotation layer to
+              // re-project so highlights and notes stay on their text. (E6)
+              try { if (typeof window.__alloflowReprojectAnnotations === 'function') window.__alloflowReprojectAnnotations(); } catch (e) {}
+              try { if (typeof window.__alloflowRewrapWideBlocks === 'function') window.__alloflowRewrapWideBlocks(); } catch (e) {}
             }
             if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { apply(false); }); else apply(false);
             document.addEventListener('click', function (e) {
               var b = e.target && e.target.closest && e.target.closest('[data-rt-text]');
-              if (!b) return;
+              if (!b || b.disabled) return;
               var a = b.getAttribute('data-rt-text');
               if (a === 'larger') st.s = Math.min(SCALES.length - 1, st.s + 1);
               else if (a === 'smaller') st.s = Math.max(0, st.s - 1);
@@ -40371,6 +40622,59 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               st.f = sel.value || 'original';
               apply(true);
             });
+          })();
+        </script>
+        <script>
+          // Wide-block guard (2026-08-16). Nothing in an export should ever be cut
+          // off with no way to see it. .section no longer sets overflow:hidden, so
+          // a too-wide table now spills instead of vanishing; this wraps any such
+          // block in a real, keyboard-reachable horizontal scroll region. Runs on
+          // load, on resize, and whenever the reader changes text size or font.
+          (function () {
+            function wrapOne(el) {
+              var parent = el.parentNode;
+              if (!parent) return null;
+              if (parent.classList && parent.classList.contains('alloflow-wide-scroll')) return parent;
+              var wrap = document.createElement('div');
+              wrap.className = 'alloflow-wide-scroll';
+              parent.insertBefore(wrap, el);
+              wrap.appendChild(el);
+              return wrap;
+            }
+            function rewrap() {
+              var host = document.getElementById('main-export-content');
+              if (!host) return;
+              var blocks = host.querySelectorAll('table');
+              for (var i = 0; i < blocks.length; i++) {
+                var el = blocks[i];
+                var wrap = el.parentNode && el.parentNode.classList && el.parentNode.classList.contains('alloflow-wide-scroll')
+                  ? el.parentNode : null;
+                var avail = (wrap || el.parentNode);
+                if (!avail) continue;
+                var tooWide = el.scrollWidth - (wrap ? wrap.clientWidth : avail.clientWidth) > 2;
+                if (tooWide && !wrap) wrap = wrapOne(el);
+                if (!wrap) continue;
+                var stillWide = el.scrollWidth - wrap.clientWidth > 2;
+                if (stillWide) {
+                  wrap.setAttribute('role', 'region');
+                  wrap.setAttribute('tabindex', '0');
+                  var cap = el.getAttribute('aria-label') || (el.closest('.section') && el.closest('.section').querySelector('h2') ? el.closest('.section').querySelector('h2').textContent.trim() : '');
+                  wrap.setAttribute('aria-label', (cap ? cap + ' — ' : '') + 'table, scrolls sideways');
+                } else {
+                  wrap.removeAttribute('role');
+                  wrap.removeAttribute('tabindex');
+                  wrap.removeAttribute('aria-label');
+                }
+              }
+            }
+            window.__alloflowRewrapWideBlocks = rewrap;
+            var pending = false;
+            window.addEventListener('resize', function () {
+              if (pending) return;
+              pending = true;
+              requestAnimationFrame(function () { pending = false; rewrap(); });
+            });
+            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', rewrap); else rewrap();
           })();
         </script>
         <script>
@@ -40770,6 +41074,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               blue:   { fill: 'rgba(96,165,250,0.36)', border: 'rgba(37,99,235,0.55)' },
               pink:   { fill: 'rgba(244,114,182,0.36)', border: 'rgba(219,39,119,0.55)' },
             };
+            // Same five pen colors as the in-app annotation suite, so a drawing
+            // made in either place looks the same in the other.
+            var DRAW_COLORS = {
+              red: '#dc2626', blue: '#2563eb', green: '#16a34a',
+              yellow: '#ca8a04', black: '#111827'
+            };
 
             // Escape HTML-significant chars before any innerHTML insertion of untrusted
             // annotation fields (authorName/title can arrive from tampered localStorage or a
@@ -40802,6 +41112,233 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                 for (var ai = 0; ai < arr.length; ai++) out.push(annotateResourceCopy(arr[ai], rid, ai));
               }
               return out;
+            }
+            // ── Document anchoring (E6, 2026-08-16) ────────────────────────
+            // Annotations used to be stored as raw pixel offsets inside the host,
+            // measured once at placement time and never revisited: the old resize
+            // handler even said so ("Coordinates are frozen at placement time").
+            // That survives scrolling, but nothing else — and this export's own
+            // reading tools change text size, font, line height and letter spacing,
+            // every one of which reflows the words the mark was placed on. Measured
+            // before this change: two presses of A+ left a highlight 319px above its
+            // own sentence, and narrowing the window from 1100px to 640px left it
+            // 103px off and 175px wider than the text it covered.
+            //
+            // Each annotation now also carries an anchor saying WHERE IN THE
+            // DOCUMENT it belongs, and its geometry is recomputed from that anchor
+            // on every reflow:
+            //   highlight  _anchor = { p: <node path>, s: <start char>, e: <end char> }
+            //              rebuilt as a Range; rects re-read from getClientRects()
+            //   everything _anchor = { p: <node path>, fx, fy }
+            //   else       (note / sticker / voice / draw) as a fraction of that
+            //              element's box
+            // Node paths are child-index chains from the host. Annotation overlays
+            // are always appended after the content, so content indices stay stable.
+            // Every resolve step is defensive: if an anchor cannot be resolved the
+            // stored x/y is used unchanged, so a mark can never disappear.
+            function pathOf(node) {
+              var parts = [];
+              var cur = node;
+              var guard = 0;
+              while (cur && cur !== host && guard++ < 200) {
+                var p = cur.parentNode;
+                if (!p) return null;
+                parts.push(Array.prototype.indexOf.call(p.childNodes, cur));
+                cur = p;
+              }
+              if (cur !== host) return null;
+              return parts.reverse().join('.');
+            }
+            function nodeFromPath(pathStr) {
+              if (pathStr == null || pathStr === '') return host;
+              var parts = String(pathStr).split('.');
+              var cur = host;
+              for (var i = 0; i < parts.length; i++) {
+                var idx = Number(parts[i]);
+                if (!cur || !cur.childNodes || !cur.childNodes[idx]) return null;
+                cur = cur.childNodes[idx];
+              }
+              return cur;
+            }
+            // Text nodes belonging to annotation overlays are skipped, identically
+            // at capture and at rebuild, so character offsets stay comparable.
+            function contentTextWalker(root) {
+              return document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+                acceptNode: function (n) {
+                  var p = n.parentNode;
+                  if (p && p.closest && p.closest('.alloflow-anno')) return NodeFilter.FILTER_REJECT;
+                  return NodeFilter.FILTER_ACCEPT;
+                }
+              });
+            }
+            function textOffsetsIn(root, range) {
+              var w = contentTextWalker(root);
+              var acc = 0, s = null, e = null, n;
+              while ((n = w.nextNode())) {
+                var len = n.nodeValue.length;
+                if (n === range.startContainer) s = acc + Math.min(range.startOffset, len);
+                if (n === range.endContainer) { e = acc + Math.min(range.endOffset, len); break; }
+                acc += len;
+              }
+              if (s == null || e == null || e <= s) return null;
+              return { s: s, e: e };
+            }
+            function rangeFromOffsets(root, s, e) {
+              var w = contentTextWalker(root);
+              var acc = 0, sn = null, so = 0, en = null, eo = 0, n;
+              while ((n = w.nextNode())) {
+                var len = n.nodeValue.length;
+                if (sn === null && acc + len > s) { sn = n; so = s - acc; }
+                if (sn !== null && acc + len >= e) { en = n; eo = e - acc; break; }
+                acc += len;
+              }
+              if (!sn || !en) return null;
+              try {
+                var r = document.createRange();
+                r.setStart(sn, Math.max(0, Math.min(so, sn.nodeValue.length)));
+                r.setEnd(en, Math.max(0, Math.min(eo, en.nodeValue.length)));
+                return r;
+              } catch (err) { return null; }
+            }
+            // Deepest content element whose box contains a host-relative point.
+            function elementAtHostPoint(x, y) {
+              var hr = host.getBoundingClientRect();
+              var cx = hr.left + x, cy = hr.top + y;
+              if (cx >= 0 && cy >= 0 && cx <= (window.innerWidth || 0) && cy <= (window.innerHeight || 0)) {
+                var hit = document.elementFromPoint(cx, cy);
+                if (hit && host.contains(hit) && !(hit.closest && hit.closest('.alloflow-anno'))) return hit;
+              }
+              var best = null, bestArea = Infinity;
+              var all = host.querySelectorAll('p, li, td, th, h1, h2, h3, h4, h5, h6, blockquote, div, section');
+              for (var i = 0; i < all.length; i++) {
+                var el = all[i];
+                if (el.closest && el.closest('.alloflow-anno')) continue;
+                var r = el.getBoundingClientRect();
+                var lx = r.left - hr.left, ty = r.top - hr.top;
+                if (x < lx || y < ty || x > lx + r.width || y > ty + r.height) continue;
+                var area = r.width * r.height;
+                if (area > 0 && area < bestArea) { bestArea = area; best = el; }
+              }
+              return best;
+            }
+            function pointAnchor(x, y) {
+              var el = elementAtHostPoint(x, y);
+              if (!el) return null;
+              var p = pathOf(el);
+              if (p == null) return null;
+              var hr = host.getBoundingClientRect();
+              var r = el.getBoundingClientRect();
+              if (!r.width || !r.height) return null;
+              return {
+                p: p,
+                fx: Math.max(0, Math.min(1, (x - (r.left - hr.left)) / r.width)),
+                fy: Math.max(0, Math.min(1, (y - (r.top - hr.top)) / r.height))
+              };
+            }
+            function highlightAnchorFromRange(range) {
+              var anc = range.commonAncestorContainer;
+              var el = anc && (anc.nodeType === 1 ? anc : anc.parentNode);
+              if (!el || !host.contains(el)) return null;
+              var p = pathOf(el);
+              if (p == null) return null;
+              var off = textOffsetsIn(el, range);
+              if (!off) return null;
+              return { p: p, s: off.s, e: off.e };
+            }
+            // Last-resort anchor for a saved highlight that predates anchoring:
+            // find its own stored text in the document.
+            function highlightAnchorFromText(text) {
+              var needle = String(text || '').replace(/\s+/g, ' ').trim();
+              if (needle.length < 4) return null;
+              var w = contentTextWalker(host);
+              var acc = 0, buf = '', n;
+              while ((n = w.nextNode())) { buf += n.nodeValue; acc += n.nodeValue.length; }
+              var flat = buf.replace(/\s+/g, ' ');
+              var idx = flat.indexOf(needle);
+              if (idx === -1) return null;
+              // Map the whitespace-collapsed index back onto the raw buffer.
+              var raw = 0, seen = 0, prevSpace = false;
+              while (raw < buf.length && seen < idx) {
+                var isSpace = /\s/.test(buf[raw]);
+                if (!isSpace || !prevSpace) seen++;
+                prevSpace = isSpace;
+                raw++;
+              }
+              var start = raw, remaining = needle.length, end = raw;
+              prevSpace = false;
+              while (end < buf.length && remaining > 0) {
+                var sp = /\s/.test(buf[end]);
+                if (!sp || !prevSpace) remaining--;
+                prevSpace = sp;
+                end++;
+              }
+              if (end <= start) return null;
+              return { p: '', s: start, e: end };
+            }
+            function ensureAnchor(a) {
+              if (!a || a._anchor) return a;
+              try {
+                if (a.kind === 'highlight') {
+                  a._anchor = highlightAnchorFromText(a.text)
+                    || (a.rects && a.rects.length ? pointAnchor(a.rects[0].x, a.rects[0].y) : null);
+                } else if (typeof a.x === 'number' && typeof a.y === 'number') {
+                  a._anchor = pointAnchor(a.x, a.y);
+                }
+              } catch (err) { /* an unanchorable mark keeps its stored x/y */ }
+              return a;
+            }
+            // Recompute geometry from anchors. Returns true if anything moved.
+            function reprojectList(list) {
+              var moved = false;
+              for (var i = 0; i < list.length; i++) {
+                var a = list[i];
+                if (!a) continue;
+                ensureAnchor(a);
+                var anc = a._anchor;
+                if (!anc) continue;
+                var hr = host.getBoundingClientRect();
+                try {
+                  if (a.kind === 'highlight' && typeof anc.s === 'number') {
+                    var root = nodeFromPath(anc.p);
+                    if (!root) continue;
+                    var rng = rangeFromOffsets(root.nodeType === 1 ? root : root.parentNode, anc.s, anc.e);
+                    if (!rng) continue;
+                    var crs = rng.getClientRects();
+                    var next = [];
+                    for (var c = 0; c < crs.length; c++) {
+                      if (crs[c].width <= 1 || crs[c].height <= 1) continue;
+                      next.push({
+                        x: Math.round(crs[c].left - hr.left),
+                        y: Math.round(crs[c].top - hr.top),
+                        w: Math.round(crs[c].width),
+                        h: Math.round(crs[c].height)
+                      });
+                    }
+                    if (next.length) { a.rects = next; moved = true; }
+                  } else if (typeof anc.fx === 'number') {
+                    var el = nodeFromPath(anc.p);
+                    if (!el || el.nodeType !== 1) continue;
+                    var r = el.getBoundingClientRect();
+                    if (!r.width || !r.height) continue;
+                    var nx = Math.round((r.left - hr.left) + anc.fx * r.width);
+                    var ny = Math.round((r.top - hr.top) + anc.fy * r.height);
+                    if (nx === a.x && ny === a.y) continue;
+                    // A stroke is drawn from its point list, not from x/y, so the
+                    // whole path has to move with the anchor. It translates
+                    // rigidly rather than stretching: a pen mark is a gesture over
+                    // a spot on the page, not a span of characters the way a
+                    // highlight is, so keeping its shape is the right behavior.
+                    if (a.kind === 'draw' && Array.isArray(a.points)) {
+                      var dx = nx - a.x, dy = ny - a.y;
+                      for (var pj = 0; pj < a.points.length; pj++) {
+                        a.points[pj] = { x: a.points[pj].x + dx, y: a.points[pj].y + dy };
+                      }
+                    }
+                    a.x = nx; a.y = ny; moved = true;
+                  }
+                } catch (err) { /* keep the previous geometry */ }
+              }
+              return moved;
             }
             function buildTitle(a) {
               var parts = [];
@@ -40859,14 +41396,22 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               pop.appendChild(header);
               pop.appendChild(body);
               if (meta.textContent) pop.appendChild(meta);
-              document.body.appendChild(pop);
+              // The open note used to be appended to <body> as position:fixed and
+              // placed from viewport coordinates, so it stayed pinned to the
+              // screen while the note it belonged to scrolled away underneath.
+              // Measured: scrolling 700px moved the note bubble from y=1024 to
+              // y=324 while its own open card sat at y=647 the whole time. It is
+              // now an absolutely positioned child of the host, so it travels
+              // with the document like the mark it belongs to.
+              host.appendChild(pop);
               notePopoverEl = pop;
               notePopoverOpener = anchor || null;
               if (anchor && anchor.setAttribute) anchor.setAttribute('aria-expanded', 'true');
               try {
-                var r = anchor && anchor.getBoundingClientRect ? anchor.getBoundingClientRect() : { left: 16, top: 16, bottom: 44 };
-                var top = Math.min(window.innerHeight - pop.offsetHeight - 12, Math.max(12, r.bottom + 8));
-                var left = Math.min(window.innerWidth - pop.offsetWidth - 12, Math.max(12, r.left));
+                var hr = host.getBoundingClientRect();
+                var r = anchor && anchor.getBoundingClientRect ? anchor.getBoundingClientRect() : { left: hr.left + 16, top: hr.top + 16, bottom: hr.top + 44 };
+                var top = (r.bottom - hr.top) + 8;
+                var left = Math.max(0, Math.min(host.clientWidth - pop.offsetWidth, r.left - hr.left));
                 pop.style.top = top + 'px';
                 pop.style.left = left + 'px';
                 close.focus();
@@ -41065,6 +41610,49 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                 attachDrag(voiceWrap, a);
                 return voiceWrap;
               }
+              if (kind === 'draw') {
+                // Freehand strokes. Previously renderAnno had no 'draw' branch at
+                // all, so every drawing a teacher made in the app was silently
+                // dropped from the export — it round-tripped through the JSON and
+                // then rendered as nothing. Reader-side drawing (below) uses the
+                // same {points, color, width} envelope as the in-app suite.
+                var pts = Array.isArray(a.points) ? a.points : null;
+                if (!pts || pts.length < 2) return null;
+                var strokeColor = DRAW_COLORS[a.color] || a.color || '#dc2626';
+                var strokeW = typeof a.width === 'number' ? a.width : 4;
+                var minX = pts[0].x, maxX = pts[0].x, minY = pts[0].y, maxY = pts[0].y;
+                for (var pi = 1; pi < pts.length; pi++) {
+                  if (pts[pi].x < minX) minX = pts[pi].x;
+                  if (pts[pi].x > maxX) maxX = pts[pi].x;
+                  if (pts[pi].y < minY) minY = pts[pi].y;
+                  if (pts[pi].y > maxY) maxY = pts[pi].y;
+                }
+                var pad = strokeW + 4;
+                var bx = minX - pad, by = minY - pad;
+                var bw = Math.max(1, (maxX - minX) + pad * 2), bh = Math.max(1, (maxY - minY) + pad * 2);
+                var svgNS = 'http://www.w3.org/2000/svg';
+                var svg = document.createElementNS(svgNS, 'svg');
+                svg.setAttribute('class', 'alloflow-anno alloflow-anno-draw');
+                svg.setAttribute('width', String(bw));
+                svg.setAttribute('height', String(bh));
+                svg.setAttribute('viewBox', '0 0 ' + bw + ' ' + bh);
+                svg.style.cssText = 'position:absolute;top:' + by + 'px;left:' + bx + 'px;pointer-events:none;z-index:44;overflow:visible;';
+                var d = '';
+                for (var qi = 0; qi < pts.length; qi++) {
+                  d += (qi === 0 ? 'M' : 'L') + (pts[qi].x - bx) + ' ' + (pts[qi].y - by) + ' ';
+                }
+                var pathEl = document.createElementNS(svgNS, 'path');
+                pathEl.setAttribute('d', d.trim());
+                pathEl.setAttribute('fill', 'none');
+                pathEl.setAttribute('stroke', strokeColor);
+                pathEl.setAttribute('stroke-width', String(strokeW));
+                pathEl.setAttribute('stroke-linecap', 'round');
+                pathEl.setAttribute('stroke-linejoin', 'round');
+                svg.appendChild(pathEl);
+                svg.setAttribute('role', 'img');
+                svg.setAttribute('aria-label', 'Drawing from ' + (buildTitle(a) || 'a reader'));
+                return svg;
+              }
               return null;
             }
 
@@ -41088,11 +41676,46 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   if (rel) target.appendChild(rel);
                 }
               }
+              updateClearBtnState();
             }
 
-            // Annotation mode state (off / note / highlight / voice). Sticker
-            // tool not exposed in export — teachers add stickers in-app;
-            // export is for note/highlight/voice student-side feedback.
+            // The clear button used to 'return' silently when there was nothing
+            // (word quoted with apostrophes deliberately: this comment lives INSIDE a template
+            // literal, where a backticked word terminates the template — it broke the whole build)
+            // to clear, which is indistinguishable from a broken button — it was
+            // the single most common way to meet this control, since a reader who
+            // has not marked anything yet is exactly who clicks an unfamiliar
+            // button to find out what it does. Disable it instead, and say why.
+            function updateClearBtnState() {
+              var btn = document.querySelector('[data-rt-anno-clear]');
+              if (!btn) return;
+              var n = studentAnno.length;
+              btn.disabled = n === 0;
+              btn.title = n === 0
+                ? 'Nothing to erase yet. Your highlights, notes and drawings will show up here.'
+                : 'Erase all ' + n + ' of your own marks on this page. Your teacher’s marks stay.';
+            }
+
+            // Re-anchor and redraw after anything that reflows the document.
+            // Exposed on window so the reading-tools script (text size, font,
+            // line spacing, letter spacing) can call it — those controls are the
+            // main reason a mark ends up sitting away from its own words.
+            function reprojectAll() {
+              var moved = false;
+              moved = reprojectList(studentAnno) || moved;
+              moved = reprojectList(teacherAnno) || moved;
+              for (var rid in teacherAnnoByResource) {
+                if (!Object.prototype.hasOwnProperty.call(teacherAnnoByResource, rid)) continue;
+                if (Array.isArray(teacherAnnoByResource[rid])) moved = reprojectList(teacherAnnoByResource[rid]) || moved;
+              }
+              render();
+              if (moved) saveStudent();
+            }
+            window.__alloflowReprojectAnnotations = reprojectAll;
+
+            // Annotation mode state (off / note / highlight / voice / draw).
+            // Sticker tool not exposed in export — teachers add stickers in-app;
+            // the export is for reader-side feedback.
             var mode = 'off';
             // Student-selected colors for newly placed notes + highlights.
             // Persisted via localStorage so the choice survives reloads.
@@ -41104,6 +41727,15 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               if (savedNc && ['yellow','green','blue','pink'].indexOf(savedNc) !== -1) noteColor = savedNc;
               if (savedHc && ['yellow','green','blue','pink'].indexOf(savedHc) !== -1) hlColor = savedHc;
             } catch (e) {}
+            // Pen state for the Draw tool.
+            var drawColor = 'red';
+            var drawWidth = 4;
+            try {
+              var savedDc = localStorage.getItem('alloflow-anno-draw-color');
+              var savedDw = parseInt(localStorage.getItem('alloflow-anno-draw-width'), 10);
+              if (savedDc && Object.prototype.hasOwnProperty.call(DRAW_COLORS, savedDc)) drawColor = savedDc;
+              if ([2, 4, 8].indexOf(savedDw) !== -1) drawWidth = savedDw;
+            } catch (e) {}
             function applyColorSwatchPressed() {
               var nBtns = document.querySelectorAll('[data-rt-note-color]');
               for (var i = 0; i < nBtns.length; i++) {
@@ -41112,6 +41744,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               var hBtns = document.querySelectorAll('[data-rt-hl-color]');
               for (var j = 0; j < hBtns.length; j++) {
                 hBtns[j].setAttribute('aria-pressed', hBtns[j].getAttribute('data-rt-hl-color') === hlColor ? 'true' : 'false');
+              }
+              var dBtns = document.querySelectorAll('[data-rt-draw-color]');
+              for (var k = 0; k < dBtns.length; k++) {
+                dBtns[k].setAttribute('aria-pressed', dBtns[k].getAttribute('data-rt-draw-color') === drawColor ? 'true' : 'false');
+              }
+              var wBtns = document.querySelectorAll('[data-rt-draw-width]');
+              for (var w = 0; w < wBtns.length; w++) {
+                wBtns[w].setAttribute('aria-pressed', String(wBtns[w].getAttribute('data-rt-draw-width')) === String(drawWidth) ? 'true' : 'false');
               }
             }
             function setMode(m) {
@@ -41125,7 +41765,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               if (bar) {
                 bar.classList.toggle('mode-note', mode === 'note');
                 bar.classList.toggle('mode-highlight', mode === 'highlight');
+                bar.classList.toggle('mode-draw', mode === 'draw');
               }
+              host.classList.toggle('alloflow-draw-active', mode === 'draw');
               // Cursor hint on host
               host.style.cursor = (mode === 'note' || mode === 'voice') ? 'crosshair' : (mode === 'highlight' ? 'text' : '');
               // WCAG 2.1.1 keyboard path: while an annotate mode is active, make the content area
@@ -41142,6 +41784,88 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                 host.removeAttribute('aria-label');
               }
             }
+
+            // ── Draw tool (E5, 2026-08-16) ─────────────────────────────────
+            // The in-app annotation suite has had a pen since Phase 9; the export
+            // never did, so a reader could highlight and take notes on a handout
+            // but not circle or underline anything. Same {points, color, width}
+            // envelope as the in-app suite, so a drawing round-trips both ways.
+            // Points are stored in host coordinates and anchored like every other
+            // annotation, so the stroke follows its text through a reflow.
+            var drawSurface = null;
+            var drawStroke = null;
+            var drawLive = null;
+            function ensureDrawSurface() {
+              if (drawSurface && drawSurface.isConnected) return drawSurface;
+              drawSurface = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+              drawSurface.setAttribute('id', 'alloflow-draw-surface');
+              drawSurface.setAttribute('aria-hidden', 'true');
+              host.appendChild(drawSurface);
+              return drawSurface;
+            }
+            function drawPointFrom(e) {
+              var hr = host.getBoundingClientRect();
+              return {
+                x: Math.round(e.clientX - hr.left + (host.scrollLeft || 0)),
+                y: Math.round(e.clientY - hr.top + (host.scrollTop || 0))
+              };
+            }
+            host.addEventListener('pointerdown', function (e) {
+              if (mode !== 'draw') return;
+              if (e.button !== undefined && e.button !== 0) return;
+              if (e.target && e.target.closest && (e.target.closest('button') || e.target.closest('input') || e.target.closest('textarea') || e.target.closest('a'))) return;
+              e.preventDefault();
+              var surf = ensureDrawSurface();
+              drawStroke = [drawPointFrom(e)];
+              drawLive = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+              drawLive.setAttribute('fill', 'none');
+              drawLive.setAttribute('stroke', DRAW_COLORS[drawColor] || '#dc2626');
+              drawLive.setAttribute('stroke-width', String(drawWidth));
+              drawLive.setAttribute('stroke-linecap', 'round');
+              drawLive.setAttribute('stroke-linejoin', 'round');
+              surf.appendChild(drawLive);
+              try { host.setPointerCapture(e.pointerId); } catch (err) {}
+            });
+            host.addEventListener('pointermove', function (e) {
+              if (!drawStroke || !drawLive) return;
+              e.preventDefault();
+              var p = drawPointFrom(e);
+              var last = drawStroke[drawStroke.length - 1];
+              // Drop sub-pixel jitter so a long stroke does not store thousands
+              // of near-identical points in localStorage.
+              if (Math.abs(p.x - last.x) < 2 && Math.abs(p.y - last.y) < 2) return;
+              drawStroke.push(p);
+              var d = '';
+              for (var i = 0; i < drawStroke.length; i++) d += (i === 0 ? 'M' : 'L') + drawStroke[i].x + ' ' + drawStroke[i].y + ' ';
+              drawLive.setAttribute('d', d.trim());
+            });
+            function finishStroke() {
+              if (!drawStroke) return;
+              var pts = drawStroke;
+              drawStroke = null;
+              if (drawLive) { try { drawLive.remove(); } catch (e) {} drawLive = null; }
+              if (pts.length < 2) return;
+              snapshot();
+              var anno = {
+                id: Date.now(),
+                kind: 'draw',
+                shape: 'free',
+                points: pts,
+                x: pts[0].x, y: pts[0].y,
+                color: drawColor,
+                width: drawWidth,
+                author: 'student', authorName: '',
+                createdAt: new Date().toISOString()
+              };
+              ensureAnchor(anno);
+              studentAnno.push(anno);
+              saveStudent();
+              render();
+              if (typeof renderSidebar === 'function') renderSidebar();
+            }
+            host.addEventListener('pointerup', finishStroke);
+            host.addEventListener('pointercancel', finishStroke);
+            host.addEventListener('pointerleave', finishStroke);
 
             // ── Voice recording (Phase 6b: export-side) ──
             // Uses MediaRecorder directly — no module dependency since the
@@ -41222,6 +41946,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               studentAnno.push({
                 id: id, kind: 'voice', x: x, y: y, pending: true,
                 author: 'student', authorName: '', createdAt: new Date().toISOString(),
+                _anchor: pointAnchor(x, y), // E6
               });
               saveStudent(); // persist the placeholder so reload-mid-recording doesn't orphan
               // Build + attach the recording overlay immediately so the
@@ -41337,6 +42062,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                 pending: true,
                 author: 'student', authorName: '',
                 createdAt: new Date().toISOString(),
+                _anchor: pointAnchor(x, y), // E6: remember which words this belongs to
               });
               saveStudent();
               // Build editor DOM
@@ -41495,6 +42221,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                 author: 'student',
                 authorName: '',
                 createdAt: new Date().toISOString(),
+                // E6: the character range this highlight covers, so the rects can
+                // be recomputed after the reader changes text size or the window
+                // reflows. Without it the mark keeps the pixels it was drawn at.
+                _anchor: highlightAnchorFromRange(range),
               });
               try { sel.removeAllRanges(); } catch (e) {}
               saveStudent();
@@ -41743,6 +42473,20 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                 applyColorSwatchPressed();
                 return;
               }
+              var dcBtn = e.target && e.target.closest && e.target.closest('[data-rt-draw-color]');
+              if (dcBtn) {
+                drawColor = dcBtn.getAttribute('data-rt-draw-color');
+                try { localStorage.setItem('alloflow-anno-draw-color', drawColor); } catch (er) {}
+                applyColorSwatchPressed();
+                return;
+              }
+              var dwBtn = e.target && e.target.closest && e.target.closest('[data-rt-draw-width]');
+              if (dwBtn) {
+                drawWidth = parseInt(dwBtn.getAttribute('data-rt-draw-width'), 10) || 4;
+                try { localStorage.setItem('alloflow-anno-draw-width', String(drawWidth)); } catch (er) {}
+                applyColorSwatchPressed();
+                return;
+              }
               var modeBtn = e.target && e.target.closest && e.target.closest('[data-rt-anno]');
               if (modeBtn) {
                 // If a recording is in progress and the user clicks a mode
@@ -41755,7 +42499,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               if (undoBtn && !undoBtn.disabled) { performUndo(); return; }
               var clearBtn = e.target && e.target.closest && e.target.closest('[data-rt-anno-clear]');
               if (clearBtn && clearBtn.getAttribute('data-rt-anno-clear') === 'mine') {
-                if (studentAnno.length === 0) return;
+                if (clearBtn.disabled) return;
+                if (studentAnno.length === 0) { updateClearBtnState(); return; }
                 var shouldClear = await askAnnotationConfirmation({
                   opener: clearBtn,
                   title: 'Remove all of your annotations?',
@@ -41820,18 +42565,28 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             // end of body so this is effectively next tick).
             setMode('off');
             applyColorSwatchPressed();
-            render();
-            // Re-render on resize so multi-line highlights track wrapping
-            // changes. Debounced lightly via requestAnimationFrame.
+            // E6 migration. Annotations saved before anchoring exist as bare
+            // pixel offsets. Give each one an anchor derived from where it sits
+            // in THIS layout — for a highlight, by finding its own saved text in
+            // the document, which is the strongest signal available and often
+            // lands it better than the pixels ever did; for a point mark, from
+            // the element currently under that point. Anything that cannot be
+            // anchored (an image-only region, text that has since changed) keeps
+            // its stored x/y and behaves exactly as it did before. The derived
+            // anchors are persisted on the next save, so an old annotation starts
+            // following its words from the first load after this update.
+            reprojectAll();
+            // Reproject on resize. The old handler re-rendered but explicitly did
+            // not re-measure ("Coordinates are frozen at placement time"), so a
+            // window resize left every mark behind: measured 103px of vertical
+            // drift and 175px of extra width going from 1100px to 640px.
             var resizePending = false;
             window.addEventListener('resize', function () {
               if (resizePending) return;
               resizePending = true;
               requestAnimationFrame(function () {
                 resizePending = false;
-                // Coordinates are frozen at placement time; redraw is just
-                // to be safe if some overlay element got knocked loose.
-                render();
+                reprojectAll();
               });
             });
             }
