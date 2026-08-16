@@ -19,16 +19,25 @@ function validatedToolNames(tools, label) {
 }
 
 function extractArchive(bundle, destination) {
+  // (2026-08-16) Windows repair — BOTH prior rungs were broken here and had never worked:
+  //   - tar.exe is bsdtar, which parses "C:\..." as a REMOTE host:path ("tar: Cannot connect
+  //     to C: resolve failed"). Run it from the bundle's directory with a colon-free archive
+  //     name instead.
+  //   - `powershell -Command "...$args[0]..."` never populates $args (that only works with
+  //     -File), so Expand-Archive received a null -LiteralPath every time. And Expand-Archive
+  //     refuses non-.zip extensions like .mcpb anyway. Use the .NET ZipFile API with the
+  //     quoted paths inlined — extension-agnostic and 5.1-safe.
+  const psQuote = (s) => "'" + String(s).replace(/'/g, "''") + "'";
   const attempts = process.platform === 'win32'
     ? [
-        ['tar.exe', ['-xf', bundle, '-C', destination]],
+        ['tar.exe', ['-xf', path.basename(bundle), '-C', destination], { cwd: path.dirname(bundle) }],
         ['powershell.exe', ['-NoProfile', '-NonInteractive', '-Command',
-          'Expand-Archive -LiteralPath $args[0] -DestinationPath $args[1] -Force', bundle, destination]],
+          'Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::ExtractToDirectory(' + psQuote(bundle) + ', ' + psQuote(destination) + ')']],
       ]
     : [['unzip', ['-q', bundle, '-d', destination]], ['tar', ['-xf', bundle, '-C', destination]]];
   const failures = [];
-  for (const [command, args] of attempts) {
-    const result = spawnSync(command, args, { encoding: 'utf8', windowsHide: true });
+  for (const [command, args, opts] of attempts) {
+    const result = spawnSync(command, args, { encoding: 'utf8', windowsHide: true, ...(opts || {}) });
     if (!result.error && result.status === 0) return;
     failures.push(command + ': ' + (result.error ? result.error.message : (result.stderr || 'exit ' + result.status).trim()));
   }
