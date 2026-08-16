@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "kind": "translation_correction",
+  "submitted_at": "2026-08-16T14:18:02.991Z",
+  "language": "Greek",
+  "key": "__pat_probe.ignore",
+  "current": "probe",
+  "suggested": "probe: end-to-end PAT check 2026-08-16, safe to reject",
+  "english": "probe",
+  "note": "Coordinator probe of GitHub PAT validity. Reject this submission.",
+  "pii_scan": {
+    "ran_server_side": true,
+    "findings": []
+  },
+  "submitter": {
+    "ip_country": "US",
+    "user_agent": "curl/8.18.0"
+  }
+}
