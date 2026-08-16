@@ -24963,7 +24963,13 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       const pageNote = _pageRange
         ? ` (${pageCount} of ${fullPageCount} pages)`
         : (pageCount > 1 ? ` (${pageCount} pages)` : '');
-      const msg = `Step ${step}/${totalSteps} ${label.emoji} ${label.name}${pageNote} — ${detail}  (typically ${label.est})`;
+      // (2026-08-15, Aaron's field screenshot) "typically ~30-60s per pass" printed beside
+      // "27m 16s elapsed" during a rate-limit storm — a promise the run was visibly breaking.
+      // While the gate reports a recent throttle, say the honest thing instead of the estimate.
+      const _estNote = (typeof _geminiThrottleInfo === 'function' && _geminiThrottleInfo().recentlyThrottled)
+        ? '(the AI service is rate-limiting — steps are slower than usual right now; nothing is skipped)'
+        : (label.est ? `(typically ${label.est})` : '');
+      const msg = `Step ${step}/${totalSteps} ${label.emoji} ${label.name}${pageNote} — ${detail}  ${_estNote}`;
       const derived = _deriveProgress(step, detail);
       if (!_silentMode) _emitRemediationProgress(_runId, {
         status: 'running', step, totalSteps, stepName: label.name, detail,
@@ -25154,7 +25160,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           extractedText = _bankedOcr.extractedText;
           _restoreOcrEvidenceGlobals(_bankedOcr);
           _ocrEvidenceCacheHit = true;
-          updateProgress(1, 'Reusing complete OCR evidence for ' + effectivePageCount + ' page' + (effectivePageCount === 1 ? '' : 's') + ' - skipped Tesseract + Vision');
+          updateProgress(1, 'Reusing complete OCR evidence for ' + effectivePageCount + ' page' + (effectivePageCount === 1 ? '' : 's') + ' - skipped Tesseract + AI Vision');
           warnLog('[OCR cache] Exact-byte hit - reused ' + extractedText.length + ' chars / ' + effectivePageCount + ' pages; skipped language detection, Tesseract, and Vision extraction calls');
         }
       }
@@ -25274,7 +25280,7 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         // "Perfect accuracy" per user spec — losing zero words matters more than speed here,
         // so we do both engines and take the longer output per page. Disagreements are
         // stashed on window globals so the fidelity panel can surface them for review.
-        updateProgress(1, _forceFullOcr ? 'Re-scanning with OCR (Tesseract + Vision) as requested...' : 'Scanned PDF detected — running Tesseract + Vision OCR in parallel...');
+        updateProgress(1, _forceFullOcr ? 'Re-scanning with OCR (Tesseract + AI Vision) as requested...' : 'Scanned PDF detected — running Tesseract + AI Vision OCR in parallel...');
         if (typeof addToast === 'function') addToast(t('toasts.running_tesseract_vision_ocr_maximum'), 'info');
 
         // Large-scan guard: a big scanned doc with NO page range fans out one OCR pass per
@@ -25997,7 +26003,12 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
               const _themePromise = new Promise(function(resolve) {
                 var _onChoice = function(e) { window.removeEventListener('alloflow:boring-palette-choice', _onChoice); resolve(e.detail ? e.detail.seedId : null); };
                 window.addEventListener('alloflow:boring-palette-choice', _onChoice);
-                setTimeout(function() { window.removeEventListener('alloflow:boring-palette-choice', _onChoice); resolve(null); }, 10000);
+                // 20s (2026-08-15, Aaron): 10s was too short to read the choice, and the deadline
+                // was INVISIBLE — the card lingered with dead buttons after this resolver removed
+                // its listener. The view now shows a matching 20s countdown and auto-hides at zero.
+                // ★Keep this number and the view's countdown seed in sync (view_pdf_audit: palette
+                // prompt countdown starts at 20).
+                setTimeout(function() { window.removeEventListener('alloflow:boring-palette-choice', _onChoice); resolve(null); }, 20000);
               });
               setTimeout(function() {
                 window.dispatchEvent(new CustomEvent('alloflow:boring-palette-detected', {
@@ -36439,6 +36450,128 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           '<span aria-hidden="true" style="display: inline-block; width: 14px; height: 14px; border: 2px solid #475569; border-radius: 50%; vertical-align: middle; margin-right: 6px; background: white;"></span>';
       const fillableBlank = (widthPx = 150) =>
           `<span aria-hidden="true" style="display: inline-block; width: ${widthPx}px; border-bottom: 1.5px solid #475569; height: 1.4em; vertical-align: middle; margin: 0 4px;"></span>`;
+      // ── Printable cloze (fill in the blanks) ──
+      // Paper twin of the on-screen cloze in text_utility_helpers_source.jsx
+      // (highlightGlossaryTerms with isCloze true). That one returns React nodes
+      // for drag and drop; this one returns an HTML string, so the matching rule
+      // is mirrored here rather than shared. Keep the two in step.
+      //
+      // Two rules carried over from it, both learned the hard way:
+      //   1. The answer is the text that was ACTUALLY replaced, never the term
+      //      implied by the language setting. A Spanish passage can legitimately
+      //      still carry an English term, and a printed sheet cannot recover from
+      //      keying that blank to the wrong word.
+      //   2. The boundary must be \p{L}/\p{N} based. A plain \b is ASCII-only in
+      //      JS, so it matched NOTHING for Russian, Arabic, Greek or CJK and the
+      //      cloze silently produced a passage with no blanks in it at all.
+      const _clozeIsOn = isWorksheet && cfg.clozeWorksheet === true;
+      // Fixed width, so the length of the line never gives the answer away. The
+      // number is visible rather than an aria-label, because it has to survive
+      // being printed on paper and it is what the answer key counts against.
+      const _clozeBlank = (n) =>
+          `<span class="alloflow-cloze-blank" style="display:inline-block;min-width:120px;border-bottom:1.5px solid #475569;margin:0 5px;text-align:center;line-height:1.5;"><span style="font-size:0.72em;font-weight:700;color:#64748b;">${n}</span></span>`;
+      const _clozeBuild = (passageHtml, glossary) => {
+          const answers = [];
+          if (!passageHtml || !Array.isArray(glossary) || glossary.length === 0) return { html: passageHtml, answers };
+          // Same term map the on-screen cloze builds: the English term, plus the
+          // passage-language term when the lesson is not in English.
+          const termMap = new Map();
+          // The passage-language spelling, in its own casing, per entry. The word
+          // bank offers THIS rather than the matched text: a term that happened to
+          // open a sentence was otherwise offered capitalised ("Мозг"), which reads
+          // as a different word and quietly hints at where it belongs.
+          const canonicalByEntry = new Map();
+          glossary.forEach(gItem => {
+              if (!gItem || gItem.isSelected === false) return;
+              if (gItem.term) termMap.set(String(gItem.term).toLowerCase(), gItem);
+              if (leveledTextLanguage !== 'English' && gItem.translations && gItem.translations[leveledTextLanguage]) {
+                  const transString = String(gItem.translations[leveledTextLanguage]);
+                  const possibleTerm = (transString.includes(':') ? transString.split(':')[0] : transString).trim();
+                  if (possibleTerm.length > 1) {
+                      termMap.set(possibleTerm.toLowerCase(), gItem);
+                      canonicalByEntry.set(gItem, possibleTerm);
+                  }
+              }
+          });
+          const sortedTerms = Array.from(termMap.keys()).sort((a, b) => b.length - a.length);
+          if (sortedTerms.length === 0) return { html: passageHtml, answers };
+          const escapeRegExp = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          // CJK and Thai are written without word separators, so a boundary
+          // assertion would reject every legitimate match; those match as plain
+          // substrings instead.
+          const NO_WORD_BREAK = /[぀-ヿ㐀-䶿一-鿿豈-﫿฀-๿]/;
+          const boundaried = [];
+          const substringy = [];
+          sortedTerms.forEach(term => { (NO_WORD_BREAK.test(term) ? substringy : boundaried).push(escapeRegExp(term)); });
+          let pattern;
+          try {
+              const branches = [];
+              if (boundaried.length) branches.push(`(?<![\\p{L}\\p{N}])(?:${boundaried.join('|')})(?![\\p{L}\\p{N}])`);
+              if (substringy.length) branches.push(`(?:${substringy.join('|')})`);
+              pattern = new RegExp(`(${branches.join('|')})`, 'giu');
+          } catch (_) {
+              // Lookbehind is unavailable on some older engines. Fall back to the
+              // ASCII boundary rather than losing the whole passage.
+              pattern = new RegExp(`\\b(${sortedTerms.map(escapeRegExp).join('|')})\\b`, 'gi');
+          }
+          // Rewrite TEXT only. Splitting on tags keeps attribute values (src,
+          // alt, style) out of the match, which a replace over the whole string
+          // would happily corrupt.
+          const html = String(passageHtml).split(/(<[^>]*>)/).map(seg => {
+              if (!seg || seg.charAt(0) === '<') return seg;
+              return seg.replace(pattern, (matched) => {
+                  const entry = termMap.get(String(matched).toLowerCase()) || null;
+                  const english = entry && entry.term ? String(entry.term) : matched;
+                  // Which language did this occurrence come in? Answer from the
+                  // MATCHED TEXT, never from leveledTextLanguage: a Spanish passage
+                  // can legitimately still carry the English term, and keying that
+                  // blank to the Spanish word makes the printed sheet wrong.
+                  const matchedEnglish = String(matched).toLowerCase() === english.toLowerCase();
+                  const bank = matchedEnglish ? english : (canonicalByEntry.get(entry) || matched);
+                  answers.push({ text: matched, term: english, bank });
+                  return _clozeBlank(answers.length);
+              });
+          }).join('');
+          return { html, answers };
+      };
+      // Deterministic shuffle. The student copy and the teacher key are two
+      // separate render passes over the same data, and a Math.random() bank
+      // would put them out of step in a way nobody notices until a class is
+      // holding the sheets.
+      const _clozeShuffle = (arr, seedStr) => {
+          let h = 2166136261;
+          const seed = String(seedStr || 'cloze');
+          for (let i = 0; i < seed.length; i++) { h ^= seed.charCodeAt(i); h = Math.imul(h, 16777619); }
+          h = h || 1;
+          const rnd = () => { h ^= h << 13; h ^= h >>> 17; h ^= h << 5; return ((h >>> 0) % 1000000) / 1000000; };
+          const out = arr.slice();
+          for (let i = out.length - 1; i > 0; i--) {
+              const j = Math.floor(rnd() * (i + 1));
+              const tmp = out[i]; out[i] = out[j]; out[j] = tmp;
+          }
+          return out;
+      };
+      // The bank is built from the blanks that were actually made, deduped, so a
+      // word can never be missing from it. When the blank holds a translated
+      // term the English is kept beside it, which is the same support the
+      // on-screen bank's "both" setting gives.
+      const _clozeWordBankHTML = (answers) => {
+          const seen = new Set();
+          const chips = [];
+          answers.forEach(a => {
+              const word = String(a.bank || a.text);
+              const key = word.toLowerCase();
+              if (seen.has(key)) return;
+              seen.add(key);
+              chips.push(key === String(a.term).toLowerCase() ? word : `${word} (${a.term})`);
+          });
+          if (chips.length === 0) return '';
+          const ordered = _clozeShuffle(chips, chips.join('|'));
+          return `<div style="break-inside:avoid;margin:18px 0 8px;border:2px dashed #2563eb;border-radius:10px;background:#eff6ff;padding:12px 14px;">
+                  <div style="font-size:0.82em;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#1d4ed8;margin-bottom:8px;">${_escTxt(t('export.cloze_word_bank') || 'Word Bank')}</div>
+                  <div style="display:flex;flex-wrap:wrap;gap:8px;">${ordered.map(c => `<span style="display:inline-block;background:#ffffff;border:1px solid #93c5fd;border-radius:9999px;padding:4px 12px;font-size:0.95em;color:#1e293b;">${_escTxt(c)}</span>`).join('')}</div>
+              </div>`;
+      };
       // Resource type filtering — configurable via export preview modal.
       // Teacher-only resources (analysis, udl-advice, brainstorm) handled separately
       // below so they appear in teacher copy unconditionally but are toggleable for student copy.
@@ -36459,7 +36592,28 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       }
       // Teacher copy traditionally hides student-facing resources to avoid duplication
       if (isTeacher) {
-          if (item.type === 'simplified') return '';
+          // One exception: the cloze answer key exists ONLY in the teacher copy,
+          // so the passage has to be rendered here to produce it. The matching
+          // relaxation in _willRenderForCtx has to stay in step with this line,
+          // or the key is filtered out before this function is ever called.
+          if (item.type === 'simplified') {
+              if (!_clozeIsOn) return '';
+              const _keyGloss = Array.isArray(cfg.__clozeGlossary) ? cfg.__clozeGlossary : [];
+              const _keyBuilt = _clozeBuild(parseMarkdownToHTML(item.data), _keyGloss);
+              const _keyTitle = _escTxt(t('export.cloze_answer_key') || 'Fill in the Blanks: Answer Key');
+              if (_keyBuilt.answers.length === 0) {
+                  // Say so rather than printing an empty key. A silent no-op here
+                  // is how a teacher finds out at the photocopier.
+                  return `<div class="section" id="${item.id}-cloze-key" style="border-left:4px solid #2563eb;border-radius:12px;">
+                      <h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid #2563eb;background:#eff6ff;"><span aria-hidden="true">🔑</span> ${_keyTitle}</h2>
+                      <p style="padding:8px 4px;color:#475569;">${_escTxt(t('export.cloze_no_blanks') || 'No glossary terms appear in this passage, so no blanks were made.')}</p>
+                  </div>`;
+              }
+              return `<div class="section" id="${item.id}-cloze-key" style="border-left:4px solid #2563eb;border-radius:12px;">
+                  <h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid #2563eb;background:#eff6ff;"><span aria-hidden="true">🔑</span> ${_keyTitle}</h2>
+                  <ol style="columns:2;column-gap:32px;padding:8px 4px 8px 28px;margin:0;line-height:1.9;color:#1e293b;">${_keyBuilt.answers.map(a => `<li style="break-inside:avoid;">${_escTxt(a.text)}${String(a.text).toLowerCase() === String(a.term).toLowerCase() ? '' : ` <span style="color:#64748b;font-size:0.88em;">(${_escTxt(a.term)})</span>`}</li>`).join('')}</ol>
+              </div>`;
+          }
           if (item.type === 'outline') return '';
           if (item.type === 'image') return '';
           if (item.type === 'faq') return '';
@@ -36494,10 +36648,27 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       if (item.type === 'simplified') {
           // Reading passage. Tagged data-ka-readable so the HTML export's
           // download-time read-aloud step can convert it into inline sentence-karaoke.
+          const _passageHtml = parseMarkdownToHTML(item.data);
+          if (_clozeIsOn) {
+              const _built = _clozeBuild(_passageHtml, Array.isArray(cfg.__clozeGlossary) ? cfg.__clozeGlossary : []);
+              // No term matched: fall back to the plain passage rather than
+              // handing out a "fill in the blanks" sheet with nothing to fill in.
+              // The teacher key says why, above.
+              if (_built.answers.length > 0) {
+                  return `
+              <div class="section" id="${item.id}" style="border-left:4px solid #2563eb;border-radius:12px;">
+                  ${enhancedHeader}
+                  <p style="margin:0 4px 12px;padding:8px 12px;background:#f8fafc;border-left:3px solid #94a3b8;font-size:0.92em;color:#334155;">${_escTxt(t('export.cloze_instructions') || 'Fill in each blank with the correct word from the word bank.')}</p>
+                  <div style="font-family:Georgia,'Times New Roman',serif;font-size:1.05em;line-height:2.4;color:#1e293b;padding:8px 4px;">${_built.html}</div>
+                  ${_clozeWordBankHTML(_built.answers)}
+              </div>
+          `;
+              }
+          }
           return `
               <div class="section" id="${item.id}" data-ka-readable style="border-left:4px solid #2563eb;border-radius:12px;">
                   ${enhancedHeader}
-                  <div style="font-family:Georgia,'Times New Roman',serif;font-size:1.05em;line-height:1.9;color:#1e293b;padding:8px 4px;">${parseMarkdownToHTML(item.data)}</div>
+                  <div style="font-family:Georgia,'Times New Roman',serif;font-size:1.05em;line-height:1.9;color:#1e293b;padding:8px 4px;">${_passageHtml}</div>
               </div>
           `;
       } else if (item.type === 'glossary') {
@@ -36548,7 +36719,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               <div role="listitem" class="alloflow-glossary-card" data-card-idx="${idx}" style="border:2px dashed #94a3b8; border-radius:12px; overflow:hidden; background:white; break-inside:avoid; page-break-inside:avoid;">
                                   <div class="alloflow-glossary-card-front" style="padding:16px 14px; text-align:center; min-height:110px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
                                       ${imageHtml}
-                                      <strong style="font-size:1.15em; color:#1e293b; line-height:1.3;">${_escTxt(gItem.term)}</strong>
+                                      <strong style="font-size:1.15em; color:#1e293b; line-height:1.3;">${gItem.emoji ? `<span aria-hidden="true">${_escTxt(gItem.emoji)}</span> ` : ''}${_escTxt(gItem.term)}</strong>
                                       ${gItem.term_en && gItem.term_en !== gItem.term ? `<div style="font-size:0.8em; color:#64748b; margin-top:4px;">(${_escTxt(gItem.term_en)})</div>` : ''}
                                   </div>
                                   <div class="alloflow-glossary-card-fold" aria-hidden="true" style="border-top:2px dashed #cbd5e1; padding:3px 0; text-align:center; font-family:monospace; font-size:0.65em; color:#64748b; letter-spacing:0.1em; background:#f8fafc;">▼ fold here / click to flip ▼</div>
@@ -36701,7 +36872,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       <tr>
                           ${hasAnyImages ? `<td data-gloss-label="${_lblImage}" class="gloss-img-cell" style="text-align: center; vertical-align: middle;">${gItem.image ? `<img loading="lazy" src="${gItem.image}" alt="${_escTxt(gItem.term)}" />` : ''}</td>` : ''}
                           <td data-gloss-label="${_lblTerm}" style="text-align: ${align}">
-                            <strong class="gloss-term">${_escTxt(gItem.term)}</strong>
+                            <strong class="gloss-term">${gItem.emoji ? `<span aria-hidden="true">${_escTxt(gItem.emoji)}</span> ` : ''}${_escTxt(gItem.term)}</strong>
                           </td>
                           <td data-gloss-label="${_lblDef}" style="text-align: ${align}">${_hideCell(gItem.def)}</td>
                           ${hasAnyTranslations ? `<td data-gloss-label="${_lblTrans}" style="text-align: ${align}">${_hideCell(Object.entries(gItem.translations || {}).map(([k, v]) => `<strong>${k}:</strong> ${v}`).join('<br><br>'))}</td>` : ''}
@@ -39242,11 +39413,25 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           if (!isTeacher && cfg[studentKey] === false) return false;
         }
         if (isTeacher) {
-          if (item.type === 'simplified' || item.type === 'outline' || item.type === 'image'
-              || item.type === 'faq' || item.type === 'sentence-frames') return false;
+          // Must stay in step with the matching gate in generateResourceHTML: on
+          // a cloze worksheet the passage DOES render in the teacher copy,
+          // because that is where the answer key comes from.
+          const clozeKey = item.type === 'simplified' && isWorksheet && cfg.clozeWorksheet === true;
+          if (!clozeKey && (item.type === 'simplified' || item.type === 'outline' || item.type === 'image'
+              || item.type === 'faq' || item.type === 'sentence-frames')) return false;
         }
         return true;
       };
+      // The cloze worksheet blanks the passage against the most recent glossary
+      // in the same pack, which is the same rule the on-screen cloze uses for
+      // latestGlossary (AlloFlowANTI.txt:28257). Resolved once here rather than
+      // per resource, because generateResourceHTML only ever sees one item.
+      if (isWorksheet && cfg.clozeWorksheet === true) {
+        const _gItem = historyItems.slice().reverse().find(it => it && it.type === 'glossary');
+        let _gData = _gItem ? _gItem.data : null;
+        if (typeof _gData === 'string') { try { _gData = JSON.parse(_gData); } catch (_) { _gData = null; } }
+        cfg.__clozeGlossary = Array.isArray(_gData) ? _gData : [];
+      }
       const _materializeRenderable = (items, isTeacher) => {
         return items
           .filter(it => _willRenderForCtx(it, isTeacher))

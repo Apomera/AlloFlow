@@ -3790,6 +3790,25 @@ function PdfAuditView(props) {
   // feature, so Start/one-click deliberately reuse it — but a diagnostic run needs to exercise
   // the REAL call path. Session-scoped; wired as skipCache into both audit entry points.
   const [pdfDiagnosticFreshRun, setPdfDiagnosticFreshRun] = useState(false);
+  // (2026-08-15, Aaron) Theme-offer countdown. The offer used to carry an INVISIBLE 10s deadline:
+  // the pipeline resolved "keep original" and removed its listener, while the card lingered with
+  // dead buttons (and sat half-under the Log FAB in the field screenshot). The pipeline now waits
+  // 20s (★keep in sync — doc_pipeline resolves at 20000ms); this seeds a visible countdown and
+  // auto-hides the card at zero so dead buttons can never linger. Updaters stay PURE (decrement
+  // only); the hide side-effect lives in its own effect below.
+  const [palettePromptSecondsLeft, setPalettePromptSecondsLeft] = useState(null);
+  useEffect(() => {
+    if (!boringPalettePrompt) { setPalettePromptSecondsLeft(null); return undefined; }
+    setPalettePromptSecondsLeft(20);
+    const _id = setInterval(() => { setPalettePromptSecondsLeft((s) => (s == null ? s : Math.max(0, s - 1))); }, 1000);
+    return () => clearInterval(_id);
+  }, [boringPalettePrompt]);
+  useEffect(() => {
+    if (palettePromptSecondsLeft === 0) {
+      try { setBoringPalettePrompt(false); } catch (_) {}
+      setPalettePromptSecondsLeft(null);
+    }
+  }, [palettePromptSecondsLeft]);
   // ── Live-run mirror (2026-07-26, field report) ──
   // pdfFixLoading is a one-shot host boolean the pipeline writes once at run entry. When that
   // write was lost, this modal rendered the audit-results panel fully interactive over a live
@@ -10251,11 +10270,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </div>
                         <div className="text-xs text-slate-700 mt-1 text-center font-semibold" role="status" aria-live="polite" aria-atomic="true">{remediationProgress?.detail || pdfFixStep}</div>
                         <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5 text-[10px]">
-                          <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">AI calls {_progressStats.apiCalls || 0}</span>
-                          <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">Vision {_progressStats.visionCalls || 0}</span>
-                          <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">Retries {_progressStats.transportRetries || 0}</span>
-                          {!!_progressStats.recoveredRetries && <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Recovered {_progressStats.recoveredRetries}</span>}
-                          {!!_progressStats.authThrottles && <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">Throttle signals {_progressStats.authThrottles}</span>}
+                          {/* (2026-08-15, Aaron) Bare chips read as jargon: "Vision 8" named an API
+                              route, "Retries 8" looked alarming with no context. Plain-language
+                              labels + hover explanations; counts unchanged. */}
+                          <span title={t('pdf_audit.chips.ai_calls_title') || 'Text AI requests made so far in this run'} className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">AI calls {_progressStats.apiCalls || 0}</span>
+                          <span title={t('pdf_audit.chips.ai_vision_title') || 'AI Vision requests — pages and images the AI has read visually'} className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">AI Vision {_progressStats.visionCalls || 0}</span>
+                          <span title={t('pdf_audit.chips.retries_title') || 'Requests re-attempted after a timeout or rate-limit — nothing is skipped, retried work is re-attempted later in the run'} className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">Retries {_progressStats.transportRetries || 0}</span>
+                          {!!_progressStats.recoveredRetries && <span title={t('pdf_audit.chips.recovered_title') || 'Retries that then succeeded'} className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Recovered {_progressStats.recoveredRetries}</span>}
+                          {!!_progressStats.authThrottles && <span title={t('pdf_audit.chips.throttle_title') || 'Times the AI service signaled a rate limit and this run deliberately backed off'} className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">Throttle signals {_progressStats.authThrottles}</span>}
                         </div>
                         {remediationProgress?.activity?.message && (
                           <div className={'mt-2 rounded-lg border px-2.5 py-1.5 text-[11px] ' + (remediationProgress.status === 'throttled' ? 'bg-amber-50 border-amber-300 text-amber-900' : 'bg-slate-50 border-slate-200 text-slate-700')}>
@@ -10357,9 +10379,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
 
                         {/* ── Boring Palette Theme Suggestion ── */}
                         {boringPalettePrompt && (
-                          <div className="mt-3 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-3 animate-in fade-in duration-300">
+                          /* sticky + z-30 + shadow (2026-08-15): the in-flow card could scroll out of
+                             view or sit under the Log FAB while its deadline ran — a timed choice the
+                             user never saw. Sticky keeps it pinned inside the modal viewport. */
+                          <div className="mt-3 sticky bottom-2 z-30 shadow-lg bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-3 animate-in fade-in duration-300" role="region" aria-live="polite" aria-label={t('pdf_audit.boring_palette.region_aria') || 'Optional styling choice'}>
                             <div className="text-xs font-bold text-amber-800 mb-1.5">🎨 The original document has minimal styling</div>
-                            <div className="text-[10px] text-amber-700 mb-2">{t('pdf_audit.boring_palette.prompt') || 'Would you like to keep the original look or apply a theme?'}</div>
+                            <div className="text-[10px] text-amber-700 mb-1">{t('pdf_audit.boring_palette.prompt') || 'Would you like to keep the original look or apply a theme?'}</div>
+                            <div className="text-[10px] text-amber-600 mb-2" role="status">
+                              {(t('pdf_audit.boring_palette.countdown_note') || 'Optional — no response needed. Keeping the original look automatically in {s}s; the run continues either way.').replace('{s}', String(palettePromptSecondsLeft != null ? palettePromptSecondsLeft : 20))}
+                            </div>
                             <div className="flex flex-wrap gap-1.5">
                               {[
                                 { id: null, label: 'Keep Original', icon: '📎' },
