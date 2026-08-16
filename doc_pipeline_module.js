@@ -23711,9 +23711,22 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
           let _reAuditSkipped = false;
           let _reVerifyFresh = null;
           let _reAxeFresh = null;
-          if (!_aiFixApplied) {
+          // (2026-08-16, field run jyo4ro/e2) Reverify triads launched into the same weather that
+          // had just failed the fixer went 0-2/3 sections all afternoon: pass 1's triad burned ~6
+          // transports for a NULLED score, pass 4's ~8. The breaker cannot flag this storm — the
+          // repeat-offender guard deliberately suppresses its feeding — but the FIXER PASS ITSELF
+          // is direct evidence: if it just deferred or shipped chunks as original under throttle,
+          // the triad faces the same wall. Defer the AI reverify to the next pass / the final
+          // audit's bounded circle-back (which self-heals sections), and keep fixing — the fixer
+          // kept landing chunks all run while the audits failed. Passes whose fixer ran CLEAN
+          // still reverify in full.
+          const _fixPassSawThrottle = !!(_fixThrottleDeferred
+            || (Number(_fixPassEvidence && _fixPassEvidence.shippedOriginalChunks) || 0) > 0);
+          if (!_aiFixApplied || _fixPassSawThrottle) {
             _reAuditSkipped = true;
-            warnLog(`[Auto-fix] Pass ${fixPass + 1}: no AI chunk applied (deterministic-only changes) — skipping the AI re-audit; axe verifies the deterministic fixes locally (no API calls)`);
+            warnLog(!_aiFixApplied
+              ? `[Auto-fix] Pass ${fixPass + 1}: no AI chunk applied (deterministic-only changes) — skipping the AI re-audit; axe verifies the deterministic fixes locally (no API calls)`
+              : `[Auto-fix] Pass ${fixPass + 1}: fixer chunks were throttle-deferred this pass — deferring the 3-call AI re-audit instead of firing it into the same storm (axe still verifies locally; the final audit completes AI coverage)`);
             _reAxeFresh = await runAxeAudit(accessibleHtml);
           } else {
             // A failed fixer wave can trip the breaker immediately. Do not launch the next audit
