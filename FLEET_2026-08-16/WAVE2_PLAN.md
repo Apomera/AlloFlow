@@ -22,6 +22,7 @@ lock-protected alongside the original four.
 | W4 | Test-prep content QA: clear the 67 findings, rebuild `test_prep_hub_module.js` | `test_prep/**`, `dev-tools/review_non_eppp_against_eppp.cjs` (read) |
 | W5 | Loose ends: the cross-lane requests no wave-1 lane could take | `generate_dispatcher_source.jsx` (lock), `AlloFlowANTI.txt` (lock), `doc_pipeline_source.jsx` (lock), `adventure_handlers_source.jsx` |
 | W6 | Docs sync: absorb L9/L10/wave-2 changes into the teacher manual; runs LAST | `docs/teacher-guide/**` |
+| W7 | AI capability gating: one resolver; teacher surfaces disable+doorway, STEM hides + header pill, Canvas-first setup panel (added 2026-08-16 after deploy) | new badge/panel, `view_sidebar_panels_source.jsx` (lock), ANTI (lock) |
 
 ## Sequencing
 
