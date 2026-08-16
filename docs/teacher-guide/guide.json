@@ -9,7 +9,8 @@
             "chapterSlugs": [
                 "start-here",
                 "prepare-a-lesson",
-                "universal-settings"
+                "universal-settings",
+                "documents-and-printing"
             ]
         },
         {
@@ -51,12 +52,13 @@
             "description": "Protect instructional time with a recovery sequence and a stable fallback.",
             "chapterSlugs": [
                 "troubleshooting",
-                "start-here"
+                "start-here",
+                "allobot-assistant"
             ]
         }
     ],
     "version": "2026.08",
-    "lastVerified": "2026-08-13",
+    "lastVerified": "2026-08-16",
     "chapters": [
         {
             "source": "chapters/01-start-here.md",
@@ -120,6 +122,20 @@
             "summary": "Use student data and generated materials with appropriate judgment.",
             "audience": "Anyone sharing or generating",
             "time": "60-second preflight"
+        },
+        {
+            "source": "chapters/14-allobot-assistant.md",
+            "slug": "allobot-assistant",
+            "summary": "Talking with the assistant: conversation first, offers before actions, and what the microphone states mean.",
+            "audience": "All teachers",
+            "time": "5 minutes"
+        },
+        {
+            "source": "chapters/15-documents-and-printing.md",
+            "slug": "documents-and-printing",
+            "summary": "The four export formats, the handout reading tools, annotations that stay put, and printing that always comes out light.",
+            "audience": "Classroom teachers",
+            "time": "10 minutes"
         },
         {
             "source": "chapters/08-troubleshooting.md",

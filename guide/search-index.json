@@ -1656,6 +1656,110 @@
     "text": "Before generation or delivery, confirm: I am on the district-approved deployment and backend. My source is de-identified and permitted for this use. I know where drafts, responses, project files, and exports will be stored. I reviewed the generated content for accuracy, bias, safety, and accessibility. Students know the purpose, audience, data expectations, and alternative route. Live-session recipients and sharing permissions are correct. I have a non-AI or offline fallback. I know what to do if a student discloses a safety concern or if data is exposed. For a practical live-room routine, return to Live sessions. For safe interpretation of results, use Review evidence and plan next steps. If a deployment or connection problem occurs, continue to Troubleshooting."
   },
   {
+    "id": "allobot-assistant:allobot-the-assistant-that-talks-with-you",
+    "title": "AlloBot: the assistant that talks with you",
+    "chapter": "AlloBot: the assistant that talks with you",
+    "level": 1,
+    "url": "allobot-assistant.html#allobot-the-assistant-that-talks-with-you",
+    "text": "Talking with the assistant: conversation first, offers before actions, and what the microphone states mean. AlloBot is AlloFlow's built-in assistant. You can type to it or talk to it, ask questions about your lesson, or ask it to do things in the app. As of the August 2026 update, conversation comes first: you can speak to it naturally, and it will never scold you for not using a command. If you are new to AlloFlow, read Start here first. AlloBot helps most once you have a lesson to talk about."
+  },
+  {
+    "id": "allobot-assistant:how-talking-to-it-works",
+    "title": "How talking to it works",
+    "chapter": "AlloBot: the assistant that talks with you",
+    "level": 2,
+    "url": "allobot-assistant.html#how-talking-to-it-works",
+    "text": "When hands-free mode is listening, everything you say lands in one of three buckets: What you said What happens Ordinary speech (\"what should I add for my striving readers?\") AlloBot answers in conversation, out loud. There is no wrong thing to say. Something that sounds like an action (\"build a lesson\", \"open the glossary\") AlloBot offers first: it says what it could do and waits for your yes. Keep talking instead, and the offer quietly goes away. A quick, harmless action (\"bigger text\", \"stop reading\") It just does it. The offer step exists because a command that yanks you to a different screen mid-thought is worse than no command. Nothing that changes what is on screen runs without your yes. The shortcut for people who know the commands: say \"command\" before a phrase (\"command open the learning hub\") and it acts immediately, no offer."
+  },
+  {
+    "id": "allobot-assistant:knowing-the-microphones-state",
+    "title": "Knowing the microphone's state",
+    "chapter": "AlloBot: the assistant that talks with you",
+    "level": 2,
+    "url": "allobot-assistant.html#knowing-the-microphones-state",
+    "text": "The voice indicator always tells you, in text as well as color, which state it is in: Listening, Paused, Thinking, or Speaking. A small level meter shows your own voice being picked up, so you are never left wondering whether the microphone hears you. All of it is announced to screen readers."
+  },
+  {
+    "id": "allobot-assistant:hiding-allobot-does-not-silence-the-app",
+    "title": "Hiding AlloBot does not silence the app",
+    "chapter": "AlloBot: the assistant that talks with you",
+    "level": 2,
+    "url": "allobot-assistant.html#hiding-allobot-does-not-silence-the-app",
+    "text": "The X on the bot and the header toggle do the same thing: they hide AlloBot and its tips. Nothing else. Read-aloud, narration, and any speech you ask for keep working with the bot hidden."
+  },
+  {
+    "id": "allobot-assistant:what-gets-sent-where",
+    "title": "What gets sent where",
+    "chapter": "AlloBot: the assistant that talks with you",
+    "level": 2,
+    "url": "allobot-assistant.html#what-gets-sent-where",
+    "text": "A spoken question goes to the same AI backend as everything else you generate, under the same settings. AlloBot does not listen when hands-free mode is off, and the microphone closes while it speaks or thinks (the indicator says so). If no AI backend is set up, AlloBot's AI conversation is unavailable; see Troubleshooting for the three ways to turn AI on."
+  },
+  {
+    "id": "allobot-assistant:practical-guidance",
+    "title": "Practical guidance",
+    "chapter": "AlloBot: the assistant that talks with you",
+    "level": 2,
+    "url": "allobot-assistant.html#practical-guidance",
+    "text": "Let new users just talk. The most common mistake is treating AlloBot like a command line. It is a colleague, not a console. During a lesson, \"stop reading\" and the read-aloud transport always act instantly; they are deliberately exempt from the offer step. In Guided Mode, AlloBot knows which step you are on, so \"where was I?\" is a fair question."
+  },
+  {
+    "id": "documents-and-printing:documents-and-printing-from-resource-to-handout",
+    "title": "Documents and printing: from resource to handout",
+    "chapter": "Documents and printing: from resource to handout",
+    "level": 1,
+    "url": "documents-and-printing.html#documents-and-printing-from-resource-to-handout",
+    "text": "The four export formats, the handout reading tools, annotations that stay put, and printing that always comes out light. Everything AlloFlow generates can leave the app as a document a student can hold: a finished copy to read, a blank copy to write on, or a self-contained web page with its own reading tools. This chapter covers choosing between them and the details that matter once paper is involved. For building the resources themselves, see Prepare a lesson."
+  },
+  {
+    "id": "documents-and-printing:the-four-export-formats-plainly",
+    "title": "The four export formats, plainly",
+    "chapter": "Documents and printing: from resource to handout",
+    "level": 2,
+    "url": "documents-and-printing.html#the-four-export-formats-plainly",
+    "text": "Format What it is Reach for it when Print / Save as PDF A finished copy to read. Opens your print window; print it or save as PDF there. Reference copies, family communication, reading material. Worksheet A blank copy to write on: answer boxes become ruled lines, multiple choice becomes fill-in bubbles, and a Name / Date / Score header appears. Paper practice and anything handed in physically. HTML handout One self-contained file with its own reading toolbar. Works offline once downloaded; nothing phones home. Sending work home, devices without AlloFlow, screen-reader use. Slides A presentation export. Whole-class instruction. The export screen explains each format under its selector, so you do not need to memorize this table. The worksheet has one more trick: if your lesson has both an adapted text and a glossary, you can turn the passage into a fill-in-the-blank worksheet. Glossary terms become numbered blanks, a word bank appears below, and the teacher copy carries the answer key. It works in any lesson language."
+  },
+  {
+    "id": "documents-and-printing:the-html-handouts-reading-tools",
+    "title": "The HTML handout's reading tools",
+    "chapter": "Documents and printing: from resource to handout",
+    "level": 2,
+    "url": "documents-and-printing.html#the-html-handouts-reading-tools",
+    "text": "The exported page carries its own accessibility toolbar, independent of AlloFlow: Text size steps from 90% to 175%, with a live percentage readout. Content reflows instead of getting cut off, at every size, on every screen width. Fonts: nine faces that work with no internet at all, including a readable serif, a rounded face, and a dyslexia-friendly option. Four high-legibility web fonts (OpenDyslexic, Atkinson Hyperlegible, Lexend, Andika) are available behind a clearly labeled \"needs internet\" checkbox at export time, off by default so no handout phones out unless you chose that. Reading themes, sentence read-along where the lesson includes audio, and the annotation tools below."
+  },
+  {
+    "id": "documents-and-printing:annotations-that-stay-put",
+    "title": "Annotations that stay put",
+    "chapter": "Documents and printing: from resource to handout",
+    "level": 2,
+    "url": "documents-and-printing.html#annotations-that-stay-put",
+    "text": "Students and teachers can highlight, add notes and stickers, record voice notes, and draw freehand directly on the handout. Marks belong to the document: they scroll with it, stay attached through text-size and font changes, and survive reload. \"Erase my marks\" clears only your own annotations, tells you how many it would erase, and is disabled when there is nothing to erase. Teacher annotations made in the app travel into the export, including drawings."
+  },
+  {
+    "id": "documents-and-printing:printing",
+    "title": "Printing",
+    "chapter": "Documents and printing: from resource to handout",
+    "level": 2,
+    "url": "documents-and-printing.html#printing",
+    "text": "Screen-only controls never print; what comes out is the worksheet, not the interface. Printing from dark mode produces a normal light page. Dark themes are for screens; paper always comes out black on white, so no one empties a toner cartridge by accident. The crossword and other glossary printables include a separate answer-key page after a page break, so you can keep the key and hand out the rest."
+  },
+  {
+    "id": "documents-and-printing:the-expert-workbench",
+    "title": "The Expert Workbench",
+    "chapter": "Documents and printing: from resource to handout",
+    "level": 2,
+    "url": "documents-and-printing.html#the-expert-workbench",
+    "text": "The Document Builder's ribbon has an Expert Workbench tab: type a plain-language instruction (\"make every heading a proper H2\", \"add alt text to the images\") and it applies structural edits across the document. It is the same engine the PDF remediation pathway uses. The panel shows example instructions, so an empty text box never greets you."
+  },
+  {
+    "id": "documents-and-printing:practical-guidance",
+    "title": "Practical guidance",
+    "chapter": "Documents and printing: from resource to handout",
+    "level": 2,
+    "url": "documents-and-printing.html#practical-guidance",
+    "text": "Preview in the real format. A resource that looks right in the app can break at 175% text on a phone; the reflow work makes this rare, but the habit is free. For families without reliable internet, the HTML handout with the default fonts is the safest artifact: one file, works from a download, nothing external. Keep the answer-key page before handing a stack to students; it prints last on purpose."
+  },
+  {
     "id": "troubleshooting:troubleshooting",
     "title": "Troubleshooting",
     "chapter": "Troubleshooting",
@@ -2086,6 +2190,14 @@
     "level": 2,
     "url": "school-rollout-and-coaching.html#start-with-a-shared-instructional-promise",
     "text": "Before choosing a feature, agree on what teachers and students should experience: a common learning goal remains visible even when access routes differ; teachers review generated material before students receive it; students can use more than one legitimate way to engage or respond; privacy, dignity, and accessibility are part of lesson planning; every digital lesson has a workable non-AI or offline fallback; classroom signals prompt professional judgment; they do not replace it. Write the promise in ordinary staff language. For example: We will use AlloFlow to make worthwhile work more reachable, give teachers better choices for differentiation, and preserve teacher judgment about content, evidence, and student support. Do not begin with a target such as “every teacher will use ten tools.” Feature counts are not evidence of instructional improvement."
+  },
+  {
+    "id": "school-rollout-and-coaching:run-a-small-pilot-before-the-rollout",
+    "title": "Run a small pilot before the rollout",
+    "chapter": "School rollout and coaching",
+    "level": 2,
+    "url": "school-rollout-and-coaching.html#run-a-small-pilot-before-the-rollout",
+    "text": "A pilot answers one question: does this help our teachers with our students? Three to five volunteer teachers for four to six weeks is enough to know. Keep the entry cost near zero. Every interactive tool has its own direct link (for example, a water cycle simulation a science teacher can open with one click and use that period). Start volunteers with one link that fits something they already teach; nobody has to adopt a platform to try a tool. There are no accounts to create, for staff or students, so IT setup for the pilot itself is nothing. Agree on defaults once. Have the pilot group open Universal Settings together for ten minutes and settle grade level, language, and the translation setting for their context. Shared defaults make pilot artifacts comparable and prevent the most common early confusion, which is two teachers getting different-feeling output from the same tool. Give each role its chapter. Volunteers get Start here and Prepare a lesson. Whoever supports them gets Troubleshooting. The person leading the pilot reads this chapter and Privacy and responsible AI before the first classroom use, because privacy questions arrive on day one and deserve a prepared answer. Close the loop weekly. A ten-minute standing check-in beats a survey: what did you try, what held up, what got in the way. Route \"it broke\" items to whoever maintains your deployment and \"it confused me\" items into the next check-in agenda. Both kinds are pilot data. Decide in advance what would count as success, and keep it instructional: a teacher reuses a tool without being asked, a student who avoided a task engages with an adapted version, a co-teacher borrows a pilot teacher's material. The measures section later in this chapter has more, but three concrete stories beat a dashboard at this scale."
   },
   {
     "id": "school-rollout-and-coaching:use-a-30-day-rollout",

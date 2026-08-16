@@ -19,6 +19,20 @@ Write the promise in ordinary staff language. For example:
 
 Do not begin with a target such as “every teacher will use ten tools.” Feature counts are not evidence of instructional improvement.
 
+## Run a small pilot before the rollout
+
+A pilot answers one question: does this help our teachers with our students? Three to five volunteer teachers for four to six weeks is enough to know.
+
+**Keep the entry cost near zero.** Every interactive tool has its own direct link (for example, a water cycle simulation a science teacher can open with one click and use that period). Start volunteers with one link that fits something they already teach; nobody has to adopt a platform to try a tool. There are no accounts to create, for staff or students, so IT setup for the pilot itself is nothing.
+
+**Agree on defaults once.** Have the pilot group open Universal Settings together for ten minutes and settle grade level, language, and the translation setting for their context. Shared defaults make pilot artifacts comparable and prevent the most common early confusion, which is two teachers getting different-feeling output from the same tool.
+
+**Give each role its chapter.** Volunteers get [Start here](01-start-here.md) and [Prepare a lesson](02-prepare-a-lesson.md). Whoever supports them gets [Troubleshooting](08-troubleshooting.md). The person leading the pilot reads this chapter and [Privacy and responsible AI](07-privacy-and-responsible-ai.md) before the first classroom use, because privacy questions arrive on day one and deserve a prepared answer.
+
+**Close the loop weekly.** A ten-minute standing check-in beats a survey: what did you try, what held up, what got in the way. Route "it broke" items to whoever maintains your deployment and "it confused me" items into the next check-in agenda. Both kinds are pilot data.
+
+**Decide in advance what would count as success**, and keep it instructional: a teacher reuses a tool without being asked, a student who avoided a task engages with an adapted version, a co-teacher borrows a pilot teacher's material. The measures section later in this chapter has more, but three concrete stories beat a dashboard at this scale.
+
 ## Use a 30-day rollout
 
 ### Days 1-5: align guardrails and the first task

@@ -141,3 +141,22 @@ That is the standard the gaps below are judged against.
 - **Admin and IT configuration** stays a pointer. It is a different audience and a different
   document, and the guide says so.
 - **Per-tool detail** is intentionally not in prose. See the design note above.
+
+## Gaps closed 2026-08-16 (second pass, post-fleet)
+
+- **AlloBot and hands-free voice** — chapter 14, written after the conversation-first intake
+  landed and stabilized (offers before screen-changing actions, the "command" accelerator,
+  microphone state text, hide-means-tips-only). Deferring it until the surface settled was
+  the right call; documenting the old behavior would have been wrong twice.
+- **Document Builder and exports** — chapter 15: the four formats, the fill-in-the-blank
+  worksheet, the handout reading tools (incl. the offline/web font split), anchored
+  annotations, always-light printing, Expert Workbench.
+- **Pilot playbook** — a "Run a small pilot before the rollout" section in chapter 10,
+  written for a principal starting with 3-5 volunteers and single-tool deep links.
+- **lastVerified bumped to 2026-08-16**: W2's browser verification plus Aaron's own recorded
+  walkthrough sessions on the live deploy meet the stamp's bar.
+
+Remaining known gaps, still deliberate: Family mode (role scoping settled this fleet but the
+parent-facing surface review is fresh; document next pass), Educator evaluation (the demo vs
+connected split is now honest in-app; a chapter should follow real district setup experience),
+Page Designer (power-user surface), Admin/IT (different audience, different document).

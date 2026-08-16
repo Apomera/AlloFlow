@@ -4,7 +4,7 @@
 
 > Practical, classroom-centered guidance for planning, teaching, accessibility, live lessons, and responsible use.
 >
-> Guide version **2026.08** · Content verified **2026-08-13**
+> Guide version **2026.08** · Content verified **2026-08-16**
 
 This consolidated Markdown edition is generated for repository browsing, review, and export. The polished searchable edition is in [guide/](guide/index.html), and the canonical chapter sources are in [docs/teacher-guide/chapters/](docs/teacher-guide/chapters/).
 
@@ -19,10 +19,12 @@ This consolidated Markdown edition is generated for repository browsing, review,
 7. [Review evidence and plan next steps](#review-evidence-and-plan-next-steps) · Interpret classroom evidence carefully and plan useful follow-up.
 8. [Classroom workflows](#classroom-workflows) · Use practical recipes for common middle-school teaching needs.
 9. [Privacy and responsible AI](#privacy-and-responsible-ai) · Use student data and generated materials with appropriate judgment.
-10. [Troubleshooting](#troubleshooting) · Recover work and diagnose common classroom problems.
-11. [Math Fluency: timed practice and CBM probes](#math-fluency-timed-practice-and-cbm-probes) · Where timed math practice and CBM probes live, and the fastest way to open them.
-12. [Specialist and product reference](#specialist-and-product-reference) · Find specialist surfaces, keyboard help, and product terminology.
-13. [School rollout and coaching](#school-rollout-and-coaching) · Introduce AlloFlow as an instructional routine with shared guardrails and coaching.
+10. [AlloBot: the assistant that talks with you](#allobot-the-assistant-that-talks-with-you) · Talking with the assistant: conversation first, offers before actions, and what the microphone states mean.
+11. [Documents and printing: from resource to handout](#documents-and-printing-from-resource-to-handout) · The four export formats, the handout reading tools, annotations that stay put, and printing that always comes out light.
+12. [Troubleshooting](#troubleshooting) · Recover work and diagnose common classroom problems.
+13. [Math Fluency: timed practice and CBM probes](#math-fluency-timed-practice-and-cbm-probes) · Where timed math practice and CBM probes live, and the fastest way to open them.
+14. [Specialist and product reference](#specialist-and-product-reference) · Find specialist surfaces, keyboard help, and product terminology.
+15. [School rollout and coaching](#school-rollout-and-coaching) · Introduce AlloFlow as an instructional routine with shared guardrails and coaching.
 
 ---
 
@@ -1866,6 +1868,97 @@ For a practical live-room routine, return to [Live sessions](#run-a-live-lesson-
 
 ---
 
+## AlloBot: the assistant that talks with you
+
+AlloBot is AlloFlow's built-in assistant. You can type to it or talk to it, ask questions about your lesson, or ask it to do things in the app. As of the August 2026 update, conversation comes first: you can speak to it naturally, and it will never scold you for not using a command.
+
+If you are new to AlloFlow, read [Start here](#start-here-prepare-your-first-student-ready-resource) first. AlloBot helps most once you have a lesson to talk about.
+
+### How talking to it works
+
+When hands-free mode is listening, everything you say lands in one of three buckets:
+
+| What you said | What happens |
+| --- | --- |
+| Ordinary speech ("what should I add for my striving readers?") | AlloBot answers in conversation, out loud. There is no wrong thing to say. |
+| Something that sounds like an action ("build a lesson", "open the glossary") | AlloBot **offers** first: it says what it could do and waits for your yes. Keep talking instead, and the offer quietly goes away. |
+| A quick, harmless action ("bigger text", "stop reading") | It just does it. |
+
+The offer step exists because a command that yanks you to a different screen mid-thought is worse than no command. Nothing that changes what is on screen runs without your yes.
+
+**The shortcut for people who know the commands:** say "command" before a phrase ("command open the learning hub") and it acts immediately, no offer.
+
+### Knowing the microphone's state
+
+The voice indicator always tells you, in text as well as color, which state it is in: Listening, Paused, Thinking, or Speaking. A small level meter shows your own voice being picked up, so you are never left wondering whether the microphone hears you. All of it is announced to screen readers.
+
+### Hiding AlloBot does not silence the app
+
+The X on the bot and the header toggle do the same thing: they hide AlloBot and its tips. Nothing else. Read-aloud, narration, and any speech you ask for keep working with the bot hidden.
+
+### What gets sent where
+
+A spoken question goes to the same AI backend as everything else you generate, under the same settings. AlloBot does not listen when hands-free mode is off, and the microphone closes while it speaks or thinks (the indicator says so). If no AI backend is set up, AlloBot's AI conversation is unavailable; see [Troubleshooting](#troubleshooting) for the three ways to turn AI on.
+
+### Practical guidance
+
+- **Let new users just talk.** The most common mistake is treating AlloBot like a command line. It is a colleague, not a console.
+- **During a lesson**, "stop reading" and the read-aloud transport always act instantly; they are deliberately exempt from the offer step.
+- **In Guided Mode**, AlloBot knows which step you are on, so "where was I?" is a fair question.
+
+---
+
+## Documents and printing: from resource to handout
+
+Everything AlloFlow generates can leave the app as a document a student can hold: a finished copy to read, a blank copy to write on, or a self-contained web page with its own reading tools. This chapter covers choosing between them and the details that matter once paper is involved.
+
+For building the resources themselves, see [Prepare a lesson](#prepare-a-purposeful-differentiated-lesson).
+
+### The four export formats, plainly
+
+| Format | What it is | Reach for it when |
+| --- | --- | --- |
+| **Print / Save as PDF** | A finished copy to read. Opens your print window; print it or save as PDF there. | Reference copies, family communication, reading material. |
+| **Worksheet** | A blank copy to write on: answer boxes become ruled lines, multiple choice becomes fill-in bubbles, and a Name / Date / Score header appears. | Paper practice and anything handed in physically. |
+| **HTML handout** | One self-contained file with its own reading toolbar. Works offline once downloaded; nothing phones home. | Sending work home, devices without AlloFlow, screen-reader use. |
+| **Slides** | A presentation export. | Whole-class instruction. |
+
+The export screen explains each format under its selector, so you do not need to memorize this table.
+
+**The worksheet has one more trick:** if your lesson has both an adapted text and a glossary, you can turn the passage into a fill-in-the-blank worksheet. Glossary terms become numbered blanks, a word bank appears below, and the teacher copy carries the answer key. It works in any lesson language.
+
+### The HTML handout's reading tools
+
+The exported page carries its own accessibility toolbar, independent of AlloFlow:
+
+- **Text size** steps from 90% to 175%, with a live percentage readout. Content reflows instead of getting cut off, at every size, on every screen width.
+- **Fonts:** nine faces that work with no internet at all, including a readable serif, a rounded face, and a dyslexia-friendly option. Four high-legibility web fonts (OpenDyslexic, Atkinson Hyperlegible, Lexend, Andika) are available behind a clearly labeled "needs internet" checkbox at export time, off by default so no handout phones out unless you chose that.
+- **Reading themes**, sentence read-along where the lesson includes audio, and the annotation tools below.
+
+### Annotations that stay put
+
+Students and teachers can highlight, add notes and stickers, record voice notes, and draw freehand directly on the handout. Marks belong to the document: they scroll with it, stay attached through text-size and font changes, and survive reload. "Erase my marks" clears only your own annotations, tells you how many it would erase, and is disabled when there is nothing to erase.
+
+Teacher annotations made in the app travel into the export, including drawings.
+
+### Printing
+
+- Screen-only controls never print; what comes out is the worksheet, not the interface.
+- **Printing from dark mode produces a normal light page.** Dark themes are for screens; paper always comes out black on white, so no one empties a toner cartridge by accident.
+- The crossword and other glossary printables include a separate answer-key page after a page break, so you can keep the key and hand out the rest.
+
+### The Expert Workbench
+
+The Document Builder's ribbon has an **Expert Workbench** tab: type a plain-language instruction ("make every heading a proper H2", "add alt text to the images") and it applies structural edits across the document. It is the same engine the PDF remediation pathway uses. The panel shows example instructions, so an empty text box never greets you.
+
+### Practical guidance
+
+- **Preview in the real format.** A resource that looks right in the app can break at 175% text on a phone; the reflow work makes this rare, but the habit is free.
+- **For families without reliable internet**, the HTML handout with the default fonts is the safest artifact: one file, works from a download, nothing external.
+- **Keep the answer-key page** before handing a stack to students; it prints last on purpose.
+
+---
+
 ## Troubleshooting
 
 When something breaks during class, protect student learning first and diagnose second. Move students to the prepared fallback, preserve unsaved work, and avoid turning a connection problem into a participation or behavior judgment.
@@ -2417,6 +2510,20 @@ Write the promise in ordinary staff language. For example:
 > We will use AlloFlow to make worthwhile work more reachable, give teachers better choices for differentiation, and preserve teacher judgment about content, evidence, and student support.
 
 Do not begin with a target such as “every teacher will use ten tools.” Feature counts are not evidence of instructional improvement.
+
+### Run a small pilot before the rollout
+
+A pilot answers one question: does this help our teachers with our students? Three to five volunteer teachers for four to six weeks is enough to know.
+
+**Keep the entry cost near zero.** Every interactive tool has its own direct link (for example, a water cycle simulation a science teacher can open with one click and use that period). Start volunteers with one link that fits something they already teach; nobody has to adopt a platform to try a tool. There are no accounts to create, for staff or students, so IT setup for the pilot itself is nothing.
+
+**Agree on defaults once.** Have the pilot group open Universal Settings together for ten minutes and settle grade level, language, and the translation setting for their context. Shared defaults make pilot artifacts comparable and prevent the most common early confusion, which is two teachers getting different-feeling output from the same tool.
+
+**Give each role its chapter.** Volunteers get [Start here](#start-here-prepare-your-first-student-ready-resource) and [Prepare a lesson](#prepare-a-purposeful-differentiated-lesson). Whoever supports them gets [Troubleshooting](#troubleshooting). The person leading the pilot reads this chapter and [Privacy and responsible AI](#privacy-and-responsible-ai) before the first classroom use, because privacy questions arrive on day one and deserve a prepared answer.
+
+**Close the loop weekly.** A ten-minute standing check-in beats a survey: what did you try, what held up, what got in the way. Route "it broke" items to whoever maintains your deployment and "it confused me" items into the next check-in agenda. Both kinds are pilot data.
+
+**Decide in advance what would count as success**, and keep it instructional: a teacher reuses a tool without being asked, a student who avoided a task engages with an adapted version, a co-teacher borrows a pilot teacher's material. The measures section later in this chapter has more, but three concrete stories beat a dashboard at this scale.
 
 ### Use a 30-day rollout
 
