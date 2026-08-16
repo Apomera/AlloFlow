@@ -12,20 +12,45 @@ name is present and nothing about whether a user sees it.
 
 ## First, know why the obvious paths don't work
 
-All three of these run the **deployed** app, not your edits. Verified 2026-08-16.
+None of these run your edits. Verified 2026-08-16.
+
+**The live app is `https://alloflow-cdn.pages.dev/app/`** — `deploy.sh` prints it
+as `Live URL:` at the end of a deploy. The shell lives under `/app/`; the view
+modules sit at the CDN **origin root**, which is why `loadModule()` uses absolute
+`https://alloflow-cdn.pages.dev/<module>.js` URLs.
 
 | Path | What actually happens |
 |---|---|
-| `npm run test:e2e` | `playwright.config.ts` defaults `baseURL` to `https://prismflow-911fe.web.app`. Drives production. |
+| `npm run test:e2e` | Points at a host that is **not the app any more** — see the warning below. And it tests *deployed* code regardless. |
 | Serve the repo, open `/` | `loadModule()` fetches every view module from `https://alloflow-cdn.pages.dev/...`. Your local `view_*_module.js` is never read. |
 | `cd desktop/web-app && npm start` | Same CDN URLs. `App.jsx` may also be stale relative to `AlloFlowANTI.txt` unless someone ran `build.js`. |
 
-There **is** a local-module mode, and it is narrower than it looks.
+### The e2e suite cannot simply be repointed
+
+`playwright.config.ts` defaults `baseURL` to `https://prismflow-911fe.web.app`,
+the old Firebase host. `AGENT_HANDOFF.md` records the 2026-07-09 "Prismflow
+production-path cleanup" that moved serving to the Cloudflare `/app/` shell, and
+Aaron confirms the old host is not operational.
+
+**Do not just set `PW_BASE_URL=https://alloflow-cdn.pages.dev/app/`.** The config
+carries its own warning about exactly that, and it is correct: 30 specs navigate
+with `page.goto('/')`, which resolves against the **origin** and silently drops
+the `/app/` path, loading the marketing site instead of the app. You get a green
+or red run against the wrong page.
+
+The suite was written when the app sat at an origin root, which was true for
+PrismFlow and is not true now. Repointing it properly means switching those
+specs to `goto('./')` (the config note says so) or serving the shell at a root.
+Treat that as its own piece of work, not a flag you pass.
+
+### The local-module mode is not for this
 `localizeModuleUrl` (`AlloFlowANTI.txt`, search `localizeModuleUrl =`) rewrites
 CDN URLs to `./` only when `_isDesktopBundledApp` is true, which requires
-hostname `localhost`/`127.0.0.1` **and** a path starting with `/app/`. The `app/`
-directory holds a built bundle and **no view modules**, so that route 404s and
-falls back to CDN anyway. Don't spend time there.
+hostname `localhost`/`127.0.0.1` **and** a path starting with `/app/`. That mode
+exists for the **desktop bundle**, where the modules are packaged next to the
+shell. In this repo `app/` holds a built bundle and **no view modules**, so
+`./<module>.js` resolves to `/app/<module>.js` and 404s, then falls back to CDN.
+Don't spend time there.
 
 Reaching a real surface through the full UI is also expensive: a Language Deck
 flashcard quiz needs source text, an AI glossary generation, translations, and a
