@@ -14100,8 +14100,134 @@ var createDocPipeline = function(deps) {
   // during it, and (worse) every out-of-range render failure landing in window.__lastOcrPageErrors,
   // where it named untouched pages in the Stage-1 banner and permanently blocked OCR-evidence
   // banking, since _ocrEvidenceCompatible refuses any record carrying page errors.
+  // ── Hidden-tab-safe page rasterization (2026-08-16, Aaron) ───────────────────────────────
+  // Chrome suspends MAIN-THREAD canvas work in a hidden tab: the 2026-08-16 field run shows
+  // pdf.js page renders waiting 46s+ for the tab and every Tesseract rung timing out, while
+  // Vision (network) sailed on. Dedicated workers are not visibility-throttled, and pdf.js can
+  // render into an OffscreenCanvas — so page rasterization moves into a worker and OCR keeps
+  // full speed while minimized. Design constraints, in order:
+  //   1. FAIL-OPEN. Any failure (CSP blocks blob workers, pdf.js won't load, OffscreenCanvas
+  //      render error on a pattern-heavy page) falls back to the existing main-thread ladder,
+  //      same rung. Two worker failures abandon the worker for the run. The old path is not
+  //      touched; the new path is an overlay.
+  //   2. The worker imports its OWN pdf.js and ALSO imports the pdf.worker build into its own
+  //      thread ("fake worker" mode): a blob:-origin worker cannot spawn a nested cross-origin
+  //      Worker, so parsing runs inline on this worker thread — which is exactly what we want.
+  //   3. The worker source is a plain single-quoted string (template literals with backticks
+  //      break the enclosing build — the Kokoro lesson — and node --check cannot see into it).
+  //   4. One log line names which path ran, so every pasted log answers "was the worker active?"
+  const _ALLO_RASTER_WORKER_MAX_BYTES = 60 * 1024 * 1024; // the worker holds a SECOND copy of the PDF
+  const _alloOcrRasterWorkerSource = function () {
+    return [
+      'var pdfDoc = null;',
+      'function tryImport(urls) {',
+      '  for (var i = 0; i < (urls || []).length; i++) {',
+      '    try { importScripts(urls[i]); return urls[i]; } catch (e) {}',
+      '  }',
+      '  return null;',
+      '}',
+      'self.onmessage = function (ev) {',
+      '  var m = ev.data || {};',
+      '  if (m.t === "init") {',
+      '    try {',
+      '      var okMain = tryImport(m.urls);',
+      '      if (!okMain || typeof pdfjsLib === "undefined") { self.postMessage({ t: "init-error", message: "pdf.js failed to load in worker" }); return; }',
+      '      var okW = tryImport(m.workerUrls);',
+      '      if (!okW && !(self.pdfjsWorker && self.pdfjsWorker.WorkerMessageHandler)) { self.postMessage({ t: "init-error", message: "pdf.worker failed to load in worker" }); return; }',
+      '      pdfjsLib.getDocument({ data: new Uint8Array(m.buf) }).promise.then(function (doc) {',
+      '        pdfDoc = doc;',
+      '        self.postMessage({ t: "ready", pages: doc.numPages });',
+      '      }, function (e) { self.postMessage({ t: "init-error", message: String((e && e.message) || e) }); });',
+      '    } catch (e) { self.postMessage({ t: "init-error", message: String((e && e.message) || e) }); }',
+      '    return;',
+      '  }',
+      '  if (m.t === "render") {',
+      '    if (!pdfDoc) { self.postMessage({ t: "render-error", id: m.id, message: "no document" }); return; }',
+      '    pdfDoc.getPage(m.page).then(function (page) {',
+      '      var vp = page.getViewport({ scale: m.scale });',
+      '      var oc = new OffscreenCanvas(Math.max(1, Math.ceil(vp.width)), Math.max(1, Math.ceil(vp.height)));',
+      '      var ctx = oc.getContext("2d");',
+      '      return page.render({ canvasContext: ctx, viewport: vp }).promise.then(function () {',
+      '        return oc.convertToBlob({ type: "image/png" });',
+      '      }).then(function (blob) { return blob.arrayBuffer(); }).then(function (buf) {',
+      '        self.postMessage({ t: "rendered", id: m.id, buf: buf, width: oc.width, height: oc.height, transform: vp.transform }, [buf]);',
+      '      });',
+      '    }).catch(function (e) { self.postMessage({ t: "render-error", id: m.id, message: String((e && e.message) || e) }); });',
+      '    return;',
+      '  }',
+      '  if (m.t === "close") { try { if (pdfDoc) pdfDoc.destroy(); } catch (e) {} try { self.close(); } catch (e) {} }',
+      '};',
+    ].join('\n');
+  };
+  // Returns a controller { render(page, scale, timeoutMs), healthy(), noteFailure(), destroy() }
+  // or null when the environment cannot support it. Never throws.
+  const _alloCreateOcrRasterWorker = async (bytes) => {
+    try {
+      if (typeof Worker === 'undefined' || typeof OffscreenCanvas === 'undefined' || typeof Blob === 'undefined' || typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function') return null;
+      if (!bytes || !bytes.length || bytes.length > _ALLO_RASTER_WORKER_MAX_BYTES) return null;
+      const _blobUrl = URL.createObjectURL(new Blob([_alloOcrRasterWorkerSource()], { type: 'application/javascript' }));
+      let _worker = null;
+      try { _worker = new Worker(_blobUrl); } finally { try { URL.revokeObjectURL(_blobUrl); } catch (_) {} }
+      if (!_worker) return null;
+      const _pending = new Map();
+      let _nextId = 1;
+      let _failures = 0;
+      let _dead = false;
+      _worker.onmessage = (ev) => {
+        const m = (ev && ev.data) || {};
+        const _p = m.id != null ? _pending.get(m.id) : null;
+        if (m.t === 'rendered' && _p) { _pending.delete(m.id); _p.resolve(m); }
+        else if (m.t === 'render-error' && _p) { _pending.delete(m.id); _p.reject(new Error(m.message || 'worker render failed')); }
+      };
+      _worker.onerror = () => { _dead = true; };
+      // Init: hand the worker its own copy of the bytes (the main thread keeps using ours) and
+      // the same CDN ladder the page uses, plus the worker build for same-thread parsing.
+      const _initDone = new Promise((resolve, reject) => {
+        const _onInit = (ev) => {
+          const m = (ev && ev.data) || {};
+          if (m.t === 'ready') { _worker.removeEventListener('message', _onInit); resolve(true); }
+          else if (m.t === 'init-error') { _worker.removeEventListener('message', _onInit); reject(new Error(m.message || 'worker init failed')); }
+        };
+        _worker.addEventListener('message', _onInit);
+      });
+      const _copy = bytes.slice().buffer;
+      _worker.postMessage({
+        t: 'init',
+        buf: _copy,
+        urls: [
+          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
+          'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js',
+          'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js',
+        ],
+        workerUrls: [
+          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
+          'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js',
+          'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js',
+        ],
+      }, [_copy]);
+      await _withTimeout(_initDone, 20000, 'raster worker init');
+      return {
+        healthy: () => !_dead && _failures < 2,
+        noteFailure: () => { _failures++; },
+        render: (page, scale, timeoutMs) => {
+          const id = _nextId++;
+          const _p = new Promise((resolve, reject) => { _pending.set(id, { resolve, reject }); });
+          _worker.postMessage({ t: 'render', id, page, scale });
+          return _withTimeout(_p, Math.max(1000, timeoutMs || 45000), 'worker page.render p' + page + ' @' + scale + 'x').finally(() => { _pending.delete(id); });
+        },
+        destroy: () => {
+          _dead = true;
+          try { _worker.postMessage({ t: 'close' }); } catch (_) {}
+          try { _worker.terminate(); } catch (_) {}
+          _pending.forEach((p) => { try { p.reject(new Error('raster worker destroyed')); } catch (_) {} });
+          _pending.clear();
+        },
+      };
+    } catch (_) { return null; }
+  };
   const extractPdfTextTesseract = async (base64, onProgress, lang, pageRange) => {
     let pdf = null; // (2026-06-20) freed in finally to release the pdf.js worker doc (batch memory leak)
+    let _rasterWorker = null; // (2026-08-16) hidden-tab-safe rasterizer; freed in the same finally
     try {
       await ensurePdfJsLoaded();
       await ensureTesseractLoaded();
@@ -14109,6 +14235,14 @@ var createDocPipeline = function(deps) {
       const raw = base64.includes(',') ? base64.split(',')[1] : base64;
       const bytes = _b64ToBytes(base64); // capped at _MAX_PDF_BYTES (was raw atob — uncapped OOM on low-RAM devices)
       pdf = await _withTimeout(window.pdfjsLib.getDocument({ data: bytes }).promise, 60000, 'pdf.js getDocument (OCR)');
+      // Hidden-tab-safe rasterization (see _alloCreateOcrRasterWorker above). Fail-open: null
+      // here simply means every page uses the existing main-thread ladder, exactly as before.
+      _rasterWorker = await _alloCreateOcrRasterWorker(bytes);
+      if (_rasterWorker) {
+        try { warnLog('[Tesseract] page rasterization is running in a background worker (OffscreenCanvas) — OCR continues at full speed while this tab is hidden or minimized'); } catch (_) {}
+      } else {
+        try { warnLog('[Tesseract] background-worker rasterization unavailable on this host — using the main-thread renderer (a hidden tab will slow page rendering)'); } catch (_) {}
+      }
       const useLang = lang || 'eng';
       // 2026-06-08: per-page try/catch — a single page's OOM/canvas/recognize
       // failure previously bubbled to the outer catch and threw away ALL pages'
@@ -14130,6 +14264,7 @@ var createDocPipeline = function(deps) {
       }
       for (let p = _ocrFirstPage; p <= _ocrLastPage; p++) {
         let canvas = null, renderScale = 2.0, renderViewport = null; // hoisted so the finally can free it on BOTH success and failure
+        let workerBlob = null, _workerDims = null; // (2026-08-16) set by the hidden-tab-safe worker path instead of `canvas`
         if (_renderCircuitOpen) {
           const _skipMsg = 'Tesseract render circuit open after repeated page-render timeouts; Vision OCR companion remains active';
           pages.push({ pageNum: p, text: '', words: null, error: _skipMsg });
@@ -14158,6 +14293,23 @@ var createDocPipeline = function(deps) {
           // A successful probe resets the ladder; a second failure opens the circuit below.
           const _renderScales = _renderFailureStreak > 0 ? [1.0] : [2.0, 1.25, 1.0];
           for (const _sc of _renderScales) {
+            // Worker path first (2026-08-16): renders on a dedicated thread the browser does not
+            // visibility-throttle, so a hidden tab no longer stalls this rung. Any failure notes
+            // it and falls through to the main-thread canvas attempt below AT THE SAME RUNG; two
+            // failures retire the worker for the run. Same timeout ladder as the canvas path.
+            if (_rasterWorker && _rasterWorker.healthy()) {
+              try {
+                const _wr = await _rasterWorker.render(p, _sc, _sc >= 2 ? 45000 : (_sc >= 1.25 ? 35000 : 55000));
+                workerBlob = new Blob([_wr.buf], { type: 'image/png' });
+                _workerDims = { width: _wr.width, height: _wr.height };
+                renderScale = _sc;
+                renderViewport = { transform: Array.isArray(_wr.transform) ? _wr.transform : null };
+                break;
+              } catch (_wErr) {
+                _rasterWorker.noteFailure();
+                try { warnLog('[Tesseract] worker raster p' + p + ' @' + _sc + 'x failed (' + ((_wErr && _wErr.message) || _wErr) + ') — falling back to the main-thread renderer for this rung' + (_rasterWorker.healthy() ? '' : '; worker retired for this run')); } catch (_) {}
+              }
+            }
             const _vp = page.getViewport({ scale: _sc });
             const _c = document.createElement('canvas'); _c.setAttribute('aria-hidden', 'true');
             _c.width = _vp.width; _c.height = _vp.height;
@@ -14180,14 +14332,14 @@ var createDocPipeline = function(deps) {
           // Bounded, self-healing OCR (see _ocrRecognize): timeout per attempt + transient
           // retry + English fallback. v5 returns ONLY text by default; {blocks:true} opts into
           // the word hierarchy that places each word's invisible glyphs at its real position.
-          const result = await _ocrRecognize(canvas, useLang, 'p' + p);
+          const result = await _ocrRecognize(canvas || workerBlob, useLang, 'p' + p); // tesseract.js accepts a canvas or a Blob interchangeably
           const data = (result && result.data) || {};
           const pageText = (data.text || '').trim();
           const words = _collectOcrWords(data, renderScale); // normalize bboxes to PDF points (actual render scale)
           const viewportTransform = (renderViewport && Array.isArray(renderViewport.transform))
             ? renderViewport.transform.map(n => n / renderScale)
             : null;
-          pages.push({ pageNum: p, text: pageText, words: (words && words.length ? words : null), pageW: canvas.width / renderScale, pageH: canvas.height / renderScale, viewportTransform });
+          pages.push({ pageNum: p, text: pageText, words: (words && words.length ? words : null), pageW: (canvas ? canvas.width : _workerDims.width) / renderScale, pageH: (canvas ? canvas.height : _workerDims.height) / renderScale, viewportTransform });
         } catch (pageErr) {
           const _pmsg = (pageErr && pageErr.message) || String(pageErr);
           pages.push({ pageNum: p, text: '', words: null, error: _pmsg });
@@ -14226,6 +14378,7 @@ var createDocPipeline = function(deps) {
       return { fullText: '', pages: [], pageCount: 0, sourceCharCount: 0, error: e && e.message, pageErrors: _errs };
     } finally {
       if (pdf) { try { pdf.destroy(); } catch (_) {} }
+      if (_rasterWorker) { try { _rasterWorker.destroy(); } catch (_) {} } // free the second pdf.js copy + thread
       try { await _ocrWorkerRelease(); } catch (_) {} // P7: free the shared worker at end-of-document
     }
   };
