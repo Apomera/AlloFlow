@@ -1484,7 +1484,32 @@ const COMPILE_PAIRS = [
             });
             return fs.readFileSync(path.join(ROOT, 'educator_evaluation_module.js'), 'utf8');
         },
-    },    simplePureCompilePair('AccessibilityEvidence', 'accessibility_evidence', 'AccessibilityEvidenceModule'),
+    },
+    {
+        // ── view_pdf_audit ── Added 2026-08-15. This module was edited, "verified" with
+        // `node build.js --compile`, and the compile silently never touched it: PdfAuditView
+        // appears in this file's CDN module registry (~line 1024) but was absent from
+        // COMPILE_PAIRS, and COMPILE_PAIRS is the ONLY thing build.js compiles. Nothing in
+        // build.js, deploy.sh or package.json invoked _build_view_pdf_audit_module.js, so it
+        // was a manual step nobody documented. The failure is silent in the worst way: a deploy
+        // still rewrites this module's CDN hash refs, so the file shows up as modified in the
+        // commit while its COMPILED CONTENT is stale. Same execFileSync shape as
+        // EducatorEvaluation above — the standalone builder writes both the root module and the
+        // desktop/web-app/public mirror itself; we read the result back so compileSources can
+        // still diff it and syntax-check it like every other pair.
+        name: 'PdfAuditView',
+        srcPath: path.join(ROOT, 'view_pdf_audit_source.jsx'),
+        modPath: path.join(ROOT, 'view_pdf_audit_module.js'),
+        publicPath: path.join(ROOT, 'desktop', 'web-app', 'public', 'view_pdf_audit_module.js'),
+        wrap() {
+            execFileSync(process.execPath, [path.join(ROOT, '_build_view_pdf_audit_module.js')], {
+                cwd: ROOT,
+                stdio: 'inherit',
+            });
+            return fs.readFileSync(path.join(ROOT, 'view_pdf_audit_module.js'), 'utf8');
+        },
+    },
+    simplePureCompilePair('AccessibilityEvidence', 'accessibility_evidence', 'AccessibilityEvidenceModule'),
     simplePureCompilePair('VerificationPolicy', 'verification_policy', 'VerificationPolicyModule'),
     simplePureCompilePair('ReviewDocumentSession', 'review_document_session', 'ReviewDocumentSessionModule'),
     simplePureCompilePair('SemanticReview', 'semantic_review', 'SemanticReviewModule'),
@@ -1720,6 +1745,37 @@ const COMPILE_PAIRS = [
     },
 ];
 
+// ── Uncompiled-source report (2026-08-15) ────────────────────────────────────
+// COMPILE_PAIRS is the ONLY thing build.js compiles: `--compile` and
+// `--mode=prod` (deploy.sh Step 3) both run exactly this list and nothing else.
+// A *_source.jsx outside it is never rebuilt by ANY automated step — nothing in
+// build.js, deploy.sh or package.json invokes its _build_* script. So editing
+// such a source and deploying ships the PREVIOUS module, and it is silent in the
+// worst way: the deploy still rewrites that module's CDN hash refs, so the file
+// appears as "modified" in the commit while its compiled content is stale.
+//
+// This does NOT close the gap — 100+ sources sit outside the list, and spawning
+// a builder per module on every deploy is its own problem. It makes the gap
+// LOUD, so the next person cannot mistake "the build said OK" for "my file was
+// built". Advisory only: it must never fail a build.
+function reportUncompiledSources() {
+    try {
+        const listed = new Set(COMPILE_PAIRS.map(p => path.basename(p.srcPath)));
+        const files = fs.readdirSync(ROOT);
+        const orphans = files.filter(f => /_source\.jsx$/.test(f)).filter(f => {
+            const mod = f.replace(/_source\.jsx$/, '_module.js');
+            return !listed.has(f) && files.includes(mod) && files.includes('_build_' + mod);
+        });
+        if (!orphans.length) return;
+        console.log('');
+        console.log('  ⚠ ' + orphans.length + ' source(s) have a generated module AND a _build_ script but are NOT in COMPILE_PAIRS.');
+        console.log('    build.js never rebuilds these. Editing one and deploying ships the OLD module.');
+        console.log('    Build by hand:  node _build_<module>.js');
+        const show = orphans.slice(0, 8);
+        for (const f of show) console.log('      · ' + f);
+        if (orphans.length > show.length) console.log('      · …and ' + (orphans.length - show.length) + ' more');
+    } catch (_) { /* reporting must never break a build */ }
+}
 function compileSources() {
     const results = [];
     for (const pair of COMPILE_PAIRS) {
@@ -1800,6 +1856,7 @@ if (args.includes('--compile')) {
         console.log(`  ${icon} ${r.name}: ${r.status}${r.reason ? ' — ' + r.reason : ''}${r.bytes ? ' (' + r.bytes + ' bytes)' : ''}`);
         if (r.status === 'error' || r.status === 'syntax-error') hadError = true;
     }
+    reportUncompiledSources();
     process.exit(hadError ? 1 : 0);
 }
 
@@ -1815,6 +1872,9 @@ if (!fs.existsSync(SOURCE)) {
 if (mode === 'prod') {
     console.log('── Compiling source modules ──');
     const compileResults = compileSources();
+    // Same advisory in the PROD path — this is the one deploy.sh Step 3 runs, so it is
+    // where a stale-but-shipped module actually reaches users.
+    reportUncompiledSources();
     for (const r of compileResults) {
         const icon = r.status === 'compiled' ? '🔧' : r.status === 'unchanged' ? '✓' : r.status === 'skipped' ? '↩️' : '❌';
         console.log(`  ${icon} ${r.name}: ${r.status}${r.reason ? ' — ' + r.reason : ''}`);
