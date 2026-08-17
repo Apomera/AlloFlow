@@ -60,7 +60,16 @@
     </script>
     <script src="site.js" defer></script>
     <script src="feedback.js" defer></script>
-    <script src="https://unpkg.com/lucide@latest" defer></script>
+    <script src="https://unpkg.com/lucide@1.31.0" defer></script>
+    <!-- Every other page calls this; feedback.html never did, so all eight of its
+         icons stayed as empty <i data-lucide> elements, including the mobile menu
+         button and back-to-top. Deferred scripts run before DOMContentLoaded, so
+         lucide is loaded by the time this fires. -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.lucide) lucide.createIcons();
+        });
+    </script>
 </head>
 
 <body class="promo-page">
