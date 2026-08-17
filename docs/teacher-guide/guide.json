@@ -7,6 +7,7 @@
             "title": "I am planning my first lesson",
             "description": "Start with a focused, student-ready resource and a teacher review gate.",
             "chapterSlugs": [
+                "quick-reference",
                 "start-here",
                 "prepare-a-lesson",
                 "universal-settings",
@@ -68,6 +69,13 @@
             "summary": "Choose an entry route and prepare a first student-ready resource.",
             "audience": "First-time teacher",
             "time": "About 15 minutes"
+        },
+        {
+            "source": "chapters/18-quick-reference.md",
+            "slug": "quick-reference",
+            "summary": "The printable one-pager: the fifteen-minute flow, the three keys, talking to AlloBot, and where things live.",
+            "audience": "Everyone",
+            "time": "2 minutes"
         },
         {
             "source": "chapters/02-prepare-a-lesson.md",

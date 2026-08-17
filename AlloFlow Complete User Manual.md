@@ -11,22 +11,23 @@ This consolidated Markdown edition is generated for repository browsing, review,
 ## Contents
 
 1. [Start here: prepare your first student-ready resource](#start-here-prepare-your-first-student-ready-resource) · Choose an entry route and prepare a first student-ready resource.
-2. [Prepare a purposeful, differentiated lesson](#prepare-a-purposeful-differentiated-lesson) · Turn source material into a purposeful, differentiated lesson package.
-3. [Universal Settings: set it once, not per tool](#universal-settings-set-it-once-not-per-tool) · Set grade level, language, translations, and other shared defaults once for the whole lesson.
-4. [Run a live lesson safely and calmly](#run-a-live-lesson-safely-and-calmly) · Prepare, run, differentiate, and close a live lesson safely.
-5. [Adventure Mode: a story your lesson can carry](#adventure-mode-a-story-your-lesson-can-carry) · When students see Adventure Mode, lesson-scoped resume, and the assignment switch.
-6. [Family mode: AlloFlow for a parent at home](#family-mode-alloflow-for-a-parent-at-home) · What a parent authoring at home can reach, what stays school-only, and how teachers hand off cleanly.
-7. [Accessibility and UDL: verify the learner experience](#accessibility-and-udl-verify-the-learner-experience) · Check the real learner experience and remove barriers before sharing.
-8. [Review evidence and plan next steps](#review-evidence-and-plan-next-steps) · Interpret classroom evidence carefully and plan useful follow-up.
-9. [Classroom workflows](#classroom-workflows) · Use practical recipes for common middle-school teaching needs.
-10. [Privacy and responsible AI](#privacy-and-responsible-ai) · Use student data and generated materials with appropriate judgment.
-11. [AlloBot: the assistant that talks with you](#allobot-the-assistant-that-talks-with-you) · Talking with the assistant: conversation first, offers before actions, and what the microphone states mean.
-12. [Documents and printing: from resource to handout](#documents-and-printing-from-resource-to-handout) · The four export formats, the handout reading tools, annotations that stay put, and printing that always comes out light.
-13. [Troubleshooting](#troubleshooting) · Recover work and diagnose common classroom problems.
-14. [Math Fluency: timed practice and CBM probes](#math-fluency-timed-practice-and-cbm-probes) · Where timed math practice and CBM probes live, and the fastest way to open them.
-15. [Specialist and product reference](#specialist-and-product-reference) · Find specialist surfaces, keyboard help, and product terminology.
-16. [School rollout and coaching](#school-rollout-and-coaching) · Introduce AlloFlow as an instructional routine with shared guardrails and coaching.
-17. [For your IT department: the one-page technical brief](#for-your-it-department-the-one-page-technical-brief) · The technical brief: static app, no accounts, on-device data, the three AI backend options, and what to verify.
+2. [Quick reference: the one page to keep nearby](#quick-reference-the-one-page-to-keep-nearby) · The printable one-pager: the fifteen-minute flow, the three keys, talking to AlloBot, and where things live.
+3. [Prepare a purposeful, differentiated lesson](#prepare-a-purposeful-differentiated-lesson) · Turn source material into a purposeful, differentiated lesson package.
+4. [Universal Settings: set it once, not per tool](#universal-settings-set-it-once-not-per-tool) · Set grade level, language, translations, and other shared defaults once for the whole lesson.
+5. [Run a live lesson safely and calmly](#run-a-live-lesson-safely-and-calmly) · Prepare, run, differentiate, and close a live lesson safely.
+6. [Adventure Mode: a story your lesson can carry](#adventure-mode-a-story-your-lesson-can-carry) · When students see Adventure Mode, lesson-scoped resume, and the assignment switch.
+7. [Family mode: AlloFlow for a parent at home](#family-mode-alloflow-for-a-parent-at-home) · What a parent authoring at home can reach, what stays school-only, and how teachers hand off cleanly.
+8. [Accessibility and UDL: verify the learner experience](#accessibility-and-udl-verify-the-learner-experience) · Check the real learner experience and remove barriers before sharing.
+9. [Review evidence and plan next steps](#review-evidence-and-plan-next-steps) · Interpret classroom evidence carefully and plan useful follow-up.
+10. [Classroom workflows](#classroom-workflows) · Use practical recipes for common middle-school teaching needs.
+11. [Privacy and responsible AI](#privacy-and-responsible-ai) · Use student data and generated materials with appropriate judgment.
+12. [AlloBot: the assistant that talks with you](#allobot-the-assistant-that-talks-with-you) · Talking with the assistant: conversation first, offers before actions, and what the microphone states mean.
+13. [Documents and printing: from resource to handout](#documents-and-printing-from-resource-to-handout) · The four export formats, the handout reading tools, annotations that stay put, and printing that always comes out light.
+14. [Troubleshooting](#troubleshooting) · Recover work and diagnose common classroom problems.
+15. [Math Fluency: timed practice and CBM probes](#math-fluency-timed-practice-and-cbm-probes) · Where timed math practice and CBM probes live, and the fastest way to open them.
+16. [Specialist and product reference](#specialist-and-product-reference) · Find specialist surfaces, keyboard help, and product terminology.
+17. [School rollout and coaching](#school-rollout-and-coaching) · Introduce AlloFlow as an instructional routine with shared guardrails and coaching.
+18. [For your IT department: the one-page technical brief](#for-your-it-department-the-one-page-technical-brief) · The technical brief: static app, no accounts, on-device data, the three AI backend options, and what to verify.
 
 ---
 
@@ -195,6 +196,55 @@ You do not have to begin with a lesson at all. Every interactive STEAM Lab tool 
 Protect instructional time first. Keep a stable fallback ready: the original source, a downloadable handout, or a simple discussion prompt. If a module is still loading, wait briefly, use its retry control if shown, or return to the previous view. If generation fails, preserve your source and directions before refreshing.
 
 For a systematic recovery sequence, see [Troubleshooting](#troubleshooting). For planning a fuller package, continue to [Prepare a lesson](#prepare-a-purposeful-differentiated-lesson). To teach it synchronously, continue to [Live sessions](#run-a-live-lesson-safely-and-calmly).
+
+---
+
+## Quick reference: the one page to keep nearby
+
+Everything on this page is a reminder, not a lesson. If a line raises a question, the linked chapter answers it. Print this one for pilot teachers.
+
+### The fifteen-minute lesson, condensed
+
+1. Open **Source Material** and paste, import, or generate a text ([Prepare a lesson](#prepare-a-purposeful-differentiated-lesson)).
+2. Open **Universal Settings** once: grade, language, translations ([Universal Settings](#universal-settings-set-it-once-not-per-tool)).
+3. Generate two or three resources; review each before students see it.
+4. **Preview, Package, Deliver**, then test the student link yourself.
+
+### Keys worth knowing
+
+| Press | What happens |
+| --- | --- |
+| **Ctrl+K** (or Cmd+K) | The command palette: type what you want ("open the glossary", "math minute") and it takes you there. Ctrl+Shift+P does the same. |
+| **?** | Help Mode on or off: click anything highlighted for a plain-language explanation. |
+| **Esc** | Closes the palette, leaves Help Mode, backs out of most dialogs. |
+
+### Talking to AlloBot, condensed
+
+- Just talk. Ordinary speech gets a conversational answer; nothing you say is "wrong."
+- Anything that would change the screen is **offered** first; say yes to do it, or keep talking and the offer fades.
+- Say **"command"** before a phrase to skip the offer and act immediately.
+- "Stop reading" and the read-aloud controls always act instantly.
+- The voice indicator names its state in words: Listening, Paused, Thinking, Speaking. A small meter shows your voice being heard. ([AlloBot](#allobot-the-assistant-that-talks-with-you))
+
+### Where things live
+
+| You want | Go to |
+| --- | --- |
+| Narrow the tool list | **Find a tool** at the top of the sidebar (says in words when a filter is on) |
+| A message that vanished | The header **lightbulb → Messages** |
+| Your saved work | AI settings → **Open saved work** |
+| A finished copy vs a blank copy | Export: **Print / Save as PDF** vs **Worksheet** ([Documents and printing](#documents-and-printing-from-resource-to-handout)) |
+| One tool to share with anyone | Its direct link, no sign-in needed ([Start here](#start-here-prepare-your-first-student-ready-resource)) |
+| Timed math practice | Math tool → Mode, or Ctrl+K then "math minute" ([Math Fluency](#math-fluency-timed-practice-and-cbm-probes)) |
+| Turn Adventure off for an assignment | Project Settings → "Include Adventure in this assignment" ([Adventure Mode](#adventure-mode-a-story-your-lesson-can-carry)) |
+| "AI extras: off" in the STEAM Lab | Nothing is broken; click the pill for the three ways to turn AI on ([Troubleshooting](#troubleshooting)) |
+
+### The habits that prevent the common problems
+
+- **Review before delivery, every time.** A fluent answer can still be wrong ([Privacy and responsible AI](#privacy-and-responsible-ai)).
+- **Set Universal Settings before generating**, not after: they apply to new work only.
+- **Test the student link as a student** before class, and again after a meaningful revision.
+- **Save Project** when a lesson matters: work lives on this device, and the project file is your backup.
 
 ---
 

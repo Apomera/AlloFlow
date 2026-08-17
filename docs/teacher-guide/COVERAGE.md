@@ -176,3 +176,11 @@ Page Designer (power-user surface), Admin/IT (different audience, different docu
 
 Remaining deliberate gaps: Educator evaluation (document after a real district setup),
 Page Designer (power-user surface).
+
+## Fourth pass, 2026-08-16
+
+- **Quick reference** — chapter 2 position (right after Start here): the printable one-pager
+  for pilot teachers. Every keyboard claim verified against source (Ctrl/Cmd+K and
+  Ctrl+Shift+P open the palette; ? toggles Help Mode outside fields; Esc backs out), the
+  AlloBot summary against L7's landed behavior, and every "where things live" row against the
+  shipped labels ("Open saved work", "Find a tool", the lightbulb Messages list).
