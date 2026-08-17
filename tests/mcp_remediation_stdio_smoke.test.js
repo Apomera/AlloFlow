@@ -286,13 +286,13 @@ describe('remediation MCP: protocol + tool registry', () => {
     const registry = requireCjs(resolve(process.cwd(), 'desktop/mcp/build_registry_metadata.cjs'));
     const artifact = join(tmp, 'registry-fixture.mcpb');
     writeFileSync(artifact, Buffer.alloc(2048, 0x41));
-    const metadata = registry.buildRegistryMetadata({ artifactPath: artifact, tag: 'mcpb-v0.3.4' });
+    const metadata = registry.buildRegistryMetadata({ artifactPath: artifact, tag: 'mcpb-v0.3.5' });
     expect(metadata.$schema).toBe('https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json');
-    expect(metadata.name).toBe('io.github.apomera/alloflow-remediation');
-    expect(metadata.version).toBe('0.3.4');
+    expect(metadata.name).toBe('io.github.Apomera/alloflow-remediation');
+    expect(metadata.version).toBe('0.3.5');
     expect(metadata.packages).toHaveLength(1);
     expect(metadata.packages[0].registryType).toBe('mcpb');
-    expect(metadata.packages[0].identifier).toBe('https://github.com/Apomera/AlloFlow/releases/download/mcpb-v0.3.4/alloflow-remediation.mcpb');
+    expect(metadata.packages[0].identifier).toBe('https://github.com/Apomera/AlloFlow/releases/download/mcpb-v0.3.5/alloflow-remediation.mcpb');
     expect(metadata.packages[0].fileSha256).toBe('3a34c8dc4aec1554c04e0d0e61179d08362b329029db4632f5f086c37be74caa');
     expect(metadata.packages[0].transport.type).toBe('stdio');
   });

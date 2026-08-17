@@ -554,7 +554,7 @@ removed, verifies every vendored runtime hash, and confirms the bundle cannot si
 assets or dependencies from the repository checkout.
 
 Every build also extracts the exact emitted .mcpb into a fresh temporary directory, clears
-NODE_PATH, launches only the shipped server, and verifies the unique 29-tool name set, manifest/server parity,
+NODE_PATH, launches only the shipped server, and verifies the unique tool-name set, manifest/server parity,
 pipeline modules, keyless mode, and every bundled vendor-file hash. Repeat that acceptance check
 without rebuilding with npm run verify:mcpb-artifact (which also requires packaged Playwright),
 or pass a lean diagnostic artifact directly to

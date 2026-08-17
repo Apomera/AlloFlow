@@ -7,7 +7,7 @@ const path = require('path');
 const { buildManifest } = require('./build_mcpb.cjs');
 
 const REGISTRY_SCHEMA = 'https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json';
-const REGISTRY_NAME = 'io.github.apomera/alloflow-remediation';
+const REGISTRY_NAME = 'io.github.Apomera/alloflow-remediation';
 const REPOSITORY_URL = 'https://github.com/Apomera/AlloFlow';
 const RELEASE_FILE = 'alloflow-remediation.mcpb';
 

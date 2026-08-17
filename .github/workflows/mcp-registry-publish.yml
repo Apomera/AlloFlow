@@ -10,7 +10,7 @@ on:
         required: true
         type: string
       confirmation:
-        description: 'Type PUBLISH io.github.apomera/alloflow-remediation'
+        description: 'Type PUBLISH io.github.Apomera/alloflow-remediation'
         required: true
         type: string
 
@@ -28,7 +28,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       RELEASE_TAG: ${{ inputs.release_tag }}
       CONFIRMATION: ${{ inputs.confirmation }}
-      MCP_NAME: io.github.apomera/alloflow-remediation
+      MCP_NAME: io.github.Apomera/alloflow-remediation
       PUBLISHER_VERSION: v1.7.9
       PUBLISHER_SHA256: ab128162b0616090b47cf245afe0a23f3ef08936fdce19074f5ba0a4469281ac
     steps:

@@ -34,7 +34,7 @@ third-party components.
 ## Registry discovery
 
 This release is also the install source for the official MCP Registry entry
-io.github.apomera/alloflow-remediation. Registry discovery installs these same checksum-bound MCPB
+io.github.Apomera/alloflow-remediation. Registry discovery installs these same checksum-bound MCPB
 bytes; it does not route documents through an AlloFlow or Cloudflare server. Registry publication is
 a separate explicit maintainer action after the GitHub release has passed provenance verification.
 
