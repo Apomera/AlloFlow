@@ -173,6 +173,27 @@ Common ones: `isRtlLang`, `getRows: () => 2`, `formatInlineText: (s) => s`.
   `node dev-tools/sync_allosheet_assets.cjs` — `verify:gate` fails on that one
   first, before any other check.
 
+## Host-coupled modules: route-inject over the deployed app
+
+Some modules will not render in isolation no matter how many props you stub —
+stem_lab_module.js is one (7,800 lines, deep host coupling; the isolated
+attempt died on an untraceable undefined element type). For those, drive the
+DEPLOYED app and swap YOUR module in over the CDN copy:
+
+\
+**serviceWorkers: 'block' is mandatory.** The app registers a service worker,
+and SW-mediated fetches bypass page.route entirely — the interception silently
+does nothing and you measure the deployed code while believing you measured
+yours. That cost a full confused round on 2026-08-17 before the block went in.
+
+Navigation to a surface costs clicks: launch pad -> Full Platform -> role gate
+(Teacher, by getByText exact) -> Skip the Quick Start wizard -> the surface.
+Selectors go stale; when a click silently fails, dump candidates:
+.
+Mind the sidebar tool FILTER — a target can exist but be filtered out
+("Show all tools" first). This tests local module code against the DEPLOYED
+host, so a change that needs new host wiring still cannot be seen this way.
+
 ## What this proves, and what it does not
 
 It runs the real built artifact, the real host helpers and real CSS in a real
