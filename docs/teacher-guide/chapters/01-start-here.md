@@ -10,9 +10,9 @@ The Launch Pad offers several starting points. The wording can vary slightly by 
 
 The complete-workspace card is labeled **Full AlloFlow** in the Launch Pad. Some interface text and older deployments still call the same route **Full Platform**; **Guided Setup** is another label you may see for the guided route.
 
-![AlloFlow Launch Pad with Guided Mode, Full AlloFlow, Learning Tools, and Educator Tools](../assets/screenshots/00-launch-pad.png)
+![AlloFlow Launch Pad with Guided Mode, Full Platform, Learning Tools, and Educator Tools](../assets/screenshots/00-launch-pad.png)
 
-*Interface reference captured August 13, 2026 from the public AlloFlow deployment. Labels and available destinations can vary by deployment.*
+*Interface reference captured August 16, 2026 from the public AlloFlow deployment. Labels and available destinations can vary by deployment.*
 
 | Entry route | Use it when | Good first task |
 | --- | --- | --- |

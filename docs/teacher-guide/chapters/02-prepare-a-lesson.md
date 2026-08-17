@@ -92,6 +92,10 @@ Interests can increase relevance, but they should not stereotype students or dis
 
 The sidebar's **Find a tool** panel narrows the tool list by purpose (Recommended, Make accessible, Engage, Assess and deliver) or by search. It filters what you see; the tool cards below it are what actually create. While a filter is on, the panel says so in words ("A filter is on: showing 8 of 22 tools"), and you can only hide the panel when no filter is active, so tools can never go missing without an explanation on screen.
 
+![The Find a tool panel with purpose filters and the active-filter notice](../assets/screenshots/06-find-a-tool.png)
+
+*Interface reference captured August 16, 2026 from the public AlloFlow deployment.*
+
 ### Build a small lesson package
 
 A practical package usually has three to five parts:

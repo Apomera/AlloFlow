@@ -10,6 +10,10 @@ If you have not made a resource yet, start with [Start here](01-start-here.md). 
 
 The panel gathers the settings that would otherwise repeat in every tool.
 
+![Universal Settings with grade level, output language, and per-setting coverage notes](../assets/screenshots/07-universal-settings.png)
+
+*Interface reference captured August 16, 2026 from the public AlloFlow deployment. The note at the top and the "applies to" lines under each control state exactly which resources a setting reaches.*
+
 | Setting | What it does | Where you notice it |
 | --- | --- | --- |
 | **Grade level** | Sets the reading and complexity target for new resources. | Sentence length, vocabulary, and question difficulty. |

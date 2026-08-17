@@ -43,9 +43,9 @@ The Launch Pad offers several starting points. The wording can vary slightly by 
 
 The complete-workspace card is labeled **Full AlloFlow** in the Launch Pad. Some interface text and older deployments still call the same route **Full Platform**; **Guided Setup** is another label you may see for the guided route.
 
-![AlloFlow Launch Pad with Guided Mode, Full AlloFlow, Learning Tools, and Educator Tools](docs/teacher-guide/assets/screenshots/00-launch-pad.png)
+![AlloFlow Launch Pad with Guided Mode, Full Platform, Learning Tools, and Educator Tools](docs/teacher-guide/assets/screenshots/00-launch-pad.png)
 
-*Interface reference captured August 13, 2026 from the public AlloFlow deployment. Labels and available destinations can vary by deployment.*
+*Interface reference captured August 16, 2026 from the public AlloFlow deployment. Labels and available destinations can vary by deployment.*
 
 | Entry route | Use it when | Good first task |
 | --- | --- | --- |
@@ -342,6 +342,10 @@ Interests can increase relevance, but they should not stereotype students or dis
 
 The sidebar's **Find a tool** panel narrows the tool list by purpose (Recommended, Make accessible, Engage, Assess and deliver) or by search. It filters what you see; the tool cards below it are what actually create. While a filter is on, the panel says so in words ("A filter is on: showing 8 of 22 tools"), and you can only hide the panel when no filter is active, so tools can never go missing without an explanation on screen.
 
+![The Find a tool panel with purpose filters and the active-filter notice](docs/teacher-guide/assets/screenshots/06-find-a-tool.png)
+
+*Interface reference captured August 16, 2026 from the public AlloFlow deployment.*
+
 #### Build a small lesson package
 
 A practical package usually has three to five parts:
@@ -512,6 +516,10 @@ If you have not made a resource yet, start with [Start here](#start-here-prepare
 ### What the card controls
 
 The panel gathers the settings that would otherwise repeat in every tool.
+
+![Universal Settings with grade level, output language, and per-setting coverage notes](docs/teacher-guide/assets/screenshots/07-universal-settings.png)
+
+*Interface reference captured August 16, 2026 from the public AlloFlow deployment. The note at the top and the "applies to" lines under each control state exactly which resources a setting reaches.*
 
 | Setting | What it does | Where you notice it |
 | --- | --- | --- |

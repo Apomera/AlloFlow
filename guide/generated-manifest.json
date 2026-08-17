@@ -7,7 +7,7 @@
   "outputs": [
     {
       "path": "AlloFlow Complete User Manual.md",
-      "sha256": "93cb591941da1f9377f0eced01a6acd6c117240eb5e79459a3141db6225972a2"
+      "sha256": "2c047a0afd25443482c72e22fcd5199c263a09010b42840203b4e7ea616d0aa8"
     },
     {
       "path": "guide/accessibility-and-udl.html",
@@ -59,11 +59,11 @@
     },
     {
       "path": "guide/offline.html",
-      "sha256": "de0f3cc95acdb36819dbd1e0ea469c03819060bf599b98cadcc9b12ba9462a07"
+      "sha256": "af841356765329df3661da9fec5681367f55dfa29611c3eba65788a54a5bb766"
     },
     {
       "path": "guide/prepare-a-lesson.html",
-      "sha256": "0ed6fc6613a04ee9045ff66f86df2b2e239fdf615bc39e0e5b7af23e18eb7067"
+      "sha256": "5e776e6cb7e3eb97ae52420ceca9b99284f21c66906b1ccb08808efb3f33be7d"
     },
     {
       "path": "guide/privacy-and-responsible-ai.html",
@@ -83,7 +83,7 @@
     },
     {
       "path": "guide/search-index.json",
-      "sha256": "5fc981fc4d0ec1dc20a80399b10251f002d066c8b7c4c44f81543f7ddf6ab38e"
+      "sha256": "72adeb1443394519787da8d983470f15469fd8ded33ab8821d37751c907ba2ce"
     },
     {
       "path": "guide/specialist-reference.html",
@@ -91,7 +91,7 @@
     },
     {
       "path": "guide/start-here.html",
-      "sha256": "d7f12114aeedd6af2ea4d0bc9b6d5ed5e48d8ad2a9ce55836c94bf1daff11dd9"
+      "sha256": "b5c2371a4a2d74c42110797a7774cf8bd3d9861d401da5aea98e4b0d59548742"
     },
     {
       "path": "guide/tool-reference.html",
@@ -103,7 +103,7 @@
     },
     {
       "path": "guide/universal-settings.html",
-      "sha256": "813027017b33742e0a8642bec3bfe6832ae1e3178e3ec41965f437770d095409"
+      "sha256": "c77e398115dcb2eb5caac90b9d8bccb4476475d84080b6efe38748ad96d45ead"
     }
   ]
 }
