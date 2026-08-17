@@ -1816,6 +1816,7 @@
         setNumberLineRange,
         setShowAssessmentBuilder,
         setShowStemLab,
+        setExpandedTools,
         setStemLabCreateMode,
         setStemLabTab,
         setStemLabTool,
@@ -4914,12 +4915,34 @@
           onClick: () => {
             const fluencyBlocks = assessmentBlocks.filter(b => b.type === 'fluency');
             if (fluencyBlocks.length > 0 && assessmentBlocks.length === fluencyBlocks.length) {
-              startMathFluencyProbe(false);
+              // Route to the LIVE fluency panel (MathFluencyPanel, mounted in the
+              // sidebar math accordion under mathMode === 'Fluency Probes').
+              // The old call here, startMathFluencyProbe(false), was the host's
+              // DEAD implementation: its overlay was removed, so this button
+              // showed a toast and nothing else while a 120s timer ran — and
+              // before the finishMathFluencyProbe guard landed, that timer then
+              // recorded a fabricated 0-attempt CBM result into the student's
+              // probe history. The panel owns its own state, so all this button
+              // must do is put it on screen.
+              if (typeof setMathMode === 'function') setMathMode('Fluency Probes');
+              if (typeof setExpandedTools === 'function') setExpandedTools(prev => (Array.isArray(prev) && prev.includes('math')) ? prev : [...(Array.isArray(prev) ? prev : []), 'math']);
               setShowStemLab(false);
-              addToast(t('stem.fluency.fluency_drill_started') + fluencyBlocks.reduce((s, b) => s + b.quantity, 0) + ' problems', 'info');
+              // Not the old "Fluency drill started!" key: nothing has started —
+              // the panel opened, and saying otherwise is how this button lied
+              // for a month. Fallback-first pattern matches the rest of this file.
+              addToast(t('stem.fluency.panel_opened') || 'Fluency Probes is open in the Math panel. Set the operation and press Start.', 'info');
               return;
             }
             const nonFluencyBlocks = assessmentBlocks.filter(b => b.type !== 'fluency');
+            // A MIXED assessment reaches here (the branch above only fires when
+            // EVERY block is fluency), and fluency blocks cannot be generated
+            // into a printed document — they are a timed interactive probe. They
+            // used to be dropped without a word, so a teacher who composed
+            // "10 computation + 1 fluency" got a document silently missing a
+            // section. Say what is happening instead.
+            if (fluencyBlocks.length > 0) {
+              addToast(t('stem.fluency.mixed_blocks_note') || ('Note: ' + fluencyBlocks.length + ' fluency block(s) are not part of the generated document. Run them from the Math panel’s Fluency Probes mode.'), 'warning');
+            }
             setMathInput('Building assessment: ' + nonFluencyBlocks.length + ' sections...');
             setMathMode('Freeform Builder');
             setActiveView('math');

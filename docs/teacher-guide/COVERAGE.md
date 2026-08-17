@@ -184,3 +184,12 @@ Page Designer (power-user surface).
   Ctrl+Shift+P open the palette; ? toggles Help Mode outside fields; Esc backs out), the
   AlloBot summary against L7's landed behavior, and every "where things live" row against the
   shipped labels ("Open saved work", "Find a tool", the lightbulb Messages list).
+
+## Fifth pass, 2026-08-16
+
+- **Make a document accessible** — chapter 19: the remediation workflow in the teacher's
+  register (audit, Make Accessible, mandatory human review, the evidence report, alternate
+  formats incl. BRF/DAISY, the no-egress local-model option), cross-linked to the white
+  paper for the district-evaluation depth. Surface names and export formats verified against
+  view_pdf_audit source. This closes the last major feature gap; remaining deliberate gaps
+  are unchanged (Educator evaluation, Page Designer).

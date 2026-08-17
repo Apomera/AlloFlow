@@ -37,7 +37,8 @@
             "chapterSlugs": [
                 "accessibility-and-udl",
                 "specialist-reference",
-                "math-fluency"
+                "math-fluency",
+                "make-a-document-accessible"
             ]
         },
         {
@@ -153,6 +154,13 @@
             "summary": "The four export formats, the handout reading tools, annotations that stay put, and printing that always comes out light.",
             "audience": "Classroom teachers",
             "time": "10 minutes"
+        },
+        {
+            "source": "chapters/19-make-a-document-accessible.md",
+            "slug": "make-a-document-accessible",
+            "summary": "Turning an inherited PDF into an accessible version: the audit, Make Accessible, the human review, the evidence report, and the no-egress option.",
+            "audience": "Teachers, specialists, and accessibility staff",
+            "time": "8 minutes"
         },
         {
             "source": "chapters/08-troubleshooting.md",

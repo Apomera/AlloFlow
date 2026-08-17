@@ -37,6 +37,7 @@ Everything on this page is a reminder, not a lesson. If a line raises a question
 | Timed math practice | Math tool → Mode, or Ctrl+K then "math minute" ([Math Fluency](13-math-fluency.md)) |
 | Turn Adventure off for an assignment | Project Settings → "Include Adventure in this assignment" ([Adventure Mode](12-adventure-mode.md)) |
 | "AI extras: off" in the STEAM Lab | Nothing is broken; click the pill for the three ways to turn AI on ([Troubleshooting](08-troubleshooting.md)) |
+| Fix an inherited PDF | The remediation workflow: audit, Make Accessible, review, export with evidence ([Make a document accessible](19-make-a-document-accessible.md)) |
 
 ## The habits that prevent the common problems
 

@@ -72,11 +72,36 @@ describe('the state of play, pinned so it is not re-argued from memory', () => {
     });
   });
 
-  it('the dead launcher is still wired to the STEM Lab assessment builder', () => {
+  it('the assessment builder routes to the LIVE panel, not the dead host path', () => {
+    // Fixed 2026-08-16: the all-fluency branch used to call
+    // startMathFluencyProbe(false), the host's dead implementation — a toast,
+    // an empty screen, and (before the finishMathFluencyProbe guard) a
+    // fabricated 0-attempt CBM record when its timer expired. It now opens the
+    // live panel: mathMode 'Fluency Probes' plus the sidebar math accordion.
     const stem = readFileSync('stem_lab/stem_lab_module.js', 'utf8');
-    expect(stem).toContain('startMathFluencyProbe(false);');
-    // and startMathFluencyProbe does not set the mode the live panel needs,
-    // so nothing renders when that button is pressed
+    const branch = stem.slice(
+      stem.indexOf("const fluencyBlocks = assessmentBlocks.filter(b => b.type === 'fluency');"),
+      stem.indexOf("const nonFluencyBlocks = assessmentBlocks.filter(b => b.type !== 'fluency');")
+    );
+    expect(branch).toContain("setMathMode('Fluency Probes')");
+    expect(branch).toContain("'math'");
+    expect(branch).not.toContain('startMathFluencyProbe(false);');
+    // No other live call site remains anywhere in the module (the destructured
+    // prop and an explanatory comment are allowed).
+    expect(stem).not.toContain('startMathFluencyProbe(false);');
+    // Mirrors carry the fix — three copies, per the STEM three-copies rule.
+    for (const mirror of ['desktop/web-app/public/stem_lab/stem_lab_module.js', 'desktop/web-app/public/stem_lab_module.js']) {
+      expect(readFileSync(mirror, 'utf8')).toBe(stem);
+    }
+  });
+
+  it('a mixed assessment names its dropped fluency blocks instead of silently omitting them', () => {
+    const stem = readFileSync('stem_lab/stem_lab_module.js', 'utf8');
+    expect(stem).toContain('if (fluencyBlocks.length > 0) {');
+    expect(stem).toContain("t('stem.fluency.mixed_blocks_note')");
+  });
+
+  it('the host launcher itself is still the dead one (unwired, pending deletion)', () => {
     const start = anti.slice(anti.indexOf('const startMathFluencyProbe ='), anti.indexOf('const startMathFluencyProbe =') + 1600);
     expect(start).toContain("setActiveView('math');");
     expect(start).not.toContain("setMathMode('Fluency Probes')");

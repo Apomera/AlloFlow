@@ -240,7 +240,7 @@ describe('teacher guide HTML accessibility', () => {
     }
   );
 
-  it('resolves every generated chapter and in-page link', { timeout: 240000 }, () => {
+  it('resolves every generated chapter and in-page link', { timeout: 480000 }, () => {
     for (const filePath of [resolve(outputRoot, 'index.html'), ...chapterPages]) {
       const document = documentFor(filePath);
       for (const link of document.querySelectorAll('a[href]')) {

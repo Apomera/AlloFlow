@@ -23,11 +23,12 @@ This consolidated Markdown edition is generated for repository browsing, review,
 11. [Privacy and responsible AI](#privacy-and-responsible-ai) · Use student data and generated materials with appropriate judgment.
 12. [AlloBot: the assistant that talks with you](#allobot-the-assistant-that-talks-with-you) · Talking with the assistant: conversation first, offers before actions, and what the microphone states mean.
 13. [Documents and printing: from resource to handout](#documents-and-printing-from-resource-to-handout) · The four export formats, the handout reading tools, annotations that stay put, and printing that always comes out light.
-14. [Troubleshooting](#troubleshooting) · Recover work and diagnose common classroom problems.
-15. [Math Fluency: timed practice and CBM probes](#math-fluency-timed-practice-and-cbm-probes) · Where timed math practice and CBM probes live, and the fastest way to open them.
-16. [Specialist and product reference](#specialist-and-product-reference) · Find specialist surfaces, keyboard help, and product terminology.
-17. [School rollout and coaching](#school-rollout-and-coaching) · Introduce AlloFlow as an instructional routine with shared guardrails and coaching.
-18. [For your IT department: the one-page technical brief](#for-your-it-department-the-one-page-technical-brief) · The technical brief: static app, no accounts, on-device data, the three AI backend options, and what to verify.
+14. [Make a document accessible: the remediation workflow](#make-a-document-accessible-the-remediation-workflow) · Turning an inherited PDF into an accessible version: the audit, Make Accessible, the human review, the evidence report, and the no-egress option.
+15. [Troubleshooting](#troubleshooting) · Recover work and diagnose common classroom problems.
+16. [Math Fluency: timed practice and CBM probes](#math-fluency-timed-practice-and-cbm-probes) · Where timed math practice and CBM probes live, and the fastest way to open them.
+17. [Specialist and product reference](#specialist-and-product-reference) · Find specialist surfaces, keyboard help, and product terminology.
+18. [School rollout and coaching](#school-rollout-and-coaching) · Introduce AlloFlow as an instructional routine with shared guardrails and coaching.
+19. [For your IT department: the one-page technical brief](#for-your-it-department-the-one-page-technical-brief) · The technical brief: static app, no accounts, on-device data, the three AI backend options, and what to verify.
 
 ---
 
@@ -242,6 +243,7 @@ Everything on this page is a reminder, not a lesson. If a line raises a question
 | Timed math practice | Math tool → Mode, or Ctrl+K then "math minute" ([Math Fluency](#math-fluency-timed-practice-and-cbm-probes)) |
 | Turn Adventure off for an assignment | Project Settings → "Include Adventure in this assignment" ([Adventure Mode](#adventure-mode-a-story-your-lesson-can-carry)) |
 | "AI extras: off" in the STEAM Lab | Nothing is broken; click the pill for the three ways to turn AI on ([Troubleshooting](#troubleshooting)) |
+| Fix an inherited PDF | The remediation workflow: audit, Make Accessible, review, export with evidence ([Make a document accessible](#make-a-document-accessible-the-remediation-workflow)) |
 
 ### The habits that prevent the common problems
 
@@ -2064,6 +2066,39 @@ The Document Builder's ribbon has an **Expert Workbench** tab: type a plain-lang
 - **Preview in the real format.** A resource that looks right in the app can break at 175% text on a phone; the reflow work makes this rare, but the habit is free.
 - **For families without reliable internet**, the HTML handout with the default fonts is the safest artifact: one file, works from a download, nothing external.
 - **Keep the answer-key page** before handing a stack to students; it prints last on purpose.
+
+---
+
+## Make a document accessible: the remediation workflow
+
+Schools run on inherited documents: the scanned packet, the district PDF, the worksheet someone made in 2009. AlloFlow's remediation workflow turns a document like that into an accessible version, shows its evidence, and keeps you, the human, as the last step. This chapter is the teacher's view; the [white paper](https://alloflow-cdn.pages.dev/whitepaper.html) covers the same pipeline for a district evaluation.
+
+### The shape of the workflow
+
+1. **Upload the document** (PDF, including scanned/image-based ones, which are routed through text recognition).
+2. **Read the audit.** The tool checks the document against accessibility rules and shows what it found, before anything is changed.
+3. **Run Make Accessible.** The pipeline rebuilds the document as structured, accessible content, applying safe deterministic fixes first and AI-assisted repairs only where diagnosis is needed. Improvement is bounded: each change is kept only if fresh checks show it helped, rolled back if it made things worse, and the process stops when results stop improving.
+4. **Review the result against the source.** This step is yours and it is not optional. The comparison view exists so you can confirm nothing was dropped or distorted; a document can pass every automated check and still misrepresent the original.
+5. **Export what you need**: accessible HTML, a tagged PDF, and alternate formats including DOCX, ODT, EPUB 3, DAISY 3, and Grade-1 braille (BRF), each with its own stated validation boundary.
+
+### What the evidence report is for
+
+Every run produces a report bound to the exact files it describes: what was found, what was fixed, what remains, and which checkers said so at which versions. Keep it with the document. If anyone ever asks "how do you know this version is accessible," the answer is a report, not a recollection.
+
+### Honest expectations
+
+- **This is repair with evidence, not magic.** The pipeline claims bounded, checkable improvement with a human decision at the end. It does not claim "guaranteed compliant," and neither should you.
+- **Structure is the hard part.** Reading order, table structure, and meaningful alt text are where automated tools most need your review, because correctness there depends on what the document *means*.
+- **A finished run can be reopened.** The results stay available on the device; the storage manager lists cached remediations, and the return pill brings you back to one you stepped away from.
+
+### Confidential documents
+
+The whole workflow can run against a local AI model instead of a cloud provider, and the validation tools run locally, so a sensitive document can be processed with nothing leaving the machine. Set that up in AI Backend Settings ("Private AI on this computer"), and see [Privacy and responsible AI](#privacy-and-responsible-ai) for the handling rules that still apply to the files themselves.
+
+### Where this connects
+
+- Structural plain-language edits to documents you are *authoring* use the same engine via the Expert Workbench, covered in [Documents and printing](#documents-and-printing-from-resource-to-handout).
+- For born-accessible materials you generate rather than inherit, see [Accessibility and UDL](#accessibility-and-udl-verify-the-learner-experience); remediation is for the documents that arrive already broken.
 
 ---
 

@@ -157,7 +157,7 @@
     "chapter": "Quick reference: the one page to keep nearby",
     "level": 2,
     "url": "quick-reference.html#where-things-live",
-    "text": "You want Go to Narrow the tool list Find a tool at the top of the sidebar (says in words when a filter is on) A message that vanished The header lightbulb → Messages Your saved work AI settings → Open saved work A finished copy vs a blank copy Export: Print / Save as PDF vs Worksheet (Documents and printing) One tool to share with anyone Its direct link, no sign-in needed (Start here) Timed math practice Math tool → Mode, or Ctrl+K then \"math minute\" (Math Fluency) Turn Adventure off for an assignment Project Settings → \"Include Adventure in this assignment\" (Adventure Mode) \"AI extras: off\" in the STEAM Lab Nothing is broken; click the pill for the three ways to turn AI on (Troubleshooting)"
+    "text": "You want Go to Narrow the tool list Find a tool at the top of the sidebar (says in words when a filter is on) A message that vanished The header lightbulb → Messages Your saved work AI settings → Open saved work A finished copy vs a blank copy Export: Print / Save as PDF vs Worksheet (Documents and printing) One tool to share with anyone Its direct link, no sign-in needed (Start here) Timed math practice Math tool → Mode, or Ctrl+K then \"math minute\" (Math Fluency) Turn Adventure off for an assignment Project Settings → \"Include Adventure in this assignment\" (Adventure Mode) \"AI extras: off\" in the STEAM Lab Nothing is broken; click the pill for the three ways to turn AI on (Troubleshooting) Fix an inherited PDF The remediation workflow: audit, Make Accessible, review, export with evidence (Make a document accessible)"
   },
   {
     "id": "quick-reference:the-habits-that-prevent-the-common-problems",
@@ -1862,6 +1862,54 @@
     "level": 2,
     "url": "documents-and-printing.html#practical-guidance",
     "text": "Preview in the real format. A resource that looks right in the app can break at 175% text on a phone; the reflow work makes this rare, but the habit is free. For families without reliable internet, the HTML handout with the default fonts is the safest artifact: one file, works from a download, nothing external. Keep the answer-key page before handing a stack to students; it prints last on purpose."
+  },
+  {
+    "id": "make-a-document-accessible:make-a-document-accessible-the-remediation-workflow",
+    "title": "Make a document accessible: the remediation workflow",
+    "chapter": "Make a document accessible: the remediation workflow",
+    "level": 1,
+    "url": "make-a-document-accessible.html#make-a-document-accessible-the-remediation-workflow",
+    "text": "Turning an inherited PDF into an accessible version: the audit, Make Accessible, the human review, the evidence report, and the no-egress option. Schools run on inherited documents: the scanned packet, the district PDF, the worksheet someone made in 2009. AlloFlow's remediation workflow turns a document like that into an accessible version, shows its evidence, and keeps you, the human, as the last step. This chapter is the teacher's view; the white paper covers the same pipeline for a district evaluation."
+  },
+  {
+    "id": "make-a-document-accessible:the-shape-of-the-workflow",
+    "title": "The shape of the workflow",
+    "chapter": "Make a document accessible: the remediation workflow",
+    "level": 2,
+    "url": "make-a-document-accessible.html#the-shape-of-the-workflow",
+    "text": "Upload the document (PDF, including scanned/image-based ones, which are routed through text recognition). Read the audit. The tool checks the document against accessibility rules and shows what it found, before anything is changed. Run Make Accessible. The pipeline rebuilds the document as structured, accessible content, applying safe deterministic fixes first and AI-assisted repairs only where diagnosis is needed. Improvement is bounded: each change is kept only if fresh checks show it helped, rolled back if it made things worse, and the process stops when results stop improving. Review the result against the source. This step is yours and it is not optional. The comparison view exists so you can confirm nothing was dropped or distorted; a document can pass every automated check and still misrepresent the original. Export what you need: accessible HTML, a tagged PDF, and alternate formats including DOCX, ODT, EPUB 3, DAISY 3, and Grade-1 braille (BRF), each with its own stated validation boundary."
+  },
+  {
+    "id": "make-a-document-accessible:what-the-evidence-report-is-for",
+    "title": "What the evidence report is for",
+    "chapter": "Make a document accessible: the remediation workflow",
+    "level": 2,
+    "url": "make-a-document-accessible.html#what-the-evidence-report-is-for",
+    "text": "Every run produces a report bound to the exact files it describes: what was found, what was fixed, what remains, and which checkers said so at which versions. Keep it with the document. If anyone ever asks \"how do you know this version is accessible,\" the answer is a report, not a recollection."
+  },
+  {
+    "id": "make-a-document-accessible:honest-expectations",
+    "title": "Honest expectations",
+    "chapter": "Make a document accessible: the remediation workflow",
+    "level": 2,
+    "url": "make-a-document-accessible.html#honest-expectations",
+    "text": "This is repair with evidence, not magic. The pipeline claims bounded, checkable improvement with a human decision at the end. It does not claim \"guaranteed compliant,\" and neither should you. Structure is the hard part. Reading order, table structure, and meaningful alt text are where automated tools most need your review, because correctness there depends on what the document means. A finished run can be reopened. The results stay available on the device; the storage manager lists cached remediations, and the return pill brings you back to one you stepped away from."
+  },
+  {
+    "id": "make-a-document-accessible:confidential-documents",
+    "title": "Confidential documents",
+    "chapter": "Make a document accessible: the remediation workflow",
+    "level": 2,
+    "url": "make-a-document-accessible.html#confidential-documents",
+    "text": "The whole workflow can run against a local AI model instead of a cloud provider, and the validation tools run locally, so a sensitive document can be processed with nothing leaving the machine. Set that up in AI Backend Settings (\"Private AI on this computer\"), and see Privacy and responsible AI for the handling rules that still apply to the files themselves."
+  },
+  {
+    "id": "make-a-document-accessible:where-this-connects",
+    "title": "Where this connects",
+    "chapter": "Make a document accessible: the remediation workflow",
+    "level": 2,
+    "url": "make-a-document-accessible.html#where-this-connects",
+    "text": "Structural plain-language edits to documents you are authoring use the same engine via the Expert Workbench, covered in Documents and printing. For born-accessible materials you generate rather than inherit, see Accessibility and UDL; remediation is for the documents that arrive already broken."
   },
   {
     "id": "troubleshooting:troubleshooting",
