@@ -436,7 +436,7 @@
                         <source src="Kitchen_Table_Scripts_and_Gamified_Learning.m4a" type="audio/mp4">
                         Your browser does not support the audio element.
                     </audio>
-                    <p style="font-size:0.7rem;color:#b45309;margin-top:10px;opacity:0.7">Duration: ~5 min • Best
+                    <p style="font-size:0.7rem;color:#b45309;margin-top:10px">Duration: ~5 min • Best
                         enjoyed with a cup of coffee ☕</p>
                 </div>
             </div>
@@ -447,7 +447,8 @@
             <div class="section-inner">
                 <div class="section-header">
                     <h2 id="try-one-tool-heading">Try One Tool Right Now</h2>
-                    <p>No signup, no install, no account. Every one of AlloFlow's 140+ interactive tools has its own direct link — click one and you are using it.</p>
+                    <!-- The tinted section background drops the shared #64748b below 4.5:1; darkened here only. -->
+                    <p style="color:#475569">No signup, no install, no account. Every one of AlloFlow's 140+ interactive tools has its own direct link — click one and you are using it.</p>
                 </div>
                 <div class="grid-3">
                     <a href="water-cycle" style="display:block;background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:24px;text-decoration:none;color:inherit">
@@ -574,7 +575,7 @@
             <div class="section-inner">
                 <div class="section-header">
                     <div
-                        style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px;background:#f3f4f6;border-radius:999px;margin-bottom:16px;font-size:0.75rem;font-weight:800;color:#64748b;letter-spacing:0.05em;text-transform:uppercase">
+                        style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px;background:#f3f4f6;border-radius:999px;margin-bottom:16px;font-size:0.75rem;font-weight:800;color:#475569;letter-spacing:0.05em;text-transform:uppercase">
                         <i data-lucide="sparkles" style="width:14px;height:14px;color:#9333ea"></i> Powered by
                         Gemini
                     </div>
@@ -843,27 +844,42 @@
 
                         .slide-dots {
                             display: flex;
-                            gap: 4px;
+                            flex-wrap: wrap;
+                            justify-content: center;
+                            gap: 0;
                         }
 
+                        /* WCAG 2.5.8: the visible dot stays 5px, drawn by ::before, while the button
+                           itself is a 24x24 pointer target. Centres land 24px apart, which also
+                           satisfies the spacing rule. */
                         .slide-dots .dot {
+                            display: grid;
+                            place-items: center;
+                            width: 24px;
+                            height: 24px;
+                            border-radius: 50%;
+                            background: transparent;
+                            border: none;
+                            padding: 0;
+                            cursor: pointer;
+                        }
+
+                        .slide-dots .dot::before {
+                            content: "";
                             width: 5px;
                             height: 5px;
                             border-radius: 50%;
                             background: #334155;
-                            border: none;
-                            padding: 0;
-                            cursor: pointer;
                             transition: all 0.3s ease;
                         }
 
-                        .slide-dots .dot.active {
+                        .slide-dots .dot.active::before {
                             background: #818cf8;
                             box-shadow: 0 0 8px rgba(129, 140, 248, 0.5);
                             transform: scale(1.3);
                         }
 
-                        .slide-dots .dot:hover:not(.active) {
+                        .slide-dots .dot:hover:not(.active)::before {
                             background: #475569;
                             transform: scale(1.15);
                         }
@@ -4891,7 +4907,7 @@
                     </div>
                     <div class="card">
                         <div
-                            style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#0d9488">
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#0f766e">
                             <i data-lucide="check-square" style="width:18px;height:18px"></i> Exit Tickets & Quizzes
                         </div>
                         <p style="font-size:0.85rem;color:#475569">Generate MCQs with DOK tuning and export directly to
@@ -4908,7 +4924,7 @@
                     </div>
                     <div class="card">
                         <div
-                            style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#16a34a">
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#15803d">
                             <i data-lucide="book-open" style="width:18px;height:18px"></i> Leveled Text
                         </div>
                         <p style="font-size:0.85rem;color:#475569">Rewrites text for K-12 levels with Immersive Reader,
@@ -4934,7 +4950,7 @@
                     </div>
                     <div class="card">
                         <div
-                            style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#0891b2">
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#0e7490">
                             <i data-lucide="vote" style="width:18px;height:18px"></i> Democracy Mode
                         </div>
                         <p style="font-size:0.85rem;color:#475569">Students vote on story paths, choices, and directions
@@ -4953,7 +4969,7 @@
                     </div>
                     <div class="card">
                         <div
-                            style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#10b981">
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#047857">
                             <i data-lucide="flask-conical" style="width:18px;height:18px"></i> STEM Lab
                         </div>
                         <p style="font-size:0.85rem;color:#475569">141 STEM plugin files / 142 registered STEM IDs across math, science, coding, music, economics, CTE, life skills, and applied simulations — browser-native and Desktop-ready.
@@ -4961,7 +4977,7 @@
                     </div>
                     <div class="card">
                         <div
-                            style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#06b6d4">
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#0e7490">
                             <i data-lucide="puzzle" style="width:18px;height:18px"></i> Modular Architecture
                         </div>
                         <p style="font-size:0.85rem;color:#475569">Hub-and-spoke framework lets developers build
@@ -4988,7 +5004,7 @@
                     </div>
                     <div class="card">
                         <div
-                            style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#0d9488">
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#0f766e">
                             <i data-lucide="clipboard-check" style="width:18px;height:18px"></i> Exit Tickets
                         </div>
                         <p style="font-size:0.85rem;color:#475569">AI-generated DOK-leveled quizzes with instant grading and one-click Canvas QTI export — a paperless workflow with less manual data entry.
@@ -4996,7 +5012,7 @@
                     </div>
                     <div class="card">
                         <div
-                            style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#d97706">
+                            style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:700;color:#b45309">
                             <i data-lucide="bar-chart-3" style="width:18px;height:18px"></i> Teacher Dashboard
                         </div>
                         <p style="font-size:0.85rem;color:#475569">Class analytics, RTI tier tracking, and learner profiles
@@ -5149,7 +5165,7 @@
                     <p style="font-size:0.8rem;color:#475569">Gemini availability and limits can change. Verify current details in the <a href="https://support.google.com/gemini/answer/16275805" target="_blank" style="color:var(--indigo);text-decoration:underline" rel="noopener noreferrer">official Gemini limits guide</a> and <a href="https://one.google.com/intl/en/about/google-ai-plans/" target="_blank" style="color:var(--indigo);text-decoration:underline" rel="noopener noreferrer">Google AI plan page</a>.</p>
                     <div
                         style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:12px;max-width:640px;margin:12px auto 0">
-                        <p style="font-size:0.7rem;color:#64748b"><strong>Disclaimer:</strong> AlloFlow is an
+                        <p style="font-size:0.7rem;color:#475569"><strong>Disclaimer:</strong> AlloFlow is an
                             independent
                             open-source project and is <strong>not affiliated with, endorsed by, or sponsored by
                                 Google</strong>.</p>
@@ -5217,7 +5233,7 @@
                 <h2 style="font-size:clamp(1.75rem,4vw,2.75rem);font-weight:900;margin-bottom:16px">Ready to Transform
                     Your
                     Classroom?</h2>
-                <p style="color:#64748b;font-size:1rem;margin-bottom:28px">Join a growing community of educators saving
+                <p style="color:#94a3b8;font-size:1rem;margin-bottom:28px">Join a growing community of educators saving
                     time
                     and reaching every learner.</p>
                 <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
