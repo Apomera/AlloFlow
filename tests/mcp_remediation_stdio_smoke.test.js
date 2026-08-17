@@ -155,7 +155,7 @@ describe('remediation MCP: protocol + tool registry', () => {
       'pdf_remediate_from_scoreboard_start', 'pdf_remediate_start',
       'pdf_validate_ua',
       'redact_document',
-      'remediation_capabilities', 'remediation_job_cancel', 'remediation_job_result', 'remediation_job_status',
+      'remediation_capabilities', 'remediation_job_cancel', 'remediation_job_diagnostics', 'remediation_job_result', 'remediation_job_status',
       'remediation_selftest', 'remediation_setup', 'remediation_verify_key',
       'simplify_accessible_html', 'transcribe_media', 'translate_accessible_html',
     ]);
@@ -224,7 +224,7 @@ describe('remediation MCP: protocol + tool registry', () => {
     expect(cap.geminiRequiredToolNames).toContain('pdf_remediate');
     expect(cap.geminiRequiredToolNames).not.toContain('pdf_validate_ua');
     expect(cap.keylessToolNames).toContain('generate_resource_pack');
-    expect(new Set([...cap.keylessToolNames, ...cap.geminiRequiredToolNames]).size).toBe(29);
+    expect(new Set([...cap.keylessToolNames, ...cap.geminiRequiredToolNames]).size).toBe(30);
     expect(cap.dataHandling.publicDependencyDownloadToolNames.sort()).toEqual([
       'export_accessible_office', 'export_alt_format', 'remediation_setup',
     ]);
@@ -239,8 +239,8 @@ describe('remediation MCP: protocol + tool registry', () => {
       cap.dataHandling.credentialCheckToolNames,
       cap.dataHandling.geminiDocumentEgressToolNames,
     ];
-    expect(new Set(privacyGroups.flat()).size).toBe(29);
-    expect(privacyGroups.reduce((sum, group) => sum + group.length, 0)).toBe(29); // disjoint, not merely exhaustive
+    expect(new Set(privacyGroups.flat()).size).toBe(30);
+    expect(privacyGroups.reduce((sum, group) => sum + group.length, 0)).toBe(30); // disjoint, not merely exhaustive
     // A key check contacts Gemini but sends no document content, so it must be in
     // neither the offline list nor the document-egress list.
     expect(cap.dataHandling.credentialCheckToolNames).toEqual(['remediation_verify_key']);
@@ -286,13 +286,13 @@ describe('remediation MCP: protocol + tool registry', () => {
     const registry = requireCjs(resolve(process.cwd(), 'desktop/mcp/build_registry_metadata.cjs'));
     const artifact = join(tmp, 'registry-fixture.mcpb');
     writeFileSync(artifact, Buffer.alloc(2048, 0x41));
-    const metadata = registry.buildRegistryMetadata({ artifactPath: artifact, tag: 'mcpb-v0.3.0' });
+    const metadata = registry.buildRegistryMetadata({ artifactPath: artifact, tag: 'mcpb-v0.3.1' });
     expect(metadata.$schema).toBe('https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json');
     expect(metadata.name).toBe('io.github.apomera/alloflow-remediation');
-    expect(metadata.version).toBe('0.3.0');
+    expect(metadata.version).toBe('0.3.1');
     expect(metadata.packages).toHaveLength(1);
     expect(metadata.packages[0].registryType).toBe('mcpb');
-    expect(metadata.packages[0].identifier).toBe('https://github.com/Apomera/AlloFlow/releases/download/mcpb-v0.3.0/alloflow-remediation.mcpb');
+    expect(metadata.packages[0].identifier).toBe('https://github.com/Apomera/AlloFlow/releases/download/mcpb-v0.3.1/alloflow-remediation.mcpb');
     expect(metadata.packages[0].fileSha256).toBe('3a34c8dc4aec1554c04e0d0e61179d08362b329029db4632f5f086c37be74caa');
     expect(metadata.packages[0].transport.type).toBe('stdio');
   });
@@ -309,7 +309,7 @@ describe('remediation MCP: protocol + tool registry', () => {
     const staged = join(tmp, 'clean-mcpb-layout');
     built.stageBundle(staged);
     const manifest = JSON.parse(readFileSync(join(staged, 'manifest.json'), 'utf8'));
-    expect(manifest.tools).toHaveLength(29);
+    expect(manifest.tools).toHaveLength(30);
     expect(readFileSync(join(staged, 'server', 'vendor', 'manifest.json'), 'utf8')).toContain('"schema": 1');
     expect(readFileSync(join(staged, 'server', 'vendor', 'THIRD_PARTY_NOTICES.md'), 'utf8')).toMatch(/axe-core/i);
 
@@ -350,7 +350,7 @@ describe('remediation MCP: protocol + tool registry', () => {
       const initialized = await rpc(1, 'initialize', { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'clean-stage', version: '1' } });
       expect(initialized.result.serverInfo.name).toBe('alloflow-remediation');
       const listed = await rpc(2, 'tools/list', {});
-      expect(listed.result.tools).toHaveLength(29);
+      expect(listed.result.tools).toHaveLength(30);
       const capabilities = await rpc(3, 'tools/call', { name: 'remediation_capabilities', arguments: {} });
       const cleanCap = capabilities.result.structuredContent;
       expect(cleanCap.vendorAssets.present).toBe(true);
@@ -883,7 +883,7 @@ describe('remediation MCP: closing the triage loop (pdf_remediate_from_scoreboar
 
 describe('remediation MCP: job bookkeeping (no runs needed)', () => {
   it('status/result/cancel of an unknown job id → clean in-band not-found', async () => {
-    for (const tool of ['remediation_job_status', 'remediation_job_result', 'remediation_job_cancel']) {
+    for (const tool of ['remediation_job_status', 'remediation_job_result', 'remediation_job_cancel', 'remediation_job_diagnostics']) {
       const res = await callTool(tool, { job_id: 'rjob-does-not-exist' });
       expect(res.isError).toBe(false); // in-band data, not a protocol error
       expect(res.structuredContent.ok).toBe(false);
@@ -920,7 +920,7 @@ describe('remediation MCP: job tools (no key, no browser — lifecycle edges onl
   });
 
   it('status / result / cancel of an unknown job id → honest in-band not-found (not a protocol error)', async () => {
-    for (const tool of ['remediation_job_status', 'remediation_job_result', 'remediation_job_cancel']) {
+    for (const tool of ['remediation_job_status', 'remediation_job_result', 'remediation_job_cancel', 'remediation_job_diagnostics']) {
       const res = await callTool(tool, { job_id: 'rjob-does-not-exist' });
       expect(res.isError).toBe(false);
       expect(res.structuredContent.ok).toBe(false);

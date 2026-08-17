@@ -1282,6 +1282,12 @@ function enqueueJob(job, runner) {
     job.abortController = attemptAbortController;
     try {
       job.result = await withSingleFlight(job.kind, () => runner(job));
+      // (2026-08-16) Stash the run's diagnostic snapshot on the job record so
+      // remediation_job_diagnostics can serve it after the fact (numbers/enums only).
+      try {
+        const _diag = driver && typeof driver.takeLastRunDiagnostics === 'function' ? driver.takeLastRunDiagnostics() : null;
+        if (_diag) job.diagnostics = _diag;
+      } catch (_) { /* diagnostics must never affect job completion */ }
       // A cancelled batch returns normally with a partial scoreboard — the status
       // must still say cancelled (the result stays fetchable, see job_result).
       job.status = job.cancelRequested ? 'cancelled' : 'completed';
@@ -2609,6 +2615,13 @@ const TOOLS = [
         annotations: { title: 'Fetch a remediation job result', readOnlyHint: true, destructiveHint: false, openWorldHint: false },
       },
       {
+        name: 'remediation_job_diagnostics',
+        title: 'Fetch run diagnostics (numbers only)',
+        description: 'The diagnostic snapshot for a run: the per-call ledger (outcomes, timings, byte counts, retries, models), throttle events, and the constants in force. Counts, timings, and enums only — never prompts, responses, or document text. Pass job_id for a background job; omit it for the most recent run in this server session. Use this to debug a slow, failing, or rate-limited run. Read-only.',
+        inputSchema: { type: 'object', properties: { job_id: { type: 'string', minLength: 1, maxLength: 200 } }, additionalProperties: false },
+        annotations: { title: 'Fetch run diagnostics (numbers only)', readOnlyHint: true, destructiveHint: false, openWorldHint: false },
+      },
+      {
         name: 'remediation_job_cancel',
         title: 'Cancel a remediation job',
         description: 'Cancel a queued job (it never starts) or the running one (its browser context closes and in-flight AI calls die within seconds). Output files already written stay on disk.',
@@ -2926,6 +2939,7 @@ const OUTPUT_SCHEMAS = {
   }, ['jobId', 'status']),
   remediation_job_status: S_JOB_VIEW,
   remediation_job_result: S_JOB_VIEW,
+  remediation_job_diagnostics: obj({ ok: S_BOOL, error: S_STR, jobId: S_STR, source: { type: 'string', enum: ['job', 'last-run'] }, capturedAt: S_STR, fileName: S_STR, diagnostics: {} }, ['ok']),
   remediation_job_cancel: obj({ ok: S_BOOL, error: S_STR, jobId: S_STR, status: S_STR, wasRunning: S_BOOL, killedRun: S_BOOL, durabilityWarning: S_STR }),
 };
 
@@ -3673,6 +3687,24 @@ const TOOL_HANDLERS = {
     const job = requireJob(args);
     if (!job) return { ok: false, error: JOB_NOT_FOUND };
     return jobStatusPayload(job);
+  },
+
+  remediation_job_diagnostics(args) {
+    assertAllowedKeys(args, ['job_id'], 'arguments');
+    if (args && args.job_id != null && String(args.job_id).trim()) {
+      const job = requireJob(args);
+      if (!job) return { ok: false, error: JOB_NOT_FOUND };
+      if (!job.diagnostics || !job.diagnostics.snapshot) {
+        return { ok: false, jobId: job.jobId, error: 'No diagnostics were captured for this job — it may predate this server version, still be running, or have failed before the pipeline booted.' };
+      }
+      return { ok: true, jobId: job.jobId, source: 'job', capturedAt: job.diagnostics.capturedAt || null, fileName: job.diagnostics.fileName || null, diagnostics: job.diagnostics.snapshot };
+    }
+    // No job_id: the most recent run (job or synchronous tool) in THIS server session.
+    // Reads the existing driver instance without booting one — a diagnostics query must
+    // never cost a browser launch.
+    const d = driver && typeof driver.takeLastRunDiagnostics === 'function' ? driver.takeLastRunDiagnostics() : null;
+    if (!d || !d.snapshot) return { ok: false, error: 'No run has completed in this server session yet. Pass job_id for a persisted background job, or run a tool first.' };
+    return { ok: true, source: 'last-run', capturedAt: d.capturedAt || null, fileName: d.fileName || null, diagnostics: d.snapshot };
   },
 
   remediation_job_result(args) {

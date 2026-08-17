@@ -779,6 +779,11 @@ function createDriver(options) {
   const spawnProcess = typeof o.spawnProcess === 'function' ? o.spawnProcess : require('child_process').spawn;
   let browser = null;
   let activeRun = null; // context + abortable Node transports for the single in-flight run
+  // (2026-08-16) The last completed run's diagnostic snapshot — the same numbers-only instrument
+  // the Canvas 🧪 bundle exports (per-call ledger, outcomes, timings, throttle events, constants).
+  // Captured in withRunPage before the run page closes; read via takeLastRunDiagnostics(). Never
+  // contains prompts, responses, or document text (the pipeline's privacy test pins that).
+  let lastRunDiagnostics = null;
   let documentEpochSeq = 0; // one document-ownership epoch per run page (see newPipelinePage)
 
   function requireModuleFiles() {
@@ -1166,7 +1171,21 @@ function createDriver(options) {
         context = opened.context;
         runState.page = page;
         runState.context = context;
-        return abortablePromise(fn(page), abort.signal);
+        return abortablePromise((async () => {
+          const _result = await fn(page);
+          // Diagnostics capture — after the operation, before the page closes. Must never
+          // fail or slow the run: one bounded evaluate, everything guarded.
+          try {
+            const _snap = await page.evaluate(() => {
+              try {
+                return (window.__mcpPipeline && typeof window.__mcpPipeline.getDiagnosticSnapshot === 'function')
+                  ? window.__mcpPipeline.getDiagnosticSnapshot() : null;
+              } catch (_) { return null; }
+            });
+            if (_snap) lastRunDiagnostics = { capturedAt: new Date().toISOString(), fileName: (runOpts && runOpts.fileName) || null, snapshot: _snap };
+          } catch (_) { /* diagnostics must never break a run */ }
+          return _result;
+        })(), abort.signal);
       })();
       runState.operation = operation;
       return await Promise.race([operation, deadlinePromise]);
@@ -2651,6 +2670,7 @@ function createDriver(options) {
     redactDocumentHtml, extractDocumentText, inspectFormFields, applyFormFields, simplifyHtml,
     auditWithBothEngines, htmlDerivatives, exportAltFormat,
     cancelActiveRun, close,
+    takeLastRunDiagnostics: () => lastRunDiagnostics,
   };
 }
 

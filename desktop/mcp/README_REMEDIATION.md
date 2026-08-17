@@ -223,6 +223,7 @@ The Canvas app never needs this — only this connector does.
 | `remediation_job_status` | Job state, a batch `progress` block (files done/remaining, observed mean per file, estimated minutes left), and the last pipeline telemetry lines (throttle waits show here — a slow job is distinguishable from a stuck one). | nothing | instant |
 | `remediation_job_result` | The completed job's summary (per-file summaries for batches). | nothing | instant |
 | `remediation_job_cancel` | Cancels a queued job, or kills the running one (its browser context closes; in-flight AI calls die in seconds). Files already written stay. | nothing | instant |
+| `remediation_job_diagnostics` | Numbers-only diagnostic snapshot for a run: per-call ledger (outcomes, timings, byte counts, retries, models), throttle events, constants in force. Pass `job_id` for a background job; omit it for the most recent run this session. Never contains prompts, responses, or document text. | nothing | instant |
 
 `generate_resource_pack` reads `{ "items": [...], "topic": "...", "isWorksheet": false,
 "responses": {}, "config": {} }` from `resource_pack_json` and writes `output_path`. Those are the
