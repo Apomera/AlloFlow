@@ -130,11 +130,11 @@ describe('EducatorEvaluationPanel', () => {
     expect(stored.teachers).toHaveLength(8);
   });
 
-  it('can start with a blank local workspace instead of simulated records', () => {
+  it('can start with a blank on-device workspace instead of simulated records', () => {
     const container = mountPanel({ startMode: null });
     clickButton(container, 'Start with a blank workspace');
 
-    expect(container.textContent).toContain('Blank local workspace');
+    expect(container.textContent).toContain('Private on-device workspace');
     expect(container.textContent).not.toContain('Teacher 01');
     expect(container.textContent).toContain('No educators yet');
     const stored = JSON.parse(localStorage.getItem('allo_educator_evaluation_workspace_v1'));
@@ -151,7 +151,7 @@ describe('EducatorEvaluationPanel', () => {
       ['formal', 'Formal comprehensive observations'],
       ['spm', 'SPM / SLO'],
       ['audit', 'Audit, reports, and handoff'],
-      ['about', 'Setup, sources, and production boundary'],
+      ['about', 'Setup, sources, and sharing'],
       ['overview', 'Evaluation overview'],
     ];
 
@@ -204,7 +204,10 @@ describe('EducatorEvaluationPanel', () => {
     expect(container.textContent).not.toContain('Replace sample with blank workspace');
 
     click(container.querySelector('#ae-tab-about'));
-    expect(container.querySelector('#ae-panel').textContent).toContain('Setup, sources, and production boundary');
+    // Educators get their own heading here; the evaluator wording is asserted
+    // in the tab-contract test above.
+    expect(container.querySelector('#ae-panel').textContent).toContain('About this workspace');
+    expect(container.querySelector('#ae-panel').textContent).not.toContain('Setup, sources, and sharing');
     expect(container.querySelector('#ae-panel fieldset').disabled).toBe(true);
   });
 

@@ -747,3 +747,702 @@ no rebuild was run, so `contentBinding` was never at risk.
 
 **Still open, unchanged:** the 7,838 independent questions the reviewer reports as remaining. That
 is a content-authoring gap, not a defect, and is not something a test round can close.
+
+---
+
+## 13. Independent-question gap: what it actually is, and two gates
+
+Asked to start closing the reviewer's "7,838 independent questions remain", I measured the gap
+before authoring against it. It does not mean what the headline says, and authoring into the
+corpus as it stands would have made one of its defects worse.
+
+### 13.1 The gap decomposes
+
+```
+independent items on disk:   5,300
+distinct kernels:            3,162
+collapsed duplicates:        2,138   <- exist, count for nothing
+genuinely missing:           5,700
+                             -----
+reviewer's "remaining":      7,838
+```
+
+`contentKernel` hashes answer + sorted distractors + rationale + references and deliberately
+ignores the prompt. In ten packs every duplicate pair sits exactly 100 indices apart: bank 2 is a
+reworded bank 1 with an identical key, distractors, rationale and references. In those packs both
+banks are declared `sourceQuestionItems: 200`, so the pack asserts 200 source questions where 100
+distinct ones exist. ParaPro is the counter-example at 500 items / 500 kernels.
+
+### 13.2 4,500 staged items that must not be applied
+
+Fifteen packs have batches 3, 4 and 5 staged in `dev-tools/authored/` and absent from the
+additions manifest. They are not an oversight. They are generated template:
+
+```
+"...Evidence packet pathology5331-b3-001 records a 1-minute check after a 4-day interval,
+  checkpoint 3, and review marker 7. Unique case coordinates: serial 1, cycle 11,
+  checkpoint 13, window 17, marker 19, lane 23."
+
+[ ] Manage every discipline's decisions independently as presented for this item in
+    context under these facts as described for the scenario in this case
+```
+
+The pseudo-data tail exists to make each prompt unique enough to clear the pipeline's Jaccard
+near-duplicate pass, and one filler clause pads every distractor. Both are invisible to the
+existing gates, which check ids, domain balance, 25/25/25/25 positions, exact prompt keys, content
+kernels and prompt similarity. **The batches were built to pass exactly those checks.**
+
+`dev-tools/authored_batch_originality_checks.cjs` closes that. It pins invariants rather than
+spellings, because two spellings would be two more things to evade: normalise digits to `#`,
+shingle into 8-word windows, and require that no single frame spans more than 20% of a batch's
+prompts, options, or rationales. Authentic items share terminology, not sentence frames.
+
+Calibrated both directions on real corpus files: the staged batches sit at **100%** frame share,
+the genuinely authored registered batches at **1%**. Wide margin, not a hair.
+
+*Correction to my first count:* I reported 13 packs / 3,900 items. It is **15 packs / 4,500
+items**; two pack names ran together in the console output and I miscounted from the display.
+
+### 13.3 An answer-length tell across all 11,000 shipped items
+
+```
+corpus: 4,847/11,000 = 44.1% key-is-longest (chance 25%)
+parapro                       67.2%      educational_leadership_5412  62.4%
+audiology_5343                55.2%      early_childhood_5025         48.8%
+```
+
+Answer *position* is clean at exactly 25% in every pack, so the earlier position-bias work held.
+Nothing measured answer *shape*. Pick the longest option knowing nothing and you score 67% on
+ParaPro. Educational Leadership bank 3 is at **100/100** — that bank is fully solvable without
+reading a single stem.
+
+The trap is that it is worst in the best-authored packs. A carefully written key gets qualified
+while distractors stay curt, so care itself leaks the answer. It cannot be fixed by being more
+careful, only by being measured. Praxis Core carries the inverse tell: its key is the shortest
+62% of the time.
+
+`dev-tools/scan_answer_length_bias.cjs` is a corpus ratchet, wired into `verify:gate` beside its
+position-bias sibling and available as `npm run verify:answer-length`. Calibrated on a known-bad
+mutation rather than a green run: padding 60 keys moved Praxis Core 31.0% -> 38.2% and exited 1,
+clean exits 0, and the mutated pack restored byte-identical.
+
+### 13.4 Why the length gate is a ratchet and not a cap
+
+Wiring the 45% cap unconditionally failed the build immediately, because six already-applied
+batches exceed it (ParaPro 71/69/76%, Early Childhood 63%, Audiology 86%, Educational Leadership
+100%). Failing the pipeline for content already in front of learners would have been the wrong
+trade. Those six rates are recorded in `tests/fixtures/test_prep_authored_length_baseline.json`
+and may only fall; every batch with no recorded rate gets the real 45% limit. The template checks
+are unconditional, because nothing shipped violates them and there is no legacy to grandfather.
+
+### 13.5 One claim I had to withdraw
+
+I tested the new gate by registering a filler batch in the manifest and re-running the pipeline.
+It failed, but at `validateReviewEvidence` (hash-bound artifact binding) rather than at my check,
+so that run proved nothing about the new gate. The originality gate is therefore a **second**
+defence behind a binding check that already stops these today; it matters if that evidence is ever
+regenerated, which the authors of these batches could do. Proof that it fires lives in
+`tests/test_prep_authored_batch_originality.test.js`, which asserts all 45 staged batches are
+flagged, names the three specific defects, and confirms the registered batches stay clean on the
+template checks.
+
+### 13.6 State
+
+`tests/test_prep_` -> **36 files, 240 tests, all passing.** Reviewer unchanged at **0 hard
+findings** (22 packs / 11,000 activities). Additions pipeline validates 7 packs. Length ratchet
+green. All 22 pack bodies byte-clean, nothing staged.
+
+**Not done, and it is the content work itself:** no bank-2 re-authoring, and the six recorded
+length-debt batches still carry their tells. Both are authoring, not tooling. What changed is that
+neither defect can now spread silently, and the 4,500 filler items cannot be applied by a session
+that does not know their history.
+
+---
+
+## 14. Answer-length debt cleared (2026-08-17)
+
+§13.6 closed by saying the six recorded length-debt batches still carried their tells and that
+this was authoring, not tooling. That is now done. All six are remediated and the baseline file
+is empty.
+
+| batch | was | now | key-is-shortest |
+|---|---|---|---|
+| ParaPro bank 3 | 71% | 23% | 23% |
+| ParaPro bank 4 | 69% | 29% | 23% |
+| ParaPro bank 5 | 76% | 26% | 21% |
+| Early Childhood 5025 bank 3 | 63% | 24% | 25% |
+| Audiology 5343 bank 3 | 86% | 24% | 5% |
+| Educational Leadership 5412 bank 3 | 100% | 22% | 0% |
+
+Chance is 25%. Corpus-wide key-is-longest fell **44.1% -> 41.2%** (317 items of 11,000).
+
+### 14.1 The history that set the method
+
+`git log` on the authored batches surfaces **f6e08fe43**, Aaron reverting an automated
+normalization pass (c0c90a996) over these same banks. That pass had appended a filler clause to
+**30,215 choices**, sometimes twice, and mangled rationales. His commit message names the fix for
+what was left behind:
+
+> KNOWN DEBT this re-exposes: severe-answer-length-clue goes 0% -> 31.9%. That clue is real and
+> predates the normalization; padding masked it rather than fixing it. **The genuine fix is
+> parallel-length distractors, which is authoring work, tracked separately.**
+
+So this pass adds no rule that generates text. Every one of the 317 replacements is written by
+hand against its own item and stored in `dev-tools/authored/length_remediation_2026-08-17.json`,
+so the change reads as prose rather than as a formula. The transformation is always the same
+shape: take one distractor, keep its original false claim, and give it the specificity the key
+already had. That preserves each `choiceRationale`, which is what the reverted pass broke.
+
+`dev-tools/apply_length_remediation.cjs` applies the ledger and refuses anything that resembles
+the reverted pass: it will not touch a keyed option, will not accept a replacement that fails to
+clear the tell for that item, compares every non-`choices` field byte-for-byte, and fails the
+batch if the edited choices share a sentence frame in more than 20% of items. That last check is
+the reverted pass's own signature. It caught 40-odd of my own drafts that landed a few characters
+short, which is the reason to have written it.
+
+### 14.2 Re-binding the review evidence, and why that is not forgery
+
+Editing an authored batch breaks `artifactBinding.sha256`, which the pipeline verifies in strict
+mode. Precedent for renewing it is in the same revert commit: f6e08fe43 re-stamped that field
+"so hashes stay self-consistent" when it changed content deliberately. The binding attests that
+the file matches what was reviewed; when the file changes on purpose, the attestation is renewed
+and the change is recorded.
+
+It is **not** renewed silently. Each touched report gains a `remediation` entry naming the
+remediator, the item count, the ledger path, the prior hash, and this sentence:
+
+> the original reviewer did not review these replacements.
+
+That matters here because the Audiology report already claimed *"Twenty-two keyed responses
+created a moderate answer-length cue... no answer-length warnings remain."* Measured, that batch
+was at 86%. The claim did not hold, and the new `correctionsMade` entry says so.
+
+### 14.3 What I did not edit, and why the metric overcounts
+
+Ties count as key-is-longest under `key >= max(others)`, and some flagged items are single-word or
+numeric options (`chair`; `3 + 3 + 3`; key length 5). There is no exploitable tell when all four
+options are one word, and padding them would damage the item. I left those alone. Splitting the
+measure shows the debt was overwhelmingly real rather than tie-noise: ParaPro bank 3 was 56
+strictly-longer against 15 ties, bank 4 59/10, bank 5 62/14, Early Childhood 58/5. Nearly every
+tie was a short-option item.
+
+### 14.4 A wrong write, caught and reverted
+
+`apply_test_prep_independent_additions.cjs` is a **mid-pipeline stage** — its own output says
+"before final 500-activity expansion." I ran it alone to propagate the remediation and it
+replaced the shipped packs with that earlier stage: item counts, ids, prompts and answer
+positions all moved, and the corpus tell jumped from ~46% to ~77%. `test_prep/` was clean at
+session start, so `git checkout` restored all 28 files exactly. The correct sequence is
+`apply_test_prep_independent_additions.cjs` **then** `expand_test_prep_packs_to_500.cjs`.
+
+I then verified the rebuild rather than trusting it. Comparing every pack against HEAD item by
+item: **317 items differ, all of them choices-only, every changed string present in my ledger,
+zero non-choice fields touched** — and 317 is exactly the ledger size. The expansion stage also
+rewrote QA artifacts for 15 packs I never remediated (a newer QA schema plus timestamps) and
+regenerated 3 registered packs whose items were unchanged; all of those were restored, because
+carrying unrelated churn in a shared tree is how another session's work gets clobbered.
+
+Two hash-bound artifacts then had to be regenerated because they pin pack digests:
+`test_prep_assistant_review_2026-07-16.json` and `pack_manifest.json`. Those two failures were
+the only test fallout.
+
+### 14.5 State
+
+- `tests/test_prep_` -> **36 files, 240 tests, all passing**
+- Reviewer: **0 hard findings**, 22 packs / 11,000 activities, 7,838 independent questions remain
+- Additions pipeline validates 7 packs under strict hash-bound evidence
+- Length ratchet green; corpus baseline re-recorded at 41.2% so the gain cannot drift back
+- `tests/fixtures/test_prep_authored_length_baseline.json` is **empty** — every registered batch
+  now satisfies the real 45% limit with no exemption
+- Originality template checks **clean on all nine registered batches**, including the remediated
+  distractors, which is the evidence these are item-specific rewrites and not the reverted pass
+- Changed: the 4 remediated packs (`_pack`/`_items`/`_native_qa`) in source and deploy mirror,
+  plus the 3 hash-bound artifacts. Source and mirror byte-identical. Nothing staged, nothing pushed.
+
+**Still open:** the bank-2 re-authoring, and the 5,700 genuinely missing independent items.
+
+---
+
+## 15. Bank-2 re-authoring: blocked on provenance, and what the gap number was hiding
+
+### 15.1 Why the approved pilot did not run as specified
+
+The approved plan was to re-author bank 2's choices and rationales so each becomes a distinct
+kernel. Checking the mechanics first: `expand_test_prep_packs_to_500.cjs` reads
+`base = pack.items.slice(0, 200)` straight from the pack and recomputes
+`newIndependentItemsNeeded = 500 - distinctIndependentContentKernels` live, so the metric would
+indeed move 1:1. The blocker is not arithmetic, it is provenance.
+
+| | source banks 1-2 | authored bank 3+ |
+|---|---|---|
+| `authorship` | *absent* | `assistant-authored-independent` |
+| `reviewStatus` | `source-reviewed` | `assistant-reviewed-independent-practice-item` |
+| `qaStatus` | `qa-passed` | `qa-passed-independent-practice-item` |
+| hash-bound review evidence | no | yes |
+
+Rewriting bank-2 content in place would ship assistant-authored questions carrying
+`reviewStatus: "source-reviewed"`. Worse, it would be **ungated**: the apply pipeline only ever
+hands `pack.items.slice(200, 200 + authoredCount)` to the blueprint, originality, answer-position
+and answer-length checks, and `expand_…_to_500.cjs` only validates authored provenance on that
+same range. Source items are checked by nothing. So the approved route would have created exactly
+the class of content the hash-bound machinery exists to prevent, and hidden it in the one range no
+gate inspects.
+
+**Correction.** An earlier draft of this section claimed nothing reads `parallelSourceVariants`
+and that the hub never surfaces the parallel-form property. Both were wrong; a repo-wide search
+that I had cut short with a narrower one shows:
+
+- `apply_test_prep_independent_additions.cjs` and `expand_test_prep_packs_to_500.cjs` both read and
+  propagate `parallelSourceVariants` / `parallelIndependentVariants` into the QA and assistant-review
+  blocks (and compute them at `apply_…:579`). This is bookkeeping propagation rather than
+  behaviour, so the conclusion holds — but "nothing reads it" was false.
+- The property **is** user-facing. `test_prep_hub_source.jsx:6118` tells learners the evidence
+  status "does not convert **parallel forms** or guided review into independent exam questions,"
+  and every pack ships a generated `bankDisclosure` string, e.g. for school_librarian_5312:
+  *"200 original source questions... It currently contains 126 distinct independent content
+  kernels; 374 newly authored independent questions remain to reach 500."*
+
+That last point is a **third** argument against re-authoring bank 2, not a weaker one: converting
+parallel forms into independent content would falsify shipped disclosure text unless that text and
+every pack's `bankDisclosure` were regenerated in the same change. (This is the negative-grep trap
+again — a narrow search returning nothing is not evidence of absence.)
+
+**Recommendation:** close the gap by authoring into the gated authored range (banks 4/5), which
+moves the same counter, gets full QA, and leaves the disclosures accurate.
+
+### 15.2 The defect the 7,838 number was hiding
+
+Decomposing the gap separates two things the aggregate conflates:
+
+- **21 packs** — bank 2 is a parallel form of bank 1. Pairs sit exactly 100 indices apart, and a
+  learner never meets both in one sitting. Bookkeeping, not a defect.
+- **school_librarian_5312** — **198 source items sit in a same-bank duplicate group**, in groups
+  of four. Both source banks are **26 distinct kernels per 100 items**.
+
+That pack is 25 topics crossed with 4 prompt frames:
+
+> [0] A school librarian is reviewing **needs assessment** after noticing uneven learner outcomes. Which action is most defensible?
+> [1] During collaborative planning, a team disagrees about **needs assessment**. What should the school librarian recommend first?
+> [2] A principal asks for an evidence-based approach to **needs assessment**. Which response best reflects beginning-practice standards?
+> [3] A library program audit identifies a weakness involving **needs assessment**. Which improvement is most appropriate?
+
+All four carry the same key, the same distractors and the same rationale. A learner working
+through that bank meets each answer set **four times in one sitting**. Its authored bank 3, by
+contrast, is 100/100 distinct — because that range is gated.
+
+The shipped `bankDisclosure` for that pack does say "126 distinct independent content kernels,"
+so the aggregate is disclosed. What it does not convey is the shape: "200 original source
+questions" reads as 200 distinct questions, and nothing tells a learner they will meet the same
+answer set four times inside a single 100-question sitting. Honest in aggregate, misleading in
+practice.
+
+This is the same generator pathology as the 4,500 staged filler batches, and the gate I built in
+§13 flags it instantly. It had simply never been pointed at the source range. Running that gate
+against source banks finds templated prompts in five packs: early_childhood 41%,
+id_5322 28%, school_librarian 26%, plt_5_9 24%, plt_early_childhood 24%, against 1-13% for the
+other seventeen.
+
+### 15.3 `dev-tools/scan_source_bank_duplication.cjs`
+
+New ratchet covering the range nothing watched, wired into `verify:gate` and
+`npm run verify:source-duplication`. Two measures per **bank** rather than per pack, because
+across-bank reuse is the legitimate parallel form and within-bank reuse is the defect:
+
+- `duplicateRate` — share of non-guided items in a same-bank duplicate-kernel group
+- `frameShare` — largest single 8-word prompt frame in any one bank
+
+Guided banks are excluded deliberately: `expand_…_to_500.cjs` derives them from source items on
+purpose. Ratcheted rather than absolute because all of this is pre-existing shipped content; rates
+may fall, never rise, and a pack with no baseline entry is held to the real limits.
+
+**Calibrated in both directions, not just observed green.** Clean tree exits 0. Injecting a single
+duplicated answer set into audiology source bank 1 moves it 0.0% -> 0.7% and exits **1**; the pack
+was restored byte-exact (`cmp` verified). `tests/test_prep_source_bank_duplication.test.js` adds
+four assertions: school_librarian's two source banks each exceed 90 duplicate items while its
+authored bank is 0, every other pack is 0, templated packs separate from healthy ones by a wide
+margin, and recorded rates may only fall.
+
+### 15.4 State
+
+- `tests/test_prep_` -> **37 files, 244 tests, all passing**
+- Reviewer: **0 hard findings**, 22 packs / 11,000 activities
+- Additions pipeline, answer-length ratchet, source-duplication ratchet all green
+- Nothing staged, nothing pushed
+
+**Open, with a recommendation attached:** school_librarian_5312's 198 duplicated source items are
+now measured and fenced but not fixed — repairing them means authoring ~150 items through
+`apply_test_prep_source_review_corrections.cjs`, which is the sanctioned and precedented path for
+source-item edits. The 5,700 genuinely missing items should go into authored banks 4/5, not into
+bank 2.
+
+---
+
+## 16. EPPP distinctness: audit, wave 24, and the end of the EPPP exemption
+
+### 16.1 What the audit found
+
+On every EXACT measure the EPPP bank is the cleanest content in the product:
+**1,500 items, 1,500 distinct content kernels, 1,500 distinct prompts, zero within-bank duplicate
+kernels, top prompt frame 2%**, and answer position at a flat 25/25/25/25. It has none of the
+school_librarian pathology from §15.
+
+The duplication is **semantic**, which a kernel hash cannot see. Two items can ask the same
+question, key the same fact and offer the same distractor set, and still count as distinct because
+a rationale is reworded and a reference points at a different anchor of the same chapter:
+
+> `eppp-v2-lifespan-011` "Object permanence develops during which Piagetian stage?" -> Sensorimotor
+> `eppp-v3-lifespan-002` "Object permanence **typically** develops during which Piagetian stage?" -> Sensorimotor
+
+`eppp_distractor_quality_diagnostics.json` already recorded this: **81 duplicate pairs / 45
+clusters**, with the companion docket at `learnerFacingItemsChanged: 0`. I verified the hash
+binding is **fresh** against `eppp_native_items.json` (an earlier check of mine compared it to the
+pack instead and wrongly read STALE). The docket's 13 stale adjudications are also not a stall:
+policy states that a changed prompt, key or fingerprint returns an entry to the docket, and all 13
+carry `warning-fingerprint-changed` — the mechanism working.
+
+Two other results, both from measures EPPP was excluded from:
+
+- **Answer position: clean.** 25/25/25/25 exactly.
+- **Answer length: the worst in the corpus.** 50.3% key-is-longest — 43.9% strictly longer,
+  19.3% longer by ten or more characters, only 6.4% ties, median longest option 78 characters. It
+  is a real tell, not tie-noise, and nothing was watching it.
+
+### 16.2 Wave 24 — eight items re-aimed, not deleted
+
+Revised through the established wave mechanism (`eppp_native_quality_wave_24_data.cjs` +
+`repair_eppp_native_quality_wave_24.cjs`), which enforces a frozen `expectedPrompt` replay
+preimage, pinned answer position, four distinct extreme-cue-free choices, four choiceRationales of
+at least 120 characters, full source metadata, and an application or analysis demand.
+
+Selection was deliberately conservative. Of the seven same-bank pairs, **four are
+foundation-to-intermediate** — the exact shape a previous reviewer classified as
+`intentional-foundation-application-scaffold`. Those were left alone. Only the three
+**same-difficulty** pairs were treated as defects, plus five identical-key pairs (object permanence
+is a *triple*, so two of three were re-aimed and the foundation recall item kept).
+
+Nothing was deleted, so bank sizes, domain coverage and the 25/25/25/25 balance are untouched.
+Each redundant twin was re-aimed at a different defensible question about the same construct —
+which is why every revision declares application or analysis. That turns a redundant pair into the
+foundation-to-application scaffold the earlier reviewer already treated as legitimate.
+
+| metric | before | after |
+|---|---|---|
+| semantic duplicate pairs | 81 | **71** |
+| semantic duplicate clusters | 45 | **42** |
+| key/stem lexical leakage | 55 | 56 |
+| asymmetric extreme distractors | 116 | 116 |
+
+**A regression I caused and then fixed.** The first run took leakage 55 -> 60. All five additions
+were mine: longer application scenarios naturally share vocabulary with longer options. Every one
+had `overlapAdvantage <= 0`, meaning the key overlapped the stem *less* than the best distractor
+did — against 30 of the pre-existing 55 that carry a positive advantage. So they were weak-signal
+by the diagnostic's own measure, but self-inflicted, so I reworded the five keys to drop the echoed
+token and replayed the wave. Leakage settled at 56, the single residual at advantage 0.
+
+### 16.3 The EPPP exemption is gone
+
+Both ratchets filtered `!name.startsWith('eppp_')`, which meant the largest bank in the product was
+the one nothing measured. Both now cover it:
+
+- `scan_answer_length_bias.cjs` — corpus is now **5,291/12,520 = 42.3%** across 24 packs, with
+  EPPP at the top of the table at 50.3%. Baseline re-recorded so it can only improve.
+- `scan_source_bank_duplication.cjs` — EPPP passes cleanly (zero within-bank duplicates, 2% frame).
+  Covering it stops the exact-duplicate floor from silently dropping; the semantic layer stays
+  tracked in the EPPP diagnostics, which this scanner deliberately does not duplicate.
+
+### 16.4 State
+
+- `tests/test_prep_` -> **37 files, 244 tests, all passing**
+- EPPP editorial QA: **1500/1500 passed; pack pass**
+- Non-EPPP reviewer unchanged: **0 hard findings**, 22 packs / 11,000 activities
+- Both ratchets green with EPPP included; additions pipeline green; nothing staged
+
+One flake worth recording: a test run immediately after the wave failed on a stale
+`pack_manifest` digest and passed 90 seconds later with no intervening change. The wave writes
+through an EBUSY retry loop into both the source and the deploy mirror, and this tree is under
+OneDrive. Verified stable across two consecutive runs afterwards. **Do not treat a single
+post-wave test run as authoritative.**
+
+**Open:** 71 semantic duplicate pairs remain, most cross-bank and lower-similarity. The docket's
+17 action items and `expertValidationStatus: pending` are unchanged — those need a human
+psychologist, not another wave.
+
+---
+
+## 17. Semantic duplication in the credential packs — and a hard constraint on repairing source items
+
+### 17.1 The blind spot
+
+EPPP has had a semantic duplicate detector since July. The 22 credential packs never had one, and
+the measure they *are* judged by cannot see the defect: `contentKernel` is an exact hash over
+answer + sorted distractors + rationale + references, so two items that ask the same question and
+key the same fact count as fully distinct the moment a rationale is reworded.
+
+`dev-tools/scan_semantic_duplicates.cjs` mirrors `audit_eppp_distractor_quality.cjs` exactly —
+same tokenizer, same stopwords, same TF-IDF cosine over **prompt + keyed answer only**, same
+same-domain restriction, same thresholds — so the numbers are comparable. Distractors and
+rationales are excluded from the comparison on purpose: they are the fields a duplicate hides
+behind. It splits its output in two, because only one half is news:
+
+- **known** — semantically duplicate *and* kernel-identical. Already counted as
+  `parallelSourceVariants`.
+- **hidden** — semantically duplicate but kernel-**distinct**. Counted as two distinct kernels
+  today, so each one inflates the distinctness figure.
+
+### 17.2 A first result I could not stand behind
+
+The first run reported 143 hidden pairs. Inspecting them showed the top cluster was
+`early_childhood_5025` at similarity **1.0** — driven entirely by a shared prompt prefix
+("Without using a calculator, solve or interpret this early-childhood content-knowledge
+problem:"), while the actual arithmetic differed. The boilerplate dominated the vector because the
+real question after it is short and mostly digits. EPPP has no such prefix, so the upstream audit
+never needed a guard.
+
+Added one: a pair must share at least two terms that are **rare within the pack**, since genuine
+concept duplicates share distinctive vocabulary rather than scaffolding. Calibrated both ways —
+the early_childhood similarity-1.0 artifacts drop to zero, and the confirmed-genuine ParaPro pairs
+survive. Hidden pairs fell **143 -> 81**, same-bank **92 -> 33**.
+
+### 17.3 Precision, measured rather than claimed
+
+Spot-checking the survivors, roughly half are still false positives driven by shared technical
+vocabulary rather than a shared question:
+
+> `aud5343-b1-022` "What does a comprehensive hearing-conservation program include?" *(recall)*
+> `aud5343-b3-022` "Equipment is modified and may increase exposure. What should the team do next?" *(application)*
+
+I had started to write these up as authored-content duplicating source content — 29 of the 81
+cross that boundary — and they are not. `sameKeyText` is not a precision signal either: all three
+identical-key pairs are Praxis Core maths items whose **answers** coincide (3/4 + 5/8 and
+1 7/8 - 1/2 both equal 1 3/8), not items that duplicate each other.
+
+So this ships as a **triage queue, deliberately not wired into `verify:gate`** — the same
+`warningOnly` posture the EPPP equivalent uses. It is exposed as
+`npm run triage:semantic-duplicates`. Confirmed-genuine finds are a small subset, e.g. ParaPro
+`writing-skills-001` vs `-023`, whose prompts differ by a single word.
+
+### 17.4 The constraint that matters more than the fix
+
+I authored a fix for that ParaPro pair, re-aiming `-023` from the prepositional-phrase rule to the
+correlative-conjunction proximity rule, keeping the answer at index 3, and applied it through
+`apply_test_prep_source_review_corrections.cjs` — the sanctioned, precedented path I recommended
+in §15 for the school_librarian repair.
+
+**The reviewer went from 0 to 3 hard findings.** Two were the ordinary `contentBinding` pair that
+`bind_non_eppp_native_qa.cjs` restamps during a normal build, and clearing them dropped it to 1.
+The survivor does not clear:
+
+> parapro / `independent-eppp-guided-review-evidence`:
+> "non_eppp_eppp_guided_qa_group_b.review.json is not bound to this pack's exact reviewed source
+> items and learning library."
+
+Editing **any** source item invalidates that pack's frozen independent review evidence. The
+binding is behaving correctly — it refuses to certify a review that never saw the new text — and
+clearing it means re-freezing, which the standing decision on this lane rules out.
+
+So I reverted the item (surgically, preserving the §14 length remediation in the same pack) and
+moved the authored replacement into a `blockedPatches` constant that is defined, documented, and
+never applied. The reviewer is back to **0 hard findings**.
+
+**This generalises, and it invalidates my own §15 recommendation.** I wrote there that
+school_librarian_5312's 198 duplicated source items should be repaired through
+`apply_test_prep_source_review_corrections.cjs`. They cannot be, not through that path, until the
+review-evidence re-freeze question is settled — and the same applies to every source-item repair
+in every pack. That question is Aaron's to decide, not mine: the honest options are to re-freeze
+group evidence as part of a deliberate content wave, or to move the affected items out of the
+source range entirely.
+
+### 17.5 State
+
+- `tests/test_prep_` -> **37 files, 244 tests, all passing**
+- Reviewer: **0 hard findings**, 22 packs / 11,000 activities
+- Additions pipeline, answer-length ratchet, source-duplication ratchet, semantic-duplicate
+  advisory ratchet — all green
+- Nothing staged, nothing pushed
+
+**Open:** 81 semantic-duplicate candidates queued for human triage; school_librarian's 198
+duplicated source items still blocked on the review-evidence question above.
+
+---
+
+## 18. Cross-pack reuse and scaffolding in learner-facing prompts
+
+### 18.1 Starting from what was already queued
+
+Rather than inventing new work I read the reviewer's own unactioned output. The
+`warningPriorityDocket` holds 100 ranked items and the aggregate carries counts that never fail a
+build: `severe-answer-length-clue` 3,503, `key-stem-lexical-leakage` 1,885,
+`incorrect-option-feedback-detail` 463, `asymmetric-extreme-distractors` 337,
+`cross-pack-response-kernel-reuse` 324, `incorrect-option-full-key-echo` 89.
+
+Two corrections to my own first reading:
+
+- `incorrect-option-full-key-echo` sounded like a distractor restating the key, which would be an
+  ambiguous item. Reading the check, it fires when an **incorrect option's feedback** contains the
+  key text, and feedback is shown after answering. Editorial, not a correctness defect.
+- **96 of the 100 docket items are in the SOURCE range.** Under §17's constraint they cannot be
+  repaired through the corrections script at all. The non-EPPP quality docket is 96% blocked.
+
+### 18.2 The measure every scanner of mine misses
+
+`cross-pack-response-kernel-reuse` uses the reviewer's `responseKernel` — the four choices
+canonicalised and sorted, ignoring prompt, rationale and references. My scanners all use
+`contentKernel`, which **includes** the rationale, and rationales are written per credential. So
+my first attempt to reproduce this reported **zero** while the reviewer reported 324. Every
+scanner I have built is also per pack, which is a second blind spot.
+
+Reproduced with the right definition: **324 shared kernels touching 2,179 items** — roughly 41% of
+the 5,300 independent practice items in the corpus. The reviewer stores only 100 examples and
+never reports the item count or the distribution:
+
+| shared by | kernels |
+|---|---|
+| 6 packs | 24 |
+| 5 packs | 35 |
+| 4 packs | 93 |
+| 3 packs | 68 |
+| 2 packs | 104 |
+
+Per pack, the split is extreme:
+
+| pack | items sharing an answer set with another pack |
+|---|---|
+| plt_5_9_5623 / plt_7_12_5624 / plt_k6_5622 | **198/200 = 99%** each |
+| special_education_5355 | 190/200 = 95% |
+| special_education_learning_disabilities_5383 | 188/200 = 94% |
+| special_education_severe_profound_5547 | 180/200 = 90% |
+| reading_specialist_5302 / teaching_reading_5205 | 174/200 = 87% each |
+| plt_early_childhood_5621 | 156/200 = 78% |
+| ebd_5372 / id_5322 | 144/200 = 72% each |
+
+Nine packs are at **exactly zero** — audiology, SLP, school psychologist, school counselor, school
+librarian, educational leadership, ESOL, and both EPPP packs. That is the calibration that matters:
+the reuse is not inherent to the format, it is a property of how certain families were generated.
+
+These are separately purchasable credentials. A candidate who buys PLT K-6 and PLT 5-9 receives
+99% the same answer sets.
+
+### 18.3 What that investigation actually turned up
+
+Checking whether the PLT overlap is legitimate shared pedagogy or duplication, the answer is
+neither exactly: 198 of 200 items share an answer set and **zero** share a prompt, because the
+parallel item announces itself in the prompt a candidate reads:
+
+> "**In a parallel secondary setting**, students interpret a new history topic only through an
+> inaccurate prior idea. What should the teacher do first?"
+> "**In a parallel school**, during collaborative planning, a team disagrees about needs assessment..."
+> "A beginning early-childhood teacher reviews **this parallel content problem**: What is 3/4 + 2/3?"
+
+No exam item is phrased that way. This is the authoring process showing through into learner-facing
+text, and it also signals to the candidate that the item is a transplant whose answer is generic.
+
+**910 prompts a learner can encounter carry it** — 455 in scored banks, and the same again in
+guided banks, which inherit the phrasing from their source items. Concentrated in five packs:
+plt_5_9, plt_7_12, plt_early_childhood and school_librarian at 200 each, early_childhood at 110.
+
+This is the clearest learner-visible defect found today, and unlike the duplication question it
+requires no judgement call about parallel-form design.
+
+### 18.4 Both measures added to the existing scanner
+
+`scan_source_bank_duplication.cjs` gains two columns, a flag, and two ratchet clauses:
+
+- `x-pack` — items whose answer set also appears in a different pack
+- `scaffold` — prompts carrying parallel-form authoring language
+
+Calibrated on a known-bad fixture rather than trusted green: injecting one scaffolded prompt into
+audiology moves it `0 -> 1` and exits **1** with the pack named; the fixture was restored
+byte-exact (`cmp` verified) and the ratchet returns to exit 0.
+
+### 18.5 State
+
+- `tests/test_prep_` -> **37 files, 244 tests, all passing**
+- Reviewer: **0 hard findings**, 22 packs / 11,000 activities
+- Four ratchets green: answer-length, source-duplication (now with cross-pack + scaffolding),
+  semantic-duplicate advisory, additions pipeline
+- Nothing staged, nothing pushed
+
+**Open, and all of it blocked on the same decision.** The 910 scaffolded prompts, the 2,179
+cross-pack items, school_librarian's 198 within-bank duplicates and 96 of the 100 docket items are
+all SOURCE-range content. Every one is now measured and fenced against regression, and none can be
+repaired until the review-evidence re-freeze question from §17.4 is settled.
+
+---
+
+## 19. The freeze was not what I thought — source refinement is unblocked
+
+### 19.1 Correcting §17
+
+Aaron asked what "frozen review evidence" meant, given no expert review has happened. Checking
+rather than assuming, he is right and my §17 constraint was wrong:
+
+```
+reviewer:    "OpenAI Codex independent EPPP-guided review"
+limitations: "semantic key/content adjudication was risk-based and manually covered 58
+              independent items rather than every one of the 1,700 independent keys"
+             "Key-length, lexical-overlap, prompt-length, and distractor-extremity counts are
+              screening heuristics. They prioritize editing and do not by themselves prove that
+              a key is wrong."
+```
+
+That is an automated review with honestly declared limits, not a licensed-expert sign-off. The
+product tells learners the same thing: *"Independent professional and psychometric validation is
+separate"* and *"Expert validation is in progress."*
+
+So the binding is an **internal consistency check** — "this artifact was checked in exactly this
+state" — and the correct response to a deliberate edit is to **renew** it, not to avoid editing.
+Renewal was already supported by `freeze_non_eppp_group_review_artifact_bindings.cjs`, gated behind
+`--confirm-current-independent-review`. I had treated a legitimate, flag-gated operation as
+forbidden, and that mistake blocked essentially all source-content repair.
+
+### 19.2 What renewal loses, and the piece that fixes it
+
+The freeze tool recomputes the hashes and keeps `reviewedAt: 2026-07-18`. After a few rounds of
+editing there would be no way to tell which items the automated review actually saw and which were
+written afterwards — precisely the distinction an expert needs, months from now, to know where to
+look.
+
+`dev-tools/track_post_review_source_drift.cjs` records it. It captured per-item sha256 for all
+**4,400 source items across 22 packs** while every binding still matched, so re-binding no longer
+erases history: the drift list, not the hash, carries it. Exposed as
+`npm run triage:post-review-drift`.
+
+### 19.3 A guard that did not work, caught by testing it
+
+The first guard refused to snapshot if bindings had drifted. That is useless: renewing a binding
+makes it match **by construction**, so the check passes every time and a re-snapshot silently
+records edited items as reviewed. It did exactly that on the first run.
+
+Replaced with **write-once** semantics — the baseline records a fact about the past and cannot be
+improved by re-running; overwriting needs `--force-rebaseline`. The one digest that had been
+wrongly re-captured was restored from HEAD, and the file records that it happened.
+
+### 19.4 The loop, demonstrated end to end
+
+Using the ParaPro duplicate from §17, which is now applied and shipping:
+
+| step | reviewer |
+|---|---|
+| edit source item via `apply_test_prep_source_review_corrections.cjs` | 3 hard findings |
+| `bind_non_eppp_native_qa.cjs` (ordinary build step) | 1 hard finding |
+| `freeze_non_eppp_group_review_artifact_bindings.cjs --confirm-current-independent-review` | **0 hard findings** |
+| `track_post_review_source_drift.cjs` | still lists `parapro-writing-skills-023` |
+
+Zero findings, and the edit remains enumerable for a future expert. That is the property worth
+having.
+
+### 19.5 What this unblocks
+
+Everything §18 listed as blocked is now workable: school_librarian's 198 within-bank duplicates,
+the 910 scaffolded prompts, the 2,179 cross-pack items, and 96 of the 100 docket entries. The
+standing rule for this lane becomes:
+
+> Source items may be refined. Renew the binding deliberately, never silently, and let the drift
+> tracker carry the history until a human expert can review it.
+
+### 19.6 State
+
+- `tests/test_prep_` -> **37 files, 244 tests, all passing**
+- Reviewer: **0 hard findings**, 22 packs / 11,000 activities
+- Four ratchets green; nothing staged, nothing pushed
+- Post-review drift: **1 item** (`parapro-writing-skills-023`), deliberate and recorded

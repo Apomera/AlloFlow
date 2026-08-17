@@ -55,7 +55,7 @@ try { fs.unlinkSync(TMP + '.compiled.js'); } catch(_){}
 const outputCode =
 `(function() {
 'use strict';
-  if (!document.getElementById("misc-components-module-a11y")) { var _s = document.createElement("style"); _s.id = "misc-components-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; }"; document.head.appendChild(_s); }
+  if (!document.getElementById("misc-components-module-a11y")) { var _s = document.createElement("style"); _s.id = "misc-components-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }"; document.head.appendChild(_s); }
 if (window.AlloModules && window.AlloModules.MiscComponentsModule) { console.log('[CDN] MiscComponentsModule already loaded, skipping'); return; }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 var React = window.React || React;

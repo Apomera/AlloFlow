@@ -29,25 +29,27 @@ beforeAll(() => {
 });
 
 describe('a probe nobody answered is never recorded as a score', () => {
-  it('finishMathFluencyProbe bails before building a result', () => {
-    const fn = anti.slice(
-      anti.indexOf('const finishMathFluencyProbe = () => {'),
-      anti.indexOf('const startMathFluencyProbe =')
-    );
-    expect(fn).toContain('if (attempted.length === 0) {');
-    // the guard must come before the result object is assembled
-    expect(fn.indexOf('if (attempted.length === 0) {')).toBeLessThan(fn.indexOf('const result = {'));
-    // and before anything is pushed into history
-    expect(fn.indexOf('if (attempted.length === 0) {')).toBeLessThan(fn.indexOf("type: 'math-fluency-probe'"));
+  // Until 2026-08-17 this was enforced by a zero-attempt guard inside the host's
+  // finishMathFluencyProbe. That whole engine has since been deleted: it had no
+  // UI (its overlay was migrated to math_fluency_module.js) and no callers, so
+  // the guard was protecting a path that could only ever be entered by accident.
+  // The protection now lives where probes are actually recorded.
+  it('the host engine that needed the guard is gone', () => {
+    expect(anti).not.toContain('const finishMathFluencyProbe =');
+    expect(anti).not.toContain('const startMathFluencyProbe =');
+    expect(anti).not.toContain('const submitMathFluencyAnswer =');
   });
 
-  it('still records a probe when the student actually attempted something', () => {
-    const fn = anti.slice(
-      anti.indexOf('const finishMathFluencyProbe = () => {'),
-      anti.indexOf('const startMathFluencyProbe =')
-    );
-    expect(fn).toContain("type: 'math-fluency-probe'");
-    expect(fn).toContain('setMathFluencyHistory(h => [...h, result]);');
+  it('the recording path refuses a run that is not a valid score', () => {
+    const sidebar = readFileSync('view_sidebar_panels_source.jsx', 'utf8');
+    const h = sidebar.slice(sidebar.indexOf('onProbeComplete={(entry) => {'), sidebar.indexOf('onProbeComplete={(entry) => {') + 4200);
+    // Interrupted or ended early: the panel marks it, and we decline to write.
+    expect(h).toContain('r.validForComparison === false');
+    // A missing score must not be coerced: Number(null) is 0, and a 0 DCPM in a
+    // student's record is exactly the fabricated CBM this guard class prevents.
+    expect(h).toContain('rawDcpm !== null && rawDcpm !== undefined');
+    // And the refusal is announced rather than silent.
+    expect(h).toContain("t('math_fluency.probe_not_recorded')");
   });
 });
 
@@ -59,11 +61,20 @@ describe('the state of play, pinned so it is not re-argued from memory', () => {
     expect(fluency).toContain('window.AlloModules.MathFluency = MathFluencyPanel;');
   });
 
-  it('the host overlay is the dead one: mathFluencyActive is declared and never read', () => {
+  it('the dead host probe state is deleted, not merely unread', () => {
     expect(anti).toContain('{/* Math Fluency probe overlay — handled by math_fluency_module.js */}');
-    // Exactly one occurrence in the monolith: its own useState.
-    expect(anti.match(/mathFluencyActive/g)).toHaveLength(1);
-    expect(anti).toContain('const [mathFluencyActive, setMathFluencyActive] = useState(false);');
+    // These were write-only: set by Assessment Center, rendered by nothing.
+    // The removal comment left behind names them, so match code only.
+    const antiCode = anti.split('\n').filter((l) => !l.trim().startsWith('//')).join('\n');
+    for (const dead of ['mathFluencyActive', 'mathFluencyProblems', 'mathFluencyCurrentIndex',
+      'mathFluencyStudentInput', 'mathFluencyResults', 'mathFluencyTimer', 'mathFluencyProblemCount',
+      'mathFluencyInputRef', 'mathFluencyTimerRef']) {
+      expect(antiCode.match(new RegExp(dead, 'g')), dead + ' should be gone').toBeNull();
+    }
+    // mathFluencyHistory survives: report_writer_module.js and FluencyModePanel
+    // still read it. It is no longer written by anything.
+    expect(anti).toContain('const [mathFluencyHistory, setMathFluencyHistory] = useState([]);');
+    expect(anti).not.toContain('setMathFluencyHistory(');
     // And no view source reads the host's probe state at all.
     ['view_sidebar_panels_source.jsx', 'view_math_source.jsx'].forEach((file) => {
       const src = readFileSync(file, 'utf8');
@@ -155,10 +166,13 @@ describe('the state of play, pinned so it is not re-argued from memory', () => {
     expect(stem).toContain("t('stem.fluency.mixed_blocks_note')");
   });
 
-  it('the host launcher itself is still the dead one (unwired, pending deletion)', () => {
-    const start = anti.slice(anti.indexOf('const startMathFluencyProbe ='), anti.indexOf('const startMathFluencyProbe =') + 1600);
-    expect(start).toContain("setActiveView('math');");
-    expect(start).not.toContain("setMathMode('Fluency Probes')");
+  it('the host launcher is now the live one, and lands on a panel that mounts', () => {
+    // The old startMathFluencyProbe set activeView and nothing else, so even if
+    // an overlay had existed the sidebar accordion would still have been shut.
+    const fn = anti.slice(anti.indexOf('const handleLaunchMathProbe ='), anti.indexOf('const handleLaunchMathProbe =') + 1800);
+    expect(fn).toContain("setActiveView('math');");
+    expect(fn).toContain("setMathMode('Fluency Probes');");
+    expect(fn).toContain('setExpandedTools');
   });
 
   it('MathFluencyPanel is self-contained, so it needs six props, not the host state', () => {
@@ -176,8 +190,12 @@ describe('STEM Lab and the math tool share one state surface', () => {
       anti.indexOf('React.createElement(StemLab, {'),
       anti.indexOf('React.createElement(StemLab, {') + 6000
     );
-    ['mathMode', 'mathSubject', 'numberLineMarkers', 'fractionPieces', 'multTableAnswer', 'startMathFluencyProbe']
+    ['mathMode', 'mathSubject', 'numberLineMarkers', 'fractionPieces', 'multTableAnswer']
       .forEach((prop) => expect(bag).toContain(prop));
+    // startMathFluencyProbe was in this bag and destructured by the Lab, but it
+    // had no call site anywhere; it went with the rest of the dead engine.
+    expect(bag).not.toContain('startMathFluencyProbe');
+    expect(readFileSync('stem_lab/stem_lab_module.js', 'utf8')).not.toContain('startMathFluencyProbe');
   });
 
   it('STEM Lab is a top-level modal, not a mode inside the math view', () => {

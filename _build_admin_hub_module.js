@@ -55,7 +55,7 @@ const outputCode = `/**
 ${compiled}
 
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.AdminHub = { AdminHubPanel: AdminHubPanel };
+  window.AlloModules.AdminHub = { AdminHubPanel: AdminHubPanel, maybeDriveBackup: _adminHubMaybeDriveBackup };
   console.log('[CDN] AdminHub loaded');
 })();
 `;

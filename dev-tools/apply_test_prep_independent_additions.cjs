@@ -4,6 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { originalityFindings } = require('./authored_batch_originality_checks.cjs');
 
 const root = path.resolve(__dirname, '..');
 const sourceDir = path.join(root, 'test_prep');
@@ -248,6 +249,16 @@ function validHttpsReference(value) {
   return valid;
 }
 
+let _authoredLengthBaseline = null;
+function authoredLengthBaseline() {
+  if (_authoredLengthBaseline) return _authoredLengthBaseline;
+  const baselinePath = path.join(root, 'tests', 'fixtures', 'test_prep_authored_length_baseline.json');
+  _authoredLengthBaseline = fs.existsSync(baselinePath)
+    ? (JSON.parse(fs.readFileSync(baselinePath, 'utf8')).batches || {})
+    : {};
+  return _authoredLengthBaseline;
+}
+
 function validateAuthoredBatch(stem, pack, batch, items, priorItems, strictMetadata) {
   const findings = [];
   const links = loadLearningLinks(stem, pack);
@@ -357,6 +368,23 @@ function validateAuthoredBatch(stem, pack, batch, items, priorItems, strictMetad
     promptIds.push(item.id);
     promptDomains.push(item.domainId);
   }
+  // Structural QA above cannot see a batch that was BUILT to pass it. Thirteen
+  // packs have 300 items each staged in dev-tools/authored/ that clear every
+  // check to this point and are pure template: a pseudo-data tail ("Unique case
+  // coordinates: serial 1, cycle 11...") making each prompt unique enough to
+  // defeat the Jaccard pass, and one filler clause padding every distractor.
+  // They were never registered in the manifest, so somebody caught it by hand.
+  // This makes that judgement mechanical, so the next session cannot register
+  // them by mistake. See authored_batch_originality_checks.cjs.
+  //
+  // The length half of that check is ratcheted, not absolute: three batches
+  // already applied sit at 71%, 86% and 100% key-is-longest, so an absolute cap
+  // would fail the build for content already in front of learners. Their rates
+  // are recorded in tests/fixtures/test_prep_authored_length_baseline.json and
+  // may only fall. Batches with no recorded rate get the real 45% limit.
+  const batchKey = pack.id + '/' + batch.id;
+  const recorded = authoredLengthBaseline()[batchKey];
+  for (const finding of originalityFindings(items, { lengthBaseline: recorded })) findings.push(finding);
   if (findings.length) {
     throw new Error(pack.id + '/' + batch.id + ': authored-batch QA failed: ' + findings.slice(0, 16).join('; '));
   }

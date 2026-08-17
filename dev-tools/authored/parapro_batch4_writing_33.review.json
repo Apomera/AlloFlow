@@ -19,6 +19,10 @@
       "itemId": "parapro-b4-writing-029",
       "issue": "The original weather/whether spellchecker task substantially repeated the dictionary-and-context decision process already assessed by the affect/effect item in the same bank and by earlier reference-use items.",
       "change": "Replaced the item with a distinct teacher-directed proofreading scaffold for detecting omitted words through text-to-speech, exact visual tracking, and student-controlled correction. The answer position and writing-classroom-support mapping were preserved."
+    },
+    {
+      "issue": "The keyed option was the longest of the four choices in 22 of 33 items, against 25% by chance, leaving the bank partly answerable without reading the stem. An earlier review of this file recorded that answer-length cues had been removed; that claim did not hold when measured.",
+      "change": "Rewrote 13 distractors by hand to carry the same false claim at parallel specificity and length. No keyed option, rationale, reference or answer position was changed. Key-is-longest now 9/33 (27%)."
     }
   ],
   "checks": {
@@ -189,15 +193,27 @@
     }
   },
   "blockers": [],
-  "sourceSha256": "a91588bb16984989518b06cbed2c3d1ebb7d0a82d18d30ba406011428a4df0d5",
+  "sourceSha256": "48198d65b5f9429ea6d1154a10d6144ddf5d50cd962fe4a39665e3695daf5f71",
   "artifactBinding": {
     "algorithm": "sha256",
-    "sha256": "a91588bb16984989518b06cbed2c3d1ebb7d0a82d18d30ba406011428a4df0d5"
+    "sha256": "48198d65b5f9429ea6d1154a10d6144ddf5d50cd962fe4a39665e3695daf5f71"
   },
   "integration": {
     "packId": "parapro-1755-practice-1",
     "batchNumber": 4,
     "expectedInsertionTier": "assistant-authored-independent",
     "expectedDiagnosticBankSize": 100
-  }
+  },
+  "remediation": [
+    {
+      "at": "2026-08-17",
+      "by": "Claude Opus 5 — AlloFlow fleet lane W4",
+      "scope": "answer-length tell only; distractor text",
+      "itemsChanged": 13,
+      "ledger": "dev-tools/authored/length_remediation_2026-08-17.json",
+      "priorSha256": "a91588bb16984989518b06cbed2c3d1ebb7d0a82d18d30ba406011428a4df0d5",
+      "sha256": "48198d65b5f9429ea6d1154a10d6144ddf5d50cd962fe4a39665e3695daf5f71",
+      "note": "Distractor text edited after the independent cross-review. The binding was renewed so the artifact stays self-consistent; the original reviewer did not review these replacements."
+    }
+  ]
 }

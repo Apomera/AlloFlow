@@ -548,6 +548,17 @@
             const maxDepth = Math.max(0, Math.min(Number(inputOptions.depth) || 1, MAX_DEPTH));
             const maxNodes = Math.max(1, Math.min(Number(inputOptions.maxNodes) || MAX_NODES, MAX_NODES));
             const maxEdges = Math.max(0, Math.min(Number(inputOptions.maxEdges) || MAX_EDGES, MAX_EDGES));
+            // Component-flooding guard. In --include-components snapshots a single standard can
+            // carry dozens of LearningComponents over `supports` edges (L.1.1.h in ccss-ela has
+            // 38), and an uncapped BFS spends the whole node budget on them, starving the
+            // related standards, clusters and progression context this method exists to return.
+            // Components may take at most a third of the node budget (never fewer than 4)
+            // unless the caller overrides with options.maxComponents. Skipped components mark
+            // the result truncated, so callers see coverage was bounded rather than complete.
+            const maxComponents = Number.isFinite(Number(inputOptions.maxComponents))
+                ? Math.max(0, Number(inputOptions.maxComponents))
+                : Math.max(4, Math.floor(maxNodes / 3));
+            let componentCount = 0;
             const rootId = idToken(rootRecord.id);
             const depths = new Map([[rootId, 0]]);
             const queue = [rootId];
@@ -574,6 +585,14 @@
                         if (nodeIds.size >= maxNodes) {
                             truncated = true;
                             continue;
+                        }
+                        const otherRecord = byId.get(otherId);
+                        if (otherRecord && otherRecord.kind === 'component') {
+                            if (componentCount >= maxComponents) {
+                                truncated = true;
+                                continue;
+                            }
+                            componentCount += 1;
                         }
                         nodeIds.add(otherId);
                         depths.set(otherId, currentDepth + 1);

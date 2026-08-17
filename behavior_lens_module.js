@@ -213,7 +213,7 @@
             }
             /* WCAG 1.4.3: Contrast fixes for low-contrast text classes */
             .fixed.inset-0 .text-slate-600 { color: #64748b !important; }
-            .fixed.inset-0 .text-gray-400 { color: #6b7280 !important; }
+            .fixed.inset-0
             .fixed.inset-0 .text-slate-600 { color: #475569 !important; }
             /* WCAG 1.4.4: Minimum text size (override sub-10px text) */
             .fixed.inset-0 [class*="text-\\[9px\\]"] { font-size: 10px !important; }

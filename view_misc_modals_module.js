@@ -1484,9 +1484,16 @@ function AIBackendModalBody(props) {
     } catch (_) {
     }
   };
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300", onClick: () => setShowAIBackendModal(false) }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "ai_backend_modal_panel", "data-student-ai-setup": isStudentAiSetup ? "true" : "false", className: "bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto", role: "dialog", "aria-modal": "true", "aria-labelledby": "ai-backend-title", tabIndex: -1, onKeyDown: (e) => {
-    if (e.key === "Escape") setShowAIBackendModal(false);
-  }, onClick: (e) => e.stopPropagation() }, isStudentAiSetup && /* @__PURE__ */ React.createElement("style", null, `
+  return /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      style: { zIndex: props.showStemLab ? 10490 : void 0 },
+      className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300",
+      onClick: () => setShowAIBackendModal(false)
+    },
+    /* @__PURE__ */ React.createElement("div", { "data-help-key": "ai_backend_modal_panel", "data-student-ai-setup": isStudentAiSetup ? "true" : "false", className: "bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto", role: "dialog", "aria-modal": "true", "aria-labelledby": "ai-backend-title", tabIndex: -1, onKeyDown: (e) => {
+      if (e.key === "Escape") setShowAIBackendModal(false);
+    }, onClick: (e) => e.stopPropagation() }, isStudentAiSetup && /* @__PURE__ */ React.createElement("style", null, `
               [data-student-ai-setup="true"] #ai-backend-engine-strip,
               [data-student-ai-setup="true"] #ai-backend-sdturbo-strip,
               [data-student-ai-setup="true"] div:has(> #ai-backend-wolfram),
@@ -1497,276 +1504,277 @@ function AIBackendModalBody(props) {
                 display: none !important;
               }
             `), /* @__PURE__ */ React.createElement("button", { onClick: () => setShowAIBackendModal(false), className: "absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10", "aria-label": t("common.close") || "Close" }, /* @__PURE__ */ React.createElement(X, { size: 20 })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-6 text-violet-900" }, /* @__PURE__ */ React.createElement("div", { className: "bg-violet-100 p-2 rounded-full" }, /* @__PURE__ */ React.createElement(Unplug, { size: 20, className: "text-violet-600" })), /* @__PURE__ */ React.createElement("h3", { id: "ai-backend-title", className: "font-black text-lg" }, isStudentAiSetup ? "Connect Personal AI" : t("ai_backend.title") || "AI Backend Settings")), /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, isStudentAiSetup && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950" }, /* @__PURE__ */ React.createElement("p", { className: "font-black" }, "Personal AI for this session"), /* @__PURE__ */ React.createElement("p", { className: "mt-1" }, "Use only your own provider account. Your credential is stored only in this browser tab and transmitted only to the provider you choose; it is never placed in the QR, Class Mailbox, or student submission."), /* @__PURE__ */ React.createElement("p", { className: "mt-1" }, "Your prompts and activity content are sent directly to the provider you choose and may create charges. Follow your school or district rules, do not include private student information, and use a restricted, low-budget key. Avoid shared devices.")), !advancedOpen && !isStudentAiSetup && renderGuidedStep(), !advancedOpen && !isStudentAiSetup && /* @__PURE__ */ React.createElement("section", { id: "ai-backend-guided-storage-shortcut", className: "rounded-xl border border-cyan-200 bg-cyan-50 p-3", "aria-labelledby": "ai-backend-guided-storage-title" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { id: "ai-backend-guided-storage-title", className: "text-xs font-black text-cyan-950" }, t("canvas_settings.local_storage_title") || "Saved work on this device"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-cyan-900" }, t("canvas_settings.local_storage_hint") || "Open your saved resource packs to restore, pin, export, or erase them. Also shows space used and the offline voice models such as Whisper and Kokoro.")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "ai_backend_guided_storage_btn", onClick: openDeviceStorageManager, className: "min-h-11 shrink-0 rounded-xl border-2 border-cyan-600 bg-white px-4 py-2 text-sm font-black text-cyan-900 hover:bg-cyan-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2" }, t("canvas_settings.local_storage_btn") || "Open saved work"))), advancedOpen && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.provider_label") || "Provider"), /* @__PURE__ */ React.createElement(
-    "select",
-    {
-      "data-help-key": "ai_backend_provider_select",
-      "aria-label": t("ai_backend.provider_aria") || "AI Backend Provider",
-      id: "ai-backend-provider",
-      defaultValue: readAIBackendConfig().backend || "gemini",
-      onChange: (e) => applyBackendChoice(e.target.value, { showStatus: true }),
-      className: "w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-bold text-slate-700 bg-white cursor-pointer"
-    },
-    /* @__PURE__ */ React.createElement("option", { value: "gemini" }, "\u2728 Gemini (Google) \u2014 Default"),
-    !isStudentAiSetup && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("option", { value: "alloflow-local" }, "\u{1F3EB} AlloFlow Built-in Engine (this computer \u2014 no account)"), /* @__PURE__ */ React.createElement("option", { value: "lmstudio" }, "LM Studio (Local)"), /* @__PURE__ */ React.createElement("option", { value: "localai" }, "\u{1F5A5}\uFE0F LocalAI (Self-Hosted GPU)"), /* @__PURE__ */ React.createElement("option", { value: "ollama" }, "\u{1F999} Ollama (Local)")),
-    /* @__PURE__ */ React.createElement("option", { value: "openai" }, "\u{1F916} OpenAI"),
-    !isStudentAiSetup && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("option", { value: "claude" }, "\u{1F9E0} Claude (Anthropic)"), /* @__PURE__ */ React.createElement("option", { value: "onnx-npu" }, "\u{1F9E0} On-Device NPU (Snapdragon)")),
-    /* @__PURE__ */ React.createElement("option", { value: "custom" }, "\u2699\uFE0F Custom Endpoint")
-  )), renderUrlField(), renderEngineStrip(), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-sdturbo-strip", style: { display: "none" }, "aria-live": "polite", ref: (node) => {
-    if (node && !node.dataset.sdInit) {
-      node.dataset.sdInit = "1";
-      setTimeout(refreshSdTurboStrip, 0);
-    }
-  } }), renderApiKeyField(), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.wolfram_label") || "Wolfram Alpha App ID", " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-slate-600" }, t("ai_backend.wolfram_hint") || "(optional \u2014 enhances math)")), /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "data-help-key": "ai_backend_wolfram_input",
-      id: "ai-backend-wolfram",
-      "aria-label": t("ai_backend.wolfram_aria") || "Custom backend Wolfram App ID",
-      type: "text",
-      placeholder: t("ai_backend.wolfram_placeholder") || "XXXXX-XXXXXXXXXX (from developer.wolframalpha.com)",
-      defaultValue: readAIBackendConfig().wolframAppId || "",
-      onChange: (e) => {
-        const current = readAIBackendConfig();
-        writeAIBackendConfig({ ...current, wolframAppId: e.target.value });
+      "select",
+      {
+        "data-help-key": "ai_backend_provider_select",
+        "aria-label": t("ai_backend.provider_aria") || "AI Backend Provider",
+        id: "ai-backend-provider",
+        defaultValue: readAIBackendConfig().backend || "gemini",
+        onChange: (e) => applyBackendChoice(e.target.value, { showStatus: true }),
+        className: "w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-bold text-slate-700 bg-white cursor-pointer"
       },
-      className: "w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
-    }
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-1" }, t("ai_backend.wolfram_free_note") || "Free: 2,000 queries/month \u2022 Adds exact math solving & step-by-step verification"))), !advancedOpen && guidedReady && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-green-200 bg-green-50 p-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-black text-green-900" }, "\u2705 ", (t("ai_backend.guided_ready") || "You're ready \u2014 AlloFlow is using") + " " + (GUIDED_BACKEND_LABELS[readAIBackendConfig().backend || "gemini"] || readAIBackendConfig().backend) + "."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-green-800 mt-1" }, t("ai_backend.guided_ready_note") || "Your choice is active now \u2014 close this window and start working."), /* @__PURE__ */ React.createElement("button", { "data-help-key": "ai_backend_guided_done_btn", onClick: () => setShowAIBackendModal(false), className: "mt-2 bg-green-600 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-green-700 transition-all active:scale-95" }, t("ai_backend.guided_done") || "Done")), guidedTestVisible && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 pt-1" }, /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      "data-help-key": "ai_backend_test_connection_btn",
-      id: "ai-backend-test",
-      onClick: async () => {
-        const btn = document.getElementById("ai-backend-test");
-        const status = document.getElementById("ai-backend-status");
-        const panel = btn && btn.closest('[data-help-key="ai_backend_modal_panel"]');
-        const lockedControls = panel ? Array.from(panel.querySelectorAll("input, select, button")).filter((control) => control !== btn) : [];
-        btn.disabled = true;
-        lockedControls.forEach((control) => {
-          control.disabled = true;
-        });
-        btn.textContent = "\u23F3 Testing...";
-        if (status) {
-          status.textContent = "";
-          status.className = "";
-        }
-        try {
-          const testedConfig = readAIBackendConfig();
-          const testedFingerprint = fingerprintAIBackendConfig(testedConfig);
-          writeAIBackendConfig(testedConfig);
-          const result = await createAIProviderFromSettings(testedConfig).testConnection();
-          if (result.success) {
-            if (!testedFingerprint || fingerprintAIBackendConfig(readAIBackendConfig()) !== testedFingerprint) {
-              throw new Error("Settings changed while the connection was being tested. Please test again.");
-            }
-            const modelSelect = document.getElementById("ai-backend-model-default");
-            const fallbackSelect = document.getElementById("ai-backend-model-fallback");
-            const cfg = readAIBackendConfig();
-            const firstModel = result.selectedModel || result.models?.[0]?.id || "";
-            if (firstModel && cfg.models?.default !== firstModel) {
-              const models = { ...cfg.models || {}, default: firstModel };
-              writeAIBackendConfig({ ...cfg, models });
-            }
-            const refreshedCfg = readAIBackendConfig();
-            writeAIBackendConfig({
-              ...refreshedCfg,
-              validation: {
-                ok: true,
-                backend: refreshedCfg.backend || "gemini",
-                text: true,
-                fingerprint: fingerprintAIBackendConfig(refreshedCfg),
-                capabilities: {
-                  text: true,
-                  vision: false,
-                  image: false,
-                  imageEdit: false,
-                  audio: false,
-                  ...result.capabilities || {}
-                },
-                testedAt: (/* @__PURE__ */ new Date()).toISOString(),
-                expiresAt: new Date(Date.now() + 6 * 60 * 60 * 1e3).toISOString(),
-                modelCount: Number(result.modelCount || 0)
+      /* @__PURE__ */ React.createElement("option", { value: "gemini" }, "\u2728 Gemini (Google) \u2014 Default"),
+      !isStudentAiSetup && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("option", { value: "alloflow-local" }, "\u{1F3EB} AlloFlow Built-in Engine (this computer \u2014 no account)"), /* @__PURE__ */ React.createElement("option", { value: "lmstudio" }, "LM Studio (Local)"), /* @__PURE__ */ React.createElement("option", { value: "localai" }, "\u{1F5A5}\uFE0F LocalAI (Self-Hosted GPU)"), /* @__PURE__ */ React.createElement("option", { value: "ollama" }, "\u{1F999} Ollama (Local)")),
+      /* @__PURE__ */ React.createElement("option", { value: "openai" }, "\u{1F916} OpenAI"),
+      !isStudentAiSetup && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("option", { value: "claude" }, "\u{1F9E0} Claude (Anthropic)"), /* @__PURE__ */ React.createElement("option", { value: "onnx-npu" }, "\u{1F9E0} On-Device NPU (Snapdragon)")),
+      /* @__PURE__ */ React.createElement("option", { value: "custom" }, "\u2699\uFE0F Custom Endpoint")
+    )), renderUrlField(), renderEngineStrip(), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-sdturbo-strip", style: { display: "none" }, "aria-live": "polite", ref: (node) => {
+      if (node && !node.dataset.sdInit) {
+        node.dataset.sdInit = "1";
+        setTimeout(refreshSdTurboStrip, 0);
+      }
+    } }), renderApiKeyField(), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("ai_backend.wolfram_label") || "Wolfram Alpha App ID", " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-slate-600" }, t("ai_backend.wolfram_hint") || "(optional \u2014 enhances math)")), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        "data-help-key": "ai_backend_wolfram_input",
+        id: "ai-backend-wolfram",
+        "aria-label": t("ai_backend.wolfram_aria") || "Custom backend Wolfram App ID",
+        type: "text",
+        placeholder: t("ai_backend.wolfram_placeholder") || "XXXXX-XXXXXXXXXX (from developer.wolframalpha.com)",
+        defaultValue: readAIBackendConfig().wolframAppId || "",
+        onChange: (e) => {
+          const current = readAIBackendConfig();
+          writeAIBackendConfig({ ...current, wolframAppId: e.target.value });
+        },
+        className: "w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
+      }
+    ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-1" }, t("ai_backend.wolfram_free_note") || "Free: 2,000 queries/month \u2022 Adds exact math solving & step-by-step verification"))), !advancedOpen && guidedReady && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-green-200 bg-green-50 p-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-black text-green-900" }, "\u2705 ", (t("ai_backend.guided_ready") || "You're ready \u2014 AlloFlow is using") + " " + (GUIDED_BACKEND_LABELS[readAIBackendConfig().backend || "gemini"] || readAIBackendConfig().backend) + "."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-green-800 mt-1" }, t("ai_backend.guided_ready_note") || "Your choice is active now \u2014 close this window and start working."), /* @__PURE__ */ React.createElement("button", { "data-help-key": "ai_backend_guided_done_btn", onClick: () => setShowAIBackendModal(false), className: "mt-2 bg-green-600 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-green-700 transition-all active:scale-95" }, t("ai_backend.guided_done") || "Done")), guidedTestVisible && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 pt-1" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        "data-help-key": "ai_backend_test_connection_btn",
+        id: "ai-backend-test",
+        onClick: async () => {
+          const btn = document.getElementById("ai-backend-test");
+          const status = document.getElementById("ai-backend-status");
+          const panel = btn && btn.closest('[data-help-key="ai_backend_modal_panel"]');
+          const lockedControls = panel ? Array.from(panel.querySelectorAll("input, select, button")).filter((control) => control !== btn) : [];
+          btn.disabled = true;
+          lockedControls.forEach((control) => {
+            control.disabled = true;
+          });
+          btn.textContent = "\u23F3 Testing...";
+          if (status) {
+            status.textContent = "";
+            status.className = "";
+          }
+          try {
+            const testedConfig = readAIBackendConfig();
+            const testedFingerprint = fingerprintAIBackendConfig(testedConfig);
+            writeAIBackendConfig(testedConfig);
+            const result = await createAIProviderFromSettings(testedConfig).testConnection();
+            if (result.success) {
+              if (!testedFingerprint || fingerprintAIBackendConfig(readAIBackendConfig()) !== testedFingerprint) {
+                throw new Error("Settings changed while the connection was being tested. Please test again.");
               }
-            }, { preserveValidation: true });
-            if (isStudentAiSetup && typeof window.__alloSyncQrStudentAiAccess === "function") window.__alloSyncQrStudentAiAccess();
-            try {
-              if (!isStudentAiSetup && typeof window._upgradeGeminiAPI === "function") window._upgradeGeminiAPI();
-            } catch (_) {
+              const modelSelect = document.getElementById("ai-backend-model-default");
+              const fallbackSelect = document.getElementById("ai-backend-model-fallback");
+              const cfg = readAIBackendConfig();
+              const firstModel = result.selectedModel || result.models?.[0]?.id || "";
+              if (firstModel && cfg.models?.default !== firstModel) {
+                const models = { ...cfg.models || {}, default: firstModel };
+                writeAIBackendConfig({ ...cfg, models });
+              }
+              const refreshedCfg = readAIBackendConfig();
+              writeAIBackendConfig({
+                ...refreshedCfg,
+                validation: {
+                  ok: true,
+                  backend: refreshedCfg.backend || "gemini",
+                  text: true,
+                  fingerprint: fingerprintAIBackendConfig(refreshedCfg),
+                  capabilities: {
+                    text: true,
+                    vision: false,
+                    image: false,
+                    imageEdit: false,
+                    audio: false,
+                    ...result.capabilities || {}
+                  },
+                  testedAt: (/* @__PURE__ */ new Date()).toISOString(),
+                  expiresAt: new Date(Date.now() + 6 * 60 * 60 * 1e3).toISOString(),
+                  modelCount: Number(result.modelCount || 0)
+                }
+              }, { preserveValidation: true });
+              if (isStudentAiSetup && typeof window.__alloSyncQrStudentAiAccess === "function") window.__alloSyncQrStudentAiAccess();
+              try {
+                if (!isStudentAiSetup && typeof window._upgradeGeminiAPI === "function") window._upgradeGeminiAPI();
+              } catch (_) {
+              }
+              setGuidedReady(true);
+              if (status) {
+                status.textContent = "Connected! " + result.modelCount + " model(s) available" + (firstModel && cfg.models?.default !== firstModel ? ". Verified model selected." : "");
+                status.className = "text-xs font-bold mt-2 text-green-800 bg-green-50 p-2.5 rounded-xl border border-green-100";
+              }
+              if (modelSelect && result.models?.length > 0) {
+                populateModelSelect(modelSelect, "Auto (server default)", result.models, refreshedCfg.models?.default || "");
+              }
+              if (fallbackSelect && result.models?.length > 0) {
+                populateModelSelect(fallbackSelect, "Same as default", result.models, refreshedCfg.models?.fallback || "");
+              }
+            } else {
+              if (status) {
+                status.textContent = "\u274C Failed: " + result.error;
+                status.className = "text-xs font-bold mt-2 text-red-800 bg-red-50 p-2.5 rounded-xl border border-red-100";
+              }
             }
-            setGuidedReady(true);
+          } catch (err) {
             if (status) {
-              status.textContent = "Connected! " + result.modelCount + " model(s) available" + (firstModel && cfg.models?.default !== firstModel ? ". Verified model selected." : "");
-              status.className = "text-xs font-bold mt-2 text-green-800 bg-green-50 p-2.5 rounded-xl border border-green-100";
-            }
-            if (modelSelect && result.models?.length > 0) {
-              populateModelSelect(modelSelect, "Auto (server default)", result.models, refreshedCfg.models?.default || "");
-            }
-            if (fallbackSelect && result.models?.length > 0) {
-              populateModelSelect(fallbackSelect, "Same as default", result.models, refreshedCfg.models?.fallback || "");
-            }
-          } else {
-            if (status) {
-              status.textContent = "\u274C Failed: " + result.error;
+              status.textContent = "\u274C Error: " + err.message;
               status.className = "text-xs font-bold mt-2 text-red-800 bg-red-50 p-2.5 rounded-xl border border-red-100";
             }
           }
-        } catch (err) {
-          if (status) {
-            status.textContent = "\u274C Error: " + err.message;
-            status.className = "text-xs font-bold mt-2 text-red-800 bg-red-50 p-2.5 rounded-xl border border-red-100";
+          lockedControls.forEach((control) => {
+            control.disabled = false;
+          });
+          btn.disabled = false;
+          btn.textContent = "\u{1F50C} Test Connection";
+        },
+        className: "flex-1 bg-violet-600 text-white px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-violet-700 transition-all shadow-lg shadow-violet-200 active:scale-95"
+      },
+      "\u{1F50C} Test Connection"
+    ), advancedOpen && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => {
+          clearAIBackendConfig();
+          const p = document.getElementById("ai-backend-provider");
+          const u = document.getElementById("ai-backend-url");
+          const k = document.getElementById("ai-backend-apikey");
+          const s = document.getElementById("ai-backend-status");
+          if (p) p.value = "gemini";
+          if (u) u.value = "";
+          if (k) k.value = "";
+          const w = document.getElementById("ai-backend-wolfram");
+          if (w) w.value = "";
+          const md = document.getElementById("ai-backend-model-default");
+          const mf = document.getElementById("ai-backend-model-fallback");
+          const tt = document.getElementById("ai-backend-tts-provider");
+          const ig = document.getElementById("ai-backend-image-provider");
+          if (md) md.value = "";
+          if (mf) mf.value = "";
+          if (tt) tt.value = "auto";
+          if (ig) ig.value = "auto";
+          if (s) {
+            s.textContent = isStudentAiSetup ? "Disconnected. The session key was erased." : "\u{1F504} Reset to defaults \u2014 reload page to apply";
+            s.className = "text-xs font-bold mt-2 text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-100";
           }
-        }
-        lockedControls.forEach((control) => {
-          control.disabled = false;
-        });
-        btn.disabled = false;
-        btn.textContent = "\u{1F50C} Test Connection";
+        },
+        className: "bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-300 transition-all active:scale-95"
       },
-      className: "flex-1 bg-violet-600 text-white px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-violet-700 transition-all shadow-lg shadow-violet-200 active:scale-95"
-    },
-    "\u{1F50C} Test Connection"
-  ), advancedOpen && /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      onClick: () => {
-        clearAIBackendConfig();
-        const p = document.getElementById("ai-backend-provider");
-        const u = document.getElementById("ai-backend-url");
-        const k = document.getElementById("ai-backend-apikey");
-        const s = document.getElementById("ai-backend-status");
-        if (p) p.value = "gemini";
-        if (u) u.value = "";
-        if (k) k.value = "";
-        const w = document.getElementById("ai-backend-wolfram");
-        if (w) w.value = "";
-        const md = document.getElementById("ai-backend-model-default");
-        const mf = document.getElementById("ai-backend-model-fallback");
-        const tt = document.getElementById("ai-backend-tts-provider");
-        const ig = document.getElementById("ai-backend-image-provider");
-        if (md) md.value = "";
-        if (mf) mf.value = "";
-        if (tt) tt.value = "auto";
-        if (ig) ig.value = "auto";
-        if (s) {
-          s.textContent = isStudentAiSetup ? "Disconnected. The session key was erased." : "\u{1F504} Reset to defaults \u2014 reload page to apply";
-          s.className = "text-xs font-bold mt-2 text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-100";
-        }
+      isStudentAiSetup ? "Disconnect & erase key" : "\u21A9 Reset"
+    )), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-status" })), advancedOpen && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "pt-3 border-t-2 border-violet-50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-blue-100 p-1.5 rounded-lg" }, /* @__PURE__ */ React.createElement(Cpu, { size: 14, className: "text-blue-600" })), /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-slate-700 uppercase tracking-wider" }, t("ai_backend.model_selection_header") || "Model Selection")), /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1" }, t("ai_backend.default_model_label") || "Default Model", " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-slate-600" }, t("ai_backend.default_model_hint") || "(text generation)")), /* @__PURE__ */ React.createElement(
+      "select",
+      {
+        "data-help-key": "ai_backend_model_select",
+        "aria-label": t("ai_backend.default_model_aria") || "Default AI model",
+        id: "ai-backend-model-default",
+        defaultValue: readAIBackendConfig().models?.default || "",
+        onChange: (e) => {
+          const current = readAIBackendConfig();
+          const models = { ...current.models || {}, default: e.target.value || void 0 };
+          if (!e.target.value) delete models.default;
+          writeAIBackendConfig({ ...current, models });
+        },
+        className: "w-full p-2 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
       },
-      className: "bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-300 transition-all active:scale-95"
-    },
-    isStudentAiSetup ? "Disconnect & erase key" : "\u21A9 Reset"
-  )), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-status" })), advancedOpen && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "pt-3 border-t-2 border-violet-50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-blue-100 p-1.5 rounded-lg" }, /* @__PURE__ */ React.createElement(Cpu, { size: 14, className: "text-blue-600" })), /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-slate-700 uppercase tracking-wider" }, t("ai_backend.model_selection_header") || "Model Selection")), /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1" }, t("ai_backend.default_model_label") || "Default Model", " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-slate-600" }, t("ai_backend.default_model_hint") || "(text generation)")), /* @__PURE__ */ React.createElement(
-    "select",
-    {
-      "data-help-key": "ai_backend_model_select",
-      "aria-label": t("ai_backend.default_model_aria") || "Default AI model",
-      id: "ai-backend-model-default",
-      defaultValue: readAIBackendConfig().models?.default || "",
-      onChange: (e) => {
-        const current = readAIBackendConfig();
-        const models = { ...current.models || {}, default: e.target.value || void 0 };
-        if (!e.target.value) delete models.default;
-        writeAIBackendConfig({ ...current, models });
+      /* @__PURE__ */ React.createElement("option", { value: "" }, t("ai_backend.auto_server_default") || "Auto (server default)")
+    )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1" }, t("ai_backend.fallback_model_label") || "Fallback Model", " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-slate-600" }, t("ai_backend.fallback_model_hint") || "(rate-limit cascade)")), /* @__PURE__ */ React.createElement(
+      "select",
+      {
+        "aria-label": t("ai_backend.fallback_model_aria") || "Fallback AI model",
+        id: "ai-backend-model-fallback",
+        defaultValue: readAIBackendConfig().models?.fallback || "",
+        onChange: (e) => {
+          const current = readAIBackendConfig();
+          const models = { ...current.models || {}, fallback: e.target.value || void 0 };
+          if (!e.target.value) delete models.fallback;
+          writeAIBackendConfig({ ...current, models });
+        },
+        className: "w-full p-2 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
       },
-      className: "w-full p-2 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
-    },
-    /* @__PURE__ */ React.createElement("option", { value: "" }, t("ai_backend.auto_server_default") || "Auto (server default)")
-  )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1" }, t("ai_backend.fallback_model_label") || "Fallback Model", " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case font-normal text-slate-600" }, t("ai_backend.fallback_model_hint") || "(rate-limit cascade)")), /* @__PURE__ */ React.createElement(
-    "select",
-    {
-      "aria-label": t("ai_backend.fallback_model_aria") || "Fallback AI model",
-      id: "ai-backend-model-fallback",
-      defaultValue: readAIBackendConfig().models?.fallback || "",
-      onChange: (e) => {
-        const current = readAIBackendConfig();
-        const models = { ...current.models || {}, fallback: e.target.value || void 0 };
-        if (!e.target.value) delete models.fallback;
-        writeAIBackendConfig({ ...current, models });
+      /* @__PURE__ */ React.createElement("option", { value: "" }, t("ai_backend.same_as_default") || "Same as default")
+    )), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 italic" }, '\u{1F4A1} Click "Test Connection" above to auto-populate available models from your backend.'))), /* @__PURE__ */ React.createElement("div", { className: "pt-3 border-t-2 border-violet-50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-100 p-1.5 rounded-lg" }, /* @__PURE__ */ React.createElement(Headphones, { size: 14, className: "text-emerald-600" })), /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-slate-700 uppercase tracking-wider" }, "Text-to-Speech")), /* @__PURE__ */ React.createElement(
+      "select",
+      {
+        "data-help-key": "ai_backend_tts_provider_select",
+        "aria-label": t("ai_backend.tts_provider_aria") || "Text-to-speech provider",
+        id: "ai-backend-tts-provider",
+        defaultValue: readAIBackendConfig().ttsProvider || "auto",
+        onChange: (e) => {
+          const current = readAIBackendConfig();
+          writeAIBackendConfig({ ...current, ttsProvider: e.target.value });
+        },
+        className: "w-full p-2 border-2 border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
       },
-      className: "w-full p-2 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
-    },
-    /* @__PURE__ */ React.createElement("option", { value: "" }, t("ai_backend.same_as_default") || "Same as default")
-  )), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 italic" }, '\u{1F4A1} Click "Test Connection" above to auto-populate available models from your backend.'))), /* @__PURE__ */ React.createElement("div", { className: "pt-3 border-t-2 border-violet-50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-100 p-1.5 rounded-lg" }, /* @__PURE__ */ React.createElement(Headphones, { size: 14, className: "text-emerald-600" })), /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-slate-700 uppercase tracking-wider" }, "Text-to-Speech")), /* @__PURE__ */ React.createElement(
-    "select",
-    {
-      "data-help-key": "ai_backend_tts_provider_select",
-      "aria-label": t("ai_backend.tts_provider_aria") || "Text-to-speech provider",
-      id: "ai-backend-tts-provider",
-      defaultValue: readAIBackendConfig().ttsProvider || "auto",
-      onChange: (e) => {
-        const current = readAIBackendConfig();
-        writeAIBackendConfig({ ...current, ttsProvider: e.target.value });
+      /* @__PURE__ */ React.createElement("option", { value: "auto" }, "\u{1F504} Auto (match backend)"),
+      /* @__PURE__ */ React.createElement("option", { value: "gemini" }, "\u2728 Gemini Cloud TTS"),
+      /* @__PURE__ */ React.createElement("option", { value: "local" }, "\u{1F5A5}\uFE0F Local TTS (Kokoro \u2192 Edge TTS cascade)"),
+      /* @__PURE__ */ React.createElement("option", { value: "browser" }, "\u{1F310} Browser Built-in (speechSynthesis)"),
+      /* @__PURE__ */ React.createElement("option", { value: "off" }, "\u{1F507} Off (disable narration)")
+    ), /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-emerald-50 p-2 rounded-lg border border-emerald-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-emerald-700 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, "Auto:"), " Gemini voices for cloud backends, Edge TTS voices for local backends. Narrator voice selection is in the header bar (\u{1F3A7} button)."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-emerald-600 mt-1" }, /* @__PURE__ */ React.createElement("strong", null, t("ai_backend.local_cascade_label") || "Local cascade:"), " Kokoro (:8880, 8 langs) \u2192 Edge TTS (:5500, 40+ langs) \u2192 Browser fallback"))), /* @__PURE__ */ React.createElement("div", { className: "pt-3 border-t-2 border-violet-50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-amber-100 p-1.5 rounded-lg" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 14, className: "text-amber-600" })), /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-slate-700 uppercase tracking-wider" }, t("ai_backend.image_generation_header") || "Image Generation")), /* @__PURE__ */ React.createElement(
+      "select",
+      {
+        "aria-label": t("ai_backend.image_provider_aria") || "Image generation provider",
+        id: "ai-backend-image-provider",
+        defaultValue: readAIBackendConfig().imageProvider || "auto",
+        onChange: (e) => {
+          const current = readAIBackendConfig();
+          writeAIBackendConfig({ ...current, imageProvider: e.target.value });
+        },
+        className: "w-full p-2 border-2 border-slate-200 rounded-xl focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
       },
-      className: "w-full p-2 border-2 border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
-    },
-    /* @__PURE__ */ React.createElement("option", { value: "auto" }, "\u{1F504} Auto (match backend)"),
-    /* @__PURE__ */ React.createElement("option", { value: "gemini" }, "\u2728 Gemini Cloud TTS"),
-    /* @__PURE__ */ React.createElement("option", { value: "local" }, "\u{1F5A5}\uFE0F Local TTS (Kokoro \u2192 Edge TTS cascade)"),
-    /* @__PURE__ */ React.createElement("option", { value: "browser" }, "\u{1F310} Browser Built-in (speechSynthesis)"),
-    /* @__PURE__ */ React.createElement("option", { value: "off" }, "\u{1F507} Off (disable narration)")
-  ), /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-emerald-50 p-2 rounded-lg border border-emerald-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-emerald-700 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, "Auto:"), " Gemini voices for cloud backends, Edge TTS voices for local backends. Narrator voice selection is in the header bar (\u{1F3A7} button)."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-emerald-600 mt-1" }, /* @__PURE__ */ React.createElement("strong", null, t("ai_backend.local_cascade_label") || "Local cascade:"), " Kokoro (:8880, 8 langs) \u2192 Edge TTS (:5500, 40+ langs) \u2192 Browser fallback"))), /* @__PURE__ */ React.createElement("div", { className: "pt-3 border-t-2 border-violet-50" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-amber-100 p-1.5 rounded-lg" }, /* @__PURE__ */ React.createElement(ImageIcon, { size: 14, className: "text-amber-600" })), /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-black text-slate-700 uppercase tracking-wider" }, t("ai_backend.image_generation_header") || "Image Generation")), /* @__PURE__ */ React.createElement(
-    "select",
-    {
-      "aria-label": t("ai_backend.image_provider_aria") || "Image generation provider",
-      id: "ai-backend-image-provider",
-      defaultValue: readAIBackendConfig().imageProvider || "auto",
-      onChange: (e) => {
-        const current = readAIBackendConfig();
-        writeAIBackendConfig({ ...current, imageProvider: e.target.value });
+      /* @__PURE__ */ React.createElement("option", { value: "auto" }, "\u{1F504} Auto (match backend)"),
+      /* @__PURE__ */ React.createElement("option", { value: "sd-local" }, "\u{1F3EB} SD-Turbo (this computer \u2014 no account)"),
+      /* @__PURE__ */ React.createElement("option", { value: "imagen" }, "\u{1F3A8} Imagen 4.0 (Google Cloud)"),
+      /* @__PURE__ */ React.createElement("option", { value: "flux" }, "\u{1F5BC}\uFE0F FLUX (Local \u2014 port 7860)"),
+      /* @__PURE__ */ React.createElement("option", { value: "off" }, "\u{1F6AB} Off (disable image generation)")
+    ), /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-amber-50 p-2 rounded-lg border border-amber-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-700 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, "Imagen:"), " Google Cloud (requires Blaze plan). High quality, fast."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-600 mt-1" }, /* @__PURE__ */ React.createElement("strong", null, "FLUX:"), " Self-hosted at localhost:7860. Supports generation + editing via FLUX Kontext. No cloud dependency."))), !isStudentAiSetup && /* @__PURE__ */ React.createElement(ModelDiagnosticsSection, { t, _isCanvasEnv, GEMINI_MODELS }), !isStudentAiSetup && /* @__PURE__ */ React.createElement(PlatformDiagnosticsSection, { t }), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-device-storage-section", className: "border-t border-slate-100 pt-4" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("canvas_settings.device_storage_label") || "Device Storage"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, t("canvas_settings.device_storage_hint") || "Work and settings are saved on this device only \u2014 nothing goes to a server. Review, export, or erase what is stored here."), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: openDeviceStorageManager,
+        className: "bg-white text-violet-700 border-2 border-violet-200 px-4 py-2 rounded-xl font-bold text-sm hover:bg-violet-50 transition-colors active:scale-95"
       },
-      className: "w-full p-2 border-2 border-slate-200 rounded-xl focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
-    },
-    /* @__PURE__ */ React.createElement("option", { value: "auto" }, "\u{1F504} Auto (match backend)"),
-    /* @__PURE__ */ React.createElement("option", { value: "sd-local" }, "\u{1F3EB} SD-Turbo (this computer \u2014 no account)"),
-    /* @__PURE__ */ React.createElement("option", { value: "imagen" }, "\u{1F3A8} Imagen 4.0 (Google Cloud)"),
-    /* @__PURE__ */ React.createElement("option", { value: "flux" }, "\u{1F5BC}\uFE0F FLUX (Local \u2014 port 7860)"),
-    /* @__PURE__ */ React.createElement("option", { value: "off" }, "\u{1F6AB} Off (disable image generation)")
-  ), /* @__PURE__ */ React.createElement("div", { className: "mt-2 bg-amber-50 p-2 rounded-lg border border-amber-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-700 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, "Imagen:"), " Google Cloud (requires Blaze plan). High quality, fast."), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-600 mt-1" }, /* @__PURE__ */ React.createElement("strong", null, "FLUX:"), " Self-hosted at localhost:7860. Supports generation + editing via FLUX Kontext. No cloud dependency."))), !isStudentAiSetup && /* @__PURE__ */ React.createElement(ModelDiagnosticsSection, { t, _isCanvasEnv, GEMINI_MODELS }), !isStudentAiSetup && /* @__PURE__ */ React.createElement(PlatformDiagnosticsSection, { t }), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-device-storage-section", className: "border-t border-slate-100 pt-4" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("canvas_settings.device_storage_label") || "Device Storage"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, t("canvas_settings.device_storage_hint") || "Work and settings are saved on this device only \u2014 nothing goes to a server. Review, export, or erase what is stored here."), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      onClick: openDeviceStorageManager,
-      className: "bg-white text-violet-700 border-2 border-violet-200 px-4 py-2 rounded-xl font-bold text-sm hover:bg-violet-50 transition-colors active:scale-95"
-    },
-    "\u{1F50C} ",
-    t("canvas_settings.device_storage_btn") || "Manage device storage"
-  )), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-diagnostics-section", className: "border-t border-slate-100 pt-4" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("canvas_settings.diagnostics_label") || "Diagnostics & Logs"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, t("canvas_settings.diagnostics_hint") || "View captured errors and the read-aloud (text-to-speech) activity trace \u2014 useful when audio stalls without a visible error."), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      onClick: () => {
-        if (typeof window.__alloOpenDiagnosticsLog !== "function") return;
-        let hasErrors = false;
-        try {
-          hasErrors = (window.AlloModules.ErrorReporter.getBuffer() || []).length > 0;
-        } catch (e) {
-        }
-        window.__alloOpenDiagnosticsLog(hasErrors ? "errors" : "tts");
+      "\u{1F50C} ",
+      t("canvas_settings.device_storage_btn") || "Manage device storage"
+    )), /* @__PURE__ */ React.createElement("div", { id: "ai-backend-diagnostics-section", className: "border-t border-slate-100 pt-4" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("canvas_settings.diagnostics_label") || "Diagnostics & Logs"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mb-2" }, t("canvas_settings.diagnostics_hint") || "View captured errors and the read-aloud (text-to-speech) activity trace \u2014 useful when audio stalls without a visible error."), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => {
+          if (typeof window.__alloOpenDiagnosticsLog !== "function") return;
+          let hasErrors = false;
+          try {
+            hasErrors = (window.AlloModules.ErrorReporter.getBuffer() || []).length > 0;
+          } catch (e) {
+          }
+          window.__alloOpenDiagnosticsLog(hasErrors ? "errors" : "tts");
+        },
+        className: "bg-white text-violet-700 border-2 border-violet-200 px-4 py-2 rounded-xl font-bold text-sm hover:bg-violet-50 transition-colors active:scale-95"
       },
-      className: "bg-white text-violet-700 border-2 border-violet-200 px-4 py-2 rounded-xl font-bold text-sm hover:bg-violet-50 transition-colors active:scale-95"
-    },
-    "\u{1FA7A} ",
-    t("canvas_settings.diagnostics_btn") || "Open error & read-aloud log"
-  )), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-3 rounded-xl border border-slate-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", { className: "text-slate-600" }, "Active:"), " ", (() => {
-    try {
-      const c = readAIBackendConfig();
-      return c.backend ? c.backend.charAt(0).toUpperCase() + c.backend.slice(1) + (c.baseUrl ? " \u2192 " + c.baseUrl : "") : "Gemini (default)";
-    } catch {
-      return "Gemini (default)";
-    }
-  })()), !isStudentAiSetup && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 font-medium mt-1" }, "\u26A1 Reload page after changing backend to apply."), isStudentAiSetup && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 font-medium mt-1" }, "Verified connections enable text AI only for this browser tab. Media generation stays off unless separately verified."))), !isStudentAiSetup && /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      "data-help-key": "ai_backend_advanced_toggle",
-      type: "button",
-      "aria-expanded": advancedOpen,
-      onClick: () => {
-        setGuidedReady(false);
-        setAdvancedOpen((v) => !v);
+      "\u{1FA7A} ",
+      t("canvas_settings.diagnostics_btn") || "Open error & read-aloud log"
+    )), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-3 rounded-xl border border-slate-100" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 font-medium leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", { className: "text-slate-600" }, "Active:"), " ", (() => {
+      try {
+        const c = readAIBackendConfig();
+        return c.backend ? c.backend.charAt(0).toUpperCase() + c.backend.slice(1) + (c.baseUrl ? " \u2192 " + c.baseUrl : "") : "Gemini (default)";
+      } catch {
+        return "Gemini (default)";
+      }
+    })()), !isStudentAiSetup && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 font-medium mt-1" }, "\u26A1 Reload page after changing backend to apply."), isStudentAiSetup && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 font-medium mt-1" }, "Verified connections enable text AI only for this browser tab. Media generation stays off unless separately verified."))), !isStudentAiSetup && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        "data-help-key": "ai_backend_advanced_toggle",
+        type: "button",
+        "aria-expanded": advancedOpen,
+        onClick: () => {
+          setGuidedReady(false);
+          setAdvancedOpen((v) => !v);
+        },
+        className: "w-full flex items-center justify-center gap-1.5 text-xs font-bold text-slate-600 hover:text-violet-700 border-t border-slate-100 pt-3 transition-colors"
       },
-      className: "w-full flex items-center justify-center gap-1.5 text-xs font-bold text-slate-600 hover:text-violet-700 border-t border-slate-100 pt-3 transition-colors"
-    },
-    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "inline-block transition-transform " + (advancedOpen ? "rotate-180" : "") }, "\u25BC"),
-    advancedOpen ? t("ai_backend.advanced_toggle_close") || "Back to guided setup" : t("ai_backend.advanced_toggle") || "Advanced settings"
-  ))));
+      /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "inline-block transition-transform " + (advancedOpen ? "rotate-180" : "") }, "\u25BC"),
+      advancedOpen ? t("ai_backend.advanced_toggle_close") || "Back to guided setup" : t("ai_backend.advanced_toggle") || "Advanced settings"
+    )))
+  );
 }
 window.AlloModules = window.AlloModules || {};
 // GroupSessionModal + PdfDiffViewer live in view_misc_panels_module.js; this module only owns

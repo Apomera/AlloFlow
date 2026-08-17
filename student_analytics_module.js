@@ -983,6 +983,11 @@ try {
   var Trash2 = _icon('Trash2');
   var Upload = _icon('Upload');
   var Users = _icon('Users');
+  // Resolved through the shim like the rest rather than read as a bare global.
+  // The host does Object.assign(window, {... X ...}) so `X` happened to work,
+  // but that is the same coupling that breaks when an icon name collides with a
+  // DOM built-in (window.History is the History interface, not the icon).
+  var X = _icon('X');
   var Wifi = _icon('Wifi');
   // ── End dependency shims ───────────────────────────────────────
 
@@ -1249,6 +1254,9 @@ try {
     screenerSession,
     setScreenerSession,
     onLaunchORF,
+    // Hands a standardized math administration to the tool that owns the
+    // measure, the same way onLaunchORF hands reading fluency to the reader.
+    onLaunchMathProbe,
     probeHistory,
     interventionLogs,
     addToast,
@@ -1291,21 +1299,6 @@ try {
     phonemeMastery = {},
     wordSoundsBadges = {},
     gameCompletions = [],
-    mathFluencyOperation,
-    setMathFluencyOperation,
-    mathFluencyDifficulty,
-    setMathFluencyDifficulty,
-    mathFluencyTimeLimit,
-    setMathFluencyTimeLimit,
-    setMathFluencyProblems,
-    setMathFluencyCurrentIndex,
-    setMathFluencyResults,
-    setMathFluencyStudentInput,
-    setMathFluencyTimer,
-    setMathFluencyActive,
-    mathFluencyTimerRef,
-    mathFluencyInputRef,
-    finishMathFluencyProbe,
     loadProbeBanks,
     // RTI goals + intervention-log handlers live in the host App scope; passed in as
     // props so the student-detail RTI-goal overlay and intervention add/delete don't
@@ -1335,8 +1328,14 @@ try {
     // critical at threshold+2). Default 4 reproduces the prior fixed 4-warn/6-change
     // rule EXACTLY. Moving the picker off default changes WHEN warning/critical fires
     // on real student data — an RTI-fidelity change for the clinician to confirm.
-    // `rtiDecisionRuleMethod` (four_point vs median-of-last-3) is still a display
-    // reference; the median-based computation is a separate, larger change.
+    // `rtiDecisionRuleMethod` is WIRED as of 2026-08-17: four_point, median_3 and
+    // trend_line are all computed in calculateAimline. The threshold picker below
+    // applies to four_point only, which is why it is shown only for that rule.
+    // Each rule declares a minimum number of points and returns 'insufficient'
+    // rather than a verdict below it — the previous code reported "On track"
+    // from as little as one data point. ★ The three rules can disagree on the
+    // same series; that is expected, and the choice between them is a team
+    // decision, so the UI labels all three as decision aids.
     const [rtiDecisionRuleMethod, setRtiDecisionRuleMethod] = React.useState('four_point');
     const [rtiDecisionRuleThreshold, setRtiDecisionRuleThreshold] = React.useState(4);
     const [isMinimized, setIsMinimized] = React.useState(false);
@@ -1545,7 +1544,6 @@ try {
         if (lnfProbeTimerRef.current) clearInterval(lnfProbeTimerRef.current);
         if (ranProbeTimerRef.current) clearInterval(ranProbeTimerRef.current);
         if (orfProbeTimerRef.current) clearInterval(orfProbeTimerRef.current);
-        if (mathFluencyTimerRef && mathFluencyTimerRef.current) clearInterval(mathFluencyTimerRef.current);
       };
     }, []);
     // Start probe timer after ProbeOverlay countdown completes
@@ -2114,92 +2112,14 @@ try {
     //  drifted in its narrative/recommendation text. The single live copy is in the
     //  "Probe Interpretation Engine" section below.)
 
-    var renderProbeInterpretation = function(probeType, score, grade, season) {
-      var result = interpretProbeResult(probeType, score, grade, season);
-      if (result.tier === 0) return null;
-      return React.createElement("div", { className: "mt-3 rounded-lg border p-3", style: { borderColor: result.statusColor + '40', background: result.statusColor + '08' } },
-        React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-          React.createElement("div", { className: "w-3 h-3 rounded-full", style: { background: result.statusColor } }),
-          React.createElement("span", { className: "text-xs font-bold", style: { color: result.statusColor } }, result.status),
-          React.createElement("span", { className: "text-[11px] text-slate-600 ml-auto" }, result.pctOfBenchmark + "% of " + result.season + " benchmark (" + result.benchmark50 + ")")
-        ),
-        React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, result.interpretation),
-        result.recommendations.length > 0 ? React.createElement("div", { className: "space-y-1" },
-          React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Recommendations:"),
-          result.recommendations.map(function(rec, i) { return React.createElement("p", { key: i, className: "text-[11px] text-slate-600 pl-3 border-l-2", style: { borderColor: result.statusColor + '60' } }, rec); })
-        ) : null
-      );
-    };
-
-    // ── RTI Meeting Summary ──
-    var printMeetingSummary = function(studentName) {
-      var dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-      var season = getSeason(); var seasonLabel = season.charAt(0).toUpperCase() + season.slice(1);
-      var student = importedStudents.find(function(s) { return (s.nickname || s.name) === studentName; });
-      var stats = student ? student.stats || {} : {};
-      var tierResult = classifyRTITier(stats);
-      var probes = (probeHistory && probeHistory[studentName]) || [];
-      var interventions = (interventionLogs && interventionLogs[studentName]) || [];
-      var probesByType = {}; probes.forEach(function(p) { var t = p.type || p.activity || 'unknown'; if (!probesByType[t] || new Date(p.date) > new Date(probesByType[t].date)) probesByType[t] = p; });
-      var benchRows = Object.keys(probesByType).map(function(type) {
-        var p = probesByType[type]; var score = p.wcpm||p.cls||p.correct||p.dcpm||p.itemsPerMin||0;
-        var nt = normTypeFor(type);
-        var interp = interpretProbeResult(nt, score, p.grade||'1', season);
-        var tl = {orf:'ORF',nwf:'NWF',lnf:'LNF',math:'Math',fluency:'ORF',missing_number:'MN',quantity_discrimination:'QD'};
-        return '<tr><td style="padding:6px 10px;border:1px solid #e2e8f0;font-size:12px;font-weight:600">'+(tl[type]||type)+'</td><td style="padding:6px 10px;border:1px solid #e2e8f0;text-align:center;font-weight:700;color:'+interp.statusColor+'">'+score+'</td><td style="padding:6px 10px;border:1px solid #e2e8f0;text-align:center">'+(interp.benchmark50!==null?interp.benchmark50:'--')+'</td><td style="padding:6px 10px;border:1px solid #e2e8f0;text-align:center">'+(interp.pctOfBenchmark||'--')+'%</td><td style="padding:6px 10px;border:1px solid #e2e8f0;font-size:12px;color:'+interp.statusColor+';font-weight:700">'+interp.status+'</td></tr>';
-      }).join('');
-      var intvRows = interventions.map(function(iv) { return '<tr><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;font-weight:600">'+(iv.program||'--')+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px">'+(iv.frequency||'--')+'</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px;text-align:center">'+(iv.minutes||'--')+' min</td><td style="padding:5px 10px;border:1px solid #e2e8f0;font-size:12px">'+(iv.startDate||'--')+'</td></tr>'; }).join('');
-      var rec = tierResult.tier === 1 ? '<span style="color:#16a34a;font-weight:700">Continue Tier 1.</span> Student is on track.' : tierResult.tier === 2 ? '<span style="color:#d97706;font-weight:700">Tier 2 strategic support.</span> ' + tierResult.recommendations.slice(0,2).join(' ') : '<span style="color:#dc2626;font-weight:700">Tier 3 intensive.</span> ' + tierResult.recommendations.slice(0,2).join(' ');
-      var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>RTI Meeting Summary</title><style>body{font-family:system-ui,sans-serif;max-width:750px;margin:0 auto;padding:1.5rem;color:#1e293b;font-size:12px;line-height:1.5}h1{font-size:16px;color:#1e3a5f;border-bottom:3px solid #2563eb;padding-bottom:6px;margin:0 0 4px}h2{font-size:13px;color:#1e3a5f;margin:14px 0 6px;border-left:4px solid #2563eb;padding-left:8px}table{width:100%;border-collapse:collapse;margin:6px 0}th{background:#f1f5f9;padding:5px 10px;border:1px solid #e2e8f0;font-size:10px;text-transform:uppercase;color:#64748b;text-align:left}.footer{margin-top:16px;padding-top:8px;border-top:2px solid #e2e8f0;font-size:9px;color:#94a3b8;text-align:center}@media print{body{padding:0.4in;font-size:11px}}</style></head><body>' +
-        '<h1>RTI Data Team Meeting Summary</h1>' +
-        '<div style="color:#64748b;font-size:11px;margin-bottom:12px"><strong>Student:</strong> '+studentName+' &bull; <strong>Date:</strong> '+dateStr+' &bull; <strong>Season:</strong> '+seasonLabel+'</div>' +
-        '<div style="margin:8px 0 12px"><span style="display:inline-block;padding:4px 14px;border-radius:20px;font-weight:800;font-size:13px;background:'+(tierResult.bg||'#f1f5f9')+';color:'+(tierResult.color||'#334155')+';border:2px solid '+(tierResult.border||'#cbd5e1')+'">'+(tierResult.emoji||'')+' '+(tierResult.label||'Not Classified')+'</span></div>' +
-        (benchRows ? '<h2>Benchmark Status</h2><table><thead><tr><th>Measure</th><th style="text-align:center">Score</th><th style="text-align:center">50th %ile</th><th style="text-align:center">% of Benchmark</th><th>Status</th></tr></thead><tbody>'+benchRows+'</tbody></table>' : '') +
-        (intvRows ? '<h2>Intervention History</h2><table><thead><tr><th>Program</th><th>Frequency</th><th>Duration</th><th>Start</th></tr></thead><tbody>'+intvRows+'</tbody></table>' : '<h2>Intervention History</h2><p style="color:#94a3b8;font-style:italic">No interventions logged.</p>') +
-        '<h2>Recommendation</h2><div style="padding:10px 14px;border-radius:8px;background:'+(tierResult.bg||'#f1f5f9')+';border-left:4px solid '+(tierResult.color||'#64748b')+';font-size:12px">'+rec+'</div>' +
-        '<h2>Team Decision</h2><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px"><div style="font-size:10px;text-transform:uppercase;color:#64748b;margin:0 0 4px;font-weight:700">Decision</div><label style="font-size:11px;display:block;margin:3px 0"><input type="checkbox" style="margin-right:4px">Continue current</label><label style="font-size:11px;display:block;margin:3px 0"><input type="checkbox" style="margin-right:4px">Modify intervention</label><label style="font-size:11px;display:block;margin:3px 0"><input type="checkbox" style="margin-right:4px">Move to higher tier</label><label style="font-size:11px;display:block;margin:3px 0"><input type="checkbox" style="margin-right:4px">Refer for evaluation</label></div><div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px"><div style="font-size:10px;text-transform:uppercase;color:#64748b;margin:0 0 4px;font-weight:700">Next Steps</div><div style="margin:4px 0"><span style="font-size:10px;color:#64748b">New Intervention:</span><div style="border-bottom:1px solid #e2e8f0;min-height:14px"></div></div><div style="margin:4px 0"><span style="font-size:10px;color:#64748b">Next Review:</span><div style="border-bottom:1px solid #e2e8f0;min-height:14px"></div></div></div></div>' +
-        '<div style="display:flex;gap:20px;margin-top:16px"><div style="flex:1;border-top:1px solid #cbd5e1;padding-top:3px;font-size:10px;color:#64748b">Team Members</div><div style="flex:1;border-top:1px solid #cbd5e1;padding-top:3px;font-size:10px;color:#64748b">Date</div></div>' +
-        '<div class="footer"><p>AlloFlow Assessment Center &bull; '+dateStr+'</p></div></body></html>';
-      var w = window.open('', '_blank'); if (w) { w.document.write(html); w.document.close(); }
-    };
-
-    // ── Class Screening Report ──
-    var printClassScreeningReport = function() {
-      var dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-      var season = getSeason(); var seasonLabel = season.charAt(0).toUpperCase() + season.slice(1);
-      var studentData = importedStudents.map(function(s) {
-        var name = s.nickname || s.name; var stats = s.stats || {}; var tier = classifyRTITier(stats);
-        var sp = (probeHistory && probeHistory[name]) || []; var latest = {};
-        sp.forEach(function(p) { var t = p.type||p.activity||'unknown'; if (!latest[t] || new Date(p.date) > new Date(latest[t].date)) latest[t] = p; });
-        var scores = {};
-        ['orf','nwf','lnf','math','fluency','missing_number','quantity_discrimination'].forEach(function(type) {
-          var p = latest[type]; if (!p) return; var score = p.wcpm||p.cls||p.correct||p.dcpm||p.itemsPerMin||0;
-          var nt = normTypeFor(type);
-          scores[type] = { score: score, interp: interpretProbeResult(nt, score, p.grade||'1', season) };
-        });
-        return { name: name, tier: tier, scores: scores };
-      });
-      studentData.sort(function(a,b) { return b.tier.tier !== a.tier.tier ? b.tier.tier - a.tier.tier : a.name.localeCompare(b.name); });
-      var t3=studentData.filter(function(s){return s.tier.tier===3;}), t2=studentData.filter(function(s){return s.tier.tier===2;}), t1=studentData.filter(function(s){return s.tier.tier===1;});
-      var n = studentData.length;
-      var rows = studentData.map(function(s) {
-        var cells = ['orf','fluency','nwf','lnf','math','missing_number','quantity_discrimination'].map(function(t) { var d=s.scores[t]; return d ? '<td style="padding:4px 8px;border:1px solid #e2e8f0;text-align:center;font-weight:700;font-size:12px;color:'+d.interp.statusColor+'">'+d.score+'</td>' : '<td style="padding:4px 8px;border:1px solid #e2e8f0;text-align:center;color:#cbd5e1">\u2014</td>'; }).join('');
-        return '<tr><td style="padding:4px 8px;border:1px solid #e2e8f0;font-size:12px;font-weight:600">'+s.name+'</td><td style="padding:4px 8px;border:1px solid #e2e8f0;text-align:center"><span style="padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;background:'+s.tier.bg+';color:'+s.tier.color+'">T'+s.tier.tier+'</span></td>'+cells+'</tr>';
-      }).join('');
-      var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Class Screening</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:0 auto;padding:1.5rem;color:#1e293b;font-size:12px}h1{font-size:16px;color:#1e3a5f;border-bottom:3px solid #2563eb;padding-bottom:6px}h2{font-size:13px;color:#1e3a5f;margin:14px 0 6px;border-left:4px solid #2563eb;padding-left:8px}table{width:100%;border-collapse:collapse;margin:6px 0}th{background:#f1f5f9;padding:5px 8px;border:1px solid #e2e8f0;font-size:9px;text-transform:uppercase;color:#64748b;text-align:center}th:first-child{text-align:left}@media print{body{padding:0.3in}}</style></head><body>' +
-        '<h1>\uD83C\uDFEB Class Screening \u2014 '+seasonLabel+'</h1><div style="color:#64748b;font-size:11px;margin-bottom:12px">'+dateStr+' &bull; '+n+' students</div>' +
-        '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0">' +
-          '<div style="text-align:center;padding:12px;border-radius:10px;border:2px solid #86efac;background:#dcfce7"><div style="font-size:28px;font-weight:900;color:#16a34a">'+t1.length+'</div><div style="font-size:11px;font-weight:700;color:#16a34a">Tier 1</div><div style="font-size:10px;color:#166534">'+(n?Math.round(t1.length/n*100):0)+'%</div></div>' +
-          '<div style="text-align:center;padding:12px;border-radius:10px;border:2px solid #fcd34d;background:#fef9c3"><div style="font-size:28px;font-weight:900;color:#d97706">'+t2.length+'</div><div style="font-size:11px;font-weight:700;color:#d97706">Tier 2</div><div style="font-size:10px;color:#92400e">'+(n?Math.round(t2.length/n*100):0)+'%</div></div>' +
-          '<div style="text-align:center;padding:12px;border-radius:10px;border:2px solid #fca5a5;background:#fee2e2"><div style="font-size:28px;font-weight:900;color:#dc2626">'+t3.length+'</div><div style="font-size:11px;font-weight:700;color:#dc2626">Tier 3</div><div style="font-size:10px;color:#991b1b">'+(n?Math.round(t3.length/n*100):0)+'%</div></div>' +
-        '</div>' +
-        '<h2>Scores by Measure</h2><table><thead><tr><th style="min-width:100px">Student</th><th>Tier</th><th>ORF</th><th>NWF</th><th>LNF</th><th>Math</th><th>MN</th><th>QD</th></tr></thead><tbody>'+rows+'</tbody></table>' +
-        (t3.length > 0 ? '<h2>Priority (Tier 3)</h2>' + t3.map(function(s) { return '<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:8px 12px;margin:4px 0"><strong style="color:#991b1b">'+s.name+'</strong> <span style="font-size:10px;color:#7f1d1d">'+ s.tier.reasons.slice(0,3).join('; ')+'</span></div>'; }).join('') : '') +
-        '<h2>Notes</h2><div style="border:1px solid #e2e8f0;border-radius:8px;min-height:60px;padding:8px"></div>' +
-        '<div style="margin-top:16px;padding-top:8px;border-top:2px solid #e2e8f0;font-size:9px;color:#94a3b8;text-align:center">AlloFlow Assessment Center &bull; '+dateStr+'</div></body></html>';
-      var w = window.open('', '_blank'); if (w) { w.document.write(html); w.document.close(); }
-    };
-
+    // Three dead duplicates lived here and were deleted 2026-08-17:
+    // renderProbeInterpretation, printMeetingSummary and printClassScreeningReport.
+    // Each was a `var` in the SAME function scope as the live copy further down,
+    // so the later assignment always won and these never ran. They had already
+    // drifted in their narrative and recommendation wording, which is the real
+    // hazard: two versions of the text that goes into an RTI meeting summary,
+    // one of them edited and never seen. The duplicate CBM_NORMS was removed the
+    // same way on 2026-06-07. One clinical statement, one source.
     // ═══════════════════════════════════════════════════════════════
     // ASSESSMENT CENTER CLINICAL INTELLIGENCE (Instance #5)
     // CBM norms, probe interpretation, progress monitoring,
@@ -4270,7 +4190,7 @@ try {
         localStorage.setItem('alloflow_rti_goals', JSON.stringify(updated));
       } catch {}
     };
-    const calculateAimline = (goal, dataPoints, warnThreshold) => {
+    const calculateAimline = (goal, dataPoints, warnThreshold, method) => {
       if (!goal || !goal.baseline || !goal.target || !goal.targetDate) return null;
       // RTI decision rule: `warnAt` consecutive points below the aimline raises a
       // WARNING, `changeAt` (= warnAt + 2) raises CRITICAL. Defaults 4/6 exactly
@@ -4290,15 +4210,108 @@ try {
           expected: Math.round(goal.baseline + slope * w)
         });
       }
+      // ── Progress-monitoring decision rules ────────────────────────────────
+      // Three rules, selected by rtiDecisionRuleMethod. All three answer the
+      // same question — "is this intervention working?" — and all three are
+      // DECISION AIDS, not determinations; the UI labels them that way. Slope
+      // and level estimates from short CBM series are unstable, which is why
+      // each rule declares a minimum and returns 'insufficient' rather than a
+      // verdict when it is not met. Reporting "on track" from two data points
+      // is the failure this guards against.
+      const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+      const weeksOf = (dp) => Math.max(0, Math.round((new Date(dp.date || Date.now()) - baseDate) / WEEK_MS));
+      const expectedAt = (weeks) => goal.baseline + slope * weeks;
+      const points = (dataPoints || [])
+        .map((dp) => ({ value: Number(dp.value), weeks: weeksOf(dp) }))
+        .filter((p) => Number.isFinite(p.value));
+
+      // 'median_3' is the value the picker has always carried; accept the
+      // spelled-out form too so a caller cannot silently fall back to
+      // four_point by naming it the obvious way.
+      const rule = (method === 'median_3' || method === 'median_last_3') ? 'median_3'
+        : method === 'trend_line' ? 'trend_line'
+        : 'four_point';
+      let alert = 'ok';
+      let detail = '';
+      let minPoints = 0;
       let consecutiveBelow = 0;
-      if (dataPoints && dataPoints.length > 0) {
-        const recent = dataPoints.slice(-Math.max(6, changeAt));
-        for (const dp of recent) {
-          const weeksSinceBase = Math.max(0, Math.round((new Date(dp.date || Date.now()) - baseDate) / (7 * 24 * 60 * 60 * 1000)));
-          const expected = goal.baseline + slope * weeksSinceBase;
-          if (dp.value < expected) consecutiveBelow++;else consecutiveBelow = 0;
+      let trendSlope = null;
+      let medianLast3 = null;
+
+      if (rule === 'four_point') {
+        // N consecutive points below the aimline. Needs at least N points before
+        // it can say anything; below that it used to report "on track".
+        minPoints = warnAt;
+        const recent = points.slice(-Math.max(6, changeAt));
+        for (const p of recent) {
+          if (p.value < expectedAt(p.weeks)) consecutiveBelow++; else consecutiveBelow = 0;
+        }
+        if (points.length < minPoints) {
+          alert = 'insufficient';
+          detail = points.length + ' of ' + minPoints + ' points needed for the ' + warnAt + '-point rule';
+        } else {
+          alert = consecutiveBelow >= changeAt ? 'critical' : consecutiveBelow >= warnAt ? 'warning' : 'ok';
+          detail = consecutiveBelow > 0
+            ? consecutiveBelow + ' consecutive point' + (consecutiveBelow === 1 ? '' : 's') + ' below the aimline'
+            : 'Most recent point is at or above the aimline';
+        }
+      } else if (rule === 'median_3') {
+        // Median of the three most recent points against the aimline at the most
+        // recent point's week. More robust to one bad administration than
+        // reading the last point alone.
+        minPoints = 3;
+        if (points.length < minPoints) {
+          alert = 'insufficient';
+          detail = points.length + ' of 3 points needed for the median rule';
+        } else {
+          const last3 = points.slice(-3);
+          const sorted = last3.map((p) => p.value).slice().sort((a, b) => a - b);
+          medianLast3 = sorted[1];
+          const expected = expectedAt(last3[last3.length - 1].weeks);
+          const belowCount = last3.filter((p) => p.value < expected).length;
+          if (medianLast3 >= expected) {
+            alert = 'ok';
+            detail = 'Median of last 3 (' + medianLast3 + ') is at or above the aimline (' + Math.round(expected) + ')';
+          } else {
+            // All three below is a stronger signal than the median alone.
+            alert = belowCount === 3 ? 'critical' : 'warning';
+            detail = 'Median of last 3 (' + medianLast3 + ') is below the aimline (' + Math.round(expected) + '), '
+              + belowCount + ' of 3 points below';
+          }
+        }
+      } else {
+        // Ordinary least-squares slope of the observed data vs the aimline slope.
+        // Six points is the minimum here; slope estimates from fewer are too
+        // unstable to act on, and the message carries n so the reader can judge.
+        minPoints = 6;
+        if (points.length < minPoints) {
+          alert = 'insufficient';
+          detail = points.length + ' of 6 points needed for a trend line';
+        } else {
+          const n = points.length;
+          const mx = points.reduce((s, p) => s + p.weeks, 0) / n;
+          const my = points.reduce((s, p) => s + p.value, 0) / n;
+          const den = points.reduce((s, p) => s + (p.weeks - mx) * (p.weeks - mx), 0);
+          if (den === 0) {
+            // Every point on the same week: no slope is defined.
+            alert = 'insufficient';
+            detail = 'All points fall in the same week, so no trend can be estimated';
+          } else {
+            trendSlope = points.reduce((s, p) => s + (p.weeks - mx) * (p.value - my), 0) / den;
+            const aimSlope = slope;
+            if (trendSlope <= 0) {
+              alert = 'critical';
+            } else if (aimSlope <= 0 || trendSlope >= aimSlope) {
+              alert = 'ok';
+            } else {
+              alert = 'warning';
+            }
+            detail = 'Trend ' + (trendSlope >= 0 ? '+' : '') + trendSlope.toFixed(1) + '/wk vs aimline +'
+              + aimSlope.toFixed(1) + '/wk (n=' + n + ')';
+          }
         }
       }
+
       return {
         aimlinePoints,
         slope,
@@ -4306,7 +4319,13 @@ try {
         consecutiveBelow,
         warnThreshold: warnAt,
         changeThreshold: changeAt,
-        alert: consecutiveBelow >= changeAt ? 'critical' : consecutiveBelow >= warnAt ? 'warning' : 'ok'
+        method: rule,
+        pointCount: points.length,
+        minPoints,
+        trendSlope,
+        medianLast3,
+        detail,
+        alert
       };
     };
     // Extend the test seam with calculateAimline (defined after the primary seam at
@@ -4539,7 +4558,14 @@ try {
       addToast(t('toasts.decodable_orf_started'), 'info');
     };
     const launchBenchmarkProbe = (grade, activity, form = 'A') => {
-      const gradeBank = BENCHMARK_PROBE_BANKS && BENCHMARK_PROBE_BANKS[grade];
+      // Read off window, as probeBanksReady above already does. A bare
+      // BENCHMARK_PROBE_BANKS is an UNDECLARED identifier until loadProbeBanks
+      // has populated the global, and `&&` does not protect against that: the
+      // reference throws ReferenceError before it can short-circuit. Pressing
+      // "Start Battery" before the banks finished loading crashed the reading
+      // screener instead of showing the "no probe words" toast below.
+      const _banks = (typeof window !== 'undefined' && window.BENCHMARK_PROBE_BANKS) || null;
+      const gradeBank = _banks && _banks[grade];
       const bank = gradeBank ? gradeBank[form] : null;
       if (activity === 'orf') {
         if (typeof setShowClassAnalytics === 'function') setShowClassAnalytics(false);
@@ -4706,44 +4732,14 @@ try {
       }, 2000);
       return () => clearTimeout(timer);
     }, [screenerSession?.status, screenerSession?.currentIndex]);
-    const generateFluencyScoreSheet = (result, sourceText) => {
-      if (!result || !result.wordData) return;
-      const rrm = calculateRunningRecordMetrics(result.wordData, result.insertions || []) || {
-        substitutions: 0,
-        omissions: 0,
-        insertions: 0,
-        selfCorrections: 0,
-        errorRate: 0,
-        scRate: 0,
-        accuracy: 0,
-        totalErrors: 0,
-        readingLevel: 'unknown'
-      };
-      const readingLevelLabel = rrm.accuracy >= 95 ? 'Independent' : rrm.accuracy >= 90 ? 'Instructional' : 'Frustrational';
-      const wordMarkup = result.wordData.map(w => {
-        const sym = w.status === 'correct' ? '✓' : w.status === 'missed' ? '—' : w.status === 'self_corrected' ? 'SC' : '✗';
-        const color = w.status === 'correct' ? '#16a34a' : w.status === 'missed' ? '#dc2626' : w.status === 'self_corrected' ? '#2563eb' : '#ea580c';
-        const said = w.said ? `<br/><span style="font-size:9px;color:#94a3b8;">${w.said}</span>` : '';
-        return `<span style="display:inline-block;text-align:center;margin:4px 3px;padding:4px 6px;border-radius:6px;border:1px solid ${color}20;background:${color}08;"><span style="font-size:16px;color:#1e293b;">${w.word}</span><br/><span style="font-size:11px;font-weight:800;color:${color};">${sym}</span>${said}</span>`;
-      }).join('');
-      const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>${t('print.oral_fluency_title')}</title>
-<style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Inter',sans-serif;color:#1e293b;padding:24px;line-height:1.4}@media print{body{padding:12px}}.sheet{max-width:750px;margin:0 auto;border:2px solid #e2e8f0;border-radius:12px;overflow:hidden}.hdr{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:white;padding:20px 24px;display:flex;justify-content:space-between;align-items:center}.hdr h1{font-size:18px;font-weight:800}.fields{padding:16px 24px;background:#f8fafc;border-bottom:1px solid #e2e8f0;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}.field{font-size:12px}.field label{font-weight:700;color:#64748b;display:block;margin-bottom:2px}.field .val{font-weight:600;color:#1e293b;padding:4px 0;border-bottom:1px dashed #cbd5e1;min-height:24px}.words{padding:20px 24px;line-height:2.2}.metrics{padding:16px 24px;background:#f8fafc;border-top:1px solid #e2e8f0;display:grid;grid-template-columns:1fr 1fr;gap:16px}.mcol{padding:12px;background:white;border-radius:8px;border:1px solid #e2e8f0}.mcol h3{font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}.mrow{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}.mrow .lbl{color:#475569}.mrow .vl{font-weight:700}.override{padding:16px 24px;border-top:1px solid #e2e8f0}.override h3{font-size:12px;font-weight:800;color:#4338ca;margin-bottom:8px}.ofields{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}.ofield{font-size:11px}.ofield label{font-weight:700;color:#64748b;display:block;margin-bottom:2px}.ofield input{width:100%;border:1px solid #cbd5e1;border-radius:6px;padding:6px 8px;font-size:13px;font-weight:600}.notes{padding:16px 24px;border-top:1px solid #e2e8f0}.notes textarea{width:100%;border:1px solid #cbd5e1;border-radius:8px;padding:8px;font-size:12px;min-height:60px;resize:vertical}.sig{padding:16px 24px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;gap:24px}.sig .sigf{flex:1}.sig .sigf label{font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px}.sig .sigf .line{border-bottom:1px solid #1e293b;min-height:28px}.legend{padding:12px 24px;background:#faf5ff;border-top:1px solid #e2e8f0;display:flex;gap:16px;flex-wrap:wrap;font-size:10px;font-weight:600;color:#475569}@media print{.no-print{display:none!important}}</style></head><body>
-<div class="sheet"><div class="hdr"><div><h1>📊 ${t('print.oral_fluency_title')}</h1><p>${t('print.assessment_record')}</p></div><div style="text-align:right;font-size:11px;"><div>Generated: ${new Date().toLocaleDateString()}</div></div></div>
-<div class="fields"><div class="field"><label>${t('print.student')}</label><div class="val">${studentNickname || '________________'}</div></div><div class="field"><label>${t('print.date')}</label><div class="val">${new Date().toLocaleDateString()}</div></div><div class="field"><label>${t('print.grade_benchmark')}</label><div class="val">${fluencyBenchmarkGrade} / ${fluencyBenchmarkSeason}</div></div></div>
-<div class="words">${wordMarkup}</div>
-<div class="legend"><span>✓ = ${t('print.correct_legend')}</span><span>✗ = ${t('print.substitution_legend')}</span><span>— = ${t('print.omission_legend')}</span><span>SC = ${t('print.self_corrected_legend')}</span></div>
-<div class="metrics"><div class="mcol"><h3>${t('common.ai_calculated_metrics')}</h3><div class="mrow"><span class="lbl">${t('print.wcpm')}</span><span class="vl">${result.wcpm || 0}</span></div><div class="mrow"><span class="lbl">${t('print.accuracy')}</span><span class="vl">${result.accuracy || 0}%</span></div><div class="mrow"><span class="lbl">${t('print.substitutions')}</span><span class="vl">${rrm.substitutions || 0}</span></div><div class="mrow"><span class="lbl">${t('print.omissions')}</span><span class="vl">${rrm.omissions || 0}</span></div><div class="mrow"><span class="lbl">${t('print.insertions')}</span><span class="vl">${rrm.insertions || 0}</span></div><div class="mrow"><span class="lbl">${t('print.self_corrections')}</span><span class="vl">${rrm.selfCorrections || 0}</span></div><div class="mrow"><span class="lbl">${t('print.error_rate')}</span><span class="vl">1:${rrm.errorRate || 0}</span></div><div class="mrow"><span class="lbl">${t('print.reading_level')}</span><span class="vl">${readingLevelLabel}</span></div></div>
-<div class="mcol"><h3>${t('common.error_analysis')}</h3><div class="mrow"><span class="lbl">${t('print.total_errors')}</span><span class="vl">${rrm.totalErrors || 0}</span></div><div class="mrow"><span class="lbl">${t('print.sc_rate')}</span><span class="vl">${rrm.scRate || 0}%</span></div><div class="mrow"><span class="lbl">${t('print.total_words')}</span><span class="vl">${result.wordData?.length || 0}</span></div></div></div>
-<div class="override"><h3>✏️ Teacher Verification (Override AI if needed)</h3><div class="ofields"><div class="ofield"><label>${t('print.verified_wcpm')}</label><input type="number" aria-label="${t('print.verified_wcpm')}" placeholder="${result.wcpm || ''}"/></div><div class="ofield"><label>${t('print.verified_accuracy')}</label><input type="number" aria-label="${t('print.verified_accuracy')}" placeholder="${result.accuracy || ''}"/></div><div class="ofield"><label>${t('print.verified_reading_level')}</label><input type="text" aria-label="${t('print.verified_reading_level')}" placeholder="${readingLevelLabel}"/></div></div></div>
-<div class="notes"><label style="font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:4px;">${t('print.teacher_notes')}</label><textarea aria-label="${t('print.teacher_notes')}" placeholder=${t('common.placeholder_observations_patterns_next_steps')}></textarea></div>
-<div class="sig"><div class="sigf"><label>${t('print.teacher_signature')}</label><div class="line"></div></div><div class="sigf"><label>${t('print.date')}</label><div class="line"></div></div></div></div>
-<div class="no-print" style="text-align:center;margin-top:16px;"><button onclick="window.print()" style="background:#4f46e5;color:white;border:none;padding:10px 24px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">🖨️ Print Score Sheet</button></div></body></html>`;
-      const win = window.open('', '_blank');
-      if (win) {
-        win.document.write(html);
-        win.document.close();
-      }
-    };
+    // A copy of the host's generateFluencyScoreSheet lived here and was
+    // deleted 2026-08-17. It had no call site in this module, and it had
+    // drifted out of scope: studentNickname, fluencyBenchmarkGrade and
+    // fluencyBenchmarkSeason are host state it could not see, so calling it
+    // would have thrown ReferenceError while printing a running record.
+    // The live one is in AlloFlowANTI.txt and reaches the ORF panel as the
+    // generateFluencyScoreSheet prop on FluencyModePanel. One clinical
+    // document, one generator.
     const generateStudentProgressReport = student => {
       if (!student) return;
       const rti = classifyRTITier(student.stats);
@@ -6077,10 +6073,34 @@ try {
       onChange: e => setLiveSyncCode(e.target.value),
       onKeyDown: e => {
         if (e.key === 'Enter' && liveSyncCode.trim()) {
+          // 2026-08-17: this handler used bare `collection`, `appId` and
+          // `onSnapshot`, none of which exist in this module's scope (only
+          // `db` resolved, via window.db). Pressing Enter threw ReferenceError
+          // before anything happened, so Live Sync had never worked.
+          //
+          // Read Firestore through window.__alloFirebase, the accessor every
+          // other live feature uses (live_polling_module.js getFb). It matters
+          // beyond tidiness: AlloFlowANTI.txt re-assigns those bindings on that
+          // object when the Canvas mailbox transport is active, so going
+          // through window.db directly would bypass the reroute.
+          //
+          // NOTE FOR REVIEW: nothing in this codebase writes to the
+          // .../sessions/{code}/studentProgress subcollection this subscribes
+          // to. Live sessions write fields on the session DOC instead. So this
+          // connects and stays empty. Kept (rather than removed) pending a
+          // decision on whether to build the producer or drop the feature.
+          const fb = (typeof window !== 'undefined') && window.__alloFirebase;
+          if (!fb || !fb.db || !fb.collection || !fb.onSnapshot) {
+            addToast(t('class_analytics.live_sync_unavailable')
+              || 'Live sync is unavailable in this session.', 'error');
+            return;
+          }
+          const liveAppId = (typeof window !== 'undefined'
+            && (window.appId || window.__app_id)) || 'default-app-id';
           setIsLiveListening(true);
           setShowLiveSyncInput(false);
-          const progressCollRef = collection(db, 'artifacts', appId, 'public', 'data', 'sessions', liveSyncCode.trim(), 'studentProgress');
-          const unsubscribe = onSnapshot(progressCollRef, snapshot => {
+          const progressCollRef = fb.collection(fb.db, 'artifacts', liveAppId, 'public', 'data', 'sessions', liveSyncCode.trim(), 'studentProgress');
+          const unsubscribe = fb.onSnapshot(progressCollRef, snapshot => {
             const data = {};
             snapshot.forEach(docSnap => {
               data[docSnap.id] = docSnap.data();
@@ -6666,34 +6686,19 @@ try {
           loadProbeBanks();
           return;
         }
-        const probeData = window.MATH_PROBE_BANKS[grade][form];
-        const problems = probeData.problems.map(p => ({
-          ...p,
-          studentAnswer: null,
-          correct: null
-        }));
-        setMathFluencyOperation(probeData.operation);
-        setMathFluencyDifficulty(probeData.difficulty);
-        setMathFluencyTimeLimit(probeData.timeLimit);
-        setMathFluencyProblems(problems);
-        setMathFluencyCurrentIndex(0);
-        setMathFluencyResults(null);
-        setMathFluencyStudentInput("");
-        setMathFluencyTimer(probeData.timeLimit);
-        setMathFluencyActive(true);
-        if (mathFluencyTimerRef.current) clearInterval(mathFluencyTimerRef.current);
-        mathFluencyTimerRef.current = setInterval(() => {
-          setMathFluencyTimer(prev => {
-            if (prev <= 1) {
-              clearInterval(mathFluencyTimerRef.current);
-              mathFluencyTimerRef.current = null;
-              setTimeout(() => finishMathFluencyProbe(), 0);
-              return 0;
-            }
-            return prev - 1;
-          });
-        }, 1000);
-        setTimeout(() => mathFluencyInputRef.current?.focus(), 100);
+        // Close this modal and hand the administration to the Math Fluency
+        // panel, exactly as launchBenchmarkProbe hands reading probes to Word
+        // Sounds. This card previously started a probe here: it set host state
+        // and a 2-minute timer for an overlay that had been migrated out to
+        // math_fluency_module.js, so nothing ever rendered and no probe was
+        // administered. Results come back through the panel's onProbeComplete,
+        // which writes to the same probe history the reading probes use.
+        if (typeof onLaunchMathProbe !== 'function') {
+          addToast(t('toasts.math_probe_launcher_unavailable') || 'Math probe launcher unavailable. Reload the page.', 'error');
+          return;
+        }
+        if (typeof setShowClassAnalytics === 'function') setShowClassAnalytics(false);
+        onLaunchMathProbe(grade, form, mathProbeStudent || null);
       },
       "aria-label": "Start math probe",
       className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-lg font-bold text-sm hover:from-orange-600 hover:to-amber-600 transition-all shadow-md"
@@ -8379,6 +8384,21 @@ try {
       }];
       const fluencyData = selectedStudent.data?.fluencyAssessments?.map(a => a.wcpm || 0) || [];
       const gameScores = selectedStudent.data?.gameCompletions ? Object.values(selectedStudent.data.gameCompletions).flat().map(e => e.score ?? e.accuracy ?? 0) : [];
+      // Math DCPM for THIS student, read from probe history like every other
+      // measure in this view. It previously read the host's mathFluencyHistory,
+      // which is not scoped to a learner, so any run on the device would have
+      // shown under whichever student happened to be open. That never surfaced
+      // only because the engine feeding it had no UI left and so could never
+      // record anything.
+      const mathDcpmData = ((probeHistory && probeHistory[selectedStudent.name]) || [])
+        .filter(p => {
+          const a = String((p && (p.activity || p.type)) || '').toLowerCase();
+          return a === 'math_dcpm' || a === 'math' || a === 'math_fluency';
+        })
+        .slice()
+        .sort((a, b) => new Date(a.date || a.timestamp || 0) - new Date(b.date || b.timestamp || 0))
+        .map(p => Number(p.dcpm != null ? p.dcpm : p.itemsPerMin))
+        .filter(v => Number.isFinite(v));
       const renderSparkline = (data, color, aimlineData) => {
         if (data.length < 2) return null;
         const allValues = [...data];
@@ -8535,7 +8555,7 @@ try {
           color: '#64748b',
           marginBottom: '4px'
         }
-      }, "\uD83C\uDFAE Game Scores Trend"), renderSparkline(gameScores, '#8b5cf6')), mathFluencyHistory.length >= 2 && /*#__PURE__*/React.createElement("div", {
+      }, "\uD83C\uDFAE Game Scores Trend"), renderSparkline(gameScores, '#8b5cf6')), mathDcpmData.length >= 2 && /*#__PURE__*/React.createElement("div", {
         className: "bg-white rounded-lg p-2 border border-slate-100"
       }, /*#__PURE__*/React.createElement("div", {
         style: {
@@ -8544,7 +8564,7 @@ try {
           color: "#64748b",
           marginBottom: "4px"
         }
-      }, "\uD83D\uDD22 Math DCPM Trend"), renderSparkline(mathFluencyHistory.map(h => h.dcpm), "#f59e0b"))), (() => {
+      }, "\uD83D\uDD22 Math DCPM Trend"), renderSparkline(mathDcpmData, "#f59e0b"))), (() => {
         var codename = selectedStudent.name;
         var longData = rosterKey && rosterKey.progressHistory && rosterKey.progressHistory[codename];
         if (!longData || longData.length < 2) return null;
@@ -8685,7 +8705,7 @@ try {
               .filter(p => (p.type || p.activity) === goalMetric)
               .map(p => ({ value: (goalMetric === 'nwf' ? (p.cls || 0) : (p.correct != null ? p.correct : (p.itemsPerMin || p.dcpm || 0))), date: p.date || p.timestamp })));
         const latestWCPM = fluencyData.length > 0 ? fluencyData[fluencyData.length - 1].value : 0;
-        const aimline = studentGoal ? calculateAimline(studentGoal, fluencyData, rtiDecisionRuleThreshold) : null;
+        const aimline = studentGoal ? calculateAimline(studentGoal, fluencyData, rtiDecisionRuleThreshold, rtiDecisionRuleMethod) : null;
         return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
           style: { marginBottom: '6px' }
         }, /*#__PURE__*/React.createElement("label", {
@@ -8822,7 +8842,7 @@ try {
             borderRadius: '6px',
             border: '1px solid #fca5a5'
           }
-        }, "\uD83D\uDD34 6 consecutive points below the aimline (of the last 6) \u2014 Tier change recommended"), aimline.alert === 'warning' && /*#__PURE__*/React.createElement("div", {
+        }, "\uD83D\uDD34 ", aimline.detail, " \u2014 Consider a tier or intervention change"), aimline.alert === 'warning' && /*#__PURE__*/React.createElement("div", {
           style: {
             fontSize: '11px',
             fontWeight: 700,
@@ -8832,7 +8852,17 @@ try {
             borderRadius: '6px',
             border: '1px solid #fcd34d'
           }
-        }, "\uD83D\uDFE1 4+ consecutive points below the aimline (within the last 6) \u2014 Consider adjusting intervention"), aimline.alert === 'ok' && studentGoal && /*#__PURE__*/React.createElement("div", {
+        }, "\uD83D\uDFE1 ", aimline.detail, " \u2014 Review the intervention"), aimline.alert === 'insufficient' && /*#__PURE__*/React.createElement("div", {
+          style: {
+            fontSize: '11px',
+            fontWeight: 700,
+            color: '#475569',
+            background: '#f1f5f9',
+            padding: '6px 10px',
+            borderRadius: '6px',
+            border: '1px solid #cbd5e1'
+          }
+        }, "\u26AA ", aimline.detail, " \u2014 No decision yet"), aimline.alert === 'ok' && studentGoal && /*#__PURE__*/React.createElement("div", {
           style: {
             fontSize: '11px',
             fontWeight: 700,
@@ -8842,7 +8872,12 @@ try {
             borderRadius: '6px',
             border: '1px solid #86efac'
           }
-        }, "\uD83D\uDFE2 On track toward goal")));
+        }, "\uD83D\uDFE2 On track toward goal \u2014 ", aimline.detail), /*#__PURE__*/React.createElement("div", {
+          // These rules are decision AIDS. Slope and level estimates from short
+          // CBM series are unstable, and the rules disagree with one another on
+          // real data; the choice between them is a team judgement.
+          style: { fontSize: '9px', color: '#64748b', marginTop: '4px', fontStyle: 'italic' }
+        }, "Decision aid only. Interpret alongside instructional context and other data.")));
       })()), /*#__PURE__*/React.createElement("div", {
         className: "mt-3 p-3 bg-white rounded-lg border border-slate-400"
       }, /*#__PURE__*/React.createElement("div", {
@@ -8877,13 +8912,11 @@ try {
         }
       }, /*#__PURE__*/React.createElement("option", {
         value: "four_point"
-      }, "Four-Point Analysis"), /*#__PURE__*/React.createElement("option", {
-        value: "trend_line",
-        disabled: true
-      }, (t('rti.trend_line_comparison') || 'Trend-line comparison') + ' (coming soon)'), /*#__PURE__*/React.createElement("option", {
-        value: "median_3",
-        disabled: true
-      }, "Median of Last 3 (coming soon)")), rtiDecisionRuleMethod === "four_point" && /*#__PURE__*/React.createElement("div", {
+      }, t('rti.four_point_analysis') || 'Four-Point Analysis'), /*#__PURE__*/React.createElement("option", {
+        value: "trend_line"
+      }, t('rti.trend_line_comparison') || 'Trend-line comparison'), /*#__PURE__*/React.createElement("option", {
+        value: "median_3"
+      }, t('rti.median_of_last_3') || 'Median of Last 3')), rtiDecisionRuleMethod === "four_point" && /*#__PURE__*/React.createElement("div", {
         style: {
           display: "flex",
           alignItems: "center",

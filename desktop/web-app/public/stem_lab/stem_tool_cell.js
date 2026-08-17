@@ -649,7 +649,7 @@ window.StemLab = window.StemLab || {
     cx2d.beginPath(); cx2d.moveTo(geometry.cx - geometry.RX * 1.08, planeY); cx2d.lineTo(geometry.cx + geometry.RX * 1.08, planeY); cx2d.stroke(); cx2d.setLineDash([]); cx2d.restore();
     cx2d.save(); cx2d.fillStyle = 'rgba(2,6,23,0.88)'; cx2d.fillRect(W / 2 - 86, H - 31, 172, 18); cx2d.font = '800 8px Inter, system-ui, sans-serif'; cx2d.fillStyle = contrast ? '#fef08a' : '#bae6fd'; cx2d.fillText('OPTICAL SECTION • DEPTH ' + Math.round(depth) + '%', W / 2 - 75, H - 19); cx2d.restore();
   }
-  function drawCellInterior(cx2d, W, H, type, t, sel, reduced, contrast, zoom, specialization, showLabels, depthMode, depthLevel, guideKeys, guideStep, guideColor) {
+  function drawCellInterior(cx2d, W, H, type, t, sel, reduced, contrast, zoom, specialization, showLabels, depthMode, depthLevel, guideKeys, guideStep, guideColor, hideCornerChips) {
     specialization = specialization || 'general';
     contrast = !!contrast;
     showLabels = !!showLabels;
@@ -685,11 +685,22 @@ window.StemLab = window.StemLab || {
     var drift = reduced ? 0 : t;
     for (var i = 0; i < 80; i++) { var a = _ih(i) * 6.2832 + drift * (0.2 + _ih(i + 99) * 0.3), rr = _ih(i + 7) * 0.46; var pp = P(0.5 + Math.cos(a) * rr, 0.5 + Math.sin(a) * rr * (RY / RX)); cx2d.fillStyle = 'rgba(125,211,252,' + (0.04 + _ih(i + 3) * 0.06) + ')'; cx2d.beginPath(); cx2d.arc(pp[0], pp[1], 1 + _ih(i + 5) * 1.6, 0, 6.2832); cx2d.fill(); }
     // Cytoskeleton: faint structural fibers beneath the organelles.
-    cx2d.save(); cx2d.globalAlpha = contrast ? (sel === 'cytoskeleton' ? 0.72 : 0.30) : (sel === 'cytoskeleton' ? 0.46 : 0.13); cx2d.lineWidth = Math.max(contrast ? 1.8 : 1, S(sel === 'cytoskeleton' ? (contrast ? 0.010 : 0.007) : (contrast ? 0.006 : 0.004)));
+    // Emphasised whenever the fibres are meant to be READ rather than felt: while
+    // the cytoskeleton is selected, and in study-label mode, where a leader line
+    // points straight at them. Measured against the brightest cytoplasm band of each
+    // cell type, 0.13 gives 1.17-1.38:1 — a labelled structure nobody can see.
+    // Scoped to cell types whose catalogue actually lists a cytoskeleton. Emphasising
+    // it everywhere made the prokaryote view draw a bold fibre network radiating from
+    // the nucleoid, with no label to name it — the tool teaches that bacteria have no
+    // such network, and the picture would have said the opposite. Screenshotted.
+    var fibreEmphasis = sel === 'cytoskeleton' || (showLabels && interiorHas(type, 'cytoskeleton'));
+    cx2d.save(); cx2d.globalAlpha = contrast ? (fibreEmphasis ? 0.78 : 0.30) : (fibreEmphasis ? 0.68 : 0.13); cx2d.lineWidth = Math.max(contrast ? 1.8 : 1, S(fibreEmphasis ? (contrast ? 0.010 : 0.007) : (contrast ? 0.006 : 0.004)));
     if (sel === 'cytoskeleton') { cx2d.shadowColor = '#22d3ee'; cx2d.shadowBlur = 10; }
     for (var cf = 0; cf < 9; cf++) {
       var cfa = cf / 9 * 6.2832 + (reduced ? 0 : t * 0.025);
-      cx2d.strokeStyle = cf % 2 ? '#a78bfa' : '#67e8f9';
+      // violet-400 tops out at 2.85:1 on these cytoplasms even at full emphasis, so the
+      // readable state steps up a shade rather than just turning the alpha up.
+      cx2d.strokeStyle = cf % 2 ? (fibreEmphasis ? '#c4b5fd' : '#a78bfa') : '#67e8f9';
       cx2d.beginPath();
       cx2d.moveTo(cx + Math.cos(cfa) * RX * 0.08, cy + Math.sin(cfa) * RY * 0.08);
       cx2d.bezierCurveTo(cx + Math.cos(cfa + 0.55) * RX * 0.42, cy + Math.sin(cfa + 0.55) * RY * 0.42, cx + Math.cos(cfa - 0.35) * RX * 0.72, cy + Math.sin(cfa - 0.35) * RY * 0.72, cx + Math.cos(cfa) * RX * 0.93, cy + Math.sin(cfa) * RY * 0.93);
@@ -955,7 +966,6 @@ window.StemLab = window.StemLab || {
     }
     cx2d.restore();   // un-clip
     if (depthMode) drawInteriorOpticalSection(cx2d, W, H, type, geometry, depthLevel, contrast);
-    if (showLabels) drawInteriorStudyLabels(cx2d, W, H, type, geometry, L, contrast);
     if (processLens) {
       cx2d.save(); var lensW = 248, lensX = W - lensW - 14;
       cx2d.fillStyle = 'rgba(2,6,23,0.90)'; cx2d.fillRect(lensX, 14, lensW, 25);
@@ -1033,6 +1043,10 @@ window.StemLab = window.StemLab || {
     }
 
     drawCellSpecializationOverlay(cx2d, W, H, type, specialization, t, reduced, zoom);
+    // Labels last of the cell passes: they annotate the cell, so every structure —
+    // including the specialization overlay above, whose muscle striations used to be
+    // drawn straight through every label — belongs underneath them.
+    if (showLabels) drawInteriorStudyLabels(cx2d, W, H, type, geometry, L, contrast);
     drawUltrastructureInset(cx2d, W, H, type, sel, reduced, t);
     // Diagram chrome: cell identity, scale caveat, and a leader-line callout.
     cx2d.save();
@@ -1042,9 +1056,22 @@ window.StemLab = window.StemLab || {
     cx2d.font = '700 8px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#cbd5e1'; cx2d.fillText(typeMeta.detail, 25, 60);
     cx2d.fillStyle = 'rgba(2,6,23,0.72)'; cx2d.fillRect(W - 164, H - 31, 150, 18);
     cx2d.font = '700 9px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#cbd5e1'; cx2d.fillText('SCHEMATIC \u2022 NOT TO SCALE', W - 153, H - 19);
+    // Suppressed when another view composites this one and owns the corner itself:
+    // microdissection puts its scale bar here, and the two were drawn on top of
+    // each other. The chip also reports a zoom that view does not have.
+    if (!hideCornerChips) {
     cx2d.fillStyle = 'rgba(2,6,23,0.84)'; cx2d.fillRect(14, H - 31, 132, 18); cx2d.font = '800 8px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#bae6fd'; cx2d.fillText('DETAIL ZOOM \u2022 ' + Math.round((Number(zoom) || 1) * 100) + '%', 22, H - 19);
+    }
     if (contrast) { cx2d.fillStyle = 'rgba(2,6,23,0.84)'; cx2d.fillRect(W - 330, H - 31, 154, 18); cx2d.font = '800 8px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#fef08a'; cx2d.fillText('HIGH CONTRAST \u2022 PATTERN + SHAPE', W - 321, H - 19); }
-    if (sel && CELL_ORGANELLES[sel]) {
+    // The callout parks itself in whichever side gutter the focused organelle is NOT
+    // in. With study labels on, BOTH gutters are label columns, so it landed on top of
+    // them — screenshotted covering "Nucleus" and "Nucleolus", which then ghosted
+    // through its 94%-opaque panel and read as a rendering fault.
+    //
+    // Nothing is lost by standing down: the label column already names every structure,
+    // the selected one is highlighted, and the ultrastructure inset below carries the
+    // same name and subtitle this panel would have repeated.
+    if (sel && CELL_ORGANELLES[sel] && !showLabels) {
       var focusEntry = L.find(function(entry) { return !entry.dot && entry.key === sel; });
       var focusNorm = focusEntry ? [focusEntry.x, focusEntry.y]
         : (sel === 'cellWall' ? [0.975, 0.5] : sel === 'cellMembrane' ? [0.945, 0.5] : [0.5, 0.82]);
@@ -1067,7 +1094,9 @@ window.StemLab = window.StemLab || {
     cx2d.restore();
   }
   function drawCellMicrodissection(cx2d, W, H, type, t, sel, reduced, stage, tool, sectionDepth, stain) {
-    drawCellInterior(cx2d, W, H, type, t, sel, reduced);
+    // true = leave the bottom-left corner to this view's own scale bar.
+    drawCellInterior(cx2d, W, H, type, t, sel, reduced, undefined, undefined, undefined,
+      undefined, undefined, undefined, undefined, undefined, undefined, true);
     var geometry = interiorGeometry(W, H, type), cx = geometry.cx, cy = geometry.cy, RX = geometry.RX, RY = geometry.RY;
     var layout = interiorLayout(type);
     var target = layout.find(function (entry) { return entry.key === sel && !entry.dot; });
@@ -17513,7 +17542,7 @@ var d = labToolData.cell || {};
 
             {
 
-              id: 'amoeba', label: 'Amoeba', icon: '\u{1F9A0}', color: '#8b5cf6', bodyColor: 'rgba(139,92,246,0.35)', desc: 'Single-celled protist that moves using pseudopods (false feet). Engulfs food by phagocytosis.', speed: 0.3, size: 28, activity: 'Phagocytosis', activityDesc: 'Engulf food particles!', xp: 5, facts: ['Amoebas reproduce by binary fission', 'Pseudopods are temporary projections of cytoplasm', 'Amoebas live in freshwater, soil, and as parasites', 'They have no fixed shape - constantly changing', 'Food vacuoles digest engulfed particles'],
+              id: 'amoeba', label: 'Amoeba', icon: '\u{1F9A0}', color: '#8457ea', bodyColor: 'rgba(139,92,246,0.35)', desc: 'Single-celled protist that moves using pseudopods (false feet). Engulfs food by phagocytosis.', speed: 0.3, size: 28, activity: 'Phagocytosis', activityDesc: 'Engulf food particles!', xp: 5, facts: ['Amoebas reproduce by binary fission', 'Pseudopods are temporary projections of cytoplasm', 'Amoebas live in freshwater, soil, and as parasites', 'They have no fixed shape - constantly changing', 'Food vacuoles digest engulfed particles'],
 
               anatomy: [
 
@@ -17533,7 +17562,7 @@ var d = labToolData.cell || {};
 
             {
 
-              id: 'paramecium', label: 'Paramecium', icon: '\u{1F9A0}', color: '#06b6d4', bodyColor: 'rgba(6,182,212,0.35)', desc: 'Ciliated protist that moves rapidly using thousands of tiny hair-like cilia.', speed: 1.2, size: 22, activity: 'Ciliary Sweep', activityDesc: 'Swim through food clouds!', xp: 3, facts: ['Cilia beat in coordinated waves', 'Has an oral groove for feeding', 'Contains contractile vacuoles to expel water', 'Reproduces by binary fission and conjugation', 'Can reverse ciliary beat to escape danger'],
+              id: 'paramecium', label: 'Paramecium', icon: '\u{1F9A0}', color: '#058094', bodyColor: 'rgba(6,182,212,0.35)', desc: 'Ciliated protist that moves rapidly using thousands of tiny hair-like cilia.', speed: 1.2, size: 22, activity: 'Ciliary Sweep', activityDesc: 'Swim through food clouds!', xp: 3, facts: ['Cilia beat in coordinated waves', 'Has an oral groove for feeding', 'Contains contractile vacuoles to expel water', 'Reproduces by binary fission and conjugation', 'Can reverse ciliary beat to escape danger'],
 
               anatomy: [
 
@@ -17553,7 +17582,7 @@ var d = labToolData.cell || {};
 
             {
 
-              id: 'euglena', label: 'Euglena', icon: '\u{1F33F}', color: '#22c55e', bodyColor: 'rgba(34,197,94,0.35)', desc: 'Unique protist with both plant and animal characteristics. Has chloroplasts AND can eat food.', speed: 0.7, size: 18, activity: 'Photosynthesis', activityDesc: 'Move into light zones!', xp: 4, facts: ['Has a red eyespot (stigma) to detect light', 'Contains chloroplasts for photosynthesis', 'Has a flagellum for movement', 'Can switch between autotroph and heterotroph', 'No cell wall - has a flexible pellicle'],
+              id: 'euglena', label: 'Euglena', icon: '\u{1F33F}', color: '#178740', bodyColor: 'rgba(34,197,94,0.35)', desc: 'Unique protist with both plant and animal characteristics. Has chloroplasts AND can eat food.', speed: 0.7, size: 18, activity: 'Photosynthesis', activityDesc: 'Move into light zones!', xp: 4, facts: ['Has a red eyespot (stigma) to detect light', 'Contains chloroplasts for photosynthesis', 'Has a flagellum for movement', 'Can switch between autotroph and heterotroph', 'No cell wall - has a flexible pellicle'],
 
               anatomy: [
 
@@ -17573,7 +17602,7 @@ var d = labToolData.cell || {};
 
             {
 
-              id: 'wbc', label: 'Neutrophil (White Blood Cell)', icon: '\u{1FA78}', color: '#ef4444', bodyColor: 'rgba(239,68,68,0.3)', desc: 'Short-lived phagocytic white blood cell that rapidly responds to many bacterial and fungal infections.', speed: 0.5, size: 24, activity: 'Phagocytosis', activityDesc: 'Track and engulf bacteria!', xp: 6, facts: ['Neutrophils are the most abundant white blood cell in human blood', 'Uses chemotaxis to find infection signals', 'Can squeeze through blood vessel walls', 'Engulfs microbes and damaged material', 'Antibodies are secreted by plasma cells, not neutrophils'],
+              id: 'wbc', label: 'Neutrophil (White Blood Cell)', icon: '\u{1FA78}', color: '#d53d3d', bodyColor: 'rgba(239,68,68,0.3)', desc: 'Short-lived phagocytic white blood cell that rapidly responds to many bacterial and fungal infections.', speed: 0.5, size: 24, activity: 'Phagocytosis', activityDesc: 'Track and engulf bacteria!', xp: 6, facts: ['Neutrophils are the most abundant white blood cell in human blood', 'Uses chemotaxis to find infection signals', 'Can squeeze through blood vessel walls', 'Engulfs microbes and damaged material', 'Antibodies are secreted by plasma cells, not neutrophils'],
 
               anatomy: [
 
@@ -17593,7 +17622,7 @@ var d = labToolData.cell || {};
 
             {
 
-              id: 'bacterium', label: 'Bacterium', icon: '\u{1F9EB}', color: '#f59e0b', bodyColor: 'rgba(245,158,11,0.35)', desc: 'Prokaryotic cell - no nucleus. Has cell wall, flagella, and reproduces by binary fission.', speed: 0.9, size: 10, activity: 'Binary Fission', activityDesc: 'Grow and divide!', xp: 5, facts: ['No membrane-bound nucleus (prokaryote)', 'Cell wall made of peptidoglycan', 'Some have flagella for movement', 'Reproduce every 20 minutes in ideal conditions', 'Plasmids carry extra DNA for antibiotic resistance'],
+              id: 'bacterium', label: 'Bacterium', icon: '\u{1F9EB}', color: '#a16707', bodyColor: 'rgba(245,158,11,0.35)', desc: 'Prokaryotic cell - no nucleus. Has cell wall, flagella, and reproduces by binary fission.', speed: 0.9, size: 10, activity: 'Binary Fission', activityDesc: 'Grow and divide!', xp: 5, facts: ['No membrane-bound nucleus (prokaryote)', 'Cell wall made of peptidoglycan', 'Some have flagella for movement', 'Reproduce every 20 minutes in ideal conditions', 'Plasmids carry extra DNA for antibiotic resistance'],
 
               anatomy: [
 
@@ -17613,7 +17642,7 @@ var d = labToolData.cell || {};
 
             {
 
-              id: 'plantcell', label: 'Plant Cell', icon: '\u{1F33B}', color: '#65a30d', bodyColor: 'rgba(101,163,13,0.25)', desc: 'Eukaryotic cell with cell wall, chloroplasts, and large central vacuole.', speed: 0, size: 35, activity: 'Organelle Tour', activityDesc: 'Zoom in to explore!', xp: 2, facts: ['Rigid cell wall made of cellulose', 'Large central vacuole stores water', 'Chloroplasts convert light to energy', 'Shares many organelles with animal cells, but most plant cells lack centrioles and typical lysosomes', 'Connected to neighbors via plasmodesmata'],
+              id: 'plantcell', label: 'Plant Cell', icon: '\u{1F33B}', color: '#51820a', bodyColor: 'rgba(101,163,13,0.25)', desc: 'Eukaryotic cell with cell wall, chloroplasts, and large central vacuole.', speed: 0, size: 35, activity: 'Organelle Tour', activityDesc: 'Zoom in to explore!', xp: 2, facts: ['Rigid cell wall made of cellulose', 'Large central vacuole stores water', 'Chloroplasts convert light to energy', 'Shares many organelles with animal cells, but most plant cells lack centrioles and typical lysosomes', 'Connected to neighbors via plasmodesmata'],
 
               anatomy: [
 
@@ -17637,7 +17666,7 @@ var d = labToolData.cell || {};
 
             {
 
-              id: 'diatom', label: 'Diatom', icon: '\u{1F4A0}', color: '#0ea5e9', bodyColor: 'rgba(14,165,233,0.25)', desc: 'Unicellular algae with intricate glass-like cell walls made of silica. Responsible for ~20% of global oxygen.', speed: 0.15, size: 16, activity: 'Nutrient Collection', activityDesc: 'Drift through nutrient clouds!', xp: 3, facts: ['Cell walls are made of silica (glass)', 'Produce about 20% of Earth\'s oxygen', 'Over 100,000 species exist', 'Used in forensic science to determine drowning', 'Fossil diatoms form diatomaceous earth'],
+              id: 'diatom', label: 'Diatom', icon: '\u{1F4A0}', color: '#0b7db0', bodyColor: 'rgba(14,165,233,0.25)', desc: 'Unicellular algae with intricate glass-like cell walls made of silica. Responsible for ~20% of global oxygen.', speed: 0.15, size: 16, activity: 'Nutrient Collection', activityDesc: 'Drift through nutrient clouds!', xp: 3, facts: ['Cell walls are made of silica (glass)', 'Produce about 20% of Earth\'s oxygen', 'Over 100,000 species exist', 'Used in forensic science to determine drowning', 'Fossil diatoms form diatomaceous earth'],
 
               anatomy: [
 
@@ -17655,7 +17684,7 @@ var d = labToolData.cell || {};
 
             {
 
-              id: 'volvox', label: 'Volvox', icon: '\u{1F7E2}', color: '#10b981', bodyColor: 'rgba(16,185,129,0.2)', desc: 'Colonial green algae forming hollow spheres of 500-50,000 cells. Each cell has two flagella.', speed: 0.4, size: 32, activity: 'Colony Coordination', activityDesc: 'Spin toward the light!', xp: 4, facts: ['Colonies can contain 500 to 50,000 cells', 'Daughter colonies form inside the parent', 'Each cell has two flagella and an eyespot', 'Demonstrates division of labor in evolution', 'Rotates like a planet - name means "fierce roller"'],
+              id: 'volvox', label: 'Volvox', icon: '\u{1F7E2}', color: '#0c855d', bodyColor: 'rgba(16,185,129,0.2)', desc: 'Colonial green algae forming hollow spheres of 500-50,000 cells. Each cell has two flagella.', speed: 0.4, size: 32, activity: 'Colony Coordination', activityDesc: 'Spin toward the light!', xp: 4, facts: ['Colonies can contain 500 to 50,000 cells', 'Daughter colonies form inside the parent', 'Each cell has two flagella and an eyespot', 'Demonstrates division of labor in evolution', 'Rotates like a planet - name means "fierce roller"'],
 
               anatomy: [
 
@@ -17673,7 +17702,7 @@ var d = labToolData.cell || {};
 
             {
 
-              id: 'stentor', label: 'Stentor', icon: '\u{1F3BA}', color: '#a855f7', bodyColor: 'rgba(168,85,247,0.3)', desc: 'Trumpet-shaped ciliate, one of the largest single-celled organisms (up to 2mm). Can regenerate from fragments.', speed: 0.1, size: 30, activity: 'Filter Feeding', activityDesc: 'Anchor and sweep food!', xp: 5, facts: ['Can be up to 2mm long - visible to naked eye', 'Can regenerate from tiny fragments', 'Has a bead-like macronucleus', 'Creates vortex currents to capture food', 'Can change color: blue, green, or pink'],
+              id: 'stentor', label: 'Stentor', icon: '\u{1F3BA}', color: '#994de1', bodyColor: 'rgba(168,85,247,0.3)', desc: 'Trumpet-shaped ciliate, one of the largest single-celled organisms (up to 2mm). Can regenerate from fragments.', speed: 0.1, size: 30, activity: 'Filter Feeding', activityDesc: 'Anchor and sweep food!', xp: 5, facts: ['Can be up to 2mm long - visible to naked eye', 'Can regenerate from tiny fragments', 'Has a bead-like macronucleus', 'Creates vortex currents to capture food', 'Can change color: blue, green, or pink'],
 
               anatomy: [
 
@@ -17693,7 +17722,7 @@ var d = labToolData.cell || {};
 
             {
 
-              id: 'tardigrade', label: 'Tardigrade', icon: '\u{1F43B}', color: '#d946ef', bodyColor: 'rgba(217,70,239,0.25)', desc: 'Some species survive severe dehydration and brief extreme exposures by entering cryptobiosis; active tardigrades are much less tolerant.', speed: 0.2, size: 20, activity: 'Cryptobiosis', activityDesc: 'Enter and leave the tun state!', xp: 7, facts: ['Cryptobiosis reduces metabolism to near-undetectable levels', 'Some species survived direct exposure to space', 'Extreme-temperature survival depends on species, state, and exposure time', 'Have eight unjointed legs with claws', 'They are stress-tolerant, not indestructible'],
+              id: 'tardigrade', label: 'Tardigrade', icon: '\u{1F43B}', color: '#b83bca', bodyColor: 'rgba(217,70,239,0.25)', desc: 'Some species survive severe dehydration and brief extreme exposures by entering cryptobiosis; active tardigrades are much less tolerant.', speed: 0.2, size: 20, activity: 'Cryptobiosis', activityDesc: 'Enter and leave the tun state!', xp: 7, facts: ['Cryptobiosis reduces metabolism to near-undetectable levels', 'Some species survived direct exposure to space', 'Extreme-temperature survival depends on species, state, and exposure time', 'Have eight unjointed legs with claws', 'They are stress-tolerant, not indestructible'],
 
               anatomy: [
 
@@ -17713,7 +17742,7 @@ var d = labToolData.cell || {};
 
             {
 
-              id: 'spirillum', label: 'Spirillum', icon: '\u{1F300}', color: '#f97316', bodyColor: 'rgba(249,115,22,0.3)', desc: 'Spiral-shaped bacterium that moves with a distinctive corkscrew motion using bipolar flagella.', speed: 1.0, size: 12, activity: 'Helical Propulsion', activityDesc: 'Corkscrew through the medium!', xp: 4, facts: ['Rigid spiral shape (not flexible like spirochetes)', 'Uses bipolar tufts of flagella', 'Found in stagnant freshwater', 'Moves in a corkscrew pattern', 'One of the largest bacteria - up to 60μm'],
+              id: 'spirillum', label: 'Spirillum', icon: '\u{1F300}', color: '#bc5710', bodyColor: 'rgba(249,115,22,0.3)', desc: 'Spiral-shaped bacterium that moves with a distinctive corkscrew motion using bipolar flagella.', speed: 1.0, size: 12, activity: 'Helical Propulsion', activityDesc: 'Corkscrew through the medium!', xp: 4, facts: ['Rigid spiral shape (not flexible like spirochetes)', 'Uses bipolar tufts of flagella', 'Found in stagnant freshwater', 'Moves in a corkscrew pattern', 'One of the largest bacteria - up to 60μm'],
 
               anatomy: [
 
@@ -18464,7 +18493,7 @@ var d = labToolData.cell || {};
 
                 cctx.moveTo(-hw * 0.4, hh * 0.3); cctx.quadraticCurveTo(hw * 0.1, hh * 0.5, hw * 0.6, hh * 0.2);
 
-                cctx.strokeStyle = 'rgba(101,163,13,0.12)'; cctx.lineWidth = 0.8 * dpr; cctx.stroke();
+                cctx.strokeStyle = 'rgba(63,98,18,0.5)'; cctx.lineWidth = 0.8 * dpr; cctx.stroke();
 
                 // Central vacuole with gradient
 
@@ -18472,9 +18501,9 @@ var d = labToolData.cell || {};
 
                 var cvGrad = cctx.createRadialGradient(-hw * 0.1, -hh * 0.08, 0, 0, 0, hw * 0.6);
 
-                cvGrad.addColorStop(0, 'rgba(196,181,253,0.3)');
+                cvGrad.addColorStop(0, 'rgba(109,40,217,0.58)');
 
-                cvGrad.addColorStop(1, 'rgba(167,139,250,0.12)');
+                cvGrad.addColorStop(1, 'rgba(91,33,182,0.44)');
 
                 cctx.fillStyle = cvGrad; cctx.fill();
 
@@ -18488,7 +18517,7 @@ var d = labToolData.cell || {};
 
                   var cpGrad = cctx.createRadialGradient(hw * cp[0] - sz * 0.05, hh * cp[1] - sz * 0.05, 0, hw * cp[0], hh * cp[1], sz * cp[2]);
 
-                  cpGrad.addColorStop(0, 'rgba(74,222,128,0.6)'); cpGrad.addColorStop(1, 'rgba(34,197,94,0.3)');
+                  cpGrad.addColorStop(0, 'rgba(21,128,61,0.92)'); cpGrad.addColorStop(1, 'rgba(22,101,52,0.88)');
 
                   cctx.fillStyle = cpGrad; cctx.fill();
 
@@ -18498,7 +18527,7 @@ var d = labToolData.cell || {};
 
                   cctx.lineTo(hw * cp[0] + sz * cp[2] * 0.5, hh * cp[1]);
 
-                  cctx.strokeStyle = 'rgba(22,163,74,0.25)'; cctx.lineWidth = 0.4 * dpr; cctx.stroke();
+                  cctx.strokeStyle = 'rgba(5,46,22,0.55)'; cctx.lineWidth = 0.4 * dpr; cctx.stroke();
 
                 });
 
@@ -18506,7 +18535,7 @@ var d = labToolData.cell || {};
 
                 cctx.beginPath(); cctx.ellipse(hw * 0.55, hh * 0.45, sz * 0.12, sz * 0.06, 0.5, 0, Math.PI * 2);
 
-                cctx.fillStyle = 'rgba(251,146,60,0.35)'; cctx.fill();
+                cctx.fillStyle = 'rgba(194,65,12,0.86)'; cctx.fill();
 
                 cctx.strokeStyle = 'rgba(249,115,22,0.3)'; cctx.lineWidth = 0.4 * dpr; cctx.stroke();
 
@@ -20307,7 +20336,12 @@ var d = labToolData.cell || {};
 
                 var hintX = W / 2 - hintW / 2;
 
-                var hintY = 14 * dpr;
+                // Below the stage HUD, not under it. At 14px this coach mark sat inside
+                // the DOM header strip (absolute top-3, ~60px tall) for its whole 8-second
+                // life: the student never read it, and the header's backdrop-blur smeared
+                // it into a grey blob that was visible in every screenshot of the default
+                // view. 80px clears the header even when it wraps to two rows.
+                var hintY = 80 * dpr;
 
                 // Pill background
 
@@ -20831,7 +20865,19 @@ var d = labToolData.cell || {};
                 key === 'D' || key === 'A' || key === 'S' || key === 'W';
             }
 
+            // A window-level handler sees every keystroke on the page, including the
+            // ones meant for a text box. INPUT covers the sliders as well as the text
+            // fields: type=range is driven by the same arrow keys this steals. BUTTON is
+            // deliberately NOT excluded — entering play mode can leave focus on the Play
+            // button, and movement has to work from there.
+            function cellKeyTargetIsFormControl(target) {
+              if (!target || !target.tagName) return false;
+              var tag = target.tagName;
+              return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable === true;
+            }
+
             function onKey(e) {
+              if (cellKeyTargetIsFormControl(e.target)) return;
               if (!playAsOrg || !isMovementKey(e.key)) return;
               var key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
               playerKeys[key] = e.type === 'keydown';
@@ -21157,6 +21203,10 @@ var d = labToolData.cell || {};
               cv._cellMicroInit = true;
               var alive = true;
               var frameId = null;
+              // Starts true so the scene draws if IntersectionObserver is missing or
+              // its first callback has not arrived yet.
+              var microOnScreen = true;
+              var microViewObserver = null;
               var phase = Number(cv._cellMicroPhase) || 0;
               function cancelMicroFrame() { if (frameId) cancelAnimationFrame(frameId); frameId = null; }
               function drawMicroFrame() {
@@ -21168,6 +21218,10 @@ var d = labToolData.cell || {};
                 var opts = microCanvasLatestRef.current;
                 if (!alive || opts.reduced || frameId) return;
                 if (typeof document !== 'undefined' && document.hidden) return;
+                // Scrolled out of view counts the same as a hidden tab: the frame is
+                // not seen. This canvas mounts below the fold, so without it the loop
+                // ran unseen from first paint until the student scrolled to it.
+                if (!microOnScreen) return;
                 frameId = requestAnimationFrame(frame);
               }
               function frame() {
@@ -21187,11 +21241,22 @@ var d = labToolData.cell || {};
                 alive = false;
                 cancelMicroFrame();
                 if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onMicroVisibilityChange);
+              if (microViewObserver) { microViewObserver.disconnect(); microViewObserver = null; }
                 cv._cellMicroInit = false;
                 cv._cellMicroRedraw = null;
                 if (microCanvasStateRef.current.canvas === cv) microCanvasStateRef.current.canvas = null;
               };
               if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onMicroVisibilityChange);
+
+              if (typeof IntersectionObserver === 'function') {
+                microViewObserver = new IntersectionObserver(function (entries) {
+                  var entry = entries[entries.length - 1];
+                  if (!entry) return;
+                  microOnScreen = entry.isIntersecting;
+                  if (microOnScreen) { drawMicroFrame(); scheduleMicroFrame(); } else cancelMicroFrame();
+                }, { rootMargin: '200px' });
+                microViewObserver.observe(cv);
+              }
               drawMicroFrame();
               scheduleMicroFrame();
             };
@@ -21242,7 +21307,18 @@ var d = labToolData.cell || {};
 
           var quizQuestion = d.quizMode && QUIZ_BANK[d.quizIdx || 0] ? cellRotateQuizOptions(QUIZ_BANK[d.quizIdx || 0], d.quizIdx || 0) : null;
 
-          var activeCellMode = d.mode || 'observe';
+              // The played organism is cleared out from under this label on ordinary
+              // paths — it dies, or a reopened session no longer has it in the world —
+              // while d.mode stays 'play'. The old `|| {}` guarded the crash and then
+              // printed "Playing as undefined" to the student.
+              function cellPlayLabel(orgId) {
+                var playing = orgId ? ORGANISMS.find(function (o) { return o.id === orgId; }) : null;
+                return playing && playing.label
+                  ? "\uD83C\uDFAE Playing as " + playing.label
+                  : "\uD83C\uDFAE Play mode";
+              }
+
+              var activeCellMode = d.mode || 'observe';
           var observedCount = (ext.organismsObserved || []).length;
           var discoveredCount = (d.discoveries || []).length;
           var completedChallengeCount = CELL_CHALLENGES.filter(function(c) { return d._completedChallenges && d._completedChallenges[c.id]; }).length;
@@ -21299,7 +21375,7 @@ var d = labToolData.cell || {};
 
               React.createElement("span", { className: "px-2 py-0.5 bg-sky-100 text-sky-700 text-[11px] font-bold rounded-full" }, "⭐ " + (d.researchPoints || 0) + " RP"),
 
-              React.createElement("span", { className: "text-xs text-slate-600 ml-1" }, d.mode === 'play' ? "\uD83C\uDFAE Playing as " + (ORGANISMS.find(function (o) { return o.id === d.playAsOrganism; }) || {}).label : d.quizMode ? "\uD83E\uDDE0 Quiz Mode" : d.mode === 'microdissection' ? 'Microdissection' : d.mode === 'processes' ? "\u2699\uFE0F Cell Processes" : d.mode === 'interior' ? 'Inside the Cell' : "\uD83D\uDC41 Observe"),
+              React.createElement("span", { className: "text-xs text-slate-600 ml-1" }, d.mode === 'play' ? cellPlayLabel(d.playAsOrganism) : d.quizMode ? "\uD83E\uDDE0 Quiz Mode" : d.mode === 'microdissection' ? 'Microdissection' : d.mode === 'processes' ? "\u2699\uFE0F Cell Processes" : d.mode === 'interior' ? 'Inside the Cell' : "\uD83D\uDC41 Observe"),
 
 
               (function() {
@@ -21569,9 +21645,15 @@ var d = labToolData.cell || {};
 
                 tabIndex: 0,
 
+                // The canvas is a tab stop, so it needs a visible focus ring. Drawn just
+                // OUTSIDE the canvas box rather than inset: the top of the canvas is a
+                // dark HUD strip and the rest is a pale mint dish, and no single colour
+                // reads on both. Outside, it sits on the tool's own light panel.
+                className: "focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-violet-700",
+
                 ref: canvasRefCb,
 
-                style: { width: '100%', height: '100%', cursor: d.playAsOrganism ? 'crosshair' : 'grab', outline: 'none', touchAction: 'none', userSelect: 'none' }
+                style: { width: '100%', height: '100%', cursor: d.playAsOrganism ? 'crosshair' : 'grab', touchAction: 'none', userSelect: 'none' }
 
               }),
 
@@ -22891,6 +22973,10 @@ var d = labToolData.cell || {};
                       var cx2d = cv.getContext && cv.getContext('2d'); if (!cx2d) return;
                       var alive = true;
                       var frameId = null;
+                      // Starts true so the scene draws if IntersectionObserver is missing or
+                      // its first callback has not arrived yet.
+                      var interiorOnScreen = true;
+                      var interiorViewObserver = null;
                       var tt = { v: Number(cv._cellInteriorPhase) || 0 };
                       function cancelInteriorFrame() { if (frameId) cancelAnimationFrame(frameId); frameId = null; }
                       function drawInteriorFrame() {
@@ -22900,6 +22986,10 @@ var d = labToolData.cell || {};
                       function scheduleInteriorFrame() {
                         if (!alive || reducedMo || frameId) return;
                         if (typeof document !== 'undefined' && document.hidden) return;
+                        // Scrolled out of view counts the same as a hidden tab: the frame is
+                        // not seen. This canvas mounts below the fold, so without it the loop
+                        // ran unseen from first paint until the student scrolled to it.
+                        if (!interiorOnScreen) return;
                         frameId = requestAnimationFrame(frame);
                       }
                       function frame() {
@@ -22918,10 +23008,21 @@ var d = labToolData.cell || {};
                         alive = false;
                         cancelInteriorFrame();
                         if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onInteriorVisibilityChange);
+                      if (interiorViewObserver) { interiorViewObserver.disconnect(); interiorViewObserver = null; }
                         if (window.__alloCellInteriorCleanup === cv._cellInteriorCleanup) window.__alloCellInteriorCleanup = null;
                       };
                       try { window.__alloCellInteriorCleanup = cv._cellInteriorCleanup; } catch (e) {}
                       if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onInteriorVisibilityChange);
+
+                      if (typeof IntersectionObserver === 'function') {
+                        interiorViewObserver = new IntersectionObserver(function (entries) {
+                          var entry = entries[entries.length - 1];
+                          if (!entry) return;
+                          interiorOnScreen = entry.isIntersecting;
+                          if (interiorOnScreen) { drawInteriorFrame(); scheduleInteriorFrame(); } else cancelInteriorFrame();
+                        }, { rootMargin: '200px' });
+                        interiorViewObserver.observe(cv);
+                      }
                       drawInteriorFrame();
                       scheduleInteriorFrame();
                     } })),

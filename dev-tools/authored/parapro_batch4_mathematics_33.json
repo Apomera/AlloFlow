@@ -888,7 +888,7 @@
     "prompt": "A student interprets 48 divided by 6 as 48 - 6 and reports 42. Which support would best develop the meaning of the quotient?",
     "choices": [
       "Ask the student to copy the division fact until the answer is memorized.",
-      "Confirm 42 because both subtraction and division make a starting number smaller.",
+      "Confirm that 42 is correct, because both subtraction and division will always make the starting number smaller than it was.",
       "Have the student arrange 48 counters into groups of 6, count the 8 groups, and connect the model to 48 divided by 6 = 8.",
       "Have the student add 6 to 48 and label the resulting 54 as the quotient."
     ],
@@ -927,7 +927,7 @@
     "difficulty": "application",
     "prompt": "A student calculates 5/6 divided by 5 as 25/6. Which model would best clarify the correct quotient?",
     "choices": [
-      "Draw five wholes, divide each whole into sixths, and count all 30 pieces.",
+      "Draw five separate wholes, divide each one of those wholes into sixths, and then count all thirty of the resulting equal pieces.",
       "Join five strips of length 5/6 end to end to model multiplication by 5.",
       "Shade 5/6 of a strip and then shade five more sixths on the same strip.",
       "Show 5/6 as five pieces of size 1/6, share those pieces equally among five groups, and note that each group receives 1/6."
@@ -1047,7 +1047,7 @@
     "difficulty": "application",
     "prompt": "A student says that the time from 10:52 a.m. to 11:26 a.m. is 74 minutes after subtracting 1052 from 1126 as ordinary whole numbers. Which support is most appropriate?",
     "choices": [
-      "Confirm 74 because hours and minutes use the same base-ten grouping as whole numbers.",
+      "Confirm that 74 is correct, because hours and minutes use exactly the same base-ten grouping as whole numbers do.",
       "Subtract only the minute values, 52 - 26, and report 26 minutes.",
       "Use an open number line to count 8 minutes to 11:00 and 26 more minutes to 11:26, for a total of 34 minutes.",
       "Add the clock readings 1052 and 1126, then remove the final zero."
@@ -1089,7 +1089,7 @@
     "choices": [
       "Measure one outside edge again and use its length as the volume.",
       "Draw the prism's outline and count its four corners as cubic units.",
-      "Add the dimensions in a different order to show that 2 + 3 + 5 is still 10.",
+      "Add all of the dimensions together in a different order to show that 2 + 3 + 5 is still exactly equal to 10.",
       "Build two layers of 15 unit cubes each, count 30 cubes, and connect the layers to 5 times 3 times 2."
     ],
     "answerIndex": 3,
@@ -1128,7 +1128,7 @@
     "prompt": "Asked to plot (-3, 2), a student plots (2, -3). Which direction would best correct the coordinate-order error?",
     "choices": [
       "Explain that the first coordinate controls horizontal movement, so move 3 units left, then use the second coordinate to move 2 units up.",
-      "Tell the student that coordinate order does not matter as long as both numbers appear on the graph.",
+      "Tell the student that the order of the two coordinates does not matter at all, as long as both of the numbers appear somewhere on the graph.",
       "Move 3 units right and 2 units down because negative signs reverse both coordinate positions.",
       "Plot both points and label them equivalent because their coordinates use the same two numbers."
     ],
@@ -1210,7 +1210,7 @@
       "Use a circle graph because each date must represent a part of one fixed whole.",
       "Use an unlabeled pictograph because the order of dates is not important.",
       "Place the ordered dates on the horizontal axis and heights on the vertical axis of a line graph, then connect the measured points.",
-      "List only Friday's height because the last measurement is enough to show the entire trend."
+      "List only Friday’s recorded height, because the final measurement by itself is enough to show the entire growth trend over the week."
     ],
     "answerIndex": 2,
     "rationale": "A line graph preserves the chronological order and makes changes between successive measurements visible. A circle graph is intended for parts of a whole, not a time sequence.",
@@ -1247,7 +1247,7 @@
     "difficulty": "application",
     "prompt": "A student draws equally spaced marks on a graph's vertical axis but labels them 0, 5, 15, and 20. Which feedback best addresses the scale?",
     "choices": [
-      "Keep the labels because graph intervals may change size without any visual indication.",
+      "Keep the existing labels, because the intervals on a graph may change size without any visual indication given to the reader at all.",
       "Move 15 closer to 5 while leaving the tick marks equally spaced.",
       "Remove all numerical labels and judge values from bar heights alone.",
       "Redraw the axis with equally spaced ticks labeled in equal increments, such as 0, 5, 10, 15, and 20, before plotting the data."
@@ -1290,7 +1290,7 @@
       "Estimate 728 as 80, divide by 8, and accept any answer near 10.",
       "Multiply 728 by 8 and use 5,824 as the estimated quotient.",
       "Use the compatible number 720: since 720 divided by 8 is 90, the quotient should be near 90; the exact quotient is 91.",
-      "Confirm 9.1 because division always makes a three-digit number into a one-digit number."
+      "Confirm that 9.1 is correct, because division always turns a three-digit number into a smaller one-digit decimal number."
     ],
     "answerIndex": 2,
     "rationale": "The nearby compatible number 720 divides evenly by 8 to give 90, establishing the quotient's reasonable magnitude. Exact division gives 91, so 9.1 is ten times too small.",

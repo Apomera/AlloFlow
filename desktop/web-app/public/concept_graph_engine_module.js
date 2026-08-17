@@ -88,7 +88,10 @@
       if (!seen[c]) { seen[c] = true; order.push(c); }
     });
     var lanes = order.map(function (c, i) { return { key: c, label: c, index: i }; });
-    if (hasUngrouped || lanes.length === 0) lanes.push({ key: null, label: 'Ungrouped', index: lanes.length });
+    // labelKey rides ALONGSIDE label, never instead of it. This engine stays translator-free
+    // by design: axis/lane labels double as model-prompt vocabulary (see DEFAULT_AXES), so
+    // `label` is the canonical English and views translate via t(labelKey) || label.
+    if (hasUngrouped || lanes.length === 0) lanes.push({ key: null, label: 'Ungrouped', labelKey: 'concept_graph.ungrouped', index: lanes.length });
     return lanes;
   }
 
@@ -291,7 +294,7 @@
     });
     return {
       pos: pos,
-      axes: { x: { label: 'causes → effect', kind: 'ordinal' }, y: { label: '', kind: 'ordinal' }, z: { label: '', kind: 'ordinal' } },
+      axes: { x: { label: 'causes → effect', labelKey: 'concept_graph.axis_cause_effect', kind: 'ordinal' }, y: { label: '', kind: 'ordinal' }, z: { label: '', kind: 'ordinal' } },
       layout: { mode: 'fishbone', planeGap: 1100, zones: [] }
     };
   }
@@ -436,7 +439,7 @@
     });
     return {
       pos: pos,
-      axes: { x: { label: 'story order', kind: 'ordinal' }, y: { label: 'tension', kind: 'ordinal' }, z: { label: '', kind: 'ordinal' } },
+      axes: { x: { label: 'story order', labelKey: 'concept_graph.axis_story_order', kind: 'ordinal' }, y: { label: 'tension', labelKey: 'concept_graph.axis_tension', kind: 'ordinal' }, z: { label: '', kind: 'ordinal' } },
       layout: { mode: 'arc', planeGap: 1100, zones: [] },
       extraEdges: extraEdges
     };
@@ -460,7 +463,7 @@
     });
     return {
       pos: pos,
-      axes: { x: { label: 'first step → last step', kind: 'ordinal' }, y: { label: '', kind: 'ordinal' }, z: { label: '', kind: 'ordinal' } },
+      axes: { x: { label: 'first step → last step', labelKey: 'concept_graph.axis_first_last', kind: 'ordinal' }, y: { label: '', kind: 'ordinal' }, z: { label: '', kind: 'ordinal' } },
       layout: { mode: 'flow', planeGap: 1100, zones: [] },
       extraEdges: extraEdges
     };
@@ -510,7 +513,7 @@
     });
     return {
       pos: pos,
-      axes: { x: { label: 'reading order', kind: 'ordinal' }, y: { label: '', kind: 'ordinal' }, z: { label: '', kind: 'ordinal' } },
+      axes: { x: { label: 'reading order', labelKey: 'concept_graph.axis_reading_order', kind: 'ordinal' }, y: { label: '', kind: 'ordinal' }, z: { label: '', kind: 'ordinal' } },
       layout: { mode: 'cascade', planeGap: 1100, zones: zones },
       extraEdges: extraEdges
     };
@@ -924,7 +927,19 @@
     };
   }
   function contextRelationshipType(type) {
-    return String(type || '').toLowerCase() === 'haschild' ? 'contains' : 'relatedTo';
+    // Preserve the semantics the dataset actually carries instead of flattening everything
+    // to 'relatedTo'. 'buildsTowards' maps onto the acg 'prerequisite' type deliberately:
+    // "A buildsTowards B" means A is an earlier step toward B, which is exactly what the
+    // existing prerequisite styling (amber dash in the 3D and unit-path views) communicates.
+    // 'supports' is the LearningComponent edge (component -> standard) introduced with the
+    // --include-components snapshots. The raw value always survives in edge.relationType,
+    // so this mapping only chooses the STYLING family, and unknown types still fall back
+    // to the generic 'relatedTo' rendering in every view.
+    var normalized = String(type || '').toLowerCase();
+    if (normalized === 'haschild') return 'contains';
+    if (normalized === 'buildstowards') return 'prerequisite';
+    if (normalized === 'supports') return 'supports';
+    return 'relatedTo';
   }
   function normalizeAuditStatus(value) {
     var raw = auditText(value), lower = raw.toLowerCase();
@@ -1154,9 +1169,9 @@
 
       var analysis = report.analysis && typeof report.analysis === 'object' ? report.analysis : {};
       [
-        { key: 'textAlignment', label: 'Text alignment', edgeType: 'evidencedBy' },
-        { key: 'activityAlignment', label: 'Activity alignment', edgeType: 'evidencedBy' },
-        { key: 'assessmentAlignment', label: 'Assessment alignment', edgeType: 'assessedBy' }
+        { key: 'textAlignment', label: 'Text alignment', labelKey: 'concept_graph.dim_text', edgeType: 'evidencedBy' },
+        { key: 'activityAlignment', label: 'Activity alignment', labelKey: 'concept_graph.dim_activity', edgeType: 'evidencedBy' },
+        { key: 'assessmentAlignment', label: 'Assessment alignment', labelKey: 'concept_graph.dim_assessment', edgeType: 'assessedBy' }
       ].forEach(function (dimension) {
         var section = analysis[dimension.key] && typeof analysis[dimension.key] === 'object' ? analysis[dimension.key] : {};
         var rawStatus = section.status;
@@ -1169,6 +1184,7 @@
         g.nodes.push({
           id: evidenceId,
           label: dimension.label,
+          labelKey: dimension.labelKey,
           type: 'auditEvidence',
           category: 'Alignment evidence',
           status: status,
@@ -1473,7 +1489,15 @@
       nodeById[node.id] = node;
       var type = auditText(node.type).toLowerCase() || 'node';
       var structural = type === 'audit' || type === 'standard';
-      var typeMatch = !requestedTypes.length || requestedTypes.indexOf(type) >= 0 || (keepStructure && structural);
+      // 'learningComponent' is a VIRTUAL filter type: components are standardsContext nodes
+      // whose record kind is 'component' (they arrive via supports edges in
+      // --include-components snapshots). Filtering by 'standardsContext' still shows them
+      // (superset, unchanged behavior); filtering by 'learningComponent' isolates them.
+      var filterTypes = [type];
+      if (type === 'standardscontext' && auditText(node.kind).toLowerCase() === 'component') filterTypes.push('learningcomponent');
+      var typeMatch = !requestedTypes.length
+        || filterTypes.some(function (candidate) { return requestedTypes.indexOf(candidate) >= 0; })
+        || (keepStructure && structural);
       var nodeSource = auditText(node.attributionSource).toLowerCase();
       var incidentSourceMatch = edgeSources[node.id] && requestedSources.length
         ? requestedSources.some(function (source) { return !!edgeSources[node.id][source]; })
@@ -1537,9 +1561,9 @@
   // layoutWithGemini ties them to a callGemini and merges axisValues back onto the
   // graph (project() then turns those into real, interpretable 3D coordinates).
   var DEFAULT_AXES = {
-    x: { label: 'Teaching sequence / chronology (taught first -> last)', kind: 'ordinal' },
-    y: { label: 'Cognitive depth (concrete/recall -> abstract/create, Bloom)', kind: 'ordinal' },
-    z: { label: 'Strand / theme', kind: 'categorical' }
+    x: { label: 'Teaching sequence / chronology (taught first -> last)', labelKey: 'concept_graph.axis_teaching_sequence', kind: 'ordinal' },
+    y: { label: 'Cognitive depth (concrete/recall -> abstract/create, Bloom)', labelKey: 'concept_graph.axis_cognitive_depth', kind: 'ordinal' },
+    z: { label: 'Strand / theme', labelKey: 'concept_graph.axis_strand', kind: 'categorical' }
   };
 
   function buildSemanticGraphPrompt(graph, opts) {

@@ -90,7 +90,11 @@ const STANDALONE_BUNDLE_OUT = path.join(ROOT, 'desktop', 'web-app', 'public', 'e
 const STANDALONE_ENTRY = path.join(ROOT, '_tmp_educator_evaluation_standalone.jsx');
 const reactImport = path.join(ROOT, 'desktop', 'web-app', 'node_modules', 'react', 'index.js').replace(/\\/g, '/');
 const reactDomImport = path.join(ROOT, 'desktop', 'web-app', 'node_modules', 'react-dom', 'client.js').replace(/\\/g, '/');
-fs.writeFileSync(STANDALONE_ENTRY, `import React from ${JSON.stringify(reactImport)};\nimport { createRoot } from ${JSON.stringify(reactDomImport)};\n${source}\ncreateRoot(document.getElementById('educator-evaluation-root')).render(React.createElement(EducatorEvaluationPanel, { standalone: true }));\n`, 'utf8');
+// Bundle the repo's single QR implementation so the standalone page can render
+// the Share-by-QR card without any network dependency. The library declares a
+// module-scoped `qrcode`, so attach it to window for the panel's feature check.
+const qrSource = fs.readFileSync(path.join(ROOT, 'qrcode.js'), 'utf8');
+fs.writeFileSync(STANDALONE_ENTRY, `import React from ${JSON.stringify(reactImport)};\nimport { createRoot } from ${JSON.stringify(reactDomImport)};\n${qrSource}\nif (typeof window !== 'undefined') window.qrcode = window.qrcode || qrcode;\n${source}\ncreateRoot(document.getElementById('educator-evaluation-root')).render(React.createElement(EducatorEvaluationPanel, { standalone: true }));\n`, 'utf8');
 require('esbuild').buildSync({
   entryPoints: [STANDALONE_ENTRY],
   outfile: STANDALONE_BUNDLE,

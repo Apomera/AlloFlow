@@ -12,11 +12,10 @@
 > still shipping the retired name in `palette.ctx.mindMap` until it was corrected on 2026-08-16,
 > and `check_lang_staleness` had been flagging it as advisory-only the whole time.
 
-> **Name collision to resolve before Phase 5.** “Surprise Me” in this document means
-> graph-grounded lesson discovery. The command palette now separately ships
-> `cmd.surprise_me_contextually` (“Surprise me with a useful next step”), which picks a low-risk
-> next action from lesson context and is **not** graph-backed. Two different features currently
-> share the name. Rename one before Phase 5 lands.
+> **Naming decided 2026-08-17 (Aaron): the Phase 5 feature is Trailhead.** Chosen for zero
+> collisions in the string corpus and the possibility-first metaphor (Compass and Pathfinder
+> both collide). The shipped palette command cmd.surprise_me_contextually keeps its name.
+> Where this document says Surprise Me for the Phase 5 feature, read Trailhead.
 
 ## Executive summary
 
@@ -86,7 +85,63 @@ both the code and the words on screen.
 `concept_graph_3d_module.js` are all live. Note none of these has a `_source.jsx` pair, so each
 module **is** the source.
 
-**Phase 5: not started.** See the naming collision noted at the top before it is.
+**Phase 4 progress, 2026-08-17: learning components now reach the Alignment Map.** Three engine
+and provider changes, all test-covered:
+
+1. **`contextRelationshipType` no longer flattens semantics.** Everything except `hasChild` used
+   to render as generic `relatedTo`. Now `supports` keeps its name and `buildsTowards` maps to
+   the acg `prerequisite` type, which means source-provided progression edges pick up the
+   existing amber-dash prerequisite styling in the 3D and unit-path views for free. The raw
+   value always survives in `edge.relationType`; unknown types still fall back to `relatedTo`.
+2. **Component-flooding guard in `getNeighborhood`.** With the `--include-components` snapshots,
+   one standard can carry dozens of `supports` neighbours (L.1.1.h: 38), and the uncapped BFS
+   spent the whole context budget on them. Components are now capped at a third of `maxNodes`
+   (minimum 4), overridable via `options.maxComponents` (0 = none), with skipped components
+   marking the result truncated. Measured effect on `5.MD.A.1` at maxNodes 24: components
+   12 -> 8, related standards 9 -> 13.
+3. **Verified end to end**: `fromAlignmentAudit` against the live ccss-math snapshot now emits
+   `supports` (8), `prerequisite` (10) and `contains` (5) context edges, component nodes carry
+   their description as the label (never the UUID `code`), and the `labelKey` contract from
+   2026-08-16 survives export/import (the alignment sanitizer preserves arbitrary keys within
+   its limits; `normalizeGraph` passes acg graphs through untouched).
+
+   New tests: 4 in `tests/standards_provider.test.js` (supports-preference + edgeSource, search
+   invisibility, the cap with both overrides, and `prerequisiteEdgesExamined`, which had shipped
+   untested) and 2 in `tests/concept_graph_engine.test.js` (type-mapping via a stub provider,
+   labelKey on evidence dimensions). Full graph + standards suite: 136 tests green.
+
+   **Done 2026-08-17 (follow-up): the "Learning components" filter.** `filterAlignmentGraph`
+   understands a virtual `learningComponent` node type (standardsContext nodes whose record
+   kind is component); filtering by `standardsContext` remains a superset, so existing
+   behavior is unchanged. The mind_map dropdown gained the option (key
+   `alignment_graph.node_learning_component`), its no-engine fallback filter mirrors the same
+   rule, and the 3D lane sprites now resolve `labelKey` through the module's own `_tr` guard
+   (the axes legend was refactored onto the same helper). Verified: the component-only view
+   shows 8/8 component nodes and zero non-component context nodes on the live ccss-math
+   snapshot; graph suites 111/111 green.
+
+**Phase 5: NOT "not started" — it is BUILT AND LIVE. Corrected 2026-08-17.** This document was
+wrong, and the naming decision above rested on that error. What exists:
+
+- `SurpriseMeEngine` (registered `AlloModules.SurpriseMeEngine`): `buildHood` pulls prerequisites,
+  leadsTo, related and components from the provider; `buildPrompt` grounds the model in ONLY those
+  source edges; `parseDirections` validates and drops any tone outside the allowed list;
+  `fallbackDirections` produces three editable starters when the AI is unavailable.
+- `SurpriseMeCompare` (registered): the three-way comparison card. Its own header comment says it
+  **answers open question 6 with "comparison card"** — so question 6 below is answered in code.
+- **Live entry point:** inside `UniversalSettingsPanel` (registered), reachable from Universal
+  Settings once a standard resolves locally. This is the surface teachers can actually use.
+- **Dead entry point:** `SurpriseTopicLauncher` in `view_misc_panels_source.jsx` (~260 lines, a
+  fuller seed-box flow with AI code lookup and verified/unverified code splitting). It is **not**
+  in that module's registration block (which exposes 6 components) and has **no call sites
+  anywhere in the repo**. It cannot be reached. Decide whether to wire it up or delete it; it
+  should not sit in between.
+
+**Consequence for the naming decision:** "renaming the unbuilt thing is free" no longer holds. The
+live surface ships a hardcoded English heading, "Surprise me: lessons in this learning space".
+Adopting **Trailhead** now means renaming a shipped surface, not an idea. That heading is now
+behind `standards_finder.surprise_heading`, so the rename is a one-key edit plus a pack delta
+whenever it is made.
 
 ### Known gaps, 2026-08-16
 
@@ -765,7 +820,7 @@ Still open:
    most important question**, and now sharper: the shipped science slice is 44 standards and 43
    edges. Is that all v1.11.0 has for MA grade 5, or is the ingestion filter dropping edges?
 4. Should the graph engine store all nodes or only a filtered neighborhood around active Blueprints?
-6. Should “Surprise Me” generate one direction at a time or show a comparison card for three directions?
+6. ~~Should Surprise Me generate one direction at a time or show a comparison card for three directions?~~ **ANSWERED IN CODE (found 2026-08-17): the comparison card.** `SurpriseMeCompare` renders three proposals with aligned dimensions, pin-to-edit, teacher edit wins over model text, and one shared provider-sourced prerequisite line below the grid.
 7. Which OpenSciEd units can be linked or imported under the intended AlloFlow distribution model?
 8. What API rate limits and production terms apply to Learning Commons Platform accounts?
 9. Should AlloFlow submit a private-beta request for curriculum-aligned datasets after the local standards proof of concept?

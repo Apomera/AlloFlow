@@ -664,3 +664,80 @@ describe('ConceptGraphEngine — alignment audit projection', () => {
     expect(graph.edges).toEqual([]);
   });
 });
+
+describe('standards-context semantics (2026-08-17)', () => {
+  function stubProvider() {
+    const root = { id: 's-root', code: 'X.1', label: 'Root standard', kind: 'standard', resolvable: true };
+    return {
+      resolveStandard(query) {
+        return String(query).indexOf('X.1') !== -1
+          ? { status: 'resolved', match: root, context: { id: root.id, code: root.code } }
+          : { status: 'not-found', match: null };
+      },
+      getStandardContext() { return { id: 's-root', code: 'X.1', label: 'Root standard', kind: 'standard' }; },
+      getNeighborhood() {
+        return {
+          rootId: 's-root',
+          depth: 2,
+          truncated: false,
+          nodes: [
+            { id: 's-root', code: 'X.1', label: 'Root standard', kind: 'standard' },
+            { id: 's-next', code: 'X.3', label: 'Next standard', kind: 'standard' },
+            { id: 's-child', code: 'X.1.a', label: 'Child part', kind: 'standard' },
+            { id: 'c-0', code: 'c-0', label: 'Do the thing', kind: 'component' },
+          ],
+          relationships: [
+            { fromId: 's-root', toId: 's-next', type: 'buildsTowards', source: 'test' },
+            { fromId: 's-root', toId: 's-child', type: 'hasChild', source: 'test' },
+            { fromId: 'c-0', toId: 's-root', type: 'supports', source: 'test' },
+          ],
+        };
+      },
+      getManifest() { return { provider: 'stub', datasetVersion: 'v0', snapshotId: 'stub' }; },
+    };
+  }
+
+  it('maps source relationship types onto acg styling families and keeps the raw type', () => {
+    const graph = E.fromAlignmentAudit(
+      { standards: { perStandard: [{ standard: 'X.1', analysis: { textAlignment: { status: 'aligned', evidence: 'covered' } } }] } },
+      { standardsProvider: stubProvider() }
+    );
+    const contextEdges = graph.edges.filter((edge) => edge.provenance === 'standards-provider');
+    const byType = {};
+    contextEdges.forEach((edge) => { byType[edge.type] = edge.relationType; });
+    expect(byType.prerequisite).toBe('buildsTowards');
+    expect(byType.contains).toBe('hasChild');
+    expect(byType.supports).toBe('supports');
+    // LearningComponent context nodes arrive with kind + readable label, never a UUID label.
+    const componentNode = graph.nodes.find((node) => node.type === 'standardsContext' && node.kind === 'component');
+    expect(componentNode).toBeTruthy();
+    expect(componentNode.label).toBe('Do the thing');
+  });
+
+  it('emits labelKey alongside canonical English on evidence dimensions', () => {
+    const graph = E.fromAlignmentAudit(
+      { standards: { perStandard: [{ standard: 'X.1', analysis: { textAlignment: { status: 'aligned', evidence: 'covered' } } }] } },
+      { standardsProvider: stubProvider() }
+    );
+    const evidence = graph.nodes.find((node) => node.labelKey === 'concept_graph.dim_text');
+    expect(evidence).toBeTruthy();
+    expect(evidence.label).toContain('Text alignment');
+  });
+
+  it("filters components with the virtual 'learningComponent' type while 'standardsContext' stays a superset", () => {
+    const graph = E.fromAlignmentAudit(
+      { standards: { perStandard: [{ standard: 'X.1', analysis: { textAlignment: { status: 'aligned', evidence: 'covered' } } }] } },
+      { standardsProvider: stubProvider() }
+    );
+    const payload = { schema: 'alloflow-alignment-graph-export/v1', graph };
+    const componentsOnly = E.filterAlignmentGraph(payload, { nodeTypes: ['learningComponent'], keepStructure: true });
+    expect(componentsOnly.ok).toBe(true);
+    const nonStructural = componentsOnly.graph.nodes.filter((node) => node.type !== 'audit' && node.type !== 'standard');
+    expect(nonStructural.length).toBeGreaterThan(0);
+    expect(nonStructural.every((node) => node.kind === 'component')).toBe(true);
+    const contextView = E.filterAlignmentGraph(payload, { nodeTypes: ['standardsContext'], keepStructure: true });
+    expect(contextView.graph.nodes.some((node) => node.kind === 'component')).toBe(true);
+    expect(contextView.graph.nodes.some((node) => node.type === 'standardsContext' && node.kind !== 'component')).toBe(true);
+  });
+});
+

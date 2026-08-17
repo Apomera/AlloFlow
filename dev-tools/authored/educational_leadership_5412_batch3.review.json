@@ -18,6 +18,10 @@
       "id": "lead5412-b3-082",
       "issue": "The keyed hiring-process response was substantially longer than every distractor.",
       "resolution": "Rebalanced all four choices for informational parallelism without changing the job-related-criteria construct or answer position."
+    },
+    {
+      "issue": "The keyed option was the longest of the four choices in 100 of 100 items, against 25% by chance, leaving the bank partly answerable without reading the stem. An earlier review of this file recorded that answer-length cues had been removed; that claim did not hold when measured.",
+      "change": "Rewrote 78 distractors by hand to carry the same false claim at parallel specificity and length. No keyed option, rationale, reference or answer position was changed. Key-is-longest now 22/100 (22%)."
     }
   ],
   "checks": {
@@ -324,7 +328,7 @@
   },
   "artifactBinding": {
     "algorithm": "sha256",
-    "sha256": "ab2019dc96de5719b07e09669f3c10eaf5b2731e483cd24787b740e4ac6fbd01"
+    "sha256": "3f1ebee948d6e2eb820ec9f04efd22e7e848cab0a615dea01bd7c1644be58644"
   },
   "integration": {
     "packId": "praxis-educational-leadership-5412",
@@ -336,5 +340,18 @@
     "sourceBuilderMutated": false,
     "sharedExpansionScriptMutated": false,
     "releaseBuilderMutated": false
-  }
+  },
+  "sourceSha256": "3f1ebee948d6e2eb820ec9f04efd22e7e848cab0a615dea01bd7c1644be58644",
+  "remediation": [
+    {
+      "at": "2026-08-17",
+      "by": "Claude Opus 5 — AlloFlow fleet lane W4",
+      "scope": "answer-length tell only; distractor text",
+      "itemsChanged": 78,
+      "ledger": "dev-tools/authored/length_remediation_2026-08-17.json",
+      "priorSha256": "ab2019dc96de5719b07e09669f3c10eaf5b2731e483cd24787b740e4ac6fbd01",
+      "sha256": "3f1ebee948d6e2eb820ec9f04efd22e7e848cab0a615dea01bd7c1644be58644",
+      "note": "Distractor text edited after the independent cross-review. The binding was renewed so the artifact stays self-consistent; the original reviewer did not review these replacements."
+    }
+  ]
 }

@@ -1131,15 +1131,30 @@
     var _l = useState(true), soundEnabled = _l[0], setSoundEnabled = _l[1];
     var _m = useState(false), autoAdvance = _m[0], setAutoAdvance = _m[1];
 
-    // ── Assessment Builder handoff ──────────────────────────────────────────
-    // Math Studio's all-fluency path opens this panel; the blocks the teacher
-    // composed carry a problem quantity that used to be silently discarded at
-    // this seam (docs/math_create_migration_plan.md, enhancement #2). The
-    // producer parks it in window.__alloFluencyPendingConfig just before
-    // opening the panel; this consumes it exactly once, on mount.
-    // Only fields a block actually carries are accepted — quantity, snapped to
-    // this panel's fixed count options, plus operation IF a future producer
-    // sends a valid one. Nothing is parsed out of free-text directives.
+    var _n = useState(null), lastFeedback = _n[0], setLastFeedback = _n[1];
+    var _o = useState('practice'), probeMode = _o[0], setProbeMode = _o[1];
+    var _p = useState('A'), probeForm = _p[0], setProbeForm = _p[1];
+    // Grade for a handed-off standardized administration. The app-wide
+    // gradeLevel prop follows whoever is signed in; a benchmark probe is
+    // administered at the grade the assessor chose, which can differ.
+    var _pg = useState(null), probeGradeOverride = _pg[0], setProbeGradeOverride = _pg[1];
+    // The learner a standardized administration is recorded against. null means
+    // practice, which is recorded against nobody.
+    var _ps = useState(null), probeStudent = _ps[0], setProbeStudent = _ps[1];
+
+    // ── Handoff from a producer that configures this panel ───────────────────
+    // Two producers park a config in window.__alloFluencyPendingConfig and then
+    // open this panel:
+    //   Math Studio       the assessment-plan blocks a teacher composed carry a
+    //                     problem quantity that used to be silently discarded
+    //                     at this seam (docs/math_create_migration_plan.md).
+    //   Assessment Center a standardized benchmark administration: grade, fixed
+    //                     form, and the student it is recorded for. Its own
+    //                     launcher used to drive a host engine whose UI had been
+    //                     migrated away, so the probe never rendered at all.
+    // Every field is validated independently, so a producer that sends only
+    // some of them configures only those. Nothing is parsed out of free text.
+    // Placed after the probe state above because it assigns to those setters.
     React.useEffect(function () {
       function consumePending() {
         var pending = null;
@@ -1163,20 +1178,32 @@
           setProblemCount(snapped);
           applied.push('problemCount');
         }
-        if (applied.length && typeof addToast === 'function') {
-          addToast(tt('math_fluency.builder_handoff_applied', 'Settings from your assessment plan were applied. Review and press Start.'), 'info');
+        // Standardized administration. A handoff may only ever set mode TO
+        // benchmark; it must not silently drop a teacher out of one.
+        var isBenchmark = pending.mode === 'benchmark';
+        if (isBenchmark) { setProbeMode('benchmark'); applied.push('mode'); }
+        if (/^[ABC]$/.test(String(pending.form || ''))) { setProbeForm(String(pending.form)); applied.push('form'); }
+        var handoffGrade = normalizeGrade(pending.grade);
+        if (handoffGrade) { setProbeGradeOverride(handoffGrade); applied.push('grade'); }
+        // Set unconditionally: a later practice handoff must clear the student
+        // a previous benchmark handoff assigned, or the next practice run would
+        // be written into that student's record.
+        var student = typeof pending.student === 'string' ? pending.student.trim() : '';
+        setProbeStudent(isBenchmark && student ? student : null);
+        if (!applied.length) return;
+        if (typeof addToast === 'function') {
+          addToast(isBenchmark
+            ? tt('math_fluency.probe_handoff_applied', 'Fixed-form probe set up. Review the settings, then press Start.')
+            : tt('math_fluency.builder_handoff_applied', 'Settings from your assessment plan were applied. Review and press Start.'), 'info');
         }
       }
       consumePending();
       // The event covers the already-mounted case: if the teacher is ALREADY
-      // in Fluency Probes mode when Math Studio hands off, no remount happens
+      // in Fluency Probes mode when a producer hands off, no remount happens
       // and a mount-only consume would let the slot expire unused.
       window.addEventListener('alloflow:fluency-pending-config', consumePending);
       return function () { window.removeEventListener('alloflow:fluency-pending-config', consumePending); };
     }, []);
-    var _n = useState(null), lastFeedback = _n[0], setLastFeedback = _n[1];
-    var _o = useState('practice'), probeMode = _o[0], setProbeMode = _o[1];
-    var _p = useState('A'), probeForm = _p[0], setProbeForm = _p[1];
     var _q = useState(''), inputError = _q[0], setInputError = _q[1];
     var _r = useState(0), interruptionCount = _r[0], setInterruptionCount = _r[1];
     var _s = useState(loadFactMastery()), factMastery = _s[0], setFactMastery = _s[1];
@@ -1401,6 +1428,9 @@
         mode: config.mode,
         form: config.form,
         grade: config.grade,
+        // Present only on a handed-off standardized administration; the host
+        // writes the record to this learner's probe history on completion.
+        student: config.student || null,
         operation: config.operation,
         difficulty: config.difficulty,
         dcpm: dcpm,
@@ -1532,7 +1562,9 @@
     }, [finishProbe, soundEnabled, addToast, sessionGoal, history]);
 
     var startProbe = useCallback(function () {
-      var normalizedGrade = normalizeGrade(gradeLevel);
+      // A handed-off administration carries its own grade; otherwise follow the
+      // app-wide grade level as before.
+      var normalizedGrade = probeGradeOverride || normalizeGrade(gradeLevel);
       var config;
       var nextProblems;
       if (probeMode === 'benchmark') {
@@ -1545,6 +1577,9 @@
         nextProblems = bank.problems.map(function (prob) { return Object.assign({}, prob, { studentAnswer: null, correct: null, responseMs: null }); });
         config = {
           mode: 'benchmark', form: probeForm, grade: normalizedGrade,
+          // Carried into the result so a completed benchmark can be written to
+          // this learner's probe history. Practice runs leave it null.
+          student: probeStudent || null,
           operation: bank.operation || 'mixed', difficulty: bank.difficulty || 'fixed-form',
           timeLimit: Number(bank.timeLimit) || 120, problemCount: nextProblems.length, adaptivePractice: false, touchKeypad: touchKeypad,
           reducedMotion: reducedMotion, highContrast: highContrast, readAloud: false, calmDisplay: calmDisplay
@@ -1560,7 +1595,7 @@
         };
       }
       beginProbe(nextProblems, config);
-    }, [timeLimit, operation, difficulty, problemCount, gradeLevel, probeMode, probeForm, beginProbe, addToast, adaptivePractice, touchKeypad, reducedMotion, highContrast, readAloud, calmDisplay, speechAvailable]);
+    }, [timeLimit, operation, difficulty, problemCount, gradeLevel, probeMode, probeForm, probeGradeOverride, probeStudent, beginProbe, addToast, adaptivePractice, touchKeypad, reducedMotion, highContrast, readAloud, calmDisplay, speechAvailable]);
 
     var resumeSavedAccuracyFocus = useCallback(function () {
       var restored = sanitizeAccuracyDraft(accuracyDraft, new Date());
@@ -2454,7 +2489,9 @@
     }
 
     // ── Config UI (default state) ──
-    var setupNormalizedGrade = normalizeGrade(gradeLevel);
+    // Must match startProbe's resolution, or the readiness check below would
+    // green-light a bank the run then fails to find.
+    var setupNormalizedGrade = probeGradeOverride || normalizeGrade(gradeLevel);
     var setupGradeBanks = setupNormalizedGrade && window.MATH_PROBE_BANKS ? window.MATH_PROBE_BANKS[setupNormalizedGrade] : null;
     var setupBank = setupGradeBanks ? setupGradeBanks[probeForm] : null;
     var setupBenchmarkReady = probeMode !== 'benchmark' || !!(setupBank && Array.isArray(setupBank.problems) && setupBank.problems.length);
@@ -2490,6 +2527,15 @@
               return h('span', { key: index, style: { padding: '4px 7px', borderRadius: '999px', border: '1px solid ' + (setupBenchmarkReady ? '#fed7aa' : '#fecaca'), background: '#fff', fontSize: '10px', fontWeight: 800 } }, label);
             })
           ),
+          // A handed-off administration is recorded against a named learner, so
+          // the assessor has to be able to see WHO and at WHAT grade before
+          // starting. Getting either wrong writes a score to the wrong record.
+          probeStudent ? h('div', {
+            style: { marginTop: '7px', padding: '5px 8px', borderRadius: '8px', background: '#fff', border: '1px solid #fed7aa', fontSize: '10px', fontWeight: 800, color: '#9a3412' }
+          }, tt('math_fluency.recording_for', 'Recording for {student} at grade {grade}', {
+            student: probeStudent,
+            grade: setupNormalizedGrade || tt('math_fluency.grade_unknown', 'unknown')
+          })) : null,
           h('div', { style: { marginTop: '7px', color: '#64748b', fontSize: '10px', lineHeight: 1.4 } },
             supportLabels.length
               ? tt('math_fluency.supports_on', 'Supports on') + ': ' + supportLabels.join(', ')

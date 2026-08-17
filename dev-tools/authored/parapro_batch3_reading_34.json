@@ -9,7 +9,7 @@
     "choices": [
       "Teaching repair skills helped the theater department reuse costumes and reduce replacement purchases.",
       "The theater department performs its largest production during the spring semester.",
-      "Sorting fabric scraps by color was the only reason students repaired forty-three costumes.",
+      "Sorting the fabric scraps by color was the only reason that students repaired all forty-three costumes.",
       "Volunteers decided that students should stop wearing costumes with buttons."
     ],
     "answerIndex": 0,
@@ -48,7 +48,7 @@
     "choices": [
       "The bridge was made from paper rather than from wood.",
       "She placed braces at the same locations where the first bridge had bent.",
-      "The books used in the second test came from a classroom shelf.",
+      "The books used during the second test all came from a nearby classroom shelf.",
       "She completed both tests before the end of the school day."
     ],
     "answerIndex": 1,
@@ -86,7 +86,7 @@
     "prompt": "Read the passage. During lunch, Amir usually played soccer. On Thursday, however, he carried a field map, a magnifying lens, and a specimen notebook to the greenhouse door. He checked the clock twice while waiting for the ecology mentor to arrive. Which inference is best supported?",
     "choices": [
       "Amir has permanently lost interest in playing soccer.",
-      "The ecology mentor asked Amir to repair the greenhouse clock.",
+      "The ecology mentor had asked Amir to repair the broken greenhouse clock outside.",
       "Amir plans to participate in a scheduled observation activity during lunch.",
       "Amir intends to lend his field equipment to the soccer team."
     ],
@@ -205,7 +205,7 @@
       "To advertise a sale of finished ceramic pieces",
       "To warn students about damage and explain how to handle unfinished work safely",
       "To compare clay sculpture with other forms of art",
-      "To entertain students with a story about a pottery mistake"
+      "To entertain students in the studio with a story about a memorable pottery mistake"
     ],
     "answerIndex": 1,
     "rationale": "The notice identifies ways wet clay can be damaged and gives direct handling rules, so its purpose is to warn and instruct rather than advertise, compare, or entertain.",
@@ -280,7 +280,7 @@
     "difficulty": "developing",
     "prompt": "Read the passage. Before the international food fair, the cafeteria manager placed photographs beside each dish, printed ingredient labels in three languages, and moved the allergy-information binder to the entrance. She also asked servers to practice pointing visitors to the binder. Which inference is best supported?",
     "choices": [
-      "The cafeteria manager expects every visitor to speak three languages.",
+      "The cafeteria manager expects every single visitor to the fair to speak three languages.",
       "The fair will serve only foods that contain common allergens.",
       "Servers have been asked to memorize every ingredient in every dish.",
       "The manager is trying to make food and allergy information accessible to more visitors."
@@ -360,7 +360,7 @@
     "choices": [
       "The platform is visible from a walking path across the river.",
       "A motion camera recorded adult peregrines bringing food to three chicks in a nest on the platform.",
-      "Club members painted the platform before placing it beside the river.",
+      "Club members carefully painted the nesting platform before placing it beside the river last spring.",
       "Several kinds of birds migrate through the region each autumn."
     ],
     "answerIndex": 1,
@@ -476,7 +476,7 @@
     "prompt": "Read the passage. The local museum began offering a quiet hour before regular opening. During that hour, lights remain low, attendance is limited, and visitors receive maps marking calm spaces. Families who had previously avoided crowded exhibits now report visiting more often. Which statement best expresses the main idea?",
     "choices": [
       "The museum's quiet hour reduced barriers for some families who had previously avoided crowded exhibits.",
-      "All museum visitors prefer low lighting and small groups at every time of day.",
+      "All of the museum’s visitors prefer low lighting and small groups at every hour of every single day of the week.",
       "Museum maps are useful only when they identify rooms without exhibits.",
       "The museum shortened its regular hours because families stopped attending."
     ],
@@ -632,7 +632,7 @@
     "prompt": "Read the excerpt. During the first mile of the trip, Lila gripped her ticket so tightly that its edges folded. When she spotted her aunt's red scarf beyond the station gate, her shoulders loosened and she carefully smoothed the ticket on her knee. Which detail most strongly supports the inference that Lila became less anxious?",
     "choices": [
       "After seeing her aunt, Lila's shoulders loosened and she smoothed the crumpled ticket.",
-      "Lila traveled for at least one mile before reaching the station gate.",
+      "Lila had traveled for at least one full mile before finally reaching the station gate outside.",
       "Her aunt wore a red scarf while waiting beyond the gate.",
       "The ticket's edges had folded while Lila held it."
     ],
@@ -672,7 +672,7 @@
     "choices": [
       "To argue that every student should learn the violin",
       "To inform families about eligibility and procedures for borrowing an instrument",
-      "To describe how woodwind and string instruments are manufactured",
+      "To describe in detail how woodwind and string instruments are manufactured and sold",
       "To tell a story about a student's first music lesson"
     ],
     "answerIndex": 1,
@@ -712,7 +712,7 @@
       "Longtime residents agree about every change that occurred in the neighborhood.",
       "Digital maps are more accurate than all photographs and spoken memories.",
       "Students combined interviews and historical materials to create a multilayered record of neighborhood change.",
-      "The neighborhood replaced its shops with a museum devoted only to transportation."
+      "The neighborhood replaced all of its shops with a single new museum devoted only to local transportation history."
     ],
     "answerIndex": 2,
     "rationale": "The passage emphasizes students integrating interviews, images, and mapped locations to represent multiple perspectives on change, which the third choice captures at the right level of generality.",
@@ -866,7 +866,7 @@
     "prompt": "Read the astronomy-night announcement. Friday's program begins at 8:00 p.m. in the east field. It includes a telescope demonstration and a star-map activity. The telescope demonstration will be the evening's most fascinating event. Portable restrooms will be available near the field. Which sentence is presented as an opinion rather than a verifiable fact?",
     "choices": [
       "Friday's program begins at 8:00 p.m. in the east field.",
-      "It includes a telescope demonstration and a star-map activity.",
+      "It includes a telescope demonstration and a guided star-map activity for families.",
       "The telescope demonstration will be the evening's most fascinating event.",
       "Portable restrooms will be available near the field."
     ],
@@ -904,7 +904,7 @@
     "difficulty": "advanced",
     "prompt": "A student repeatedly chooses the catchy opening sentence as a passage's main idea even when later paragraphs develop a different central point. Which paraprofessional response would best preserve the student's reasoning role while building main-idea skill?",
     "choices": [
-      "Tell the student that opening sentences are never important and should always be crossed out.",
+      "Tell the student that opening sentences are never important to a passage and should therefore always be crossed out before reading begins.",
       "Provide the correct main idea before the student rereads so the student can copy it.",
       "Ask the student to count the words in each sentence and select the longest sentence.",
       "Have the student group recurring ideas across paragraphs, propose a statement that covers them, and cite details that support it."
@@ -947,7 +947,7 @@
       "Ask the student to record a specific clue, explain how it connects to the prediction, and revise the prediction if the evidence does not support it.",
       "Accept the prediction because any possible ending is an equally valid inference.",
       "Reveal the story's ending and ask the student to copy the final event into a notebook.",
-      "Shift to a spelling exercise so the unsupported prediction does not need to be discussed."
+      "Shift immediately to an unrelated spelling exercise so that the unsupported prediction never has to be discussed with the student at all during the lesson."
     ],
     "answerIndex": 0,
     "rationale": "An evidence-and-reasoning prompt makes the inference process observable and invites revision based on the text, teaching the student to distinguish a supported inference from a guess.",
@@ -1024,7 +1024,7 @@
     "difficulty": "developing",
     "prompt": "A student understands grade-level text when it is read aloud but frequently loses the correct line when reading a densely printed page independently. Under the teacher's plan, which support should the paraprofessional try first?",
     "choices": [
-      "Replace the assigned text with an unrelated book containing much shorter sentences.",
+      "Replace the assigned text with a completely unrelated book that contains much shorter and much simpler sentences.",
       "Read every page aloud while the student listens without following the print.",
       "Offer a line guide, teach the student to move it after each line, and fade it as tracking becomes consistent.",
       "Ask the student to memorize the page before attempting to read it from print."
@@ -1065,7 +1065,7 @@
     "prompt": "A student writes summaries by copying nearly every detail, including examples and repeated explanations. Which instructional response would best help the student produce a concise, accurate summary?",
     "choices": [
       "Set a faster copying deadline so the student has less time to include details.",
-      "Tell the student to summarize only the final sentence, regardless of what earlier paragraphs explain.",
+      "Tell the student to summarize only the final sentence of the passage, regardless of what any of the earlier paragraphs explain.",
       "Delete half of the copied sentences for the student without discussing why they are unnecessary.",
       "Have the student state each paragraph's gist, combine the essential ideas, and justify why specific examples can be omitted."
     ],
@@ -1105,7 +1105,7 @@
     "prompt": "A science article alternates between threats facing sea turtles and conservation responses to each threat. A student incorrectly arranges the information only by the dates mentioned in examples. Which support would best highlight the article's actual structure?",
     "choices": [
       "Guide the student to place each threat beside its corresponding response in a problem-solution chart and cite signal language from the article.",
-      "Ask the student to copy every date into a longer timeline and ignore the surrounding sentences.",
+      "Ask the student to copy every single date from the article into a much longer timeline and then ignore all of the surrounding explanatory sentences.",
       "Provide a list of sea turtle species and ask the student to alphabetize it.",
       "Tell the student the structure is chronological and praise the first organizer."
     ],
@@ -1144,7 +1144,7 @@
     "difficulty": "developing",
     "prompt": "While reading a geography paragraph, a student stalls at the word transportation and begins guessing from its first letter. Which teacher-directed paraprofessional prompt would most appropriately support accurate word reading?",
     "choices": [
-      "Skip the word permanently because a long word is unlikely to affect paragraph meaning.",
+      "Skip over the word permanently, because a single long word is unlikely to affect the overall meaning of the paragraph for the reader in any noticeable way.",
       "Mark the prefix trans-, root port, and suffix -ation; blend the parts into the whole word; then reread the sentence to check pronunciation and meaning.",
       "Supply an unrelated short word beginning with t so the student can finish quickly.",
       "Ask the student to guess again without looking beyond the first letter."
@@ -1184,7 +1184,7 @@
     "difficulty": "developing",
     "prompt": "A student reads the prose in a science section but skips the diagram caption and cannot explain what the arrows in the diagram represent. Which support would best help the student integrate the two sources of information?",
     "choices": [
-      "Cover the diagram so the student can focus exclusively on memorizing the prose.",
+      "Cover the diagram entirely so that the student can focus exclusively on reading and memorizing the surrounding prose section of the science chapter.",
       "Explain the complete diagram while the student waits for the answer.",
       "Prompt the student to read the caption, trace each labeled arrow, and explain how the diagram adds to a specific sentence in the prose.",
       "Have the student copy the caption three times without viewing the diagram."
@@ -1226,7 +1226,7 @@
     "choices": [
       "Select definition 1 because the first dictionary meaning must fit every sentence.",
       "Select definition 2 because channel is commonly associated with television.",
-      "Combine all three definitions and treat the sentence as having all three meanings at once.",
+      "Combine all three of the dictionary definitions and treat the sentence as carrying all three of those meanings at the very same time as one another.",
       "Notice that channel follows will and is followed by funds toward repairs, then test definition 3 by substituting it and rereading the sentence."
     ],
     "answerIndex": 3,
@@ -1304,7 +1304,7 @@
     "difficulty": "advanced",
     "prompt": "A student can use headings to predict a section's content, but only after the paraprofessional points to each heading and asks what it means. Recent work shows the predictions are usually accurate. What is the best next instructional move?",
     "choices": [
-      "Continue giving every prompt indefinitely because accurate performance proves the prompts are necessary.",
+      "Continue giving every prompt indefinitely, because the student’s accurate performance proves that the prompts themselves are still necessary.",
       "Fade the support by asking the student to preview headings independently, then review the prediction and provide a prompt only when needed.",
       "Stop allowing the student to use headings and require predictions from page numbers alone.",
       "Advance immediately to a much harder text and remove all opportunities for feedback."

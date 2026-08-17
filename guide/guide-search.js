@@ -229,3 +229,82 @@
     start();
   }
 }());
+
+/* Read aloud, per section (2026-08-17).
+ *
+ * Why the device voice and not Kokoro: AlloFlow ships Kokoro for high-quality
+ * on-device speech INSIDE the app, but it is an ~88MB ONNX model plus a
+ * transformers runtime cached in OPFS and driven by a worker. A guide page
+ * whose job is to be readable instantly cannot justify that download, and it
+ * would inherit the truncated-model failure mode. The shipped HTML handouts
+ * already read with window.speechSynthesis for the same reason; this matches.
+ *
+ * Progressive enhancement: no speech API, no buttons, unchanged page.
+ */
+(function () {
+  'use strict';
+  if (!window.speechSynthesis || typeof window.SpeechSynthesisUtterance !== 'function') return;
+  var article = document.querySelector('article.guide-article');
+  if (!article) return;
+  var synth = window.speechSynthesis;
+  var current = null;
+
+  function blocksFor(h2) {
+    var out = [];
+    var n = h2.nextElementSibling;
+    while (n && n.tagName !== 'H2') {
+      if (/^(P|LI|DT|DD|H3|H4|TD|TH|BLOCKQUOTE|FIGCAPTION)$/.test(n.tagName)) out.push(n);
+      else Array.prototype.push.apply(out, n.querySelectorAll('p, li, dt, dd, h3, h4'));
+      n = n.nextElementSibling;
+    }
+    return out.filter(function (el) { return (el.textContent || '').trim().length > 1; });
+  }
+
+  function stop() {
+    if (!current) return;
+    try { synth.cancel(); } catch (e) {}
+    current.blocks.forEach(function (b) { b.classList.remove('is-reading'); });
+    current.btn.textContent = '🔊 Listen';
+    current.btn.setAttribute('aria-label', 'Read this section aloud');
+    current = null;
+  }
+
+  function speakFrom(state) {
+    if (!current || current !== state) return;
+    if (state.idx >= state.blocks.length) { stop(); return; }
+    var el = state.blocks[state.idx];
+    state.blocks.forEach(function (b) { b.classList.remove('is-reading'); });
+    el.classList.add('is-reading');
+    var utter = new window.SpeechSynthesisUtterance((el.textContent || '').trim());
+    utter.onend = function () { state.idx += 1; speakFrom(state); };
+    utter.onerror = function () { stop(); };
+    try { synth.speak(utter); } catch (e) { stop(); }
+  }
+
+  Array.prototype.forEach.call(article.querySelectorAll('h2'), function (h2) {
+    // Prose sections only. The in-page search panel is an h2 inside the same
+    // article, and a "Listen" button on a search box reads the form labels
+    // aloud — caught by listing which headings got buttons, 2026-08-17.
+    if (h2.closest('.guide-search, nav, form, [data-guide-search]')) return;
+    var blocks = blocksFor(h2);
+    if (!blocks.length) return;
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'listen-btn no-print';
+    btn.textContent = '🔊 Listen';
+    btn.setAttribute('aria-label', 'Read this section aloud');
+    btn.addEventListener('click', function () {
+      var wasThis = current && current.btn === btn;
+      stop();
+      if (wasThis) return;
+      current = { btn: btn, blocks: blocks, idx: 0 };
+      btn.textContent = '⏹ Stop';
+      btn.setAttribute('aria-label', 'Stop reading this section');
+      speakFrom(current);
+    });
+    h2.appendChild(btn);
+  });
+
+  window.addEventListener('beforeunload', function () { try { synth.cancel(); } catch (e) {} });
+  document.addEventListener('visibilitychange', function () { if (document.hidden) stop(); });
+}());

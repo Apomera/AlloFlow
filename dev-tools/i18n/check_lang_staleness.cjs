@@ -46,7 +46,11 @@ const QUIET = argv.includes('--quiet');
 //                   count drops, the watermark auto-lowers so improvements lock in.
 const GATE_GUARDED = argv.includes('--gate-guarded');
 const RATCHET = argv.includes('--ratchet');
-const GUARDED = ['sidebar', 'tools', 'glossary', 'visuals', 'universal', 'launch_pad', 'storage', 'alignment_graph'];
+// X4 2026-08-17: + 'guided' (the recommended entry route for new teachers — the
+// single highest-visibility namespace for non-English users) and 'hints' (the
+// renamed Messages log). Both verified stale-free at addition time, same
+// contract as the original eight: keep them clean, never delist.
+const GUARDED = ['sidebar', 'tools', 'glossary', 'visuals', 'universal', 'launch_pad', 'storage', 'alignment_graph', 'guided', 'hints'];
 const WATERMARK_PATH = path.join(__dirname, 'lang_staleness_watermark.json');
 
 if (!fs.existsSync(L.BASELINE_PATH)) {

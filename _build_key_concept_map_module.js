@@ -60,7 +60,7 @@ const outputCode =
 `(function() {
 'use strict';
   // WCAG 2.1 AA: respect prefers-reduced-motion + keep slate-600 AA contrast
-  if (!document.getElementById("key-concept-map-module-a11y")) { var _s = document.createElement("style"); _s.id = "key-concept-map-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; }"; document.head.appendChild(_s); }
+  if (!document.getElementById("key-concept-map-module-a11y")) { var _s = document.createElement("style"); _s.id = "key-concept-map-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }"; document.head.appendChild(_s); }
 if (window.AlloModules && window.AlloModules.KeyConceptMapModule) { console.log('[CDN] KeyConceptMapModule already loaded, skipping'); return; }
 var React = window.React || React;
 var useRef = React.useRef;

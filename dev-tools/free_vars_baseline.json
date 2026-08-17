@@ -308,5 +308,8 @@
     "Pencil",
     "RefreshCw",
     "Users"
+  ],
+  "student_analytics_module.js": [
+    "Chart"
   ]
 }

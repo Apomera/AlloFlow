@@ -13,4 +13,5 @@ Generated: 2026-08-16T22:55:46.769Z
 
 > This is not ETS or NPBEA approval, independent practicing-school-leader validation, field testing, psychometric calibration, a scaled-score model, legal or personnel advice, an employment or licensure decision, or an emergency directive.
 
+
 - Independent-batch audit: 200 original source questions plus 100 assistant-authored independent practice questions produce 200 distinct independent content kernels. 200 additional activities remain guided review only. 300 new independent questions remain to reach 500.

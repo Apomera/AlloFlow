@@ -24,11 +24,14 @@ describe('voice command coverage regression gate', () => {
     expect(report.check?.ok).toBe(true);
     expect(report.registryCommands).toBeGreaterThanOrEqual(174);
     expect(report.helpKeySurfaces).toBeGreaterThanOrEqual(545);
-    // 327 as of 2026-08-16 evening: six new surfaces landed in one day (the AI
-    // Backend Canvas card, brainstorm discussion/jigsaw modes, doc-builder block
-    // suggestions, collapsed header jump). The audit tool itself says to treat
-    // this list as a menu, not a debt register.
-    expect(report.uncoveredCount).toBeLessThanOrEqual(327);
+    // 326 as of 2026-08-17 (X6): the 2026-08-16 additions got their doors —
+    // use_gemini_canvas, open_brainstorm_modes, open_discussion_builder,
+    // open_jigsaw_builder, jump_to_lesson_plan, open_block_suggestions
+    // (reachability-pinned in tests/new_surface_commands_reachability.test.js).
+    // One new surface joined: sidebar_ai_setup_notice — itself a doorway whose
+    // destination already has two commands (open_ai_settings, use_gemini_canvas).
+    // The audit tool itself says to treat this list as a menu, not a debt register.
+    expect(report.uncoveredCount).toBeLessThanOrEqual(326);
   });
 
   it('fails when a surface becomes newly uncovered', () => {

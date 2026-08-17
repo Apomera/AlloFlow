@@ -19,6 +19,20 @@ Work product stays in the browser's own storage on the device that created it (l
 
 The full data-path table, including live sessions, exports, QR codes, and LMS launches, is in [Privacy and responsible AI](07-privacy-and-responsible-ai.md); it is written to be reviewed line by line with a privacy officer.
 
+## The one exception: the educator evaluation portal
+
+Everything above describes the default. There is exactly one part of AlloFlow where a district deliberately stands up a server-side store, and it is worth knowing about because it holds **personnel** records: the Educator Evaluation portal. It is optional. Without it, the evaluation tool behaves like every other tool and keeps records in the signed-in browser profile on one device.
+
+When a district does want shared, authenticated evaluation records, an administrator deploys a small Apps Script project **into a district-owned Google account, never a personal one**:
+
+- **It runs in your tenant, not ours.** The workspace file, its index spreadsheet, and released summary documents live in a Drive folder owned by your deployment account. The server code makes **no external network calls at all**, so nothing leaves your Google Workspace. That is what lets it sit under the Workspace for Education agreement you already have.
+- **It fails closed.** Access is limited to accounts on your domain that an administrator has added, deployed as *Execute as: Me* with *Who has access: users in your domain*. The server, not the link, decides each person's role and which records they see. Someone without a district account gets nothing.
+- **Storage is private by verified default.** Setup sets the repository folder and files to private and then checks that it took effect, refusing to continue if it cannot confirm it.
+- **Notifications carry no content.** Email says only that there was portal activity. Ratings, names, and evidence stay inside the authenticated portal. Released summaries are Google Docs shared view-only to the one educator they belong to.
+- **The legal frame is personnel, not student.** FERPA governs student education records and is largely the wrong lens here. What governs is your state's personnel-records law, the collective bargaining agreement, and district retention and discoverability policy. Keep student names out of observation evidence and that separation holds.
+
+Things you can check yourself: `verifyDeploymentIdentity()` confirms the deployment identity, `getPortalSetupHealth()` reports the domain lock and configuration state, and `doGet?api=health` reveals only service status to an already-authorized member. The package and its deployment README are in `apps_script/educator_evaluation/`, and the operating manual is the [Educator Growth & Evaluation user manual](https://alloflow-cdn.pages.dev/educator-evaluation-manual).
+
 ## The AI question, which is really three options
 
 AI features only work when a backend is configured, and the district controls which:
@@ -42,6 +56,7 @@ Teachers are instructed throughout this guide to use de-identified content with 
 1. Open the app on a managed device with your standard filtering and confirm it loads and a sample tool runs.
 2. Watch the network tab during generation with your chosen backend and confirm traffic goes only where this chapter says.
 3. Review the repository if your process requires code review; the license permits it and the build is reproducible from source.
+4. If you deploy the evaluation portal, grep its `Code.gs` for `UrlFetchApp` before you approve it. There are zero occurrences, which is the claim that nothing leaves your tenant, and it takes one search to confirm rather than trust.
 
 ## The two-sentence version for a busy director
 

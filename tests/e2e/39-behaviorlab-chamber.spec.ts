@@ -110,6 +110,21 @@ test.describe('colour contrast', () => {
     ['expanded panels', Object.assign({}, RUNNING, { blShowBeyond: true, blShowFunctions: true, blMatrixIdx: 'spPlus' })],
     ['schedule sleuth', Object.assign({}, RUNNING, { blShowSleuth: true, blSleuthIdx: 0, blSleuthSeed: 19, blSleuthRounds: 1 })],
     ['sleuth answered', Object.assign({}, RUNNING, { blShowSleuth: true, blSleuthIdx: 2, blSleuthSeed: 19, blSleuthRounds: 2, blSleuthAnswered: true, blSleuthPick: 0 })],
+    // Everything below had never been graded. The original list was seven states
+    // chosen while fixing seven states — the same blind spot that let 41
+    // untranslated strings sit inside a green i18n gate.
+    ['level complete', Object.assign({}, RUNNING, { blPhase: 'complete', blLevelScore: 10, blQuizAnswered: true, blQuizSelected: 1, blQuizCorrect: true })],
+    ['level complete, wrong answer', Object.assign({}, RUNNING, { blPhase: 'complete', blQuizAnswered: true, blQuizSelected: 0, blQuizCorrect: false })],
+    ['aba timeline', Object.assign({}, RUNNING, { blShowTimeline: true })],
+    ['quick reference', Object.assign({}, RUNNING, { blShowQuickRef: true })],
+    ['glossary', Object.assign({}, RUNNING, { blShowGlossary: true })],
+    ['operant vs classical', Object.assign({}, RUNNING, { blShowCondCompare: true })],
+    ['schedule comparison', Object.assign({}, RUNNING, { blSchedCanvas: true, blSchedTick: 200 })],
+    ['behaviour inquiry', Object.assign({}, RUNNING, { blShowInquiry: true })],
+    ['chain panel (L7)', Object.assign({}, RUNNING, { blLevel: 7, blChainStep: 2, blChainHistory: [4, 11] })],
+    ['dro panel (L8)', Object.assign({}, RUNNING, { blLevel: 8, blDroTimer: 3, blDroSuccesses: 2 })],
+    ['pavlov panel (L9)', Object.assign({}, RUNNING, { blLevel: 9, blCcPhase: 'extinction', blAssocStrength: 24, blCcExtTrials: 2 })],
+    ['3d chamber', Object.assign({}, RUNNING, { blChamberView: '3d', bl3dSel: 'lever' })],
   ];
 
   for (const theme of ['default', 'dark', 'contrast'] as Theme[]) {
@@ -122,6 +137,20 @@ test.describe('colour contrast', () => {
       });
     }
   }
+
+  test('every level, not just the ones the surface list happens to mount', async ({ page }) => {
+    // The surface list above mounts a handful of levels, and that is how two
+    // failing accent colours sat green for a whole session: the levels that used
+    // them were never rendered. Nine mounts in one test rather than nine more
+    // entries x three themes, which would double the suite's runtime.
+    const bad = [];
+    for (let lvl = 1; lvl <= 9; lvl += 1) {
+      await mount(page, Object.assign({}, RUNNING, { blLevel: lvl }), 'dark');
+      const hits = await contrastViolations(page);
+      for (const h of hits) bad.push(`L${lvl}: ${h.why}`);
+    }
+    expect(bad, bad.length + ' contrast violation(s) across the nine levels:\n  ' + bad.join('\n  ')).toEqual([]);
+  });
 
   test('the locked level badges are dimmed but still legible', async ({ page }) => {
     // opacity-50 on the badge tile put its label at 4.33:1. The lock glyph and the
@@ -281,6 +310,50 @@ test.describe('level 4 actually runs an FR-3 schedule', () => {
         .find((t) => /\d\s*\/\s*3/.test(t) && /press/i.test(t)) || null);
     expect(text, 'no ratio readout found').not.toBeNull();
     expect(text).toContain('2 / 3');
+  });
+});
+
+test.describe('Level 2 shapes the behaviour it names', () => {
+  test('no lever-proximity meter on the shaping level', async ({ page }) => {
+    // Level 2's target is a spin and its lesson is shaping one. It used to show a
+    // lever-proximity meter and a dashed line to the lever, and its automatic
+    // assist boosted lever-approach — the tool pushing the subject toward the
+    // lever on the one level where the lever is not the point.
+    await mount(page, Object.assign({}, RUNNING, { blLevel: 2, blMouseAction: 'turnRight' }), 'dark');
+    const meter = await page.evaluate(() =>
+      [...document.querySelectorAll('span')].some((e) => (e.textContent || '').includes('Lever proximity')));
+    expect(meter, 'the shaping level still measures lever proximity').toBe(false);
+  });
+
+  test('level 1 still has it, because there the lever IS the target', async ({ page }) => {
+    // The other half: gating on the target must not silently remove the meter from
+    // the level that legitimately needs it.
+    await mount(page, Object.assign({}, RUNNING, { blLevel: 1 }), 'dark');
+    const meter = await page.evaluate(() =>
+      [...document.querySelectorAll('span')].some((e) => (e.textContent || '').includes('Lever proximity')));
+    expect(meter, 'level 1 lost its proximity meter').toBe(true);
+  });
+
+  test('reinforcing an approximation makes the next step more likely', async ({ page }) => {
+    // Spin starts at weight 1 in ~110. Without this the student reinforces a turn
+    // and then waits ~100 ticks for a spin to happen by chance.
+    await mount(page, Object.assign({}, RUNNING, {
+      blLevel: 2, blLastAction: 'turnRight', blMouseAction: 'turnRight',
+    }), 'dark');
+    const before = await page.evaluate(() => ((window as any).__toolData.blWeights || {}).halfTurn || 3);
+    await page.evaluate(() => {
+      const fn = (window as any)._blReinforceFn;
+      if (typeof fn === 'function') fn();
+    });
+    await page.waitForTimeout(300);
+    const after = await page.evaluate(() => {
+      const w = (window as any).__toolData.blWeights || {};
+      return { halfTurn: w.halfTurn, turnRight: w.turnRight, approachLever: w.approachLever };
+    });
+    expect(after.turnRight, 'the reinforced behaviour was not strengthened').toBeGreaterThan(10);
+    expect(after.halfTurn, 'the next approximation was not made more likely').toBeGreaterThan(before);
+    // And the lever must NOT have been quietly boosted on this level.
+    expect(after.approachLever, 'the shaping level still boosted lever approach').toBeLessThanOrEqual(10);
   });
 });
 
@@ -513,21 +586,27 @@ test.describe('3D chamber', () => {
         d.blMouseX = x; d.blMouseY = y; d.blTargetX = x; d.blTargetY = y;
         (window as any).__rerender();
       }, { x, y });
-      let moved = before === null;
+      // `before === null` means the chip was not positioned yet. Treating that as
+      // "already moved" skipped the movement gate entirely and let two starved
+      // samples look like arrival — the exact hole the previous fix was meant to
+      // close. A floor on elapsed polling covers it: whatever the baseline, this
+      // cannot return before the lerp has had time to run.
+      let moved = false;
       let last: number | null = null;
       let stable = 0;
+      const MIN_POLLS = 8;                       // 8 x 150ms
       for (let i = 0; i < 80; i += 1) {
         await page.waitForTimeout(150);
         const now = await chipLeft();
         if (now === null) { last = null; stable = 0; continue; }
         if (!moved) {
-          if (before !== null && Math.abs(now - before) > 2) moved = true;
+          if (before === null || Math.abs(now - before) > 2) moved = true;
           last = now;
           continue;
         }
         stable = (last !== null && Math.abs(now - last) < 0.5) ? stable + 1 : 0;
         last = now;
-        if (stable >= 2) return;
+        if (stable >= 2 && i >= MIN_POLLS) return;
       }
       throw new Error('the subject never settled at its target');
     };

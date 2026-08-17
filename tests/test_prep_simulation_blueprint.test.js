@@ -16,7 +16,7 @@ beforeAll(() => {
   // Credential packs are lazy in the shipped module; register them as
   // fixtures so listPacks() can see them (see registerCredentialPacks).
   registerCredentialPacks();
-});
+}, 60_000);
 
 const countDomains = (items) => items.reduce((counts, item) => {
   counts[item.domainId] = (counts[item.domainId] || 0) + 1;

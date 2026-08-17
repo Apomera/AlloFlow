@@ -10,7 +10,7 @@
       "Making volunteer information easier to find and understand increased participation.",
       "Most community-center volunteers prefer tasks that take an entire day.",
       "The main entrance was moved to a hallway near the bulletin board.",
-      "Staff members stopped using printed cards to advertise volunteer tasks."
+      "Staff members had stopped using printed index cards entirely to advertise volunteer tasks."
     ],
     "answerIndex": 0,
     "rationale": "The passage connects two access improvements (greater visibility and clearer time information) with increased sign-ups. The first choice states that central relationship without adding an unsupported preference or reversing what staff did.",
@@ -46,7 +46,7 @@
     "difficulty": "developing",
     "prompt": "A science club claims that planting native flowers beside the athletic field attracted more pollinators. Which evidence most directly supports the claim?",
     "choices": [
-      "The flowers were purchased from a nursery located twelve miles from the school.",
+      "The flowers were purchased from a commercial nursery located about twelve miles away from the school building itself last spring.",
       "Weekly observations recorded an average of 6 bee and butterfly visits before planting and 19 visits after the flowers bloomed.",
       "Club members selected flowers with yellow, purple, and white blossoms.",
       "The athletic field is used for practices during three seasons of the year."
@@ -85,7 +85,7 @@
     "difficulty": "developing",
     "prompt": "Read the passage. After rehearsal, Priya noticed a padded instrument case beneath a row of empty seats. She checked the name on its tag, carried the unopened case to the music office, and showed the tag to the secretary. Which inference is best supported?",
     "choices": [
-      "Priya has decided to stop participating in music classes.",
+      "Priya has already decided to stop participating in the school music classes.",
       "Priya is purchasing a new instrument from the secretary.",
       "Priya is reporting found music equipment that may belong to someone else.",
       "Priya is decorating a case for an upcoming concert."
@@ -165,7 +165,7 @@
     "choices": [
       "As a comparison showing a similarity and a difference between two growing spaces",
       "As a sequence of steps for constructing a greenhouse",
-      "As a problem about irrigation followed by several unrelated solutions",
+      "As a problem about irrigation followed by several completely unrelated solutions to it",
       "As an argument that all school gardens should be moved indoors"
     ],
     "answerIndex": 0,
@@ -205,7 +205,7 @@
       "To explain how thunderstorms form over the school grounds",
       "To give safety directions for responding to lightning and thunder",
       "To compare several kinds of outdoor athletic equipment",
-      "To announce the final results of a canceled sporting event"
+      "To announce the final results of a recently canceled sporting event"
     ],
     "answerIndex": 1,
     "rationale": "The notice uses commands to state what people should do, where they should shelter, what they should avoid, and when they may return. Its purpose is therefore to provide emergency safety procedures.",
@@ -241,7 +241,7 @@
     "difficulty": "developing",
     "prompt": "Read the passage. Students studying neighborhood temperatures first mapped places with little tree cover. They presented the map to a local association, helped plant twelve young trees at approved sites, and created a watering schedule. A year later, all twelve trees were growing and residents had volunteered to care for additional plantings. Which is the best summary?",
     "choices": [
-      "Residents asked students to measure the height of every mature tree in the neighborhood.",
+      "Residents asked the students to measure the exact height of every mature tree in the whole neighborhood.",
       "A local association replaced the students' map with a watering schedule.",
       "Students used their research to begin a tree-planting effort that gained continuing community support.",
       "The twelve young trees failed because none of the approved sites received water."
@@ -282,7 +282,7 @@
     "choices": [
       "Mateo is timing a race through the hallway.",
       "Mateo is measuring the hallway for permanent walls.",
-      "Mateo is hiding the cones from people attending the performance.",
+      "Mateo is deliberately hiding the cones from everyone attending the evening performance.",
       "Mateo is organizing accessible waiting or entry locations for audience members."
     ],
     "answerIndex": 3,
@@ -358,7 +358,7 @@
     "difficulty": "developing",
     "prompt": "A facilities report claims that applying reflective film to west-facing classroom windows reduced afternoon glare. Which evidence most directly supports the claim?",
     "choices": [
-      "The installer used three rolls of film during a weekend work period.",
+      "The installer used up three separate rolls of film during a single weekend work period at the school site over the two full days.",
       "Teacher glare reports fell from 18 in the month before installation to 3 in the month after installation in the treated rooms.",
       "The classrooms contain desks of several different sizes.",
       "West-facing windows receive light during part of the school day."
@@ -400,7 +400,7 @@
       "Every sentence is an opinion because the announcement describes a club.",
       "Every sentence is a fact because numbers appear in the announcement.",
       "The match and participant counts are factual claims, while \"most exciting\" is an opinion.",
-      "The match count is an opinion, while the claim about excitement is a measurable fact."
+      "The match count is only an opinion, while the claim about the excitement is a measurable fact."
     ],
     "answerIndex": 2,
     "rationale": "The counts can be checked against schedules or participation records, making them verifiable factual claims. Calling the club the most exciting expresses a value judgment that depends on personal preference.",
@@ -438,7 +438,7 @@
     "choices": [
       "October had the greatest combined collection weight.",
       "Paper collection increased during every month shown.",
-      "September and December had equal can-collection weights.",
+      "September and December both recorded exactly the same can-collection weights during the drive.",
       "November had the greatest paper collection, while December had the greatest can collection."
     ],
     "answerIndex": 3,
@@ -476,7 +476,7 @@
     "prompt": "Read the passage. At low tide, water left in a tide pool can warm quickly and become saltier as it evaporates. Some snails close their shells to conserve moisture, while small crabs move beneath cool rocks until the tide returns. What is the passage's primary purpose?",
     "choices": [
       "To explain how several tide-pool animals respond to changing conditions",
-      "To argue that all crabs should live far from the ocean",
+      "To argue that all hermit crabs ought to live far away from the open ocean",
       "To give step-by-step directions for collecting snails",
       "To compare the sizes of every animal found on a beach"
     ],
@@ -632,7 +632,7 @@
     "prompt": "Read the passage. On foggy mornings, tiny bumps on the backs of some desert beetles catch water droplets. The droplets run along narrow channels toward the beetles' mouths. This adaptation allows the beetles to drink in places where rain is rare. Which statement best expresses the main idea?",
     "choices": [
       "Some desert beetles use specialized body surfaces to collect water from fog.",
-      "All desert insects must travel to rivers each morning to find water.",
+      "All desert insects must travel to the distant rivers each morning to find water.",
       "Fog causes deserts to receive more annual rain than forests receive.",
       "Desert beetles dig channels in the ground to carry water to plants."
     ],
@@ -672,7 +672,7 @@
     "choices": [
       "The eggs rest in shallow scrapes on the beach.",
       "The adults take turns shading the eggs while the other bird feeds.",
-      "Midday sunlight can raise the temperature of the nest.",
+      "Midday sunlight can noticeably raise the internal temperature of the nest.",
       "The nesting area consists of open sand."
     ],
     "answerIndex": 1,
@@ -712,7 +712,7 @@
       "Visits increased on all three trails from May to June.",
       "Lake Path had the greatest increase in visits.",
       "Visits rose on North Loop and East Ridge but fell on Lake Path.",
-      "East Ridge had more visits than North Loop in both months."
+      "East Ridge had more total visits than North Loop in both of the months."
     ],
     "answerIndex": 2,
     "rationale": "North Loop rises from 140 to 185 visits and East Ridge rises from 90 to 120, while Lake Path falls from 160 to 150. The keyed statement accurately describes all three changes.",
@@ -749,7 +749,7 @@
     "prompt": "Read the passage. At closing time, Leila found a library book on the return cart with a damp cover. She photographed its condition, slipped absorbent sheets between the wet pages, placed it flat in a tray marked \"Do not shelve,\" and notified the librarian. Which inference is best supported?",
     "choices": [
       "Leila is preparing the book for a decorative display.",
-      "Leila is hiding the book so that a borrower will avoid a fine.",
+      "Leila is hiding the library book so that another borrower will manage to avoid a fine.",
       "Leila plans to discard every book on the return cart.",
       "Leila is protecting a damaged book until library staff can decide the next steps."
     ],
@@ -790,7 +790,7 @@
       "As a sequence showing how to construct a coral reef",
       "As a problem followed by one proposed solution",
       "As a general statement followed by several examples of reefs' importance",
-      "As a comparison of freshwater and saltwater habitats"
+      "As a direct comparison of freshwater and saltwater habitats and their species"
     ],
     "answerIndex": 2,
     "rationale": "The first sentence states the general point that reefs have broad importance despite their limited area. The next sentence supports that point with ecological and human examples, rather than presenting a sequence, a single solution, or a habitat comparison.",
@@ -867,7 +867,7 @@
     "choices": [
       "Every month before the route revision had the same on-time percentage.",
       "The route revision caused every rider to arrive home earlier than before.",
-      "Reliability was already improving steadily for three months before January.",
+      "Reliability had already been improving steadily for at least three full months before January, which fully explains the entire change on its own without any other factor.",
       "On-time performance was higher in the two months after January than in the months shown before the revision, though the sources alone do not prove causation."
     ],
     "answerIndex": 3,
@@ -905,7 +905,7 @@
     "prompt": "During a teacher-planned decoding lesson, a student reads stop as sop, plan as pan, and frog as fog. Which paraprofessional response would most directly address the pattern in the student's errors?",
     "choices": [
       "Model saying both consonant sounds in each initial blend and blending them into the whole word, then have the student reread while pointing to both opening letters.",
-      "Ask the student to memorize the three complete words from flash cards without examining their letter patterns.",
+      "Ask the student to memorize all three of the complete words from the flash cards, without ever examining the letter patterns that the three words happen to share here.",
       "Explain the meanings of stop, plan, and frog and then read the remainder of the passage aloud for the student.",
       "Practice identifying only the final consonant sound in each word before moving to an unrelated list."
     ],
@@ -946,7 +946,7 @@
     "choices": [
       "Tell students the article's conclusion and ask them to copy it before reading.",
       "Show the title and a bridge photograph, then invite students to share what they have noticed about movement in bridges or other structures.",
-      "Skip the title and have students define every unfamiliar word from the final paragraph.",
+      "Skip the title entirely and have students define every unfamiliar word taken from the final paragraph of the article before reading any of it.",
       "Read the entire article aloud and summarize each section before students see the text."
     ],
     "answerIndex": 1,
@@ -986,7 +986,7 @@
     "choices": [
       "Which sentence has the greatest number of words?",
       "What do the details about floodwater, animal habitat, and water filtration together show about why wetlands matter?",
-      "Can you copy the first sentence exactly as it appears in the passage?",
+      "Can you copy out the very first sentence exactly as it appears in the passage that you have only just finished reading?",
       "Which wetland animal would make the most interesting classroom pet?"
     ],
     "answerIndex": 1,
@@ -1028,7 +1028,7 @@
       "The student needs to memorize more dictionary definitions before reading aloud.",
       "The passage should be replaced because any pause proves the text is too difficult.",
       "Word recognition is largely accurate, while phrasing at meaningful boundaries and attention to punctuation need support.",
-      "The student understands every idea because most individual words were pronounced correctly."
+      "The student clearly understands every idea in the passage, because most of the individual words were pronounced correctly aloud."
     ],
     "answerIndex": 2,
     "rationale": "The observation distinguishes accurate word reading from difficulties with prosody, phrase boundaries, and question punctuation. That specific, evidence-based record is more useful than an unsupported conclusion about vocabulary, text difficulty, or comprehension.",
@@ -1068,7 +1068,7 @@
     "choices": [
       "Guess from the word's length and continue without checking.",
       "Copy the entire page so the definition will be easier to remember.",
-      "Wait until the end of the unit and ask another student for the answer.",
+      "Wait until the very end of the unit and then simply ask another student in the class for the correct answer instead.",
       "Use the bold print to match sediment to its entry in the glossary box, then reread the sentence with that meaning."
     ],
     "answerIndex": 3,
@@ -1108,7 +1108,7 @@
     "choices": [
       "Ask students to compare authorship, purpose, evidence, date, and transparency, then explain which source better supports each claim.",
       "Tell students that the page with more photographs must be the more accurate source.",
-      "Have students accept both pages because any information posted online has already been verified.",
+      "Have students accept both of the pages, because any information that has been posted online anywhere has already been carefully verified.",
       "Direct students to choose the shorter page so they can finish the assignment more quickly."
     ],
     "answerIndex": 0,
@@ -1145,7 +1145,7 @@
     "difficulty": "advanced",
     "prompt": "A student misreads the sentence \"When Tessa called June after she reached the station, June was already on the bus\" and assumes that she clearly refers to June. Which paraprofessional prompt best addresses the problem?",
     "choices": [
-      "Read only the word station several times until the sentence seems clearer.",
+      "Read only the word station over and over several times until the surrounding sentence begins to seem clearer to the student who is reading it.",
       "Identify both possible people the pronoun she could name and look for additional context before deciding whether the reference is clear.",
       "Replace every name in the sentence with the same pronoun.",
       "Ignore the pronoun because pronouns never affect a sentence's meaning."
@@ -1185,7 +1185,7 @@
     "difficulty": "developing",
     "prompt": "A student reads, \"The hikers rested on the bank before crossing the stream,\" and says bank must mean a place that keeps money. Which response would best help the student determine the intended meaning?",
     "choices": [
-      "Tell the student to use the first dictionary meaning every time a word has multiple meanings.",
+      "Tell the student to use the very first dictionary meaning listed every single time that a word happens to have multiple possible meanings.",
       "Ask the student to skip the sentence because unfamiliar meanings cannot be inferred.",
       "Have the student reread the clues hikers and stream, substitute \"land beside the water,\" and check whether the sentence makes sense.",
       "Explain that bank is a spelling error and should always be replaced with bench."
@@ -1226,7 +1226,7 @@
     "prompt": "A student needs to find every page in a social-studies textbook that discusses the Erie Canal, but the table of contents lists only broad chapter titles. Which support should the paraprofessional provide first?",
     "choices": [
       "Read every chapter aloud until the phrase Erie Canal appears.",
-      "Choose the chapter with the shortest title and search only that chapter.",
+      "Choose whichever chapter happens to have the shortest title and then search only within that one chapter.",
       "Look at the copyright page for the name of the printing company.",
       "Model locating Erie Canal alphabetically in the index and using the listed page numbers and subentries."
     ],
@@ -1267,7 +1267,7 @@
       "Provide a short numbered checklist with matching picture cues and ask the student to point to each completed step before continuing.",
       "Complete the preparation steps for the student each time so the activity moves faster.",
       "Remove the student's painting materials without discussing the directions.",
-      "Add several unrelated cleanup rules to the spoken directions and repeat all of them more quickly."
+      "Add several unrelated cleanup rules to the spoken directions and then repeat all of them again much more quickly than you did before."
     ],
     "answerIndex": 0,
     "rationale": "A concise visual sequence reduces memory demands, preserves the order in the written directions, and gives the student a way to self-monitor. It supports independent completion rather than taking over the task or increasing language load.",
@@ -1303,7 +1303,7 @@
     "difficulty": "advanced",
     "prompt": "A school article says participation in breakfast increased because serving began fifteen minutes earlier in March. A graph shows participation rose in January, stayed level in February and March, and rose again in April. Which teacher-directed prompt would best help a student integrate the sources critically?",
     "choices": [
-      "Which source has the brighter colors, and why does that make its conclusion correct?",
+      "Which of the two sources uses the brighter colors on its charts, and why does that make its conclusion the correct one to rely on here?",
       "What trend does the graph show before, during, and after March, and how much of the article's causal claim does that timeline support?",
       "Can you copy the article's explanation without examining the graph?",
       "Which breakfast food do you personally prefer?"

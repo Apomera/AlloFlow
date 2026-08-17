@@ -939,40 +939,40 @@ function UniversalSettingsPanel(props) {
                                                 certification or using them for high-stakes decisions is out of bounds. */}
                                             <p className="text-[10px] leading-snug text-cyan-900/80">
                                                 {(localStandardsManifest && localStandardsManifest.attribution) || 'Standards data: Learning Commons Knowledge Graph (CC BY 4.0).'}{' '}
-                                                Matches are alignment evidence to support educator judgment — not official certification, and not for grading, placement, or evaluation.
+                                                {t('standards_finder.evidence_disclaimer') || 'Matches are alignment evidence to support educator judgment, not official certification, and not for grading, placement, or evaluation.'}
                                             </p>
                                             {localResolution && localResolution.status === 'resolved' && localResolution.match && (
                                                 <div role="status" className="rounded border border-emerald-200 bg-white p-2 text-[11px] text-slate-700">
-                                                    <div className="font-bold text-emerald-800">Exact local match: {localResolution.match.code}</div>
+                                                    <div className="font-bold text-emerald-800">{t('standards_finder.exact_match', { code: localResolution.match.code }) || ('Exact local match: ' + localResolution.match.code)}</div>
                                                     <div className="mt-0.5">{localResolution.match.label || localResolution.match.text}</div>
                                                     <button type="button"
                                                         onClick={() => handleUseResolvedStandard && handleUseResolvedStandard(localResolution)}
                                                         disabled={targetStandards.length > 0 || typeof handleUseResolvedStandard !== 'function'}
                                                         className="mt-2 rounded bg-emerald-700 px-2 py-1 font-bold text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50"
                                                     >
-                                                        Use resolved standard
+                                                        {t('standards_finder.use_resolved') || 'Use resolved standard'}
                                                     </button>
-                                                    {targetStandards.length > 0 && <div className="mt-1 text-amber-800">Remove the current target standard before using a resolved local record.</div>}
+                                                    {targetStandards.length > 0 && <div className="mt-1 text-amber-800">{t('standards_finder.remove_target_first') || 'Remove the current target standard before using a resolved local record.'}</div>}
                                                 </div>
                                             )}
                                             {localResolution && localResolution.status === 'resolved' && localResolution.match && surpriseAi && (
                                                 <div className="rounded border border-violet-200 bg-violet-50/70 p-2 text-[11px] text-slate-700">
                                                     <div className="flex items-center justify-between gap-2">
-                                                        <span className="font-bold text-violet-900">Surprise me: lessons in this learning space</span>
+                                                        <span className="font-bold text-violet-900">{t('standards_finder.surprise_heading') || 'Surprise me: lessons in this learning space'}</span>
                                                         <button type="button" onClick={runSurpriseMe} disabled={surpriseState === 'loading'}
                                                             className="rounded bg-violet-700 px-2 py-1 font-bold text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50">
-                                                            {surpriseState === 'loading' ? 'Proposing…' : surpriseState === 'ready' ? 'Propose again' : '✨ Propose 3 directions'}
+                                                            {surpriseState === 'loading' ? (t('standards_finder.proposing') || 'Proposing…') : surpriseState === 'ready' ? (t('standards_finder.propose_again') || 'Propose again') : (t('standards_finder.propose_3_sparkle') || '✨ Propose 3 directions')}
                                                         </button>
                                                     </div>
                                                     {surpriseState === 'ready' && surpriseHood && (
-                                                        <p className="mt-1 text-violet-900">Graph context: {surpriseHood.prerequisites.length} prerequisite(s), {surpriseHood.leadsTo.length} next, {surpriseHood.related.length} related{surpriseHood.dataset && surpriseHood.dataset.provider ? ' — ' + surpriseHood.dataset.provider : ''}. Directions are AI proposals grounded in these source edges, for educator judgment — not certification.</p>
+                                                        <p className="mt-1 text-violet-900">{t('standards_finder.graph_context', { prereq: surpriseHood.prerequisites.length, next: surpriseHood.leadsTo.length, related: surpriseHood.related.length, provider: (surpriseHood.dataset && surpriseHood.dataset.provider) ? ((t('standards_finder.provider_suffix', { provider: surpriseHood.dataset.provider }) || (' — ' + surpriseHood.dataset.provider))) : '' }) || ('Graph context: ' + surpriseHood.prerequisites.length + ' prerequisite(s), ' + surpriseHood.leadsTo.length + ' next, ' + surpriseHood.related.length + ' related. Directions are AI proposals grounded in these source edges, for educator judgment — not certification.')}</p>
                                                     )}
                                                     {surpriseState === 'ready' && surpriseDirections.length > 0 && <SurpriseMeCompare directions={surpriseDirections} hood={surpriseHood} onUse={useSurpriseDirection} />}
                                                 </div>
                                             )}
                                             {localResolution && localResolution.status === 'ambiguous' && (
                                                 <div role="status" className="rounded border border-amber-200 bg-white p-2 text-[11px] text-slate-700">
-                                                    <div className="font-bold text-amber-800">Multiple exact matches. Choose the intended framework.</div>
+                                                    <div className="font-bold text-amber-800">{t('standards_finder.ambiguous_framework') || 'Multiple exact matches. Choose the intended framework.'}</div>
                                                     <div className="mt-1 flex flex-wrap gap-1">
                                                         {(localResolution.candidates || []).map((candidate) => (
                                                             <button type="button" key={candidate.id}
@@ -987,14 +987,14 @@ function UniversalSettingsPanel(props) {
                                             )}
                                             {localResolution && localResolution.status === 'not-found' && (
                                                 <div role="status" className="rounded border border-slate-300 bg-white p-2 text-[11px] text-slate-700">
-                                                    <div className="font-bold">No exact local match.</div>
+                                                    <div className="font-bold">{t('standards_finder.no_exact_match') || 'No exact local match.'}</div>
                                                     {(localResolution.candidates || []).length > 0 && (
-                                                        <div className="mt-1">Possible codes to review: {(localResolution.candidates || []).slice(0, 3).map((candidate) => candidate.code).join(', ')}. They were not selected automatically.</div>
+                                                        <div className="mt-1">{t('standards_finder.possible_codes') || 'Possible codes to review:'}{' '}{(localResolution.candidates || []).slice(0, 3).map((candidate) => candidate.code).join(', ')}. They were not selected automatically.</div>
                                                     )}
                                                 </div>
                                             )}
                                             {localResolution && localResolution.status === 'error' && (
-                                                <div role="alert" className="rounded border border-red-200 bg-white p-2 text-[11px] text-red-700">The local snapshot could not resolve this entry.</div>
+                                                <div role="alert" className="rounded border border-red-200 bg-white p-2 text-[11px] text-red-700">{t('standards_finder.resolve_error') || 'The local snapshot could not resolve this entry.'}</div>
                                             )}
                                         </div>
                                     )}
@@ -1820,7 +1820,12 @@ function MathPanel(props) {
     storageDB, t, useMathSourceContext,
     // Primary door to Math Studio, the former STEM Lab Create tab
     // (docs/math_create_migration_plan.md).
-    openMathCreate
+    openMathCreate,
+    // Writes a completed standardized math probe into the learner's probe
+    // history, the store Assessment Center reads for RTI tier, trend series and
+    // the IEP export. Before this, no math path called it and the Math DCPM
+    // trend could never be populated.
+    saveProbeResult
   } = props;
   if (!expandedTools || !expandedTools.includes('math')) return null;
   return (
@@ -1896,7 +1901,54 @@ function MathPanel(props) {
                                 addToast={addToast}
                                 storageDB={storageDB}
                                 handleScoreUpdate={handleScoreUpdate}
-                                onProbeComplete={(entry) => setHistory(prev => [...prev, entry])}
+                                onProbeComplete={(entry) => {
+                                    setHistory(prev => [...prev, entry]);
+                                    // A standardized administration handed off from Assessment
+                                    // Center is recorded against a named learner. Practice runs
+                                    // carry no student and are recorded against nobody.
+                                    const r = entry && entry.data;
+                                    if (!r || r.mode !== 'benchmark' || !r.student) return;
+                                    if (typeof saveProbeResult !== 'function') return;
+                                    // Number(null) and Number('') are both 0, so coercing first
+                                    // would turn a missing score into a genuine 0 DCPM in the
+                                    // student's record. Validate the raw value.
+                                    const rawDcpm = r.dcpm;
+                                    const dcpm = Number(rawDcpm);
+                                    const hasScore = rawDcpm !== null && rawDcpm !== undefined
+                                        && rawDcpm !== '' && Number.isFinite(dcpm);
+                                    // An interrupted or early-ended run is not a score. Probe
+                                    // history has no validity flag, so anything written here is
+                                    // read as a real CBM by the tier calculation. Say so rather
+                                    // than dropping it silently.
+                                    if (r.validForComparison === false || !hasScore) {
+                                        if (typeof addToast === 'function') addToast(
+                                            t('math_fluency.probe_not_recorded')
+                                            || 'Probe not recorded: the run was interrupted or ended early. Re-administer for a comparable score.',
+                                            'warning');
+                                        return;
+                                    }
+                                    saveProbeResult(r.student, {
+                                        activity: 'math_dcpm',
+                                        grade: r.grade,
+                                        form: r.form,
+                                        // Assessment Center reads itemsPerMin through
+                                        // _probeTypeAndScore and dcpm through the AlloSheet score
+                                        // walker. Both must see the same number, or two surfaces
+                                        // would report different scores for one probe.
+                                        dcpm,
+                                        itemsPerMin: dcpm,
+                                        correct: r.totalCorrect,
+                                        total: r.totalAttempted,
+                                        accuracy: r.accuracy,
+                                        date: r.date || new Date().toISOString(),
+                                        timestamp: entry.timestamp || Date.now(),
+                                        source: 'math_fluency_probe'
+                                    });
+                                    if (typeof addToast === 'function') addToast(
+                                        t('math_fluency.probe_recorded_for', { student: r.student })
+                                        || `Probe recorded for ${r.student}.`,
+                                        'success');
+                                }}
                             />;
                         })()}
 {mathMode === 'Fluency Maze' && (() => {

@@ -4,7 +4,7 @@
   "reportType": "warning-only-editorial-diagnostics",
   "reviewedAt": "2026-07-16",
   "sourceFile": "test_prep/eppp_native_items.json",
-  "sourceSha256": "a205d0fef2669752e29dc068411216abd86fe509a3865fc8b8a2c5604f1e2833",
+  "sourceSha256": "0016b0238d5eaf695b530d53ba0cc35eb1a9caaef5d7ed8d242fc60941e2307a",
   "policy": {
     "warningMeaning": "Diagnostics identify candidates for human editorial review; they do not assert that an item is inaccurate or cause the generator to fail.",
     "hardGate": "All-of-the-above and none-of-the-above answer choices remain prohibited and cause this generator to fail.",
@@ -20,11 +20,11 @@
     "totalItems": 1500,
     "warningOnly": true,
     "forbiddenAggregateChoices": 0,
-    "uniqueKeyStemLexicalLeakageCandidates": 55,
+    "uniqueKeyStemLexicalLeakageCandidates": 56,
     "asymmetricExtremeDistractorCandidates": 116,
     "advancedDirectRecallCandidates": 4,
-    "semanticConceptDuplicatePairs": 81,
-    "semanticConceptDuplicateClusters": 45,
+    "semanticConceptDuplicatePairs": 71,
+    "semanticConceptDuplicateClusters": 42,
     "editorialAnchorsWithActiveWarnings": 2,
     "editorialAnchorsWithNoCurrentWarning": 8,
     "priorityDocketItems": 20
@@ -198,7 +198,7 @@
       "difficulty": "intermediate",
       "practiceBank": 10,
       "itemInBank": 28,
-      "score": 7.51,
+      "score": 7.52,
       "diagnostics": [
         "semantic-concept-duplicate-candidate"
       ],
@@ -1026,6 +1026,22 @@
       "overlapAdvantage": 1,
       "prompt": "Learned helplessness, as originally described by Seligman, occurs when:",
       "keyedChoice": "Organisms learn that their responses have no effect on outcomes"
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-039",
+      "domainId": "cognitive-affective",
+      "difficulty": "intermediate",
+      "practiceBank": 11,
+      "itemInBank": 89,
+      "answerIndex": 2,
+      "uniqueKeyStemTerms": [
+        "student"
+      ],
+      "answerOverlap": 3,
+      "maxDistractorOverlap": 3,
+      "overlapAdvantage": 0,
+      "prompt": "Students in a programme currently choose their own project topics and report high interest. An administrator proposes replacing that choice with assigned topics and a cash prize for the highest score. From the standpoint of self-determination theory, what is the most likely consequence for intrinsic motivation?",
+      "keyedChoice": "Interest tends to decline, because withdrawing the students own topic selection undermines autonomy and a salient reward shifts the perceived reason for working"
     },
     {
       "id": "eppp-v3-cognitive-affective-051",
@@ -4025,29 +4041,10 @@
   "semanticConceptDuplicates": {
     "pairs": [
       {
-        "leftId": "eppp-v2-lifespan-011",
-        "rightId": "eppp-v3-lifespan-002",
-        "domainId": "lifespan",
-        "similarity": 0.9314,
-        "matchBasis": [
-          "high-tfidf-similarity"
-        ],
-        "sharedIdentifiers": [],
-        "sharedTerms": [
-          "permanence",
-          "sensorimotor",
-          "piagetian",
-          "object",
-          "stage",
-          "develop",
-          "dur"
-        ]
-      },
-      {
         "leftId": "eppp-v2-lifespan-021",
         "rightId": "eppp-v2-lifespan-025",
         "domainId": "lifespan",
-        "similarity": 0.8738,
+        "similarity": 0.8739,
         "matchBasis": [
           "high-tfidf-similarity"
         ],
@@ -4067,7 +4064,7 @@
         "leftId": "eppp-v2-cognitive-affective-019",
         "rightId": "eppp-v3-cognitive-affective-010",
         "domainId": "cognitive-affective",
-        "similarity": 0.8585,
+        "similarity": 0.8584,
         "matchBasis": [
           "high-tfidf-similarity",
           "shared-rare-hyphenated-term"
@@ -4088,7 +4085,7 @@
         "leftId": "eppp-v3-biological-001",
         "rightId": "eppp-v3-biological-034",
         "domainId": "biological",
-        "similarity": 0.8177,
+        "similarity": 0.8202,
         "matchBasis": [
           "high-tfidf-similarity"
         ],
@@ -4099,6 +4096,26 @@
           "hemispher",
           "cerebral",
           "connect"
+        ]
+      },
+      {
+        "leftId": "eppp-v3-lifespan-010",
+        "rightId": "eppp-v3-lifespan-051",
+        "domainId": "lifespan",
+        "similarity": 0.8124,
+        "matchBasis": [
+          "high-tfidf-similarity"
+        ],
+        "sharedIdentifiers": [],
+        "sharedTerms": [
+          "assimilation",
+          "schema",
+          "exist",
+          "piaget",
+          "new",
+          "cognitive",
+          "information",
+          "theory"
         ]
       },
       {
@@ -4147,7 +4164,7 @@
         "leftId": "eppp-b012-lifespan-1",
         "rightId": "eppp-v3-lifespan-053",
         "domainId": "lifespan",
-        "similarity": 0.8075,
+        "similarity": 0.8074,
         "matchBasis": [
           "high-tfidf-similarity"
         ],
@@ -4161,42 +4178,6 @@
           "despite",
           "understand",
           "remain"
-        ]
-      },
-      {
-        "leftId": "eppp-v3-lifespan-010",
-        "rightId": "eppp-v3-lifespan-051",
-        "domainId": "lifespan",
-        "similarity": 0.8074,
-        "matchBasis": [
-          "high-tfidf-similarity"
-        ],
-        "sharedIdentifiers": [],
-        "sharedTerms": [
-          "assimilation",
-          "schema",
-          "exist",
-          "piaget",
-          "new",
-          "cognitive",
-          "information",
-          "theory"
-        ]
-      },
-      {
-        "leftId": "eppp-v3-research-016",
-        "rightId": "eppp-v3-research-022",
-        "domainId": "research",
-        "similarity": 0.802,
-        "matchBasis": [
-          "high-tfidf-similarity"
-        ],
-        "sharedIdentifiers": [],
-        "sharedTerms": [
-          "0.80",
-          "cohen",
-          "large",
-          "effect"
         ]
       },
       {
@@ -4227,14 +4208,14 @@
         "leftId": "eppp-v2-lifespan-035",
         "rightId": "eppp-v3-lifespan-006",
         "domainId": "lifespan",
-        "similarity": 0.7884,
+        "similarity": 0.7833,
         "matchBasis": [
           "high-tfidf-similarity"
         ],
         "sharedIdentifiers": [],
         "sharedTerms": [
-          "stagnation",
           "middle",
+          "stagnation",
           "generativity",
           "adulthood",
           "erikson",
@@ -4246,7 +4227,7 @@
         "leftId": "eppp-v2-biological-030",
         "rightId": "eppp-v3-biological-011",
         "domainId": "biological",
-        "similarity": 0.7643,
+        "similarity": 0.764,
         "matchBasis": [
           "high-tfidf-similarity",
           "shared-acronym"
@@ -4268,30 +4249,10 @@
         ]
       },
       {
-        "leftId": "eppp-v2-cognitive-affective-016",
-        "rightId": "eppp-v3-cognitive-affective-009",
-        "domainId": "cognitive-affective",
-        "similarity": 0.7549,
-        "matchBasis": [
-          "high-tfidf-similarity"
-        ],
-        "sharedIdentifiers": [],
-        "sharedTerms": [
-          "reproduction",
-          "bandura",
-          "observational",
-          "retention",
-          "motivation",
-          "attention",
-          "accord",
-          "learn"
-        ]
-      },
-      {
         "leftId": "eppp-v2-cognitive-affective-009",
         "rightId": "eppp-v3-cognitive-affective-008",
         "domainId": "cognitive-affective",
-        "similarity": 0.7545,
+        "similarity": 0.7589,
         "matchBasis": [
           "high-tfidf-similarity",
           "shared-rare-hyphenated-term"
@@ -4311,29 +4272,30 @@
         ]
       },
       {
-        "leftId": "eppp-v2-lifespan-001",
-        "rightId": "eppp-v3-lifespan-017",
-        "domainId": "lifespan",
-        "similarity": 0.7456,
+        "leftId": "eppp-v2-cognitive-affective-016",
+        "rightId": "eppp-v3-cognitive-affective-009",
+        "domainId": "cognitive-affective",
+        "similarity": 0.7544,
         "matchBasis": [
           "high-tfidf-similarity"
         ],
         "sharedIdentifiers": [],
         "sharedTerms": [
-          "adolescence",
-          "confusion",
-          "erikson",
-          "identity",
-          "primary",
-          "role",
-          "accord"
+          "reproduction",
+          "bandura",
+          "observational",
+          "retention",
+          "motivation",
+          "attention",
+          "accord",
+          "learn"
         ]
       },
       {
         "leftId": "eppp-v2-lifespan-014",
         "rightId": "eppp-v3-lifespan-016",
         "domainId": "lifespan",
-        "similarity": 0.7454,
+        "similarity": 0.7455,
         "matchBasis": [
           "high-tfidf-similarity",
           "shared-rare-hyphenated-term"
@@ -4357,7 +4319,7 @@
         "leftId": "eppp-v2-assessment-010",
         "rightId": "eppp-v2-assessment-046",
         "domainId": "assessment",
-        "similarity": 0.7407,
+        "similarity": 0.7426,
         "matchBasis": [
           "high-tfidf-similarity",
           "shared-acronym"
@@ -4366,9 +4328,9 @@
           "TAT"
         ],
         "sharedTerms": [
+          "tat",
           "apperception",
           "pictur",
-          "tat",
           "thematic",
           "ambiguou",
           "test"
@@ -4378,7 +4340,7 @@
         "leftId": "eppp-v2-assessment-008",
         "rightId": "eppp-v3-assessment-001",
         "domainId": "assessment",
-        "similarity": 0.7338,
+        "similarity": 0.7345,
         "matchBasis": [
           "high-tfidf-similarity"
         ],
@@ -4394,7 +4356,7 @@
         "leftId": "eppp-b024-professional-2",
         "rightId": "eppp-v2-professional-079",
         "domainId": "professional",
-        "similarity": 0.7281,
+        "similarity": 0.7284,
         "matchBasis": [
           "high-tfidf-similarity",
           "shared-rare-hyphenated-term"
@@ -4418,27 +4380,10 @@
         ]
       },
       {
-        "leftId": "eppp-v2-lifespan-011",
-        "rightId": "eppp-v3-lifespan-049",
-        "domainId": "lifespan",
-        "similarity": 0.7231,
-        "matchBasis": [
-          "high-tfidf-similarity"
-        ],
-        "sharedIdentifiers": [],
-        "sharedTerms": [
-          "permanence",
-          "sensorimotor",
-          "piagetian",
-          "object",
-          "stage"
-        ]
-      },
-      {
         "leftId": "eppp-b022-social-1",
         "rightId": "eppp-v3-social-cultural-052",
         "domainId": "social-cultural",
-        "similarity": 0.7224,
+        "similarity": 0.7226,
         "matchBasis": [
           "high-tfidf-similarity"
         ],
@@ -4460,7 +4405,7 @@
         "leftId": "eppp-v3-lifespan-003",
         "rightId": "eppp-v3-lifespan-009",
         "domainId": "lifespan",
-        "similarity": 0.7218,
+        "similarity": 0.722,
         "matchBasis": [
           "high-tfidf-similarity"
         ],
@@ -4499,55 +4444,10 @@
         ]
       },
       {
-        "leftId": "eppp-b005-cognitive-1",
-        "rightId": "eppp-v3-cognitive-affective-039",
-        "domainId": "cognitive-affective",
-        "similarity": 0.7142,
-        "matchBasis": [
-          "shared-rare-hyphenated-term"
-        ],
-        "sharedIdentifiers": [
-          "self-determination"
-        ],
-        "sharedTerms": [
-          "relatednes",
-          "self-determination",
-          "autonomy",
-          "basic",
-          "psychological",
-          "need",
-          "competence",
-          "identify",
-          "theory"
-        ]
-      },
-      {
-        "leftId": "eppp-v3-cognitive-affective-041",
-        "rightId": "eppp-v3-cognitive-affective-052",
-        "domainId": "cognitive-affective",
-        "similarity": 0.7069,
-        "matchBasis": [
-          "shared-rare-hyphenated-term"
-        ],
-        "sharedIdentifiers": [
-          "post-event"
-        ],
-        "sharedTerms": [
-          "loftu",
-          "misinformation",
-          "post-event",
-          "alter",
-          "original",
-          "demonstrat",
-          "memory",
-          "effect"
-        ]
-      },
-      {
         "leftId": "eppp-b014-professional-2",
         "rightId": "eppp-v3-professional-010",
         "domainId": "professional",
-        "similarity": 0.6964,
+        "similarity": 0.6954,
         "matchBasis": [
           "shared-ethics-standard"
         ],
@@ -4568,7 +4468,7 @@
         "leftId": "eppp-b021-assessment-1",
         "rightId": "eppp-b024-assessment-4",
         "domainId": "assessment",
-        "similarity": 0.6906,
+        "similarity": 0.6912,
         "matchBasis": [
           "shared-acronym"
         ],
@@ -4586,32 +4486,10 @@
         ]
       },
       {
-        "leftId": "eppp-v2-assessment-010",
-        "rightId": "eppp-v2-assessment-012",
-        "domainId": "assessment",
-        "similarity": 0.6686,
-        "matchBasis": [
-          "shared-acronym"
-        ],
-        "sharedIdentifiers": [
-          "TAT"
-        ],
-        "sharedTerms": [
-          "apperception",
-          "pictur",
-          "tat",
-          "thematic",
-          "story",
-          "ambiguou",
-          "asks",
-          "test"
-        ]
-      },
-      {
         "leftId": "eppp-v2-social-cultural-034",
         "rightId": "eppp-v3-social-cultural-013",
         "domainId": "social-cultural",
-        "similarity": 0.6614,
+        "similarity": 0.6628,
         "matchBasis": [
           "shared-rare-hyphenated-term"
         ],
@@ -4620,33 +4498,10 @@
         ],
         "sharedTerms": [
           "turner",
+          "membership",
+          "self-esteem",
+          "tajfel",
           "in-group",
-          "membership",
-          "self-esteem",
-          "tajfel",
-          "identity",
-          "propos",
-          "social",
-          "group",
-          "theory"
-        ]
-      },
-      {
-        "leftId": "eppp-v2-social-cultural-037",
-        "rightId": "eppp-v3-social-cultural-013",
-        "domainId": "social-cultural",
-        "similarity": 0.6566,
-        "matchBasis": [
-          "shared-rare-hyphenated-term"
-        ],
-        "sharedIdentifiers": [
-          "self-esteem"
-        ],
-        "sharedTerms": [
-          "derive",
-          "membership",
-          "self-esteem",
-          "tajfel",
           "identity",
           "propos",
           "social",
@@ -4658,7 +4513,7 @@
         "leftId": "eppp-b024-assessment-4",
         "rightId": "eppp-v3-assessment-008",
         "domainId": "assessment",
-        "similarity": 0.654,
+        "similarity": 0.6551,
         "matchBasis": [
           "shared-acronym"
         ],
@@ -4679,7 +4534,7 @@
         "leftId": "eppp-b021-assessment-1",
         "rightId": "eppp-v3-assessment-008",
         "domainId": "assessment",
-        "similarity": 0.6,
+        "similarity": 0.6003,
         "matchBasis": [
           "shared-acronym"
         ],
@@ -4716,30 +4571,10 @@
         ]
       },
       {
-        "leftId": "eppp-v2-assessment-012",
-        "rightId": "eppp-v2-assessment-046",
-        "domainId": "assessment",
-        "similarity": 0.5739,
-        "matchBasis": [
-          "shared-acronym"
-        ],
-        "sharedIdentifiers": [
-          "TAT"
-        ],
-        "sharedTerms": [
-          "apperception",
-          "pictur",
-          "tat",
-          "thematic",
-          "ambiguou",
-          "test"
-        ]
-      },
-      {
         "leftId": "eppp-v2-assessment-051",
         "rightId": "eppp-v3-assessment-014",
         "domainId": "assessment",
-        "similarity": 0.5671,
+        "similarity": 0.567,
         "matchBasis": [
           "shared-rare-hyphenated-term"
         ],
@@ -4758,7 +4593,7 @@
         "leftId": "eppp-b012-assessment-2",
         "rightId": "eppp-v3-assessment-011",
         "domainId": "assessment",
-        "similarity": 0.5618,
+        "similarity": 0.5627,
         "matchBasis": [
           "shared-rare-hyphenated-term"
         ],
@@ -4795,7 +4630,7 @@
         "leftId": "eppp-v3-cognitive-affective-010",
         "rightId": "eppp-v3-cognitive-affective-017",
         "domainId": "cognitive-affective",
-        "similarity": 0.5238,
+        "similarity": 0.5224,
         "matchBasis": [
           "shared-rare-hyphenated-term"
         ],
@@ -4810,32 +4645,10 @@
         ]
       },
       {
-        "leftId": "eppp-v2-social-cultural-034",
-        "rightId": "eppp-v2-social-cultural-037",
-        "domainId": "social-cultural",
-        "similarity": 0.507,
-        "matchBasis": [
-          "shared-rare-hyphenated-term"
-        ],
-        "sharedIdentifiers": [
-          "self-esteem"
-        ],
-        "sharedTerms": [
-          "membership",
-          "self-esteem",
-          "tajfel",
-          "identity",
-          "propos",
-          "social",
-          "group",
-          "theory"
-        ]
-      },
-      {
         "leftId": "eppp-b002-professional-2",
         "rightId": "eppp-v2-professional-030",
         "domainId": "professional",
-        "similarity": 0.5046,
+        "similarity": 0.5061,
         "matchBasis": [
           "shared-ethics-standard",
           "shared-rare-hyphenated-term"
@@ -4863,7 +4676,7 @@
         "leftId": "eppp-v2-intervention-024",
         "rightId": "eppp-v2-intervention-033",
         "domainId": "intervention",
-        "similarity": 0.4952,
+        "similarity": 0.4954,
         "matchBasis": [
           "shared-acronym"
         ],
@@ -4883,7 +4696,7 @@
         "leftId": "eppp-b012-assessment-2",
         "rightId": "eppp-v2-assessment-021",
         "domainId": "assessment",
-        "similarity": 0.4819,
+        "similarity": 0.4827,
         "matchBasis": [
           "shared-rare-hyphenated-term"
         ],
@@ -4900,7 +4713,7 @@
         "leftId": "eppp-v3-research-011",
         "rightId": "eppp-v3-research-017",
         "domainId": "research",
-        "similarity": 0.4815,
+        "similarity": 0.4814,
         "matchBasis": [
           "shared-acronym",
           "shared-rare-hyphenated-term"
@@ -4922,7 +4735,7 @@
         "leftId": "eppp-b028-social-1",
         "rightId": "eppp-v3-social-cultural-048",
         "domainId": "social-cultural",
-        "similarity": 0.4749,
+        "similarity": 0.475,
         "matchBasis": [
           "shared-rare-hyphenated-term"
         ],
@@ -4941,7 +4754,7 @@
         "leftId": "eppp-v2-assessment-031",
         "rightId": "eppp-v2-assessment-051",
         "domainId": "assessment",
-        "similarity": 0.4535,
+        "similarity": 0.4558,
         "matchBasis": [
           "shared-rare-hyphenated-term"
         ],
@@ -4961,7 +4774,7 @@
         "leftId": "eppp-v2-cognitive-affective-019",
         "rightId": "eppp-v3-cognitive-affective-017",
         "domainId": "cognitive-affective",
-        "similarity": 0.4497,
+        "similarity": 0.4484,
         "matchBasis": [
           "shared-rare-hyphenated-term"
         ],
@@ -4979,7 +4792,7 @@
         "leftId": "eppp-v2-intervention-024",
         "rightId": "eppp-v3-intervention-050",
         "domainId": "intervention",
-        "similarity": 0.442,
+        "similarity": 0.4416,
         "matchBasis": [
           "shared-acronym"
         ],
@@ -4996,7 +4809,7 @@
         "leftId": "eppp-v3-intervention-007",
         "rightId": "eppp-v3-intervention-075",
         "domainId": "intervention",
-        "similarity": 0.4252,
+        "similarity": 0.4249,
         "matchBasis": [
           "shared-acronym"
         ],
@@ -5014,7 +4827,7 @@
         "leftId": "eppp-v2-assessment-055",
         "rightId": "eppp-v3-assessment-057",
         "domainId": "assessment",
-        "similarity": 0.4153,
+        "similarity": 0.4159,
         "matchBasis": [
           "shared-acronym"
         ],
@@ -5032,7 +4845,7 @@
         "leftId": "eppp-b002-research-2",
         "rightId": "eppp-b016-research-2",
         "domainId": "research",
-        "similarity": 0.412,
+        "similarity": 0.4105,
         "matchBasis": [
           "shared-rare-hyphenated-term"
         ],
@@ -5051,7 +4864,7 @@
         "leftId": "eppp-v2-intervention-016",
         "rightId": "eppp-v3-intervention-007",
         "domainId": "intervention",
-        "similarity": 0.4067,
+        "similarity": 0.4074,
         "matchBasis": [
           "shared-acronym"
         ],
@@ -5071,7 +4884,7 @@
         "leftId": "eppp-v2-lifespan-032",
         "rightId": "eppp-v3-lifespan-016",
         "domainId": "lifespan",
-        "similarity": 0.402,
+        "similarity": 0.4018,
         "matchBasis": [
           "shared-rare-hyphenated-term"
         ],
@@ -5089,7 +4902,7 @@
         "leftId": "eppp-v2-assessment-031",
         "rightId": "eppp-v3-assessment-014",
         "domainId": "assessment",
-        "similarity": 0.368,
+        "similarity": 0.3698,
         "matchBasis": [
           "shared-rare-hyphenated-term"
         ],
@@ -5108,7 +4921,7 @@
         "leftId": "eppp-v3-research-013",
         "rightId": "eppp-v3-research-017",
         "domainId": "research",
-        "similarity": 0.3438,
+        "similarity": 0.3436,
         "matchBasis": [
           "shared-acronym"
         ],
@@ -5122,26 +4935,10 @@
         ]
       },
       {
-        "leftId": "eppp-b010-research-1",
-        "rightId": "eppp-v2-research-031",
-        "domainId": "research",
-        "similarity": 0.3393,
-        "matchBasis": [
-          "shared-rare-hyphenated-term"
-        ],
-        "sharedIdentifiers": [
-          "effect-size"
-        ],
-        "sharedTerms": [
-          "effect-size",
-          "magnitude"
-        ]
-      },
-      {
         "leftId": "eppp-v2-intervention-006",
         "rightId": "eppp-v2-intervention-033",
         "domainId": "intervention",
-        "similarity": 0.3388,
+        "similarity": 0.3383,
         "matchBasis": [
           "shared-acronym"
         ],
@@ -5159,10 +4956,26 @@
         ]
       },
       {
+        "leftId": "eppp-b010-research-1",
+        "rightId": "eppp-v2-research-031",
+        "domainId": "research",
+        "similarity": 0.3356,
+        "matchBasis": [
+          "shared-rare-hyphenated-term"
+        ],
+        "sharedIdentifiers": [
+          "effect-size"
+        ],
+        "sharedTerms": [
+          "effect-size",
+          "magnitude"
+        ]
+      },
+      {
         "leftId": "eppp-v2-lifespan-014",
         "rightId": "eppp-v2-lifespan-032",
         "domainId": "lifespan",
-        "similarity": 0.3318,
+        "similarity": 0.3316,
         "matchBasis": [
           "shared-rare-hyphenated-term"
         ],
@@ -5180,7 +4993,7 @@
         "leftId": "eppp-v3-cognitive-affective-041",
         "rightId": "eppp-v3-cognitive-affective-044",
         "domainId": "cognitive-affective",
-        "similarity": 0.3247,
+        "similarity": 0.3234,
         "matchBasis": [
           "shared-rare-hyphenated-term"
         ],
@@ -5198,7 +5011,7 @@
         "leftId": "eppp-v3-research-011",
         "rightId": "eppp-v3-research-013",
         "domainId": "research",
-        "similarity": 0.3157,
+        "similarity": 0.3156,
         "matchBasis": [
           "shared-acronym"
         ],
@@ -5217,7 +5030,7 @@
         "leftId": "eppp-b007-social-1",
         "rightId": "eppp-v3-social-cultural-048",
         "domainId": "social-cultural",
-        "similarity": 0.3078,
+        "similarity": 0.3093,
         "matchBasis": [
           "shared-rare-hyphenated-term"
         ],
@@ -5235,7 +5048,7 @@
         "leftId": "eppp-b007-social-1",
         "rightId": "eppp-b028-social-1",
         "domainId": "social-cultural",
-        "similarity": 0.3068,
+        "similarity": 0.308,
         "matchBasis": [
           "shared-rare-hyphenated-term"
         ],
@@ -5251,27 +5064,10 @@
         ]
       },
       {
-        "leftId": "eppp-v3-cognitive-affective-044",
-        "rightId": "eppp-v3-cognitive-affective-052",
-        "domainId": "cognitive-affective",
-        "similarity": 0.3059,
-        "matchBasis": [
-          "shared-rare-hyphenated-term"
-        ],
-        "sharedIdentifiers": [
-          "post-event"
-        ],
-        "sharedTerms": [
-          "post-event",
-          "alter",
-          "memory"
-        ]
-      },
-      {
         "leftId": "eppp-v2-intervention-034",
         "rightId": "eppp-v3-intervention-072",
         "domainId": "intervention",
-        "similarity": 0.289,
+        "similarity": 0.2889,
         "matchBasis": [
           "shared-acronym"
         ],
@@ -5289,7 +5085,7 @@
         "leftId": "eppp-b011-research-2",
         "rightId": "eppp-v3-research-012",
         "domainId": "research",
-        "similarity": 0.2817,
+        "similarity": 0.2823,
         "matchBasis": [
           "shared-rare-hyphenated-term"
         ],
@@ -5305,7 +5101,7 @@
         "leftId": "eppp-b016-research-2",
         "rightId": "eppp-v3-research-030",
         "domainId": "research",
-        "similarity": 0.2699,
+        "similarity": 0.2717,
         "matchBasis": [
           "shared-rare-hyphenated-term"
         ],
@@ -5321,7 +5117,7 @@
         "leftId": "eppp-b018-assessment-2",
         "rightId": "eppp-v3-assessment-057",
         "domainId": "assessment",
-        "similarity": 0.2654,
+        "similarity": 0.2646,
         "matchBasis": [
           "shared-rare-hyphenated-term"
         ],
@@ -5338,7 +5134,7 @@
         "leftId": "eppp-b012-intervention-2",
         "rightId": "eppp-b028-intervention-1",
         "domainId": "intervention",
-        "similarity": 0.2413,
+        "similarity": 0.2416,
         "matchBasis": [
           "shared-rare-hyphenated-term"
         ],
@@ -5355,7 +5151,7 @@
         "leftId": "eppp-v2-research-032",
         "rightId": "eppp-v3-research-012",
         "domainId": "research",
-        "similarity": 0.2411,
+        "similarity": 0.2416,
         "matchBasis": [
           "shared-rare-hyphenated-term"
         ],
@@ -5371,7 +5167,7 @@
         "leftId": "eppp-b026-assessment-5",
         "rightId": "eppp-v3-assessment-077",
         "domainId": "assessment",
-        "similarity": 0.2319,
+        "similarity": 0.2322,
         "matchBasis": [
           "shared-rare-hyphenated-term"
         ],
@@ -5387,7 +5183,7 @@
         "leftId": "eppp-b004-lifespan-2",
         "rightId": "eppp-b028-lifespan-2",
         "domainId": "lifespan",
-        "similarity": 0.2194,
+        "similarity": 0.2193,
         "matchBasis": [
           "shared-rare-hyphenated-term"
         ],
@@ -5403,7 +5199,7 @@
         "leftId": "eppp-b002-professional-2",
         "rightId": "eppp-v2-professional-040",
         "domainId": "professional",
-        "similarity": 0.2185,
+        "similarity": 0.2186,
         "matchBasis": [
           "shared-rare-hyphenated-term"
         ],
@@ -5423,7 +5219,7 @@
         "leftId": "eppp-v2-assessment-017",
         "rightId": "eppp-v2-assessment-054",
         "domainId": "assessment",
-        "similarity": 0.2146,
+        "similarity": 0.2151,
         "matchBasis": [
           "shared-rare-hyphenated-term"
         ],
@@ -5439,7 +5235,7 @@
         "leftId": "eppp-b002-research-2",
         "rightId": "eppp-v2-research-031",
         "domainId": "research",
-        "similarity": 0.2064,
+        "similarity": 0.2081,
         "matchBasis": [
           "shared-rare-hyphenated-term"
         ],
@@ -5450,22 +5246,6 @@
           "effect-size",
           "estimate",
           "effect"
-        ]
-      },
-      {
-        "leftId": "eppp-v2-lifespan-029",
-        "rightId": "eppp-v3-lifespan-028",
-        "domainId": "lifespan",
-        "similarity": 0.206,
-        "matchBasis": [
-          "shared-rare-hyphenated-term"
-        ],
-        "sharedIdentifiers": [
-          "year-old"
-        ],
-        "sharedTerms": [
-          "year-old",
-          "piaget"
         ]
       },
       {
@@ -5485,10 +5265,26 @@
         ]
       },
       {
+        "leftId": "eppp-v2-lifespan-029",
+        "rightId": "eppp-v3-lifespan-028",
+        "domainId": "lifespan",
+        "similarity": 0.199,
+        "matchBasis": [
+          "shared-rare-hyphenated-term"
+        ],
+        "sharedIdentifiers": [
+          "year-old"
+        ],
+        "sharedTerms": [
+          "year-old",
+          "piaget"
+        ]
+      },
+      {
         "leftId": "eppp-b001-assessment-1",
         "rightId": "eppp-v2-assessment-006",
         "domainId": "assessment",
-        "similarity": 0.1961,
+        "similarity": 0.1963,
         "matchBasis": [
           "shared-rare-hyphenated-term"
         ],
@@ -5504,7 +5300,7 @@
         "leftId": "eppp-b002-research-2",
         "rightId": "eppp-v3-research-030",
         "domainId": "research",
-        "similarity": 0.1938,
+        "similarity": 0.195,
         "matchBasis": [
           "shared-rare-hyphenated-term"
         ],
@@ -5520,7 +5316,7 @@
         "leftId": "eppp-b018-assessment-2",
         "rightId": "eppp-v2-assessment-002",
         "domainId": "assessment",
-        "similarity": 0.1875,
+        "similarity": 0.1874,
         "matchBasis": [
           "shared-rare-hyphenated-term"
         ],
@@ -5536,7 +5332,7 @@
         "leftId": "eppp-v2-professional-030",
         "rightId": "eppp-v2-professional-040",
         "domainId": "professional",
-        "similarity": 0.1819,
+        "similarity": 0.1825,
         "matchBasis": [
           "shared-rare-hyphenated-term"
         ],
@@ -5556,7 +5352,7 @@
         "leftId": "eppp-b025-social-2",
         "rightId": "eppp-v3-social-cultural-002",
         "domainId": "social-cultural",
-        "similarity": 0.1802,
+        "similarity": 0.1804,
         "matchBasis": [
           "shared-rare-hyphenated-term"
         ],
@@ -5575,7 +5371,7 @@
         "leftId": "eppp-b001-social-2",
         "rightId": "eppp-b011-social-2",
         "domainId": "social-cultural",
-        "similarity": 0.1785,
+        "similarity": 0.18,
         "matchBasis": [
           "shared-rare-hyphenated-term"
         ],
@@ -5586,21 +5382,27 @@
           "foot-in-the-door",
           "technique"
         ]
+      },
+      {
+        "leftId": "eppp-b005-cognitive-1",
+        "rightId": "eppp-v3-cognitive-affective-039",
+        "domainId": "cognitive-affective",
+        "similarity": 0.1763,
+        "matchBasis": [
+          "shared-rare-hyphenated-term"
+        ],
+        "sharedIdentifiers": [
+          "self-determination"
+        ],
+        "sharedTerms": [
+          "self-determination",
+          "autonomy",
+          "motivation",
+          "theory"
+        ]
       }
     ],
     "clusters": [
-      {
-        "itemIds": [
-          "eppp-v2-lifespan-011",
-          "eppp-v3-lifespan-002",
-          "eppp-v3-lifespan-049"
-        ],
-        "domainId": "lifespan",
-        "pairCount": 2,
-        "maxSimilarity": 0.9314,
-        "sharedIdentifiers": [],
-        "clusterId": "concept-candidate-001"
-      },
       {
         "itemIds": [
           "eppp-v2-lifespan-021",
@@ -5608,9 +5410,9 @@
         ],
         "domainId": "lifespan",
         "pairCount": 1,
-        "maxSimilarity": 0.8738,
+        "maxSimilarity": 0.8739,
         "sharedIdentifiers": [],
-        "clusterId": "concept-candidate-002"
+        "clusterId": "concept-candidate-001"
       },
       {
         "itemIds": [
@@ -5620,11 +5422,11 @@
         ],
         "domainId": "cognitive-affective",
         "pairCount": 3,
-        "maxSimilarity": 0.8585,
+        "maxSimilarity": 0.8584,
         "sharedIdentifiers": [
           "yerkes-dodson"
         ],
-        "clusterId": "concept-candidate-003"
+        "clusterId": "concept-candidate-002"
       },
       {
         "itemIds": [
@@ -5633,7 +5435,18 @@
         ],
         "domainId": "biological",
         "pairCount": 1,
-        "maxSimilarity": 0.8177,
+        "maxSimilarity": 0.8202,
+        "sharedIdentifiers": [],
+        "clusterId": "concept-candidate-003"
+      },
+      {
+        "itemIds": [
+          "eppp-v3-lifespan-010",
+          "eppp-v3-lifespan-051"
+        ],
+        "domainId": "lifespan",
+        "pairCount": 1,
+        "maxSimilarity": 0.8124,
         "sharedIdentifiers": [],
         "clusterId": "concept-candidate-004"
       },
@@ -5671,31 +5484,9 @@
         ],
         "domainId": "lifespan",
         "pairCount": 1,
-        "maxSimilarity": 0.8075,
-        "sharedIdentifiers": [],
-        "clusterId": "concept-candidate-007"
-      },
-      {
-        "itemIds": [
-          "eppp-v3-lifespan-010",
-          "eppp-v3-lifespan-051"
-        ],
-        "domainId": "lifespan",
-        "pairCount": 1,
         "maxSimilarity": 0.8074,
         "sharedIdentifiers": [],
-        "clusterId": "concept-candidate-008"
-      },
-      {
-        "itemIds": [
-          "eppp-v3-research-016",
-          "eppp-v3-research-022"
-        ],
-        "domainId": "research",
-        "pairCount": 1,
-        "maxSimilarity": 0.802,
-        "sharedIdentifiers": [],
-        "clusterId": "concept-candidate-009"
+        "clusterId": "concept-candidate-007"
       },
       {
         "itemIds": [
@@ -5706,7 +5497,7 @@
         "pairCount": 1,
         "maxSimilarity": 0.8008,
         "sharedIdentifiers": [],
-        "clusterId": "concept-candidate-010"
+        "clusterId": "concept-candidate-008"
       },
       {
         "itemIds": [
@@ -5715,9 +5506,9 @@
         ],
         "domainId": "lifespan",
         "pairCount": 1,
-        "maxSimilarity": 0.7884,
+        "maxSimilarity": 0.7833,
         "sharedIdentifiers": [],
-        "clusterId": "concept-candidate-011"
+        "clusterId": "concept-candidate-009"
       },
       {
         "itemIds": [
@@ -5726,22 +5517,11 @@
         ],
         "domainId": "biological",
         "pairCount": 1,
-        "maxSimilarity": 0.7643,
+        "maxSimilarity": 0.764,
         "sharedIdentifiers": [
           "LTP"
         ],
-        "clusterId": "concept-candidate-012"
-      },
-      {
-        "itemIds": [
-          "eppp-v2-cognitive-affective-016",
-          "eppp-v3-cognitive-affective-009"
-        ],
-        "domainId": "cognitive-affective",
-        "pairCount": 1,
-        "maxSimilarity": 0.7549,
-        "sharedIdentifiers": [],
-        "clusterId": "concept-candidate-013"
+        "clusterId": "concept-candidate-010"
       },
       {
         "itemIds": [
@@ -5750,22 +5530,22 @@
         ],
         "domainId": "cognitive-affective",
         "pairCount": 1,
-        "maxSimilarity": 0.7545,
+        "maxSimilarity": 0.7589,
         "sharedIdentifiers": [
           "pre-exist"
         ],
-        "clusterId": "concept-candidate-014"
+        "clusterId": "concept-candidate-011"
       },
       {
         "itemIds": [
-          "eppp-v2-lifespan-001",
-          "eppp-v3-lifespan-017"
+          "eppp-v2-cognitive-affective-016",
+          "eppp-v3-cognitive-affective-009"
         ],
-        "domainId": "lifespan",
+        "domainId": "cognitive-affective",
         "pairCount": 1,
-        "maxSimilarity": 0.7456,
+        "maxSimilarity": 0.7544,
         "sharedIdentifiers": [],
-        "clusterId": "concept-candidate-015"
+        "clusterId": "concept-candidate-012"
       },
       {
         "itemIds": [
@@ -5775,25 +5555,24 @@
         ],
         "domainId": "lifespan",
         "pairCount": 3,
-        "maxSimilarity": 0.7454,
+        "maxSimilarity": 0.7455,
         "sharedIdentifiers": [
           "bler-ros"
         ],
-        "clusterId": "concept-candidate-016"
+        "clusterId": "concept-candidate-013"
       },
       {
         "itemIds": [
           "eppp-v2-assessment-010",
-          "eppp-v2-assessment-012",
           "eppp-v2-assessment-046"
         ],
         "domainId": "assessment",
-        "pairCount": 3,
-        "maxSimilarity": 0.7407,
+        "pairCount": 1,
+        "maxSimilarity": 0.7426,
         "sharedIdentifiers": [
           "TAT"
         ],
-        "clusterId": "concept-candidate-017"
+        "clusterId": "concept-candidate-014"
       },
       {
         "itemIds": [
@@ -5802,9 +5581,9 @@
         ],
         "domainId": "assessment",
         "pairCount": 1,
-        "maxSimilarity": 0.7338,
+        "maxSimilarity": 0.7345,
         "sharedIdentifiers": [],
-        "clusterId": "concept-candidate-018"
+        "clusterId": "concept-candidate-015"
       },
       {
         "itemIds": [
@@ -5813,11 +5592,11 @@
         ],
         "domainId": "professional",
         "pairCount": 1,
-        "maxSimilarity": 0.7281,
+        "maxSimilarity": 0.7284,
         "sharedIdentifiers": [
           "record-keep"
         ],
-        "clusterId": "concept-candidate-019"
+        "clusterId": "concept-candidate-016"
       },
       {
         "itemIds": [
@@ -5826,9 +5605,9 @@
         ],
         "domainId": "social-cultural",
         "pairCount": 1,
-        "maxSimilarity": 0.7224,
+        "maxSimilarity": 0.7226,
         "sharedIdentifiers": [],
-        "clusterId": "concept-candidate-020"
+        "clusterId": "concept-candidate-017"
       },
       {
         "itemIds": [
@@ -5837,9 +5616,9 @@
         ],
         "domainId": "lifespan",
         "pairCount": 1,
-        "maxSimilarity": 0.7218,
+        "maxSimilarity": 0.722,
         "sharedIdentifiers": [],
-        "clusterId": "concept-candidate-021"
+        "clusterId": "concept-candidate-018"
       },
       {
         "itemIds": [
@@ -5853,34 +5632,7 @@
         "sharedIdentifiers": [
           "within-subject"
         ],
-        "clusterId": "concept-candidate-022"
-      },
-      {
-        "itemIds": [
-          "eppp-b005-cognitive-1",
-          "eppp-v3-cognitive-affective-039"
-        ],
-        "domainId": "cognitive-affective",
-        "pairCount": 1,
-        "maxSimilarity": 0.7142,
-        "sharedIdentifiers": [
-          "self-determination"
-        ],
-        "clusterId": "concept-candidate-023"
-      },
-      {
-        "itemIds": [
-          "eppp-v3-cognitive-affective-041",
-          "eppp-v3-cognitive-affective-044",
-          "eppp-v3-cognitive-affective-052"
-        ],
-        "domainId": "cognitive-affective",
-        "pairCount": 3,
-        "maxSimilarity": 0.7069,
-        "sharedIdentifiers": [
-          "post-event"
-        ],
-        "clusterId": "concept-candidate-024"
+        "clusterId": "concept-candidate-019"
       },
       {
         "itemIds": [
@@ -5889,11 +5641,11 @@
         ],
         "domainId": "professional",
         "pairCount": 1,
-        "maxSimilarity": 0.6964,
+        "maxSimilarity": 0.6954,
         "sharedIdentifiers": [
           "standard 6.05"
         ],
-        "clusterId": "concept-candidate-025"
+        "clusterId": "concept-candidate-020"
       },
       {
         "itemIds": [
@@ -5903,26 +5655,25 @@
         ],
         "domainId": "assessment",
         "pairCount": 3,
-        "maxSimilarity": 0.6906,
+        "maxSimilarity": 0.6912,
         "sharedIdentifiers": [
           "BDI-II",
           "II"
         ],
-        "clusterId": "concept-candidate-026"
+        "clusterId": "concept-candidate-021"
       },
       {
         "itemIds": [
           "eppp-v2-social-cultural-034",
-          "eppp-v2-social-cultural-037",
           "eppp-v3-social-cultural-013"
         ],
         "domainId": "social-cultural",
-        "pairCount": 3,
-        "maxSimilarity": 0.6614,
+        "pairCount": 1,
+        "maxSimilarity": 0.6628,
         "sharedIdentifiers": [
           "self-esteem"
         ],
-        "clusterId": "concept-candidate-027"
+        "clusterId": "concept-candidate-022"
       },
       {
         "itemIds": [
@@ -5932,11 +5683,11 @@
         ],
         "domainId": "assessment",
         "pairCount": 3,
-        "maxSimilarity": 0.5671,
+        "maxSimilarity": 0.567,
         "sharedIdentifiers": [
           "set-shift"
         ],
-        "clusterId": "concept-candidate-028"
+        "clusterId": "concept-candidate-023"
       },
       {
         "itemIds": [
@@ -5946,11 +5697,11 @@
         ],
         "domainId": "assessment",
         "pairCount": 3,
-        "maxSimilarity": 0.5618,
+        "maxSimilarity": 0.5627,
         "sharedIdentifiers": [
           "split-half"
         ],
-        "clusterId": "concept-candidate-029"
+        "clusterId": "concept-candidate-024"
       },
       {
         "itemIds": [
@@ -5960,12 +5711,12 @@
         ],
         "domainId": "professional",
         "pairCount": 3,
-        "maxSimilarity": 0.5046,
+        "maxSimilarity": 0.5061,
         "sharedIdentifiers": [
           "standard 10.01",
           "third-party"
         ],
-        "clusterId": "concept-candidate-030"
+        "clusterId": "concept-candidate-025"
       },
       {
         "itemIds": [
@@ -5976,12 +5727,12 @@
         ],
         "domainId": "intervention",
         "pairCount": 3,
-        "maxSimilarity": 0.4952,
+        "maxSimilarity": 0.4954,
         "sharedIdentifiers": [
           "CPT",
           "PTSD"
         ],
-        "clusterId": "concept-candidate-031"
+        "clusterId": "concept-candidate-026"
       },
       {
         "itemIds": [
@@ -5991,12 +5742,12 @@
         ],
         "domainId": "research",
         "pairCount": 3,
-        "maxSimilarity": 0.4815,
+        "maxSimilarity": 0.4814,
         "sharedIdentifiers": [
           "ANOVA",
           "one-way"
         ],
-        "clusterId": "concept-candidate-032"
+        "clusterId": "concept-candidate-027"
       },
       {
         "itemIds": [
@@ -6006,11 +5757,11 @@
         ],
         "domainId": "social-cultural",
         "pairCount": 3,
-        "maxSimilarity": 0.4749,
+        "maxSimilarity": 0.475,
         "sharedIdentifiers": [
           "self-serv"
         ],
-        "clusterId": "concept-candidate-033"
+        "clusterId": "concept-candidate-028"
       },
       {
         "itemIds": [
@@ -6021,12 +5772,12 @@
         ],
         "domainId": "intervention",
         "pairCount": 3,
-        "maxSimilarity": 0.4252,
+        "maxSimilarity": 0.4249,
         "sharedIdentifiers": [
           "ACT",
           "cognitive-behavioral"
         ],
-        "clusterId": "concept-candidate-034"
+        "clusterId": "concept-candidate-029"
       },
       {
         "itemIds": [
@@ -6037,12 +5788,12 @@
         ],
         "domainId": "assessment",
         "pairCount": 3,
-        "maxSimilarity": 0.4153,
+        "maxSimilarity": 0.4159,
         "sharedIdentifiers": [
           "SEM",
           "true-score"
         ],
-        "clusterId": "concept-candidate-035"
+        "clusterId": "concept-candidate-030"
       },
       {
         "itemIds": [
@@ -6054,12 +5805,25 @@
         ],
         "domainId": "research",
         "pairCount": 5,
-        "maxSimilarity": 0.412,
+        "maxSimilarity": 0.4105,
         "sharedIdentifiers": [
           "effect-size",
           "meta-analysi"
         ],
-        "clusterId": "concept-candidate-036"
+        "clusterId": "concept-candidate-031"
+      },
+      {
+        "itemIds": [
+          "eppp-v3-cognitive-affective-041",
+          "eppp-v3-cognitive-affective-044"
+        ],
+        "domainId": "cognitive-affective",
+        "pairCount": 1,
+        "maxSimilarity": 0.3234,
+        "sharedIdentifiers": [
+          "post-event"
+        ],
+        "clusterId": "concept-candidate-032"
       },
       {
         "itemIds": [
@@ -6068,11 +5832,11 @@
         ],
         "domainId": "intervention",
         "pairCount": 1,
-        "maxSimilarity": 0.289,
+        "maxSimilarity": 0.2889,
         "sharedIdentifiers": [
           "SFBT"
         ],
-        "clusterId": "concept-candidate-037"
+        "clusterId": "concept-candidate-033"
       },
       {
         "itemIds": [
@@ -6081,11 +5845,11 @@
         ],
         "domainId": "intervention",
         "pairCount": 1,
-        "maxSimilarity": 0.2413,
+        "maxSimilarity": 0.2416,
         "sharedIdentifiers": [
           "harm-reduction"
         ],
-        "clusterId": "concept-candidate-038"
+        "clusterId": "concept-candidate-034"
       },
       {
         "itemIds": [
@@ -6094,11 +5858,11 @@
         ],
         "domainId": "assessment",
         "pairCount": 1,
-        "maxSimilarity": 0.2319,
+        "maxSimilarity": 0.2322,
         "sharedIdentifiers": [
           "ninety-five"
         ],
-        "clusterId": "concept-candidate-039"
+        "clusterId": "concept-candidate-035"
       },
       {
         "itemIds": [
@@ -6107,11 +5871,11 @@
         ],
         "domainId": "lifespan",
         "pairCount": 1,
-        "maxSimilarity": 0.2194,
+        "maxSimilarity": 0.2193,
         "sharedIdentifiers": [
           "identity-statu"
         ],
-        "clusterId": "concept-candidate-040"
+        "clusterId": "concept-candidate-036"
       },
       {
         "itemIds": [
@@ -6120,11 +5884,11 @@
         ],
         "domainId": "assessment",
         "pairCount": 1,
-        "maxSimilarity": 0.2146,
+        "maxSimilarity": 0.2151,
         "sharedIdentifiers": [
           "norm-referenc"
         ],
-        "clusterId": "concept-candidate-041"
+        "clusterId": "concept-candidate-037"
       },
       {
         "itemIds": [
@@ -6133,11 +5897,11 @@
         ],
         "domainId": "lifespan",
         "pairCount": 1,
-        "maxSimilarity": 0.206,
+        "maxSimilarity": 0.199,
         "sharedIdentifiers": [
           "year-old"
         ],
-        "clusterId": "concept-candidate-042"
+        "clusterId": "concept-candidate-038"
       },
       {
         "itemIds": [
@@ -6146,11 +5910,11 @@
         ],
         "domainId": "assessment",
         "pairCount": 1,
-        "maxSimilarity": 0.1961,
+        "maxSimilarity": 0.1963,
         "sharedIdentifiers": [
           "inter-rater"
         ],
-        "clusterId": "concept-candidate-043"
+        "clusterId": "concept-candidate-039"
       },
       {
         "itemIds": [
@@ -6159,11 +5923,11 @@
         ],
         "domainId": "social-cultural",
         "pairCount": 1,
-        "maxSimilarity": 0.1802,
+        "maxSimilarity": 0.1804,
         "sharedIdentifiers": [
           "stereotype-threat"
         ],
-        "clusterId": "concept-candidate-044"
+        "clusterId": "concept-candidate-040"
       },
       {
         "itemIds": [
@@ -6172,11 +5936,24 @@
         ],
         "domainId": "social-cultural",
         "pairCount": 1,
-        "maxSimilarity": 0.1785,
+        "maxSimilarity": 0.18,
         "sharedIdentifiers": [
           "the-door"
         ],
-        "clusterId": "concept-candidate-045"
+        "clusterId": "concept-candidate-041"
+      },
+      {
+        "itemIds": [
+          "eppp-b005-cognitive-1",
+          "eppp-v3-cognitive-affective-039"
+        ],
+        "domainId": "cognitive-affective",
+        "pairCount": 1,
+        "maxSimilarity": 0.1763,
+        "sharedIdentifiers": [
+          "self-determination"
+        ],
+        "clusterId": "concept-candidate-042"
       }
     ]
   }

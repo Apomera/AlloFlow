@@ -66,13 +66,13 @@
         "computer-delivered-selected-response"
       ],
       "packUrl": "./test_prep/eppp_part_one_pack.json",
-      "sha256": "f46b6f0b5cec128437658b689d2479d999955ef9808544edc2c3d7bb43973e2f",
+      "sha256": "77fbb8eeed84d4a772d5a2dd77f580c96728b26880c92c4456fb4c1aa0d51d31",
       "learningLibraryUrl": "https://alloflow-cdn.pages.dev/test_prep/eppp_learning_library.json",
       "learningLibraryQaUrl": "https://alloflow-cdn.pages.dev/test_prep/eppp_learning_library_qa.json",
       "nativeQaUrl": "https://alloflow-cdn.pages.dev/test_prep/eppp_native_qa.json",
       "learningLibrarySha256": "44c037a01abb2f0e75fcf4f6d7fb428a811ea46c820f9ed08a5232c12b55bcc6",
       "learningLibraryQaSha256": "63b0544e41b62cada5effb60354dfe0de646c81b5fe1e001fedda01128657c35",
-      "nativeQaSha256": "4fc402263b97087d10b4321b84cd8715f06dc2718c69a094cbf2e24ccc962cfe"
+      "nativeQaSha256": "e4b9957ff15bad99b1c850f8f72d322a1196fe8ae6c9e5efb1723a5c05225d93"
     },
     {
       "id": "eppp-integrated-2027-preview",
@@ -128,13 +128,13 @@
       ],
       "examModes": [],
       "packUrl": "./test_prep/parapro_pack.json",
-      "sha256": "04e45afae1f32de51efea3ef5f654fc3368f37682328b46ef40d6a1a29e354da",
+      "sha256": "576723a01fb78af87e7f6057878723ceb920a77c76a244c74a025fe2a5871dbd",
       "learningLibraryUrl": "./test_prep/parapro_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/parapro_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/parapro_native_qa.json",
       "learningLibrarySha256": "af0034d320e1030821b073d10ca09edc82e150a1acd38fde2e01b46e89491e02",
-      "learningLibraryQaSha256": "7130aa5ca8114a7aa812466f2e66b63a635b2a361d8e40297b03a02fc75f1829",
-      "nativeQaSha256": "b3102920a6f12833fecda182dc21246169b1be1b9cc61d54b15246c3614e73c9"
+      "learningLibraryQaSha256": "db8800b4053d1bd97be508b31965317ff760b7cd61049375ca2c917fbcc79ea0",
+      "nativeQaSha256": "18c80794ced5dabf423b4bf75fbf35aafc8a8ec27c288ab922de2e2c4631d673"
     },
     {
       "id": "praxis-special-education-5355",
@@ -293,13 +293,13 @@
       ],
       "examModes": [],
       "packUrl": "./test_prep/audiology_5343_pack.json",
-      "sha256": "11a27aaa9bc69d6bb0f060299bb511b9b2268c2197aa05b592fc103f015c5a3d",
+      "sha256": "d8f61df57ed847ce0d262078603554db038bd3fbbc9d5668a54c1fbe6a5b4b05",
       "learningLibraryUrl": "./test_prep/audiology_5343_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/audiology_5343_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/audiology_5343_native_qa.json",
       "learningLibrarySha256": "e3f29e63ba06d9c8c36c52f1560ca7bbb74fd3dda36b8726f888aa343bc1fcfb",
       "learningLibraryQaSha256": "ac22779ae2311afb7ec8ba3e7b91e1b9471bc9090e702d177d149aab7ae25a98",
-      "nativeQaSha256": "2543b9e31a6591481c6bace2ac3c520638b52e96bfefd9941da2b421a199e40a"
+      "nativeQaSha256": "413f4d3552730615c57cd2908ba6059df758e4ba9580c173494b3ff0f72650f4"
     },
     {
       "id": "praxis-reading-specialist-5302",
@@ -359,13 +359,13 @@
       ],
       "examModes": [],
       "packUrl": "./test_prep/educational_leadership_5412_pack.json",
-      "sha256": "b8f6ed1b9a4790bd182e2907140b062e0c2232f609e2a5dfe39a6e7a2768a233",
+      "sha256": "59a00531818866f2ff00fd2612599fb11c5c5ed514e8da4985d1dfdde76173b4",
       "learningLibraryUrl": "./test_prep/educational_leadership_5412_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/educational_leadership_5412_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/educational_leadership_5412_native_qa.json",
       "learningLibrarySha256": "c235ae7eef17531b3e66b2ad42d2b3281e2e571fc1a557be1139c9e69702047a",
       "learningLibraryQaSha256": "07d26964f2a2db9f017cbbdd1607523e9fd4db4eb612f4210e78415712478e90",
-      "nativeQaSha256": "4812c1499ae2bfed845b453078ad5e9470fa6660f679bcbeb5ec5cfcec2a25ce"
+      "nativeQaSha256": "ca0539a42a208e351d29070774df9f87775e2560f7f49046eb69f74c3a0f2260"
     },
     {
       "id": "praxis-plt-k6-5622",
@@ -524,13 +524,13 @@
       ],
       "examModes": [],
       "packUrl": "./test_prep/early_childhood_5025_pack.json",
-      "sha256": "fdf1ede918fe62c2b033e0574173813a1c764d17986845703de308d55d7ca895",
+      "sha256": "d6069d125f43ae852be4d9a9811d3354fe30353d19585739ff8a32fa2b2cb7bc",
       "learningLibraryUrl": "./test_prep/early_childhood_5025_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/early_childhood_5025_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/early_childhood_5025_native_qa.json",
       "learningLibrarySha256": "fc24eed89a1c287c3adf72c9cd548ba1eb4acff99a07aac71dc9565c63523a0e",
       "learningLibraryQaSha256": "22d4393b4e58fb2710e697f1a04e3db76ff9771a99d2afed0b457c63de6c063a",
-      "nativeQaSha256": "856f9a01df56316862577005ef73c86ea4d3f4797be2afd5746f52c0384ae32f"
+      "nativeQaSha256": "e9e7e8ef5c4f123e685c25add046546daed176b480b736bbf64fd54e0ab66cca"
     },
     {
       "id": "praxis-plt-early-childhood-5621",

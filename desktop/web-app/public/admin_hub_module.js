@@ -13,8 +13,223 @@
   var React = window.React;
   if (!React) { console.error('[AdminHub] React not found on window'); return; }
 
+const ADMIN_HUB_STORAGE_MANIFEST = [
+  { prefix: "allo_udlwalk_", tool: "UDL Walkthrough" },
+  // config, roster, sessions, draft
+  { prefix: "allo_wcop_", tool: "Walkthrough Copilot" },
+  // delivery log
+  { prefix: "allo_dispro_", tool: "Disproportionality Analyzer" },
+  // analyses, draft
+  { prefix: "allo_mtss_", tool: "MTSS Triage" },
+  // datasets, groups
+  { prefix: "allo_sped_", tool: "SpEd Timelines" },
+  // cases, config
+  { prefix: "allo_meetdocs_", tool: "Meeting Documentation" },
+  // meetings, templates, draft
+  { prefix: "allo_famann_", tool: "Family Announcements" },
+  // saved, config, draft
+  { prefix: "allo_educator_evaluation_", tool: "Educator Evaluation" }
+  // local workspace, onboarding
+];
+const ADMIN_HUB_STORAGE_PREFIXES = ADMIN_HUB_STORAGE_MANIFEST.map((entry) => entry.prefix);
+const ADMIN_HUB_BACKUP_FORMAT = "alloflow-leadership-hub-backup";
+function _adminHubGroupByTool(keys) {
+  const counts = [];
+  for (const entry of ADMIN_HUB_STORAGE_MANIFEST) {
+    const n = keys.filter((k) => k.indexOf(entry.prefix) === 0).length;
+    if (n > 0) counts.push({ tool: entry.tool, count: n });
+  }
+  return counts;
+}
+function _adminHubKeyAllowed(key) {
+  return typeof key === "string" && ADMIN_HUB_STORAGE_PREFIXES.some((p) => key.indexOf(p) === 0);
+}
+function _adminHubCollectBackup() {
+  const keys = {};
+  let count = 0;
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (!_adminHubKeyAllowed(key)) continue;
+    const value = localStorage.getItem(key);
+    if (typeof value === "string") {
+      keys[key] = value;
+      count++;
+    }
+  }
+  return { format: ADMIN_HUB_BACKUP_FORMAT, version: 1, exportedAt: (/* @__PURE__ */ new Date()).toISOString(), keyCount: count, keys };
+}
+const ADMIN_HUB_DRIVE_CFG_KEY = "allo_adminhubdrive_config_v1";
+function _adminHubDriveCfg() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(ADMIN_HUB_DRIVE_CFG_KEY) || "null");
+    return parsed && typeof parsed === "object" && typeof parsed.url === "string" && typeof parsed.token === "string" ? parsed : null;
+  } catch (_) {
+    return null;
+  }
+}
+function _adminHubHash(text) {
+  let h = 5381;
+  for (let i = 0; i < text.length; i++) {
+    h = (h << 5) + h + text.charCodeAt(i) | 0;
+  }
+  return String(h);
+}
+async function _adminHubDrivePost(url, body) {
+  const res = await fetch(url, { method: "POST", body: JSON.stringify(body) });
+  return res.json();
+}
+async function _adminHubMaybeDriveBackup(opts) {
+  const force = !!(opts && opts.force);
+  try {
+    const cfg = _adminHubDriveCfg();
+    if (!cfg) return { status: "no-config" };
+    const backup = _adminHubCollectBackup();
+    if (backup.keyCount === 0) return { status: "empty" };
+    const hash = _adminHubHash(JSON.stringify(backup.keys));
+    if (!force && cfg.lastHash === hash) return { status: "unchanged", lastSavedAt: cfg.lastSavedAt };
+    const reply = await _adminHubDrivePost(cfg.url, { token: cfg.token, action: "save", payload: backup });
+    if (!reply || reply.ok !== true) return { status: "error", error: String(reply && reply.error || "save-failed") };
+    const next = { ...cfg, lastSavedAt: (/* @__PURE__ */ new Date()).toISOString(), lastHash: hash };
+    try {
+      localStorage.setItem(ADMIN_HUB_DRIVE_CFG_KEY, JSON.stringify(next));
+    } catch (_) {
+    }
+    return { status: "saved", keyCount: backup.keyCount, lastSavedAt: next.lastSavedAt };
+  } catch (err) {
+    return { status: "error", error: String(err && err.message || err) };
+  }
+}
+function AdminHubDriveBackup({ tt, addToast }) {
+  const [cfg, setCfg] = React.useState(() => _adminHubDriveCfg());
+  const [setupOpen, setSetupOpen] = React.useState(false);
+  const [urlInput, setUrlInput] = React.useState("");
+  const [tokenInput, setTokenInput] = React.useState("");
+  const [busy, setBusy] = React.useState(false);
+  const [autoNote, setAutoNote] = React.useState("");
+  const writeCfg = (next) => {
+    try {
+      if (next) localStorage.setItem(ADMIN_HUB_DRIVE_CFG_KEY, JSON.stringify(next));
+      else localStorage.removeItem(ADMIN_HUB_DRIVE_CFG_KEY);
+    } catch (_) {
+    }
+    setCfg(next);
+  };
+  const saveToDrive = React.useCallback(async ({ auto, force } = {}) => {
+    const result = await _adminHubMaybeDriveBackup({ force: !!force });
+    if (result.status === "saved") {
+      setCfg(_adminHubDriveCfg());
+      setAutoNote("");
+      if (!auto) addToast(tt("adminhub.drive_saved", "Backup saved to your school Drive ({count} items).").replace("{count}", String(result.keyCount)), "success");
+    } else if (result.status === "unchanged") {
+      if (auto) setAutoNote(tt("adminhub.drive_unchanged", "No changes since the last Drive backup."));
+    } else if (result.status === "empty") {
+      if (!auto) addToast(tt("adminhub.backup_empty", "Nothing to back up yet — the hub tools have no saved data on this device."), "info");
+    } else if (result.status === "error") {
+      addToast((auto ? tt("adminhub.drive_auto_failed", "Automatic Drive backup failed: ") : tt("adminhub.drive_save_failed", "Drive backup failed: ")) + result.error, "error");
+    }
+    return result;
+  }, [addToast, tt]);
+  React.useEffect(() => {
+    if (!_adminHubDriveCfg()) return;
+    saveToDrive({ auto: true });
+  }, [saveToDrive]);
+  if (!cfg) {
+    return /* @__PURE__ */ React.createElement("div", { className: "mt-2 border-t border-slate-200 pt-2", "data-help-key": "adminhub_drive_section" }, !setupOpen ? /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "data-help-key": "adminhub_drive_setup_open",
+        onClick: () => setSetupOpen(true),
+        className: "text-[11px] font-bold text-indigo-700 underline underline-offset-2 hover:text-indigo-900"
+      },
+      tt("adminhub.drive_setup_open", "Set up automatic Drive backup (school Google account)"),
+      /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, " →")
+    ) : /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, tt("adminhub.drive_setup_intro", "A 3-minute script on your school-managed Google account saves this hub to your Drive automatically — covered by your district’s data agreement. Follow the setup steps in the leader’s guide, then paste the web-app URL and token here.")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-col sm:flex-row gap-2 sm:items-end" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "adminhub-drive-url", className: "block text-[11px] font-bold text-slate-700 mb-0.5" }, tt("adminhub.drive_url_label", "Web app URL")), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        id: "adminhub-drive-url",
+        type: "url",
+        value: urlInput,
+        onChange: (e) => setUrlInput(e.target.value),
+        placeholder: tt("adminhub.drive_url_placeholder", "Web app URL ending in /exec"),
+        className: "min-h-10 w-full rounded-lg border border-slate-300 bg-white px-2 text-xs"
+      }
+    )), /* @__PURE__ */ React.createElement("div", { className: "w-full sm:w-40" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "adminhub-drive-token", className: "block text-[11px] font-bold text-slate-700 mb-0.5" }, tt("adminhub.drive_token_label", "Backup token")), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        id: "adminhub-drive-token",
+        type: "password",
+        value: tokenInput,
+        onChange: (e) => setTokenInput(e.target.value),
+        placeholder: tt("adminhub.drive_token_placeholder", "From setup()"),
+        className: "min-h-10 w-full rounded-lg border border-slate-300 bg-white px-2 text-xs"
+      }
+    )), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "data-help-key": "adminhub_drive_connect",
+        disabled: busy || !urlInput.trim() || !tokenInput.trim(),
+        onClick: async () => {
+          setBusy(true);
+          try {
+            const url = urlInput.trim();
+            const reply = await _adminHubDrivePost(url, { token: tokenInput.trim(), action: "ping" });
+            if (!reply || reply.ok !== true) throw new Error(reply && reply.error || "no-reply");
+            const next = { url, token: tokenInput.trim(), folder: String(reply.folder || ""), lastSavedAt: null, lastHash: null };
+            writeCfg(next);
+            setSetupOpen(false);
+            setUrlInput("");
+            setTokenInput("");
+            addToast(tt("adminhub.drive_connected", "Drive backup connected. Saving a first backup now…"), "success");
+            await saveToDrive({ force: true });
+          } catch (err) {
+            addToast(tt("adminhub.drive_connect_failed", "Could not connect: ") + String(err && err.message || err) + tt("adminhub.drive_connect_hint", " — check the URL ends in /exec, the token matches setup(), and the deployment allows Anyone."), "error");
+          } finally {
+            setBusy(false);
+          }
+        },
+        className: "min-h-10 px-3 rounded-lg border border-indigo-300 bg-white text-xs font-bold text-indigo-800 hover:bg-indigo-50 disabled:opacity-50"
+      },
+      busy ? tt("adminhub.drive_connecting", "Connecting…") : tt("adminhub.drive_connect", "Connect & test")
+    ))));
+  }
+  return /* @__PURE__ */ React.createElement("div", { className: "mt-2 border-t border-slate-200 pt-2 flex flex-wrap items-center justify-between gap-2", "data-help-key": "adminhub_drive_section" }, /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", className: "text-[11px] text-slate-600 min-w-0", "data-help-key": "adminhub_drive_status" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-emerald-800" }, tt("adminhub.drive_on", "Drive auto-backup on")), cfg.folder ? " · " + cfg.folder : "", " · ", cfg.lastSavedAt ? tt("adminhub.drive_last_saved", "last saved {time}").replace("{time}", new Date(cfg.lastSavedAt).toLocaleString()) : tt("adminhub.drive_not_yet", "no backup saved yet"), autoNote ? " · " + autoNote : ""), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 shrink-0" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-help-key": "adminhub_drive_save_now",
+      disabled: busy,
+      onClick: async () => {
+        setBusy(true);
+        try {
+          await saveToDrive({ force: true });
+        } finally {
+          setBusy(false);
+        }
+      },
+      className: "min-h-10 px-3 rounded-lg border border-emerald-300 bg-white text-[11px] font-bold text-emerald-800 hover:bg-emerald-50 disabled:opacity-50"
+    },
+    busy ? tt("adminhub.drive_saving", "Saving…") : tt("adminhub.drive_save_now", "Back up to Drive now")
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-help-key": "adminhub_drive_disconnect",
+      onClick: () => {
+        if (window.confirm(tt("adminhub.drive_disconnect_confirm", "Stop backing up to Drive? Existing backups stay in your Drive folder; only the connection on this device is removed."))) {
+          writeCfg(null);
+          addToast(tt("adminhub.drive_disconnected", "Drive backup disconnected."), "info");
+        }
+      },
+      className: "min-h-10 px-3 rounded-lg border border-slate-300 bg-white text-[11px] font-bold text-slate-600 hover:bg-slate-100"
+    },
+    tt("adminhub.drive_disconnect", "Disconnect")
+  )));
+}
 function AdminHubPanel(props) {
   const { onClose, t, openTool = (() => {
+  }), addToast = (() => {
   }) } = props;
   const tt = React.useCallback((key, fallback) => {
     if (typeof t === "function") {
@@ -99,7 +314,7 @@ function AdminHubPanel(props) {
       id: "evaluation",
       icon: "✅",
       title: tt("adminhub.evaluation_title", "Educator Evaluation"),
-      desc: tt("adminhub.evaluation_desc", "Opens your connected district evaluation portal; otherwise opens a click-through demonstration with Pennsylvania Act 13 completion and weighting pies, walkthroughs, formal observations, SPM / SLO, dialogue, receipts, and audit history."),
+      desc: tt("adminhub.evaluation_desc", "Opens your connected district evaluation portal; otherwise your private on-device workspace — completion and weighting views, walkthroughs, formal observations, SPM / SLO, dialogue, receipts, and audit history, with framework profiles for PA Act 13 and Maine PEPG."),
       accent: "from-blue-50 to-indigo-50 border-blue-700",
       titleCls: "text-blue-900",
       descCls: "text-blue-800"
@@ -170,10 +385,104 @@ function AdminHubPanel(props) {
     },
     /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, tool.icon),
     /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold " + tool.titleCls }, tool.title), /* @__PURE__ */ React.createElement("p", { className: "text-xs mt-1 " + tool.descCls }, tool.desc))
-  ))), /* @__PURE__ */ React.createElement("p", { className: "mt-5 text-[11px] text-slate-500 border-t border-slate-200 pt-3" }, tt("adminhub.covenant", "How this suite handles information: analysis tools use aggregate counts or de-identified codes. Official evaluation records belong only in a district-authorized authenticated portal. The local preview must not contain real personnel or student information. Human review stays in control—never an automated verdict about a teacher or student."))));
+  ))), /* @__PURE__ */ React.createElement("div", { className: "mt-5 rounded-xl border border-slate-200 bg-slate-50 p-3", "data-help-key": "adminhub_backup_section" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-black uppercase tracking-wide text-slate-700" }, tt("adminhub.backup_title", "Back up this hub")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 mt-0.5" }, tt("adminhub.backup_desc", "Everything above lives only in this browser. Download one file with all of it, and restore on a new device or after a wipe."))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 shrink-0" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-help-key": "adminhub_backup_export",
+      onClick: () => {
+        try {
+          const backup = _adminHubCollectBackup();
+          if (backup.keyCount === 0) {
+            addToast(tt("adminhub.backup_empty", "Nothing to back up yet — the hub tools have no saved data on this device."), "info");
+            return;
+          }
+          const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "alloflow-leadership-hub-backup-" + backup.exportedAt.slice(0, 10) + ".json";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => {
+            try {
+              URL.revokeObjectURL(url);
+            } catch (_) {
+            }
+          }, 5e3);
+          addToast(tt("adminhub.backup_done", "Backup downloaded ({count} saved items). Keep it where you keep confidential files.").replace("{count}", String(backup.keyCount)), "success");
+        } catch (err) {
+          addToast(tt("adminhub.backup_failed", "Backup failed: ") + String(err && err.message || err), "error");
+        }
+      },
+      className: "min-h-10 px-3 rounded-lg border border-indigo-300 bg-white text-xs font-bold text-indigo-800 hover:bg-indigo-50"
+    },
+    tt("adminhub.backup_export", "Download backup")
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-help-key": "adminhub_backup_restore",
+      onClick: () => {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = "application/json,.json";
+        input.onchange = () => {
+          const file = input.files && input.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = () => {
+            try {
+              const data = JSON.parse(String(reader.result || ""));
+              if (!data || data.format !== ADMIN_HUB_BACKUP_FORMAT || typeof data.keys !== "object" || data.keys === null) {
+                addToast(tt("adminhub.restore_not_backup", "That file is not a Leadership Hub backup."), "error");
+                return;
+              }
+              const entries = Object.entries(data.keys).filter(([k, v]) => _adminHubKeyAllowed(k) && typeof v === "string");
+              const rejected = Object.keys(data.keys).length - entries.length;
+              if (entries.length === 0) {
+                addToast(tt("adminhub.restore_empty", "The backup contains no hub data."), "error");
+                return;
+              }
+              const stamp = typeof data.exportedAt === "string" ? data.exportedAt.slice(0, 10) : "?";
+              const breakdown = _adminHubGroupByTool(entries.map(([k]) => k)).map((g) => "· " + g.tool + ": " + g.count + " " + (g.count === 1 ? tt("adminhub.restore_item_one", "item") : tt("adminhub.restore_item_many", "items"))).join("\n");
+              const ok = window.confirm(
+                tt("adminhub.restore_confirm", "Restore this backup, dated {date}?").replace("{date}", stamp) + "\n\n" + breakdown + "\n\n" + tt("adminhub.restore_confirm_effect", "Data for these tools on this device will be replaced by the backup. Tools not listed are left alone, and nothing outside the Leadership Hub is touched.")
+              );
+              if (!ok) return;
+              for (const [k, v] of entries) localStorage.setItem(k, v);
+              addToast(
+                (rejected > 0 ? tt("adminhub.restore_done_skipped", "Restored {count} items; {skipped} entries outside the hub were ignored. Reopen a tool to see its data.").replace("{skipped}", String(rejected)) : tt("adminhub.restore_done", "Restored {count} items. Reopen a tool to see its data.")).replace("{count}", String(entries.length)),
+                "success"
+              );
+            } catch (err) {
+              addToast(tt("adminhub.restore_failed", "Restore failed: ") + String(err && err.message || err), "error");
+            }
+          };
+          reader.readAsText(file);
+        };
+        input.click();
+      },
+      className: "min-h-10 px-3 rounded-lg border border-slate-300 bg-white text-xs font-bold text-slate-700 hover:bg-slate-100"
+    },
+    tt("adminhub.backup_restore", "Restore from backup")
+  ))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-amber-800 mt-2" }, tt("adminhub.backup_caveat", "The file contains whatever the tools store — codes, notes, and settings. Treat it like the confidential records it may describe, and delete old copies per your retention policy.")), /* @__PURE__ */ React.createElement(AdminHubDriveBackup, { tt, addToast })), /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-[11px] text-slate-500 border-t border-slate-200 pt-3" }, tt("adminhub.covenant", "How this suite handles information: analysis tools use aggregate counts or de-identified codes. Everything you enter stays in your signed-in profile on this device and is never uploaded, protected by your device sign-in rather than by separate encryption. Connecting a district portal adds shared, authenticated records staff can see and acknowledge. Apply your district’s retention rules, and keep a backup so a lost device is not a lost year. Human review stays in control—never an automated verdict about a teacher or student.")), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[11px]" }, /* @__PURE__ */ React.createElement(
+    "a",
+    {
+      href: "https://alloflow-cdn.pages.dev/guide/for-school-leaders.html",
+      target: "_blank",
+      rel: "noopener noreferrer",
+      "data-help-key": "adminhub_guide_link",
+      "aria-label": tt("adminhub.guide_link_aria", "Leader’s guide: how to use these tools (opens in a new tab)"),
+      className: "font-bold text-indigo-700 underline underline-offset-2 hover:text-indigo-900"
+    },
+    tt("adminhub.guide_link", "Leader’s guide: how to use these tools"),
+    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, " →")
+  ))));
 }
 
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.AdminHub = { AdminHubPanel: AdminHubPanel };
+  window.AlloModules.AdminHub = { AdminHubPanel: AdminHubPanel, maybeDriveBackup: _adminHubMaybeDriveBackup };
   console.log('[CDN] AdminHub loaded');
 })();

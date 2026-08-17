@@ -1281,3 +1281,880 @@ commit intended is complete.
 check and a different session's file: new hardcoded user-facing strings in
 `educator_evaluation_source.jsx` (488 → 495, +7), which is ` M` in the working tree and not in
 my ownership. Reported, not fixed, not bypassed.
+### Ninth pass — flight-path diagrams, a size scale, and the finding underneath both
+
+**`flightPatterns` now has diagrams.** Ten patterns, ten traces, drawn to a common baseline so
+they can be compared: soaring as circles rising inside a thermal column with the V-versus-flat
+posture pair the text names; direct as a straight line with even beat ticks; bounding as a wave
+dipping below a dashed reference with folded wings at each trough; hovering as a true crossed
+figure-8 over a fixed point; gliding as a long shallow descent with no beats; diving as a steep
+plunge to a splash with wings folded; erratic as a jagged zigzag; heavy plowing as dense beats
+low over water; aerial insect-catching as a winding path past insects; slow flapping as three
+deep, widely spaced beats. Each is `aria-hidden` and every claim it makes is also in the prose
+beside it, so nothing is lost to a screen reader.
+
+Three defects found by looking at them on the right background and fixed: the two soaring
+labels collided into "V = vultureflat = eagle"; the hovering figure was two facing arcs around
+a dot, which read unmistakably as an **eye**; and the "few, deep beats" caption sat across the
+flight line. Worth noting how the first two were caught — the harness has **no Tailwind**, so
+every `bg-white` card renders dark and I could not judge stroke colour against it. I rebuilt
+the traces onto a white sheet, which is where the collisions showed.
+
+**`dichotomous` — the size question now shows sizes.** The very first question of the key asks
+"Roughly what size is the bird?" and answered it with five lines of text. "Robin-sized" and
+"crow-sized" only help someone who already knows those birds, which is not who opens a
+dichotomous key. Each option now carries a perched-bird glyph drawn to scale from its band's
+body length, on a fixed baseline so only the bird changes size.
+
+### The finding underneath all of this
+
+Three passes have now turned up the same thing in four different views, and it is worth stating
+as one defect rather than four:
+
+> **BirdLab teaches visual identification almost entirely in prose.**
+
+- Silhouette Quiz — ellipses and rectangles for a quiz that is nothing but shape (fixed)
+- Beak & Feet — eight bill shapes as 3px slivers (fixed)
+- Flight Patterns — no illustrations at all (fixed)
+- Dichotomous Key — a size question with no sizes (fixed)
+- **Common Confusing Pairs — ten look-alike pairs, described only in words (NOT fixed)**
+
+That last one is the largest remaining instance and the most visual content in the tool by
+definition: "these two birds look alike, here is how to tell them apart", with no pictures.
+Its own text names exactly the marks I now have vocabulary for — "Sharp-shinned has square tail
+tip, Cooper's rounded", "Hermit has rusty-red tail", "Goshawk plain gray with white eyebrow".
+Ten pairs is twenty illustrations, so it is a real piece of work rather than a repair, and I
+have left it described rather than half-built.
+
+### Verified (ninth pass)
+
+`node dev-tools/birdlab_visual_qa.mjs` **83 core / 402 exhaustive, exit 0**; the four BirdLab
+test files **47/47**; both e2e specs **7/7**; `check_keyless_map` clean; mirror byte-identical.
+Traces reviewed twice on a white card background, before and after the three fixes; size glyphs
+reviewed in the live view. All scratch capture specs removed — `tests/e2e/` holds only the two
+real BirdLab specs.
+
+### Prioritised list of what is still open
+
+1. **Common Confusing Pairs** — 10 pairs, no art. Largest instance of the class above.
+2. **The remaining ~110 unreviewed views.** I have now looked at 22 of 123. Of the six
+   illustration-bearing ones examined closely, **five had real defects**. That rate has not
+   dropped as I have gone.
+3. `word_sounds` suite: 2 failures from a missing `wsProgress` validator region in
+   `AlloFlowANTI.txt` (not mine, still open).
+4. `npm run verify:gate` red for every lane on the i18n staleness ratchet (23,054 vs 22,930).
+5. The taller mobile scene card pushes panels down — wants a real device.
+### Tenth pass — Common Confusing Pairs, the last big instance
+
+The largest remaining case of "teaches visual ID in prose", and the one I had left described
+rather than built. Now built: **nine comparison plates**, one per pair.
+
+The design decision that made twenty illustrations tractable: a learner comparing two
+look-alike birds does not need two portraits, they need **the difference**. Each plate shows
+the single decisive mark the entry's own text already names, side by side at one scale:
+
+| pair | mark shown |
+|---|---|
+| Downy vs Hairy Woodpecker | bill length against a dashed head-width bracket, so "shorter / longer than head" is measurable rather than a phrase |
+| Cooper's vs Sharp-shinned | square vs rounded tail tip |
+| Greater vs Lesser Yellowlegs | bill length, and the slight upturn |
+| White-throated vs White-crowned Sparrow | yellow lores + white throat vs neither |
+| Magnolia vs Yellow Warbler | black mask vs plain face |
+| Hermit vs Swainson's Thrush | rusty tail against a brown body vs uniform brown |
+| Red-shouldered vs Red-tailed Hawk | boldly barred vs plain brick-red tail |
+| Common vs Hooded Merganser | raised white hood vs green head |
+| Sharp-shinned / Cooper's / Goshawk | three birds at true relative size |
+
+Built from four primitives (`cmpHead`, `cmpTail`, `cmpSizeBird`, and the plate router
+`confusePlate`), so the plates share one visual language with the silhouettes, flight traces
+and size glyphs added earlier.
+
+**One pair deliberately has no plate.** Black-capped vs Carolina Chickadee separates in Maine
+on **range**, not on a mark — the entry's own text says "In Maine: only Black-capped present".
+Drawing a plate for a feature that does not reliably separate them would manufacture a
+confidence the field does not support, so that entry keeps its text and the code says why.
+That is the one place in this whole run where the right answer was to draw nothing.
+
+Caught in review, on a white sheet: the merganser's crest rendered as a thin wisp under a
+caption reading "big raised white hood" — a diagram contradicting its own label, which is the
+exact defect this pass exists to remove. Redrawn as a fan about as large as the head, behind
+the head circle so it reads as raised.
+
+### Verified (tenth pass)
+
+`node dev-tools/birdlab_visual_qa.mjs` **83 core / 402 exhaustive, exit 0**; the four BirdLab
+test files **47/47**; both e2e specs **7/7**; `check_keyless_map` clean; `check_render_refs`
+exit 0; mirror byte-identical. All nine plates reviewed twice on a white card background,
+before and after the crest fix. Scratch capture spec removed; `tests/e2e/` holds only the two
+real BirdLab specs.
+
+### Where the class stands now
+
+All five instances found are closed:
+
+- Silhouette Quiz — ellipses and rectangles → 19 species-true silhouettes
+- Beak & Feet — 3px bill slivers → eight bills drawn on heads
+- Flight Patterns — no art at all → ten flight-path traces
+- Dichotomous Key — a size question in words → to-scale size glyphs
+- **Common Confusing Pairs — ten prose entries → nine comparison plates**
+
+### Still open
+
+1. **~110 unreviewed views.** 22 of 123 seen. Of the seven illustration-bearing ones examined
+   closely, six had real defects. The rate has not dropped.
+2. `word_sounds`: 2 failures from a missing `wsProgress` validator region in `AlloFlowANTI.txt`.
+3. `npm run verify:gate` red for every lane on the i18n staleness ratchet (23,054 vs 22,930).
+4. The taller mobile scene card pushes panels down — wants a real device.
+### Eleventh pass — stopped sampling, measured instead
+
+Six of the seven illustration-bearing views I had opened by hand were broken, but eyeballing
+the other hundred is the wrong tool. So I built a detector for the defect class rather than
+hunting more instances of it.
+
+**The audit.** Mount every one of the 123 views in the live harness and, for each, count how
+much of its text makes a **visual claim** (`shape`, `silhouette`, `posture`, `look for`,
+`note the`, `barred`, `crest`, `wingbar`, `field mark`, ~40 terms) against how much
+illustration it actually renders — where "illustration" means an `<svg>` with at least three
+drawing elements, so a lone icon glyph does not count as art.
+
+The headline number:
+
+> **123 views measured. 24 have any art at all.**
+
+And the ranked worklist, claims per thousand words with zero illustrations:
+
+| view | claims | words | claims/1k |
+|---|---|---|---|
+| **shapediff** | 32 | 309 | **104** |
+| plumage | 9 | 107 | 84 |
+| colorId | 24 | 300 | 80 |
+| drawing | 18 | 257 | 70 |
+| agesex | 23 | 385 | 60 |
+| footTypes | 7 | 117 | 60 |
+| irruptions | 14 | 343 | 41 |
+| glossaryDeep | 49 | 1309 | 37 |
+| behaviorGloss | 11 | 299 | 37 |
+| wingTypes | 7 | 268 | 26 |
+
+That is a measured worklist instead of my impression, and it survives me: anyone can re-run it.
+
+**Fixed the top entry.** `shapediff` — "Bird Shape + Size Quick Reference" — is the single most
+diagram-shaped content in the tool: eight morphological features, every one of them a shape,
+all in prose. It now carries **eight glyph strips**, one labelled mini-diagram per named
+variant: bill length short/medium/long; bill shape cone/needle/hook/spear/spoon/pelican-like;
+wing shape long-pointed/short-rounded/broad-slotted/aquatic-stiff; tail length; tail shape
+forked/notched/square/pointed/round; body size across five bands at true relative scale; leg
+length; body shape round/slim/compact. Built on the primitives added earlier in this run, so
+the quick reference now matches the art it is a reference for.
+
+Caught on the white sheet and fixed: `needle` and `spear` were both thin lines and `spoon` and
+`pelican-like` were both rounded blobs — four variants collapsing into two pairs, which defeats
+a reference strip. Needle is now short and hair-fine against a long heavy spear, and
+pelican-like carries the throat pouch that is its actual mark.
+
+**Note on `footTypes`.** It appears on the worklist with zero art, yet the foot illustrations I
+praised in an earlier pass are real — they live in `beakFeet`. So `footTypes` is a *second*
+view covering the same ground in words while a good drawn version already exists elsewhere in
+the tool. Worth reconciling rather than re-drawing.
+
+### Verified (eleventh pass)
+
+`node dev-tools/birdlab_visual_qa.mjs` **83 core / 402 exhaustive, exit 0**; the four BirdLab
+test files **47/47**; both e2e specs **7/7**; `check_keyless_map` clean; mirror byte-identical.
+Strips reviewed twice on a white background, before and after the bill differentiation. All
+four scratch specs removed — `tests/e2e/` holds only the two real BirdLab specs.
+
+### Still open, in priority order
+
+1. **The worklist above.** `plumage`, `colorId`, `drawing`, `agesex` are the next four, and
+   `agesex` (ageing and sexing birds) is arguably the highest-value of them because plumage
+   difference is the whole subject.
+2. `footTypes` duplicates `beakFeet`'s drawn content in prose — reconcile, do not redraw.
+3. `word_sounds`: 2 failures from a missing `wsProgress` validator region in `AlloFlowANTI.txt`.
+4. `npm run verify:gate` red for every lane on the i18n staleness ratchet (23,054 vs 22,930).
+5. The taller mobile scene card pushes panels down — wants a real device.
+
+The audit spec itself is removed rather than kept: it prints a worklist rather than asserting
+anything, and a test that cannot fail does not belong in the suite. It is reproduced in full in
+this report's history if it is wanted as a standing gate.
+### Twelfth pass — Aging + Sexing Birds, next off the measured worklist
+
+`agesex` scored 60 claims per thousand words with zero art. It ranks higher than that number
+suggests because **plumage difference is its entire subject**: six of its eight topics are
+male-versus-female or juvenile-versus-adult comparisons, which is the same plate pattern built
+for Confusing Pairs.
+
+Six plates added, using a new `cmpPlumageBird` primitive. The silhouette is held **constant**
+across each comparison and only the paint changes, so the eye compares plumage and nothing
+else — which is exactly the skill the view is teaching:
+
+- **Aging Songbirds** — first-fall brown-and-tan crown vs adult black-and-white
+- **Aging Raptors** — juvenile eagle mottled brown throughout vs adult dark body with white
+  head and tail
+- **Aging Gulls** — the **four-winter progression** the text calls the hardest ID group, as
+  four birds from mottled brown to full adult
+- **Sexing Songbirds** — cardinal male bright red vs female buff with a red wash
+- **Sexing Raptors** — kestrel male blue-grey wing vs female brown and streaked
+- **Sexing Waterfowl** — wood duck male green-headed vs female brown with the white eye-patch
+
+Banding + Marking and Citizen-Reportable Marks keep text only: they are about metal bands and
+wing tags, not plumage, so a plumage plate would say nothing.
+
+**Two mistakes of mine, caught before they shipped.** I typed an invalid colour
+(`'#a89madeup'`) into the second-winter gull, which would have painted as no fill; found by
+scanning every hex literal in the file for malformed values, and fixed. Then on the white sheet
+the four gull captions ran together — "browner, cleane**pproaching** adult" — because four
+items at that spacing cannot carry phrases; shortened to mottled / cleaner / near-adult /
+adult.
+
+### Verified (twelfth pass)
+
+`node dev-tools/birdlab_visual_qa.mjs` **83 core / 402 exhaustive, exit 0**; the four BirdLab
+test files **47/47**; both e2e specs **7/7**; `check_keyless_map` clean; mirror byte-identical.
+Plates reviewed on a white background before and after both fixes. Scratch specs removed;
+`tests/e2e/` holds only the two real BirdLab specs. I used the 90+ number range for scratch
+specs this time, after noticing other sessions had taken 42-48 while I was working.
+
+### Worklist status
+
+| view | claims/1k | state |
+|---|---|---|
+| shapediff | 104 | **done** (8 glyph strips) |
+| plumage | 84 | open |
+| colorId | 80 | open |
+| drawing | 70 | open |
+| agesex | 60 | **done** (6 plumage plates) |
+| footTypes | 60 | open — but see below |
+| irruptions | 41 | open |
+| glossaryDeep | 37 | open |
+| behaviorGloss | 37 | open |
+| wingTypes | 26 | open |
+
+Next two by value rather than by score: **`plumage`** (84, and it will reuse `cmpPlumageBird`
+directly) and **`colorId`** (80, colour being the one property the tool has never once drawn).
+`footTypes` should be **reconciled with `beakFeet`, not redrawn** — the good foot art already
+exists there.
+
+Still open elsewhere, unchanged: the two `word_sounds` failures from a missing `wsProgress`
+region in `AlloFlowANTI.txt`; `verify:gate` red for every lane on the i18n staleness ratchet;
+and the taller mobile scene card wanting a real-device look.
+### Thirteenth pass — Seasonal Plumage, and a bug of my own worth recording
+
+`plumage` ("Seasonal Plumage + Molt") scored 84 claims per thousand words with no art. Its
+shape is fourteen species, each with a breeding and a non-breeding description — the two-item
+plate again.
+
+**The honest design decision.** Only four of the fourteen actually change: goldfinch
+(lemon-yellow to olive-buff), loon (black head and checkered back to grey-and-white), snow
+bunting (white-and-black to warm buff), and wood duck (breeding to eclipse). The rest say
+"same plumage year-round" in their own text. Drawing a fabricated difference for those would
+teach the exact opposite of the view's real lesson, which is *which* species change. So the
+non-changers get **one** bird and a caption saying so, and two species that vary by sex or
+morph rather than season (snowy owl, white-throated sparrow) show that pair instead.
+
+### The bug: String.replace took the first match in a 25,000-line file
+
+My tagging script used `s.replace("{ species: 'Northern Cardinal',", ...)`. A plain-string
+`replace` substitutes the **first** occurrence anywhere in the file, and this file has **287**
+`species: '` keys across many arrays. Eleven of the fourteen `art:` blocks therefore landed in
+the **egg gallery**, sitting next to `dimensions`, `clutch` and `pattern`. Three happened to
+land correctly only because their species appeared first in `PLUMAGE_CYCLES`.
+
+The script reported `tagged 14/14` and `node --check` passed, because an unused extra key on
+an egg object is valid JavaScript that nothing reads. **Nothing failed.** What caught it was
+going back to verify the result rather than the report: a DOM check across all fourteen
+species showed eleven rendering zero drawing elements.
+
+I nearly mis-diagnosed it too — the first capture attempt looked like a screenshot race, and I
+said so. Re-running as a hard DOM assertion rather than an image gave the same eleven zeroes
+every time, which is what turned "flaky harness" into "real defect, and it is mine".
+
+**Repair:** a line-scoped script instead of a global replace — strip any `art:` sharing a line
+with `dimensions:`, find the `PLUMAGE_CYCLES` bounds, and insert only between them. Result:
+11 stripped from the egg array, 11 inserted correctly, 3 already right. Verified the egg rows
+still carry their `dimensions`/`clutch`/`color`/`pattern` (34 intact) and that all fourteen
+species now render, 6 to 14 drawing elements each, **zero with too little art**.
+
+### Verified (thirteenth pass)
+
+`node dev-tools/birdlab_visual_qa.mjs` **83 core / 402 exhaustive, exit 0**; the four BirdLab
+test files **47/47**; both e2e specs **7/7**; `check_keyless_map` clean; `check_render_refs`
+exit 0; mirror byte-identical. Scratch specs removed.
+
+### Worklist status
+
+| view | claims/1k | state |
+|---|---|---|
+| shapediff | 104 | done |
+| plumage | 84 | **done** (14 species) |
+| colorId | 80 | next |
+| drawing | 70 | open |
+| agesex | 60 | done |
+| footTypes | 60 | reconcile with `beakFeet`, do not redraw |
+| irruptions | 41 | open |
+| glossaryDeep | 37 | open |
+
+### For Aaron
+
+The `String.replace` trap is worth knowing beyond this file: **any scripted edit keyed on a
+name that recurs in a large source file needs a scoped range, not a global first-match**, and
+the tell is that it fails silently and reports success. I have written it to memory.
+### Fourteenth pass — Birds By Color
+
+`colorId` scored 80 with zero art, and it is the sharpest instance of the whole class: the view
+is titled **"Birds By Color — Visual ID"**, is organised entirely by colour, and showed no
+colour at all. Seven groups, each a list of species names in prose.
+
+Each group now leads with three representative birds drawn in that group's actual colours,
+reusing `cmpPlumageBird` so the swatches are birds rather than paint chips:
+
+- **Red** — cardinal all red, house finch with a red wash on a brown body, scarlet tanager
+  scarlet-and-black, which is the point the group's own tip makes about how much of the bird
+  is red
+- **Yellow** — goldfinch with black cap, all-yellow warbler, yellowthroat's black mask
+- **Blue** — bluebird blue-backed with a rust breast, indigo bunting deep blue, blue jay
+- **Black + White** — chickadee, downy woodpecker, checkered loon
+- **Brown + Streaked** — the hardest group, so it shows the distinction its tip names:
+  **streaked** vs **spotted** vs **plain** breast
+- **Gray** — junco with white belly, titmouse, raven
+- **Iridescent** — mallard green head, grackle purple-bronze, and **the same bird at a bad
+  angle looking plain black**, which is exactly what the group's tip warns about
+
+**Design calls I made.** The iridescent group gets a deliberate third panel showing the
+failure mode rather than a third species, because "may look black at the wrong angle" is the
+whole teaching point and a list of iridescent birds does not convey it. And the brown group
+shows a pattern contrast rather than three species, because its own tip says the ID hinges on
+breast pattern, not on colour.
+
+**Caught in review.** "Spotted breast" used the head `patch` field, which draws near the eye,
+so it rendered identically to "plain brown" — a caption contradicting its own picture, the
+same defect this whole pass exists to remove. Added a proper `spots` option that puts round
+marks on the breast, distinct from `streaks` lines. The triad now genuinely differs: lines,
+dots, nothing.
+
+**On accessibility:** colour is the subject here, so these are decorative (`aria-hidden`) and
+every species name and distinction remains in the text beside them. Nobody relying on a screen
+reader loses information they had before.
+
+**Method note:** this insert used the line-scoped script from the previous pass, and I verified
+where it landed (line 9129, immediately inside `BIRDS_BY_COLOR` at 9127) rather than trusting
+the script's count — which is exactly the check that was missing when the plumage edits went
+into the egg array.
+
+### Verified (fourteenth pass)
+
+`node dev-tools/birdlab_visual_qa.mjs` **83 core / 402 exhaustive, exit 0**; the four BirdLab
+test files **47/47**; both e2e specs **7/7**; `check_keyless_map` clean; `check_render_refs`
+exit 0; mirror byte-identical. Scratch spec removed.
+
+### Worklist status
+
+| view | claims/1k | state |
+|---|---|---|
+| shapediff | 104 | done |
+| plumage | 84 | done |
+| colorId | 80 | **done** |
+| drawing | 70 | next |
+| agesex | 60 | done |
+| footTypes | 60 | reconcile with `beakFeet`, do not redraw |
+| irruptions | 41 | open |
+| glossaryDeep | 37 | open (49 claims, the largest absolute count) |
+| behaviorGloss | 37 | open |
+| wingTypes | 26 | open — likely folds into `shapediff`'s wing strip |
+
+Five of the top ten are now closed. `drawing` is next by score, though I would look at
+`glossaryDeep` first on absolute volume: 49 claims is the most in the tool, and a glossary of
+visual terms is a natural place for small inline diagrams.
+### Fifteenth pass — glossaryDeep, and a measured fix to the diagram it points at
+
+`glossaryDeep` carries 49 visual claims, the largest absolute count in the tool. But the right
+answer turned out not to be new art.
+
+**The reconciliation call.** About two dozen of its 98 terms are places ON a bird — lore,
+malar, auriculars, nape, rump, speculum, coverts. The tool **already draws all of them**, on a
+labelled bird, in the Bird Topography Lab. Adding 98 inline diagrams would have created a
+second, worse set competing with a good existing one — the same trap I flagged for
+`footTypes` duplicating `beakFeet`. So the glossary now carries one cross-link to the
+Topography Lab, naming the kind of term it answers. One button, no duplication.
+
+**Then I checked the diagram it points at, and it had a real defect.** The 22 numbered
+hotspots are drawn directly on their anatomical points, at radius 12 in a 280x360 viewBox.
+Several facial marks are only ~15 units apart, so the badges collided. Measured, not eyeballed:
+
+| pair | overlap |
+|---|---|
+| Eyeline ↔ Eye ring | **46%** |
+| Supercilium ↔ Eyeline | 38% |
+| Supercilium ↔ Eye ring | 34% |
+| Throat ↔ Malar | 30% |
+| Lores ↔ Bill | 13% |
+
+Five overlapping pairs, and the worst three are supercilium, eyeline and eye ring — precisely
+the fine facial marks a beginner most needs to tell apart, on 33px targets where a click could
+land on the wrong one.
+
+**Fix:** separate the badge from the anchor. Anatomy stays exactly where it is; the numbered
+badge moves out to clear space with a leader line back to its real point, plus a small anchor
+dot. Five badges offset. Re-measured: **0 overlapping pairs**.
+
+**A measurement mistake of mine, caught immediately.** The first re-measure came back
+*worse* — 7 pairs including two at 100%. That was my metric, not the fix: once a leader line
+joins badge to anchor, `getBoundingClientRect()` on the `<g>` spans both, which is not what
+anyone clicks. Corrected to measure the badge circle specifically (r>=10, distinguishing it
+from the r=2.6 anchor dot). The corrected metric is consistent across both versions, since the
+original had exactly one circle per hotspot: **5 before, 0 after**.
+
+`tests/e2e/32-birdlab-diagram-keyboard.spec.ts` still passes, so the hotspots remain focusable
+and named by their part — the badge moved, the `<g>` role, tabIndex and aria-label did not.
+
+### Verified (fifteenth pass)
+
+`node dev-tools/birdlab_visual_qa.mjs` **83 core / 402 exhaustive, exit 0**; the four BirdLab
+test files **47/47**; both e2e specs **7/7** including the topography keyboard spec;
+`check_keyless_map` clean; mirror byte-identical. Diagram inspected before and after. Scratch
+specs removed.
+
+### Worklist status
+
+| view | claims/1k | state |
+|---|---|---|
+| shapediff | 104 | done |
+| plumage | 84 | done |
+| colorId | 80 | done |
+| drawing | 70 | open — next |
+| agesex | 60 | done |
+| footTypes | 60 | open: reconcile with `beakFeet` (same call as glossaryDeep) |
+| irruptions | 41 | open |
+| glossaryDeep | 37 | **done** by cross-link, plus the overlap fix |
+| behaviorGloss | 37 | open |
+| wingTypes | 26 | open — likely folds into `shapediff`'s wing strip |
+
+Six of the top ten closed. Two of them (`glossaryDeep`, and `footTypes` when it is done) close
+by **pointing at existing art rather than drawing more**, which I think is the more valuable
+pattern: this tool's problem is not only missing diagrams, it is also good diagrams that
+nothing else references.
+
+Still open elsewhere, unchanged: the two `word_sounds` failures from a missing `wsProgress`
+region in `AlloFlowANTI.txt`; `verify:gate` red for every lane on the i18n staleness ratchet;
+the taller mobile scene card wanting a real device.
+
+### Sixteenth pass — the drawing lesson that had no drawings, and closing footTypes
+
+**`drawing` (70 claims/1k).** Nine text sections teaching field sketching: "capture posture
+and proportions first", "after basic shape, add bill, eye, wing pattern, tail shape, feet",
+"birds have characteristic postures — woodpecker on a trunk, sandpiper running, hawk soaring,
+capture these". Not one drawing anywhere in it. Of everything in the visual-debt list this was
+the clearest case: a lesson about drawing, delivered entirely in prose.
+
+Four pieces added, one per topic that describes a shape:
+
+- **Build strip (Quick sketches).** Four cumulative panels: two construction ovals -> join
+  plus posture axis -> bill, eye, tail, legs -> wing and marks. Panel 4 is literally panels
+  1-3 plus more, so the strip reads as one drawing growing rather than four pictures.
+- **Detail-order plate (Adding details).** The finished sketch with five numbered callouts in
+  the exact order the prose lists, badges offset with leader lines.
+- **Posture plate (Drawing posture + behavior).** The three postures the text names by name,
+  each with its body axis drawn as a dashed line, because that angle is the thing being taught.
+- **Journal page (Note-taking) and colour notes (Color).** A page with date/place/weather/
+  species/behaviour, and separately the contrast between "brown bird" and "bill black, legs
+  yellow, breast warm rust" with swatches.
+
+All of it stroke-only in graphite, so it reads as a field sketch a learner could plausibly
+match, rather than finished artwork they cannot.
+
+**Two colour collisions caught by looking at the render.** Amber was doing two jobs at once.
+In build step 4 the amber posture axis was still drawn while the amber plumage marks came on —
+a construction guide and a field mark in the same colour saying different things; the axis is
+now dropped at step 4, which is also what happens on paper. On the detail plate the amber
+callout leader for "wing pattern" ran collinear into the amber wingbar and read as one long
+stroke crossing the bird, and the eye callout's anchor dot vanished into the eyeline; marks
+are graphite there now, so amber means "a callout points here" and nothing else.
+
+**A fragility worth keeping.** The colour swatches rendered as nothing, because their size came
+from `w-3.5 h-3.5` and the QA harness loads no Tailwind. The harness is not the product, so
+that is an artifact — but the swatch IS the entire lesson on that card, and a utility class
+failing to resolve would delete it silently. Size is inline now. Same reasoning fixed the
+detail list double-numbering ("1. 1 Bill"): the `<ol>` marker is killed inline rather than
+relying on a preflight reset.
+
+**Three postures redrawn after the first render.** The soaring hawk read as a paper aeroplane
+(straight wings on a narrow body), the sandpiper's two parallel leg lines merged into a single
+pedestal, and the woodpecker's "stiff tail" was a thin tick rather than the third leg of a
+tripod. Second versions: swept wings with finger slots and a fanned tail, bent splayed legs
+with toes, and a tail wedge propped against the bark.
+
+**`footTypes` (60 claims/1k) — closed the way `glossaryDeep` was.** The Beak & Feet Lab already
+draws feet, so this view points at them instead of growing a duplicate set. But the drawn set
+did not actually cover the prose:
+
+- Six feet were drawn against eight described. **Lobed** (coot, grebe, phalarope) and
+  **gamebird walking** (turkey, grouse) are now drawn, in the existing 40x40 style.
+- Lobed could **not** be pointed at the existing "Shorebird (small webbing)" entry. Separate
+  lobes on each toe and a small web between toes are different feet on different birds; that
+  link would have taught something false.
+- The header said **"6 foot types"** in a hardcoded string. It now counts the array, so it
+  cannot drift again. The intro paragraph's "eight bill shapes and six foot patterns" lost its
+  numbers for the same reason.
+- The new gamebird foot came out at **1.20:1** against its panel where the amber feet sit at
+  1.60:1 — washed out beside its siblings. Repalletted to 2.41:1. Worth noting the amber
+  baseline is low too; those feet are carried by their dark stroke, not their fill.
+
+**One thing I did not fix, deliberately.** The prose entry "Grasping foot (large toes)" lists
+`birds: Cranes, herons (modified)` but `examples: Osprey`. Those are not the same foot — an
+Osprey grips fish with a reversible outer toe and spiny scales, which is not a crane's foot.
+I did not draw it, because drawing it means choosing which half of a contradictory entry is
+right, and that is a content call on the science rather than a visual one. It is also why the
+new cross-link says "these feet are drawn in the Beak & Feet Lab" rather than "every foot
+below" — seven of the eight have a correct counterpart, and the button does not claim eight.
+**Flagging for whoever owns this content: that entry needs its birds and example reconciled.**
+
+### Verified (sixteenth pass)
+
+`node dev-tools/birdlab_visual_qa.mjs` **83 core / 402 exhaustive, exit 0**; the four BirdLab
+test files **45/45**; both e2e specs **7/7**; `check_keyless_map` clean; `check_render_refs`
+clean; mirror byte-identical. Every new piece of art inspected in a real browser render, and
+the postures re-inspected after redrawing. Scratch spec removed.
+
+**Correction to earlier passes in this report:** I recorded the BirdLab unit total as "47/47".
+The four files hold 32 + 7 + 4 + 2 = **45** tests. No tests were lost — the files are unmodified
+— the earlier figure was simply a miscount.
+
+### Worklist status
+
+| view | claims/1k | state |
+|---|---|---|
+| shapediff | 104 | done |
+| plumage | 84 | done |
+| colorId | 80 | done |
+| drawing | 70 | **done** |
+| agesex | 60 | done |
+| footTypes | 60 | **done** by cross-link + 2 feet drawn |
+| irruptions | 41 | open — next |
+| glossaryDeep | 37 | done by cross-link |
+| behaviorGloss | 37 | open |
+| wingTypes | 26 | open — likely folds into `shapediff`'s wing strip |
+
+Eight of the top ten closed. Three of them closed by pointing at art that already existed —
+and in this pass that reconciliation is what exposed the missing feet and the stale "6 foot
+types" count. Cross-linking is not just cheaper than redrawing; it is the thing that finds the
+gaps, because a link forces you to check that the destination actually delivers.
+
+### Seventeenth pass — researched the contradictory foot, and found the view was never rendering
+
+I said last pass that the "Grasping foot (large toes)" entry needed its birds and example
+reconciled, and that I would not guess. Looked it up instead.
+
+**The prose was wrong on both halves, and the fix is not a judgement call.**
+
+- Herons and cranes take prey with the **bill**, not the feet. Their claws are small, blunt and
+  straight, and their foot is the wading foot already listed two entries above. "Grasps fish +
+  amphibian prey / Cranes, herons" describes no real bird.
+- The genuine fish-grasping foot is the **Osprey's**, and it is built quite specifically: a
+  reversible outer toe that swings back to give 2 toes forward and 2 back (semi-zygodactyly),
+  plus **spicules** — short spiny scales on the toe pads that stop a wet fish sliding free. The
+  trait is shared with the Grey-headed and Lesser Fish Eagles and almost nothing else.
+
+Entry rewritten to that, and **now drawn**, showing both marks: the outer toe swung back, and
+the spicules. The cross-link could also be strengthened from "these feet are drawn" to "every
+foot below is drawn", because with the Osprey added all eight prose feet finally have a correct
+counterpart.
+
+**A second correction in the same array.** The Raptor entry claimed "Hawks + owls have
+reversible outer toe (zygodactyl) for stronger grip." Owls do; most hawks and falcons do not —
+the Osprey is the notable exception among diurnal raptors. Reworded.
+
+**The file already knew.** The Osprey *tracks* entry has read "two toes forward + two back
+(zygodactyl when grasping fish)" all along. So the tool was contradicting itself in two places,
+and the correct fact was already sitting in it.
+
+**Then the screenshot showed the whole view was broken — and had been.** With the Osprey added
+I re-rendered Foot Types and got **nine cards, every heading reading "undefined"**, with
+Shape/Birds/Function blank and Examples showing the *Beak & Feet Lab's* text.
+
+Root cause, and it is not mine: the diagram array is declared `var FOOT_TYPES` in the
+**component scope, outside `BeakFeetLab`** — so it shadowed the module-level `FOOT_TYPES` prose
+array for every view in the component. `FootTypesView` has been mapping over diagram objects
+that carry `label`/`lifestyle` and reading `type`/`shape`/`birds`/`function` off them. Confirmed
+pre-existing against HEAD, where the same shadowing sits at lines 5540 and 15751 with
+`BeakFeetLab` starting later at 15913. Before this pass it rendered **six** undefined headings;
+adding three feet made it nine. Renamed to `FOOT_DIAGRAMS`, with the reason recorded at the
+declaration. Everything renders now.
+
+**Why nothing caught it.** I have been quoting "83 core / 402 exhaustive states" as
+verification for fifteen passes. Those states are **all I-Spy scene states** — the harness
+asserts on `data-birdlab-ispy` markers and never renders a text view at all. It is deep
+coverage of one view, not broad coverage of the tool, and I should have said so earlier.
+
+**New test, calibrated against the bug.** `tests/birdlab_view_data_binding.test.js` renders
+**every** menu view id (read from the source, so new views are covered automatically) and fails
+if any renders the literal text "undefined" or comes back nearly empty, plus two guards on the
+foot arrays staying separately named and the Osprey correction surviving. I reintroduced the
+shadow to check it actually fires: **all 3 tests fail on the bad code**, and the failure output
+prints the nine `undefined` headings. A gate that has never failed proves nothing.
+
+**The first-match trap, caught by its own counter.** My scoped recolour script anchored on
+`indexOf("id: 'osprey'")` — there are **four** of those in the file, and it landed on a species
+record ~12,000 lines earlier. It was a harmless no-op only because that block contained none of
+the three colours. The replacement counters printed `0/0/0`, which is why I noticed; the script
+now throws when a scoped edit matches nothing, and anchors on a unique translation key instead.
+
+### Verified (seventeenth pass)
+
+`birdlab_visual_qa` **83 core / 402 exhaustive, exit 0** (I-Spy states only — see above); five
+BirdLab test files **48/48**; both e2e specs **7/7**; `check_keyless_map` and `check_render_refs`
+clean; mirror byte-identical. Foot Types and Beak & Feet re-rendered and inspected after the
+fix. Scratch spec removed.
+
+### Recommendation beyond this lane
+
+The shadowing hazard is generic: any `var X` in a STEM tool's component scope silently shadows a
+module-level `var X`, and the failure is invisible until someone reads the rendered page. I
+scoped my test to BirdLab deliberately, so as not to turn other lanes red on pre-existing
+issues, but **a repo-wide check for duplicate `var NAME = [` declarations at different scopes
+would be cheap and is likely to find more of these.** Worth a gate with a runner attached.
+
+Sources for the corrections:
+- Londei, T. (2020), "The osprey-like reversible outer toe...", *Ibis* 162(3) —
+  https://onlinelibrary.wiley.com/doi/10.1111/ibi.12812
+- "Behavioral correlates of semi-zygodactyly in Ospreys" —
+  https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6368007/
+- Scottish Wildlife Trust, "Flying fishermen: the key features that help ospreys hunt" —
+  https://scottishwildlifetrust.org.uk/2021/05/flying-fishermen-the-key-features-that-help-ospreys-hunt/
+
+### Eighteenth pass — irruptions: the concept was a sentence where a chart belongs
+
+`irruptions` listed eight species in prose. The gap here was not only ID art — the **concept the
+view is named for** was invisible. "Some winters bring spectacular numbers; other winters very
+few" is a chart written as a sentence.
+
+**The irruption chart.** Ten winters at one feeder, three rows: a regular visitor (even bars
+every winter), an irruptive one (near-zero, near-zero, then a flood), and underneath the driver
+— the northern seed crop marked good or failed, with the failures lining up under the spikes.
+That alignment is the mechanism the prose asserts and never shows: when the northern crop
+fails, the birds have to come south.
+
+It is labelled **schematic on its face**, in the note and in the alt text. Inventing per-species
+counts per winter would be fabricating survey data, and the shape of the pattern is the
+teachable part anyway.
+
+**Two corrections, both researched rather than guessed.**
+
+- **Bohemian vs Cedar Waxwing.** The prose offered "gray rump distinguishes them" — a mark both
+  birds roughly share, so it separates nothing. The reliable marks are the **undertail coverts**
+  (rusty on Bohemian, white on Cedar — the one that holds up at distance), the wing pattern
+  (bold white + yellow on Bohemian, plain on Cedar) and the belly (grey vs yellow). Prose
+  rewritten, and a side-by-side plate drawn with the undertail called out and labelled on each
+  bird.
+- **The two crossbills sit one above the other in this list and the prose never separates
+  them.** Added the mark that does: White-winged has two bold white wing bars, Red has a plain
+  dark wing.
+
+**The crossed bill took three attempts, and the reason is worth recording.** "Unique
+crossed-mandible bill for prying open cone scales" is accurate and completely unpicturable, so
+it is exactly the kind of claim that needs art.
+
+1. *At head scale* the two mandibles were thin slivers that overlapped into a single grey wedge.
+   The cone was also drawn on the wrong side — behind the bird's head, so it was biting nothing.
+2. *Zoomed to the bill, as filled wedges*, the pale lower mandible blanketed the dark upper's
+   descending tip and the pair read as one hooked bill. Ending both tips at the same x only
+   splayed it into a Y.
+3. *Working version:* the shared base **ends**, and two short blades leave it at opposing angles
+   and cross at roughly x=94. **A crossing needs an angle, not just an overlap** — that was the
+   thing I kept missing. Two shafts running parallel and then diverging read as a hook however
+   they are coloured or layered.
+
+The second panel shows what the crossing is *for*: opening the bill drives the tips in opposite
+directions and levers a cone scale up.
+
+**The waxwing plate needed a redraw too**, for a mistake I have made in this tool before: the
+white undertail patch was a free-floating pale oval on the bird's flank and read as a giant eye.
+Redrawn as a wedge at the vent where the tail meets the body, with a leader line to a written
+label, so it cannot be mistaken for anything else.
+
+### Verified (eighteenth pass)
+
+`birdlab_visual_qa` **83 core / 402 exhaustive, exit 0** (I-Spy states only); five BirdLab test
+files **48/48**; both e2e specs **7/7**; `check_keyless_map` and `check_render_refs` clean;
+mirror byte-identical. Every diagram inspected in a browser render, and the two that were wrong
+re-inspected after each redraw. Scratch spec removed.
+
+### Worklist status
+
+| view | claims/1k | state |
+|---|---|---|
+| shapediff | 104 | done |
+| plumage | 84 | done |
+| colorId | 80 | done |
+| drawing | 70 | done |
+| agesex | 60 | done |
+| footTypes | 60 | done |
+| irruptions | 41 | **done** |
+| glossaryDeep | 37 | done by cross-link |
+| behaviorGloss | 37 | open — next |
+| wingTypes | 26 | open — likely folds into `shapediff`'s wing strip |
+
+Nine of the top ten closed. Remaining in this view, deliberately not drawn: Redpoll's red cap,
+Siskin's yellow wing flash and Evening Grosbeak's yellow-and-black are all things the words
+already convey adequately to someone looking at the bird. The crossed bill and the waxwing pair
+were not.
+
+### Nineteenth pass — behaviour glossary, and two terms it could not tell apart
+
+`behaviorGloss` is 25 terms with a one-line definition each and no art. Twelve of those
+definitions **are a body shape or an arrangement of birds** — "spread-wing posture", "feigning
+injury", "up-and-down tail motion", "one bird watching while others feed" — so those twelve are
+now drawn. The abstract ones (philopatry, habituation, niche differentiation, site fidelity)
+are not, because a picture of them would be decoration.
+
+**The defect worth leading with.** The glossary defines two different behaviours with the *same
+three words*:
+
+- Sun-bathing — "**Spread-wing posture** for vitamin D + parasite control."
+- Mantling — "**Spread-wing posture** over prey to hide it from competitors."
+
+Read in the field, that separates nothing. So the view now opens with a three-panel plate
+answering it directly: sun-bathing has wings **open and flat** to the sun with nothing
+underneath; mantling has wings arched **forward and down** like a tent with prey underneath;
+and the distraction display — the third "wings out" posture in the same list — has **one** wing
+splayed and dragging while the bird stumbles away from the nest.
+
+**Three glyphs failed on first render and were redrawn.**
+
+- **Mantling** was the worst, and it failed at exactly the point of the diagram: the prey was
+  drawn *under* the wing cloak, so it was completely hidden. That is realistic and useless —
+  it removed the only thing distinguishing mantling from sun-bathing. The prey now protrudes at
+  the front and back, the way a half-covered kill actually looks.
+- **Sun-bathing** was drawn in profile, where two spread wings are just small blobs either side
+  of the body. Redrawn from **above**: spread wings only read as spread when you can see both.
+- **Mobbing** read as a single bird — the mobbers were specks in the corners. The predator is
+  smaller and centred now, and the mobbers are gull-wing strokes, which read as birds in flight
+  at 12px where a filled body does not.
+- **Sentinel** had its feeding birds produced by rotating the shared body 28°, which just looked
+  like debris. Drawn explicitly instead: one bird up on a post with its head **up**, two below
+  with their bills **in the ground**. That contrast is the definition.
+
+**New guard, calibrated.** The twelve glyphs are attached by a hand-typed lookup of glossary
+term strings. A typo there does not throw — the lookup returns undefined and the card silently
+loses its drawing, which is precisely the class of no-op nothing else would catch. Added a test
+that every key in `BEHAVIOR_GLYPH_FOR` matches a real term, and injected a typo (`Mobbign`) to
+confirm it fires. It does, naming the bad key.
+
+### Verified (nineteenth pass)
+
+`birdlab_visual_qa` **83 core / 402 exhaustive, exit 0** (I-Spy states only); five BirdLab test
+files **49/49**; both e2e specs **7/7**; `check_keyless_map` and `check_render_refs` clean;
+mirror byte-identical. All twelve glyphs inspected in a browser render, and the four that failed
+re-inspected after redrawing. Scratch spec removed.
+
+### Worklist status — top ten closed
+
+| view | claims/1k | state |
+|---|---|---|
+| shapediff | 104 | done |
+| plumage | 84 | done |
+| colorId | 80 | done |
+| drawing | 70 | done |
+| agesex | 60 | done |
+| footTypes | 60 | done |
+| irruptions | 41 | done |
+| glossaryDeep | 37 | done by cross-link |
+| behaviorGloss | 37 | **done** |
+| wingTypes | 26 | open — folds into `shapediff`'s wing strip; see below |
+
+**`wingTypes` is the last one, and it may not need new art.** `shapediff` already carries a
+wing-shape strip (pointed / rounded / slotted / tapered). The right move is almost certainly the
+`glossaryDeep` and `footTypes` treatment — check whether that strip actually covers what
+`wingTypes` describes, cross-link if it does, and draw only the gap. That check is what found
+the missing feet and the stale "6 foot types" count last time.
+
+Beyond the measured worklist, the recurring finding across these passes is worth stating plainly:
+**this tool's text and its diagrams were maintained separately, and drifted.** Three separate
+content errors surfaced only because I went to draw the thing (cranes-and-herons vs Osprey, the
+waxwing "gray rump", the two identical spread-wing definitions), plus one view that had never
+rendered at all. Drawing a claim is a good way to discover it is wrong.
+
+### Twentieth pass — wingTypes closed, and a 3D wing viewer
+
+The last item on the measured worklist, and the one place in this tool where a flat silhouette is
+genuinely not enough.
+
+**First the cross-link check that closed the last two views — and it found another defect.**
+`shapediff` already carries a wing strip with four variants: pointed, rounded, slotted, **stiff**.
+But `shapeStripGlyph` has no `stiff` branch. It fell through to the generic tapered fallback, so
+the strip labelled a wing **"aquatic stiff"** and then drew the same shape as everything else —
+a label promising a distinction the drawing did not make. A puffin/auk wing is short, narrow and
+blunt, barely clearing the body, which is exactly why those birds fly the way they do. Drawn now.
+
+**The 3D viewer.** Built on the host's shared `makeBayViewer`, so it inherits WebGL context-loss
+recovery, pause-when-unseen, reduced-motion and label chips rather than re-implementing them.
+Five wing specs (span, chord, sweep, taper, camber, droop, slots) drive real geometry:
+
+- **Planform and aspect ratio** you can look at rather than read. The ratio shown is computed
+  **from the drawn geometry**, so the number and the model cannot disagree.
+- **Slotted primaries** as separate upswept finger feathers — a 2D outline can only imply those
+  with notches.
+- **Droop** — how far the wings fall away from the shoulder, which differs by wing and is
+  invisible in a silhouette.
+
+Two presets go straight to those views. `reset()` returns to a fixed home pose, so a preset is
+exactly reproducible rather than "wherever you happened to spin to".
+
+**The accessibility contract is the same one the First Response body viewer uses**: every wing is
+a button, the camera has buttons as well as arrow keys, and when WebGL is unavailable the panel
+says so and points at the cards — *nothing here needs the picture*.
+
+**Four things I got wrong, all caught by rendering it.**
+
+1. **I "fixed" a hazard that was already handled, and broke the tool doing it.** Seeing a `useState`
+   and a WebGL ref going into a view dispatched as bare `h(WingTypesView)`, I wrapped it in
+   `stableType`. But `WingTypesView` is *already* rebound to a stable wrapper further up, so my
+   call set `slot.impl = slot.Type` and it recursed until the stack blew — the whole tool rendered
+   nothing. The live test caught it, which is why I wrote it before tuning anything.
+2. **`readPixels` reported a phantom zero.** The shared renderer is created without
+   `preserveDrawingBuffer`, so the drawing buffer is empty once the frame has been composited. A
+   blank buffer was not a blank scene. Switched to Playwright screenshots, which capture what the
+   student actually sees.
+3. **What I built as "camber" was droop.** The height varied along the SPAN, not across the chord —
+   that is dihedral, and captioning it "the curve that makes lift" would have been wrong. Rebuilt
+   each span station from chord-wise slats following an aerofoil arc, and split the spec into
+   separate `camber` and `droop`.
+4. **Then camber turned out not to belong in the 3D at all.** Looking along the span foreshortens
+   the wing to almost nothing and the section hides behind the leading edge. Rather than keep
+   fighting the camera, camber now gets its own 2D cross-section with the air splitting over and
+   under and a lift arrow — and the preset that used to promise camber now shows droop, which a
+   front view genuinely does show. The panel title was updated too: it read "camber and slots only
+   exist in 3D", which my own change had made false.
+
+Also worth recording: the auto-spin was removed. A continuously turning model keeps sweeping past
+the angle the student is trying to look at, and it made every screenshot an arbitrary pose.
+
+**Honest scope note:** the aerofoil drawing exaggerates curvature so it is visible at 250px, and
+says so in its caption. The equal-transit-time picture it implies is the standard classroom
+account; it is a simplification of how lift actually works, and the caption stays on what differs
+between wings (flatter sections trade lift for speed) rather than overclaiming the mechanism.
+
+### Verified (twentieth pass)
+
+`birdlab_visual_qa` **83 core / 402 exhaustive, exit 0** (I-Spy states only); five BirdLab test
+files **49/49**; both e2e specs **7/7**; `check_keyless_map` and `check_render_refs` clean; mirror
+byte-identical. The 3D viewer was exercised live in Chromium — real WebGL, three wing types and
+both presets screenshotted and inspected, console clean. Scratch spec removed.
+
+### Worklist — all ten closed
+
+| view | claims/1k | state |
+|---|---|---|
+| shapediff | 104 | done (+ `stiff` glyph fixed this pass) |
+| plumage | 84 | done |
+| colorId | 80 | done |
+| drawing | 70 | done |
+| agesex | 60 | done |
+| footTypes | 60 | done |
+| irruptions | 41 | done |
+| glossaryDeep | 37 | done by cross-link |
+| behaviorGloss | 37 | done |
+| wingTypes | 26 | **done — 2D fix + 3D viewer** |
+
+The measured visual-debt list that started this work — 123 views, only 24 with any art — is
+closed at the top. Four content errors and one never-rendering view were found along the way,
+every one of them because drawing a claim forces you to check it.

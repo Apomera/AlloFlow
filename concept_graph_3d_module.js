@@ -147,7 +147,7 @@
       var laneZ = {};
       nodes.forEach(function (n) { if (laneZ[n.lane] == null) laneZ[n.lane] = n.sz; });
       lanePlanes = lanes.map(function (l) {
-        return { index: l.index, key: l.key, label: l.label, z: laneZ[l.index] != null ? laneZ[l.index] : 0,
+        return { index: l.index, key: l.key, label: l.label, labelKey: l.labelKey || null, z: laneZ[l.index] != null ? laneZ[l.index] : 0,
                  color: l.key == null ? UNCATEGORIZED : PALETTE[l.index % PALETTE.length] };
       });
     } else if (Array.isArray(layoutMeta.zones)) {
@@ -509,7 +509,7 @@
       mesh.position.set(0, 0, lp.z);   // depth plane at constant z
       group.add(mesh);
       var tag = null;
-      if (lp.label) { tag = makeLabelSprite(THREE, lp.label, lp.color); tag.position.set(-planeW / 2 + 80, planeH / 2 - 40, lp.z); group.add(tag); }
+      if (lp.label) { var laneText = lp.labelKey ? _tr(opts && opts.t, lp.labelKey, lp.label) : lp.label; tag = makeLabelSprite(THREE, laneText, lp.color); tag.position.set(-planeW / 2 + 80, planeH / 2 - 40, lp.z); group.add(tag); }
       planeObjs.push({ key: lp.key == null ? '__none' : lp.key, mesh: mesh, tag: tag });
     });
 
@@ -1254,7 +1254,7 @@
       }
       if (scene.axes) {
         var ah = document.createElement('div'); ah.style.cssText = 'font-weight:800;color:#f1f5f9;margin:6px 0 3px;'; ah.textContent = t('cg3d.legend_axes') || 'Axes'; legBody.appendChild(ah);
-        ['x', 'y', 'z'].forEach(function (ax) { if (scene.axes[ax] && scene.axes[ax].label) { var d = document.createElement('div'); d.style.cssText = 'color:#94a3b8;'; d.textContent = ax + ' = ' + scene.axes[ax].label; legBody.appendChild(d); } });
+        ['x', 'y', 'z'].forEach(function (ax) { if (scene.axes[ax] && scene.axes[ax].label) { var d = document.createElement('div'); d.style.cssText = 'color:#94a3b8;'; var axisLabel = scene.axes[ax].labelKey ? _tr(t, scene.axes[ax].labelKey, scene.axes[ax].label) : scene.axes[ax].label; d.textContent = ax + ' = ' + axisLabel; legBody.appendChild(d); } });
       }
       var ek = document.createElement('div'); ek.style.cssText = 'margin-top:6px;color:#94a3b8;';
       ek.textContent = (t('cg3d.legend_help') || 'Flowing line = teaching order · dashed amber = prerequisite. Hover to focus · click a node to center.')

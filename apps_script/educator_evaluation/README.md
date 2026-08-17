@@ -272,11 +272,28 @@ should export audit events to a district-controlled immutable logging system.
 The HTML portal uses `google.script.run`:
 
 - `getPortalBootstrap()` / `bootstrap()` -> `{ok, workspace, revision,
-  version, currentUser, deployment}`
+  version, currentUser, deployment}`. `deployment.portalUrl` carries the
+  deployed `/exec` address so the portal's Share by QR card can encode the
+  district's own entry point; it is the same URL the user already opened.
 - `savePortalWorkspace({workspace, expectedVersion, mutation})` /
   `saveWorkspace(...)` -> `{ok, workspace, revision, version}` or a conflict
 - `sendPortalNotification({teacherId, target:'teacher'|'evaluator'})`
 - `getPortalCohortStats({teacherId, metric, from?, to?})`
+- `sharePortalReleasedEvaluation({teacherId})` -> `{ok, doc:{id, url,
+  sharedAt}}`. Evaluator or admin only, and only after the educator's cycle is
+  finalized. Builds the strengths-first summary Doc in the private "Released
+  evaluations" folder and adds the educator as a VIEWER of that one file. It is
+  idempotent: a second call returns the existing document rather than making a
+  duplicate. Drive sharing sends no email of its own, so the notification stays
+  content-free.
+- `recordReleasedSummaryOpened({teacherId})` -> `{ok, openedAt}` or
+  `{skipped:true}`. The educator's own open receipt; an evaluator calling it is
+  skipped rather than recorded, and a second open does not overwrite the first.
+- `getPortalSetupHealth()` -> `{ok, checks:[...]}`. Read-only deployment
+  self-check for the Setup tab: domain lock, repository spreadsheet and
+  workspace files, membership, and evaluator assignments. It reports counts and
+  configured/not-configured status only; it returns no records and no
+  identities beyond the caller's own.
 
 `recordType` is one of `walkthrough`, `formal_observation`, or `spm`.
 Two-way comments and all current lifecycle milestones use the canonical,

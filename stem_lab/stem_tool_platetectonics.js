@@ -152,7 +152,7 @@
   if (!document.getElementById('tect-a11y')) {
     var _s = document.createElement('style');
     _s.id = 'tect-a11y';
-    _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; } ' +
+    _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } ' +
       '.plate-tectonics-container button:focus, .plate-tectonics-container input:focus, .plate-tectonics-container select:focus, .plate-tectonics-container textarea:focus, .plate-tectonics-container canvas:focus, .plate-tectonics-container [tabindex]:focus { outline: 3px solid #facc15 !important; outline-offset: 2px !important; box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.4) !important; } ' +
       '.plate-tectonics-container.dark { color: #e2e8f0 !important; } .plate-tectonics-container.dark h2, .plate-tectonics-container.dark h3, .plate-tectonics-container.dark h4 { color: #f1f5f9 !important; } ' +
       '.plate-tectonics-container.dark .bg-white { background-color: rgba(15, 23, 42, 0.6) !important; border-color: rgba(51, 65, 85, 0.5) !important; color: #f1f5f9 !important; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); } ' +
@@ -161,8 +161,8 @@
       '.plate-tectonics-container.dark .bg-blue-50 { background-color: rgba(59, 130, 246, 0.1) !important; border-color: rgba(59, 130, 246, 0.25) !important; } ' +
       '.plate-tectonics-container.dark .bg-emerald-50 { background-color: rgba(16, 185, 129, 0.1) !important; border-color: rgba(16, 185, 129, 0.25) !important; } ' +
       '.plate-tectonics-container.dark .text-red-900, .plate-tectonics-container.dark .text-orange-900, .plate-tectonics-container.dark .text-amber-900 { color: #f87171 !important; } ' +
-      '.plate-tectonics-container.dark .text-red-750, .plate-tectonics-container.dark .text-red-700, .plate-tectonics-container.dark .text-orange-700, .plate-tectonics-container.dark .text-amber-700 { color: #fca5a5 !important; } ' +
-      '.plate-tectonics-container.dark .text-slate-750, .plate-tectonics-container.dark .text-slate-700, .plate-tectonics-container.dark .text-slate-600 { color: #94a3b8 !important; } ' +
+      '.plate-tectonics-container.dark .text-red-700, .plate-tectonics-container.dark .text-orange-700, .plate-tectonics-container.dark .text-amber-700 { color: #fca5a5 !important; } ' +
+      '.plate-tectonics-container.dark .text-slate-700, .plate-tectonics-container.dark ' +
       '.plate-tectonics-container.dark .text-slate-500 { color: #64748b !important; } ' +
       '.plate-tectonics-container.dark .border-red-200, .plate-tectonics-container.dark .border-orange-200, .plate-tectonics-container.dark .border-amber-200, .plate-tectonics-container.dark .border-slate-200 { border-color: rgba(51, 65, 85, 0.5) !important; } ' +
       '.plate-tectonics-container.dark .bg-slate-100 { background-color: #1e293b !important; color: #e2e8f0 !important; border-color: #334155 !important; } ' +
@@ -9686,7 +9686,7 @@ var d = labToolData.plateTectonics || {};
 
               ),
 
-              showEdu && React.createElement("div", { className: "mt-2 p-5 rounded-2xl border space-y-4 text-sm leading-relaxed " + (isDark ? "border-slate-800 text-slate-350" : "border-red-200 text-slate-700"), style: { background: _gCard } },
+              showEdu && React.createElement("div", { className: "mt-2 p-5 rounded-2xl border space-y-4 text-sm leading-relaxed " + (isDark ? "border-slate-800 text-slate-300" : "border-red-200 text-slate-700"), style: { background: _gCard } },
 
                 React.createElement("div", null,
 
@@ -9859,7 +9859,7 @@ var d = labToolData.plateTectonics || {};
                 React.createElement('div', { className: 'flex flex-wrap gap-2 text-xs mb-3' },
                   ['all', 'igneous', 'sedimentary', 'metamorphic'].map(function(g) {
                     var active = (d._rockGroup || 'all') === g;
-                    return React.createElement('button', { key: g, onClick: function() { upd({ _rockGroup: g }); }, className: 'px-3 py-1 rounded-lg font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'bg-stone-700 text-white' : (isDark ? 'transition-colors bg-slate-900 text-stone-300 border border-slate-700 hover:bg-slate-850' : 'transition-colors bg-white text-stone-700 border border-stone-300 hover:bg-stone-50')) }, g);
+                    return React.createElement('button', { key: g, onClick: function() { upd({ _rockGroup: g }); }, className: 'px-3 py-1 rounded-lg font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'bg-stone-700 text-white' : (isDark ? 'transition-colors bg-slate-900 text-stone-300 border border-slate-700 hover:bg-slate-800' : 'transition-colors bg-white text-stone-700 border border-stone-300 hover:bg-stone-50')) }, g);
                   })
                 ),
                 React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },

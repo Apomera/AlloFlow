@@ -984,7 +984,10 @@ describe('model cache', () => {
       expect(app, f).toContain('On-device speech models');
       expect(app, f).toContain('downloadWhisperModel');
       expect(app, f).toContain('downloadKokoroModel');
-      expect(app, f).toContain('✓ On this device');
+      // Re-anchored 2026-08-17 (X8): wave 2 extracted this literal to
+      // {'✓ '}{t('storage.model_on_device') || 'On this device'} — the BEHAVIOR
+      // (an on-device badge) still ships; the pin follows the t() form now.
+      expect(app, f).toContain("t('storage.model_on_device') || 'On this device'");
       // Status is actually probed — a defined-but-never-called refresher would
       // leave the panel permanently claiming "not downloaded".
       expect(app, f).toContain('try { refreshAlloModelStatus(); } catch (_) {}');

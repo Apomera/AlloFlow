@@ -178,6 +178,117 @@ describe('Educator Evaluation — browser e2e', () => {
     await page.close();
   }, 60000);
 
+  it('the onboarding dialog owns focus: lands inside, traps Tab, keyboard-only entry works', async () => {
+    const page = await browser.newPage();
+    await page.goto(PAGE);
+    await page.waitForSelector('.ae-onboarding-overlay');
+    expect(await page.evaluate(() => (document.activeElement.className || '').includes('ae-onboarding-option'))).toBe(true);
+    for (let i = 0; i < 6; i += 1) await page.keyboard.press('Tab');
+    expect(await page.evaluate(() => (document.activeElement.className || '').includes('ae-onboarding-option'))).toBe(true);
+    await page.keyboard.press('Enter');
+    await page.waitForSelector('.ae-tabs');
+    await page.close();
+  }, 60000);
+
+  it('footer references follow the active framework profile', async () => {
+    const { page, errors } = await openWorkspace();
+    expect(await page.locator('footer').innerText()).toContain('Act 13 Toolkit');
+    await switchFramework(page, 'Maine PEPG (district plan governs)');
+    const footer = await page.locator('footer').innerText();
+    expect(footer).toContain('Maine DOE Educator Effectiveness');
+    expect(footer).not.toContain('Act 13 Toolkit');
+    expect(errors).toEqual([]);
+    await page.close();
+  }, 60000);
+
+  it('Setup offers a scannable Share-by-QR card with the privacy caption', async () => {
+    const { page, errors } = await openWorkspace();
+    await openTab(page, 'Setup');
+    await page.waitForTimeout(500);
+    const card = page.locator('section', { hasText: 'Share by QR' }).first();
+    expect(await card.count()).toBe(1);
+    expect(await card.locator('svg').count()).toBeGreaterThanOrEqual(1);
+    const text = await card.innerText();
+    // Loaded over file://, so the card must fall back to the canonical published
+    // page: a disk path is unscannable elsewhere and leaks the local folder.
+    expect(text).toContain('https://alloflow-cdn.pages.dev/educator-evaluation');
+    expect(text).not.toMatch(/file:\/\//);
+    expect(text).not.toMatch(/OneDrive|C:\//);
+    expect(text).toContain('Your data is not shared by the code');
+    expect(errors).toEqual([]);
+    await page.close();
+  }, 60000);
+
+  // Added 2026-08-17. The manual (section 12) tells a principal that exporting
+  // the workspace JSON is how they move to a new device. Nothing pinned that
+  // claim, and it is the highest-stakes path in the tool: a lossy round-trip
+  // costs a year of evaluation records. This drives the REAL export button and
+  // the REAL import input, and deep-compares the whole workspace tree.
+  it('export -> wipe -> import restores the workspace with no field loss', async () => {
+    const { page, errors } = await openWorkspace();
+
+    const stored = await page.evaluate(() => {
+      const key = Object.keys(localStorage).find((k) => k.includes('_workspace_v1'));
+      return key ? localStorage.getItem(key) : null;
+    });
+    expect(stored, 'the simulated workspace must be persisted').toBeTruthy();
+
+    await openTab(page, 'Reports & audit');
+    await page.waitForTimeout(300);
+
+    // Capture what the download would contain, without touching the filesystem.
+    const exportedText = await page.evaluate(async () => {
+      const created = [];
+      const origCreate = URL.createObjectURL;
+      const origClick = HTMLAnchorElement.prototype.click;
+      URL.createObjectURL = (blob) => { created.push(blob); return 'blob:test'; };
+      HTMLAnchorElement.prototype.click = function () {};
+      try {
+        const btn = [...document.querySelectorAll('button')]
+          .find((b) => /Export workspace JSON/i.test(b.textContent || ''));
+        if (!btn) return null;
+        btn.click();
+        await new Promise((r) => setTimeout(r, 250));
+        return created.length ? await created[0].text() : null;
+      } finally {
+        URL.createObjectURL = origCreate;
+        HTMLAnchorElement.prototype.click = origClick;
+      }
+    });
+    expect(exportedText, 'Export workspace JSON must produce a file').toBeTruthy();
+
+    const storedWorkspace = JSON.parse(stored);
+    const exportedPayload = JSON.parse(exportedText);
+    const exportedWorkspace = exportedPayload.workspace || exportedPayload;
+    expect(exportedWorkspace.teachers.length).toBe(storedWorkspace.teachers.length);
+    // Deep equality of the whole tree, not a spot check on counts.
+    expect(exportedWorkspace).toMatchObject(storedWorkspace);
+
+    // Wipe the device, start clean, and import the file back.
+    await page.evaluate(() => localStorage.clear());
+    await page.reload();
+    await page.waitForSelector('.ae-onboarding-overlay .ae-onboarding-option');
+    await page.locator('.ae-onboarding-overlay .ae-onboarding-option').nth(0).click(); // blank
+    await page.waitForSelector('.ae-tabs');
+    await openTab(page, 'Reports & audit');
+    await page.waitForTimeout(300);
+    await page.setInputFiles('input[type="file"]', {
+      name: 'workspace.json', mimeType: 'application/json', buffer: Buffer.from(exportedText),
+    });
+    await page.waitForTimeout(600);
+
+    const restored = await page.evaluate(() => {
+      const key = Object.keys(localStorage).find((k) => k.includes('_workspace_v1'));
+      const ws = key ? JSON.parse(localStorage.getItem(key)) : null;
+      return ws ? { teachers: ws.teachers.length, org: ws.config.organization } : null;
+    });
+    expect(restored, 'import must persist a workspace').toBeTruthy();
+    expect(restored.teachers).toBe(storedWorkspace.teachers.length);
+    expect(restored.org).toBe(storedWorkspace.config.organization);
+    expect(errors).toEqual([]);
+    await page.close();
+  }, 90000);
+
   it('dark scheme: the panel paints its own ground (no transparent-body inherit)', async () => {
     const { page, errors } = await openWorkspace({ colorScheme: 'dark' });
     const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);

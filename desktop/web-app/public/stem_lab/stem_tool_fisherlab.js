@@ -80,7 +80,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       // --fl-bar-h is measured from the real control bar. It was a hard-coded
       // 58px, and the bar wraps to two rows as soon as the stage is narrow or
       // expanded — which put every floating panel underneath the buttons.
-      '.fl-nav-cue { position: absolute; z-index: 18; top: calc(var(--fl-bar-h, 48px) + 10px); left: 50%; transform: translateX(-50%); width: min(280px, 32%); min-width: 190px; pointer-events: none; }',
+      '.fl-nav-cue { position: absolute; z-index: 18; top: calc(var(--fl-bar-h, 48px) + 10px); left: 50%; transform: translateX(-50%); width: min(300px, 34%); min-width: 208px; pointer-events: none; }',
+      // While a radar plot is running the cue holds a real instrument, not a
+      // 50-pixel thumbnail, so it needs the width to show it.
+      '.fl-nav-cue.fl-nav-cue-radar { width: min(360px, 42%); min-width: 250px; }',
       // Current camera rig, drawn on the scene itself. Switching views was already
       // wired up, but with no on-canvas confirmation and two rigs that framed the
       // hull badly it read as a control that did nothing.
@@ -675,7 +678,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       conditionsScore >= 14 ? 'Tide, temperature, and current are favorable.' : 'At least one observed condition is unfavorable.',
       presentationScore >= 12 ? 'Presentation matches the target behavior.' : 'Presentation could be adjusted.'
     ];
-    return { total: habitat + depth + tackleScore + conditionsScore + presentationScore, components: components, evidence: evidence };
+    return {
+      total: habitat + depth + tackleScore + conditionsScore + presentationScore,
+      components: components, evidence: evidence,
+      // ★ Published so the cast preview draws the fish the score was actually
+      // computed against. Re-resolving the target in the drawing is how a
+      // picture comes to disagree with the number printed beneath it.
+      speciesId: speciesId, speciesZone: species.depthZone,
+      spotLabel: spot.label, spotZone: spot.depthZone, spotTags: spot.habitatTags,
+      tackleId: tackle.id, tackleLabel: tackle.label,
+      targetDepth: input.targetDepth,
+      depthMatched: input.targetDepth === species.depthZone
+    };
   }
   function hashCoreFishingSeed(value) {
     var text = String(value == null ? 'fisherlab' : value);
@@ -719,14 +733,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       biteChance: Math.max(0, Math.min(1, 0.12 + encounterScore.total / 115))
     };
   }
+  // ★ The target water, authored once. This band was previously spelled out in
+  // five places — the success test (0.75/0.95), the accuracy centre (85), the
+  // control's label, the bar's 75fr/20fr/5fr grid ratios, and the failure
+  // sentence — so moving the target meant finding all five or shipping a
+  // display that disagreed with the rule it is drawn from.
+  var CAST_TARGET = { lo: 75, hi: 95 };
+  CAST_TARGET.mid = (CAST_TARGET.lo + CAST_TARGET.hi) / 2;
+  function getCoreCastPlacement(meter) {
+    var m = Math.max(0, Math.min(100, Number(meter) || 0));
+    return {
+      meter: m, lo: CAST_TARGET.lo, hi: CAST_TARGET.hi, mid: CAST_TARGET.mid,
+      inside: m >= CAST_TARGET.lo && m <= CAST_TARGET.hi,
+      short: m < CAST_TARGET.lo, long: m > CAST_TARGET.hi,
+      accuracy: Math.max(0, 1 - Math.abs(m - CAST_TARGET.mid) / CAST_TARGET.mid)
+    };
+  }
+
   function evaluateCast(input) {
     var data = input || {};
     var threshold = data.assistMode ? 0.45 : 0.62;
     var ratio = Math.max(0, Math.min(1, Number(data.distanceRatio) || 0));
     var placement = (Math.max(0, Number(data.accuracy) || 0) * 0.65) + (ratio * 0.35);
-    var insideTarget = ratio >= 0.75 && ratio <= 0.95;
+    var insideTarget = getCoreCastPlacement(ratio * 100).inside;
     var success = placement >= threshold && insideTarget;
-    return { success: success, outcome: success ? 'placed' : 'off-target', assisted: !!data.assistMode, quality: Math.round(Math.max(0, Math.min(1, placement)) * 100), feedback: success ? 'The presentation landed inside the selected water.' : 'The cast fell outside the 75 to 95 percent target water. Reset and place it again.' };
+    return { success: success, outcome: success ? 'placed' : 'off-target', assisted: !!data.assistMode, quality: Math.round(Math.max(0, Math.min(1, placement)) * 100), feedback: success ? 'The presentation landed inside the selected water.' : 'The cast fell outside the ' + CAST_TARGET.lo + ' to ' + CAST_TARGET.hi + ' percent target water. Reset and place it again.' };
   }
   function evaluateHookset(input) {
     var data = input || {};
@@ -885,6 +916,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var retainedCount = context && typeof context.retainedCount === 'number' && isFinite(context.retainedCount) ? Math.max(0, Math.floor(context.retainedCount)) : 0;
     var bagRemaining = bagLimit === null ? null : Math.max(0, bagLimit - retainedCount);
     var evidence = {
+      // ★ Numeric bounds, published rather than left embedded in ruleLabel.
+      // The measuring board draws the same limits the decision is scored
+      // against; re-parsing them out of the sentence is how the picture and
+      // the verdict would come to disagree about where the line is.
+      measuredInches: isFinite(measured) ? measured : null,
+      minInches: null,
+      maxInches: null,
       legalToRetain: true,
       expectedReason: 'no-size-rule',
       expectedLabel: 'No size restriction in this activity',
@@ -899,6 +937,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var lower = Number(slotBounds[0]);
       var upper = Number(slotBounds[1]);
       evidence.ruleLabel = 'Slot: ' + lower + '-' + upper + ' in';
+      evidence.minInches = lower;
+      evidence.maxInches = upper;
       if (measured < lower) {
         evidence.legalToRetain = false;
         evidence.expectedReason = 'below-minimum';
@@ -913,6 +953,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       }
     } else if (minimum !== null) {
       evidence.ruleLabel = 'Minimum: ' + minimum + ' in';
+      evidence.minInches = minimum;
       evidence.legalToRetain = measured >= minimum;
       evidence.expectedReason = evidence.legalToRetain ? 'within-rule' : 'below-minimum';
       evidence.expectedLabel = evidence.legalToRetain ? measured + ' in meets the ' + minimum + ' in minimum' : measured + ' in is below the ' + minimum + ' in minimum';
@@ -952,6 +993,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     return { accurate: accurate, error: error, direction: direction, reading: measured, tolerance: allowedError, message: message };
   }
 
+  // ★ These size bounds are DUPLICATED from the species records — Maine
+  // lobster 3.25–5, Chesapeake blue crab 5, Dungeness 6.25 — rather than read
+  // out of them the way getCoreFishRuleEvidence reads species.slot and
+  // species.minSize. They agree today, and
+  // fisherlab_core_simulator.test.js pins that they keep agreeing.
+  //
+  // Left duplicated on purpose: this function also encodes region-specific
+  // conditions with no counterpart in the species data (egg sponge, male-only
+  // harvest, V-notch), and it scores real student decisions. If you change a
+  // slot in the species table, change it here too — the test will tell you.
   function getCoreShellfishReleaseReason(specimen) {
     if (!specimen) return 'the specimen does not meet the scenario profile';
     if (specimen.region === 'chesapeake') return specimen.length < 5 ? 'its width is below the 5-inch Chesapeake training minimum' : specimen.hasSponge ? 'it is an egg-bearing female blue crab' : 'it does not meet the Chesapeake training profile';
@@ -1054,10 +1105,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     while (relative < -Math.PI) relative += Math.PI * 2;
     return relative;
   }
+  // Ranks lowest-first. The thresholds used to be written inline inside the
+  // comparison chain, which made "how far am I from the next one?" impossible
+  // to answer without repeating them — and that question is the whole reason a
+  // student runs the voyage a second time.
+  var VOYAGE_RANKS = [
+    { id: 'bronze', label: 'Bronze Deckhand', stars: 1, color: '#fdba74', score: 0, accuracy: 0, fuel: 0 },
+    { id: 'silver', label: 'Silver Skipper', stars: 2, color: '#dbeafe', score: 145, accuracy: 80, fuel: 20 },
+    { id: 'gold', label: 'Gold Wheelhouse', stars: 3, color: '#fde68a', score: 200, accuracy: 90, fuel: 30 }
+  ];
   function getCoreVoyageRank(score, accuracy, fuel) {
-    if (score >= 200 && accuracy >= 90 && fuel >= 30) return { id: 'gold', label: 'Gold Wheelhouse', stars: 3, color: '#fde68a' };
-    if (score >= 145 && accuracy >= 80 && fuel >= 20) return { id: 'silver', label: 'Silver Skipper', stars: 2, color: '#dbeafe' };
-    return { id: 'bronze', label: 'Bronze Deckhand', stars: 1, color: '#fdba74' };
+    var earned = VOYAGE_RANKS[0];
+    for (var i = 0; i < VOYAGE_RANKS.length; i++) {
+      var r = VOYAGE_RANKS[i];
+      if (score >= r.score && accuracy >= r.accuracy && fuel >= r.fuel) earned = r;
+    }
+    return { id: earned.id, label: earned.label, stars: earned.stars, color: earned.color };
+  }
+  // What is still missing for the next rank up, and by how much. Returning the
+  // specific shortfall rather than a bare "not yet" is the difference between a
+  // dead end and a reason to cast off again.
+  function getCoreNextRank(score, accuracy, fuel) {
+    var have = getCoreVoyageRank(score, accuracy, fuel);
+    var idx = -1;
+    for (var i = 0; i < VOYAGE_RANKS.length; i++) if (VOYAGE_RANKS[i].id === have.id) idx = i;
+    var next = VOYAGE_RANKS[idx + 1];
+    if (!next) return { atTop: true, current: have, next: null, criteria: [] };
+    var criteria = [
+      { key: 'score', label: 'Stewardship points', have: Math.round(score) || 0, need: next.score, unit: '' },
+      { key: 'accuracy', label: 'Decision accuracy', have: Math.round(accuracy) || 0, need: next.accuracy, unit: '%' },
+      { key: 'fuel', label: 'Fuel reserve', have: Math.round(fuel) || 0, need: next.fuel, unit: '%' }
+    ].map(function(c) {
+      c.met = c.have >= c.need;
+      c.shortfall = c.met ? 0 : c.need - c.have;
+      c.progress = c.need ? Math.max(0, Math.min(1, c.have / c.need)) : 1;
+      return c;
+    });
+    return { atTop: false, current: have, next: next, criteria: criteria };
   }
   // ═══════════════════════════════════════════════════════════════════
   // BUOY GLYPHS
@@ -2570,6 +2654,929 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
   var BUOY_3D_INK = { red: 0xc8302a, green: 0x2a7c44, black: 0x1b2230, yellow: 0xe8d048, white: 0xf4f6f8 };
   var BUOY_3D_LANTERN = { red: 0xff3b30, green: 0x2fe06a, black: 0xf8fafc, yellow: 0xf8fafc, white: 0xf8fafc };
 
+  // ═══════════════════════════════════════════════════════════════════
+  // ★ WHICH SIDE IS STARBOARD ON THIS MODEL
+  // The boat's bow is at local +Z. In a right-handed, Y-up scene, the
+  // starboard side of a body facing +Z is local −X, NOT +X: point the bow at
+  // the camera and the vessel's right hand is on the viewer's left.
+  //
+  // This was authored backwards — green at local +0.8, red at −0.8 — which put
+  // the GREEN light on the port bow and the RED on the starboard bow, exactly
+  // reversed from COLREGS Rule 23 and from the light-sector diagram this tool
+  // teaches on the Night Nav tab. Verified in a real scene by taking
+  // forward × up from the model's own transform and projecting each light onto
+  // it; the two lights came back on the wrong sides of the hull.
+  //
+  // Both lights are now placed through this one function, so they cannot be
+  // reversed independently of each other again.
+  var BOAT_HALF_BEAM_LIGHTS = 0.8;
+  function getCoreNavLightLocalX(side) {
+    // starboard = −X for a bow-at-+Z model; port is its mirror.
+    return (side === 'starboard' ? -1 : 1) * BOAT_HALF_BEAM_LIGHTS;
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // VOYAGE RANK MEDALLION
+  // Finishing a run is the moment the whole thing has been building to, and it
+  // was announced by a line of coloured text. A drawn medallion gives the
+  // result somewhere to land — struck metal, the earned number of stars, and
+  // the rank on a ribbon.
+  // ═══════════════════════════════════════════════════════════════════
+  function flRankMedallionSvg(h, rank, earned) {
+    var cx = 76, cy = 72;
+    var ink = earned ? rank.color : '#64748b';
+    var kids = [];
+    // Struck-metal look: a radial sheen plus a bevel ring, so it reads as an
+    // object rather than a coloured circle.
+    kids.push(h('defs', { key: 'd' },
+      h('radialGradient', { id: 'fl-medal-' + rank.id, cx: '38%', cy: '32%', r: '75%' },
+        h('stop', { offset: '0%', stopColor: '#ffffff', stopOpacity: earned ? 0.55 : 0.16 }),
+        h('stop', { offset: '55%', stopColor: ink, stopOpacity: earned ? 0.9 : 0.35 }),
+        h('stop', { offset: '100%', stopColor: '#0b1a2b', stopOpacity: 0.95 }))));
+    // Ribbon behind, so the disc appears to hang from it.
+    kids.push(h('path', { key: 'rib', d: 'M' + (cx - 22) + ' 8 L' + (cx - 8) + ' 58 L' + (cx + 8) + ' 58 L' + (cx + 22) + ' 8 Z',
+      fill: earned ? 'rgba(56,189,248,0.35)' : 'rgba(100,116,139,0.25)', stroke: 'rgba(226,232,240,0.35)', strokeWidth: 1 }));
+    kids.push(h('circle', { key: 'rim', cx: cx, cy: cy, r: 44, fill: 'url(#fl-medal-' + rank.id + ')', stroke: ink, strokeWidth: 3 }));
+    kids.push(h('circle', { key: 'bevel', cx: cx, cy: cy, r: 36, fill: 'none', stroke: 'rgba(255,255,255,0.28)', strokeWidth: 1.2 }));
+    // Stars, laid out so one sits centred and three form an arc.
+    var n = Math.max(1, rank.stars || 1);
+    var spread = n === 1 ? [0] : n === 2 ? [-15, 15] : [-24, 0, 24];
+    spread.forEach(function(dx, i) {
+      var sy = cy - 6 + (n === 3 && dx === 0 ? -7 : 0);
+      var pts = [];
+      for (var k = 0; k < 10; k++) {
+        var ang = (Math.PI / 5) * k - Math.PI / 2;
+        var rr = k % 2 ? 4.4 : 10;
+        pts.push((cx + dx + Math.cos(ang) * rr).toFixed(1) + ',' + (sy + Math.sin(ang) * rr).toFixed(1));
+      }
+      kids.push(h('polygon', { key: 'st' + i, points: pts.join(' '), fill: earned ? ink : '#475569', stroke: 'rgba(11,26,43,0.7)', strokeWidth: 0.8 }));
+    });
+    kids.push(h('text', { key: 'n', x: cx, y: cy + 26, textAnchor: 'middle', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', fill: earned ? '#0b1a2b' : '#94a3b8' },
+      earned ? String(rank.stars) + (rank.stars === 1 ? ' STAR' : ' STARS') : 'UNEARNED'));
+    return h('svg', {
+      width: 152, height: 132, viewBox: '0 0 152 132', role: 'img',
+      'aria-label': earned
+        ? 'Rank medallion: ' + rank.label + ', ' + rank.stars + (rank.stars === 1 ? ' star.' : ' stars.')
+        : 'Rank medallion, not yet earned.',
+      style: { flex: '0 0 auto', display: 'block' }
+    }, kids);
+  }
+
+  // ─── What is still missing for the next rank. A terminal screen that only
+  // says "standard not met" is a dead end; naming the gap is what sends someone
+  // back out for another run.
+  function flNextRankSvg(h, info) {
+    if (!info || info.atTop) return null;
+    var W = 320, rowH = 26;
+    var kids = [];
+    info.criteria.forEach(function(c, i) {
+      var y = 16 + i * rowH;
+      kids.push(h('text', { key: 'l' + i, x: 0, y: y, fontSize: 10.5, fill: '#cbd5e1' }, c.label));
+      kids.push(h('text', { key: 'v' + i, x: W, y: y, textAnchor: 'end', fontSize: 10.5, fontWeight: 800, fill: c.met ? '#86efac' : '#fdba74' },
+        c.met ? '✓ ' + c.have + c.unit : c.have + c.unit + ' → need ' + c.need + c.unit));
+      kids.push(h('rect', { key: 'bg' + i, x: 0, y: y + 4, width: W, height: 5, rx: 2.5, fill: 'rgba(148,163,184,0.25)' }));
+      kids.push(h('rect', { key: 'fg' + i, x: 0, y: y + 4, width: Math.max(2, W * c.progress), height: 5, rx: 2.5, fill: c.met ? '#34d399' : '#fbbf24' }));
+    });
+    return h('svg', {
+      viewBox: '0 0 ' + W + ' ' + (16 + info.criteria.length * rowH),
+      role: 'img',
+      'aria-label': 'Progress toward ' + info.next.label + '. ' + info.criteria.map(function(c) {
+        return c.label + ' ' + c.have + c.unit + (c.met ? ', met' : ', needs ' + c.need + c.unit);
+      }).join('. ') + '.',
+      style: { width: '100%', height: 'auto', display: 'block', marginTop: 4 }
+    }, kids);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // ACHIEVEMENT BADGES
+  // Twenty-odd achievements rendered as a flat grid of emoji on tinted
+  // rectangles: every locked one looked exactly like every other locked one,
+  // so there was nothing to want and no sense of a collection filling up.
+  //
+  // A struck shield gives each one an object to be. Locked badges keep their
+  // shape and show their emoji faintly behind a padlock — visible enough to be
+  // a target, dim enough to read as not-yet-yours.
+  // ═══════════════════════════════════════════════════════════════════
+  function flAchievementBadgeSvg(h, ach, unlocked) {
+    var W = 74, cx = W / 2;
+    var rim = unlocked ? '#fbbf24' : '#475569';
+    var face = unlocked ? '#1d3348' : '#131c28';
+    var uid = 'fl-badge-' + ach.id;
+    // Shield: flat shoulders, tapering to a point, so it reads as struck metal
+    // rather than as another rounded rectangle in a page full of them.
+    var shield = 'M10 8 L64 8 L64 44 Q64 62 37 72 Q10 62 10 44 Z';
+    var kids = [];
+    kids.push(h('defs', { key: 'd' },
+      h('linearGradient', { id: uid, x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+        h('stop', { offset: '0%', stopColor: unlocked ? '#2b4d68' : '#1a2432' }),
+        h('stop', { offset: '100%', stopColor: face }))));
+    kids.push(h('path', { key: 'sh', d: shield, fill: 'url(#' + uid + ')', stroke: rim, strokeWidth: unlocked ? 2.4 : 1.6 }));
+    kids.push(h('path', { key: 'in', d: 'M15 13 L59 13 L59 43 Q59 57 37 65 Q15 57 15 43 Z', fill: 'none', stroke: unlocked ? 'rgba(251,191,36,0.45)' : 'rgba(148,163,184,0.25)', strokeWidth: 1 }));
+    kids.push(h('text', { key: 'ic', x: cx, y: 44, textAnchor: 'middle', fontSize: 25, opacity: unlocked ? 1 : 0.28 }, ach.icon));
+    if (unlocked) {
+      // A tick on the shoulder, so a filled badge is obvious at grid scale.
+      kids.push(h('circle', { key: 'tk', cx: 60, cy: 14, r: 9, fill: '#22c55e', stroke: '#052e16', strokeWidth: 1.2 }));
+      kids.push(h('path', { key: 'tkm', d: 'M56 14 l3 3.5 l5.5 -7', fill: 'none', stroke: '#f0fdf4', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }));
+    } else {
+      // Padlock on the shoulder, where the earned tick goes — centred it sat
+      // on top of the emoji and hid the very thing the badge is for.
+      kids.push(h('circle', { key: 'lkb', cx: 60, cy: 14, r: 9, fill: '#1e293b', stroke: '#475569', strokeWidth: 1.2 }));
+      kids.push(h('rect', { key: 'lk', x: 56.5, y: 13.5, width: 7, height: 5.5, rx: 1.1, fill: '#94a3b8' }));
+      kids.push(h('path', { key: 'lks', d: 'M58 13.5 v-1.8 a2 2 0 0 1 4 0 v1.8', fill: 'none', stroke: '#94a3b8', strokeWidth: 1.3 }));
+    }
+    return h('svg', {
+      width: W, height: 80, viewBox: '0 0 ' + W + ' 80',
+      // The caption beside it carries the name and how to earn it; announcing
+      // the badge as well would read every tile twice.
+      'aria-hidden': 'true', focusable: 'false',
+      style: { flex: '0 0 auto', display: 'block' }
+    }, kids);
+  }
+
+  // ─── Collection progress. A count in a heading is a fact; a ring filling up
+  // is a thing you want to finish.
+  function flCollectionRingSvg(h, done, total) {
+    var R = 44, C = 2 * Math.PI * R;
+    var pct = total ? Math.max(0, Math.min(1, done / total)) : 0;
+    return h('svg', {
+      width: 116, height: 116, viewBox: '0 0 116 116', role: 'img',
+      'aria-label': done + ' of ' + total + ' achievements earned, ' + Math.round(pct * 100) + ' per cent.',
+      style: { flex: '0 0 auto', display: 'block' }
+    }, [
+      h('circle', { key: 't', cx: 58, cy: 58, r: R, fill: 'none', stroke: 'rgba(148,163,184,0.22)', strokeWidth: 9 }),
+      // A round linecap on a zero-length dash still paints a dot, which reads
+      // as one badge earned when none are.
+      pct <= 0 ? null : h('circle', { key: 'p', cx: 58, cy: 58, r: R, fill: 'none', stroke: pct >= 1 ? '#34d399' : '#fbbf24', strokeWidth: 9,
+        strokeLinecap: 'round', strokeDasharray: (C * pct).toFixed(1) + ' ' + C.toFixed(1),
+        transform: 'rotate(-90 58 58)' }),
+      h('text', { key: 'n', x: 58, y: 55, textAnchor: 'middle', fontSize: 24, fontWeight: 900, fill: '#f8fafc' }, String(done)),
+      h('text', { key: 'd', x: 58, y: 72, textAnchor: 'middle', fontSize: 11, fontWeight: 700, fill: '#94a3b8' }, 'of ' + total)
+    ]);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // THE FIGHT
+  // Playing a fish is the most-repeated moment in the tool and it was two flat
+  // progress bars and a pair of buttons. Nothing bent, nothing closed, nothing
+  // was at stake to look at.
+  //
+  // The scene below is driven entirely by the numbers already in the fight
+  // state — tension bends the rod and tightens the line, stamina brings the
+  // fish up from depth — so it is a view of the simulation rather than an
+  // animation running alongside it.
+  // ═══════════════════════════════════════════════════════════════════
+  function flFightSceneSvg(h, st) {
+    var W = 420, H = 190, SURF = 62;
+    var tension = Math.max(0, Math.min(1.1, Number(st.tension) || 0));
+    var stamina = Math.max(0, Math.min(100, Number(st.stamina) || 0));
+    var band = st.band || 'Working';
+    var lineInk = band === 'Critical' ? '#ef4444' : band === 'Working' ? '#a7f3d0' : band === 'Slack' ? '#94a3b8' : '#f59e0b';
+
+    // Rod butt at the angler, tip swept over as tension climbs. A slack line
+    // leaves the rod almost straight; a critical one hoops it right over.
+    var buttX = 40, buttY = 150;
+    var bend = tension * 44;
+    var tipX = 158, tipY = 30 + tension * 30;      // the tip dips as it loads
+    var chordMidX = (buttX + tipX) / 2, chordMidY = (buttY + tipY) / 2;
+    var dx = tipX - buttX, dy = tipY - buttY;
+    var chordLen = Math.sqrt(dx * dx + dy * dy) || 1;
+    // Perpendicular to the chord, pointing outboard toward the fish.
+    var ctrlX = chordMidX + (-dy / chordLen) * bend;
+    var ctrlY = chordMidY + (dx / chordLen) * bend;
+
+    // A tired fish is a closer fish: full stamina holds it deep and out, an
+    // exhausted one is nearly at the boat.
+    var t = stamina / 100;
+    var fishX = 214 + t * 150;
+    var fishY = SURF + 26 + t * 74;
+
+    var kids = [];
+    kids.push(h('rect', { key: 'sky', x: 0, y: 0, width: W, height: SURF, fill: 'rgba(12,42,66,0.55)' }));
+    kids.push(h('rect', { key: 'sea', x: 0, y: SURF, width: W, height: H - SURF, fill: 'rgba(24,74,110,0.55)' }));
+    kids.push(h('line', { key: 'sl', x1: 0, y1: SURF, x2: W, y2: SURF, stroke: 'rgba(125,211,252,0.7)', strokeWidth: 2 }));
+    // Gunwale the angler is standing behind.
+    kids.push(h('path', { key: 'hull', d: 'M0 ' + (SURF - 2) + ' L104 ' + (SURF - 6) + ' L92 ' + (SURF + 20) + ' L0 ' + (SURF + 20) + ' Z', fill: '#dfe7ef', stroke: '#0f172a', strokeWidth: 1.2 }));
+    kids.push(h('path', { key: 'rail', d: 'M0 ' + (SURF - 2) + ' L104 ' + (SURF - 6), fill: 'none', stroke: '#35506b', strokeWidth: 3, strokeLinecap: 'round' }));
+    // Rod, drawn as a taper: a thick butt segment under a thin tip.
+    var rodPath = 'M' + buttX + ' ' + buttY + ' Q' + ctrlX + ' ' + ctrlY + ' ' + tipX + ' ' + tipY;
+    kids.push(h('path', { key: 'rod2', d: rodPath, fill: 'none', stroke: '#5b4632', strokeWidth: 6, strokeLinecap: 'round' }));
+    kids.push(h('path', { key: 'rod', d: rodPath, fill: 'none', stroke: '#c8a06a', strokeWidth: 3, strokeLinecap: 'round' }));
+    kids.push(h('circle', { key: 'reel', cx: buttX + 16, cy: buttY - 20, r: 7, fill: '#94a3b8', stroke: '#0f172a', strokeWidth: 1.2 }));
+    // Line from tip to fish. Slack sags; tight runs straight and thrums.
+    var sag = (1 - Math.min(1, tension * 1.4)) * 42;
+    var midX = (tipX + fishX) / 2, midY = (tipY + fishY) / 2 + sag;
+    kids.push(h('path', { key: 'line', d: 'M' + tipX + ' ' + tipY + ' Q' + midX + ' ' + midY + ' ' + fishX + ' ' + fishY,
+      fill: 'none', stroke: lineInk, strokeWidth: band === 'Critical' ? 2.4 : 1.6 }));
+    if (band === 'Critical') {
+      // A second stroke just off the first reads as a line singing under load.
+      kids.push(h('path', { key: 'thrum', d: 'M' + tipX + ' ' + (tipY + 2) + ' Q' + midX + ' ' + (midY + 3) + ' ' + fishX + ' ' + fishY,
+        fill: 'none', stroke: 'rgba(239,68,68,0.4)', strokeWidth: 1.2 }));
+    }
+    // Fish, nose toward the boat, tail kicked over so it reads as fighting.
+    kids.push(h('g', { key: 'fish', transform: 'translate(' + fishX.toFixed(1) + ',' + fishY.toFixed(1) + ')' },
+      h('path', { d: 'M0 0 q-16 -11 -34 0 q18 11 34 0 Z', fill: '#7d8ea0', stroke: '#0b1a29', strokeWidth: 1 }),
+      h('path', { d: 'M-34 0 l-12 -8 l4 8 l-4 8 z', fill: '#63758a', stroke: '#0b1a29', strokeWidth: 1 }),
+      h('circle', { cx: -6, cy: -2, r: 1.7, fill: '#0b1a29' })));
+    // Depth ticks, so "closer" is legible rather than merely felt.
+    [0.33, 0.66].forEach(function(d, i) {
+      var y = SURF + (H - SURF) * d;
+      kids.push(h('line', { key: 'dt' + i, x1: 0, y1: y, x2: W, y2: y, stroke: 'rgba(125,211,252,0.16)', strokeWidth: 1, strokeDasharray: '5 7' }));
+    });
+    kids.push(h('text', { key: 'st', x: W - 6, y: SURF - 8, textAnchor: 'end', fontSize: 10, fontWeight: 800, fill: lineInk },
+      band === 'Critical' ? 'LINE ABOUT TO GO' : band === 'Slack' ? 'SLACK — HE IS THROWING IT' : band === 'Working' ? 'GOOD PRESSURE' : 'EASE OFF'));
+    kids.push(h('text', { key: 'sm', x: W - 6, y: H - 8, textAnchor: 'end', fontSize: 10, fontWeight: 800, fill: '#bae6fd' },
+      stamina > 66 ? 'still green' : stamina > 33 ? 'tiring' : stamina > 8 ? 'nearly beaten' : 'ready for the net'));
+    return h('svg', {
+      viewBox: '0 0 ' + W + ' ' + H,
+      // The gauges beneath carry the same state with proper roles and values;
+      // this is the picture of it, and announcing both would read twice.
+      'aria-hidden': 'true', focusable: 'false',
+      style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.25)', marginBottom: 10 }
+    }, kids);
+  }
+
+  // ─── Tension gauge with the working band drawn ON it. "Keep it in the green"
+  // is only actionable if you can see where the green is.
+  function flTensionGaugeSvg(h, tensionPct, lower, upper) {
+    var W = 420, HH = 38, y = 8, barH = 13;   // HH must clear the captions at y+barH+12
+    var x = function(p) { return (p / 100) * W; };
+    var lo = lower * 100, hi = upper * 100;
+    return h('svg', { viewBox: '0 0 ' + W + ' ' + HH, 'aria-hidden': 'true', focusable: 'false',
+      style: { width: '100%', height: 'auto', display: 'block', margin: '2px 0 9px' } }, [
+      h('rect', { key: 'bg', x: 0, y: y, width: W, height: barH, rx: 3, fill: '#1e293b' }),
+      h('rect', { key: 'lowdz', x: 0, y: y, width: x(12), height: barH, fill: 'rgba(148,163,184,0.35)' }),
+      h('rect', { key: 'band', x: x(lo), y: y, width: x(hi) - x(lo), height: barH, fill: 'rgba(52,211,153,0.4)' }),
+      h('rect', { key: 'hidz', x: x(90), y: y, width: W - x(90), height: barH, fill: 'rgba(239,68,68,0.42)' }),
+      h('line', { key: 'l1', x1: x(lo), y1: y - 3, x2: x(lo), y2: y + barH + 3, stroke: '#34d399', strokeWidth: 1.5 }),
+      h('line', { key: 'l2', x1: x(hi), y1: y - 3, x2: x(hi), y2: y + barH + 3, stroke: '#34d399', strokeWidth: 1.5 }),
+      // The needle.
+      h('polygon', { key: 'nd', points: (x(Math.min(100, tensionPct)) - 5) + ',' + (y - 6) + ' ' + (x(Math.min(100, tensionPct)) + 5) + ',' + (y - 6) + ' ' + x(Math.min(100, tensionPct)) + ',' + (y + 2),
+        fill: '#f8fafc' }),
+      h('rect', { key: 'ndl', x: x(Math.min(100, tensionPct)) - 1, y: y, width: 2, height: barH, fill: '#f8fafc' }),
+      h('text', { key: 'lz', x: 3, y: y + barH + 12, fontSize: 8.5, fill: '#94a3b8' }, 'slack'),
+      h('text', { key: 'gz', x: (x(lo) + x(hi)) / 2, y: y + barH + 12, textAnchor: 'middle', fontSize: 8.5, fontWeight: 800, fill: '#6ee7b7' }, 'working band'),
+      h('text', { key: 'hz', x: W - 3, y: y + barH + 12, textAnchor: 'end', fontSize: 8.5, fill: '#fca5a5' }, 'snap')
+    ]);
+  }
+
+  // ─── THE STRIKE. The bite is the adrenaline spike of the whole tool and it
+  // was a yellow paragraph. A hooped rod, a boil on the surface and the shock
+  // lines coming off it give the moment somewhere to go.
+  function flStrikeSvg(h) {
+    var W = 420, H = 150, SURF = 66, bx = 300, by = SURF - 4;
+    var kids = [];
+    kids.push(h('rect', { key: 'sky', x: 0, y: 0, width: W, height: SURF, fill: 'rgba(60,32,10,0.5)' }));
+    kids.push(h('rect', { key: 'sea', x: 0, y: SURF, width: W, height: H - SURF, fill: 'rgba(24,74,110,0.6)' }));
+    kids.push(h('line', { key: 'sl', x1: 0, y1: SURF, x2: W, y2: SURF, stroke: 'rgba(253,224,71,0.8)', strokeWidth: 2 }));
+    // Shock lines radiating off the boil — the graphic equivalent of a bang.
+    for (var i = 0; i < 9; i++) {
+      var a = (-Math.PI * 0.92) + (i / 8) * (Math.PI * 0.84);
+      var r0 = 26 + (i % 2) * 7, r1 = 46 + (i % 3) * 12;
+      kids.push(h('line', { key: 'sk' + i,
+        x1: (bx + Math.cos(a) * r0).toFixed(1), y1: (by + Math.sin(a) * r0).toFixed(1),
+        x2: (bx + Math.cos(a) * r1).toFixed(1), y2: (by + Math.sin(a) * r1).toFixed(1),
+        stroke: 'rgba(253,224,71,' + (0.75 - (i % 3) * 0.16) + ')', strokeWidth: 2.4, strokeLinecap: 'round' }));
+    }
+    // Rod hooped right over — this is the moment it loads hardest.
+    kids.push(h('path', { key: 'rod2', d: 'M28 138 Q120 122 196 46', fill: 'none', stroke: '#5b4632', strokeWidth: 7, strokeLinecap: 'round' }));
+    kids.push(h('path', { key: 'rod', d: 'M28 138 Q120 122 196 46', fill: 'none', stroke: '#c8a06a', strokeWidth: 3.4, strokeLinecap: 'round' }));
+    kids.push(h('circle', { key: 'reel', cx: 62, cy: 130, r: 8, fill: '#94a3b8', stroke: '#0f172a', strokeWidth: 1.2 }));
+    // Line ripped bar-tight from tip to the boil.
+    kids.push(h('line', { key: 'line', x1: 196, y1: 46, x2: bx, y2: by, stroke: '#fef08a', strokeWidth: 2.6 }));
+    // The boil: broken water where the fish turned.
+    kids.push(h('ellipse', { key: 'boil', cx: bx, cy: by + 6, rx: 34, ry: 9, fill: 'rgba(248,250,252,0.85)' }));
+    kids.push(h('ellipse', { key: 'boil2', cx: bx, cy: by + 12, rx: 52, ry: 11, fill: 'none', stroke: 'rgba(248,250,252,0.5)', strokeWidth: 2 }));
+    [[-30, -22], [-12, -34], [14, -30], [32, -18], [-44, -10], [46, -8]].forEach(function(d, k) {
+      kids.push(h('circle', { key: 'dp' + k, cx: bx + d[0], cy: by + d[1], r: 3.4 - (k % 3) * 0.7, fill: 'rgba(248,250,252,0.9)' }));
+    });
+    // The fish turning away under the boil — a shape, not a portrait.
+    kids.push(h('path', { key: 'fish', d: 'M' + (bx + 16) + ' ' + (by + 30) + ' q-20 -13 -44 -2 q22 15 44 2 Z', fill: 'rgba(125,146,166,0.9)', stroke: '#0b1a29', strokeWidth: 1 }));
+    return h('svg', {
+      viewBox: '0 0 ' + W + ' ' + H,
+      // The alert beside it already shouts this; the picture is the feeling.
+      'aria-hidden': 'true', focusable: 'false',
+      style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '2px solid rgba(250,204,21,0.65)', marginBottom: 10 }
+    }, kids);
+  }
+
+  // ─── ALONGSIDE. The landing was a green box of text. Give the fish a moment
+  // in the air before the inspection screen takes over.
+  function flLandedSvg(h) {
+    var W = 420, H = 132, SURF = 96;
+    var kids = [];
+    kids.push(h('rect', { key: 'sky', x: 0, y: 0, width: W, height: SURF, fill: 'rgba(6,60,48,0.5)' }));
+    kids.push(h('rect', { key: 'sea', x: 0, y: SURF, width: W, height: H - SURF, fill: 'rgba(24,74,110,0.6)' }));
+    kids.push(h('line', { key: 'sl', x1: 0, y1: SURF, x2: W, y2: SURF, stroke: 'rgba(167,243,208,0.7)', strokeWidth: 2 }));
+    // Net, drawn back-to-front so the fish is IN it rather than on it: bag and
+    // mesh first, then the fish, then the hoop rim over the top. Drawn in the
+    // other order the rim disappears behind the fish and it reads as balanced
+    // on the frame.
+    var hx = 226, hy = 54, hrx = 88, hry = 26;
+    kids.push(h('path', { key: 'handle', d: 'M20 122 L' + (hx - hrx + 10) + ' ' + (hy + 10), stroke: '#5b4632', strokeWidth: 7, strokeLinecap: 'round' }));
+    kids.push(h('path', { key: 'bag', d: 'M' + (hx - hrx) + ' ' + hy + ' q' + hrx + ' 84 ' + (hrx * 2) + ' 0',
+      fill: 'rgba(148,163,184,0.18)', stroke: 'rgba(148,163,184,0.7)', strokeWidth: 1.4 }));
+    for (var m = 1; m < 7; m++) {
+      var mxp = hx - hrx + (m / 7) * (hrx * 2);
+      var droop = 52 * Math.sin((m / 7) * Math.PI);
+      kids.push(h('path', { key: 'mesh' + m, d: 'M' + mxp.toFixed(1) + ' ' + hy + ' q0 ' + droop.toFixed(1) + ' ' + ((hx - mxp) * 0.12).toFixed(1) + ' ' + droop.toFixed(1),
+        fill: 'none', stroke: 'rgba(148,163,184,0.34)', strokeWidth: 1 }));
+    }
+    // The fish, centred in the hoop and sized to sit inside it.
+    kids.push(h('g', { key: 'fish', transform: 'translate(' + (hx + 28) + ',' + (hy + 22) + ')' },
+      h('path', { d: 'M0 0 q-26 -17 -58 0 q30 18 58 0 Z', fill: '#8fa2b5', stroke: '#0b1a29', strokeWidth: 1.2 }),
+      h('path', { d: 'M-58 0 l-17 -11 l5 11 l-5 11 z', fill: '#75879b', stroke: '#0b1a29', strokeWidth: 1.2 }),
+      h('path', { d: 'M-30 -9 q9 -10 17 -1 Z', fill: '#75879b', stroke: '#0b1a29', strokeWidth: 1 }),
+      h('circle', { cx: -10, cy: -3, r: 2.2, fill: '#0b1a29' })));
+    // Rim last, so it passes in front of the fish.
+    kids.push(h('ellipse', { key: 'hoop', cx: hx, cy: hy, rx: hrx, ry: hry, fill: 'none', stroke: '#aab6c4', strokeWidth: 4 }));
+    // Drips, so it reads as just out of the water.
+    [[176, 100], [222, 108], [268, 102]].forEach(function(d, k) {
+      kids.push(h('ellipse', { key: 'dr' + k, cx: d[0], cy: d[1], rx: 2, ry: 4.5, fill: 'rgba(186,230,253,0.8)' }));
+    });
+    return h('svg', {
+      viewBox: '0 0 ' + W + ' ' + H, 'aria-hidden': 'true', focusable: 'false',
+      style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(52,211,153,0.5)', marginBottom: 10 }
+    }, kids);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // RADAR — RELATIVE MOTION
+  // The plot was a 50-pixel div with 4-pixel dots and 8-pixel labels, holding
+  // the one judgement that decides whether two vessels hit each other.
+  //
+  // The teaching point of a relative-motion plot is a single geometric fact:
+  // join the successive contact positions and extend that line. If it passes
+  // through your own ship, you are on a collision course; how close it passes
+  // IS the closest point of approach. Stated in prose that is an assertion;
+  // drawn, a student can see it and check it.
+  // ═══════════════════════════════════════════════════════════════════
+
+  // Fit a line to the plotted track and find where it passes the own-ship
+  // position. Pure, so the number under the drawing can be tested.
+  function getCoreRadarTrack(dots) {
+    var pts = (dots || []).filter(function(d) { return d && isFinite(d.x) && isFinite(d.y); });
+    if (pts.length < 2) return { valid: false, cpa: null };
+    // Use the first and last plot: over a short watch the relative track is
+    // effectively straight, and this is what a navigator does with a chinagraph
+    // pencil on the screen.
+    var a = pts[0], b = pts[pts.length - 1];
+    var dx = b.x - a.x, dy = b.y - a.y;
+    var len = Math.sqrt(dx * dx + dy * dy);
+    if (len < 0.0001) return { valid: false, cpa: null };
+    var ux = dx / len, uy = dy / len;
+    // Closest approach of the infinite line to the origin (own ship).
+    var t = -(a.x * ux + a.y * uy);
+    var cpaX = a.x + ux * t, cpaY = a.y + uy * t;
+    var cpaDist = Math.sqrt(cpaX * cpaX + cpaY * cpaY);
+    return {
+      valid: true, ux: ux, uy: uy, from: a, to: b,
+      cpa: { x: cpaX, y: cpaY, dist: cpaDist, ahead: t > 0 }
+    };
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // PLACING THE CAST, AND WORKING IT
+  // These two beats sit between choosing your rig and the fish taking it, and
+  // they were the flattest thing left in the chain: a range slider over a
+  // ten-pixel gradient bar, then a button next to a progress bar. The throw
+  // and the retrieve — the two things a person actually DOES with a rod —
+  // were the only steps with nothing to watch.
+  // ═══════════════════════════════════════════════════════════════════
+
+  function flCastArcSvg(h, meter) {
+    var place = getCoreCastPlacement(meter);
+    var W = 420, H = 168, SURF = 104, X0 = 96, X1 = 404;
+    var at = function(pct) { return X0 + (X1 - X0) * (pct / 100); };
+    var ink = place.inside ? '#34d399' : '#fbbf24';
+    var kids = [];
+
+    kids.push(h('rect', { key: 'sky', x: 0, y: 0, width: W, height: SURF, fill: '#16344d' }));
+    kids.push(h('rect', { key: 'sea', x: 0, y: SURF, width: W, height: H - SURF, fill: '#0d3450' }));
+
+    // The target water, marked on the surface AND down the column, because a
+    // cast is placed on a piece of water rather than at a number.
+    var tL = at(place.lo), tR = at(place.hi);
+    kids.push(h('rect', { key: 'tz', x: tL, y: SURF, width: tR - tL, height: H - SURF, fill: 'rgba(52,211,153,0.2)' }));
+    kids.push(h('rect', { key: 'tzs', x: tL, y: SURF - 4, width: tR - tL, height: 8, fill: 'rgba(52,211,153,0.55)' }));
+    // The caption sits INSIDE the water. Above the surface it is wider than the
+    // band it names and runs into the flight of the line.
+    kids.push(h('text', { key: 'tzt', x: (tL + tR) / 2, y: SURF + 15, textAnchor: 'middle', fontSize: 8.5, fontWeight: 900,
+      fill: '#6ee7b7', letterSpacing: '0.04em' }, 'TARGET WATER'));
+    // Fish holding in it — what you are throwing AT.
+    [[0.28, 12], [0.6, 26], [0.8, 4]].forEach(function(f, k) {
+      kids.push(castFish(h, 'tf' + k, tL + (tR - tL) * f[0], SURF + 30 + f[1], 0.5, 'rgba(148,197,222,0.85)', 0.85, true));
+    });
+
+    kids.push(h('path', { key: 'surf', d: 'M0 ' + SURF + ' q22 -4 44 0 t44 0 t44 0 t44 0 t44 0 t44 0 t44 0 t44 0 t44 0',
+      fill: 'none', stroke: 'rgba(186,230,253,0.75)', strokeWidth: 1.6 }));
+
+    // The boat you are casting from, and the rod loaded to throw.
+    kids.push(h('path', { key: 'hull', d: 'M10 ' + (SURF - 12) + ' L84 ' + (SURF - 12) + ' L76 ' + (SURF + 6) + ' L18 ' + (SURF + 6) + ' Z', fill: '#e8eef5', stroke: '#0f172a', strokeWidth: 1.2 }));
+    kids.push(h('rect', { key: 'cab', x: 28, y: SURF - 23, width: 22, height: 11, fill: '#cbd8e6', stroke: '#0f172a', strokeWidth: 1 }));
+    var tipX = 88, tipY = SURF - 52;
+    kids.push(h('path', { key: 'rod', d: 'M52 ' + (SURF - 16) + ' Q74 ' + (SURF - 46) + ' ' + tipX + ' ' + tipY,
+      fill: 'none', stroke: '#c8a06a', strokeWidth: 3, strokeLinecap: 'round' }));
+
+    // The line in the air. A longer cast throws a flatter, further arc.
+    var landX = at(place.meter);
+    var apexY = Math.max(12, tipY - 26 - (landX - tipX) * 0.16);
+    kids.push(h('path', { key: 'arc', d: 'M' + tipX + ' ' + tipY + ' Q' + ((tipX + landX) / 2) + ' ' + apexY + ' ' + landX + ' ' + SURF,
+      fill: 'none', stroke: ink, strokeWidth: 1.8, strokeDasharray: '6 4' }));
+    // Splash where it lands.
+    kids.push(h('ellipse', { key: 'sp', cx: landX, cy: SURF, rx: 11, ry: 3.6, fill: 'none', stroke: ink, strokeWidth: 2 }));
+    kids.push(h('ellipse', { key: 'sp2', cx: landX, cy: SURF, rx: 19, ry: 6, fill: 'none', stroke: ink, strokeWidth: 1, opacity: 0.5 }));
+    kids.push(h('path', { key: 'lure', d: 'M' + (landX - 3) + ' ' + (SURF + 3) + ' l3 8 l3 -8 z', fill: ink }));
+    kids.push(h('line', { key: 'mk', x1: landX, y1: SURF + 12, x2: landX, y2: H - 16, stroke: ink, strokeWidth: 1, strokeDasharray: '2 3', opacity: 0.7 }));
+    kids.push(h('text', { key: 'mt', x: Math.min(W - 6, Math.max(20, landX)), y: H - 5, textAnchor: 'middle', fontSize: 10, fontWeight: 900, fill: ink, stroke: 'rgba(13,52,80,0.95)', strokeWidth: 2.6, paintOrder: 'stroke' }, Math.round(place.meter) + '%'));
+
+    // The verdict, said in words as well as position.
+    kids.push(h('text', { key: 'v', x: 8, y: 16, fontSize: 12, fontWeight: 900, fill: ink },
+      place.inside ? 'ON THE FISH' : place.short ? 'FALLING SHORT' : 'THROWN PAST'));
+    kids.push(h('text', { key: 'd', x: 8, y: 29, fontSize: 9, fontWeight: 700, fill: '#94a3b8' },
+      place.inside ? 'in the ' + place.lo + '–' + place.hi + '% target water' : 'target water is ' + place.lo + '–' + place.hi + '%'));
+
+    return h('svg', {
+      viewBox: '0 0 ' + W + ' ' + H,
+      // The range control's own label carries the reading and the target band.
+      'aria-hidden': 'true', focusable: 'false',
+      style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid ' + (place.inside ? 'rgba(52,211,153,0.5)' : 'rgba(251,191,36,0.45)'), margin: '10px 0' }
+    }, kids);
+  }
+
+  // ─── Working the rig. The count told you how many times you had pressed the
+  // button; it never showed the one thing that makes a retrieve worth doing,
+  // which is a fish deciding whether to commit.
+  function flPresentationSvg(h, count, target, technique) {
+    var done = Math.max(0, Number(count) || 0);
+    var goal = Math.max(1, Number(target) || 1);
+    var progress = Math.min(1, done / goal);
+    var W = 420, H = 152, SURF = 26;
+    var lureX = 150, lureY = 88;
+    var kids = [];
+
+    kids.push(h('rect', { key: 'sea', x: 0, y: 0, width: W, height: H, fill: '#0b2c44' }));
+    kids.push(h('rect', { key: 'sky', x: 0, y: 0, width: W, height: SURF, fill: '#16344d' }));
+    kids.push(h('path', { key: 'surf', d: 'M0 ' + SURF + ' q24 -4 48 0 t48 0 t48 0 t48 0 t48 0 t48 0 t48 0 t48 0 t48 0',
+      fill: 'none', stroke: 'rgba(186,230,253,0.7)', strokeWidth: 1.6 }));
+    kids.push(h('line', { key: 'line', x1: lureX - 4, y1: SURF, x2: lureX, y2: lureY, stroke: '#e2e8f0', strokeWidth: 1.2 }));
+
+    // The working path, shaped by the presentation actually selected — a jig
+    // hops, a drift swings, a retrieve tracks straight.
+    var path;
+    if (technique === 'vertical-jig') path = 'M' + lureX + ' ' + (lureY - 26) + ' L' + (lureX - 7) + ' ' + lureY + ' L' + lureX + ' ' + (lureY + 26) + ' L' + (lureX + 7) + ' ' + lureY + ' Z';
+    else if (technique === 'slow-drift') path = 'M' + (lureX - 40) + ' ' + (lureY + 18) + ' Q' + lureX + ' ' + (lureY - 22) + ' ' + (lureX + 44) + ' ' + (lureY + 12);
+    else path = 'M' + (lureX - 52) + ' ' + lureY + ' Q' + lureX + ' ' + (lureY - (technique === 'fast-retrieve' ? 20 : 10)) + ' ' + (lureX + 52) + ' ' + lureY;
+    kids.push(h('path', { key: 'wp', d: path, fill: 'none', stroke: 'rgba(125,211,252,0.55)', strokeWidth: 1.6, strokeDasharray: '5 4' }));
+    kids.push(h('path', { key: 'lure', d: 'M' + lureX + ' ' + (lureY - 8) + ' l6 11 l-6 7 l-6 -7 z', fill: '#cbd5e1', stroke: '#0f172a', strokeWidth: 1.2 }));
+
+    // The fish, closing as the cadence holds. This is the whole point of the
+    // step: something out there is making up its mind.
+    // Nose position. Mirrored, the body runs to the RIGHT of this point, so the
+    // far end of the approach has to leave room for it inside the frame.
+    var fishX = 366 - (366 - (lureX + 46)) * progress;
+    var interested = progress > 0.05;
+    kids.push(castFish(h, 'f', fishX, lureY + 10 - progress * 8, 1.05,
+      progress > 0.72 ? '#6ee7b7' : progress > 0.35 ? '#9fc2d8' : 'rgba(120,150,172,0.75)', interested ? 1 : 0.5, true));
+    if (progress > 0.35) {
+      kids.push(h('line', { key: 'sight', x1: fishX - 4, y1: lureY + 8 - progress * 8, x2: lureX + 12, y2: lureY,
+        stroke: 'rgba(110,231,183,' + (0.2 + progress * 0.45) + ')', strokeWidth: 1.2, strokeDasharray: '3 4' }));
+    }
+
+    var stage = progress >= 1 ? 'COMMITTED' : progress > 0.72 ? 'CLOSING FAST' : progress > 0.35 ? 'TRACKING THE RIG' : interested ? 'SOMETHING NOTICED' : 'NOTHING YET';
+    kids.push(h('text', { key: 's', x: 8, y: 16, fontSize: 12, fontWeight: 900, fill: progress > 0.72 ? '#6ee7b7' : '#bae6fd' }, stage));
+    kids.push(h('text', { key: 'c', x: W - 8, y: 16, textAnchor: 'end', fontSize: 11, fontWeight: 800, fill: '#7dd3fc' }, done + ' / ' + goal));
+    kids.push(h('text', { key: 't', x: 8, y: H - 7, fontSize: 9, fontWeight: 700, fill: '#94a3b8' }, String(technique || '').replace(/-/g, ' ')));
+
+    return h('svg', {
+      viewBox: '0 0 ' + W + ' ' + H,
+      // The labelled progressbar beside it carries the count and the target.
+      'aria-hidden': 'true', focusable: 'false',
+      style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.28)', margin: '10px 0' }
+    }, kids);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // THE MEASURING BOARD
+  // The catch inspection is where the whole trip is settled, and there was
+  // nothing to measure. The length arrived already decided, printed in the
+  // heading — "Atlantic Cod · 18 in" — and the legal limit arrived as a second
+  // sentence somewhere below it. Whether 18 clears 19 was arithmetic performed
+  // in the student's head between two pieces of text.
+  //
+  // A measuring board is the actual instrument: nose against the bump stop,
+  // read where the tail falls. Drawn to scale against the limit, "short" stops
+  // being a subtraction and becomes a tail that visibly does not reach the
+  // line. That is the entire skill this screen exists to teach.
+  // ═══════════════════════════════════════════════════════════════════
+
+  // A fish in profile, nose at the origin, `len` long and `tall` deep. Drawn
+  // from proportions rather than a fixed path so the same body reads at any
+  // length on the board.
+  function boardFishPath(len, tall) {
+    var b = len * 0.78;                 // body ends, tail begins
+    var t = tall / 2;
+    return 'M0 0'
+      + ' C' + (len * 0.12) + ' ' + (-t * 0.92) + ' ' + (b * 0.55) + ' ' + (-t) + ' ' + b + ' ' + (-t * 0.34)
+      + ' L' + len + ' ' + (-t * 0.86)
+      + ' L' + (len * 0.93) + ' 0'
+      + ' L' + len + ' ' + (t * 0.86)
+      + ' L' + b + ' ' + (t * 0.34)
+      + ' C' + (b * 0.55) + ' ' + t + ' ' + (len * 0.12) + ' ' + (t * 0.92) + ' 0 0 Z';
+  }
+
+  function flMeasuringBoardSvg(h, evidence, speciesName) {
+    var ev = evidence || {};
+    var measured = Number(ev.measuredInches);
+    if (!isFinite(measured) || measured <= 0) return null;
+    // ★ Number(null) is 0, and isFinite(0) is true — so guarding a missing
+    // bound with isFinite(Number(x)) turns "no maximum" into "maximum of
+    // zero". Every fish then measured OVERSIZE against a limit that does not
+    // exist, which is the exact opposite of the correct call. Check for the
+    // absent value before coercing it.
+    var num = function(v) { return v == null || !isFinite(Number(v)) ? null : Number(v); };
+    var lo = num(ev.minInches), hi = num(ev.maxInches);
+
+    var W = 460, H = 178, X0 = 34, X1 = 446, BASE = 122;
+    // Range the board so the fish AND both limits always fit, with headroom so
+    // a tail sitting exactly on the line is still readable.
+    var span = Math.max(measured, hi || 0, (lo || 0) + 2) * 1.12;
+    span = Math.max(span, 8);
+    var ppi = (X1 - X0) / span;
+    var at = function(inches) { return X0 + inches * ppi; };
+    var legal = ev.legalToRetain !== false;
+    var ink = legal ? '#34d399' : '#f87171';
+    var kids = [];
+
+    kids.push(h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, rx: 8, fill: '#0b1b28' }));
+    // The board itself, with the bump stop the nose goes against.
+    kids.push(h('rect', { key: 'board', x: X0 - 12, y: BASE - 54, width: (X1 - X0) + 24, height: 74, rx: 3, fill: '#8a6a44' }));
+    kids.push(h('rect', { key: 'grain', x: X0 - 12, y: BASE - 54, width: (X1 - X0) + 24, height: 74, rx: 3, fill: 'none', stroke: 'rgba(60,40,20,0.55)', strokeWidth: 1 }));
+    kids.push(h('rect', { key: 'stop', x: X0 - 12, y: BASE - 74, width: 12, height: 94, rx: 2, fill: '#5f4a30', stroke: '#3a2c1b', strokeWidth: 1 }));
+
+    // Inch graduations. Every inch gets a tick; every fifth is tall and numbered.
+    var step = span > 44 ? 2 : 1;
+    for (var i = 0; i <= Math.floor(span); i += step) {
+      var big = i % 5 === 0;
+      kids.push(h('line', { key: 'tk' + i, x1: at(i), y1: BASE, x2: at(i), y2: BASE - (big ? 15 : 8),
+        stroke: big ? '#2b2013' : 'rgba(43,32,19,0.6)', strokeWidth: big ? 1.6 : 1 }));
+      // Suppress a numeral that would collide with the unit label at the rim.
+      if (big && at(i) < X1 - 38) kids.push(h('text', { key: 'tl' + i, x: at(i), y: BASE + 13, textAnchor: 'middle', fontSize: 9.5, fontWeight: 800, fill: '#2b2013' }, i));
+    }
+    kids.push(h('text', { key: 'unit', x: X1, y: BASE + 13, textAnchor: 'end', fontSize: 9, fontWeight: 700, fill: '#4a3a24' }, 'inches'));
+
+    // The legal band, drawn ON the board. A minimum alone shades everything
+    // above it; a slot shades only between the two bounds.
+    if (lo !== null) {
+      var bandL = at(lo), bandR = hi !== null ? at(hi) : X1 + 12;
+      kids.push(h('rect', { key: 'band', x: bandL, y: BASE - 54, width: Math.max(2, bandR - bandL), height: 74, fill: 'rgba(52,211,153,0.2)' }));
+      kids.push(h('line', { key: 'lo', x1: bandL, y1: BASE - 72, x2: bandL, y2: BASE + 20, stroke: '#34d399', strokeWidth: 2.4 }));
+      kids.push(h('text', { key: 'lot', x: bandL, y: BASE - 78, textAnchor: 'middle', fontSize: 10, fontWeight: 900, fill: '#6ee7b7' },
+        (hi !== null ? 'SLOT ' : 'MIN ') + lo + '"'));
+      if (hi !== null) {
+        kids.push(h('line', { key: 'hi', x1: bandR, y1: BASE - 72, x2: bandR, y2: BASE + 20, stroke: '#34d399', strokeWidth: 2.4 }));
+        kids.push(h('text', { key: 'hit', x: bandR, y: BASE - 78, textAnchor: 'middle', fontSize: 10, fontWeight: 900, fill: '#6ee7b7' }, hi + '"'));
+      }
+    }
+
+    // The fish, nose on the stop, drawn to its measured length.
+    var bodyLen = measured * ppi;
+    var bodyTall = Math.max(20, Math.min(46, bodyLen * 0.26));
+    kids.push(h('path', { key: 'fish', transform: 'translate(' + X0 + ',' + (BASE - 27) + ')',
+      d: boardFishPath(bodyLen, bodyTall), fill: '#94a8bb', stroke: '#0f172a', strokeWidth: 1.4 }));
+    kids.push(h('path', { key: 'lat', transform: 'translate(' + X0 + ',' + (BASE - 27) + ')',
+      d: 'M' + (bodyLen * 0.14) + ' ' + (-bodyTall * 0.06) + ' Q' + (bodyLen * 0.45) + ' ' + (-bodyTall * 0.16) + ' ' + (bodyLen * 0.77) + ' ' + (-bodyTall * 0.04),
+      fill: 'none', stroke: 'rgba(15,23,42,0.45)', strokeWidth: 1.2 }));
+    kids.push(h('circle', { key: 'eye', cx: X0 + bodyLen * 0.09, cy: BASE - 27 - bodyTall * 0.2, r: Math.max(1.8, bodyTall * 0.075), fill: '#0f172a' }));
+
+    // Where the tail actually falls — the reading itself.
+    var tailX = at(measured);
+    kids.push(h('line', { key: 'rd', x1: tailX, y1: BASE - 74, x2: tailX, y2: BASE + 20, stroke: ink, strokeWidth: 2.4, strokeDasharray: '5 3' }));
+    kids.push(h('rect', { key: 'rdb', x: Math.min(W - 74, Math.max(2, tailX - 36)), y: BASE + 24, width: 72, height: 20, rx: 4, fill: ink }));
+    kids.push(h('text', { key: 'rdt', x: Math.min(W - 38, Math.max(38, tailX)), y: BASE + 38, textAnchor: 'middle', fontSize: 11.5, fontWeight: 900, fill: '#04121d' }, measured + ' in'));
+
+    // The verdict, and by how much — "short" is only useful with a number.
+    var verdict, detail;
+    if (lo === null) { verdict = 'NO SIZE RULE'; detail = 'this activity does not score length'; }
+    else if (measured < lo) { verdict = 'SHORT'; detail = (Math.round((lo - measured) * 10) / 10) + ' in under the ' + lo + ' in minimum'; }
+    else if (hi !== null && measured > hi) { verdict = 'OVERSIZE'; detail = (Math.round((measured - hi) * 10) / 10) + ' in over the ' + hi + ' in slot maximum'; }
+    else if (measured === lo) { verdict = hi !== null ? 'IN THE SLOT' : 'MEETS MINIMUM'; detail = 'exactly on the ' + lo + ' in ' + (hi !== null ? 'slot minimum' : 'minimum'); }
+    // A minimum is not a slot. Reporting "IN THE SLOT" against a rule that has
+    // no upper bound teaches a limit the regulation does not have.
+    else { verdict = hi !== null ? 'IN THE SLOT' : 'MEETS MINIMUM'; detail = (Math.round((measured - lo) * 10) / 10) + ' in clear of the ' + lo + ' in minimum'; }
+    kids.push(h('text', { key: 'v', x: 10, y: 20, fontSize: 13, fontWeight: 900, fill: lo === null ? '#bae6fd' : ink }, verdict));
+    kids.push(h('text', { key: 'd', x: 10, y: 34, fontSize: 9.5, fontWeight: 700, fill: '#94a3b8' }, detail));
+    if (speciesName) kids.push(h('text', { key: 'sp', x: W - 10, y: 20, textAnchor: 'end', fontSize: 11, fontWeight: 800, fill: '#bae6fd' }, speciesName));
+
+    return h('svg', {
+      viewBox: '0 0 ' + W + ' ' + H,
+      // The rule label and the decision buttons beside it state all of this.
+      'aria-hidden': 'true', focusable: 'false',
+      style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid ' + (lo === null ? 'rgba(125,211,252,0.3)' : legal ? 'rgba(52,211,153,0.5)' : 'rgba(248,113,113,0.5)'), margin: '10px 0' }
+    }, kids);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // THE CAST SETUP
+  // This is the decision the whole rest of the trip hangs on — where you fish,
+  // how deep, on what, worked how — and it was six dropdowns over a number.
+  // "Target affinity 62/100" tells a student they are wrong without telling
+  // them what wrong looks like.
+  //
+  // Below: a cut through the water. Your lure hangs where you put it, the fish
+  // hold where they hold, and whether those are the same place is something you
+  // can SEE rather than infer from a bar. Everything is read from the score the
+  // panel already computed, so the picture and the number cannot disagree.
+  // ═══════════════════════════════════════════════════════════════════
+
+  var CAST_ZONES = ['surface', 'midwater', 'bottom'];
+  // Band tops and bottoms in the preview's own coordinate space.
+  var CAST_BANDS = { surface: [40, 96], midwater: [96, 152], bottom: [152, 198] };
+  function castBandMid(zone) {
+    var b = CAST_BANDS[zone] || CAST_BANDS.midwater;
+    return (b[0] + b[1]) / 2;
+  }
+
+  // One fish silhouette, sized and tinted by caller. Drawn nose-at-origin with
+  // the body running left, so it faces RIGHT unless mirrored.
+  // ★ faceLeft matters: a fish drawn closing on a lure while pointing away from
+  // it says the opposite of what the frame is for.
+  function castFish(h, key, x, y, size, fill, opacity, faceLeft) {
+    return h('g', { key: key, transform: 'translate(' + x.toFixed(1) + ',' + y.toFixed(1) + ') scale(' + (faceLeft ? -size : size) + ',' + size + ')', opacity: opacity },
+      h('path', { d: 'M0 0 q-13 -8 -28 0 q15 8 28 0 Z', fill: fill, stroke: 'rgba(2,6,23,0.65)', strokeWidth: 1 }),
+      h('path', { d: 'M-28 0 l-9 -6 l3 6 l-3 6 z', fill: fill, stroke: 'rgba(2,6,23,0.65)', strokeWidth: 1 }),
+      h('circle', { cx: -5, cy: -1.6, r: 1.4, fill: '#0b1a29' }));
+  }
+
+  function flCastPreviewSvg(h, score, session) {
+    var W = 420, H = 216, SURF = 40;
+    var sess = session || {};
+    var lureZone = CAST_ZONES.indexOf(score.targetDepth) >= 0 ? score.targetDepth : 'midwater';
+    var fishZone = CAST_ZONES.indexOf(score.speciesZone) >= 0 ? score.speciesZone : 'bottom';
+    var matched = lureZone === fishZone;
+    var tags = score.spotTags || [];
+    var night = sess.timeOfDay === 'night' || sess.timeOfDay === 'dusk';
+    var ink = matched ? '#34d399' : '#fbbf24';
+    var kids = [];
+
+    kids.push(h('rect', { key: 'sky', x: 0, y: 0, width: W, height: SURF, fill: night ? '#0b1220' : '#1e3a5f' }));
+    // Water darkens with depth, the way it actually does.
+    kids.push(h('defs', { key: 'defs' },
+      h('linearGradient', { id: 'flCastWater', x1: '0', y1: '0', x2: '0', y2: '1' },
+        h('stop', { offset: '0', stopColor: night ? '#0d2436' : '#1d5b80' }),
+        h('stop', { offset: '1', stopColor: '#04121d' }))));
+    kids.push(h('rect', { key: 'sea', x: 0, y: SURF, width: W, height: H - SURF, fill: 'url(#flCastWater)' }));
+
+    // Depth bands, each named down the left margin.
+    CAST_ZONES.forEach(function(z, i) {
+      var b = CAST_BANDS[z];
+      var isFish = z === fishZone, isLure = z === lureZone;
+      if (isFish) {
+        kids.push(h('rect', { key: 'fb' + i, x: 0, y: b[0], width: W, height: b[1] - b[0],
+          fill: matched ? 'rgba(52,211,153,0.17)' : 'rgba(251,191,36,0.15)' }));
+      }
+      kids.push(h('line', { key: 'bl' + i, x1: 0, y1: b[0], x2: W, y2: b[0], stroke: 'rgba(148,187,214,0.22)', strokeWidth: 1, strokeDasharray: '4 6' }));
+      kids.push(h('text', { key: 'bt' + i, x: 5, y: b[0] + 13, fontSize: 9, fontWeight: 800,
+        fill: isFish ? ink : isLure ? '#bae6fd' : 'rgba(186,230,253,0.45)' }, z.toUpperCase()));
+    });
+
+    // Seabed, shaped by the habitat the spot was scored on.
+    var bedTop = CAST_BANDS.bottom[1];
+    kids.push(h('path', { key: 'bed', d: 'M0 ' + bedTop + ' Q90 ' + (bedTop - 7) + ' 180 ' + (bedTop - 2) + ' T420 ' + (bedTop - 5) + ' L420 ' + H + ' L0 ' + H + ' Z',
+      fill: tags.indexOf('rocky') >= 0 ? '#3f4a52' : '#6b6350' }));
+    if (tags.indexOf('rocky') >= 0 || tags.indexOf('structure') >= 0) {
+      [[52, 12], [128, 17], [232, 10], [318, 20], [386, 13]].forEach(function(r, k) {
+        kids.push(h('path', { key: 'rk' + k, d: 'M' + (r[0] - r[1]) + ' ' + (H - 4) + ' L' + r[0] + ' ' + (bedTop - r[1] * 0.7) + ' L' + (r[0] + r[1]) + ' ' + (H - 4) + ' Z',
+          fill: '#525d66', stroke: '#2b343b', strokeWidth: 1 }));
+      });
+    } else if (tags.indexOf('grass') >= 0) {
+      for (var g = 0; g < 22; g++) {
+        var gx = 12 + g * 19;
+        kids.push(h('path', { key: 'gr' + g, d: 'M' + gx + ' ' + (H - 2) + ' q' + (g % 2 ? 7 : -7) + ' -16 ' + (g % 2 ? 2 : -2) + ' -28',
+          fill: 'none', stroke: '#3f7a4a', strokeWidth: 2, strokeLinecap: 'round' }));
+      }
+    } else {
+      [0, 1, 2, 3].forEach(function(k) {
+        kids.push(h('path', { key: 'sd' + k, d: 'M' + (k * 110) + ' ' + (bedTop + 7) + ' q28 -5 56 0 t56 0',
+          fill: 'none', stroke: 'rgba(160,150,120,0.5)', strokeWidth: 1.5 }));
+      });
+    }
+
+    // Surface, and the boat you are casting from.
+    kids.push(h('path', { key: 'surf', d: 'M0 ' + SURF + ' q26 -5 52 0 t52 0 t52 0 t52 0 t52 0 t52 0 t52 0 t52 0',
+      fill: 'none', stroke: 'rgba(186,230,253,0.85)', strokeWidth: 2 }));
+    kids.push(h('path', { key: 'hull', d: 'M42 ' + (SURF - 13) + ' L120 ' + (SURF - 13) + ' L110 ' + (SURF + 5) + ' L52 ' + (SURF + 5) + ' Z',
+      fill: '#e8eef5', stroke: '#0f172a', strokeWidth: 1.2 }));
+    kids.push(h('rect', { key: 'cab', x: 62, y: SURF - 24, width: 26, height: 12, fill: '#cbd8e6', stroke: '#0f172a', strokeWidth: 1 }));
+    // Rod, angled out over the water toward the cast.
+    kids.push(h('path', { key: 'rod', d: 'M104 ' + (SURF - 16) + ' Q152 ' + (SURF - 34) + ' 196 ' + (SURF - 26),
+      fill: 'none', stroke: '#c8a06a', strokeWidth: 2.6, strokeLinecap: 'round' }));
+
+    // The line, and the lure hanging at the depth actually selected.
+    var lureX = 262, lureY = castBandMid(lureZone);
+    kids.push(h('path', { key: 'line', d: 'M196 ' + (SURF - 26) + ' Q' + (lureX - 12) + ' ' + (SURF - 8) + ' ' + lureX + ' ' + lureY,
+      fill: 'none', stroke: '#e2e8f0', strokeWidth: 1.3, opacity: 0.9 }));
+    // Lure glyph by tackle — a jig, a baited drift rig, a plug, a sabiki string.
+    var tackle = score.tackleId;
+    if (tackle === 'casting-plug') {
+      kids.push(h('g', { key: 'lure', transform: 'translate(' + lureX + ',' + lureY + ')' },
+        h('ellipse', { rx: 12, ry: 5, fill: '#f8fafc', stroke: '#0f172a', strokeWidth: 1.2 }),
+        h('circle', { cx: -6, cy: -1, r: 1.6, fill: '#0f172a' }),
+        h('path', { d: 'M10 0 l8 -4 M10 0 l8 4', stroke: '#94a3b8', strokeWidth: 1.4, fill: 'none' })));
+    } else if (tackle === 'sabiki') {
+      kids.push(h('g', { key: 'lure', transform: 'translate(' + lureX + ',' + (lureY - 16) + ')' },
+        h('line', { x1: 0, y1: 0, x2: 0, y2: 34, stroke: '#e2e8f0', strokeWidth: 1.2 }),
+        h('path', { d: 'M0 6 l9 2 M0 15 l9 2 M0 24 l9 2', stroke: '#fca5a5', strokeWidth: 2.4, fill: 'none' }),
+        h('circle', { cx: 0, cy: 34, r: 3.4, fill: '#94a3b8' })));
+    } else if (tackle === 'drift-rig') {
+      kids.push(h('g', { key: 'lure', transform: 'translate(' + lureX + ',' + lureY + ')' },
+        h('path', { d: 'M-8 -6 q11 6 0 12 q-9 -6 0 -12 Z', fill: '#d9a066', stroke: '#0f172a', strokeWidth: 1 }),
+        h('path', { d: 'M2 2 q7 5 1 9', stroke: '#94a3b8', strokeWidth: 1.6, fill: 'none' })));
+    } else {
+      kids.push(h('g', { key: 'lure', transform: 'translate(' + lureX + ',' + lureY + ')' },
+        h('path', { d: 'M0 -9 l7 12 l-7 7 l-7 -7 Z', fill: '#cbd5e1', stroke: '#0f172a', strokeWidth: 1.2 }),
+        h('path', { d: 'M0 10 l6 6', stroke: '#94a3b8', strokeWidth: 1.6 })));
+    }
+    kids.push(h('text', { key: 'lt', x: lureX + 18, y: lureY + 4, fontSize: 9.5, fontWeight: 800, fill: '#e2e8f0',
+      stroke: 'rgba(4,18,29,0.9)', strokeWidth: 2.4, paintOrder: 'stroke' }, 'your rig'));
+
+    // The fish, holding in their band.
+    var fy = castBandMid(fishZone);
+    [[352, 1, 0.95], [386, 0.8, 0.75], [330, 0.72, 0.6]].forEach(function(f, k) {
+      kids.push(castFish(h, 'f' + k, f[0], fy + (k === 1 ? -13 : k === 2 ? 14 : 0), f[1], matched ? '#6ee7b7' : '#93a7bb', f[2], true));
+    });
+
+    // The verdict, and — when it is wrong — which way to move.
+    if (matched) {
+      kids.push(h('text', { key: 'v', x: W - 8, y: 22, textAnchor: 'end', fontSize: 12, fontWeight: 900, fill: '#6ee7b7' }, 'IN THE ZONE'));
+    } else {
+      var deeper = CAST_ZONES.indexOf(fishZone) > CAST_ZONES.indexOf(lureZone);
+      kids.push(h('text', { key: 'v', x: W - 8, y: 22, textAnchor: 'end', fontSize: 12, fontWeight: 900, fill: '#fbbf24' },
+        'FISH ARE ' + (deeper ? 'DEEPER' : 'SHALLOWER')));
+      // An arrow from the lure toward the band it should be in.
+      var ay = castBandMid(fishZone);
+      kids.push(h('line', { key: 'ar', x1: lureX, y1: lureY + (deeper ? 14 : -14), x2: lureX, y2: ay + (deeper ? -12 : 12),
+        stroke: '#fbbf24', strokeWidth: 2, strokeDasharray: '4 3' }));
+      kids.push(h('polygon', { key: 'ah',
+        points: lureX + ',' + (ay + (deeper ? -3 : 3)) + ' ' + (lureX - 5) + ',' + (ay + (deeper ? -12 : 12)) + ' ' + (lureX + 5) + ',' + (ay + (deeper ? -12 : 12)),
+        fill: '#fbbf24' }));
+    }
+    return h('svg', {
+      viewBox: '0 0 ' + W + ' ' + H,
+      // The affinity bars and evidence list beneath carry all of this in text.
+      'aria-hidden': 'true', focusable: 'false',
+      style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid ' + (matched ? 'rgba(52,211,153,0.5)' : 'rgba(251,191,36,0.45)'), marginBottom: 10 }
+    }, kids);
+  }
+
+  // ─── The affinity score, broken into the five things it is actually made of.
+  // A single 62/100 says you are wrong; five bars say WHICH choice is wrong,
+  // which is the only version a student can act on. Read straight from the
+  // scorer's own components so the bars cannot drift from the total.
+  var CAST_SCORE_PARTS = [
+    { key: 'habitat', label: 'Spot' }, { key: 'depth', label: 'Depth' },
+    { key: 'tackle', label: 'Tackle' }, { key: 'conditions', label: 'Conditions' },
+    { key: 'presentation', label: 'Presentation' }
+  ];
+  function flSetupScoreBarsSvg(h, components) {
+    var comp = components || {};
+    var W = 420, rowH = 21, H = CAST_SCORE_PARTS.length * rowH + 4;
+    var labelW = 84, barX = labelW + 6, barW = W - barX - 34;
+    var kids = [];
+    CAST_SCORE_PARTS.forEach(function(part, i) {
+      var val = Math.max(0, Math.min(20, Number(comp[part.key]) || 0));
+      var y = i * rowH + 4;
+      var frac = val / 20;
+      var fill = frac >= 0.85 ? '#34d399' : frac >= 0.45 ? '#fbbf24' : '#f87171';
+      kids.push(h('text', { key: 'l' + i, x: labelW, y: y + 11, textAnchor: 'end', fontSize: 10, fontWeight: 800,
+        fill: frac >= 0.45 ? '#dbeafe' : '#fca5a5' }, part.label));
+      kids.push(h('rect', { key: 'bg' + i, x: barX, y: y + 2, width: barW, height: 11, rx: 3, fill: 'rgba(148,163,184,0.2)' }));
+      kids.push(h('rect', { key: 'fg' + i, x: barX, y: y + 2, width: Math.max(2, barW * frac), height: 11, rx: 3, fill: fill }));
+      kids.push(h('text', { key: 'v' + i, x: W - 2, y: y + 11, textAnchor: 'end', fontSize: 9.5, fontWeight: 800, fill: '#94a3b8' }, val + '/20'));
+    });
+    return h('svg', { viewBox: '0 0 ' + W + ' ' + H,
+      // The evidence list below states each of these in words.
+      'aria-hidden': 'true', focusable: 'false',
+      style: { width: '100%', height: 'auto', display: 'block', margin: '8px 0 2px' } }, kids);
+  }
+
+  // Where a contact sits on the scope, from its bearing and range. Written
+  // once: the live contact and every history plot must land on the same scale,
+  // or the trail would say a different thing from the blip at the end of it.
+  //
+  // ★ The floor here was 7 of 22 units, a third of the way out. Inside that the
+  // whole trail piled onto one spot — so the plot went blind at exactly the
+  // range where a closing contact matters most. It exists only to keep a
+  // contact from vanishing under own ship's marker.
+  var RADAR_FULL_SCALE = 36;          // sim units at the outer ring
+  var RADAR_PLOT_UNITS = 22;          // scope radius in plot units
+  function getCoreRadarPlotPoint(bearingDeg, range) {
+    var angle = (Number(bearingDeg) || 0) * Math.PI / 180;
+    var r = (Number(range) || 0) / RADAR_FULL_SCALE * RADAR_PLOT_UNITS;
+    r = Math.min(RADAR_PLOT_UNITS, Math.max(1.6, r));
+    return { x: Math.sin(angle) * r, y: -Math.cos(angle) * r, units: r };
+  }
+
+  function flRadarSvg(h, dots, contact, riskColor, riskLabel) {
+    var R = 108, cx = 124, cy = 124, W = 248;
+    var scale = R / 22;                 // the plot points arrive on a 22-unit radius
+    var ink = riskColor || '#7dd3fc';
+    var kids = [], defs = [];
+    // ★ Everything plotted is clipped to the scope face. An extended relative
+    // track is a long line by construction, and unclipped it ran clean off the
+    // circle and across the panel — which reads as a broken drawing, not as a
+    // radar. A real screen shows you only what is inside the range you set.
+    defs.push(h('clipPath', { key: 'cp', id: 'flRadarFace' },
+      h('circle', { cx: cx, cy: cy, r: R - 1 })));
+    kids.push(h('defs', { key: 'defs' }, defs));
+    kids.push(h('circle', { key: 'face', cx: cx, cy: cy, r: R, fill: 'rgba(6,30,44,0.95)', stroke: 'rgba(125,211,252,0.7)', strokeWidth: 1.6 }));
+    // Range rings, labelled. An unlabelled ring tells you a contact is "out
+    // there somewhere"; a labelled one tells you how far, which is the number
+    // the give-way decision actually turns on.
+    // ★ The rings are labelled in SIM UNITS — the same units as the "closest
+    // range" readout below the scope. They previously carried the drawing's own
+    // internal plot units, so a ring marked 7 sat beside a readout of 11.2 and
+    // the two numbers could not be compared, which is the only thing a range
+    // ring is for. Derived from the placement constant so they cannot drift.
+    [0.333, 0.667, 1].forEach(function(f, i) {
+      kids.push(h('circle', { key: 'rr' + i, cx: cx, cy: cy, r: R * f, fill: 'none',
+        stroke: 'rgba(125,211,252,' + (i === 2 ? 0 : 0.34) + ')', strokeWidth: 1, strokeDasharray: '3 4' }));
+      kids.push(h('text', { key: 'rl' + i, x: cx + 4, y: cy - R * f + 11, fontSize: 9, fontWeight: 700,
+        fill: 'rgba(125,211,252,0.7)' }, Math.round(RADAR_FULL_SCALE * f)));
+    });
+    // Bearing scale every 30°, cardinals longer and labelled in relative degrees.
+    for (var b = 0; b < 12; b++) {
+      var ang = (b * 30) * Math.PI / 180;
+      var card = b % 3 === 0;
+      var inner = R - (card ? 13 : 7);
+      kids.push(h('line', { key: 'bt' + b,
+        x1: (cx + Math.sin(ang) * inner).toFixed(1), y1: (cy - Math.cos(ang) * inner).toFixed(1),
+        x2: (cx + Math.sin(ang) * R).toFixed(1), y2: (cy - Math.cos(ang) * R).toFixed(1),
+        stroke: 'rgba(125,211,252,' + (card ? 0.75 : 0.38) + ')', strokeWidth: card ? 1.4 : 1 }));
+      if (card && b > 0) {
+        kids.push(h('text', { key: 'bl' + b,
+          x: (cx + Math.sin(ang) * (R - 22)).toFixed(1), y: (cy - Math.cos(ang) * (R - 22) + 3.5).toFixed(1),
+          textAnchor: 'middle', fontSize: 8.5, fontWeight: 800, fill: 'rgba(125,211,252,0.7)' }, (b * 30) + '°'));
+      }
+    }
+    // Heading line straight up: this is a head-up display, so the top of the
+    // scope is where the bow is pointing.
+    kids.push(h('line', { key: 'hl', x1: cx, y1: cy, x2: cx, y2: cy - R, stroke: 'rgba(125,211,252,0.45)', strokeWidth: 1 }));
+    kids.push(h('text', { key: 'hd', x: cx, y: 13, textAnchor: 'middle', fontSize: 9.5, fontWeight: 900, fill: '#7dd3fc', letterSpacing: '0.08em' }, 'HEAD UP · RANGE ' + RADAR_FULL_SCALE + ' SIM'));
+
+    var plotted = [];
+    var track = getCoreRadarTrack(dots);
+    if (track.valid) {
+      // The extended relative track, and the CPA marker on it. This is the
+      // whole read: a line through the middle means a collision course.
+      var far = 200;
+      var x1 = cx + (track.from.x - track.ux * far) * scale;
+      var y1 = cy + (track.from.y - track.uy * far) * scale;
+      var x2 = cx + (track.to.x + track.ux * far) * scale;
+      var y2 = cy + (track.to.y + track.uy * far) * scale;
+      plotted.push(h('line', { key: 'trk', x1: x1, y1: y1, x2: x2, y2: y2,
+        stroke: ink, strokeWidth: 1.6, strokeDasharray: '6 5', opacity: 0.9 }));
+      var cX = cx + track.cpa.x * scale, cY = cy + track.cpa.y * scale;
+      // ★ A closest approach that lies BEHIND the contact has already happened.
+      // Marking it the same as one still to come implies an imminent close pass
+      // when the contact is in fact drawing away — the opposite call.
+      var ahead = track.cpa.ahead;
+      plotted.push(h('line', { key: 'cpal', x1: cx, y1: cy, x2: cX, y2: cY, stroke: ink, strokeWidth: 1.2, strokeDasharray: '2 3', opacity: ahead ? 1 : 0.4 }));
+      plotted.push(h('circle', { key: 'cpad', cx: cX, cy: cY, r: 5, fill: 'none', stroke: ink, strokeWidth: ahead ? 2 : 1.2, opacity: ahead ? 1 : 0.45 }));
+      plotted.push(h('circle', { key: 'cpaf', cx: cX, cy: cY, r: 1.8, fill: ink, opacity: ahead ? 1 : 0.45 }));
+    }
+    // Plot history, oldest faintest — the trail is the evidence.
+    (dots || []).forEach(function(d, i) {
+      plotted.push(h('circle', { key: 'p' + i, cx: cx + d.x * scale, cy: cy + d.y * scale, r: 3.4,
+        fill: '#7dd3fc', stroke: 'rgba(2,14,24,0.8)', strokeWidth: 0.8, opacity: d.opacity == null ? 0.65 : d.opacity }));
+    });
+    // The live contact, ringed so it reads apart from its own history trail.
+    if (contact) {
+      var tx = cx + contact.x * scale, ty = cy + contact.y * scale;
+      plotted.push(h('circle', { key: 'cth', cx: tx, cy: ty, r: 10, fill: 'none', stroke: ink, strokeWidth: 1, opacity: 0.45 }));
+      plotted.push(h('circle', { key: 'ct', cx: tx, cy: ty, r: 6, fill: ink, stroke: '#020617', strokeWidth: 1.4 }));
+    }
+    kids.push(h('g', { key: 'plot', clipPath: 'url(#flRadarFace)' }, plotted));
+    // The CPA label rides OUTSIDE the clip so a marker near the rim keeps its
+    // text; clipped, the one case you most need to read would lose its name.
+    if (track.valid) {
+      var lx = cx + track.cpa.x * scale, ly = cy + track.cpa.y * scale;
+      var flip = lx > cx + R * 0.55;
+      kids.push(h('text', { key: 'cpat', x: lx + (flip ? -8 : 9), y: ly - 8, textAnchor: flip ? 'end' : 'start',
+        fontSize: 10, fontWeight: 900, fill: ink, opacity: track.cpa.ahead ? 1 : 0.6,
+        stroke: 'rgba(2,14,24,0.9)', strokeWidth: 2.6, paintOrder: 'stroke' },
+        track.cpa.ahead ? 'CPA' : 'CPA passed'));
+    }
+    // Own ship at the centre, pointing up.
+    kids.push(h('polygon', { key: 'own', points: cx + ',' + (cy - 10) + ' ' + (cx + 6.5) + ',' + (cy + 7) + ' ' + (cx - 6.5) + ',' + (cy + 7),
+      fill: '#f8fafc', stroke: '#0b1a29', strokeWidth: 1.2 }));
+    return h('svg', {
+      viewBox: '0 0 ' + W + ' ' + W,
+      // The panel beneath it carries the numbers and the verdict in text.
+      'aria-hidden': 'true', focusable: 'false',
+      style: { width: '100%', maxWidth: 248, height: 'auto', display: 'block' }
+    }, kids);
+  }
+
   // ─── Camera rig geometry, kept pure so all four views can be verified without
   // a WebGL context — tick() feeds the result straight into the three.js camera.
   // Forward is (sin heading, cos heading); heading π is north, matching
@@ -2824,7 +3831,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     }, kids);
   }
 
+  // Post-rotation answer positions, measured off the SHIPPED bank rather than
+  // by re-deriving the rotation in a test. The authored bank put 66% of correct
+  // answers in slot B and never used slot D — passable by position — and the
+  // rotation above is what fixes it. Nothing was guarding that it stays fixed
+  // as questions are added, which is how this bug class keeps coming back.
+  function getCoreQuizAnswerDistribution() {
+    var counts = [], total = 0;
+    for (var i = 0; i < QUIZ_QUESTIONS.length; i++) {
+      var q = QUIZ_QUESTIONS[i];
+      if (!q || !Array.isArray(q.a) || typeof q.correct !== 'number') continue;
+      while (counts.length < q.a.length) counts.push(0);
+      counts[q.correct] = (counts[q.correct] || 0) + 1;
+      total++;
+    }
+    var peak = 0;
+    for (var c = 0; c < counts.length; c++) peak = Math.max(peak, counts[c]);
+    return { counts: counts, total: total, peakShare: total ? peak / total : 0 };
+  }
+
   window.__FisherLabCore = {
+    getCoreQuizAnswerDistribution: getCoreQuizAnswerDistribution,
     getCoreBuoyGlyph: getCoreBuoyGlyph,
     getCoreSimBuoySpec: getCoreSimBuoySpec,
     getCoreChartSymbol: getCoreChartSymbol,
@@ -2838,6 +3865,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     getCoreZoneDepths: getCoreZoneDepths,
     getCoreLightCharacter: getCoreLightCharacter,
     getCoreCameraRig: getCoreCameraRig,
+    getCoreNavLightLocalX: getCoreNavLightLocalX,
     getCoreSimProfile: getCoreSimProfile,
     getCoreVoyageMode: getCoreVoyageMode,
     evaluateCoreBuoyPass: evaluateCoreBuoyPass,
@@ -2880,7 +3908,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     isCoreMissionReady: isCoreMissionReady,
     getCoreObjective: getCoreObjective,
     relativeCoreBearing: relativeCoreBearing,
-    getCoreVoyageRank: getCoreVoyageRank
+    getCoreVoyageRank: getCoreVoyageRank,
+    getCoreNextRank: getCoreNextRank,
+    // Exported so the rank medallion and the next-rank strip can be rendered
+    // and photographed without playing a whole voyage to reach the debrief.
+    // Both are pure given h.
+    flRankMedallionSvg: flRankMedallionSvg,
+    flNextRankSvg: flNextRankSvg,
+    flFightSceneSvg: flFightSceneSvg,
+    flTensionGaugeSvg: flTensionGaugeSvg,
+    flStrikeSvg: flStrikeSvg,
+    flLandedSvg: flLandedSvg,
+    getCoreRadarTrack: getCoreRadarTrack,
+    getCoreRadarPlotPoint: getCoreRadarPlotPoint,
+    flCastPreviewSvg: flCastPreviewSvg,
+    flSetupScoreBarsSvg: flSetupScoreBarsSvg,
+    flMeasuringBoardSvg: flMeasuringBoardSvg,
+    getCoreCastPlacement: getCoreCastPlacement,
+    flCastArcSvg: flCastArcSvg,
+    flPresentationSvg: flPresentationSvg,
+    flRadarSvg: flRadarSvg
   };
 
   // ───────────────────────────────────────────────────────────
@@ -10196,8 +11243,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     // broke into hard-edged polygons. The per-frame cost of a finer mesh is
     // held flat by the octave lookup tables in updateWaterSurface below, so
     // this buys smoothness rather than spending frame budget on it.
-    var lowPowerWater = reducedMotion || (typeof navigator !== 'undefined' && !!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
-    var WATER_SEG = lowPowerWater ? 88 : 128;
+    // ★ ONE definition of "this machine cannot take the full scene". The same
+    // expression used to be written out twice, 600 lines apart — once for the
+    // water tessellation and once inside the effects layer — so tuning the
+    // threshold in one place would silently have left the other on the old
+    // rule. Everything that scales now reads this.
+    //
+    // hardwareConcurrency <= 4 is a crude proxy, but it is the only signal
+    // available without running a benchmark, and it catches the school
+    // Chromebooks this tool actually has to survive on.
+    var LOW_POWER = reducedMotion || (typeof navigator !== 'undefined' && !!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+    var WATER_SEG = LOW_POWER ? 88 : 128;
     var waterGeo = new THREE.PlaneGeometry(1400, 1400, WATER_SEG, WATER_SEG);
     // Shininess 50 against a bright specular put a blown-out white smear across
     // the middle of every daylight frame — worst from above, where it swallowed
@@ -10362,7 +11418,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       scene.add(tree);
     }
 
+    // Everything that shoals the water around it. Filled as the scenery is
+    // built, then read once to paint the shallows.
+    var shoalFeatures = [];
     function createIsland(x, z, radius, height) {
+      shoalFeatures.push({ x: x, z: z, r: radius });
       var islandColorHex = 0x5e7a4e; // default green-brown
       var islandHeight = height;
       
@@ -10383,7 +11443,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       // shoreline, and enough per-vertex jitter to look like rock rather than
       // a lathe turning. Two harmonics per island, seeded off its position, so
       // no two are the same shape but each is stable across frames.
-      var RINGS = 7, SEG = 16;
+      var RINGS = LOW_POWER ? 5 : 7, SEG = LOW_POWER ? 11 : 16;
       var seedA = Math.sin(x * 0.7 + z * 0.13) * 3.1, seedB = Math.cos(x * 0.19 - z * 0.41) * 2.7;
       function outlineAt(theta) {
         return radius * (0.84 + 0.16 * Math.sin(3 * theta + seedA) + 0.09 * Math.sin(5 * theta + seedB));
@@ -10588,19 +11648,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
 
     // ─── Navigation Lights (COLREGS Compliance)
     // Red Light (Port side bow)
+    var PORT_X = getCoreNavLightLocalX('port'), STBD_X = getCoreNavLightLocalX('starboard');
     var portLight = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 8), new THREE.MeshBasicMaterial({ color: 0xff0000 }));
-    portLight.position.set(-0.8, 0.8, 2.0);
+    portLight.position.set(PORT_X, 0.8, 2.0);
     boat.add(portLight);
     var portGlow = new THREE.PointLight(0xff0000, 0.0, 4);
-    portGlow.position.set(-0.8, 0.8, 2.0);
+    portGlow.position.set(PORT_X, 0.8, 2.0);
     boat.add(portGlow);
 
     // Green Light (Starboard side bow)
     var stbdLight = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 8), new THREE.MeshBasicMaterial({ color: 0x00ff00 }));
-    stbdLight.position.set(0.8, 0.8, 2.0);
+    stbdLight.position.set(STBD_X, 0.8, 2.0);
     boat.add(stbdLight);
     var stbdGlow = new THREE.PointLight(0x00ff00, 0.0, 4);
-    stbdGlow.position.set(0.8, 0.8, 2.0);
+    stbdGlow.position.set(STBD_X, 0.8, 2.0);
     boat.add(stbdGlow);
 
     // White Light (Stern pole)
@@ -10671,7 +11732,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var AF = { update: function () {}, applyEnv: function () {}, dispose: function () {}, seaChop: 0.15 };
     (function buildAmbientFX() {
       try {
-        var lowPower = reducedMotion || (typeof navigator !== 'undefined' && !!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+        var lowPower = LOW_POWER;   // see the single definition above
         var disp = [];   // textures / geometries / materials to free
         var objs = [];   // scene objects to remove on dispose
         function keep(o) { if (o) disp.push(o); return o; }
@@ -10825,10 +11886,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
 
         function spawnWake() {
           var w = wake[wcur]; wcur = (wcur + 1) % wake.length;
-          var p = boat.localToWorld(new THREE.Vector3((Math.random() - 0.5) * 1.7, 0.16, -2.6));
+          var offset = (Math.random() - 0.5) * 1.7;
+          var p = boat.localToWorld(new THREE.Vector3(offset, 0.16, -2.6));
           w.position.copy(p); w.position.y = 0.09;
           w.userData.max = 1.1 + Math.random() * 0.7; w.userData.life = w.userData.max;
           w.material.opacity = 0.5; w.scale.setScalar(0.35); w.visible = true;
+          // Foam is dropped in the water and left behind, which the old code
+          // had right. What it was missing is that the two arms of a wake
+          // SPREAD as they age — a real one opens into a V behind the boat
+          // rather than trailing straight astern in a single column. Record
+          // the outward direction in world space at spawn time; the boat will
+          // have turned by the time this puff has finished spreading.
+          var side = offset >= 0 ? 1 : -1;
+          var h = boatState.heading;
+          // Starboard beam is the forward vector rotated +90 degrees.
+          w.userData.outX = Math.cos(h) * side;
+          w.userData.outZ = -Math.sin(h) * side;
+          // Spread rate scales with speed: a faster boat throws a wider wake.
+          w.userData.spread = (0.55 + Math.min(1, Math.abs(boatState.speed) / 8) * 1.15);
         }
         function spawnSpray() {
           var s = spray[scur]; scur = (scur + 1) % spray.length;
@@ -10898,6 +11973,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 for (var wi = 0; wi < wake.length; wi++) {
                   var w = wake[wi]; if (w.userData.life <= 0) continue;
                   w.userData.life -= dt; var lr = 1 - Math.max(0, w.userData.life) / w.userData.max;
+                  // Spread outward from the track, fastest just after the boat
+                  // passes and easing off — which is what opens the V. The
+                  // Kelvin wake of a displacement hull sits near a 19-degree
+                  // half-angle; this only approximates the look of it.
+                  var drift = w.userData.spread * dt * (1 - lr * 0.55);
+                  w.position.x += (w.userData.outX || 0) * drift;
+                  w.position.z += (w.userData.outZ || 0) * drift;
                   w.scale.setScalar(0.35 + lr * 1.75); w.material.opacity = Math.max(0, 0.5 * (1 - lr));
                   if (w.userData.life <= 0) w.visible = false;
                 }
@@ -11117,18 +12199,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     scene.add(rock);
 
     // ─── Dock (origin marker)
+    // A single tan slab with two posts read as a plank of wood next to the
+    // lofted hull. Same footprint and the same collision-free geometry, but
+    // built the way a working float is: individual planks on stringers, a
+    // piling at each corner with a cap, and mooring cleats where a line would
+    // actually go.
     var dock = new THREE.Mesh(
       new THREE.BoxGeometry(6, 0.4, 2),
       new THREE.MeshLambertMaterial({ color: 0x8a6c47 })
     );
     dock.position.set(0, 0.1, 8);
+    // The slab stays as the invisible reference the mission logic measures
+    // distance-to-dock against; the visible decking sits on top of it.
+    dock.visible = false;
     scene.add(dock);
-    var dockPost = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 1.2, 8), new THREE.MeshLambertMaterial({ color: 0x4a3a25 }));
-    dockPost.position.set(-2.6, 0.7, 8);
-    scene.add(dockPost);
-    var dockPost2 = dockPost.clone();
-    dockPost2.position.set(2.6, 0.7, 8);
-    scene.add(dockPost2);
+    (function() {
+      var deckMat = new THREE.MeshLambertMaterial({ color: 0x9a7a52 });
+      var deckMatAlt = new THREE.MeshLambertMaterial({ color: 0x8a6c47 });
+      var PLANKS = 12, PW = 6 / PLANKS;
+      for (var pi = 0; pi < PLANKS; pi++) {
+        var plank = new THREE.Mesh(
+          new THREE.BoxGeometry(PW * 0.88, 0.12, 2),
+          pi % 2 ? deckMat : deckMatAlt);
+        plank.position.set(-3 + PW * (pi + 0.5), 0.26, 8);
+        scene.add(plank);
+      }
+      // Stringers under the planking, so the float has some depth from a low
+      // camera instead of showing a paper-thin edge.
+      [-0.72, 0.72].forEach(function(dz, i) {
+        var str = new THREE.Mesh(new THREE.BoxGeometry(6, 0.22, 0.16), new THREE.MeshLambertMaterial({ color: 0x6b5335 }));
+        str.position.set(0, 0.1, 8 + dz);
+        scene.add(str);
+      });
+      // Pilings at the corners, each with a cap — the classic Maine float.
+      var pileMat = new THREE.MeshLambertMaterial({ color: 0x4a3a25 });
+      var capMat = new THREE.MeshLambertMaterial({ color: 0x3a2d1d });
+      [[-2.6, 7.2], [2.6, 7.2], [-2.6, 8.8], [2.6, 8.8]].forEach(function(pt, i) {
+        var pile = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.2, 1.5, 9), pileMat);
+        pile.position.set(pt[0], 0.62, pt[1]);
+        scene.add(pile);
+        var cap = new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.21, 0.09, 9), capMat);
+        cap.position.set(pt[0], 1.4, pt[1]);
+        scene.add(cap);
+      });
+      // Mooring cleats on the seaward edge, where a line would actually go —
+      // and the cleat hitch is one of the five knots the tool teaches.
+      [-1.5, 1.5].forEach(function(cx, i) {
+        var cleat = new THREE.Group();
+        var barMat = new THREE.MeshLambertMaterial({ color: 0x8b95a3 });
+        var bar = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.06, 0.08), barMat);
+        bar.position.y = 0.12;
+        cleat.add(bar);
+        [-0.15, 0.15].forEach(function(hx, hi) {
+          var horn = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.045, 0.12, 6), barMat);
+          horn.position.set(hx, 0.06, 0);
+          cleat.add(horn);
+        });
+        cleat.position.set(cx, 0.32, 7.15);
+        scene.add(cleat);
+      });
+    })();
 
     // ─── Land mass behind dock (Portland-ish silhouette)
     // Was a flat 40 x 4 x 8 box, which from the water reads as a green wall.
@@ -11146,7 +12276,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       return landRidge(x) * Math.min(1, Math.pow(Math.max(0, t), 0.65));
     }
     (function() {
-      var NX = 40, NZ = 8, pos = [], idx = [];
+      var NX = LOW_POWER ? 24 : 40, NZ = LOW_POWER ? 5 : 8, pos = [], idx = [];
       for (var iz = 0; iz <= NZ; iz++) {
         var zz = LAND_FRONT_Z + (iz / NZ) * (LAND_BACK_Z - LAND_FRONT_Z);
         for (var ix = 0; ix <= NX; ix++) {
@@ -11172,6 +12302,74 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var mtz = 13.5 + (Math.random() - 0.5) * 2;
       createTree(mtx, mtz, landHeightAt(mtx, mtz));
     }
+    // ─── Shallows.
+    // The sea was one flat colour to the horizon. Real inshore water pales
+    // over a shoaling bottom, and that is a navigational cue as much as a
+    // pretty one — it is where you look for the ledge you are trying not to
+    // hit.
+    //
+    // Drawn as a separate ADDITIVE overlay rather than by recolouring the water
+    // itself. Additive means black contributes nothing, so open water renders
+    // byte-identical to before and only the shoals are touched; it also keeps
+    // this independent of the per-time-of-day water colour the environment
+    // controller sets, which a vertex-coloured water plane would have fought
+    // with. Its brightness is driven from the same clock below, so the
+    // shallows do not glow at night.
+    var shoalMat = null;
+    (function() {
+      var X0 = -140, X1 = 140, Z0 = -170, Z1 = 24;
+      var NX = LOW_POWER ? 32 : 56, NZ = LOW_POWER ? 26 : 44;
+      var RANGE = 16;                      // how far the paling reaches offshore
+      function shoalAt(x, z) {
+        var best = 0;
+        for (var i = 0; i < shoalFeatures.length; i++) {
+          var f = shoalFeatures[i];
+          var d = Math.sqrt((x - f.x) * (x - f.x) + (z - f.z) * (z - f.z)) - f.r;
+          best = Math.max(best, 1 - Math.max(0, d) / RANGE);
+        }
+        // The mainland shoals along its whole frontage rather than radially.
+        if (Math.abs(x) < LAND_HALF_X + RANGE) {
+          var edgeX = Math.max(0, Math.abs(x) - LAND_HALF_X);
+          var dz = Math.max(0, LAND_FRONT_Z - z);
+          var dl = Math.sqrt(dz * dz + edgeX * edgeX);
+          best = Math.max(best, 1 - Math.min(1, dl / RANGE));
+        }
+        return Math.max(0, Math.min(1, best));
+      }
+      var pos = [], col = [], idx = [];
+      var TINT = [0.36, 0.50, 0.40];       // pale green-blue, the Gulf's sand-over-ledge
+      for (var iz = 0; iz <= NZ; iz++) {
+        var zz = Z0 + (iz / NZ) * (Z1 - Z0);
+        for (var ix = 0; ix <= NX; ix++) {
+          var xx = X0 + (ix / NX) * (X1 - X0);
+          pos.push(xx, 0.03, zz);
+          // Squared falloff: the pale band hugs the shore instead of washing
+          // halfway across the bay.
+          var t = shoalAt(xx, zz); t = t * t;
+          col.push(TINT[0] * t, TINT[1] * t, TINT[2] * t);
+        }
+      }
+      for (var iz2 = 0; iz2 < NZ; iz2++) {
+        for (var ix2 = 0; ix2 < NX; ix2++) {
+          var a = iz2 * (NX + 1) + ix2, b = a + 1, c = a + NX + 1, d = c + 1;
+          idx.push(a, c, b, b, c, d);
+        }
+      }
+      var g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+      g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+      g.setIndex(idx);
+      buoyDisposables.push(g);
+      shoalMat = new THREE.MeshBasicMaterial({
+        vertexColors: true, transparent: true, opacity: 1,
+        blending: THREE.AdditiveBlending, depthWrite: false, fog: true
+      });
+      buoyDisposables.push(shoalMat);
+      var shoalMesh = new THREE.Mesh(g, shoalMat);
+      shoalMesh.renderOrder = 1;
+      scene.add(shoalMesh);
+    })();
+
     // Front face of the shore, with a margin. Derived from the same constant
     // the terrain is built from, so moving the land moves the clamp with it.
     var shoreLineZ = LAND_FRONT_Z - 1;
@@ -11713,6 +12911,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       fill.color.setHex(fillSky);
       fill.groundColor.setHex(fillGround);
       fill.intensity = fillInt;
+
+      // Shoal paling is something you SEE by daylight. At night there is no
+      // light reaching the bottom to scatter back, so an additive overlay left
+      // at full strength would make the shoreline glow.
+      if (shoalMat) {
+        shoalMat.opacity = tod === 'night' ? 0.05 : tod === 'sunset' ? 0.45 : 1;
+        if (weather === 'foggy') shoalMat.opacity *= 0.5;
+        else if (weather === 'rainy') shoalMat.opacity *= 0.65;
+      }
 
       // Navigation lights & beam active when dark/reduced visibility
       var dark = (tod === 'sunset' || tod === 'night' || weather === 'foggy' || weather === 'rainy');
@@ -13042,7 +14249,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function releaseFishingCast() {
       if (!activeFishing || activeFishing.phase !== 'cast') return;
       var meter = Math.max(0, Math.min(100, Number(activeFishing.castMeter) || 0));
-      var accuracy = Math.max(0, 1 - Math.abs(meter - 85) / 85);
+      var accuracy = getCoreCastPlacement(meter).accuracy;
       var castResult = evaluateCast({ accuracy: accuracy, distanceRatio: meter / 100, assistMode: activeFishing.assistMode });
       if (!castResult.success) {
         updateFishingSession({ phase: 'lost', lossReason: 'off-target', castResult: castResult, message: castResult.feedback });
@@ -13976,16 +15183,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       if (fuelValue < modeProfile.requiredFuel) unmetStandards.push(modeProfile.requiredFuel + '% fuel reserve');
       if (hud.trafficManeuverReviewed) unmetStandards.push('the required traffic maneuver within its window');
       var voyageRank = getCoreVoyageRank(hud.stewardshipScore || 0, decisionAccuracy, fuelValue);
-      var trafficPlotAngle = (hud.trafficRelativeBearing || 0) * Math.PI / 180;
-      var trafficPlotRadius = Math.min(22, Math.max(7, (hud.trafficRange || 0) / 38 * 22));
-      var trafficPlotX = Math.sin(trafficPlotAngle) * trafficPlotRadius;
-      var trafficPlotY = -Math.cos(trafficPlotAngle) * trafficPlotRadius;
+      var trafficPlotPoint = getCoreRadarPlotPoint(hud.trafficRelativeBearing, hud.trafficRange);
+      var trafficPlotX = trafficPlotPoint.x;
+      var trafficPlotY = trafficPlotPoint.y;
       var trafficRiskColor = hud.trafficRiskId === 'collision-risk' ? '#fca5a5' : hud.trafficRiskId === 'opening' ? '#86efac' : hud.trafficRiskId === 'bearing-changing' ? '#7dd3fc' : '#fde68a';
       var trafficTrackHistory = Array.isArray(hud.trafficTrackHistory) ? hud.trafficTrackHistory : [];
       var trafficTrackDots = trafficTrackHistory.map(function(plot, plotIndex) {
-        var angle = (plot.bearing || 0) * Math.PI / 180;
-        var radius = Math.min(22, Math.max(7, (plot.range || 0) / 38 * 22));
-        return { x: Math.sin(angle) * radius, y: -Math.cos(angle) * radius, opacity: 0.24 + ((plotIndex + 1) / Math.max(1, trafficTrackHistory.length)) * 0.48 };
+        var pt = getCoreRadarPlotPoint(plot.bearing, plot.range);
+        return { x: pt.x, y: pt.y, opacity: 0.28 + ((plotIndex + 1) / Math.max(1, trafficTrackHistory.length)) * 0.56 };
       });
       var trafficPlotLesson = hud.trafficConstantBearing && hud.trafficClosing ? 'Steady bearing + shrinking range = collision risk' : hud.trafficOpening ? 'Growing range = contact opening' : 'Compare each timed bearing and range plot';
       var trafficEvidence = summarizeCoreRadarTrail(trafficTrackHistory);
@@ -14142,7 +15347,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 return '📹 Chase · V';
               })()),
 
-            h('div', { className: 'fl-nav-cue', 'aria-label': 'Next voyage objective and relative bearing', style: { padding: '8px 10px', borderRadius: 8, background: 'rgba(3,18,31,0.88)', border: '1px solid rgba(125,211,252,0.45)', boxShadow: '0 8px 24px rgba(0,0,0,0.38)', color: '#e0f2fe', textAlign: 'center' } },
+            h('div', { className: 'fl-nav-cue' + (hud.trafficDecisionMade && !hud.trafficManeuverComplete ? ' fl-nav-cue-radar' : ''), 'aria-label': 'Next voyage objective and relative bearing', style: { padding: '8px 10px', borderRadius: 8, background: 'rgba(3,18,31,0.88)', border: '1px solid rgba(125,211,252,0.45)', boxShadow: '0 8px 24px rgba(0,0,0,0.38)', color: '#e0f2fe', textAlign: 'center' } },
               h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 } },
                 h('span', { 'aria-hidden': 'true', style: { display: 'inline-block', color: '#fbbf24', fontSize: 22, lineHeight: 1, transform: 'rotate(' + (hud.objectiveBearing || 0) + 'deg)', transition: 'transform 0.2s ease' } }, '↑'),
                 h('div', { style: { minWidth: 0, textAlign: 'left' } },
@@ -14151,19 +15356,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 )
               ),
               hud.trafficDecisionMade && !hud.trafficManeuverComplete ? h('div', { style: { marginTop: 7, paddingTop: 7, borderTop: '1px solid rgba(125,211,252,0.25)', display: 'grid', gap: 4, textAlign: 'left' } },
-                h('div', { 'aria-label': 'Closest point of approach watch with ' + trafficTrackDots.length + ' timed radar plots. ' + (hud.trafficRiskLabel || 'Monitoring bearing and range') + '. Bearing change ' + (hud.trafficBearingChange || 0).toFixed(1) + ' degrees. Range change ' + (hud.trafficRangeChange || 0).toFixed(1) + ' simulation units. ' + maneuverWindow.remaining.toFixed(1) + ' seconds remain before review.', style: { display: 'grid', gridTemplateColumns: '54px minmax(0,1fr)', gap: 7, alignItems: 'center', paddingBottom: 5, marginBottom: 1, borderBottom: '1px solid rgba(125,211,252,0.18)' } },
-                  h('div', { 'aria-hidden': 'true', style: { position: 'relative', width: 50, height: 50, borderRadius: '50%', border: '1px solid rgba(125,211,252,0.55)', background: 'radial-gradient(circle, transparent 31%, rgba(125,211,252,0.18) 32%, transparent 34%, transparent 64%, rgba(125,211,252,0.18) 65%, transparent 67%), linear-gradient(90deg, transparent 49%, rgba(125,211,252,0.22) 50%, transparent 52%), linear-gradient(transparent 49%, rgba(125,211,252,0.22) 50%, transparent 52%)' } },
-                    h('span', { style: { position: 'absolute', left: '50%', top: '50%', width: 6, height: 8, borderRadius: '50% 50% 35% 35%', background: '#f8fafc', transform: 'translate(-50%,-50%)' } }),
-                    trafficTrackDots.map(function(dot, dotIndex) {
-                      return h('span', { key: 'plot-' + dotIndex, style: { position: 'absolute', left: '50%', top: '50%', width: 4, height: 4, borderRadius: '50%', background: '#7dd3fc', opacity: dot.opacity, boxShadow: '0 0 4px rgba(125,211,252,0.65)', transform: 'translate(calc(-50% + ' + dot.x.toFixed(1) + 'px), calc(-50% + ' + dot.y.toFixed(1) + 'px))' } });
-                    }),
-                    h('span', { style: { position: 'absolute', left: '50%', top: '50%', width: 7, height: 7, borderRadius: '50%', background: trafficRiskColor, border: '1px solid #020617', boxShadow: '0 0 7px ' + trafficRiskColor, transform: 'translate(calc(-50% + ' + trafficPlotX.toFixed(1) + 'px), calc(-50% + ' + trafficPlotY.toFixed(1) + 'px))', transition: 'transform 0.15s linear' } })
-                  ),
+                h('div', { 'aria-label': 'Closest point of approach watch with ' + trafficTrackDots.length + ' timed radar plots. ' + (hud.trafficRiskLabel || 'Monitoring bearing and range') + '. Bearing change ' + (hud.trafficBearingChange || 0).toFixed(1) + ' degrees. Range change ' + (hud.trafficRangeChange || 0).toFixed(1) + ' simulation units. ' + maneuverWindow.remaining.toFixed(1) + ' seconds remain before review.', style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr)', gap: 8, justifyItems: 'center', paddingBottom: 6, marginBottom: 1, borderBottom: '1px solid rgba(125,211,252,0.18)' } },
+                  flRadarSvg(h, trafficTrackDots, { x: trafficPlotX, y: trafficPlotY }, trafficRiskColor, hud.trafficRiskLabel),
                   h('div', { style: { minWidth: 0 } },
-                    h('span', { style: { display: 'block', marginBottom: 2, color: '#7dd3fc', fontSize: 8, fontWeight: 900 } }, 'PLOT ' + trafficTrackDots.length + '/6 - 0.8 s interval'),
-                    h('strong', { style: { display: 'block', color: trafficRiskColor, fontSize: 9, lineHeight: 1.3 } }, 'CPA WATCH · ' + (hud.trafficRiskLabel || 'Monitoring bearing and range')),
-                    h('span', { style: { display: 'block', marginTop: 3, color: '#dbeafe', fontSize: 8, lineHeight: 1.3 } }, trafficPlotLesson),
-                    h('span', { style: { display: 'block', marginTop: 3, color: '#dbeafe', fontSize: 8 } }, 'Bearing Δ ' + (hud.trafficBearingChange || 0).toFixed(1) + '° · Range Δ ' + ((hud.trafficRangeChange || 0) > 0 ? '+' : '') + (hud.trafficRangeChange || 0).toFixed(1))
+                    h('span', { style: { display: 'block', marginBottom: 3, color: '#7dd3fc', fontSize: 9.5, fontWeight: 900, letterSpacing: '0.04em' } }, 'PLOT ' + trafficTrackDots.length + '/6 · 0.8 s interval'),
+                    h('strong', { style: { display: 'block', color: trafficRiskColor, fontSize: 11, lineHeight: 1.35 } }, 'CPA WATCH · ' + (hud.trafficRiskLabel || 'Monitoring bearing and range')),
+                    h('span', { style: { display: 'block', marginTop: 4, color: '#dbeafe', fontSize: 10, lineHeight: 1.4, fontWeight: 700 } }, trafficPlotLesson),
+                    h('span', { style: { display: 'block', marginTop: 4, color: '#dbeafe', fontSize: 10 } }, 'Bearing Δ ' + (hud.trafficBearingChange || 0).toFixed(1) + '° · Range Δ ' + ((hud.trafficRangeChange || 0) > 0 ? '+' : '') + (hud.trafficRangeChange || 0).toFixed(1))
                   )
                 ),
                 trafficTrackDots.length >= 3 ? h('div', { role: 'group', 'aria-label': 'Make the radar evidence call', style: { pointerEvents: 'auto', display: 'grid', gap: 3, padding: '5px 0', borderBottom: '1px solid rgba(125,211,252,0.18)' } },
@@ -14337,6 +15536,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                   h('p', { id: 'fl-fishing-prompt', role: activeFishing.phase === 'fight' ? 'status' : null, 'aria-live': activeFishing.phase === 'fight' ? 'polite' : null, 'aria-atomic': activeFishing.phase === 'fight' ? 'true' : null, style: { margin: '10px 0 12px', padding: 9, borderRadius: 6, background: 'rgba(2,6,23,0.48)', color: activeFishing.phase === 'bite' ? '#fef08a' : '#dbeafe', fontSize: 12, lineHeight: 1.5, fontWeight: activeFishing.phase === 'bite' ? 900 : 600 } }, activeFishing.message),
 
                   activeFishing.phase === 'setup' ? h('div', null,
+                    flCastPreviewSvg(h, liveSetupScore, activeFishing),
                     h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(185px,1fr))', gap: 10 } },
                       h('label', { style: fieldStyle }, 'Nearby water',
                         h('select', { ref: decisionFocusRef, value: activeFishing.spotId, onChange: function(e) { updateFishingSession({ spotId: e.target.value }); }, style: selectStyle }, spots.map(function(spot) { return h('option', { key: spot.id, value: spot.id }, spot.label + ' · ' + spot.depthZone); }))),
@@ -14370,6 +15570,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                       h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: '#bae6fd', fontSize: 11, fontWeight: 900 } }, h('span', null, 'Target affinity'), h('span', null, liveSetupScore.total + '/100')),
                       h('div', { role: 'progressbar', 'aria-label': 'Fishing setup affinity', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': liveSetupScore.total, style: { height: 8, marginTop: 5, overflow: 'hidden', borderRadius: 5, background: 'rgba(148,163,184,0.25)' } },
                         h('div', { style: { width: Math.min(100, liveSetupScore.total) + '%', height: '100%', background: 'linear-gradient(90deg,#f59e0b,#34d399)' } })),
+                      flSetupScoreBarsSvg(h, liveSetupScore.components),
                       h('ul', { style: { margin: '8px 0 0', paddingLeft: 18, color: '#dbeafe', fontSize: 10, lineHeight: 1.45 } }, liveSetupScore.evidence.map(function(note, index) { return h('li', { key: index }, note); })),
                       h('div', { style: { marginTop: 6, color: '#94a3b8', fontSize: 10 } }, 'Respond to the observed conditions with your spot, depth, tackle, and presentation. Better choices improve bite likelihood; they do not guarantee a target catch.')
                     ),
@@ -14378,27 +15579,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                       h('button', { type: 'button', className: 'fl-btn', onClick: leaveFishing, style: secondaryStyle }, 'Return to helm')
                     )
                   ) : null,
-                  activeFishing.phase === 'cast' ? h('div', null,
-                    h('label', { style: { display: 'block', color: '#e2e8f0', fontSize: 12, fontWeight: 800 } }, 'Cast placement: ' + Math.round(activeFishing.castMeter) + '% · target zone 75–95',
-                      h('input', { ref: decisionFocusRef, type: 'range', min: 0, max: 100, step: 1, value: activeFishing.castMeter, onChange: function(e) { updateFishingSession({ castMeter: Number(e.target.value) }); }, style: { width: '100%', marginTop: 12, accentColor: '#34d399' } })),
-                    h('div', { 'aria-hidden': 'true', style: { display: 'grid', gridTemplateColumns: '75fr 20fr 5fr', height: 10, margin: '8px 0 12px', borderRadius: 5, overflow: 'hidden' } },
-                      h('span', { style: { background: '#334155' } }),
-                      h('span', { style: { background: 'linear-gradient(90deg,#22c55e,#86efac)' } }),
-                      h('span', { style: { background: '#334155' } })),
-                    h('button', { type: 'button', className: 'fl-btn', onClick: releaseFishingCast, style: actionStyle }, 'Release cast')
-                  ) : null,
+                  activeFishing.phase === 'cast' ? (function() {
+                    var castPlace = getCoreCastPlacement(activeFishing.castMeter);
+                    return h('div', null,
+                      flCastArcSvg(h, activeFishing.castMeter),
+                      h('label', { style: { display: 'block', color: castPlace.inside ? '#a7f3d0' : '#fde68a', fontSize: 12, fontWeight: 800 } },
+                        'Cast placement: ' + Math.round(castPlace.meter) + '% · target water ' + castPlace.lo + '–' + castPlace.hi + '% · ' + (castPlace.inside ? 'on the fish' : castPlace.short ? 'falling short' : 'thrown past'),
+                        h('input', { ref: decisionFocusRef, type: 'range', min: 0, max: 100, step: 1, value: activeFishing.castMeter, onChange: function(e) { updateFishingSession({ castMeter: Number(e.target.value) }); }, style: { width: '100%', marginTop: 10, marginBottom: 12, accentColor: castPlace.inside ? '#34d399' : '#fbbf24' } })),
+                      h('button', { type: 'button', className: 'fl-btn', onClick: releaseFishingCast, style: actionStyle }, 'Release cast')
+                    );
+                  })() : null,
                   activeFishing.phase === 'presentation' ? h('div', null,
+                    flPresentationSvg(h, activeFishing.presentationCount, activeFishing.presentationTarget, activeFishing.technique),
                     h('div', { style: { color: '#e2e8f0', fontSize: 12 } }, 'Presentation actions: ' + activeFishing.presentationCount + ' of ' + activeFishing.presentationTarget),
                     h('div', { role: 'progressbar', 'aria-label': 'Presentation cadence', 'aria-valuemin': 0, 'aria-valuemax': activeFishing.presentationTarget, 'aria-valuenow': activeFishing.presentationCount, style: { height: 9, margin: '8px 0 14px', overflow: 'hidden', borderRadius: 5, background: '#1e293b' } },
                       h('div', { style: { height: '100%', width: (activeFishing.presentationCount / activeFishing.presentationTarget * 100) + '%', background: '#38bdf8' } })),
                     h('button', { ref: decisionFocusRef, type: 'button', className: 'fl-btn', onClick: workFishingPresentation, style: actionStyle }, 'Work lure / bait')
                   ) : null,
                   activeFishing.phase === 'bite' ? h('div', null,
-                    h('div', { role: 'alert', style: { padding: 14, borderRadius: 7, border: '2px solid #facc15', background: 'rgba(113,63,18,0.5)', color: '#fef08a', fontSize: 18, fontWeight: 900, textAlign: 'center' } }, 'BITE — LINE LOADED'),
+                    flStrikeSvg(h),
+                    h('div', { role: 'alert', className: 'fl-pulse', style: { padding: 14, borderRadius: 7, border: '2px solid #facc15', background: 'rgba(113,63,18,0.5)', color: '#fef08a', fontSize: 18, fontWeight: 900, textAlign: 'center' } }, 'BITE — LINE LOADED'),
                     h('button', { ref: decisionFocusRef, type: 'button', className: 'fl-btn', onClick: setFishingHook, style: Object.assign({}, actionStyle, { width: '100%', marginTop: 12, minHeight: 48, background: '#facc15', color: '#422006', fontSize: 16 }) }, 'Set hook now')
                   ) : null,
                   activeFishing.phase === 'fight' ? h('div', null,
+                    flFightSceneSvg(h, { tension: activeFishing.tension, stamina: activeFishing.stamina, band: tensionBand }),
                     h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: tensionBand === 'Working' ? '#a7f3d0' : '#fde68a', fontSize: 11, fontWeight: 900 } }, h('span', null, 'Line tension · ' + tensionBand), h('span', null, tensionPct + '%')),
+                    flTensionGaugeSvg(h, tensionPct, tensionProfile.lower, tensionProfile.upper),
                     h('div', { role: 'progressbar', 'aria-label': 'Line tension, ' + tensionBand + ', ' + tensionPct + ' percent', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': tensionPct, style: { height: 12, margin: '5px 0 11px', overflow: 'hidden', borderRadius: 6, background: '#1e293b' } },
                       h('div', { style: { height: '100%', width: Math.min(100, tensionPct) + '%', background: tensionBand === 'Working' ? '#34d399' : tensionBand === 'Critical' ? '#ef4444' : '#f59e0b' } })),
                     h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: '#bae6fd', fontSize: 11, fontWeight: 900 } }, h('span', null, 'Fish stamina'), h('span', null, activeFishing.stamina + '% remaining')),
@@ -14409,7 +15615,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                       h('button', { type: 'button', className: 'fl-btn', onClick: function() { runFishingFight('give-line'); }, style: Object.assign({}, secondaryStyle, { borderColor: 'rgba(251,191,36,0.6)', background: '#713f12', color: '#fef3c7' }) }, 'Give line')),
                     h('p', { style: { margin: '10px 0 0', color: '#94a3b8', fontSize: 10 } }, 'Working band: ' + (activeFishing.assistMode ? '18–82%' : '30–72%') + '. Low tension can lose the hook; critical tension can break the line.')
                   ) : null,
-                  activeFishing.phase === 'landed' ? h('div', { role: 'status', style: { padding: 15, borderRadius: 7, background: 'rgba(6,78,59,0.55)', color: '#a7f3d0', fontSize: 15, fontWeight: 900, textAlign: 'center' } }, 'Fish alongside — opening catch inspection…') : null,
+                  activeFishing.phase === 'landed' ? h('div', null, flLandedSvg(h), h('div', { role: 'status', style: { padding: 15, borderRadius: 7, background: 'rgba(6,78,59,0.55)', color: '#a7f3d0', fontSize: 15, fontWeight: 900, textAlign: 'center' } }, 'Fish alongside — opening catch inspection…')) : null,
                   activeFishing.phase === 'lost' || activeFishing.phase === 'no-bite' ? h('div', null,
                     activeFishing.setupScore ? h('div', { style: { marginBottom: 10, padding: 9, borderRadius: 6, background: 'rgba(2,6,23,0.42)', color: '#dbeafe', fontSize: 10, lineHeight: 1.45 } },
                       h('strong', { style: { color: '#bae6fd' } }, 'Evidence from this cast: '), activeFishing.setupScore.evidence.join(' ')) : null,
@@ -14499,6 +15705,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                     h('div', { style: { marginTop: 4, color: '#dbeafe', fontSize: 10, lineHeight: 1.45 } }, activeFish.fishingSummary.spotLabel + ' · ' + activeFish.fishingSummary.tackleLabel + ' · cast ' + activeFish.fishingSummary.castQuality + '/100 · hookset ' + (activeFish.fishingSummary.hooksetMs / 1000).toFixed(1) + ' s · working tension ' + activeFish.fishingSummary.safeTensionPct + '%'),
                     h('div', { style: { marginTop: 4, color: '#94a3b8', fontSize: 10, lineHeight: 1.4 } }, activeFish.fishingSummary.setupEvidence)
                   ) : null,
+                  flMeasuringBoardSvg(h, ruleEvidence || { measuredInches: activeFish.length }, identifiedSpecies ? identifiedSpecies.name : null),
                   h('div', { style: { padding: 10, borderRadius: 7, background: 'rgba(15,23,42,0.72)' } },
                     h('strong', { style: { color: '#7dd3fc', fontSize: 11 } }, 'Observed field marks'),
                     h('div', { style: { marginTop: 4, color: '#e2e8f0', fontSize: 12, lineHeight: 1.55 } }, activeFish.species.idMarks)),
@@ -14524,9 +15731,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                     h('fieldset', { key: 'identification', style: { margin: '12px 0', padding: 10, borderRadius: 7, border: '1px solid rgba(167,243,208,0.4)' } },
                       h('legend', { style: { padding: '0 5px', color: '#a7f3d0', fontSize: 12, fontWeight: 900 } }, '1. Identify the species from its field marks'),
                       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(145px,1fr))', gap: 7 } }, regionalFishOptions.map(function(candidate, index) {
-                        return h('label', { key: candidate.id, style: { display: 'flex', alignItems: 'flex-start', gap: 8, padding: 7, borderRadius: 6, background: fishIdentification === candidate.id ? 'rgba(5,150,105,0.24)' : 'rgba(2,6,23,0.3)', color: '#e2e8f0', fontSize: 12, lineHeight: 1.35, cursor: 'pointer' } },
-                          h('input', { ref: index === 0 ? decisionFocusRef : null, type: 'radio', name: 'fl-fish-identification', value: candidate.id, checked: fishIdentification === candidate.id, onChange: function() { setFishIdentification(candidate.id); setFishEvidence(null); }, style: { marginTop: 2, accentColor: '#10b981' } }), candidate.name);
-                      }))
+                        var plate = getCoreSpeciesArt(candidate.id);
+                        var picked = fishIdentification === candidate.id;
+                        return h('label', { key: candidate.id, style: { display: 'block', padding: 7, borderRadius: 6, border: '1px solid ' + (picked ? 'rgba(52,211,153,0.75)' : 'rgba(148,163,184,0.28)'), background: picked ? 'rgba(5,150,105,0.24)' : 'rgba(2,6,23,0.3)', color: '#e2e8f0', fontSize: 12, lineHeight: 1.35, cursor: 'pointer' } },
+                          // The plate is decorative: the radio's own label already
+                          // names the species, and a duplicate alt would read twice.
+                          plate ? h('img', { src: plate.url, alt: '', 'aria-hidden': 'true', loading: 'lazy',
+                            style: { display: 'block', width: '100%', height: 64, objectFit: 'contain', marginBottom: 5, borderRadius: 4, background: '#f1f5f9' } }) : null,
+                          h('span', { style: { display: 'flex', alignItems: 'flex-start', gap: 8 } },
+                            h('input', { ref: index === 0 ? decisionFocusRef : null, type: 'radio', name: 'fl-fish-identification', value: candidate.id, checked: picked, onChange: function() { setFishIdentification(candidate.id); setFishEvidence(null); }, style: { marginTop: 2, accentColor: '#10b981' } }), candidate.name));
+                      })),
+                      h('div', { style: { marginTop: 6, color: '#94a3b8', fontSize: 9.5, lineHeight: 1.4 } },
+                        'Plates are public-domain scientific illustrations; match the field marks above against them.')
                     ),
                     h('fieldset', { key: 'evidence', disabled: !identifiedSpecies, style: { margin: '12px 0', padding: 10, borderRadius: 7, border: '1px solid rgba(125,211,252,0.35)', opacity: identifiedSpecies ? 1 : 0.65 } },
                       h('legend', { style: { padding: '0 5px', color: '#bae6fd', fontSize: 12, fontWeight: 900 } }, '2. Log the selected profile evidence'),
@@ -14549,8 +15765,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               h('div', { style: { width: 'min(540px,100%)', maxHeight: 'calc(100% - 24px)', overflowY: 'auto', padding: 20, borderRadius: 8, border: '1px solid rgba(52,211,153,0.55)', background: 'linear-gradient(145deg,#064e3b,#082f49 58%,#0f172a)', textAlign: 'center', boxShadow: '0 24px 70px rgba(0,0,0,0.65)' } },
                 h('div', { style: { color: hud.missionComplete ? '#6ee7b7' : '#fde68a', fontSize: 12, fontWeight: 900, textTransform: 'uppercase' } }, modeProfile.label + ' voyage · ' + (hud.missionComplete ? 'standard met' : 'practice return')),
                 h('h3', { id: 'fl-debrief-title', style: { margin: '6px 0 2px', color: '#fff', fontSize: 24 } }, mission.title),
-                h('div', { style: { color: hud.missionComplete ? voyageRank.color : '#fde68a', fontSize: 13, fontWeight: 900, textTransform: 'uppercase' } }, hud.missionComplete ? Array(voyageRank.stars + 1).join('★') + ' ' + voyageRank.label : 'Standard not yet met'),
-                h('div', { style: { color: '#fde68a', fontSize: 34, fontWeight: 900, marginTop: 4 } }, (hud.stewardshipScore || 0) + ' pts'),
+                // The result, given something to land on. The medallion is
+                // struck in the rank's own colour when earned and left grey
+                // when it is not, so the difference reads at a glance.
+                h('div', { style: { display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', margin: '10px 0 4px' } },
+                  flRankMedallionSvg(h, voyageRank, !!hud.missionComplete),
+                  h('div', { style: { minWidth: 0, flex: '1 1 200px' } },
+                    h('div', { style: { color: hud.missionComplete ? voyageRank.color : '#fde68a', fontSize: 15, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em' } },
+                      hud.missionComplete ? voyageRank.label : 'Standard not yet met'),
+                    h('div', { style: { color: '#fde68a', fontSize: 34, fontWeight: 900, lineHeight: 1.1 } }, (hud.stewardshipScore || 0) + ' pts'),
+                    (function() {
+                      var nextInfo = getCoreNextRank(hud.stewardshipScore || 0, decisionAccuracy, fuelValue);
+                      if (nextInfo.atTop) {
+                        return h('div', { style: { marginTop: 4, color: '#a7f3d0', fontSize: 11, fontWeight: 800 } }, 'Top rank — nothing left to beat but your own score.');
+                      }
+                      return h('div', { style: { marginTop: 4 } },
+                        h('div', { style: { color: '#bae6fd', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em' } },
+                          'Next: ' + nextInfo.next.label),
+                        flNextRankSvg(h, nextInfo));
+                    })()
+                  )
+                ),
                 hud.lastFishingSummary ? h('p', { style: { margin: '5px 0', color: '#bae6fd', fontSize: 11, lineHeight: 1.5 } }, 'Fishing: ' + hud.lastFishingSummary.spotLabel + ' / ' + hud.lastFishingSummary.tackleLabel + ' / cast ' + hud.lastFishingSummary.castQuality + '% / hookset ' + (hud.lastFishingSummary.hooksetMs / 1000).toFixed(1) + ' s / working tension ' + hud.lastFishingSummary.safeTensionPct + '%') : null,
                 h('p', { style: { color: '#dbeafe', fontSize: 12 } }, (hud.correctDecisions || 0) + ' of ' + (hud.totalDecisions || 0) + ' decisions correct · ' + fuelValue.toFixed(0) + '% fuel remaining · ' + Math.max(0, Math.round((hud.elapsed || 0) / 60)) + ' min'),
                 h('p', { style: { color: trafficGradeColor, fontSize: 11, fontWeight: 800 } }, 'Traffic watch: ' + (hud.trafficGradeLabel || 'complete') + ' · CPA ' + (isFinite(hud.trafficClosestRange) ? hud.trafficClosestRange.toFixed(1) : '—') + ' · ' + (hud.trafficManeuverSeconds || 0).toFixed(1) + ' s'),
@@ -15017,7 +16252,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
             'Stylized chart approximating Casco Bay. In a real sim you\'d use NOAA Chart 13290 (Casco Bay). Buoy symbols mirror IALA-B convention. Useful as a 2D fallback if WebGL is unavailable, or as a study aid while playing.'),
           h('svg', { viewBox: '0 0 600 400', style: { width: '100%', maxWidth: 720, background: '#dbe7ef', borderRadius: 8, border: '1px solid rgba(56,189,248,0.3)' },
-            'aria-label': 'Stylized nautical chart of Portland Harbor approach showing buoys, Halfway Rock, and Portland Head Light.' },
+            // ★ role="img" is not optional here. An aria-label on a bare <svg>
+            // is exposed inconsistently across screen readers, and THIS chart is
+            // the tool's stated fallback for when WebGL is unavailable — so the
+            // one surface a student is left with when the 3-D sim cannot run was
+            // the surface least reliably announced.
+            role: 'img',
+            'aria-label': 'Stylized north-up nautical chart of the Portland Harbor approach. The mainland and Custom House Wharf are along the top, with Portland Head Light to the east. The channel runs down the middle to open water at the bottom. Three red nun buoys, numbered 2, 4 and 6, mark its eastern side on the right of the chart, and three green cans, numbered 1, 3 and 5, mark its western side on the left. A vessel returning from sea travels up the chart and keeps the red nuns to starboard; outbound the sides reverse. A red and white mid-channel safe-water mark sits at the seaward end, with Halfway Rock beyond it, and dashed 10-metre and 30-metre depth contours cross the chart.' },
             // land
             h('rect', { x: 0, y: 0, width: 600, height: 80, fill: '#a8c595' }),
             h('text', { x: 18, y: 30, fill: '#3b4d2b', fontSize: 13, fontWeight: 700 }, 'Portland (mainland)'),
@@ -15029,21 +16270,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             h('text', { x: 460, y: 78, fill: '#3b4d2b', fontSize: 10 }, 'Portland Head Light'),
             // channel buoys
             // red nuns (left side as drawn, since chart is "looking south" out of harbor)
-            [120, 180, 240].forEach,
+            // (A stray `[120, 180, 240].forEach,` sat here — a bare member
+            // expression in the argument list, so the forEach FUNCTION itself
+            // was being handed to React as a child of the svg. Production React
+            // drops it silently, which is why nothing ever surfaced; the
+            // development build warns "Functions are not valid as a React
+            // child".)
+            // ★ The red and green columns were the wrong way round.
+            // The rose puts N at the top, so this is a north-up chart. Outbound
+            // runs DOWN the page (harbour to sea); facing south, port is east —
+            // page-RIGHT — and starboard is west, page-LEFT. Green to starboard
+            // when seaward therefore puts GREEN on the left and RED on the
+            // right. They were drawn red-left, green-right, which contradicted
+            // this tab's own caption ("red marks line the east side"), the
+            // Buoyage tab's channel diagram, and the 3-D sim, where the green
+            // cans really do sit to starboard on the way out.
             h('g', null,
-              [{ x: 240, y: 130, t: 'R' }, { x: 230, y: 200, t: 'R' }, { x: 215, y: 280, t: 'R' }].map(function(b, i) {
+              [{ x: 360, y: 130, t: 'R' }, { x: 370, y: 200, t: 'R' }, { x: 385, y: 280, t: 'R' }].map(function(b, i) {
                 return h('g', { key: 'r' + i },
                   h('polygon', { points: (b.x - 7) + ',' + (b.y + 10) + ' ' + (b.x + 7) + ',' + (b.y + 10) + ' ' + b.x + ',' + (b.y - 4), fill: '#c8302a' }),
                   h('text', { x: b.x + 12, y: b.y + 5, fill: '#9b1c17', fontSize: 9, fontWeight: 700 }, b.t + (i * 2 + 2)));
               })),
             h('g', null,
-              [{ x: 360, y: 130, t: 'G' }, { x: 370, y: 200, t: 'G' }, { x: 385, y: 280, t: 'G' }].map(function(b, i) {
+              [{ x: 240, y: 130, t: 'G' }, { x: 230, y: 200, t: 'G' }, { x: 215, y: 280, t: 'G' }].map(function(b, i) {
                 return h('g', { key: 'g' + i },
                   h('rect', { x: b.x - 6, y: b.y - 4, width: 12, height: 14, fill: '#2a7c44' }),
                   h('text', { x: b.x + 12, y: b.y + 5, fill: '#155b2f', fontSize: 9, fontWeight: 700 }, b.t + (i * 2 + 1)));
               })),
-            // safe water (midchannel)
-            h('circle', { cx: 300, cy: 330, r: 8, fill: '#d03830', stroke: '#fff', strokeWidth: 3 }),
+            // ★ Safe water: RED AND WHITE VERTICAL STRIPES. This was a red disc
+            // with a white ring round it, which is not the safe-water mark —
+            // and it is the third place in this tool that drew this mark
+            // wrongly. The Buoyage tab's glyph and the 3-D sim's buoy both got
+            // corrected earlier; the fallback chart still had the old shape.
+            // Stripes are the whole identity of this mark.
+            h('defs', null,
+              h('clipPath', { id: 'fl-chart-safewater' },
+                h('circle', { cx: 300, cy: 330, r: 8 }))),
+            h('g', { clipPath: 'url(#fl-chart-safewater)' },
+              [0, 1, 2, 3].map(function(si) {
+                return h('rect', { key: 'sw' + si, x: 292 + si * 4, y: 322, width: 4, height: 16,
+                  fill: si % 2 ? '#f4f6f8' : '#d03830' });
+              })),
+            h('circle', { cx: 300, cy: 330, r: 8, fill: 'none', stroke: '#1f3d5c', strokeWidth: 1 }),
             h('text', { x: 312, y: 335, fill: '#9b1c17', fontSize: 9, fontWeight: 700 }, 'Mid-channel'),
             // Halfway Rock
             h('polygon', { points: '210,365 230,360 225,378 215,378', fill: '#6b6358' }),
@@ -15053,6 +16321,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             h('text', { x: 540, y: 138, fill: '#5a8ba5', fontSize: 9 }, '10 m'),
             h('path', { d: 'M 50 230 Q 300 200 550 235', stroke: '#7aa9c4', strokeWidth: 1, fill: 'none', strokeDasharray: '4,3' }),
             h('text', { x: 540, y: 228, fill: '#5a8ba5', fontSize: 9 }, '30 m'),
+            // Direction of travel. Without it the reader has to take the
+            // red-right-returning rule on trust; with it they can check it.
+            h('g', null,
+              h('defs', null,
+                h('marker', { id: 'fl-chart-arrow', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto-start-reverse' },
+                  h('path', { d: 'M0 0 L10 5 L0 10 z', fill: '#1f3d5c' }))),
+              h('path', { d: 'M 300 320 L 300 150', stroke: '#1f3d5c', strokeWidth: 2, fill: 'none', strokeDasharray: '7 5', markerEnd: 'url(#fl-chart-arrow)' }),
+              h('text', { x: 306, y: 250, fill: '#1f3d5c', fontSize: 10, fontWeight: 700 }, 'RETURNING'),
+              h('text', { x: 306, y: 262, fill: '#1f3d5c', fontSize: 9 }, 'red to starboard'),
+              h('text', { x: 306, y: 300, fill: '#5a6b7a', fontSize: 9, fontStyle: 'italic' }, 'outbound reverses it')),
             // compass rose
             h('g', { transform: 'translate(70, 360)' },
               h('circle', { cx: 0, cy: 0, r: 22, fill: 'rgba(255,255,255,0.5)', stroke: '#5a8ba5', strokeWidth: 1 }),
@@ -15671,16 +16949,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var unlocked = st.achievements || {};
       return h('div', null,
         h('div', { style: cardStyle },
-          h('div', { style: headerStyle }, '🏆 Achievements (' + Object.keys(unlocked).length + ' / ' + ACHIEVEMENTS.length + ')'),
-          h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
-            'Unlock by playing missions, completing the quiz, reading curriculum modules, and demonstrating stewardship.'),
+          h('div', { style: headerStyle }, '🏆 Achievements'),
+          (function() {
+            var doneCount = ACHIEVEMENTS.filter(function(a) { return !!unlocked[a.id]; }).length;
+            var remaining = ACHIEVEMENTS.length - doneCount;
+            return h('div', { style: { display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', marginBottom: 14 } },
+              flCollectionRingSvg(h, doneCount, ACHIEVEMENTS.length),
+              h('div', { style: { minWidth: 0, flex: '1 1 240px' } },
+                h('p', { style: { margin: 0, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
+                  'Unlock by playing missions, completing the quiz, reading curriculum modules, and demonstrating stewardship.'),
+                h('p', { style: { margin: '6px 0 0', fontSize: 12, fontWeight: 800, color: remaining ? '#fde68a' : '#86efac' } },
+                  remaining ? remaining + (remaining === 1 ? ' badge left to earn.' : ' badges left to earn.') : 'Every badge earned — the full set.')));
+          })(),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 } },
             ACHIEVEMENTS.map(function(a, i) {
               var done = !!unlocked[a.id];
-              return h('div', { key: a.id, style: { padding: 10, background: done ? 'rgba(134,239,172,0.12)' : 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid ' + (done ? '#86efac' : '#475569'), opacity: done ? 1 : 0.65 } },
-                h('div', { style: { fontSize: 22, marginBottom: 4 } }, a.icon),
-                h('div', { style: { fontSize: 12, fontWeight: 800, color: done ? '#86efac' : '#cbd5e1', marginBottom: 2 } }, (done ? '✓ ' : '') + a.name),
-                h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4 } }, a.desc));
+              return h('div', { key: a.id, style: { display: 'flex', gap: 10, alignItems: 'flex-start', padding: 10, background: done ? 'rgba(251,191,36,0.10)' : 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid ' + (done ? '#fbbf24' : '#475569') } },
+                flAchievementBadgeSvg(h, a, done),
+                h('div', { style: { minWidth: 0 } },
+                  h('div', { style: { fontSize: 12, fontWeight: 800, color: done ? '#fde68a' : '#cbd5e1', marginBottom: 2 } }, (done ? '✓ ' : '') + a.name),
+                  h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4 } }, a.desc),
+                  h('div', { style: { marginTop: 4, fontSize: 9.5, fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase', color: done ? '#86efac' : '#64748b' } }, done ? 'Earned' : 'Locked')));
             }))));
     }
 

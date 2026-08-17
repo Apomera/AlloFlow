@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Educator Growth &amp; Evaluation: User Manual | AlloFlow</title>
+<meta name="description" content="How to use AlloFlow's Educator Growth &amp; Evaluation tool: the private on-device workspace, the district-hosted portal, the ten-step observation cycle, framework profiles, what the released summary says, the educator view, backups, accessibility, and troubleshooting.">
+<link rel="canonical" href="https://alloflow-cdn.pages.dev/educator-evaluation-manual">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Educator Growth &amp; Evaluation: User Manual">
+<meta property="og:description" content="How to run an evaluation cycle in AlloFlow: the private on-device workspace, the district-hosted portal, what the released summary says, and what the tool deliberately does not do.">
+<meta property="og:url" content="https://alloflow-cdn.pages.dev/educator-evaluation-manual">
+<meta property="og:image" content="https://alloflow-cdn.pages.dev/educator-evaluation-manual-assets/02-overview.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root{
+  --ink:#0f172a;--body:#1e293b;--soft:#526079;--line:#e2e8f0;--panel:#ffffff;
+  --accent:#1d4ed8;--accent-ink:#1e3a8a;--accent-soft:#eff6ff;--accent-bd:#bfdbfe;
+  --warn-bg:#fffbeb;--warn-bd:#fcd34d;--warn-ink:#92400e;
+  --ok-bg:#f0fdf4;--ok-bd:#86efac;--ok-ink:#14532d;
+  --code-bg:#f1f5f9;--th:#f1f5f9;--bg:#f8fafc;--shadow:0 1px 3px rgba(15,23,42,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:#e8eefc;--body:#d3ddf0;--soft:#9aa9c4;--line:#28354e;--panel:#141d30;
+    --accent:#8ab4ff;--accent-ink:#bcd4ff;--accent-soft:#152340;--accent-bd:#2c4470;
+    --warn-bg:#2c2410;--warn-bd:#6d5716;--warn-ink:#f6d894;
+    --ok-bg:#10261a;--ok-bd:#1f6b3d;--ok-ink:#a7e8bf;
+    --code-bg:#1b2740;--th:#1b2740;--bg:#0b1220;--shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--body);font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.65;}
+.wrap{max-width:860px;margin:0 auto;padding:32px 22px 80px;}
+.banner{background:var(--accent-soft);border:1px solid var(--accent-bd);border-radius:14px;padding:14px 18px;margin:0 0 20px;font-size:14px;color:var(--accent-ink);}
+h1{font-size:30px;font-weight:900;letter-spacing:-0.5px;line-height:1.2;margin:0 0 10px;color:var(--ink);}
+h2{font-size:22px;font-weight:800;margin:38px 0 10px;padding-top:12px;border-top:1px solid var(--line);color:var(--ink);}
+h3{font-size:16px;font-weight:800;margin:24px 0 6px;color:var(--ink);}
+p{margin:0 0 14px;}
+ul,ol{margin:0 0 16px;padding-left:22px;}
+li{margin:0 0 7px;}
+strong{font-weight:700;color:var(--ink);}
+a{color:var(--accent);}
+a:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:3px;}
+code{background:var(--code-bg);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.88em;}
+table{border-collapse:collapse;width:100%;margin:0;font-size:14.5px;background:var(--panel);}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top;}
+th{background:var(--th);font-weight:700;color:var(--ink);}
+caption{text-align:left;padding:0 0 8px;font-weight:700;color:var(--ink);}
+.tablewrap{overflow-x:auto;margin:0 0 18px;}
+blockquote{margin:18px 0;padding:12px 16px;background:var(--warn-bg);border:1px solid var(--warn-bd);border-left:4px solid #f59e0b;border-radius:10px;}
+blockquote p{margin:0;color:var(--warn-ink);font-size:14.5px;}
+.good{margin:18px 0;padding:12px 16px;background:var(--ok-bg);border:1px solid var(--ok-bd);border-left:4px solid #22c55e;border-radius:10px;color:var(--ok-ink);font-size:14.5px;}
+.suite{margin:0 0 18px;font-size:14px;color:var(--soft);}
+.start{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:6px 18px 14px;margin:0 0 22px;box-shadow:var(--shadow);}
+.start p{margin:10px 0 0;font-size:14.5px;}
+figure{margin:22px 0 26px;}
+figure img{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);background:var(--panel);}
+figcaption{margin-top:8px;font-size:13.5px;color:var(--soft);}
+nav.toc{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin:0 0 24px;box-shadow:var(--shadow);}
+nav.toc strong{display:block;margin-bottom:4px;}
+nav.toc ol{margin:6px 0 0;}
+nav.toc li{margin:0 0 4px;}
+dl{margin:0 0 16px;}
+dt{font-weight:800;color:var(--ink);margin:14px 0 2px;}
+dd{margin:0 0 8px;}
+.doc{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:26px 30px;margin:18px 0 8px;box-shadow:var(--shadow);font-size:14.5px;}
+.doc .doc-title{font-size:19px;font-weight:800;color:var(--ink);margin:0 0 4px;}
+.doc h4{font-size:15px;font-weight:800;color:var(--ink);margin:22px 0 6px;}
+.doc p{margin:0 0 10px;}
+.doc .meta{color:var(--soft);font-size:13px;}
+.doc .cut{color:var(--soft);font-style:italic;font-size:13px;}
+.doc table{font-size:13.5px;margin:8px 0 4px;}
+.doc ul{margin:0 0 10px;}
+footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:var(--soft);font-size:12.5px;}
+@media (max-width:600px){.wrap{padding:20px 16px 60px;}h1{font-size:25px;}.doc{padding:18px 16px;}}
+/* ── Reading polish (2026-08-17) ───────────────────────────────────── */
+.docmeta{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;margin:0 0 22px;font-size:13px;color:var(--soft);}
+.docmeta span{display:inline-flex;align-items:center;gap:6px;}
+.docmeta .dot{width:4px;height:4px;border-radius:50%;background:var(--line);}
+/* Section headings get an accent rule so a 20-page manual has visible rhythm
+   when you scroll it, without renumbering any heading text. */
+h2{position:relative;padding-left:14px;}
+h2::before{content:"";position:absolute;left:0;top:16px;bottom:2px;width:4px;border-radius:3px;background:var(--accent);opacity:.85;}
+/* The 17-item contents list is a tall single column on a laptop; two columns
+   put the whole manual in view at once. */
+@media (min-width:720px){ nav.toc ol{columns:2;column-gap:34px;} nav.toc li{break-inside:avoid;} }
+nav.toc a{text-decoration:none;border-bottom:1px solid transparent;}
+nav.toc a:hover{border-bottom-color:var(--accent);}
+/* ── Read aloud (device voice; see the note in the script) ─────────── */
+.listen{margin-left:10px;vertical-align:middle;font:600 12px/1 ui-sans-serif,system-ui,sans-serif;
+  color:var(--accent-ink);background:var(--accent-soft);border:1px solid var(--accent-bd);
+  border-radius:999px;padding:5px 10px;cursor:pointer;}
+.listen:hover{filter:brightness(.97);}
+.listen:focus-visible{outline:3px solid var(--accent);outline-offset:2px;}
+.reading{background:var(--accent-soft);box-shadow:0 0 0 4px var(--accent-soft);border-radius:4px;}
+@media print{
+  body{background:#fff;color:#000;}
+  nav.toc{display:none;}
+  .listen{display:none;}
+  h2{padding-left:0;}
+  h2::before{display:none;}
+  .reading{background:none;box-shadow:none;}
+  .wrap{max-width:none;padding:0;}
+  figure,table,blockquote,.good,.doc{break-inside:avoid;page-break-inside:avoid;}
+  h2{break-after:avoid;page-break-after:avoid;}
+  a{color:#000;text-decoration:underline;}
+}
+</style>
+</head>
+<body>
+<main class="wrap">
+<div class="banner">🌱 <strong>Growth first.</strong> This tool makes educator evaluation transparent, strengths-forward, and clear. It works two ways: a <strong>private on-device workspace</strong> anyone can open instantly, and a <strong>district-hosted portal</strong> for shared, authenticated records. This manual covers both.</div>
+<article>
+<h1>Educator Growth &amp; Evaluation: User Manual</h1>
+<p class="suite">Part of the Leadership Hub. For how this tool sits beside the rest of the suite, see <a href="/guide/for-school-leaders.html">For school leaders</a> in the AlloFlow teacher guide. That chapter is the suite overview; this is the operating manual for one tool.</p>
+
+<p class="docmeta">
+<span>17 sections</span><span class="dot" aria-hidden="true"></span>
+<span>about 25 minutes end to end</span><span class="dot" aria-hidden="true"></span>
+<span>updated August 2026</span><span class="dot" aria-hidden="true"></span>
+<span>prints to about 20 pages</span>
+</p>
+
+<div class="start">
+<h3>Where to start</h3>
+<p><strong>Evaluators and principals:</strong> read sections 1 through 7. That is everything you need to run a cycle.</p>
+<p><strong>Educators being evaluated:</strong> section 8 is written for you, and section 10 shows the summary you will receive.</p>
+<p><strong>District IT and administrators:</strong> section 9 is the deployment, and sections 11 and 12 cover privacy, data location, and backups.</p>
+</div>
+
+<nav class="toc" aria-label="Contents">
+<strong>Contents</strong>
+<ol>
+<li><a href="#versions">Choosing your version</a></li>
+<li><a href="#quickstart">Quick start</a></li>
+<li><a href="#tour">A tour of the workspace</a></li>
+<li><a href="#walkthroughs">Walkthroughs: evidence and interpretation</a></li>
+<li><a href="#cycle">The formal observation cycle</a></li>
+<li><a href="#frameworks">Framework profiles</a></li>
+<li><a href="#trends">Trends and why old scores never change</a></li>
+<li><a href="#educator">For educators being evaluated</a></li>
+<li><a href="#portal">Setting up the district portal</a></li>
+<li><a href="#sharing">The released summary: how it arrives and what it says</a></li>
+<li><a href="#privacy">Privacy, records, and boundaries</a></li>
+<li><a href="#backup">Backing up and moving devices</a></li>
+<li><a href="#phone">Using it on a phone</a></li>
+<li><a href="#accessibility">Accessibility</a></li>
+<li><a href="#qr">Sharing the tool by QR</a></li>
+<li><a href="#glossary">Glossary</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+</ol>
+</nav>
+
+<h2 id="versions">1. Choosing Your Version</h2>
+<p>Both versions run the same evaluation workspace. The difference is where records live and who can see them.</p>
+<div class="tablewrap">
+<table>
+<caption>On-device workspace compared with the district portal</caption>
+<tr><th scope="col"></th><th scope="col">On-device workspace</th><th scope="col">District portal</th></tr>
+<tr><th scope="row">Who it is for</th><td>A single evaluator organizing their own walkthroughs, observations, and trends. Good for getting started today.</td><td>A district that wants shared two-way records, where teachers see and acknowledge their own records under their district sign-in.</td></tr>
+<tr><th scope="row">Setup needed</th><td>None. Open it and go.</td><td>A one-time Apps Script deployment by a district administrator, with IT permission.</td></tr>
+<tr><th scope="row">Where data lives</th><td>Only on your device. Nothing is uploaded.</td><td>In the district's own Google Workspace: a private Drive folder owned by the district deployment account.</td></tr>
+<tr><th scope="row">Teacher access</th><td>None. Role switching previews the teacher view on your device; it is not a sign-in.</td><td>Real. Each teacher signs in with their district account and sees only their own published records.</td></tr>
+<tr><th scope="row">Drive sharing</th><td>Not available. Export a growth snapshot file instead.</td><td>Released summaries are created as Google Docs and shared to the teacher's Drive, with an opened receipt.</td></tr>
+<tr><th scope="row">Official record</th><td>No. It is a working notebook, not the personnel record.</td><td>Closer, but the district's authorized personnel system remains the official record unless the district decides otherwise.</td></tr>
+</table>
+</div>
+<div class="good"><strong>A good path:</strong> start in the on-device workspace to learn the tool and sharpen your walkthrough practice. When your district is ready for shared records, connect the portal. Your habits transfer directly, because the screens are the same.</div>
+
+<h2 id="quickstart">2. Quick Start</h2>
+<p>Three ways in, all the same tool. Inside AlloFlow, open <strong>Educator Tools &rarr; Leadership Hub &rarr; Educator Evaluation</strong> &mdash; that is the route the Leadership Hub documents and the one to teach colleagues. It is also still reachable from AlloFlow's Project Settings with <strong>Open Educator Evaluation</strong>. Or go straight to <a href="https://alloflow-cdn.pages.dev/educator-evaluation">alloflow-cdn.pages.dev/educator-evaluation</a> in any modern browser, which is the link to bookmark or hand to a colleague. Once the tool is open, <strong>Manual</strong> in its header returns you to this page from any tab.</p>
+<figure>
+<img src="educator-evaluation-manual-assets/01-first-launch.jpg" width="1770" height="1200" loading="lazy" alt="First-time setup dialog titled Choose how to start Educator Evaluation, offering two cards: Start with a blank workspace, which preloads nothing, and Explore simulated data, which opens a fictional roster. A note headed Where this lives explains the workspace is stored in your signed-in profile on this device, never uploaded, protected by your device sign-in rather than by encryption AlloFlow adds, and that educators cannot see anything until the district connects the portal.">
+<figcaption>First launch asks how you want to begin. Both choices stay entirely on your device.</figcaption>
+</figure>
+<ol>
+<li><strong>Choose a starting point.</strong> <em>Explore simulated data</em> opens a fictional roster with example statuses, ratings, and workflow history, which is the fastest way to see how the cycle works. <em>Start with a blank workspace</em> preloads nothing.</li>
+<li><strong>Set up the workspace.</strong> On the <strong>Setup</strong> tab, enter your organization, building, academic year, and evaluator name, then choose your <strong>evaluation framework</strong> (section 6).</li>
+<li><strong>Add educators.</strong> On the <strong>Staff</strong> tab, add the educators you evaluate along with their assignment type, which drives the correct scoring composition.</li>
+<li><strong>Start observing.</strong> Log walkthroughs as you do them, and assign formal observations when the cycle calls for them. Trends build themselves.</li>
+</ol>
+<p>Everything saves automatically on your device as you work. There is no account and no server in this version. Before you rely on it for a full year of records, read section 12 on backups.</p>
+
+<h2 id="tour">3. A Tour of the Workspace</h2>
+<p>Evaluators see eight tabs. The <strong>Overview</strong> is the daily home base: what is coming due, how far the roster has progressed, and how the selected educator's final evaluation is composed.</p>
+<figure>
+<img src="educator-evaluation-manual-assets/02-overview.jpg" width="1770" height="1200" loading="lazy" alt="Evaluation overview tab showing a Coming due card with counts for past due, due within 14 days, and due in 15 to 30 days; a Teachers evaluated donut reading 2 of 8 finalized; and a Weight in final evaluation donut showing Observation and Practice 70 percent, Building Level Data 10 percent, Teacher-Specific Data 10 percent, and LEA Selected Measure 10 percent.">
+<figcaption>The Overview tab. The weighting donut always shows the composition that applies to the selected educator's assignment type.</figcaption>
+</figure>
+<ul>
+<li><strong>Overview:</strong> cycle progress, what is coming due, and the weighting for the selected educator.</li>
+<li><strong>Trends:</strong> growth over time and de-identified peer context (section 7).</li>
+<li><strong>Staff:</strong> the roster, assignments, and cycle status.</li>
+<li><strong>Walkthroughs:</strong> short, frequent, low-stakes visit notes (section 4).</li>
+<li><strong>Formal observations:</strong> the full ten-step cycle (section 5).</li>
+<li><strong>SPM / SLO:</strong> student performance measures and student learning objectives, where your framework uses them.</li>
+<li><strong>Reports &amp; audit:</strong> the audit timeline, exports, and handoff (section 12).</li>
+<li><strong>Setup:</strong> workspace settings, framework choice, official references, the portal connection guide, and the Share by QR card.</li>
+</ul>
+<p>A <strong>Manual</strong> link sits in the header on every tab, so this document is always one click away from wherever you are working.</p>
+<p>A footer runs along the bottom of every screen as a standing reminder of the design commitments: no AI scoring, evidence and judgments stay separate, and published records are append-only.</p>
+<h3>What the tool deliberately does not do</h3>
+<ul>
+<li>It does not score anyone. Every rating is entered by a person, and the software performs arithmetic only.</li>
+<li>It does not reproduce licensed rubric text. Component names organize evidence; the performance-level descriptors stay with your licensed materials.</li>
+<li>It does not rank educators against each other. Cohort context is de-identified and suppressed for small groups.</li>
+<li>It does not replace your district's personnel system, and it does not decide anyone's employment.</li>
+</ul>
+
+<h2 id="walkthroughs">4. Walkthroughs: Evidence and Interpretation</h2>
+<p>A walkthrough is a middle-of-lesson visit that captures factual evidence. It does not replace a comprehensive observation and it never auto-scores a rubric.</p>
+<figure>
+<img src="educator-evaluation-manual-assets/03-walkthroughs.jpg" width="1770" height="1200" loading="lazy" alt="Walkthrough observations tab. The left column lists visit records with badges reading Private draft and Published. The right column shows a published walkthrough for Teacher 03 with separate sections for Directly witnessed evidence and Interpretation or feedback, component tags 2B and 3D, and a conversation area noting that published comments are appended and cannot alter the original evidence.">
+<figcaption>Evidence and interpretation are recorded in separate fields, and drafts stay private until you publish.</figcaption>
+</figure>
+<ul>
+<li><strong>Drafts are private.</strong> A visit marked <em>Private draft</em> is yours alone. Nothing reaches the educator's record until you publish it.</li>
+<li><strong>Publishing freezes the snapshot.</strong> A published walkthrough becomes a locked record. Later thoughts are appended as comments and cannot alter the original evidence.</li>
+<li><strong>Two separate fields, on purpose.</strong> <em>Directly witnessed evidence</em> is what you saw and heard. <em>Interpretation and feedback</em> is what you make of it. Keeping them apart is what makes a walkthrough defensible and useful to the educator.</li>
+<li><strong>Interpretations pay off later.</strong> They are mined into the released summary, so a strength you noticed in October is still visible in June.</li>
+<li><strong>Component tags</strong> (2B, 3D, and so on) organize evidence by framework component without reproducing licensed rubric text.</li>
+</ul>
+
+<h2 id="cycle">5. The Formal Observation Cycle</h2>
+<p>Formal observations walk a ten-step tracker in order, and the tool will not let steps be skipped silently. The tracker across the top of the record always shows where you are.</p>
+<figure>
+<img src="educator-evaluation-manual-assets/04-formal-observation.jpg" width="1770" height="1200" loading="lazy" alt="Formal comprehensive observations tab showing a record for Teacher 03 badged Step 8 of 10, with a progress tracker whose ten points read Assigned, Prework, Pre-conference, Observation, Evidence review, Reflection, Post-conference, Ratings, Acknowledged, and Finalized. The first seven points are complete, Ratings is the current step, and the panel beside it reports that the evaluator signed on August 13 and the record is awaiting teacher acknowledgment, which does not indicate agreement. An evidence map lists Domain 1 Planning and Preparation at 20 percent, Domain 2 Classroom Environment at 30 percent, and Domain 3 Instruction at 30 percent.">
+<figcaption>The ten-step tracker partway through a cycle. Completed steps are filled in, the current step is highlighted, and later steps stay dim until they are reached.</figcaption>
+</figure>
+<ol>
+<li><strong>Assigned.</strong> The observation is created for an educator and stamped with the framework snapshot in force.</li>
+<li><strong>Prework.</strong> The educator submits pre-observation reflection.</li>
+<li><strong>Pre-conference.</strong> You meet and record it.</li>
+<li><strong>Observation.</strong> You observe and collect evidence.</li>
+<li><strong>Evidence review.</strong> Evidence is published so the educator can see exactly what was recorded.</li>
+<li><strong>Reflection.</strong> The educator responds to what was observed.</li>
+<li><strong>Post-conference.</strong> You discuss it together.</li>
+<li><strong>Ratings.</strong> You enter human ratings with a written rationale for each domain. Nothing is scored by AI at any point.</li>
+<li><strong>Acknowledged.</strong> You sign, and the educator acknowledges. Acknowledgment records that they saw the record, not that they agree with it.</li>
+<li><strong>Finalized.</strong> The record locks. Later context appears as appended comments.</li>
+</ol>
+<p>Alongside the tracker, the <strong>evidence map</strong> organizes evidence by domain and shows each domain's weight within Observation and Practice. Component names appear, but rubric-level performance descriptors are not reproduced, because that text is licensed.</p>
+<h3>The educator statement</h3>
+<p>At any point before finalization, the educator can attach a statement in their own words. It is theirs: no evaluator can edit it, it appears verbatim under "In your own words," and it <strong>leads</strong> the released summary, ahead of any ratings. This mirrors the contractual right to attach a memorandum to a personnel record. Once the record is finalized, the statement is frozen with it.</p>
+
+<h2 id="frameworks">6. Framework Profiles</h2>
+<p>Choose the profile on the Setup tab. Every record permanently remembers which framework and weights it was scored under, so changing profiles mid-year never rewrites old scores.</p>
+<figure>
+<img src="educator-evaluation-manual-assets/06-setup.jpg" width="1770" height="1200" loading="lazy" alt="Setup tab headed Setup, sources, and sharing, with a link to this user manual. The Workspace setup card holds organization, building, academic year, evaluator name and initials, and an Evaluation framework dropdown set to Pennsylvania Act 13 with Danielson 2021, above a note that full performance-level rubric text is not bundled. An Official references card lists four links including the Pennsylvania Department of Education and the Danielson Group, above an amber note explaining that this workspace uses assignment-aware 70/10/10/10 rather than the older 50 percent observation model.">
+<figcaption>Workspace setup and the framework picker, with the official references for whichever profile is active.</figcaption>
+</figure>
+<h3>Pennsylvania Act 13 (Danielson 2021)</h3>
+<p>Assignment-aware composition: 70/10/10/10 for classroom teachers, 80 percent Observation and Practice where Building Level Data is unavailable, and 100 percent Observation and Practice for temporary classroom teachers.</p>
+<h3>Portland, Maine (PEPG guidebook)</h3>
+<p>Uses the published guidebook's four performance levels (Unsatisfactory, Novice/Needs Improvement, Proficient, Excellent), all 22 Danielson components, a categorical decision matrix rather than a numeric average for the summative practice rating, and an evidence expectation of at least nine pieces. Confirm the details against your current district guidebook, because the district plan governs.</p>
+<h4>How the Portland matrix reaches a summative practice rating</h4>
+<p>Portland's summative practice rating is <strong>categorical, not an average</strong>. The tool checks four rules in order and stops at the first one that fits:</p>
+<div class="tablewrap">
+<table>
+<caption>Decision rules, applied top to bottom</caption>
+<tr><th scope="col">Result</th><th scope="col">When</th></tr>
+<tr><th scope="row">Unsatisfactory</th><td>Any domain is rated Unsatisfactory.</td></tr>
+<tr><th scope="row">Excellent</th><td>Two or more domains are Excellent and none is below Proficient.</td></tr>
+<tr><th scope="row">Novice/Needs Improvement</th><td>Three or more domains are at Novice/Needs Improvement.</td></tr>
+<tr><th scope="row">Proficient</th><td>Everything else: no more than two domains below Proficient, and none Unsatisfactory.</td></tr>
+</table>
+</div>
+<p>Because the rules run in order, a single low domain outranks several high ones. That is the intended behaviour of a matrix and the main way it differs from an average:</p>
+<div class="tablewrap">
+<table>
+<caption>Worked examples, using the four domain ratings in order</caption>
+<tr><th scope="col">Domain ratings</th><th scope="col">Result</th><th scope="col">Why</th></tr>
+<tr><td>0, 3, 3, 3</td><td>Unsatisfactory</td><td>One Unsatisfactory domain decides it, even beside three Excellent domains. An average would have read 2.25.</td></tr>
+<tr><td>3, 3, 2, 2</td><td>Excellent</td><td>Two Excellent domains and nothing below Proficient.</td></tr>
+<tr><td>3, 3, 1, 2</td><td>Proficient</td><td>Two Excellent domains, but one sits below Proficient, so the Excellent rule does not apply.</td></tr>
+<tr><td>1, 1, 1, 2</td><td>Novice/Needs Improvement</td><td>Three domains at Novice/Needs Improvement.</td></tr>
+<tr><td>2, 2, 2, 2</td><td>Proficient</td><td>The ordinary case.</td></tr>
+</table>
+</div>
+<p>No summative practice rating is produced until all four domains are rated. A partially rated record stays blank rather than guessing.</p>
+
+<h3>Maine PEPG (district plan governs)</h3>
+<p>Maine systems are local. Your district plan, built with a steering committee that has a teacher majority and revised by consensus, defines the rubric, rating levels, category weights, and process. Enter your plan's Professional Practice and Student Learning and Growth split. Since the 2019 amendments, student learning and growth measures are a district choice rather than a state mandate. This workspace mirrors your plan; it never substitutes for it.</p>
+
+<h2 id="trends">7. Trends and Why Old Scores Never Change</h2>
+<p>The Trends tab shows finalized ratings and workflow activity over time. Evidence text, comments, and rationales are never aggregated into a number.</p>
+<figure>
+<img src="educator-evaluation-manual-assets/05-trends.jpg" width="1770" height="1200" loading="lazy" alt="Teacher trends and cohort context tab. An amber notice reads that this is a privacy-aware aggregate and not FERPA certification, that cohort values appear only when at least ten eligible peers contribute, that small groups are suppressed, and that results are descriptive and must not be the sole basis for personnel decisions. Below are trend filters for educator, metric, and a date range, then a longitudinal snapshot for Teacher 03 counting published walkthroughs, finalized formal observations, and released cycle snapshots.">
+<figcaption>Trends, with the cohort-suppression rule stated on the screen where the comparison is made.</figcaption>
+</figure>
+<ul>
+<li><strong>Small cohorts are suppressed.</strong> Peer context appears only when at least ten eligible peers contribute, so no one can be identified by subtraction in a small building.</li>
+<li><strong>Comparisons are descriptive.</strong> The screen says plainly that these results must not be the sole basis for personnel decisions.</li>
+<li><strong>Prior cycles are reported separately</strong> from the current year, and released cycle snapshots are immutable.</li>
+</ul>
+<h3>The framework snapshot</h3>
+<p>Every record is stamped with the framework and weights that were in force when it was created. If your district changes frameworks, or you switch profiles to compare, the tool recalculates nothing retroactively: a record scored under Pennsylvania Act 13 keeps its Act 13 math forever, and a Maine record keeps its Maine math. This is why a trend line stays trustworthy across a policy change, and it is also why two records in the same list can be scored differently on purpose.</p>
+
+<h2 id="educator">8. For Educators Being Evaluated</h2>
+<p>In the district portal, an educator signing in with their district account gets their own set of tabs, scoped to them alone. Colleagues' records are never visible.</p>
+<figure>
+<img src="educator-evaluation-manual-assets/08-teacher-view.jpg" width="1770" height="1200" loading="lazy" alt="Teacher view showing tabs My evaluation, My trends, My evidence, Formal observation, SPM / SLO, Timeline, and About. The My evaluation tab shows Teacher 03 badged Awaiting teacher, a weighting donut reading Observation and Practice 70 percent with three 10 percent measures, and a card titled Your statement for the record whose text box is open for writing, explaining that the statement appears verbatim in the released summary and that no one else can edit it.">
+<figcaption>The educator's own view. The statement box is theirs to write, and no evaluator can edit it.</figcaption>
+</figure>
+<ul>
+<li><strong>My evaluation:</strong> how the final evaluation is weighted, current status, and the statement card.</li>
+<li><strong>My trends:</strong> your own growth over time.</li>
+<li><strong>My evidence:</strong> published walkthroughs and evidence, where you can add comments to the conversation.</li>
+<li><strong>Formal observation:</strong> where you are in the ten-step cycle, with prework and reflection.</li>
+<li><strong>SPM / SLO:</strong> your student performance measures and learning objectives.</li>
+<li><strong>Timeline:</strong> the dated record of what happened and when.</li>
+<li><strong>About:</strong> the framework in use and the official references behind it.</li>
+</ul>
+<figure>
+<img src="educator-evaluation-manual-assets/11-portal-teacher.jpg" width="1770" height="1200" loading="lazy" alt="The district portal signed in as an educator. The banner reads District Google account with the educator's own address and Educator access. Only the seven educator tabs appear, the page shows that educator's own weighting donut badged In progress, and the statement box is open for writing. No roster and no colleagues' records are visible.">
+<figcaption>The same portal signed in as the educator. They see their own record and nothing else, with no roster and no way to reach a colleague's file.</figcaption>
+</figure>
+<p>Three things worth knowing as an educator. You see the same evidence your evaluator sees, as soon as it is published. Acknowledging a record means you have seen it, not that you agree with it. And if you disagree, or if there is context the ratings do not capture, write a statement: it leads the document, word for word, and no one can edit it.</p>
+<p>You can download your own workflow summary and growth snapshot at any time. The teacher view cannot export the whole workspace or see organization-wide audit events.</p>
+
+<h2 id="portal">9. Setting Up the District Portal</h2>
+<blockquote><p><strong>Get IT permission first.</strong> The portal must live in a district-owned Google account, never a personal one, and district IT and leadership should approve it like any system that touches personnel records, including LEA authorization, a privacy and security review, and approval of any rating forms.</p></blockquote>
+<p>The portal is a separate deployment from the AlloFlow Class Mailbox. The mailbox is deliberately open to anyone with the link, because homework is low-stakes. The evaluation portal is the opposite: district-domain accounts only, and it fails closed without one.</p>
+<ol>
+<li>A district administrator copies <code>apps_script/educator_evaluation/</code> (Code.gs, Portal.html, appsscript.json) into a district-owned Apps Script project.</li>
+<li>They run the one-time <code>setupEvaluationRepository</code> with the district domain, bootstrap admin, educators, members, and evaluator assignments. The package README shows the exact call.</li>
+<li>They deploy as a Web app with <strong>Execute as: Me</strong> and <strong>Who has access: users in your domain</strong>, then verify with <code>verifyDeploymentIdentity()</code>.</li>
+<li>Each user pastes the deployment's <code>/macros/s/&hellip;/exec</code> link into AlloFlow's Project Settings, or bookmarks it directly. Opening it signs them in with their district Google account. The server, not the link, decides their role and which records they see.</li>
+</ol>
+<figure>
+<img src="educator-evaluation-manual-assets/11-portal-evaluator.jpg" width="1770" height="1200" loading="lazy" alt="The district portal in an evaluator's browser. A green banner reads District Google account with the signed-in address, Evaluator access, and Saved to district repository, beside buttons for Refresh, Email educator a portal notice, and Share released summary to educator's Drive. The eight evaluator tabs and the overview cards look the same as the on-device workspace, and there is no role switch.">
+<figcaption>The connected portal. The signed-in identity replaces the role switch, because the server decides what each person can see.</figcaption>
+</figure>
+<p>After connecting, the <strong>Setup health</strong> panel confirms the deployment is configured correctly, checking the domain lock, repository files, and assignments before anyone relies on it.</p>
+
+<h2 id="sharing">10. The Released Summary: How It Arrives and What It Says</h2>
+<p>In the district portal, when an evaluator releases a finalized evaluation:</p>
+<ol>
+<li>The summary is generated as a <strong>Google Doc</strong> in a private "Released evaluations" folder owned by the district deployment account.</li>
+<li>The teacher's district account is added as a <strong>viewer</strong> of that one document, so it appears in their Drive under "Shared with me."</li>
+<li>Email notifications are <strong>content-free</strong>, saying only that there is portal activity. No ratings or details travel by email.</li>
+<li>When the teacher opens their summary, an <strong>opened receipt</strong> is recorded, so both parties can see the evaluation was actually received.</li>
+</ol>
+<p>Sharing is a deliberate evaluator action at release time, never a silent background job. In the on-device workspace, use <strong>Export growth snapshot</strong> instead: it produces a formative, ratings-free file you can hand to an educator directly.</p>
+<h3>What the document actually says</h3>
+<p>Below is a real summary produced by the tool, abridged, using fictional names. Notice the order: the educator's own words come first, strengths come before growth areas, and the arithmetic is explained rather than asserted.</p>
+<section class="doc" aria-label="Example of a released evaluation summary">
+<p class="doc-title">Educator Effectiveness Summary — 2026-27</p>
+<p class="meta">Prepared for Teacher One on 2026-08-13 by Principal Rivera.</p>
+<p>This document is a plain-language summary of your finalized evaluation. It is shared view-only with you and your evaluation team — no one else. The district portal remains the official record and holds every observation, note, timestamp, and revision behind this summary; nothing here is hidden from you there.</p>
+<h4>In your own words</h4>
+<p>This year I rebuilt my small-group reading block so every student conferences with me at least twice a month. Attendance in my first period was uneven through the winter, and I want that context on the record alongside my ratings.</p>
+<p class="meta">Written by you in the portal (2026-08-13); no one edited it.</p>
+<h4>Your strengths</h4>
+<p><strong>Planning and Preparation — rated Distinguished</strong> (how the lesson and its goals were designed)<br>Plans name the standard, the misconception to watch for, and the check for understanding.</p>
+<p><strong>Classroom Environment — rated Distinguished</strong> (the respect, routines, and culture students experience)<br>Transitions are routine and student-run; the room lost under a minute across three transitions.</p>
+<p class="cut">[ two further domains follow, each with its evaluator's written rationale ]</p>
+<p><strong>Walkthrough observation (2026-08-09)</strong><br>The discussion-norms anchor chart is doing real work; students referenced it without prompting. Worth sharing at a team meeting.</p>
+<h4>Your overall rating, in plain language</h4>
+<p>Overall score: 2.69 out of 3, which is the "Distinguished" performance band. Bands are fixed statewide cut points: 2.50 and above is Distinguished, 1.50–2.49 Proficient, 0.50–1.49 Needs Improvement, below 0.50 Failing.</p>
+<table>
+<tr><th scope="col">Component</th><th scope="col">Weight</th><th scope="col">What it measures</th></tr>
+<tr><td>Observation &amp; Practice</td><td>70%</td><td>Your observed practice across the four domains below.</td></tr>
+<tr><td>Building Level Data</td><td>10%</td><td>Your building's performance data for the year.</td></tr>
+<tr><td>Teacher-Specific Data</td><td>10%</td><td>The measures selected for your role and assignment.</td></tr>
+<tr><td>LEA Selected Measure / SPM</td><td>10%</td><td>The measures selected for your role and assignment.</td></tr>
+</table>
+<p>Your final score is the weighted average of these components — each score is multiplied by its weight and the results are added. No component is hidden and no other factor enters the calculation.</p>
+<p class="cut">[ a domain-by-domain table follows, giving each rating in plain language ]</p>
+<h4>Growth focus</h4>
+<p>No component of your finalized evaluation was rated below Proficient.</p>
+<h4>Transparency and your rights</h4>
+<p>This summary was assembled only from the finalized records in the district portal: 1 finalized formal observation and your locked student performance measures. Every rating shown here was assigned by a person and carries that person's written rationale in the portal; the software performs arithmetic only.</p>
+<ul>
+<li>You can read every underlying record, timestamp, and revision in the portal at any time.</li>
+<li>You acknowledged the observation before finalization; acknowledgment records that you received it, not that you agree.</li>
+<li>You can add a written response through the portal dialogue, and it becomes part of the record.</li>
+<li>Finalized records are immutable — nothing in this summary can be edited after release without a new, visible record.</li>
+</ul>
+<p>Questions about this evaluation go first to your evaluator or to Sample School District leadership. This copy is shared view-only to your district account; if any detail here disagrees with the portal, the portal record governs.</p>
+</section>
+<p class="doc-note"><small>The wording adapts to your framework profile: a Maine or Portland workspace names that plan's rating levels instead of the statewide Pennsylvania bands.</small></p>
+
+<h2 id="privacy">11. Privacy, Records, and Boundaries</h2>
+<ul>
+<li><strong>On-device workspace:</strong> nothing is uploaded, ever. Records live in your signed-in browser profile on this device, so anyone who can unlock that profile can open them. Use a device you control.</li>
+<li><strong>AlloFlow adds no encryption of its own.</strong> On-device records are protected by your device sign-in and whatever the device provides, which on a managed district laptop usually means the user profile is encrypted at rest. That is a question for IT, not an assumption to make.</li>
+<li><strong>Retention applies here too.</strong> Evaluation records are subject to your district's retention and discoverability rules wherever they live, including on your own laptop.</li>
+<li><strong>District portal:</strong> all data stays inside the district's own Google Workspace. The server code makes <strong>no external network calls</strong>, so nothing leaves the district tenant, which is what lets it operate under the district's existing Google Workspace for Education agreement.</li>
+<li><strong>Repository files are private by verified default.</strong> The deployment checks that its Drive folder and files are private and refuses to proceed if that cannot be confirmed.</li>
+<li><strong>Evaluations are personnel records.</strong> Treat them with the confidentiality your state law and collective bargaining agreement require. FERPA governs student records and enters here only if observation evidence names identifiable students, so keep evidence focused on educator practice.</li>
+<li><strong>Role switching is a preview, not authentication.</strong> Only the portal, with district sign-in, gives educators real authenticated access.</li>
+<li><strong>The official record:</strong> unless your district decides otherwise, official summative ratings and anything requiring two-party records belong in the district's authorized personnel system.</li>
+<li><strong>No AI scoring.</strong> Ratings are entered by people. The tool organizes evidence; it does not judge it.</li>
+</ul>
+
+<h2 id="backup">12. Backing Up and Moving Devices</h2>
+<p>The on-device workspace lives in your browser's storage. That is what keeps it private, and it is also its main risk: <strong>clearing your browser data will erase it</strong>, and it does not follow you to another computer. The Reports &amp; audit tab is where you protect against that.</p>
+<figure>
+<img src="educator-evaluation-manual-assets/09-reports-audit.jpg" width="1770" height="1200" loading="lazy" alt="Reports and audit tab headed Audit, reports, and handoff. The left column shows an audit timeline listing dated events including assigned, prework submitted, observed, evidence published, reflection submitted, and signed, each naming the actor and role. The right column holds an Export and transfer card with buttons for Export workspace JSON, Export status CSV, Workflow summary HTML, and Growth snapshot, an Import another device export section, and a warning that the district-authorized system remains the official summative rating record.">
+<figcaption>The audit timeline records who did what and when. The export card beside it is your backup and transfer route.</figcaption>
+</figure>
+<ul>
+<li><strong>Export workspace JSON</strong> is your backup. Take one at the end of any working session you would not want to redo, and keep it in district-authorized storage.</li>
+<li><strong>Import another device export</strong> moves a workspace to a new computer. Import <em>replaces</em> the current workspace after validation, so export first if the destination has anything you want to keep.</li>
+<li><strong>Export status CSV</strong> and <strong>Workflow summary HTML</strong> are for reporting and handoff rather than backup.</li>
+<li><strong>Growth snapshot</strong> is the formative, ratings-free file you can share with an educator directly.</li>
+</ul>
+<blockquote><p>Exports can contain confidential personnel information. Store and transmit them only through district-authorized systems, never personal email or cloud storage.</p></blockquote>
+<p>In the district portal this concern disappears: records live server-side in the district's Drive, and the portal keeps its own tamper-evident audit log.</p>
+
+<h2 id="phone">13. Using It on a Phone</h2>
+<p>Walkthroughs happen while you are standing in a doorway, so the workspace reflows to a single column on a phone. The tab strip scrolls sideways, cards stack, and buttons keep a large touch target.</p>
+<figure>
+<img src="educator-evaluation-manual-assets/10-phone.jpg" width="804" height="1600" loading="lazy" alt="The workspace at phone width showing the Walkthroughs tab in a single column: a horizontally scrolling tab strip, a large Start walkthrough button, and stacked visit records badged Private draft and Published, each showing the educator, date, duration, and note.">
+<figcaption>The Walkthroughs tab on a phone. Everything stacks into one column and nothing scrolls sideways except the tab strip.</figcaption>
+</figure>
+<ul>
+<li><strong>Add to your home screen</strong> so the workspace opens in one tap, the same as any bookmarked web page.</li>
+<li><strong>The workspace is per device.</strong> A walkthrough logged on your phone stays on your phone unless you are signed in to the district portal, which syncs server-side. On-device workspaces do not sync between your phone and your laptop.</li>
+<li><strong>Draft on the phone, publish at your desk</strong> if you prefer. Drafts stay private until you publish them.</li>
+</ul>
+
+<h2 id="accessibility">14. Accessibility</h2>
+<p>The workspace is built to the same standard as the rest of AlloFlow and is checked automatically on every change.</p>
+<ul>
+<li><strong>Keyboard throughout.</strong> Tabs, forms, dialogs, and record controls are reachable and operable by keyboard. The first-launch dialog holds focus until you choose, so keyboard and screen-reader users cannot land behind it.</li>
+<li><strong>Screen-reader structure.</strong> The tab strip and panels use a proper tab and tabpanel relationship, so each panel announces the tab it belongs to.</li>
+<li><strong>Touch targets</strong> are sized for a phone in a hallway between visits: primary buttons, inputs, and the role switch are at least 44 pixels tall, and no control falls below the 24 pixel minimum that WCAG sets. Both floors are checked automatically at desktop and phone widths.</li>
+<li><strong>Automated checks.</strong> Every screen in both roles is scanned against WCAG 2.1 AA rules as part of the test suite, and the tool ships with zero violations. This manual is scanned the same way.</li>
+<li><strong>Dark and light.</strong> Both this manual and the workspace follow your system's colour scheme.</li>
+</ul>
+<h3>Language</h3>
+<p>The evaluation workspace is currently available in English only, while the rest of AlloFlow is translated into many languages. Evaluation records are personnel records, and which language they are written in is a district policy question rather than a display setting, so translation is waiting on that decision rather than on the technology. If your district needs another language of record, that is worth raising before you adopt the portal.</p>
+<p>Automated checks catch a great deal but not everything. If you hit something that does not work with your assistive technology, that is a bug worth reporting, not a limit you should work around.</p>
+
+<h2 id="qr">15. Sharing the Tool by QR</h2>
+<p>The Setup tab includes a <strong>Share by QR</strong> card with a scannable code and a copy-link button.</p>
+<figure>
+<img src="educator-evaluation-manual-assets/07-share-qr.jpg" width="1770" height="1200" loading="lazy" alt="Share by QR card on the Setup tab, showing a QR code beside the address https://alloflow-cdn.pages.dev/educator-evaluation and a Copy link button, with the caption that anyone can scan this to open their own private on-device workspace and that your data is not shared by the code.">
+<figcaption>The Share by QR card in the on-device workspace, pointing to the published page rather than to anything on your machine.</figcaption>
+</figure>
+<ul>
+<li><strong>On-device version:</strong> the code points to the published workspace page, so a colleague who scans it gets their own private workspace. Your records are not in the code and are not shared by it.</li>
+<li><strong>District portal:</strong> the code points to your district's portal address. Each person's district sign-in still decides what they can see, so the code is safe to print on a staff-meeting handout.</li>
+</ul>
+
+<h2 id="glossary">16. Glossary</h2>
+<dl>
+<dt>Walkthrough</dt><dd>A short, frequent, low-stakes classroom visit that captures evidence. It does not score a rubric.</dd>
+<dt>Formal observation</dt><dd>The full ten-step cycle with prework, conferences, evidence, reflection, ratings, acknowledgment, and finalization.</dd>
+<dt>Observation and Practice (O&amp;P)</dt><dd>The classroom-practice portion of a final evaluation, as distinct from data-based measures.</dd>
+<dt>SPM</dt><dd>Student Performance Measure. A district-selected measure that contributes a defined share of the final evaluation.</dd>
+<dt>SLO</dt><dd>Student Learning Objective. A goal set for a group of students, used where the framework calls for it.</dd>
+<dt>PEPG</dt><dd>Performance Evaluation and Professional Growth, the Maine term for a district's educator evaluation system.</dd>
+<dt>Framework snapshot</dt><dd>The tag stamped on every record identifying the framework and weights used when it was created, which is what keeps historical scores stable.</dd>
+<dt>Band</dt><dd>The label a score falls into, such as Proficient. In this tool a band is triage for planning, not a verdict about a person.</dd>
+<dt>Released summary</dt><dd>The final strengths-first document shared with the educator, opening with their own statement.</dd>
+<dt>Acknowledgment</dt><dd>A record that the educator has seen a document. It does not signal agreement.</dd>
+<dt>Cohort suppression</dt><dd>Withholding peer comparisons until enough peers contribute, so no individual can be identified from an aggregate.</dd>
+</dl>
+
+<h2 id="troubleshooting">17. Troubleshooting</h2>
+<ul>
+<li><strong>"This page must be opened from the district Apps Script web-app URL":</strong> the portal bundle was opened outside its deployment. Use the <code>/exec</code> link from your district administrator.</li>
+<li><strong>A teacher cannot sign in:</strong> the portal admits only district-domain accounts that an administrator has added as members. Failing closed is the design; ask the administrator to add them.</li>
+<li><strong>The portal looks out of date:</strong> the administrator should re-paste the current <code>Code.gs</code> and <code>Portal.html</code> and create a new deployment version. Apps Script serves the old version until a new one is deployed.</li>
+<li><strong>Setup health shows a warning:</strong> follow its specific message. It checks the domain lock, repository files, and assignments in order.</li>
+<li><strong>A finalized record needs a correction:</strong> finalized records are immutable by design. Add an appended comment, record a new entry, or have the educator attach a statement.</li>
+<li><strong>Scores differ between old and new records:</strong> that is the framework snapshot working as intended (section 7). Each record keeps the framework and weights it was scored under.</li>
+<li><strong>Peer context is missing on the Trends tab:</strong> fewer than ten eligible peers contributed, so the comparison is suppressed to protect identities.</li>
+<li><strong>The QR code shows a different address than you expected:</strong> outside a web address, such as inside the desktop app, the card falls back to the published page on purpose, because a local file path cannot be opened by anyone else.</li>
+<li><strong>Your workspace looks empty on another device or browser:</strong> the on-device workspace does not follow you, and clearing browser data erases it. See section 12 for exports and transfers.</li>
+</ul>
+
+</article>
+
+<script>
+/* Read aloud, per section (2026-08-17).
+ *
+ * WHY THE DEVICE VOICE AND NOT KOKORO. AlloFlow ships Kokoro for high-quality
+ * on-device speech inside the app, but Kokoro is an ~88MB ONNX model plus a
+ * transformers runtime, cached in OPFS and driven by a worker. Pulling that
+ * into a standalone manual would mean an 88MB download before the first word,
+ * on a page whose entire job is to be readable immediately — and it would
+ * inherit the poisoned-cache failure mode a truncated model download causes.
+ * The shipped HTML handouts already answer this the same way: they read with
+ * window.speechSynthesis, which is instant, needs no download, and is present
+ * on the Chromebooks and laptops staff actually use. Same choice here.
+ *
+ * Progressive enhancement on purpose: if speechSynthesis is missing, no button
+ * is ever inserted and the manual is exactly the document it was.
+ */
+(function () {
+  // Feature-test the OBJECTS, not the property name: 'speechSynthesis' in
+  // window is true even where the getter yields undefined, which would have
+  // rendered 17 dead buttons.
+  if (!window.speechSynthesis || typeof window.SpeechSynthesisUtterance !== 'function') return;
+  var synth = window.speechSynthesis;
+  var current = null; // { btn, blocks, idx }
+
+  function blocksFor(h2) {
+    var out = [], n = h2.nextElementSibling;
+    while (n && n.tagName !== 'H2') {
+      if (/^(P|LI|DT|DD|H3|H4|TD|TH|BLOCKQUOTE|FIGCAPTION)$/.test(n.tagName)) out.push(n);
+      else out.push.apply(out, n.querySelectorAll('p, li, dt, dd, h3, h4'));
+      n = n.nextElementSibling;
+    }
+    return out.filter(function (el) { return (el.textContent || '').trim().length > 1; });
+  }
+
+  function stop() {
+    if (!current) return;
+    try { synth.cancel(); } catch (e) {}
+    current.blocks.forEach(function (b) { b.classList.remove('reading'); });
+    current.btn.textContent = '🔊 Listen';
+    current.btn.setAttribute('aria-label', 'Read this section aloud');
+    current = null;
+  }
+
+  function speakFrom(state) {
+    if (!current || current !== state) return;
+    if (state.idx >= state.blocks.length) { stop(); return; }
+    var el = state.blocks[state.idx];
+    state.blocks.forEach(function (b) { b.classList.remove('reading'); });
+    el.classList.add('reading');
+    // One utterance per block: long single utterances get truncated by some
+    // engines, and per-block is what makes the highlight follow along.
+    var u = new SpeechSynthesisUtterance((el.textContent || '').trim());
+    u.rate = 1;
+    u.onend = function () { state.idx += 1; speakFrom(state); };
+    u.onerror = function () { stop(); };
+    try { synth.speak(u); } catch (e) { stop(); }
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('article h2'), function (h2) {
+    var blocks = blocksFor(h2);
+    if (!blocks.length) return;
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'listen';
+    btn.textContent = '🔊 Listen';
+    btn.setAttribute('aria-label', 'Read this section aloud');
+    btn.addEventListener('click', function () {
+      var wasThis = current && current.btn === btn;
+      stop();
+      if (wasThis) return;            // second click on the same button = stop
+      current = { btn: btn, blocks: blocks, idx: 0 };
+      btn.textContent = '⏹ Stop';
+      btn.setAttribute('aria-label', 'Stop reading this section');
+      speakFrom(current);
+    });
+    h2.appendChild(btn);
+  });
+
+  window.addEventListener('beforeunload', function () { try { synth.cancel(); } catch (e) {} });
+  // Leaving the page open in a background tab and returning should not resume
+  // half-read; browsers vary, so stop cleanly when the page is hidden.
+  document.addEventListener('visibilitychange', function () { if (document.hidden) stop(); });
+}());
+</script>
+
+<footer>
+<p>AlloFlow Educator Growth &amp; Evaluation. User manual, August 2026. Screenshots and the example summary use fictional data; nothing in them represents real personnel. This manual describes how the tool behaves and is not legal or contractual advice. Your district plan, collective bargaining agreement, and state law govern evaluation practice.</p>
+</footer>
+</main>
+</body>
+</html>

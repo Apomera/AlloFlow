@@ -198,7 +198,7 @@
   }
 
   // WCAG a11y CSS
-  if (!document.getElementById('wc-a11y-css')) { var _s = document.createElement('style'); _s.id = 'wc-a11y-css'; _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; }'; document.head.appendChild(_s); }
+  if (!document.getElementById('wc-a11y-css')) { var _s = document.createElement('style'); _s.id = 'wc-a11y-css'; _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }'; document.head.appendChild(_s); }
 
   (function() {
     if (typeof document === 'undefined') return;
@@ -468,6 +468,10 @@
       ,'.wc-canvas-shell::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:inset 0 0 64px rgba(2,6,23,.32),inset 0 1px 0 rgba(255,255,255,.10)}'
       ,'.wc-stage-rack button{transition:transform 150ms ease,box-shadow 150ms ease,filter 150ms ease}.wc-stage-rack button:hover{transform:translateY(-1px);filter:saturate(1.12)}.wc-stage-rack button[aria-pressed="true"]{box-shadow:0 6px 16px rgba(15,23,42,.24)}'
       ,'.wc-view-segments button[aria-pressed="true"]{background:linear-gradient(135deg,#0284c7,#0369a1)}'
+      // "Physical time" is the only cell whose dd holds a value AND a caveat, and
+      // the two inline elements ran together as "Minutes to daysEnergy and
+      // weather dependent...". Break the caveat onto its own line and mute it.
+      ,'.wc-matter-energy-grid dd span{display:block;margin-top:2px;font-size:10px;line-height:1.35;color:#475569}.dark .wc-matter-energy-grid dd span{color:#94a3b8}@media(forced-colors:active){.wc-matter-energy-grid dd span{color:CanvasText}}'
       ,'.wc-steward-card{transition:transform 170ms ease,box-shadow 170ms ease;box-shadow:0 2px 8px rgba(15,23,42,.06)}.wc-steward-card:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(15,23,42,.15)}.wc-steward-card button:hover{filter:brightness(1.1)}.wc-steward-cta{transition:transform 160ms ease,box-shadow 160ms ease,filter 160ms ease}.wc-steward-cta:hover{transform:translateY(-1px);filter:brightness(1.06)}.wc-steward-cta:active{transform:scale(.99)}'
     ].join('');
     if (document.head) document.head.appendChild(st);
@@ -1590,6 +1594,52 @@
       wind: 26, windDirection: 'east', updraft: 96, cloudDepth: 12, terrain: 'plains'
     }
   };
+
+  // ── Readable ink for a DATA-DRIVEN colour ───────────────────────────────
+  // Stage and watershed-component colours are chosen as identity/branding hues
+  // and then reused as TEXT. That works on white and fails on the dark card:
+  // measured on #0f172a, riverMainstem #1d4ed8 = 2.66:1, suburbanEdges #7c3aed
+  // = 3.13, forestBuffer #15803d = 3.56, agriculturalWatershed #a16207 = 3.63 --
+  // four of six component names, plus three of six stage chips.
+  //
+  // Mix the hue toward white only as far as it takes to clear the target, so
+  // each item keeps its identity instead of collapsing to a generic light grey.
+  // Returns the ORIGINAL colour when it already passes, so light mode and the
+  // bright hues are untouched.
+  //
+  // ★The contrast gate cannot catch this class: the ink is a variable, not a
+  // hex literal in the source. It was found by screenshotting dark mode.
+  function wcReadableInk(hex, bgHex, target) {
+    if (typeof hex !== 'string' || hex.charAt(0) !== '#' || hex.length !== 7) return hex;
+    var toRgb = function (h) {
+      var n = parseInt(h.slice(1), 16);
+      return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+    };
+    var lin = function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+    var lum = function (c) { return 0.2126 * lin(c[0]) + 0.7152 * lin(c[1]) + 0.0722 * lin(c[2]); };
+    var fg = toRgb(hex);
+    var bgL = lum(toRgb(bgHex || '#0f172a'));
+    var want = target || 4.5;
+    var ratio = function (c) {
+      var a = lum(c), b = bgL;
+      return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+    };
+    if (ratio(fg) >= want) return hex;
+    // Move AWAY from the ground: lighten on a dark ground, darken on a light
+    // one. The first version only ever lightened, which is right for the dark
+    // card but useless for the light stage chips -- there the ground is a pale
+    // tint of the hue ITSELF, so the fix is to go darker (transpiration on its
+    // own light chip measured 2.02:1, worse than any dark-mode case).
+    var goLighter = bgL < 0.18;
+    var t = goLighter ? [248, 250, 252] : [10, 15, 26];
+    for (var mix = 0.1; mix <= 1.0001; mix += 0.1) {
+      var m = [fg[0] + (t[0] - fg[0]) * mix, fg[1] + (t[1] - fg[1]) * mix, fg[2] + (t[2] - fg[2]) * mix];
+      if (ratio(m) >= want) {
+        return '#' + m.map(function (v) { return ('0' + Math.round(v).toString(16)).slice(-2); }).join('');
+      }
+    }
+    return goLighter ? '#f8fafc' : '#0a0f1a';
+  }
 
   function wcPrecipClamp(value, low, high) {
     var numberValue = Number(value);
@@ -2834,9 +2884,9 @@ const d = labToolData.waterCycle || {};
               h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 } },
                 h('span', { style: { fontSize: 36 } }, def.icon),
                 h('div', { style: { flex: 1 } },
-                  h('div', { style: { fontSize: 11, color: def.color, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, t('stem.watercycle.watershed_deep_dive', 'Watershed deep-dive')),
+                  h('div', { style: { fontSize: 11, color: isDark ? wcReadableInk(def.color) : def.color, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, t('stem.watercycle.watershed_deep_dive', 'Watershed deep-dive')),
                   h('h3', { id: 'watercycle-deep-dive-title-' + def.id, style: { margin: '2px 0 0', color: isDark ? '#fff' : '#0f172a', fontSize: 20 } }, def.name),
-                  h('div', { style: { color: def.color, fontSize: 13, marginTop: 4, fontStyle: 'italic' } }, def.role)
+                  h('div', { style: { color: isDark ? wcReadableInk(def.color) : def.color, fontSize: 13, marginTop: 4, fontStyle: 'italic' } }, def.role)
                 ),
                 h('button', {
                   onClick: closeStewardDeepDive,
@@ -2855,15 +2905,17 @@ const d = labToolData.waterCycle || {};
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 } },
                 h('div', { style: { background: isDark ? 'rgba(15,23,42,0.7)' : 'rgba(255,255,255,0.8)', border: isDark ? '1px solid #1e293b' : '1px solid #cbd5e1', borderRadius: 10, padding: 12 } },
-                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#22c55e', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, t('stem.watercycle.hydrology', '💧 Hydrology')),
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: isDark ? '#22c55e' : '#15803d', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, t('stem.watercycle.hydrology', '💧 Hydrology')),
                   h('p', { style: { margin: 0, color: isDark ? '#cbd5e1' : '#334155', fontSize: 13, lineHeight: 1.55 } }, dd.knowledge)
                 ),
                 h('div', { style: { background: isDark ? 'rgba(15,23,42,0.7)' : 'rgba(255,255,255,0.8)', border: isDark ? '1px solid #1e293b' : '1px solid #cbd5e1', borderRadius: 10, padding: 12 } },
-                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, t('stem.watercycle.case_work', '📰 Case work')),
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: isDark ? '#fbbf24' : '#b45309', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, t('stem.watercycle.case_work', '📰 Case work')),
                   h('p', { style: { margin: 0, color: isDark ? '#cbd5e1' : '#334155', fontSize: 13, lineHeight: 1.55 } }, dd.casework)
                 ),
-                h('div', { style: { background: isDark ? 'rgba(15,23,42,0.7)' : 'rgba(255,255,255,0.8)', border: isDark ? '1px solid #1e293b' : '1px solid #cbd5e1', borderRadius: 10, padding: 12 } },
-                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#0ea5e9', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, t('stem.watercycle.maine_context', '🌍 Maine context')),
+                // Spans the full row: three cards in a 2-column auto-fit grid
+                // orphaned this one and left a card-sized hole beside it.
+                h('div', { style: { gridColumn: '1 / -1', background: isDark ? 'rgba(15,23,42,0.7)' : 'rgba(255,255,255,0.8)', border: isDark ? '1px solid #1e293b' : '1px solid #cbd5e1', borderRadius: 10, padding: 12 } },
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: isDark ? '#0ea5e9' : '#0369a1', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 6 } }, t('stem.watercycle.maine_context', '🌍 Maine context')),
                   h('p', { style: { margin: 0, color: isDark ? '#cbd5e1' : '#334155', fontSize: 13, lineHeight: 1.55 } }, dd.modernContext)
                 )
               ),
@@ -3048,12 +3100,12 @@ const d = labToolData.waterCycle || {};
             },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
                 h('span', { style: { fontSize: 20 } }, '🔍'),
-                h('strong', { style: { color: isDark ? '#38bdf8' : '#0ea5e9', fontSize: 14 } }, t('stem.watercycle.ai_watershed_reading_2', 'AI Watershed Reading')),
+                h('strong', { style: { color: isDark ? '#38bdf8' : '#0369a1', fontSize: 14 } }, t('stem.watercycle.ai_watershed_reading_2', 'AI Watershed Reading')),
                 h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 6 } },
                   h('button', {
                     onClick: readWatershed,
                     className: "focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all",
-                    style: { background: 'transparent', border: isDark ? '1px solid #38bdf8' : '1px solid #0ea5e9', color: isDark ? '#38bdf8' : '#0ea5e9', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 }
+                    style: { background: 'transparent', border: isDark ? '1px solid #38bdf8' : '1px solid #0369a1', color: isDark ? '#38bdf8' : '#0369a1', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 }
                   }, t('stem.watercycle.re_read', '↻ Re-read')),
                   h('button', {
                     onClick: dismissStewardAIRead,
@@ -3138,7 +3190,7 @@ const d = labToolData.waterCycle || {};
                     },
                       h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                         h('span', { style: { fontSize: 22 } }, c.icon),
-                        h('strong', { style: { color: c.color } }, c.name)
+                        h('strong', { style: { color: isDark ? wcReadableInk(c.color) : c.color } }, c.name)
                       ),
                       h('div', { style: { fontSize: 11, color: isDark ? '#94a3b8' : '#64748b', marginBottom: 4 } }, c.role),
                       h('div', { style: { fontSize: 12, color: isDark ? '#cbd5e1' : '#475569', lineHeight: 1.5, marginBottom: 8 } }, __alloT('stem.watercycle.' + (c.id) + '_desc', c.desc)),
@@ -3286,7 +3338,7 @@ const d = labToolData.waterCycle || {};
                         fontSize: 12
                       }
                     },
-                      h('div', { style: { fontWeight: 700, color: def.color, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 } },
+                      h('div', { style: { fontWeight: 700, color: isDark ? wcReadableInk(def.color) : def.color, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 } },
                         h('span', null, def.icon + ' ' + def.name + (targetsHit ? ' ✓' : '')),
                         def.deepDive ? h('button', {
                           onClick: function() { openStewardDeepDive(c.id); },
@@ -3327,7 +3379,7 @@ const d = labToolData.waterCycle || {};
                       h('div', { style: { color: isDark ? '#cbd5e1' : '#334155', fontSize: 13 } }, 'Avg quality ' + actualAvgQ + ' · Avg connectivity ' + actualAvgConn)
                     ),
                     h('div', { style: { background: isDark ? '#0f172a' : '#f8fafc', padding: 10, borderRadius: 8, borderLeft: '3px solid #ef4444' } },
-                      h('div', { style: { fontSize: 12, fontWeight: 700, color: isDark ? '#fca5a5' : '#ef4444', marginBottom: 4 } }, t('stem.watercycle.pure_neglect', 'Pure neglect')),
+                      h('div', { style: { fontSize: 12, fontWeight: 700, color: isDark ? '#fca5a5' : '#b91c1c', marginBottom: 4 } }, t('stem.watercycle.pure_neglect', 'Pure neglect')),
                       h('div', { style: { color: isDark ? '#cbd5e1' : '#334155', fontSize: 13 } }, 'Avg quality ' + baselineAvgQ + ' · Avg connectivity ' + baselineAvgConn)
                     )
                   ),
@@ -3343,8 +3395,8 @@ const d = labToolData.waterCycle || {};
                   // Derive from components rather than reading the stored copy:
                   // a debrief state saved without componentsAt75 rendered
                   // "undefined / 6", and the count is always derivable.
-                  h('strong', { style: { color: '#0ea5e9' } }, t('stem.watercycle.components_at_75_quality', 'Components at 75+ quality: ')), steward.components.filter(function(c) { return c.quality >= 75; }).length + ' / 6 · ',
-                  h('strong', { style: { color: '#0ea5e9' } }, t('stem.watercycle.connectivity_boosts', 'Connectivity boosts: ')), (steward.connectivityBoosts || 0)
+                  h('strong', { style: { color: isDark ? '#38bdf8' : '#0369a1' } }, t('stem.watercycle.components_at_75_quality', 'Components at 75+ quality: ')), steward.components.filter(function(c) { return c.quality >= 75; }).length + ' / 6 · ',
+                  h('strong', { style: { color: isDark ? '#38bdf8' : '#0369a1' } }, t('stem.watercycle.connectivity_boosts', 'Connectivity boosts: ')), (steward.connectivityBoosts || 0)
                 ),
                 h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
                   h('button', {
@@ -3386,7 +3438,7 @@ const d = labToolData.waterCycle || {};
                   }
                 },
                   h('div', { style: { fontSize: 22, marginBottom: 4 } }, ev.icon || '🌿'),
-                  h('strong', { style: { color: '#fbbf24', fontSize: 16 } }, 'Year ' + steward.year + ' event: ' + (ev.name || 'quiet year')),
+                  h('strong', { style: { color: isDark ? '#fbbf24' : '#b45309', fontSize: 16 } }, 'Year ' + steward.year + ' event: ' + (ev.name || 'quiet year')),
                   h('p', { style: { margin: '6px 0 0', color: isDark ? '#cbd5e1' : '#475569', fontSize: 13, lineHeight: 1.55 } }, ev.desc || '')
                 ),
                 (lastSnap.cascades && lastSnap.cascades.length > 0) ? h('div', {
@@ -3399,7 +3451,7 @@ const d = labToolData.waterCycle || {};
                     color: isDark ? '#bae6fd' : '#0369a1'
                   }
                 },
-                  h('strong', { style: { color: isDark ? '#38bdf8' : '#0ea5e9' } }, t('stem.watercycle.hydrological_feedback_rules_this_year', '🔄 Hydrological feedback rules this year')),
+                  h('strong', { style: { color: isDark ? '#38bdf8' : '#0369a1' } }, t('stem.watercycle.hydrological_feedback_rules_this_year', '🔄 Hydrological feedback rules this year')),
                   lastSnap.cascades.map(function(c, ci) { return h('div', { key: ci, style: { margin: '6px 0 0', fontStyle: 'italic' } }, '· ' + c.msg); })
                 ) : null,
 
@@ -3467,7 +3519,7 @@ const d = labToolData.waterCycle || {};
                       return h('span', { style: { color: color, fontSize: 11, fontWeight: 700, marginRight: 8 } }, label + ' ' + Math.round(after) + ' ' + arrow + ' ' + (dlt > 0 ? '+' : '') + dlt);
                     }
                     return h('div', { key: preC.id, style: { fontSize: 12, padding: '4px 0', borderTop: isDark ? '1px solid #1e293b' : '1px solid #e2e8f0' } },
-                      h('strong', { style: { color: def.color, marginRight: 8 } }, def.icon + ' ' + def.name),
+                      h('strong', { style: { color: isDark ? wcReadableInk(def.color) : def.color, marginRight: 8 } }, def.icon + ' ' + def.name),
                       delta('Q', preC.quality, postC.quality),
                       delta('Conn', preC.connectivity, postC.connectivity),
                       delta('Sup', preC.support, postC.support)
@@ -3523,7 +3575,7 @@ const d = labToolData.waterCycle || {};
                   onClick: function() { setSteward({ firstTipDismissed: true }); },
                   'aria-label': t('stem.watercycle.dismiss_tip', 'Dismiss tip'),
                   className: "focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all",
-                  style: { background: 'transparent', border: 'none', color: '#a855f7', cursor: 'pointer', fontSize: 16, padding: 0, marginLeft: 6 }
+                  style: { background: 'transparent', border: 'none', color: isDark ? '#a855f7' : '#7e22ce', cursor: 'pointer', fontSize: 16, padding: 0, marginLeft: 6 }
                 }, '✕')
               ) : null,
               // AI panel renders here when active
@@ -3550,7 +3602,7 @@ const d = labToolData.waterCycle || {};
                 ),
                 h('div', null,
                   h('div', { style: { fontSize: 11, color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.watercycle.hours_left', 'Hours left')),
-                  h('div', { style: { fontSize: 20, fontWeight: 800, color: '#fbbf24' } }, steward.hoursLeft + ' / ' + steward.hoursPerYear)
+                  h('div', { style: { fontSize: 20, fontWeight: 800, color: isDark ? '#fbbf24' : '#b45309' } }, steward.hoursLeft + ' / ' + steward.hoursPerYear)
                 ),
                 h('div', null,
                   h('div', { style: { fontSize: 11, color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.watercycle.connectivity_boosts_2', 'Connectivity boosts')),
@@ -3605,7 +3657,7 @@ const d = labToolData.waterCycle || {};
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
                       h('span', { style: { fontSize: 22 } }, def.icon),
                       h('div', { style: { flex: 1 } },
-                        h('div', { style: { fontWeight: 700, color: def.color, fontSize: 14 } }, def.name),
+                        h('div', { style: { fontWeight: 700, color: isDark ? wcReadableInk(def.color) : def.color, fontSize: 14 } }, def.name),
                         h('div', { style: { fontSize: 11, color: isDark ? '#94a3b8' : '#64748b' } }, def.role)
                       ),
                       def.deepDive ? h('button', {
@@ -3685,7 +3737,7 @@ const d = labToolData.waterCycle || {};
                   borderLeft: '3px solid #38bdf8'
                 }
               },
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#38bdf8', marginBottom: 8 } }, t('stem.watercycle.watershed_wide_actions', '🛠 Watershed-wide actions')),
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: isDark ? '#38bdf8' : '#0369a1', marginBottom: 8 } }, t('stem.watercycle.watershed_wide_actions', '🛠 Watershed-wide actions')),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
                   STEWARD_TECHNIQUES.filter(function(t) { return t.appliesTo === 'any'; }).map(function(t) {
                     var disabled = steward.hoursLeft < t.hours;
@@ -7321,16 +7373,25 @@ const d = labToolData.waterCycle || {};
                 }
 
                 // Canopy layers
+                // Every tree used the same two fixed greens and the same three
+                // lobe offsets, so the forest cover read as ONE tree stamped
+                // five times. Vary hue, lightness and lobe geometry from a seed
+                // derived from the tree's own x -- deterministic, so it never
+                // shimmers between frames, and stable across re-renders.
+                var treeSeed = Math.abs(Math.sin(tx * 0.37 + ty * 0.11)) % 1;
+                var canopyHue = 118 + treeSeed * 34;
+                var canopyLight = (isDark ? 30 : 41) + treeSeed * 8;
+                var lobeSpread = 0.85 + treeSeed * 0.4;
 
-                ctx.fillStyle = '#22c55e';
+                ctx.fillStyle = 'hsl(' + canopyHue.toFixed(0) + ',68%,' + canopyLight.toFixed(0) + '%)';
 
-                ctx.beginPath(); ctx.arc((tx + sway) * dpr, (ty - 16 * sz) * dpr, 9 * sz * dpr, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc((tx + sway) * dpr, (ty - (15 + treeSeed * 2.5) * sz) * dpr, (8.4 + treeSeed * 1.4) * sz * dpr, 0, Math.PI * 2); ctx.fill();
 
-                ctx.fillStyle = '#16a34a';
+                ctx.fillStyle = 'hsl(' + (canopyHue - 5).toFixed(0) + ',72%,' + (canopyLight - 9).toFixed(0) + '%)';
 
-                ctx.beginPath(); ctx.arc((tx - 4 * sz + sway * 0.7) * dpr, (ty - 12 * sz) * dpr, 7 * sz * dpr, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc((tx - 4 * sz * lobeSpread + sway * 0.7) * dpr, (ty - 12 * sz) * dpr, (6.6 + treeSeed * 0.9) * sz * dpr, 0, Math.PI * 2); ctx.fill();
 
-                ctx.beginPath(); ctx.arc((tx + 5 * sz + sway * 0.7) * dpr, (ty - 13 * sz) * dpr, 6 * sz * dpr, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc((tx + 5 * sz * lobeSpread + sway * 0.7) * dpr, (ty - (12.4 + treeSeed) * sz) * dpr, (5.7 + treeSeed * 0.9) * sz * dpr, 0, Math.PI * 2); ctx.fill();
 
                 // Dark canopy shadow
 
@@ -13425,9 +13486,9 @@ const d = labToolData.waterCycle || {};
 
               React.createElement("button", { 
                 onClick: () => setStemLabTool(null), 
-                className: "p-1.5 rounded-lg transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors hover:bg-slate-800 text-slate-350 active:scale-[0.97]" : "transition-colors hover:bg-slate-100 text-slate-600 active:scale-[0.97]"), 
+                className: "p-1.5 rounded-lg transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isDark ? "transition-colors hover:bg-slate-800 text-slate-300 active:scale-[0.97]" : "transition-colors hover:bg-slate-100 text-slate-600 active:scale-[0.97]"), 
                 'aria-label': t('stem.watercycle.back_to_tools', 'Back to tools') 
-              }, React.createElement(ArrowLeft, { size: 18, className: isDark ? "text-slate-350" : "text-slate-600" })),
+              }, React.createElement(ArrowLeft, { size: 18, className: isDark ? "text-slate-300" : "text-slate-600" })),
 
               React.createElement("h3", { className: "text-lg font-bold tracking-tight " + (isDark ? "text-slate-100" : "text-slate-800") }, t('stem.watercycle.water_cycle', "\uD83C\uDF0A Water Cycle")),
 
@@ -13747,6 +13808,47 @@ journeyView === '2d' && React.createElement("div", {
                   var L = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
                   return ((L + 0.05) / 0.05) >= (1.05 / (L + 0.05)) ? '#0a0f1a' : '#ffffff';
                 })(stage.color);
+                // INACTIVE-chip ink for dark mode. An inactive chip paints the
+                // stage colour at ~15% over the dark panel and then writes the
+                // SAME colour on top, which only works for the bright stages:
+                // measured on the dark chip, condensation #64748b = 3.25:1,
+                // precipitation #3b82f6 = 4.03:1 and infiltration #92400e =
+                // 2.33:1 -- that last one is effectively unreadable. Lighten
+                // toward white until it clears 4.5:1, so the chip keeps its hue
+                // identity instead of being flattened to a generic grey.
+                // (The static contrast gate cannot see this: the colour is a
+                // variable, not a hex literal. It was found by looking.)
+                // Inactive chips paint the stage colour at ~15% over the dark
+                // panel and then write the SAME colour on top, which only works
+                // for the bright stages: on that ground infiltration #92400e
+                // measured 2.33:1, condensation 3.25 and precipitation 4.03.
+                // Compute the chip's own ground, then lighten the ink onto it.
+                // Both themes tint the chip with the stage's OWN hue and then
+                // write that same hue on top -- '25' (~14.5%) over the dark
+                // panel, '15' (~8.2%) over the white card. Light was the worse
+                // half and was missed first time round: transpiration measured
+                // 2.02:1, collection 2.42, precipitation 3.18 (axe, on the real
+                // rendered ground). Compute whichever ground applies, then let
+                // wcReadableInk move the ink away from it.
+                var _wcChipBg = (function (hex) {
+                  var n = parseInt(hex.slice(1), 16);
+                  var a = isDark ? 0.145 : 0.082;
+                  var base = isDark ? [15, 23, 42] : [255, 255, 255];
+                  var mixed = [
+                    a * ((n >> 16) & 255) + (1 - a) * base[0],
+                    a * ((n >> 8) & 255) + (1 - a) * base[1],
+                    a * (n & 255) + (1 - a) * base[2]
+                  ];
+                  return '#' + mixed.map(function (v) {
+                    return ('0' + Math.round(v).toString(16)).slice(-2);
+                  }).join('');
+                })(stage.color);
+                // Target 5.2, not 4.5: the chip ground is COMPUTED from the
+                // tint alpha, and the rendered value differs slightly (the
+                // panel behind is not pure white), which left precipitation
+                // at 4.45 and collection at 4.28 on a 4.5 target. The margin
+                // absorbs that estimation error instead of fitting one reading.
+                var _wcChipInk = wcReadableInk(stage.color, _wcChipBg, 5.2);
                 var isActive = (d.activeStage || 'evaporation') === stage.id;
                 var isViewed = !!(d.stagesViewed && d.stagesViewed[stage.id]);
                 var isCausalStage = wcCausalStageIds.indexOf(stage.id) >= 0;
@@ -13769,7 +13871,7 @@ journeyView === '2d' && React.createElement("div", {
                     }
                   },
                   className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all inline-flex items-center gap-1.5 focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (isActive ? 'shadow-md' : 'border hover:opacity-80') + (isCausalStage ? ' wc-stage-causal' : ''),
-                  style: { backgroundColor: isActive ? stage.color : (isDark ? stage.color + '25' : stage.color + '15'), borderColor: stage.color, color: isActive ? _wcInk : stage.color }
+                  style: { backgroundColor: isActive ? stage.color : (isDark ? stage.color + '25' : stage.color + '15'), borderColor: stage.color, color: isActive ? _wcInk : _wcChipInk }
                 },
                   React.createElement("span", { className: "inline-flex items-center justify-center w-4 h-4 rounded text-[10px] font-bold " + (isActive ? "bg-white/25 text-white" : "bg-white/60"), "aria-hidden": "true" }, shortcut),
                   isViewed && React.createElement("span", { className: "wc-stage-viewed-mark", "aria-hidden": "true" }, "\u2713"),
@@ -14463,7 +14565,7 @@ React.createElement("div", {
                 (d.climTemp != null && d.climTemp > 30) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-amber-950/60 text-amber-300 border border-amber-900/50" : "bg-amber-100 text-amber-700") }, "Hot surface"),
                 (d.climSolar != null && d.climSolar > 0.7 && d.climTemp > 10 && d.climTemp < 35) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-purple-950/60 text-purple-300 border border-purple-900/50" : "bg-purple-100 text-purple-700") }, t('stem.watercycle.rainbow', "\uD83C\uDF08 Rainbow")),
                 (d.climSolar != null && d.climSolar < 0.3) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-indigo-950/60 text-indigo-300 border border-indigo-900/50" : "bg-indigo-100 text-indigo-700") }, t('stem.watercycle.stars_visible', "\u2B50 Stars visible")),
-                (d.climTemp != null && d.climTemp > 2 && d.climTemp < 18) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-slate-800/80 text-slate-350 border border-slate-700/60" : "bg-slate-100 text-slate-600") }, t('stem.watercycle.fog', "\uD83C\uDF2B\uFE0F Fog")),
+                (d.climTemp != null && d.climTemp > 2 && d.climTemp < 18) && React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-slate-800/80 text-slate-300 border border-slate-700/60" : "bg-slate-100 text-slate-600") }, t('stem.watercycle.fog', "\uD83C\uDF2B\uFE0F Fog")),
                 React.createElement("span", { className: "px-1.5 py-0.5 rounded " + (isDark ? "bg-sky-950/60 text-sky-300 border border-sky-900/50" : "bg-sky-100 text-sky-800") },
                   "Evaporation index: " + evaporationIndex.toFixed(2) + "x"
                                    ),
@@ -15034,7 +15136,7 @@ React.createElement("div", {
                   "Playback speed changes this animation only. Animation is compressed - not physical time. For context, groundwater pathways can take years to millennia. Faster fractured-rock pathways also exist, and real residence and transit times vary enormously."
                 ),
                 // Current state card
-                React.createElement("div", { className: "rounded-lg p-3 border " + (isDark ? "bg-slate-900/60 border-cyan-950/50 text-slate-350" : "bg-white border-cyan-100 text-slate-800") },
+                React.createElement("div", { className: "rounded-lg p-3 border " + (isDark ? "bg-slate-900/60 border-cyan-950/50 text-slate-300" : "bg-white border-cyan-100 text-slate-800") },
                   React.createElement("p", { className: "text-xs font-bold mb-1 " + (isDark ? "text-cyan-400" : "text-cyan-700") },
                     (d.journeyState === 'ground_choice') ? (journeyView === '3d'
                       ? "\uD83E\uDEA8 Choose your path in the viewport above or use the buttons here:" : "\uD83E\uDEA8 Choose your path on the map or use the buttons here:") :
@@ -15178,7 +15280,7 @@ React.createElement("div", {
 
                 // Stats bar
                 (d.journeyLoops > 0 || (d.journeyPaths && (d.journeyPaths.runoff || d.journeyPaths.infiltrate || d.journeyPaths.plant))) && React.createElement("div", { className: "flex flex-wrap items-center gap-3 text-[11px] font-bold", role: "status", "aria-label": "Journey progress summary", "aria-live": "polite", "aria-atomic": "true" },
-                  React.createElement("span", { className: "text-cyan-650 text-cyan-400" }, "\uD83D\uDD04 Loops: " + (d.journeyLoops || 0)),
+                  React.createElement("span", { className: "text-cyan-400" }, "\uD83D\uDD04 Loops: " + (d.journeyLoops || 0)),
                   React.createElement("span", { className: "text-blue-500 text-blue-400" }, "\uD83C\uDF0A Runoff: " + ((d.journeyPaths && d.journeyPaths.runoff) || 0)),
                   React.createElement("span", { className: "text-amber-500 text-amber-400" }, "\uD83E\uDEB4 Underground: " + ((d.journeyPaths && d.journeyPaths.infiltrate) || 0)),
                   React.createElement("span", { className: "text-emerald-500 text-emerald-400" }, "\uD83C\uDF3F Plant: " + ((d.journeyPaths && d.journeyPaths.plant) || 0))
@@ -15270,20 +15372,20 @@ React.createElement("div", {
                 var infiltrationDisplay = landIndexBand(infiltrationOpportunity) + ' | ' + infiltrationOpportunity + '/100';
                 return React.createElement("div", null, React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2" },
                   React.createElement("div", { className: "rounded-lg p-2 text-center border " + (isDark ? "bg-slate-900/60 border-amber-950/50" : "bg-white border-amber-100") },
-                    React.createElement("p", { className: "text-lg font-bold text-amber-500 tracking-tight" }, evapRate.toFixed(2) + "x"),
-                    React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-amber-600" : "text-amber-500") }, t('stem.watercycle.evaporation_2', "Evaporation index"))
+                    React.createElement("p", { className: "text-lg font-bold tracking-tight " + (isDark ? "text-amber-400" : "text-amber-700") }, evapRate.toFixed(2) + "x"),
+                    React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-amber-400" : "text-amber-700") }, t('stem.watercycle.evaporation_2', "Evaporation index"))
                   ),
                   React.createElement("div", { className: "rounded-lg p-2 text-center border " + (isDark ? "bg-slate-900/60 border-blue-950/50" : "bg-white border-blue-100") },
-                    React.createElement("p", { className: "text-sm font-bold text-blue-500" }, precipType),
-                    React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-blue-600" : "text-blue-500") }, t('stem.watercycle.precip_type', "Precip Type"))
+                    React.createElement("p", { className: "text-sm font-bold " + (isDark ? "text-blue-400" : "text-blue-700") }, precipType),
+                    React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-blue-400" : "text-blue-700") }, t('stem.watercycle.precip_type', "Precip Type"))
                   ),
                   React.createElement("div", { className: "rounded-lg p-2 text-center border " + (isDark ? "bg-slate-900/60 border-cyan-950/50" : "bg-white border-cyan-100") },
-                    React.createElement("p", { className: "text-sm font-bold text-cyan-500" }, runoffDisplay),
-                    React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-cyan-600" : "text-cyan-500") }, "Runoff tendency")
+                    React.createElement("p", { className: "text-sm font-bold " + (isDark ? "text-cyan-400" : "text-cyan-700") }, runoffDisplay),
+                    React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-cyan-400" : "text-cyan-700") }, "Runoff tendency")
                   ),
                   React.createElement("div", { className: "rounded-lg p-2 text-center border " + (isDark ? "bg-slate-900/60 border-emerald-950/50" : "bg-white border-emerald-100") },
-                    React.createElement("p", { className: "text-sm font-bold text-emerald-500" }, infiltrationDisplay),
-                    React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-emerald-600" : "text-emerald-500") }, "Infiltration opportunity")
+                    React.createElement("p", { className: "text-sm font-bold " + (isDark ? "text-emerald-400" : "text-emerald-700") }, infiltrationDisplay),
+                    React.createElement("p", { className: "text-[11px] font-bold " + (isDark ? "text-emerald-400" : "text-emerald-700") }, "Infiltration opportunity")
                   )
                   ),
                   React.createElement("p", { role: "note", className: "text-[11px] mt-2 text-center font-medium " + (isDark ? "text-sky-300" : "text-sky-700") }, "Relative teaching indices, not measurements or a forecast. Surface temperature only hints at precipitation phase; the vertical temperature profile matters. Land controls shape runoff tendency and infiltration opportunity, but neither index is a water-budget percentage. Groundwater recharge remains unresolved.")
@@ -15376,9 +15478,9 @@ React.createElement("div", {
               }, d.aiQuizLoading ? '\u23F3 Generating...' : '\u2728 AI Question'),
 
               d.wcQuiz && d.wcQuiz.score > 0 && React.createElement("span", { className: "ml-2 text-xs font-bold text-emerald-600" }, "\u2B50 " + d.wcQuiz.score + " correct"),
-              d.wcQuiz && d.wcQuiz.isAI && React.createElement("span", { className: "px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[11px] font-bold rounded-full" }, t('stem.watercycle.ai_generated', "\uD83E\uDDE0 AI-GENERATED")),
+              d.wcQuiz && d.wcQuiz.isAI && React.createElement("span", { className: "px-1.5 py-0.5 text-[11px] font-bold rounded-full " + (isDark ? "bg-purple-900/60 text-purple-200" : "bg-purple-100 text-purple-600") }, t('stem.watercycle.ai_generated', "\uD83E\uDDE0 AI-GENERATED")),
               (d.wcStreak || 0) >= 3 && React.createElement("span", { className: "px-2 py-0.5 bg-gradient-to-r from-orange-700 to-red-600 text-white text-[11px] font-bold rounded-full shadow-sm animate-pulse" }, "\uD83D\uDD25 " + d.wcStreak + " streak!"),
-              (d.wcAttempts || 0) > 0 && React.createElement("span", { className: "px-1.5 py-0.5 bg-slate-100 text-slate-600 text-[11px] font-bold rounded-full" }, (d.wcQuiz && d.wcQuiz.score || 0) + "/" + d.wcAttempts + " (" + Math.round(((d.wcQuiz && d.wcQuiz.score || 0) / d.wcAttempts) * 100) + "%)"),
+              (d.wcAttempts || 0) > 0 && React.createElement("span", { className: "px-1.5 py-0.5 text-[11px] font-bold rounded-full " + (isDark ? "bg-slate-800 text-slate-300" : "bg-slate-100 text-slate-600") }, (d.wcQuiz && d.wcQuiz.score || 0) + "/" + d.wcAttempts + " (" + Math.round(((d.wcQuiz && d.wcQuiz.score || 0) / d.wcAttempts) * 100) + "%)"),
 
               d.wcQuiz && React.createElement("div", {
                 className: "wc-focus-secondary mt-2 rounded-xl p-3 border shadow-sm " + (isDark ? "bg-slate-950/60 border-sky-900/40 backdrop-blur-md" : "bg-gradient-to-br from-sky-50 to-indigo-50 border-sky-200"),
@@ -15417,13 +15519,13 @@ React.createElement("div", {
 
                     var cls = !d.wcQuiz.answered
                       ? (isDark
-                         ? 'transition-colors bg-slate-900 border-slate-800 text-slate-300 hover:border-sky-550 hover:bg-sky-950/40 hover:shadow-sm active:scale-[0.97]'
+                         ? 'transition-colors bg-slate-900 border-slate-800 text-slate-300 hover:border-sky-500 hover:bg-sky-950/40 hover:shadow-sm active:scale-[0.97]'
                          : 'transition-colors bg-white border-slate-200 hover:border-sky-400 hover:bg-sky-50 hover:shadow-sm text-slate-800 active:scale-[0.97]')
                       : isCorrect
                         ? (isDark ? 'bg-emerald-950/60 border-emerald-800 text-emerald-400 shadow-sm' : 'bg-emerald-100 border-emerald-400 shadow-sm text-emerald-900')
                         : wasChosen
                           ? (isDark ? 'bg-red-950/60 border-red-800 text-red-400' : 'bg-red-100 border-red-400 text-red-900')
-                          : (isDark ? 'bg-slate-950/40 border-slate-900 opacity-40 text-slate-500' : 'bg-slate-50 border-slate-200 opacity-40 text-slate-550');
+                          : (isDark ? 'bg-slate-950/40 border-slate-900 opacity-40 text-slate-500' : 'bg-slate-50 border-slate-200 opacity-40 text-slate-500');
 
                     return React.createElement("button", {
                       type: "button",
@@ -15489,7 +15591,7 @@ React.createElement("div", {
                   },
                     React.createElement("p", { className: "font-black text-xs" }, d.wcQuiz.chosen === d.wcQuiz.a ? "✅ Correct answer!" : "❌ Incorrect answer"),
                     React.createElement("p", { className: "text-xs mt-1 font-bold" }, "Correct answer: " + d.wcQuiz.a),
-                    React.createElement("p", { className: "text-xs mt-1 leading-relaxed font-medium " + (isDark ? "text-slate-350" : "text-slate-700") },
+                    React.createElement("p", { className: "text-xs mt-1 leading-relaxed font-medium " + (isDark ? "text-slate-300" : "text-slate-700") },
                       d.wcQuiz.chosen === d.wcQuiz.a
                         ? "Great job! That is correct."
                         : (d.wcQuiz.wrongFeedback && d.wcQuiz.wrongFeedback[d.wcQuiz.chosen])
@@ -15506,7 +15608,7 @@ React.createElement("div", {
                     return React.createElement("div", { className: "p-3 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in " + (isDark ? "bg-indigo-950/40 border border-indigo-900/50" : "bg-indigo-50 border border-indigo-200") },
                       React.createElement("div", { className: "flex-1" },
                         React.createElement("p", { className: "text-xs font-bold " + (isDark ? "text-indigo-400" : "text-indigo-800") }, "🔍 Concept Focus: " + concept),
-                        React.createElement("p", { className: "text-[11px] mt-0.5 leading-relaxed font-medium " + (isDark ? "text-slate-350" : "text-slate-600") }, definition)
+                        React.createElement("p", { className: "text-[11px] mt-0.5 leading-relaxed font-medium " + (isDark ? "text-slate-300" : "text-slate-600") }, definition)
                       ),
                       !studied && React.createElement("button", {
                         onClick: function() {
@@ -15597,7 +15699,7 @@ React.createElement("div", {
                     : (isDark ? "bg-red-950/40 border-red-900/50" : "bg-red-50 border-red-200")) },
                     React.createElement("p", { className: "text-xs font-bold mb-1 " + (myth.chosen === myth.t ? (isDark ? "text-emerald-400" : "text-emerald-700") : (isDark ? "text-red-400" : "text-red-700")) },
                       (myth.chosen === myth.t ? '\u2705 Correct \u2014 ' : '\u274C Not quite \u2014 ') + (myth.t ? 'TRUE.' : 'FALSE.')),
-                    React.createElement("p", { className: "text-xs leading-relaxed mb-1 " + (isDark ? "text-slate-350" : "text-slate-700") }, myth.why),
+                    React.createElement("p", { className: "text-xs leading-relaxed mb-1 " + (isDark ? "text-slate-300" : "text-slate-700") }, myth.why),
                     React.createElement("p", { className: "text-[11px] leading-relaxed font-bold " + (isDark ? "text-indigo-400" : "text-indigo-700") }, "\uD83D\uDD2C Try it: " + myth.tryIt)
                   )
                 )

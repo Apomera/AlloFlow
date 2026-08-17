@@ -230,48 +230,58 @@
             </div>
         </div>
 
-        <!-- Video Demo -->
+        <!-- Tutorials: tabbed player. Tutorials live in TUTORIALS (bottom of
+             this file) — adding one is a single array entry, no markup change. -->
         <div class="section reveal" style="background:#fff;padding-top:0;padding-bottom:60px">
+            <div class="section-header" style="margin-bottom:20px">
+                <h2>Tutorials</h2>
+                <p>Walkthroughs of the real workflow, start to finish.</p>
+            </div>
             <div style="max-width:800px;margin:0 auto;position:relative">
-                <div
-                    style="position:absolute;inset:-2px;background:linear-gradient(135deg,#4f46e5,#9333ea);border-radius:18px;opacity:0.15">
+                <div class="tutorial-tabs" role="tablist" aria-label="AlloFlow tutorials" id="tutorial-tablist">
+                    <!-- Tabs rendered by renderTutorialTabs(); the noscript-safe
+                         default is the first tutorial, already in the poster. -->
                 </div>
-                <div
-                    style="position:relative;background:#0f172a;border-radius:16px;overflow:hidden;border:1px solid #334155">
+                <div style="position:relative">
                     <div
-                        style="background:#1e293b;padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #334155">
-                        <div style="display:flex;gap:6px">
-                            <div style="width:10px;height:10px;border-radius:50%;background:#ef4444"></div>
-                            <div style="width:10px;height:10px;border-radius:50%;background:#eab308"></div>
-                            <div style="width:10px;height:10px;border-radius:50%;background:#22c55e"></div>
-                        </div>
-                        <div
-                            style="margin:0 auto;background:#0f172a;padding:4px 12px;border-radius:4px;font-size:0.7rem;color:#94a3b8;font-family:monospace;display:flex;align-items:center;gap:6px">
-                            <i data-lucide="lock" style="width:10px;height:10px"></i> gemini.google.com · localhost:3000
-                        </div>
+                        style="position:absolute;inset:-2px;background:linear-gradient(135deg,#4f46e5,#9333ea);border-radius:18px;opacity:0.15">
                     </div>
-                    <div style="aspect-ratio:16/9;position:relative;background:#000" id="video-container">
-                        <div id="video-poster" onclick="loadVideo()" role="button" tabindex="0"
-                            aria-label="Play demo video — see how it works in under 10 minutes"
-                            onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();loadVideo();}"
-                            style="cursor:pointer;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1e1b4b,#312e81)">
-                            <div style="text-align:center;color:#fff">
-                                <div
-                                    style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;backdrop-filter:blur(8px)">
-                                    <i data-lucide="play" style="width:32px;height:32px;fill:white"></i>
+                    <div id="tutorial-panel" role="tabpanel" aria-labelledby="tutorial-tab-0"
+                        style="position:relative;background:#0f172a;border-radius:16px;overflow:hidden;border:1px solid #334155">
+                        <div
+                            style="background:#1e293b;padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #334155">
+                            <div style="display:flex;gap:6px">
+                                <div style="width:10px;height:10px;border-radius:50%;background:#ef4444"></div>
+                                <div style="width:10px;height:10px;border-radius:50%;background:#eab308"></div>
+                                <div style="width:10px;height:10px;border-radius:50%;background:#22c55e"></div>
+                            </div>
+                            <div id="tutorial-chrome"
+                                style="margin:0 auto;background:#0f172a;padding:4px 12px;border-radius:4px;font-size:0.7rem;color:#94a3b8;font-family:monospace;display:flex;align-items:center;gap:6px">
+                                <i data-lucide="lock" style="width:10px;height:10px"></i> gemini.google.com · localhost:3000
+                            </div>
+                        </div>
+                        <div style="aspect-ratio:16/9;position:relative;background:#000" id="video-container">
+                            <div id="video-poster" onclick="loadTutorial()" role="button" tabindex="0"
+                                aria-label="Play tutorial: AlloFlow Resource Generation Tutorial, 12 minutes"
+                                onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();loadTutorial();}"
+                                style="cursor:pointer;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1e1b4b,#312e81)">
+                                <div style="text-align:center;color:#fff;padding:0 24px">
+                                    <div
+                                        style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;backdrop-filter:blur(8px)">
+                                        <i data-lucide="play" style="width:32px;height:32px;fill:white"></i>
+                                    </div>
+                                    <p id="tutorial-poster-title" style="font-size:0.9rem;font-weight:600">Resource
+                                        Generation</p>
+                                    <p id="tutorial-poster-blurb"
+                                        style="font-size:0.7rem;opacity:0.75;margin-top:4px;max-width:44ch;margin-left:auto;margin-right:auto;line-height:1.5">
+                                        Build a differentiated lesson from a single source · 12 min</p>
                                 </div>
-                                <p style="font-size:0.9rem;font-weight:600">Watch the Demo</p>
-                                <p style="font-size:0.7rem;opacity:0.6;margin-top:4px">See how it works in under 10
-                                    minutes
-                                </p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-
         <!-- Admin Overview Video -->
         <div class="section reveal" style="background:#fff;padding-top:0;padding-bottom:60px">
             <div style="max-width:800px;margin:0 auto;position:relative">
@@ -5284,6 +5294,84 @@
                 opacity: 0.4
             }
         }
+
+        /* Tutorial chooser. Tabs rather than a carousel: every tutorial title
+           stays readable at once, the player keeps its full width, and adding
+           one is an array entry. Scrolls horizontally once the titles outgrow
+           the row, so more tutorials never break the layout. */
+        .tutorial-tabs {
+            display: flex;
+            gap: 8px;
+            margin: 0 0 14px;
+            overflow-x: auto;
+            scrollbar-width: thin;
+            padding-bottom: 2px;
+        }
+
+        .tutorial-tab {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            padding: 9px 16px;
+            border-radius: 999px;
+            border: 1px solid #e2e8f0;
+            background: #fff;
+            /* #475569 on white is 7.4:1; the muted #64748b used elsewhere sits
+               close to the 4.5:1 floor and these are small, bold labels. */
+            color: #475569;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s, color 0.15s;
+        }
+
+        .tutorial-tab:hover {
+            border-color: #c7d2fe;
+            background: #f8fafc;
+        }
+
+        .tutorial-tab .tutorial-tab-meta {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #64748b;
+        }
+
+        .tutorial-tab.is-active {
+            background: #4338ca;
+            border-color: #4338ca;
+            color: #fff;
+        }
+
+        .tutorial-tab.is-active .tutorial-tab-meta {
+            color: #e0e7ff;
+        }
+
+        /* Selection must not be carried by colour alone (WCAG 1.4.1). */
+        .tutorial-tab.is-active::before {
+            content: "";
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: currentColor;
+            align-self: center;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .tutorial-tab {
+                transition: none;
+            }
+        }
+
+        @media (max-width: 640px) {
+            /* The strip must start on the same edge as the player frame; the
+               section already supplies the page gutter, so no extra margin. */
+            .tutorial-tab {
+                padding: 8px 13px;
+                font-size: 0.8rem;
+            }
+        }
     </style>
 
     <script>
@@ -5328,11 +5416,119 @@
             backBtn.classList.toggle('visible', window.scrollY > 600);
         }, { passive: true });
 
-        // Lazy Video Load
-        function loadVideo() {
-            const container = document.getElementById('video-container');
-            container.innerHTML = '<iframe style="position:absolute;inset:0;width:100%;height:100%" src="https://www.youtube.com/embed/8Mr-VzWHys8?autoplay=1&rel=0" title="AlloFlow Demo" frameborder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe>';
+        // ── Tutorials ───────────────────────────────────────────────────────
+        // To add a tutorial, add an entry here. Nothing else changes: the tab
+        // strip, the poster and the ARIA wiring are all rendered from this list.
+        // `chrome` is the fake address-bar caption on the player frame.
+        const TUTORIALS = [
+            {
+                id: 'XAPoHkeuHeA',
+                tab: 'Resource Generation',
+                title: 'Resource Generation',
+                full: 'AlloFlow Resource Generation Tutorial',
+                blurb: 'Build a differentiated lesson from a single source',
+                duration: '12 min',
+                chrome: 'gemini.google.com · localhost:3000',
+                icon: 'lock'
+            },
+            {
+                id: '5zND0YixHVo',
+                tab: 'Multilingual Lessons',
+                title: 'Multilingual Lessons',
+                full: 'How to Create Multilingual Lessons with AlloFlow',
+                blurb: 'Translate, level and deliver one lesson across languages',
+                duration: '11 min',
+                chrome: 'Multilingual & language classrooms',
+                icon: 'languages'
+            }
+        ];
+        let activeTutorial = 0;
+
+        // Playing means an iframe replaced the poster; a tab change then has to
+        // swap the video rather than silently leave the previous one running.
+        function tutorialIsPlaying() {
+            return !!document.querySelector('#video-container iframe');
         }
+
+        function loadTutorial(index) {
+            const t = TUTORIALS[typeof index === 'number' ? index : activeTutorial];
+            if (!t) return;
+            document.getElementById('video-container').innerHTML =
+                '<iframe style="position:absolute;inset:0;width:100%;height:100%" src="https://www.youtube.com/embed/'
+                + t.id + '?autoplay=1&rel=0" title="' + t.full
+                + '" frameborder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe>';
+        }
+
+        function renderTutorialPoster() {
+            const t = TUTORIALS[activeTutorial];
+            const chrome = document.getElementById('tutorial-chrome');
+            if (chrome) {
+                chrome.innerHTML = '<i data-lucide="' + t.icon + '" style="width:10px;height:10px"></i> ' + t.chrome;
+            }
+            // Rebuild the poster only when one is showing. If a video is playing
+            // the caller swaps the iframe instead.
+            const poster = document.getElementById('video-poster');
+            if (poster) {
+                document.getElementById('tutorial-poster-title').textContent = t.title;
+                document.getElementById('tutorial-poster-blurb').textContent = t.blurb + ' · ' + t.duration;
+                poster.setAttribute('aria-label', 'Play tutorial: ' + t.full + ', ' + t.duration);
+            }
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function selectTutorial(index, focusTab) {
+            if (index < 0 || index >= TUTORIALS.length) return;
+            const wasPlaying = tutorialIsPlaying();
+            activeTutorial = index;
+            document.querySelectorAll('#tutorial-tablist [role="tab"]').forEach((tab, i) => {
+                const on = i === index;
+                tab.setAttribute('aria-selected', on ? 'true' : 'false');
+                // Roving tabindex: only the selected tab is in the tab order, so
+                // Tab moves past the strip and arrows move within it.
+                tab.setAttribute('tabindex', on ? '0' : '-1');
+                tab.classList.toggle('is-active', on);
+            });
+            const panel = document.getElementById('tutorial-panel');
+            if (panel) panel.setAttribute('aria-labelledby', 'tutorial-tab-' + index);
+            renderTutorialPoster();
+            // Switching tabs mid-playback swaps to the newly chosen tutorial
+            // rather than leaving the old one playing under a new label.
+            if (wasPlaying) loadTutorial(index);
+            if (focusTab) {
+                const el = document.getElementById('tutorial-tab-' + index);
+                if (el) el.focus();
+            }
+        }
+
+        function renderTutorialTabs() {
+            const list = document.getElementById('tutorial-tablist');
+            if (!list) return;
+            // A single tutorial needs no chooser.
+            if (TUTORIALS.length < 2) { list.hidden = true; return; }
+            list.innerHTML = TUTORIALS.map((t, i) =>
+                '<button type="button" role="tab" class="tutorial-tab' + (i === 0 ? ' is-active' : '') + '"'
+                + ' id="tutorial-tab-' + i + '" aria-controls="tutorial-panel"'
+                + ' aria-selected="' + (i === 0 ? 'true' : 'false') + '" tabindex="' + (i === 0 ? '0' : '-1') + '">'
+                + '<span class="tutorial-tab-title">' + t.tab + '</span>'
+                + '<span class="tutorial-tab-meta">' + t.duration + '</span>'
+                + '</button>').join('');
+            list.querySelectorAll('[role="tab"]').forEach((tab, i) => {
+                tab.addEventListener('click', () => selectTutorial(i));
+                tab.addEventListener('keydown', (e) => {
+                    // WAI-ARIA tabs pattern: arrows move between tabs, Home/End jump.
+                    let next = null;
+                    if (e.key === 'ArrowRight') next = (i + 1) % TUTORIALS.length;
+                    else if (e.key === 'ArrowLeft') next = (i - 1 + TUTORIALS.length) % TUTORIALS.length;
+                    else if (e.key === 'Home') next = 0;
+                    else if (e.key === 'End') next = TUTORIALS.length - 1;
+                    if (next === null) return;
+                    e.preventDefault();
+                    selectTutorial(next, true);
+                });
+            });
+            renderTutorialPoster();
+        }
+        renderTutorialTabs();
         function loadAdminVideo() {
             const container = document.getElementById('admin-video-container');
             container.innerHTML = '<iframe style="position:absolute;inset:0;width:100%;height:100%" src="https://www.youtube.com/embed/k4GkmZqXOW4?autoplay=1&rel=0" title="AlloFlow Administrator Overview" frameborder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe>';

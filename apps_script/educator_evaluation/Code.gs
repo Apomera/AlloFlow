@@ -192,7 +192,7 @@ function bootstrap() {
     revision: state.revision,
     version: state.revision,
     currentUser: { email: actor.email, displayName: actor.displayName, role: actor.role, teacherId: actor.teacherId || '' },
-    deployment: { service: EE_SERVICE, version: EE_VERSION, mode: 'district_workspace', domain: emailDomain_(actor.email), localOnly: false }
+    deployment: { service: EE_SERVICE, version: EE_VERSION, mode: 'district_workspace', domain: emailDomain_(actor.email), localOnly: false, portalUrl: safePortalUrl_(configMap_().webAppUrl || ScriptApp.getService().getUrl() || '') }
   };
 }
 

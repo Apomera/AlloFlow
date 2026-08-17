@@ -60,6 +60,13 @@ const harness = new GlHarness({
       w.scrollTop = y;
       return w.scrollTop;
     };
+    window.__canvasBox = function (selector) {
+      var c = document.querySelector(selector);
+      var w = document.getElementById('wrap');
+      if (!c || !w) return null;
+      var r = c.getBoundingClientRect(), wr = w.getBoundingClientRect();
+      return { top: Math.round(r.top - wr.top), off: r.bottom < wr.top || r.top > wr.bottom };
+    };
     window.__simOffScreen = function () {
       var c = document.querySelector('canvas[data-cell-sim-canvas]');
       var w = document.getElementById('wrap');
@@ -121,3 +128,55 @@ test('the petri simulation pauses off-screen and resumes when scrolled back', as
     + 'returns leaves a frozen dish, which reads as broken rather than efficient')
     .toBeGreaterThan(30);
 });
+
+// The other two animated modes have their own rAF loops, each guarded only on
+// document.hidden before this, and each mounting BELOW the fold like the petri canvas.
+// Measured off-screen 2026-08-16: interior 755 paints/2.5s (715 in view),
+// microdissection 1386 (1341 in view) — no reduction at all. After the fix: 0.
+const MODES: [string, string][] = [
+  ['interior', 'canvas[data-cell-interior-canvas]'],
+  ['microdissection', 'canvas[data-cell-microdissection-canvas]'],
+];
+
+for (const [mode, selector] of MODES) {
+  test(`the ${mode} canvas pauses off-screen and resumes when scrolled back`, async ({ page }) => {
+    await harness.mount(page, { cell: { mode } }, undefined, { expectCanvas: false });
+    await page.evaluate(() => (window as any).__makeScrollable(320));
+    await page.waitForTimeout(2000);
+
+    const box = async () => page.evaluate((s) => (window as any).__canvasBox(s), selector);
+    const sample = async () => {
+      await page.evaluate(() => { (window as any).__paints = 0; });
+      await page.waitForTimeout(2500);
+      return page.evaluate(() => (window as any).__paints);
+    };
+
+    const start = await box();
+    expect(start, `no ${mode} canvas matched ${selector}`).not.toBeNull();
+
+    // Scroll it to the top of the viewport rather than guessing an offset: these
+    // canvases differ in height and position, and a fixed number would silently
+    // measure the wrong state as the layout changes.
+    await page.evaluate((y) => (window as any).__scrollWrap(y), Math.max(0, start.top - 40));
+    await page.waitForTimeout(1200);
+    expect((await box()).off, `the ${mode} canvas was not brought into view`).toBe(false);
+
+    const inView = await sample();
+    expect(inView, `the ${mode} canvas never painted while in view — nothing was measured`)
+      .toBeGreaterThan(30);
+
+    await page.evaluate(() => (window as any).__scrollWrap(0));
+    await page.waitForTimeout(1200);
+    expect((await box()).off, `the ${mode} canvas did not leave the viewport`).toBe(true);
+
+    const away = await sample();
+    expect(away,
+      `the ${mode} canvas kept painting while scrolled out of view: ${away} calls in `
+      + `2.5s (${inView} while visible)`).toBeLessThanOrEqual(2);
+
+    await page.evaluate((y) => (window as any).__scrollWrap(y), Math.max(0, start.top - 40));
+    await page.waitForTimeout(1200);
+    expect(await sample(), `the ${mode} canvas did not resume after scrolling back`)
+      .toBeGreaterThan(30);
+  });
+}

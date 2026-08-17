@@ -2249,6 +2249,23 @@ const StoryForge = React.memo(({
     const v = t('a11y.storyforge_beat_' + (value || 'none'));
     return typeof v === 'string' ? v : ((PLOT_BEATS.find(b => b.value === value) || {}).label || '');
   };
+  // Generic option-table display: a11y.storyforge_opt_<family>_<value|none>,
+  // falling back to the table's English label. Same display/identity split as
+  // genres and beats — values stay identity, prompts and exports keep English.
+  const optLabel = (family, value, fallback) => {
+    // '' is the dropdown PLACEHOLDER row ('Shot', 'Lettering space', …) and gets
+    // its own slug — the lettering table also has a literal 'none' value ('No
+    // bubble area'), so folding '' into 'none' would show the wrong label.
+    const slug = value == null || value === '' ? 'placeholder' : String(value).toLowerCase().replace(/[^a-z0-9]+/g, '_');
+    const v = t('a11y.storyforge_opt_' + family + '_' + slug);
+    return typeof v === 'string' ? v : (fallback ?? '');
+  };
+  const phaseLabel = (i) => {
+    const v = t('a11y.storyforge_phase_name_' + (PHASES[i] || 'configure'));
+    return typeof v === 'string' ? v : (PHASE_LABELS[i] || '');
+  };
+  const shapeLabel = (key) => { const v = t('a11y.storyforge_shape_' + key); return typeof v === 'string' ? v : (STORY_SHAPES[key]?.label || ''); };
+  const shapeDesc = (key) => { const v = t('a11y.storyforge_shape_' + key + '_desc'); return typeof v === 'string' ? v : (STORY_SHAPES[key]?.desc || ''); };
 
   // ── Phase state ──
   const [phase, setPhase] = useState('configure');
@@ -8003,7 +8020,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     onKeyDown={(e) => handleBubbleControlKeyDown(e, p.id, 'move')}
                     className={`sf-bubble-drag-handle sf-bubble-move-handle absolute ${resizeBehavior.resizeFromLeft ? '-bottom-3 -right-3' : '-bottom-3 -left-3'} pointer-events-auto w-7 h-7 flex items-center justify-center rounded-full border-2 border-slate-900 bg-white text-slate-900 shadow-md cursor-move touch-none`}
                     title={ta('a11y.storyforge_attr_move_bubble')}
-                    aria-label={`Move ${placedBubbleKind} bubble for panel ${idx + 1}. Use arrow keys for precise movement.`}
+                    aria-label={ta('a11y.storyforge_aria_move_bubble_for_panel_use_arrow_keys').replace('{0}', placedBubbleKind).replace('{1}', idx + 1)}
                     data-sf-bubble-control="move"
                     data-sf-focusable
                   >
@@ -8018,7 +8035,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     onKeyDown={(e) => handleBubbleControlKeyDown(e, p.id, 'resize')}
                     className={`sf-bubble-drag-handle sf-bubble-resize-handle absolute ${resizeBehavior.resizeFromLeft ? '-bottom-3 -left-3' : '-bottom-3 -right-3'} pointer-events-auto w-7 h-7 flex items-center justify-center rounded-full border-2 border-slate-900 bg-white text-slate-900 shadow-md cursor-ew-resize touch-none`}
                     title={ta('a11y.storyforge_attr_resize_bubble')}
-                    aria-label={`Resize ${placedBubbleKind} bubble for panel ${idx + 1}. Use left and right arrow keys for precise sizing.`}
+                    aria-label={ta('a11y.storyforge_aria_resize_bubble_for_panel_use_left_and').replace('{0}', placedBubbleKind).replace('{1}', idx + 1)}
                     data-sf-bubble-control="resize"
                     data-sf-focusable
                   >
@@ -8067,7 +8084,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
           onKeyDown={(e) => handlePanelResizeKeyDown(e, p.id, idx, previewLayout, pageIndex)}
           className={`sf-resize-handle absolute bottom-2 right-2 z-30 w-8 h-8 rounded-lg border-2 border-slate-900 bg-white/95 text-slate-900 shadow-lg flex items-center justify-center text-base font-black cursor-nwse-resize touch-none transition-transform ${resizingPanel ? 'scale-110 ring-4 ring-fuchsia-300' : 'hover:scale-105'}`}
           title={ta('a11y.storyforge_attr_resize_panel')}
-          aria-label={`Resize panel ${idx + 1}. Use arrow keys, Home for 1 by 1, or End for the largest frame.`}
+          aria-label={ta('a11y.storyforge_aria_resize_panel_use_arrow_keys_home_for').replace('{0}', idx + 1)}
           data-sf-focusable
         >
           <Maximize2 size={15} aria-hidden="true" />
@@ -8311,12 +8328,12 @@ const comicAltCoverageLabel = layoutMode === 'comic'
           <BookOpen size={24} />
           <div className="min-w-0">
             <h2 className="truncate text-lg font-black sm:text-xl">{t("headings.story_forge")}</h2>
-            <p className="max-w-[58vw] truncate text-[11px] font-semibold text-rose-100 sm:max-w-[42vw] sm:text-xs" title={`${storyTitle.trim() || `Untitled ${artifactType === 'comic' ? 'comic' : 'story'}`} - ${PHASE_LABELS[phaseIdx]} - ${draftSaveLabel}`}>
+            <p className="max-w-[58vw] truncate text-[11px] font-semibold text-rose-100 sm:max-w-[42vw] sm:text-xs" title={`${storyTitle.trim() || `Untitled ${artifactType === 'comic' ? 'comic' : 'story'}`} - ${phaseLabel(phaseIdx)} - ${draftSaveLabel}`}>
               <span data-sf-header-project-title>{storyTitle.trim() || `Untitled ${artifactType === 'comic' ? 'comic' : 'story'}`}</span>
               <span aria-hidden="true"> · </span>
               <span data-sf-header-artifact>{artifactType === 'comic' ? 'Comic' : 'Story'}</span>
               <span aria-hidden="true"> · </span>
-              <span>{PHASE_LABELS[phaseIdx]}</span>
+              <span>{phaseLabel(phaseIdx)}</span>
               <span aria-hidden="true"> · </span>
               <span data-sf-header-save-state>{draftSaveLabel}</span>
             </p>
@@ -8355,7 +8372,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
             <div className="absolute right-0 z-[260] mt-2 w-72 max-w-[calc(100vw-1.5rem)] rounded-2xl border border-slate-200 bg-white p-3 text-slate-800 shadow-2xl" role="group" aria-label={ta('a11y.storyforge_attr_project_actions')}>
               <div className="border-b border-slate-200 px-2 pb-3">
                 <p className="truncate text-sm font-black" data-sf-project-menu-title>{storyTitle.trim() || `Untitled ${artifactType === 'comic' ? 'comic' : 'story'}`}</p>
-                <p className="mt-0.5 text-xs text-slate-500">{artifactType === 'comic' ? 'Comic' : 'Story'} · {PHASE_LABELS[phaseIdx]} · {draftSaveLabel}</p>
+                <p className="mt-0.5 text-xs text-slate-500">{ta(artifactType === 'comic' ? 'a11y.storyforge_ui_comic' : 'a11y.storyforge_ui_story')} · {phaseLabel(phaseIdx)} · {draftSaveLabel}</p>
               </div>
               {draftHydrationState === 'awaiting' ? (
                 <div className="mt-3 space-y-2">
@@ -8458,11 +8475,11 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   disabled={!canEnterPhase(p)}
                   className={`min-h-11 shrink-0 flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg border text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${tone}`}
                   aria-current={isCurrent ? 'step' : undefined}
-                  aria-label={`${PHASE_LABELS[i]}, ${statusLabel}, ${phaseHealth.score} percent. ${phaseHealth.detail}`}
+                  aria-label={ta('a11y.storyforge_aria_percent').replace('{0}', phaseLabel(i)).replace('{1}', statusLabel).replace('{2}', phaseHealth.score).replace('{3}', phaseHealth.detail)}
                   title={canEnterPhase(p) ? phaseHealth.detail : currentPhaseRequirement}
                 >
                   <Icon size={14} aria-hidden="true" />
-                  <span>{PHASE_LABELS[i]}</span>
+                  <span>{phaseLabel(i)}</span>
                   <span className={`hidden sm:block w-1.5 h-1.5 rounded-full ${isCurrent ? 'bg-white' : isReady ? 'bg-emerald-500' : phaseHealth.status === 'blocked' ? 'bg-rose-500' : phaseHealth.status === 'progress' ? 'bg-blue-500' : 'bg-amber-500'}`} aria-hidden="true" />
                 </button>
               </React.Fragment>
@@ -8503,7 +8520,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-5">
           <div className="min-w-0 flex-1">
             <div className="text-[10px] font-black uppercase tracking-widest text-rose-600">
-              Step {phaseIdx + 1} of {PHASES.length} · {ARTIFACT_TYPES[artifactType].label}
+              {ta('a11y.storyforge_ui_step_of').replace('{0}', phaseIdx + 1).replace('{1}', PHASES.length)} · {optLabel('artifact', artifactType, ARTIFACT_TYPES[artifactType].label)}
             </div>
             <h2 id="sf-current-step-title" className="text-base font-black text-slate-800">{currentPhaseGuide.title}</h2>
             <p className="text-xs text-slate-600 mt-0.5">{currentPhaseGuide.outcome}</p>
@@ -8522,7 +8539,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
         </div>
       </section>
       {/* ── Phase Content ── */}
-      <div className="flex-grow overflow-y-auto" ref={phaseContentRef} tabIndex={-1} role="region" aria-label={`${PHASE_LABELS[phaseIdx]} phase`}>
+      <div className="flex-grow overflow-y-auto" ref={phaseContentRef} tabIndex={-1} role="region" aria-label={ta('a11y.storyforge_aria_phase').replace('{0}', PHASE_LABELS[phaseIdx])}>
         <div className="max-w-4xl mx-auto px-3 py-4 sm:p-6">
 
           {/* ═══ CONFIGURE PHASE ═══ */}
@@ -8616,13 +8633,13 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                       onClick={() => selectArtifactType(key)}
                       disabled={artifactTypeLocked && artifactType !== key}
                       aria-pressed={artifactType === key}
-                      aria-label={m.label + ': ' + m.desc}
-                      title={artifactTypeLocked && artifactType !== key ? 'Artifact type is locked after drafting begins' : m.desc}
+                      aria-label={optLabel('artifact', key, m.label) + ': ' + optLabel('artifactdesc', key, m.desc)}
+                      title={artifactTypeLocked && artifactType !== key ? ta('a11y.storyforge_ui_artifact_type_locked') : optLabel('artifactdesc', key, m.desc)}
                       className={`p-3 rounded-xl border-2 text-center text-xs font-bold transition-all disabled:opacity-45 disabled:cursor-not-allowed ${
                         artifactType === key ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-md' : 'border-slate-200 text-slate-600 hover:border-blue-300'
                       }`}
                     >
-                      <span className="block text-sm">{m.label}</span>
+                      <span className="block text-sm">{optLabel('artifact', key, m.label)}</span>
                       <span className="block text-[11px] font-medium leading-snug mt-1">{m.desc}</span>
                     </button>
                   ))}
@@ -8690,7 +8707,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   {vocabTerms.map((v, i) => (
                     <div key={i} className="bg-rose-50 border border-rose-200 rounded-full px-3 py-1 text-sm font-bold text-rose-800 flex items-center gap-2 group">
                       <span>{v.term}</span>
-                      <button type="button" onClick={() => removeVocabTerm(i)} className="text-rose-700 hover:text-rose-600 opacity-60 group-hover:opacity-100 focus:opacity-100 transition-opacity" aria-label={`Remove ${v.term}`}>
+                      <button type="button" onClick={() => removeVocabTerm(i)} className="text-rose-700 hover:text-rose-600 opacity-60 group-hover:opacity-100 focus:opacity-100 transition-opacity" aria-label={ta('a11y.storyforge_aria_remove').replace('{0}', v.term)}>
                         <X size={12} />
                       </button>
                     </div>
@@ -8751,11 +8768,11 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                         data-sf-focusable
                         onClick={() => setStoryShape(active ? '' : key)}
                         aria-pressed={active}
-                        aria-label={`Story shape: ${sh.label}. ${sh.desc}`}
+                        aria-label={ta('a11y.storyforge_aria_story_shape').replace('{0}', shapeLabel(key)).replace('{1}', shapeDesc(key))}
                         className={`p-2.5 rounded-xl border-2 text-left transition-all ${active ? 'border-violet-500 bg-violet-50 shadow-md' : 'border-slate-200 hover:border-violet-300'}`}
                       >
                         <div className="flex items-center justify-between gap-1 mb-1">
-                          <span className={`text-xs font-bold ${active ? 'text-violet-700' : 'text-slate-600'}`}>{sh.emoji} {sh.label}</span>
+                          <span className={`text-xs font-bold ${active ? 'text-violet-700' : 'text-slate-600'}`}>{sh.emoji} {shapeLabel(key)}</span>
                           <svg viewBox="0 0 48 18" width="48" height="18" aria-hidden="true" className="shrink-0">
                             <polyline fill="none" stroke={active ? '#7c3aed' : '#94a3b8'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
                               points={sh.curve.map((v, i) => `${(i / (sh.curve.length - 1)) * 46 + 1},${(1 - v) * 14 + 2}`).join(' ')} />
@@ -9107,7 +9124,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                           type="button"
                           data-sf-focusable
                           aria-describedby={`sf-vocab-tip-${i}`}
-                          aria-label={`${v.term}${used ? ' — used' : ' — not yet used'}. Copy term to paste into your draft`}
+                          aria-label={ta('a11y.storyforge_aria_copy_term_to_paste_into_your_draft').replace('{0}', v.term).replace('{1}', used ? ' — used' : ' — not yet used')}
                           className={`px-2.5 py-1 rounded-full text-[11px] font-bold border-2 transition-all cursor-pointer select-none ${
                             used ? 'bg-green-100 border-green-400 text-green-800 shadow-sm' : 'bg-white border-rose-200 text-rose-700 hover:bg-rose-50 hover:border-rose-400'
                           }`}
@@ -9180,7 +9197,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                                 type="button"
                                 onClick={jumpToPanel}
                                 className={`text-left rounded-xl border-2 p-3 transition-colors hover:border-blue-300 hover:bg-blue-50/50 ${focusMode && focusParagraphIdx === idx ? 'border-blue-500 bg-blue-50' : 'border-slate-200 bg-slate-50/50'}`}
-                                aria-label={`Jump to comic panel ${idx + 1}`}
+                                aria-label={ta('a11y.storyforge_aria_jump_to_comic_panel').replace('{0}', idx + 1)}
                               >
                                 <div className="flex items-center justify-between gap-2 mb-2">
                                   <span className="text-xs font-black text-slate-800">{ta('a11y.storyforge_ui_panel').replace('{0}', idx + 1)}</span>
@@ -9238,7 +9255,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                             pi === focusParagraphIdx ? 'bg-indigo-600 scale-125' : pp.text.trim().length > 10 ? 'bg-green-400' : 'bg-slate-300'
                           }`}
                           title={`Jump to ${layoutMode === 'comic' ? 'panel' : 'scene'} ${pi + 1}${pp.text.trim().length > 10 ? ' (written)' : ' (empty)'}`}
-                          aria-label={`Jump to ${layoutMode === 'comic' ? 'panel' : 'scene'} ${pi + 1}${pp.text.trim().length > 10 ? ' (written)' : ' (empty)'}`}
+                          aria-label={ta(layoutMode === 'comic' ? (pp.text.trim().length > 10 ? 'a11y.storyforge_aria_jump_panel_written' : 'a11y.storyforge_aria_jump_panel_empty') : (pp.text.trim().length > 10 ? 'a11y.storyforge_aria_jump_scene_written' : 'a11y.storyforge_aria_jump_scene_empty')).replace('{0}', pi + 1)}
                           aria-current={pi === focusParagraphIdx ? 'true' : undefined}
                         />
                       ))}
@@ -9291,7 +9308,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                           onKeyDown={(e) => handlePanelSequenceKeyDown(e, idx)}
                           className="sf-panel-drag-handle w-8 h-8 shrink-0 rounded-md border border-fuchsia-200 bg-white text-fuchsia-700 hover:border-fuchsia-400 flex items-center justify-center"
                           style={{ cursor: 'grab' }}
-                          aria-label={`Reorder panel ${idx + 1}. Use arrow keys, Home, or End.`}
+                          aria-label={ta('a11y.storyforge_aria_reorder_panel_use_arrow_keys_home_or').replace('{0}', idx + 1)}
                           title={ta('a11y.storyforge_attr_drag_to_reorder_panel')}
                           data-sf-panel-drag-handle={p.id}
                           data-sf-focusable
@@ -9302,8 +9319,8 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                       <span className="text-xs font-bold text-slate-600">{layoutMode === 'comic' ? 'Panel' : 'Scene'} {idx + 1}</span>
                       {/* Reorder buttons */}
                       <div className="flex gap-0.5">
-                        <button type="button" onClick={() => moveParagraph(idx, -1)} disabled={idx === 0} className="text-slate-500 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label={`Move ${layoutMode === 'comic' ? 'panel' : 'scene'} ${idx + 1} earlier`} title={t("ui_common.move_up")}>▲</button>
-                        <button type="button" onClick={() => moveParagraph(idx, 1)} disabled={idx === paragraphs.length - 1} className="text-slate-500 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label={`Move ${layoutMode === 'comic' ? 'panel' : 'scene'} ${idx + 1} later`} title={t("ui_common.move_down")}>▼</button>
+                        <button type="button" onClick={() => moveParagraph(idx, -1)} disabled={idx === 0} className="text-slate-500 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label={ta(layoutMode === 'comic' ? 'a11y.storyforge_aria_move_panel_earlier' : 'a11y.storyforge_aria_move_scene_earlier').replace('{0}', idx + 1)} title={t("ui_common.move_up")}>▲</button>
+                        <button type="button" onClick={() => moveParagraph(idx, 1)} disabled={idx === paragraphs.length - 1} className="text-slate-500 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label={ta(layoutMode === 'comic' ? 'a11y.storyforge_aria_move_panel_later' : 'a11y.storyforge_aria_move_scene_later').replace('{0}', idx + 1)} title={t("ui_common.move_down")}>▼</button>
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -9331,7 +9348,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                         <Sparkles size={10} /> Help Me
                       </button>
                       {paragraphs.length > 1 && (
-                        <button type="button" onClick={() => removeParagraph(idx)} className="text-slate-500 hover:text-red-500 focus:text-red-500 p-1 rounded transition-colors" aria-label={`Remove ${layoutMode === 'comic' ? 'panel' : 'scene'} ${idx + 1}`}>
+                        <button type="button" onClick={() => removeParagraph(idx)} className="text-slate-500 hover:text-red-500 focus:text-red-500 p-1 rounded transition-colors" aria-label={ta(layoutMode === 'comic' ? 'a11y.storyforge_aria_remove_panel' : 'a11y.storyforge_aria_remove_scene').replace('{0}', idx + 1)}>
                           <Trash2 size={14} />
                         </button>
                       )}
@@ -9425,10 +9442,10 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                                 value={(panelDirections[p.id] || {})[field] || ''}
                                 onChange={(e) => updatePanelDirection(p.id, field, e.target.value)}
                                 className="w-full px-2 py-1.5 text-[11px] rounded-md border border-slate-200 bg-slate-50 text-slate-700 font-bold focus:border-blue-400"
-                                aria-label={`Panel ${idx + 1} ${label.toLowerCase()}`}
+                                aria-label={ta('a11y.storyforge_aria_panel').replace('{0}', idx + 1).replace('{1}', label.toLowerCase())}
                               >
                                 {options.map(opt => (
-                                  <option key={opt.value || `${field}-none`} value={opt.value}>{opt.label}</option>
+                                  <option key={opt.value || `${field}-none`} value={opt.value}>{optLabel(field, opt.value, opt.label)}</option>
                                 ))}
                               </select>
                             </label>
@@ -9457,16 +9474,16 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                             onChange={(e) => updatePanelThumbnail(p.id, 'focalPoint', e.target.value)}
                             className="w-full px-2 py-1.5 text-[11px] rounded-md border border-teal-100 bg-white text-slate-700 focus:border-teal-400"
                             placeholder={ta('a11y.storyforge_attr_focal_point')}
-                            aria-label={`Panel ${idx + 1} focal point`}
+                            aria-label={ta('a11y.storyforge_aria_panel_focal_point').replace('{0}', idx + 1)}
                           />
                           <select
                             value={(panelThumbnails[p.id] || {}).letteringSpace || ''}
                             onChange={(e) => updatePanelThumbnail(p.id, 'letteringSpace', e.target.value)}
                             className="w-full px-2 py-1.5 text-[11px] rounded-md border border-teal-100 bg-white text-slate-700 font-bold focus:border-teal-400"
-                            aria-label={`Panel ${idx + 1} lettering space`}
+                            aria-label={ta('a11y.storyforge_aria_panel_lettering_space').replace('{0}', idx + 1)}
                           >
                             {COMIC_LETTERING_SPACE_OPTIONS.map(opt => (
-                              <option key={opt.value || 'lettering-space-none'} value={opt.value}>{opt.label}</option>
+                              <option key={opt.value || 'lettering-space-none'} value={opt.value}>{optLabel('lettering', opt.value, opt.label)}</option>
                             ))}
                           </select>
                         </div>
@@ -9476,7 +9493,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                           className="mt-2 w-full p-2 text-[11px] resize-none border border-teal-100 rounded-lg bg-white focus:border-teal-400"
                           style={{ minHeight: '38px' }}
                           placeholder={ta('a11y.storyforge_attr_composition_foreground_background_negative_space_character')}
-                          aria-label={`Panel ${idx + 1} composition rough`}
+                          aria-label={ta('a11y.storyforge_aria_panel_composition_rough').replace('{0}', idx + 1)}
                         />
                         <textarea
                           value={(panelThumbnails[p.id] || {}).sketchNote || ''}
@@ -9484,7 +9501,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                           className="mt-2 w-full p-2 text-[11px] resize-none border border-teal-100 rounded-lg bg-white focus:border-teal-400"
                           style={{ minHeight: '34px' }}
                           placeholder={ta('a11y.storyforge_attr_sketch_note_silhouette_motion_important_prop')}
-                          aria-label={`Panel ${idx + 1} thumbnail sketch note`}
+                          aria-label={ta('a11y.storyforge_aria_panel_thumbnail_sketch_note').replace('{0}', idx + 1)}
                         />
                       </div>
                       <div>
@@ -9498,7 +9515,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                           className="w-full p-2.5 text-xs resize-none border-2 border-amber-200 rounded-lg bg-amber-50 focus:border-amber-400 transition-colors italic"
                           style={{ minHeight: '50px' }}
                           placeholder={t("placeholders.panel_narrator")}
-                          aria-label={`Panel ${idx + 1} narration`}
+                          aria-label={ta('a11y.storyforge_aria_panel_narration').replace('{0}', idx + 1)}
                         />
                         <textarea
                           value={(panelThumbnails[p.id] || {}).altText || ''}
@@ -9506,7 +9523,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                           className="mt-2 w-full p-2 text-[11px] resize-y border border-teal-100 rounded-lg bg-white focus:border-teal-400"
                           style={{ minHeight: '42px' }}
                           placeholder={ta('a11y.storyforge_attr_accessibility_description_who_or_what_is')}
-                          aria-label={`Panel ${idx + 1} accessibility description`}
+                          aria-label={ta('a11y.storyforge_aria_panel_accessibility_description').replace('{0}', idx + 1)}
                         />
                       </div>
                       {/* Speech bubble */}
@@ -9521,7 +9538,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                             onChange={(e) => updatePanelDialogue(p.id, 'speaker', e.target.value)}
                             className="w-20 p-1.5 text-[11px] border border-blue-200 rounded-lg focus:border-blue-400 font-bold text-blue-700"
                             placeholder={t("placeholders.who_speaker")}
-                            aria-label={`Panel ${idx + 1} speaker name`}
+                            aria-label={ta('a11y.storyforge_aria_panel_speaker_name').replace('{0}', idx + 1)}
                           />
                           <textarea
                             value={(panelDialogue[p.id] || {}).speech || ''}
@@ -9529,7 +9546,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                             className="flex-1 p-2 text-xs resize-none border-2 border-blue-200 rounded-xl bg-white focus:border-blue-400 transition-colors"
                             style={{ minHeight: '36px', borderRadius: '16px' }}
                             placeholder={ta('a11y.storyforge_attr_dialogue_example')}
-                            aria-label={`Panel ${idx + 1} speech`}
+                            aria-label={ta('a11y.storyforge_aria_panel_speech').replace('{0}', idx + 1)}
                           />
                         </div>
                       </div>
@@ -9544,7 +9561,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                           className="w-full p-2 text-xs resize-none border-2 border-purple-200 rounded-xl bg-purple-50/30 focus:border-purple-400 transition-colors italic"
                           style={{ minHeight: '30px', borderRadius: '20px', borderStyle: 'dashed' }}
                           placeholder={t("placeholders.character_thinking")}
-                          aria-label={`Panel ${idx + 1} thought`}
+                          aria-label={ta('a11y.storyforge_aria_panel_thought').replace('{0}', idx + 1)}
                         />
                       </div>
                       {/* Sound effect */}
@@ -9556,7 +9573,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                           onChange={(e) => updatePanelDialogue(p.id, 'sfx', e.target.value)}
                           className="flex-1 p-1.5 text-xs border border-red-200 rounded-lg focus:border-red-400 font-black text-red-600 uppercase"
                           placeholder={t("placeholders.sound_effect_example")}
-                          aria-label={`Panel ${idx + 1} sound effect`}
+                          aria-label={ta('a11y.storyforge_aria_panel_sound_effect').replace('{0}', idx + 1)}
                         />
                       </div>
                       {(() => {
@@ -9565,7 +9582,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                         const color = lettering.level === 'crowded' ? 'bg-red-500' : lettering.level === 'watch' ? 'bg-amber-400' : 'bg-green-500';
                         const textColor = lettering.level === 'crowded' ? 'text-red-700' : lettering.level === 'watch' ? 'text-amber-700' : 'text-green-700';
                         return (
-                          <div id={`sf-lettering-${p.id}`} tabIndex={-1} data-sf-focusable className="rounded-lg border border-slate-200 bg-white p-2 focus:ring-2 focus:ring-amber-400" aria-label={`Panel ${idx + 1} lettering budget`}>
+                          <div id={`sf-lettering-${p.id}`} tabIndex={-1} data-sf-focusable className="rounded-lg border border-slate-200 bg-white p-2 focus:ring-2 focus:ring-amber-400" aria-label={ta('a11y.storyforge_aria_panel_lettering_budget').replace('{0}', idx + 1)}>
                             <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
                               <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">{ta('a11y.storyforge_ui_lettering_budget')}</span>
                               {onCallGemini && lettering.words > COMIC_BUBBLE_WORD_WARNING && (
@@ -9612,7 +9629,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                         backgroundPosition: layoutMode === 'journal' ? '0 8px' : undefined,
                       }}
                       placeholder={p.scaffoldFrame ? "Continue from the scaffold above..." : layoutMode === 'journal' ? "Write this scene like a notebook entry..." : "Write this scene here..."}
-                      aria-label={`Scene ${idx + 1} text`}
+                      aria-label={ta('a11y.storyforge_aria_scene_text').replace('{0}', idx + 1)}
                     />
                   )}
                   {/* ── Handwriting Capture Row ── */}
@@ -9625,7 +9642,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                       } ${
                         layoutMode === 'dark' ? 'border-cyan-700 text-cyan-400 hover:bg-cyan-900/30' : 'border-violet-300 text-violet-600 hover:bg-violet-50 hover:border-violet-400'
                       }`}
-                        aria-label={`Snap or upload handwriting for scene ${idx + 1}`}
+                        aria-label={ta('a11y.storyforge_aria_snap_or_upload_handwriting_for_scene').replace('{0}', idx + 1)}
                       >
                         <input
                           type="file"
@@ -9641,7 +9658,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                       </label>
                       <button type="button"
                         onClick={() => setHwPenmanshipOn(!hwPenmanshipOn)}
-                        aria-label={`${hwPenmanshipOn ? 'Disable' : 'Enable'} penmanship feedback`}
+                        aria-label={ta(hwPenmanshipOn ? 'a11y.storyforge_aria_disable_penmanship' : 'a11y.storyforge_aria_enable_penmanship')}
                         aria-pressed={hwPenmanshipOn}
                         className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold border transition-all ${
                           hwPenmanshipOn
@@ -9851,7 +9868,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     ].map(({ field, label, placeholder }) => (
                       <label key={field} className="block">
                         <span className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">{label}</span>
-                        <textarea value={comicContinuity[field] || ''} onChange={(e) => updateComicContinuity(field, e.target.value)} placeholder={placeholder} className="w-full h-20 p-2 text-xs rounded-lg border border-purple-100 bg-purple-50/40 text-slate-700 focus:border-purple-400 resize-none" aria-label={`Comic continuity ${label.toLowerCase()}`} />
+                        <textarea value={comicContinuity[field] || ''} onChange={(e) => updateComicContinuity(field, e.target.value)} placeholder={placeholder} className="w-full h-20 p-2 text-xs rounded-lg border border-purple-100 bg-purple-50/40 text-slate-700 focus:border-purple-400 resize-none" aria-label={ta('a11y.storyforge_aria_comic_continuity').replace('{0}', label.toLowerCase())} />
                       </label>
                     ))}
                   </div>
@@ -9871,16 +9888,16 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                           <div key={reference.id} className="rounded-xl border border-purple-100 bg-purple-50/30 p-3">
                             <div className="flex items-center justify-between gap-2 mb-2">
                               <span className="text-[10px] font-black text-purple-700 uppercase tracking-widest">{ta('a11y.storyforge_ui_cast').replace('{0}', referenceIndex + 1)}</span>
-                              <button type="button" onClick={() => removeContinuityReference(reference.id)} className="p-1 rounded-md text-rose-600 hover:bg-rose-50" aria-label={`Remove cast reference ${referenceIndex + 1}`} title={ta('a11y.storyforge_attr_remove_cast_reference')}><Trash2 size={13} aria-hidden="true" /></button>
+                              <button type="button" onClick={() => removeContinuityReference(reference.id)} className="p-1 rounded-md text-rose-600 hover:bg-rose-50" aria-label={ta('a11y.storyforge_aria_remove_cast_reference').replace('{0}', referenceIndex + 1)} title={ta('a11y.storyforge_attr_remove_cast_reference')}><Trash2 size={13} aria-hidden="true" /></button>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                               {[['name','Name','Mina'],['aliases','Also known as','Min, Captain M'],['role','Role','Explorer'],['appearance','Appearance','Round glasses, warm brown skin, short curls'],['wardrobe','Wardrobe','Red jacket with a silver compass'],['props','Props','Brass compass and canvas satchel']].map(([field, label, placeholder]) => (
                                 <label key={field} className={field === 'appearance' || field === 'wardrobe' || field === 'props' ? 'sm:col-span-2' : ''}>
                                   <span className="block text-[10px] font-bold text-slate-500 mb-1">{label}</span>
                                   {field === 'name' || field === 'aliases' || field === 'role' ? (
-                                    <input value={reference[field] || ''} onChange={(e) => updateContinuityReference(reference.id, field, e.target.value)} placeholder={placeholder} className="w-full px-2 py-1.5 text-xs rounded-md border border-purple-100 bg-white text-slate-700" aria-label={`Cast reference ${label.toLowerCase()}`} />
+                                    <input value={reference[field] || ''} onChange={(e) => updateContinuityReference(reference.id, field, e.target.value)} placeholder={placeholder} className="w-full px-2 py-1.5 text-xs rounded-md border border-purple-100 bg-white text-slate-700" aria-label={ta('a11y.storyforge_aria_cast_reference').replace('{0}', label.toLowerCase())} />
                                   ) : (
-                                    <textarea value={reference[field] || ''} onChange={(e) => updateContinuityReference(reference.id, field, e.target.value)} placeholder={placeholder} className="w-full h-14 px-2 py-1.5 text-xs rounded-md border border-purple-100 bg-white text-slate-700 resize-y" aria-label={`Cast reference ${label.toLowerCase()}`} />
+                                    <textarea value={reference[field] || ''} onChange={(e) => updateContinuityReference(reference.id, field, e.target.value)} placeholder={placeholder} className="w-full h-14 px-2 py-1.5 text-xs rounded-md border border-purple-100 bg-white text-slate-700 resize-y" aria-label={ta('a11y.storyforge_aria_cast_reference').replace('{0}', label.toLowerCase())} />
                                   )}
                                 </label>
                               ))}
@@ -9888,14 +9905,14 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                                 <div className="flex flex-wrap items-end gap-2">
                                   <label className="flex-1 min-w-[180px]">
                                     <span className="block text-[10px] font-bold text-slate-500 mb-1">{ta('a11y.storyforge_ui_reference_art_url')}</span>
-                                    <input type="url" value={reference.imageUrl || ''} onChange={(e) => updateContinuityReference(reference.id, 'imageUrl', e.target.value)} placeholder="https://..." className="w-full px-2 py-1.5 text-xs rounded-md border border-purple-100 bg-white text-slate-700" aria-label={`Cast reference art URL ${referenceIndex + 1}`} />
+                                    <input type="url" value={reference.imageUrl || ''} onChange={(e) => updateContinuityReference(reference.id, 'imageUrl', e.target.value)} placeholder="https://..." className="w-full px-2 py-1.5 text-xs rounded-md border border-purple-100 bg-white text-slate-700" aria-label={ta('a11y.storyforge_aria_cast_reference_art_url').replace('{0}', referenceIndex + 1)} />
                                   </label>
                                   <label className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-purple-200 bg-purple-50 text-[11px] font-bold text-purple-700 hover:bg-purple-100 cursor-pointer">
                                     <ImageIcon size={12} aria-hidden="true" /> Upload art
-                                    <input type="file" accept="image/*" className="sr-only" onChange={(e) => handleContinuityReferenceImage(reference.id, e)} aria-label={`Upload cast reference art ${referenceIndex + 1}`} />
+                                    <input type="file" accept="image/*" className="sr-only" onChange={(e) => handleContinuityReferenceImage(reference.id, e)} aria-label={ta('a11y.storyforge_aria_upload_cast_reference_art').replace('{0}', referenceIndex + 1)} />
                                   </label>
                                   {reference.imageUrl && (
-                                    <button type="button" onClick={() => updateContinuityReference(reference.id, 'imageUrl', '')} className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md border border-rose-200 bg-rose-50 text-[11px] font-bold text-rose-700 hover:bg-rose-100" aria-label={`Remove cast reference art ${referenceIndex + 1}`}>
+                                    <button type="button" onClick={() => updateContinuityReference(reference.id, 'imageUrl', '')} className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md border border-rose-200 bg-rose-50 text-[11px] font-bold text-rose-700 hover:bg-rose-100" aria-label={ta('a11y.storyforge_aria_remove_cast_reference_art').replace('{0}', referenceIndex + 1)}>
                                       <X size={12} aria-hidden="true" /> Remove art
                                     </button>
                                   )}
@@ -10021,7 +10038,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                       ))}
                       <select value="" onChange={(e) => applyComicPagePreset(e.target.value)} className="px-3 py-1.5 rounded-full text-[11px] font-black border border-blue-200 bg-white text-blue-700" aria-label={ta('a11y.storyforge_attr_comic_page_preset')}>
                         <option value="">{ta('a11y.storyforge_ui_page_preset')}</option>
-                        {Object.entries(COMIC_PAGE_PRESETS).map(([key, preset]) => <option key={key} value={key}>{preset.label}</option>)}
+                        {Object.entries(COMIC_PAGE_PRESETS).map(([key, preset]) => <option key={key} value={key}>{optLabel('pagepreset', key, preset.label)}</option>)}
                       </select>                      <button
                         type="button"
                         onClick={() => applyComicLetteringPlacement(comicPageGroups, 'Comic')}
@@ -10059,21 +10076,21 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                               value={pageMeta.layout || ''}
                               onChange={(e) => updateComicPageMeta(page.page, 'layout', e.target.value)}
                               className="px-3 py-2 rounded-lg border border-blue-100 bg-white text-xs font-bold text-slate-700 focus:border-blue-400"
-                              aria-label={`Page ${page.page} layout`}
+                              aria-label={ta('a11y.storyforge_aria_page_layout').replace('{0}', page.page)}
                             >
                               <option value="">{ta('a11y.storyforge_ui_use_global')}{getComicPageLayoutLabel(comicPageLayout)})</option>
                               {Object.entries(COMIC_PAGE_LAYOUTS).map(([key, item]) => (
-                                <option key={key} value={key}>{item.label}</option>
+                                <option key={key} value={key}>{optLabel('pagelayout', key, item.label)}</option>
                               ))}
                             </select>
                             <select
                               value={pageMeta.turn || ''}
                               onChange={(e) => updateComicPageMeta(page.page, 'turn', e.target.value)}
                               className="px-3 py-2 rounded-lg border border-blue-100 bg-white text-xs font-bold text-slate-700 focus:border-blue-400"
-                              aria-label={`Page ${page.page} turn`}
+                              aria-label={ta('a11y.storyforge_aria_page_turn').replace('{0}', page.page)}
                             >
                               {COMIC_PAGE_TURN_OPTIONS.map((option) => (
-                                <option key={option.value || 'unset'} value={option.value}>{option.label}</option>
+                                <option key={option.value || 'unset'} value={option.value}>{optLabel('pageturn', option.value, option.label)}</option>
                               ))}
                             </select>
                             <input
@@ -10081,7 +10098,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                               onChange={(e) => updateComicPageMeta(page.page, 'note', e.target.value)}
                               placeholder={ta('a11y.storyforge_attr_page_note')}
                               className="px-3 py-2 rounded-lg border border-blue-100 bg-white text-xs text-slate-700 focus:border-blue-400"
-                              aria-label={`Page ${page.page} note`}
+                              aria-label={ta('a11y.storyforge_aria_page_note').replace('{0}', page.page)}
                             />
                           </div>
                           <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
@@ -10165,7 +10182,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                           aria-label={ta('a11y.storyforge_attr_comic_print_gutter')}
                         >
                           {Object.entries(COMIC_PRINT_GUTTERS).map(([key, item]) => (
-                            <option key={key} value={key}>{item.label} {item.width !== 'none' ? `(${item.width})` : ''}</option>
+                            <option key={key} value={key}>{optLabel('gutter', key, item.label)} {item.width !== 'none' ? `(${item.width})` : ''}</option>
                           ))}
                         </select>
                       </label>
@@ -10234,7 +10251,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                               <div className="font-black text-slate-800 text-sm">{ta('a11y.storyforge_ui_panel').replace('{0}', idx + 1)}</div>
                               <div className="text-[10px] font-bold text-slate-500">{ta('a11y.storyforge_ui_sequence')} {idx + 1} of {paragraphs.length}</div>
                             </div>
-                            <div className="sf-comic-toolbar flex flex-wrap items-center gap-1.5" role="toolbar" aria-label={`Panel ${idx + 1} layout actions`}>
+                            <div className="sf-comic-toolbar flex flex-wrap items-center gap-1.5" role="toolbar" aria-label={ta('a11y.storyforge_aria_panel_layout_actions').replace('{0}', idx + 1)}>
                               <button
                                 type="button"
                                 draggable="true"
@@ -10243,7 +10260,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                                 onKeyDown={(e) => handlePanelSequenceKeyDown(e, idx)}
                                 className="sf-comic-action sf-panel-drag-handle w-8 h-8 shrink-0 rounded-md border border-fuchsia-100 bg-white text-fuchsia-700 hover:border-fuchsia-300 flex items-center justify-center"
                                 style={{ cursor: 'grab' }}
-                                aria-label={`Reorder panel ${idx + 1}. Use arrow keys, Home, or End.`}
+                                aria-label={ta('a11y.storyforge_aria_reorder_panel_use_arrow_keys_home_or').replace('{0}', idx + 1)}
                                 title={ta('a11y.storyforge_attr_drag_to_reorder_panel_2')}
                                 data-sf-panel-drag-handle={p.id}
                                 data-sf-focusable
@@ -10255,7 +10272,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                                 onClick={() => moveParagraph(idx, -1)}
                                 disabled={idx === 0}
                                 className="sf-comic-action px-2 py-1 rounded-md border border-fuchsia-100 bg-white text-[10px] font-black text-slate-700 hover:border-fuchsia-300 disabled:opacity-40 disabled:hover:border-fuchsia-100 flex items-center gap-1"
-                                aria-label={`Move panel ${idx + 1} earlier`}
+                                aria-label={ta('a11y.storyforge_aria_move_panel_earlier').replace('{0}', idx + 1)}
                                 title={ta('a11y.storyforge_attr_move_panel_earlier')}
                               >
                                 <ArrowLeft size={11} /> Earlier
@@ -10265,7 +10282,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                                 onClick={() => moveParagraph(idx, 1)}
                                 disabled={idx === paragraphs.length - 1}
                                 className="sf-comic-action px-2 py-1 rounded-md border border-fuchsia-100 bg-white text-[10px] font-black text-slate-700 hover:border-fuchsia-300 disabled:opacity-40 disabled:hover:border-fuchsia-100 flex items-center gap-1"
-                                aria-label={`Move panel ${idx + 1} later`}
+                                aria-label={ta('a11y.storyforge_aria_move_panel_later').replace('{0}', idx + 1)}
                                 title={ta('a11y.storyforge_attr_move_panel_later')}
                               >
                                 Later <ArrowRight size={11} />
@@ -10275,7 +10292,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                                 onClick={() => duplicatePanelAfter(idx)}
                                 disabled={paragraphs.length >= maxParagraphs}
                                 className="sf-comic-action px-2 py-1 rounded-md border border-fuchsia-100 bg-white text-[10px] font-black text-fuchsia-700 hover:border-fuchsia-300 disabled:opacity-40 disabled:hover:border-fuchsia-100 flex items-center gap-1"
-                                aria-label={`Duplicate panel ${idx + 1}`}
+                                aria-label={ta('a11y.storyforge_aria_duplicate_panel').replace('{0}', idx + 1)}
                                 title={paragraphs.length >= maxParagraphs ? `Panel limit reached (${maxParagraphs})` : 'Duplicate panel'}
                               >
                                 <Plus size={11} /> Duplicate
@@ -10285,7 +10302,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                               </div>
                             </div>
                           </div>
-                          <div className="sf-comic-frame-group flex flex-wrap gap-1.5 mb-2" role="group" aria-label={`Panel ${idx + 1} frame preset`}>
+                          <div className="sf-comic-frame-group flex flex-wrap gap-1.5 mb-2" role="group" aria-label={ta('a11y.storyforge_aria_panel_frame_preset').replace('{0}', idx + 1)}>
                             {COMIC_PANEL_FRAME_OPTIONS.map((option) => (
                               <button
                                 key={option.value || 'auto'}
@@ -10294,7 +10311,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                                 aria-pressed={frame === option.value}
                                 className={`sf-comic-frame-choice px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all ${frame === option.value ? 'sf-comic-frame-choice-active bg-fuchsia-700 border-fuchsia-700 text-white' : 'bg-white border-fuchsia-100 text-slate-700 hover:border-fuchsia-300'}`}
                               >
-                                {option.label}
+                                {optLabel('frame', option.value, option.label)}
                               </button>
                             ))}
                           </div>
@@ -10316,10 +10333,10 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                               value={letteringSpace}
                               onChange={(e) => updatePanelThumbnail(p.id, 'letteringSpace', e.target.value)}
                               className="w-full px-3 py-2 rounded-lg border border-fuchsia-100 bg-white text-xs font-bold text-slate-700 focus:border-fuchsia-400"
-                              aria-label={`Panel ${idx + 1} bubble anchor`}
+                              aria-label={ta('a11y.storyforge_aria_panel_bubble_anchor').replace('{0}', idx + 1)}
                             >
                               {COMIC_LETTERING_SPACE_OPTIONS.map((option) => (
-                                <option key={option.value || 'unset'} value={option.value}>{option.label}</option>
+                                <option key={option.value || 'unset'} value={option.value}>{optLabel('lettering', option.value, option.label)}</option>
                               ))}
                             </select>
                           </label>
@@ -10337,7 +10354,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                                 value={customBubbleWidth}
                                 onChange={(e) => updatePanelThumbnail(p.id, 'letteringWidth', e.target.value)}
                                 className="sf-bubble-width-slider flex-1 accent-fuchsia-700"
-                                aria-label={`Panel ${idx + 1} bubble width`}
+                                aria-label={ta('a11y.storyforge_aria_panel_bubble_width').replace('{0}', idx + 1)}
                                 aria-valuetext={hasCustomBubbleWidth ? `${customBubbleWidth} percent` : 'Auto fit'}
                                 data-sf-bubble-width-slider={p.id}
                                 data-sf-focusable
@@ -10348,7 +10365,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                                   onClick={() => updatePanelThumbnail(p.id, 'resetLetteringWidth')}
                                   className="sf-comic-action h-8 px-2 rounded-md border border-fuchsia-100 bg-white text-[10px] font-black text-fuchsia-700 hover:border-fuchsia-300 flex items-center gap-1"
                                   title={ta('a11y.storyforge_attr_reset_bubble_width_to_auto')}
-                                  aria-label={`Reset panel ${idx + 1} bubble width to auto`}
+                                  aria-label={ta('a11y.storyforge_aria_reset_panel_bubble_width_to_auto').replace('{0}', idx + 1)}
                                   data-sf-focusable
                                 >
                                   <RefreshCw size={11} aria-hidden="true" /> Auto
@@ -10893,7 +10910,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                           value={selfAssessment[c] || 3}
                           onChange={(e) => setSelfAssessment(prev => ({ ...prev, [c]: parseInt(e.target.value, 10) }))}
                           className="w-32 accent-violet-600"
-                          aria-label={`Self-rating for ${c}: ${selfAssessment[c] || 3} out of 5`}
+                          aria-label={ta('a11y.storyforge_aria_self_rating_for_out_of_5').replace('{0}', c).replace('{1}', selfAssessment[c] || 3)}
                         />
                         <div className="bg-violet-100 text-violet-800 text-xs font-black px-2 py-0.5 rounded-full min-w-[2.25rem] text-center">
                           {selfAssessment[c] || 3}/5
@@ -10929,17 +10946,17 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   {(() => {
                     const counts = sensesResult.counts || {};
                     const max = Math.max(1, ...Object.values(counts).map(n => Number(n) || 0));
-                    const SENSE_LABELS = { sight: '👁️ Sight', sound: '👂 Sound', smell: '👃 Smell', taste: '👅 Taste', touch: '✋ Touch', motion: '🏃ƒ Motion', emotion: '💗 Emotion' };
+                    const SENSE_EMOJI = { sight: '👁️', sound: '👂', smell: '👃', taste: '👅', touch: '✋', motion: '🏃', emotion: '💗' };
                     return (
                       <div className="space-y-1.5">
-                        {Object.entries(SENSE_LABELS).map(([k, label]) => {
+                        {Object.entries(SENSE_EMOJI).map(([k, emoji]) => {
                           const n = Number(counts[k]) || 0;
                           const pct = (n / max) * 100;
                           const isStrongest = sensesResult.strongest === k;
                           const isMissing = sensesResult.missing === k;
                           return (
                             <div key={k} className="flex items-center gap-2">
-                              <div className="text-xs font-bold text-slate-700 w-24 shrink-0">{label}</div>
+                              <div className="text-xs font-bold text-slate-700 w-24 shrink-0">{emoji} {ta('a11y.storyforge_sense_' + k)}</div>
                               <div className="flex-1 h-4 bg-slate-100 rounded-full overflow-hidden">
                                 <div className={`h-full rounded-full transition-all ${isStrongest ? 'bg-teal-500' : isMissing ? 'bg-amber-400' : 'bg-rose-300'}`} style={{ width: `${pct}%` }} />
                               </div>
@@ -10984,7 +11001,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                           }
                           {mentorMatch.mentor.sourceUrl && (
                             <p className="text-[11px] mt-2">
-                              <a href={mentorMatch.mentor.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-fuchsia-700 hover:text-fuchsia-900 font-bold underline" aria-label={`Open source for ${mentorMatch.mentor.title || 'mentor story'} in a new tab`}>
+                              <a href={mentorMatch.mentor.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-fuchsia-700 hover:text-fuchsia-900 font-bold underline" aria-label={ta('a11y.storyforge_aria_open_mentor_source').replace('{0}', mentorMatch.mentor.title || ta('a11y.storyforge_aria_mentor_story_fallback'))}>
                                 Read the full story ↗
                               </a>
                             </p>
@@ -11407,7 +11424,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     const match = anySet ? closestStoryShape(norm) : null;
                     return (
                       <>
-                        <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} role="img" aria-label={`Emotional arc across ${artifactType === 'comic' ? 'panels' : 'scenes'}`} className="overflow-visible">
+                        <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} role="img" aria-label={ta(artifactType === 'comic' ? 'a11y.storyforge_aria_arc_across_panels' : 'a11y.storyforge_aria_arc_across_scenes')} className="overflow-visible">
                           <line x1={pad} y1={py(0)} x2={W - pad} y2={py(0)} stroke="#e2e8f0" strokeWidth="1" strokeDasharray="3 3" />
                           <text x={pad} y={py(5) + 2} fontSize="7" fill="#94a3b8">{ta('a11y.storyforge_ui_good')}</text>
                           <text x={pad} y={py(-5)} fontSize="7" fill="#94a3b8">{ta('a11y.storyforge_ui_bad')}</text>
@@ -11423,7 +11440,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                                 <span className="text-[11px] text-slate-500 font-bold w-7 shrink-0">P{i + 1}</span>
                                 <input type="range" min="-5" max="5" step="1" value={v}
                                   onChange={(e) => { const nv = parseInt(e.target.value, 10); setValenceByPara(prev => ({ ...prev, [p.id]: nv })); }}
-                                  aria-label={`Fortune for paragraph ${i + 1}, from -5 (bad) to +5 (good)`}
+                                  aria-label={ta('a11y.storyforge_aria_fortune_for_paragraph_from_5_bad_to').replace('{0}', i + 1)}
                                   className="flex-1 accent-violet-600" />
                                 <span className="text-[11px] text-slate-500 w-6 text-right tabular-nums">{v > 0 ? '+' + v : v}</span>
                               </div>
@@ -11595,7 +11612,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     : 'Preview the finished story and choose how to share or save it.'}
                 </p>
                 <div className="inline-flex mt-3 px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-bold">
-                  Artifact: {ARTIFACT_TYPES[artifactType].label}
+                  {ta('a11y.storyforge_ui_artifact_label')} {optLabel('artifact', artifactType, ARTIFACT_TYPES[artifactType].label)}
                   {artifactType === 'story' ? ' · ' + WRITING_VIEWS[writingView].label + ' writing view' : ''}
                 </div>
               </div>
@@ -11785,7 +11802,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                               aria-controls={`sf-comic-preview-page-${page.page}`}
                               onClick={() => setComicPreviewPage(page.page)}
                               className={`sf-page-nav-button w-8 h-8 shrink-0 rounded-md border text-[11px] font-black ${comicPreviewPage === page.page ? 'border-amber-300 bg-amber-400 text-slate-950' : 'border-slate-600 bg-slate-900 text-white hover:bg-slate-800'}`}
-                              aria-label={`Show comic page ${page.page}`}
+                              aria-label={ta('a11y.storyforge_aria_show_comic_page').replace('{0}', page.page)}
                             >
                               {page.page}
                             </button>
@@ -11812,7 +11829,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                         const turnLabel = getComicPageTurnLabel(page.turn);
                         const previewPageStats = getComicPageProductionStats(page, { panelDialogue, panelThumbnails, panelLayouts, illustrations, comicPrintSafety });
                         return (
-                          <section id={`sf-comic-preview-page-${page.page}`} role="tabpanel" className="overflow-hidden rounded-lg border border-slate-700 bg-slate-950/75 shadow-lg" aria-label={`Comic page ${page.page}`}>
+                          <section id={`sf-comic-preview-page-${page.page}`} role="tabpanel" className="overflow-hidden rounded-lg border border-slate-700 bg-slate-950/75 shadow-lg" aria-label={ta('a11y.storyforge_aria_comic_page').replace('{0}', page.page)}>
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-3 py-2 bg-slate-950 text-white border-b border-slate-700">
                               <div>
                                 <div className="text-xs font-black uppercase tracking-widest">Page {page.page} · {getComicPageLayoutLabel(page.layout)}</div>

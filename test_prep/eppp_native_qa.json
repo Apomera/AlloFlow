@@ -1,6 +1,6 @@
 {
   "schemaVersion": 5,
-  "generatedAt": "2026-08-12T00:00:00.000Z",
+  "generatedAt": "2026-08-17T00:00:00.000Z",
   "packId": "eppp-part-one",
   "packVersion": "3.1.0",
   "standard": {
@@ -40489,7 +40489,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/12-5-prejudice-and-discrimination"
+        "https://doi.org/10.1002/ejsp.2420010202"
       ]
     },
     {
@@ -45761,7 +45761,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/15-introduction"
+        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf"
       ]
     },
     {
@@ -72739,7 +72739,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/9-introduction"
+        "https://openstax.org/books/psychology-2e/pages/9-3-stages-of-development"
       ]
     },
     {
@@ -73669,7 +73669,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/9-introduction"
+        "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories"
       ]
     },
     {
@@ -75653,7 +75653,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/9-introduction"
+        "https://openstax.org/books/psychology-2e/pages/9-3-stages-of-development"
       ]
     },
     {
@@ -86944,7 +86944,7 @@
       ],
       "findings": [],
       "references": [
-        "https://www.itl.nist.gov/div898/handbook/dtoc.htm"
+        "https://www.itl.nist.gov/div898/handbook/glossary.htm"
       ]
     },
     {

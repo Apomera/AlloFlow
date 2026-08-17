@@ -7804,7 +7804,7 @@
     "prompt": "A K–8 school is reconsidering its mission after enrollment shifts and a widening participation gap in advanced mathematics. Which evidence-gathering plan should the principal use first?",
     "choices": [
       "Combine disaggregated access and outcome trends with student, family, staff, and community perspectives before convening a representative mission-review team.",
-      "Ask department chairs to select the most appealing mission from three neighboring schools, then announce it at the next faculty meeting.",
+      "Ask department chairs to select the most appealing mission statement from three neighboring schools, then announce the choice at the next faculty meeting alongside the updated enrollment figures.",
       "Have the principal draft a concise statement privately and survey staff afterward about whether they support the finished version.",
       "Wait for one more year of state scores so the team can base the mission exclusively on a single standardized outcome measure."
     ],
@@ -7852,7 +7852,7 @@
     "cognitiveLevel": "analysis",
     "prompt": "A school vision promises that every learner will become an independent problem solver, but budget requests continue to favor short-term remediation worksheets. What should the leadership team do?",
     "choices": [
-      "Keep the aspirational vision unchanged but allow each budget owner to interpret it independently so departments retain maximum flexibility.",
+      "Keep the aspirational vision unchanged but allow each budget owner to interpret its instructional implications independently, so that departments retain the maximum possible spending flexibility.",
       "Define observable instructional and resource commitments implied by the vision, then use them as criteria when comparing budget proposals and monitoring learner access.",
       "Replace the vision with a list of purchasable materials because financial decisions should remain separate from instructional direction.",
       "Add a stronger statement about problem solving to the school website and revisit resource alignment after achievement scores improve."
@@ -7901,7 +7901,7 @@
     "cognitiveLevel": "application",
     "prompt": "A leadership team wants to improve ninth-grade course completion while avoiding a goal that hides unequal access. Which goal design is strongest?",
     "choices": [
-      "Set one schoolwide completion percentage and postpone subgroup analysis until the overall target has been reached for two consecutive years.",
+      "Set one schoolwide completion percentage and postpone all subgroup analysis until the overall target has been reached for two consecutive years and confirmed by the state accountability report.",
       "Measure the number of staff meetings devoted to course completion and treat increased meeting attendance as the final student outcome.",
       "Set a time-bound completion target, report results by relevant student groups, specify access and implementation measures, and schedule decision points for reviewing the strategy.",
       "Promise that every ninth grader will pass every course this semester without documenting a baseline, supports, or review schedule."
@@ -7952,7 +7952,7 @@
     "choices": [
       "Support the reduction because equal dismissal times mean the policy treats all students the same regardless of travel conditions.",
       "Quietly keep buses running from the school budget without district authorization so tutoring participation is not interrupted.",
-      "Remove tutoring from the strategic plan because programs that create transportation complications should not be linked to core values.",
+      "Remove after-school tutoring from the strategic plan entirely, on the grounds that any program creating transportation complications should not be formally linked to the district’s stated core values.",
       "Analyze who would lose access, present feasible transportation and scheduling alternatives, and use the stated value and evidence to recommend an equitable decision through authorized channels."
     ],
     "answerIndex": 3,
@@ -8000,7 +8000,7 @@
     "prompt": "Two schools are consolidating, and each community fears that its identity will disappear. How should the new principal establish a shared strategic direction?",
     "choices": [
       "Create a representative process that examines both schools’ histories and evidence, identifies shared learner commitments, names genuine tensions, and translates agreed values into early decisions.",
-      "Adopt the mission of the higher-performing school because its achievement data establish that its culture should govern the consolidation.",
+      "Adopt the mission of the higher-performing school outright, because its achievement data establish that its existing culture and practices should govern every aspect of the consolidation from the first day.",
       "Write a neutral mission that avoids any reference to the communities’ histories so disagreements cannot enter the planning process.",
       "Let each former school retain a separate mission indefinitely while using one budget and instructional plan for the combined campus."
     ],
@@ -8051,7 +8051,7 @@
       "Thank the students for participating but keep the draft unchanged because strategic goals should be based on adult-defined priorities.",
       "Document and investigate the concern with appropriate safeguards, examine relevant evidence and policy scope, and bring findings back to the planning group before finalizing the goal and measures.",
       "Add the phrase digital citizenship to the goal immediately without investigating patterns, responsibilities, or possible reporting obligations.",
-      "Ask the representatives to identify accused students publicly at the next planning meeting so the committee can decide whether the concern is credible."
+      "Ask the student representatives to identify the accused students publicly at the next planning meeting, so that the full committee can decide for itself whether the reported concern is credible enough to act on."
     ],
     "answerIndex": 1,
     "rationale": "Student participation is meaningful only when new information can affect the plan. The leader must protect students, verify the concern through appropriate processes, and determine whether the goal, measures, responsibilities, or supports need revision.",
@@ -8097,7 +8097,7 @@
     "cognitiveLevel": "analysis",
     "prompt": "A needs assessment identifies chronic absenteeism, weak algebra performance, staff turnover, and unreliable internet access. Which prioritization process is most defensible?",
     "choices": [
-      "Choose the concern with the largest raw count because frequency is the only objective basis for allocating strategic attention.",
+      "Choose the single concern with the largest raw count of affected students, because frequency is the only genuinely objective basis available for allocating limited strategic attention and funding.",
       "Divide available funds equally among all four concerns so no constituency can claim that its priority received less attention.",
       "Use published criteria for student impact, inequity, urgency, causal leverage, feasibility, dependencies, and mission alignment, then document how evidence supports the selected sequence.",
       "Select the issue most likely to produce a favorable public result this semester and defer less visible access barriers."
@@ -8146,7 +8146,7 @@
     "cognitiveLevel": "application",
     "prompt": "A schoolwide literacy strategy is approved, but counselors, paraprofessionals, and operations staff cannot explain how their work contributes. What communication plan should the principal use?",
     "choices": [
-      "Send every employee the complete technical plan and require a signed statement confirming that each person has read identical information.",
+      "Send every employee the complete technical plan and require a signed statement confirming that each person has received and read exactly the same information.",
       "Limit implementation communication to classroom teachers because other employees do not directly deliver the literacy curriculum.",
       "Allow supervisors to create separate goals for each employee group without a shared rationale or common progress measures.",
       "Provide one coherent rationale and goal, then co-develop role-specific actions, supports, measures, timelines, and feedback routes with each staff group."
@@ -8196,7 +8196,7 @@
     "prompt": "A three-year strategic plan reaches its first annual review: student participation improved, but the intended learning outcome did not, and implementation quality varies widely. What should leaders do?",
     "choices": [
       "Separate access, implementation, and outcome evidence; investigate variation and causal assumptions; then document whether to strengthen delivery, revise the strategy, or adjust the goal.",
-      "Lower the learning target to match the current result because improved participation proves the original outcome was unrealistic.",
+      "Lower the published learning target to match the current result, because the improvement in participation proves that the original outcome expectation was simply unrealistic for this population.",
       "Continue every action for two more years because changing a published strategic plan would signal insufficient commitment.",
       "Replace the implementation team and relaunch the same plan before examining site-level conditions or instructional evidence."
     ],
@@ -8244,7 +8244,7 @@
     "cognitiveLevel": "analysis",
     "prompt": "A team assumes low homework completion is caused by student motivation, but interviews reveal inconsistent assignment platforms and limited home connectivity. How should the principal redirect the inquiry?",
     "choices": [
-      "Launch an incentive contest because the original motivation explanation came from experienced teachers who know the students well.",
+      "Launch a schoolwide incentive contest immediately, because the original motivation explanation came from experienced teachers who know these students and their families well.",
       "Rewrite the problem statement without an assumed cause, map contributing conditions with affected groups, and select measures that can test the most plausible drivers.",
       "Average completion rates across grades so differences in platforms and connectivity do not complicate the schoolwide analysis.",
       "Wait until the next annual survey before discussing causes because interviews cannot contribute credible improvement evidence."
@@ -8294,7 +8294,7 @@
     "prompt": "Before adopting a new advisory model, a principal finds broad support for the purpose but insufficient schedule space and uneven facilitator skill. What is the best change-readiness decision?",
     "choices": [
       "Launch schoolwide while enthusiasm is high and solve scheduling or training problems after staff experience the model.",
-      "Reject the model permanently because uneven readiness proves that the school culture cannot support advisory programming.",
+      "Reject the advisory model permanently, because uneven facilitator readiness proves that the existing school culture cannot support any form of advisory programming.",
       "Address the schedule and capacity gaps, define minimum implementation conditions, and test the model on a manageable scale before committing to schoolwide launch.",
       "Require each grade to design its own advisory structure with no common outcomes or implementation expectations."
     ],
@@ -8343,7 +8343,7 @@
     "prompt": "A grade team is testing a revised late-work conference routine for two weeks. Which plan best supports disciplined learning from the test?",
     "choices": [
       "Ask participating teachers whether they liked the routine and expand it if most responses are positive at the final meeting.",
-      "Change the conference routine, grading scale, and attendance policy together so the test has enough intensity to affect results.",
+      "Change the late-work conference routine, the grading scale, and the attendance policy together, so that the two-week test has enough combined intensity to affect measurable results.",
       "Use the two-week results as a final program evaluation and discontinue all measurement once the routine expands.",
       "State the predicted mechanism, define process and student measures, document adaptations, compare results with the baseline, and decide whether to revise, expand, or stop."
     ],
@@ -8393,7 +8393,7 @@
     "choices": [
       "A timely implementation measure showing mentor assignment coverage, contact dosage, successful connection, and follow-up by student group.",
       "A second display of the same monthly attendance percentage using a different chart format for the leadership meeting.",
-      "The number of mentors who attended the original orientation, regardless of whether they later contacted assigned students.",
+      "The number of mentors who attended the original program orientation session, regardless of whether they ever went on to contact their assigned students.",
       "A ranking of mentors by the final attendance rate of their assigned students without adjustment for baseline differences."
     ],
     "answerIndex": 0,
@@ -8442,7 +8442,7 @@
     "choices": [
       "Create a fifth committee to coordinate the four initiatives while leaving all expectations, reports, and timelines unchanged.",
       "Map the initiatives against strategic priorities, evidence, required obligations, staff workload, and shared drivers, then consolidate, sequence, modify, or end work transparently.",
-      "Suspend the initiative with the lowest staff approval rating because acceptability is the most reliable measure of strategic value.",
+      "Suspend whichever initiative carries the lowest staff approval rating, because perceived acceptability is the most reliable available measure of an initiative’s strategic value to the school.",
       "Ask each teacher to choose one initiative personally so workload declines without requiring a schoolwide priority decision."
     ],
     "answerIndex": 1,
@@ -8489,7 +8489,7 @@
     "cognitiveLevel": "analysis",
     "prompt": "A successful reading pilot is ready to expand from two classrooms to an entire elementary school. Which evidence should govern the scale-up plan?",
     "choices": [
-      "Require every classroom to copy all pilot routines exactly, including incidental features unrelated to the reading mechanism.",
+      "Require every classroom in the school to copy all of the pilot routines exactly, including incidental scheduling features that are entirely unrelated to the reading mechanism itself.",
       "Expand immediately to every grade because waiting for capacity analysis would withhold a promising practice from students.",
       "Identify the pilot’s essential practices, training and coaching demands, resource and schedule requirements, subgroup results, adaptations, and capacity at each expansion stage.",
       "Judge readiness from the pilot’s average result and omit subgroup patterns so the scale-up message remains simple."
@@ -8539,7 +8539,7 @@
     "prompt": "A school’s improvement aim is stronger argumentative writing, but the action plan jumps directly from purchasing materials to state-test gains. What should leaders add?",
     "choices": [
       "Add a guarantee that the purchased materials will raise scores if teachers complete the required training hours.",
-      "Replace the student-learning aim with a purchase-completion target because materials are easier for leaders to monitor.",
+      "Replace the student-learning aim entirely with a purchase-completion target, because the delivery of materials is far easier for school leaders to monitor and report on each month.",
       "Track the number of pages assigned each week as the sole intermediate measure of writing quality.",
       "Specify intermediate drivers such as teacher task design, feedback quality, student revision opportunities, and common scoring, with measures connecting each driver to the aim."
     ],
@@ -8588,7 +8588,7 @@
     "prompt": "After grant funding ends, a tutoring program’s participation declines even though outcome evidence remains promising. Which sustainability response is strongest?",
     "choices": [
       "Identify the program’s essential functions and costs, examine equitable demand and impact, integrate viable responsibilities into core systems, and monitor whether quality survives the transition.",
-      "Continue every feature using short-term donations because changing the original grant design would invalidate prior outcome evidence.",
+      "Continue funding every original program feature through short-term donations, because altering any part of the original grant design would invalidate the promising outcome evidence already collected.",
       "End the program when the grant closes because a sustainable initiative must operate without any ongoing school resources.",
       "Transfer responsibility to volunteers without defining training, supervision, student safeguards, or minimum service expectations."
     ],
@@ -8638,7 +8638,7 @@
     "choices": [
       "Average the observers’ scores and use the mean because combining ratings automatically removes interpretation differences.",
       "Have observers cite common evidence, reconcile rubric interpretations with exemplars, practice on additional lessons, and recheck agreement while preserving space for relevant context.",
-      "Let each observer retain a personal rubric interpretation because instructional quality is too contextual for shared expectations.",
+      "Let each observer retain a personal interpretation of the rubric, because instructional quality is far too contextual for any shared set of scoring expectations to be meaningful across classrooms.",
       "Choose the score assigned by the most experienced administrator and treat it as the calibration standard without discussion."
     ],
     "answerIndex": 1,
@@ -8685,7 +8685,7 @@
     "cognitiveLevel": "evaluation",
     "prompt": "Midyear retention data show that newly hired special educators leave at twice the rate of other teachers. Which induction redesign is most appropriate?",
     "choices": [
-      "Require an additional general orientation presentation and assume employees will request individual support if they still need it.",
+      "Require one additional general orientation presentation for all new hires and assume that individual employees will request more targeted support themselves if they still find they need it during the year.",
       "Offer a voluntary social event each month while leaving caseloads, planning time, and mentor access unchanged.",
       "Use exit, workload, support, and role evidence to provide trained mentors, protected collaboration, role-specific learning, manageable assignments, and scheduled check-ins with responsible leaders.",
       "Delay induction changes until three full years of turnover data are available so the response is based on a larger sample."
@@ -8734,7 +8734,7 @@
     "cognitiveLevel": "application",
     "prompt": "Teachers complete training on academic discussion but classroom evidence shows little change in student talk. What follow-up is most likely to support transfer?",
     "choices": [
-      "Repeat the original presentation with additional slides explaining why academic discussion is important for achievement.",
+      "Repeat the original training presentation with additional slides explaining in more detail why academic discussion matters for student achievement outcomes on state assessments.",
       "Require teachers to submit a certificate showing that they completed the training before the end of the semester.",
       "Evaluate teachers immediately on full proficiency so the possibility of a low rating creates urgency for implementation.",
       "Schedule modeling, rehearsal with upcoming lessons, classroom implementation, evidence-based coaching, and team analysis of student participation and discourse quality."
@@ -8785,7 +8785,7 @@
     "choices": [
       "Share the observed wait-time pattern, connect it to the goal of broader reasoning, co-select a specific pause routine, and arrange a short follow-up observation using the same measure.",
       "Tell the teacher to improve questioning because strong teachers create more engaging classroom conversations.",
-      "Recommend asking fewer questions and wait until the annual evaluation to determine whether student thinking improved.",
+      "Recommend simply asking fewer questions overall, then wait until the annual summative evaluation to determine whether the quality of student thinking has improved in any observable way.",
       "Email a rubric score for classroom discourse without discussing what evidence produced the rating or how to respond."
     ],
     "answerIndex": 0,
@@ -8832,7 +8832,7 @@
     "cognitiveLevel": "analysis",
     "prompt": "A professional learning community notices that multilingual learners participate in group tasks but rarely present mathematical justifications. What should the team do next?",
     "choices": [
-      "Refer students for individual remediation before examining whether tasks, language supports, or group roles restrict opportunities to explain.",
+      "Refer the multilingual students for individual remediation before examining whether the tasks, the available language supports, or the assigned group roles restrict their opportunities to explain.",
       "Examine tasks and student work, identify language and participation demands, plan an accessible instructional change, predict evidence, and review results after implementation.",
       "Collect more examples of low participation for the remainder of the year before trying any instructional adjustment.",
       "Assign the strongest speaker in each group to present so mathematical explanations become more fluent during observations."
@@ -8881,7 +8881,7 @@
     "cognitiveLevel": "evaluation",
     "prompt": "Teachers want peer-coaching visits, but several worry that informal notes could later appear in formal evaluation files. What structure should the principal establish?",
     "choices": [
-      "Promise that every coaching communication will remain confidential under all circumstances, including disclosures involving student safety.",
+      "Promise teachers that every coaching communication will remain strictly confidential under all circumstances, including any disclosures that involve student safety or mandated reporting.",
       "Require coaches to send all notes to administrators so the school can maximize the evaluative value of each visit.",
       "Define in advance the purpose, consent, confidentiality limits, data ownership, separation from evaluation, safety exceptions, and process for revisiting the agreement.",
       "Leave confidentiality unwritten because a flexible informal process allows each coaching pair to decide what feels appropriate."
@@ -8931,7 +8931,7 @@
     "prompt": "A teacher leader is asked to coordinate mathematics improvement across six grades but has no release time or authority to convene teams. What should the principal change?",
     "choices": [
       "Advise the teacher leader to rely on personal influence because formal authority would undermine collegial relationships.",
-      "Transfer full supervisory authority over colleagues to the teacher leader without training, policy clarification, or principal oversight.",
+      "Transfer full supervisory authority over grade-level colleagues to the teacher leader immediately, without any training, policy clarification, or continuing principal oversight of the new role.",
       "Narrow the role to distributing mathematics resources so no schedule or decision changes are required.",
       "Clarify the role and decision boundaries, provide time and access to relevant evidence, establish support and accountability, and communicate the leader’s mandate to affected teams."
     ],
@@ -8982,7 +8982,7 @@
       "Audit evidence sources, observation conditions, rubric use, assignment context, and rater patterns; recalibrate evaluators and correct inequitable procedures before drawing performance conclusions.",
       "Raise every affected teacher’s rating by one level because the correlation proves that the evaluation system is biased.",
       "Keep the ratings unchanged because one common rubric guarantees that all teachers were evaluated under equivalent conditions.",
-      "Remove student behavior from classroom observations so evaluators can focus exclusively on teacher personality and presentation style."
+      "Remove all consideration of student behavior from classroom observations, so that evaluators can focus exclusively on each teacher’s personality, delivery, and presentation style during the observed lesson."
     ],
     "answerIndex": 0,
     "rationale": "A rating pattern may reflect performance, context, opportunity to demonstrate criteria, or evaluator bias. A procedural and evidence audit protects fairness while retaining valid expectations and identifying where support or evaluation design needs adjustment.",
@@ -9028,7 +9028,7 @@
     "cognitiveLevel": "evaluation",
     "prompt": "Experienced science teachers and novices are beginning a new laboratory-safety curriculum. Which professional-learning design best differentiates support while preserving common expectations?",
     "choices": [
-      "Excuse experienced teachers from all learning and verification because years of service are sufficient evidence of competence with the new curriculum.",
+      "Excuse the experienced science teachers from all professional learning and safety verification, because their years of classroom service are sufficient evidence of competence with the new laboratory curriculum.",
       "Set shared safety and instructional outcomes, use evidence to identify readiness, offer different learning pathways and practice opportunities, and verify competence through common performance evidence.",
       "Require every teacher to complete the same introductory sequence at the same pace so the process is procedurally equal.",
       "Let teachers choose any safety standard they prefer as long as they submit a personal reflection about professional growth."
@@ -9077,7 +9077,7 @@
     "cognitiveLevel": "synthesis",
     "prompt": "The assistant principal who leads the school’s strongest instructional teams will leave in June. What is the most responsible succession strategy?",
     "choices": [
-      "Ask the departing administrator to select one favored teacher privately because close collaboration makes that person the safest successor.",
+      "Ask the departing assistant principal to select one favored teacher privately, because their close day-to-day collaboration makes that individual the safest and most obvious successor to the instructional leadership role.",
       "Postpone planning until the vacancy is official so current staff do not become distracted by a transition that has not occurred.",
       "Document essential routines and relationships, distribute leadership practice now, identify and develop multiple potential successors, and monitor continuity rather than naming an unprepared replacement late.",
       "Convert every routine into a fixed checklist that the next leader must follow without modification for the first two years."
@@ -9127,7 +9127,7 @@
     "prompt": "A coaching initiative adds weekly meetings, but teachers report losing planning time and submitting duplicate evidence to three teams. How should leaders respond?",
     "choices": [
       "Continue the requirements unchanged because discomfort is expected whenever a school adopts an ambitious instructional priority.",
-      "Cancel all coaching meetings because staff well-being should take precedence over any additional accountability or learning activity.",
+      "Cancel all of the weekly coaching meetings, because staff well-being should always take precedence over any additional accountability requirement or professional learning activity.",
       "Ask teachers to complete duplicate evidence outside contract hours so protected instructional time is not reduced.",
       "Map workload and evidence flows, remove duplication, protect planning and coaching time, clarify priorities, and monitor both implementation quality and staff capacity."
     ],
@@ -9176,7 +9176,7 @@
     "prompt": "Participants rate a culturally responsive teaching institute highly. Which evaluation design would best determine whether the professional learning improved practice?",
     "choices": [
       "Track changes in teacher planning and instruction, student access and experience, implementation support, and relevant learning evidence over time, using multiple sources and comparison to baseline.",
-      "Use the favorable exit survey as the outcome because participant perceptions are the most direct measure of classroom impact.",
+      "Use the favorable exit survey ratings as the outcome measure, because participant perceptions immediately after the institute are the most direct available indicator of eventual impact in the classroom.",
       "Compare this year’s state scores with last year’s scores and attribute any increase entirely to the institute.",
       "Count the number of institute materials downloaded after the event and treat higher access as proof of improved teaching."
     ],
@@ -9227,7 +9227,7 @@
       "Add the research standard across course documents and assume written inclusion will produce equivalent classroom instruction.",
       "Examine enacted curriculum, assignments, prerequisite access, and student work across course pathways, then ensure every learner receives appropriately supported opportunities to develop the skill.",
       "Move the skill to an honors assessment because advanced research is measured most efficiently where it receives intensive instruction.",
-      "Give students in general courses the honors assignment without examining prerequisite instruction, materials, time, or accessibility supports."
+      "Give students in the general courses the same honors assignment without first examining prerequisite instruction, available materials, instructional time, or the accessibility supports they may require."
     ],
     "answerIndex": 1,
     "rationale": "Written alignment is insufficient when the opportunity to learn differs by pathway. Leaders should study what students actually encounter and remove access gaps while maintaining rigorous expectations and needed scaffolds.",
@@ -9278,7 +9278,7 @@
       "Assume the benchmark is valid because every student receives the same passages under the same time limit.",
       "Remove every challenging context so the benchmark measures motivation rather than academic reading demands.",
       "Determine whether language and context unrelated to the reading construct are introducing barriers, and gather evidence before using scores to infer reading needs.",
-      "Use the result as the sole basis for intervention placement because a common benchmark is more objective than classroom evidence."
+      "Use the benchmark result as the sole basis for intervention placement, because a common assessment is inherently more objective than any classroom evidence a teacher could gather."
     ],
     "answerIndex": 2,
     "rationale": "Assessment interpretation depends on whether performance reflects the intended construct. Construct-irrelevant context can depress scores for reasons unrelated to reading proficiency, so leaders should examine item evidence and corroborate conclusions with other measures.",
@@ -9326,7 +9326,7 @@
     "cognitiveLevel": "application",
     "prompt": "An exit ticket shows that most students can calculate slope but cannot explain what slope means in a real context. What should the grade team do next?",
     "choices": [
-      "Enter the exit-ticket grade and proceed because calculation accuracy shows that the required mathematics standard has been mastered.",
+      "Enter the exit-ticket grade and proceed directly to the next unit, because accuracy in calculating slope demonstrates that the required mathematics standard has already been fully mastered.",
       "Reteach the entire unit from the first lesson to every student without examining which concepts or learners need additional support.",
       "Assign additional slope calculations for homework so fluency increases before students discuss contextual meaning.",
       "Analyze the reasoning error, adjust the next lesson to connect representations and meaning, provide another opportunity to explain, and use the new evidence to decide subsequent support."
@@ -9380,7 +9380,7 @@
       "Check comparability, participation, implementation, subgroup patterns, and the constructs measured across sources before forming a conclusion or changing the instructional plan.",
       "Use the state result because externally administered measures supersede all local evidence when sources disagree.",
       "Average all scores into one index so the inconsistency disappears and stakeholders receive a single clear number.",
-      "Discard the state score because classroom evidence is closer to instruction and therefore cannot be affected by local bias."
+      "Discard the state score entirely, because classroom evidence is closer to daily instruction and therefore cannot be affected by any form of local scoring bias or expectation effects."
     ],
     "answerIndex": 0,
     "rationale": "Conflicting evidence is a reason for inquiry, not selective reporting. Triangulation requires understanding what each measure represents, who participated, and how instruction changed before leaders infer improvement or decline.",
@@ -9428,7 +9428,7 @@
     "cognitiveLevel": "evaluation",
     "prompt": "Students understand science content during discussion but several cannot show that understanding on the required written product. Which leadership response best preserves rigor and access?",
     "choices": [
-      "Reduce the science standard for students who struggle with the written format so their assignments can be completed independently.",
+      "Reduce the science standard itself for any students who struggle with the required written format, so that their assignments can be completed independently and submitted on time without additional support.",
       "Clarify the construct being assessed, provide accessible pathways and scaffolds that do not remove essential demands, and examine whether students can demonstrate the targeted science understanding.",
       "Require the identical unsupported product from every student because changing the pathway would make grading inequitable.",
       "Replace the written task with participation credit for the entire class so no student is disadvantaged by response demands."
@@ -9479,7 +9479,7 @@
     "cognitiveLevel": "analysis",
     "prompt": "Students receiving an intensive reading intervention show adequate weekly growth, but the team wants to double the program duration based on one low quarterly benchmark. What should the principal ask?",
     "choices": [
-      "Approve the extension because a quarterly benchmark is more formal and therefore more accurate than repeated progress measures.",
+      "Approve the extension because a quarterly benchmark is more formal and therefore inherently more accurate than the repeated weekly progress monitoring measures.",
       "End intervention for every student because positive weekly growth proves that all reading goals have already been met.",
       "Review progress-monitoring trends, benchmark validity, implementation, goals, and other evidence before changing intensity or duration for individual students.",
       "Keep the original duration for every student so the intervention remains standardized across participants."
@@ -9531,7 +9531,7 @@
     "prompt": "Multilingual learners perform well on classroom investigations but poorly on a science assessment with complex idioms. What should the instructional leader do?",
     "choices": [
       "Conclude that the students need a less rigorous science curriculum until their English assessment scores match peers.",
-      "Translate every scientific term into everyday language even when precise terminology is part of the assessed standard.",
+      "Translate every scientific term into everyday conversational language, even when the precise technical terminology is itself a central part of the standard being assessed on the test.",
       "Use classroom participation as the final grade and stop assessing individual scientific reasoning.",
       "Examine whether language features exceed the intended science construct, use appropriate access supports, and corroborate science understanding with additional valid evidence."
     ],
@@ -9584,7 +9584,7 @@
       "Clarify the purposes of grades, examine policy and evidence, calibrate common criteria, and separate academic achievement from other reported behaviors where appropriate.",
       "Average the two teachers’ grading distributions so both classes produce the same percentage of each letter grade.",
       "Allow the variation because teacher autonomy means course grades need not communicate a consistent construct.",
-      "Require every assignment to carry identical point values across classes regardless of purpose, complexity, or evidence quality."
+      "Require every assignment to carry identical point values across all classes, regardless of its instructional purpose, complexity, or the quality of the evidence it produces."
     ],
     "answerIndex": 0,
     "rationale": "Comparable grades require shared meaning. Leaders should align grading with governing policy and intended academic constructs while ensuring that work habits or compliance are reported transparently rather than silently distorting achievement judgments.",
@@ -9632,7 +9632,7 @@
     "cognitiveLevel": "synthesis",
     "prompt": "Middle-school teachers report that students repeat the same data-display skill in three grades but never learn to critique misleading graphs. What is the best vertical-alignment response?",
     "choices": [
-      "Delete graph instruction from the earliest grade because repetition proves that initial teaching has no lasting value.",
+      "Delete data-display instruction from the earliest grade entirely, because the repetition across three grades proves that the initial teaching has no lasting instructional value for students.",
       "Map intended and enacted learning progressions with assignments and student work, identify redundancy and missing complexity, and revise sequencing with shared performance expectations.",
       "Add the critique skill to the final grade’s pacing guide without changing prior tasks or shared expectations.",
       "Give all three grades the same critique task so teachers can compare scores using one common benchmark."
@@ -9683,7 +9683,7 @@
     "cognitiveLevel": "evaluation",
     "prompt": "A new mathematics curriculum coincides with higher achievement, smaller classes, and additional tutoring. Which evaluation approach is most defensible?",
     "choices": [
-      "Attribute the full gain to the curriculum because it was the most visible change and was adopted before scores increased.",
+      "Attribute the full achievement gain to the new curriculum, because it was the most visible change of the year and was formally adopted shortly before the scores increased across the grade.",
       "Conclude that evaluation is impossible whenever more than one school condition changes during implementation.",
       "Examine implementation and outcomes over time, account for concurrent changes and baseline differences, use comparison evidence where feasible, and state causal limitations explicitly.",
       "Ask teachers which change they believe mattered most and use the majority response as the causal estimate."
@@ -9734,7 +9734,7 @@
     "cognitiveLevel": "analysis",
     "prompt": "An audit finds that assemblies, make-up testing, and unscheduled service pullouts disproportionately interrupt the same students’ core instruction. What should the principal do?",
     "choices": [
-      "Ban every pullout during core instruction even when an individualized plan or essential service requires a different schedule.",
+      "Ban every scheduled pullout during core instruction, even in cases where an individualized education plan or an essential related service requires a different scheduling arrangement.",
       "Rotate assemblies among periods but leave make-up testing and service schedules unexamined because each interruption is brief.",
       "Ask students who miss instruction to obtain notes independently so the master schedule can remain unchanged.",
       "Map lost instructional time by student group and purpose, coordinate required services, redesign avoidable interruptions, and monitor whether access to core learning improves."
@@ -9786,7 +9786,7 @@
     "prompt": "A climate survey shows high overall belonging, but response rates are low among students in alternative programs. What should the principal do before celebrating the result?",
     "choices": [
       "Investigate participation barriers, gather protected and accessible input through additional methods, disaggregate the evidence, and involve affected students in interpreting and responding to findings.",
-      "Report the overall percentage because a single schoolwide measure avoids stigmatizing smaller programs through separate analysis.",
+      "Report only the overall belonging percentage, because a single schoolwide measure avoids stigmatizing students in smaller alternative programs through separate subgroup analysis and public reporting of results.",
       "Treat nonresponse as evidence that alternative-program students have no significant concerns about school belonging.",
       "Require every student to complete the same survey publicly during advisory so the response rate becomes fully comparable."
     ],
@@ -9839,7 +9839,7 @@
       "Increase consequences for defiance so the group learns that the school applies behavioral expectations consistently.",
       "Audit referral definitions, contexts, opportunities, decision points, and consequences; engage affected students and staff; recalibrate practice and monitor disaggregated changes.",
       "Remove the defiance category from reports but allow staff to continue using it informally when documenting incidents.",
-      "Ask the staff members with the most referrals to explain the pattern and accept their shared judgment as sufficient evidence."
+      "Ask the staff members who wrote the most referrals to explain the pattern themselves and accept their shared professional judgment as sufficient evidence of what is causing the disparity."
     ],
     "answerIndex": 1,
     "rationale": "Variation concentrated in subjective categories points to a need for systems analysis, not a conclusion about group behavior. Leaders should examine discretion, context, instruction, and consequences while protecting individual due process and monitoring impact.",
@@ -9887,7 +9887,7 @@
     "cognitiveLevel": "evaluation",
     "prompt": "Students who use mobility devices report that they are invited to clubs but cannot reach several after-school meeting rooms. What should the school leader prioritize?",
     "choices": [
-      "Offer separate virtual club meetings to students using mobility devices while keeping existing room assignments for other members.",
+      "Offer separate virtual club meetings to the students who use mobility devices, while keeping all of the existing physical room assignments unchanged for the other participating club members.",
       "Ask students to notify each club sponsor individually whenever a room is inaccessible so sponsors can improvise a solution.",
       "Correct the access barriers, review activity scheduling and facilities systematically, include affected students in verification, and communicate a reliable process for requesting support.",
       "Move the affected clubs only when a formal complaint is filed because informal reports do not establish an access obligation."
@@ -9938,7 +9938,7 @@
     "cognitiveLevel": "application",
     "prompt": "A student reports identity-based harassment in a team messaging channel and fears retaliation from peers. What should the principal do first?",
     "choices": [
-      "Arrange an immediate face-to-face meeting between the reporting student and alleged harassers so both sides can resolve the matter informally.",
+      "Arrange an immediate face-to-face meeting between the reporting student and the alleged harassers, so that both sides can talk through and resolve the matter informally without further escalation.",
       "Tell the student to block the accounts and return if the behavior continues after school officials have had more time to observe it.",
       "Announce the allegations to the team so witnesses understand that the administration takes harassment reports seriously.",
       "Ensure immediate safety and support, preserve relevant evidence, follow current reporting and investigation procedures, limit disclosure, and explain protection from retaliation and next steps."
@@ -9991,7 +9991,7 @@
     "choices": [
       "Consult families, remove or offset financial and transportation barriers, offer equivalent accessible participation options, and review whether event traditions serve the educational purpose.",
       "Keep the requirements but create an application through which families can document financial hardship to a committee.",
-      "Make the event optional and stop tracking participation so unequal attendance no longer affects school accountability data.",
+      "Make the capstone celebration optional and stop tracking family participation altogether, so that unequal attendance no longer affects the school’s reported accountability data in any way at all.",
       "Ask teachers to identify families who probably need assistance based on neighborhood and prior payment history."
     ],
     "answerIndex": 0,
@@ -10043,7 +10043,7 @@
       "Continue translated announcements because families can bring a bilingual friend if they want help during a meeting.",
       "Establish qualified, timely interpretation for consequential two-way meetings, translate essential documents accessibly, verify understanding, and avoid using students as routine interpreters.",
       "Ask multilingual students to interpret for their families because they know the school vocabulary and family context.",
-      "Postpone every planning meeting until a staff member who speaks the language happens to be available during normal duties."
+      "Postpone every individualized planning meeting until a staff member who happens to speak the family’s language becomes available during the course of their normal assigned duties at the school."
     ],
     "answerIndex": 1,
     "rationale": "Equitable communication includes meaningful reciprocal participation, not only translated broadcasts. Qualified language access protects accuracy, confidentiality, family agency, and the school’s ability to understand concerns in consequential decisions.",
@@ -10091,7 +10091,7 @@
     "cognitiveLevel": "analysis",
     "prompt": "A restorative-conference initiative reports many completed conferences, but students say outcomes depend heavily on which facilitator is assigned. What should leaders examine?",
     "choices": [
-      "Increase the number of conferences because higher volume will average out differences among facilitators over time.",
+      "Increase the total number of restorative conferences, because a higher overall volume will naturally average out any differences among individual facilitators over the course of the year.",
       "Publish facilitator rankings based solely on how quickly each person closes a case after a conference.",
       "Review facilitator preparation, voluntariness, procedural consistency, participant experience, agreements, follow-through, and disaggregated outcomes before judging effectiveness.",
       "Standardize every spoken sentence in the conference and prohibit facilitators from adapting to participant needs."
@@ -10142,7 +10142,7 @@
     "cognitiveLevel": "synthesis",
     "prompt": "A student has separate attendance, behavior, language-development, and academic plans with conflicting meeting schedules and goals. What should the principal facilitate?",
     "choices": [
-      "Designate the academic plan as primary and pause all other supports until course grades improve enough to simplify coordination.",
+      "Designate the academic plan as the primary plan and pause all of the other supports until course grades improve enough to make ongoing coordination simpler for all of the staff involved.",
       "Combine every record into one broadly shared document so all employees can see the complete history and avoid duplication.",
       "Let each team continue independently because specialized professionals should not alter one another’s goals or schedules.",
       "With proper consent and role boundaries, convene relevant staff and family partners to integrate goals, clarify responsibilities, align supports, and monitor one coordinated plan."
@@ -10194,7 +10194,7 @@
     "prompt": "Student advisers are repeatedly invited to committees during class and asked to prepare presentations without support. How can the principal make participation more authentic and equitable?",
     "choices": [
       "Provide varied participation routes, preparation and adult support, accessible schedules, decision authority, feedback on impact, and appropriate recognition without selecting only highly available students.",
-      "Continue the current structure because students who sacrifice class time demonstrate the strongest commitment to leadership.",
+      "Continue with the current committee structure, because the students who are willing to sacrifice their own class time in this way demonstrate the strongest personal commitment to school leadership roles and service.",
       "Ask one elected student to represent every grade and identity group so adults can manage a simpler consultation process.",
       "Collect anonymous suggestions instead of including students in meetings so no participant misses instruction."
     ],
@@ -10244,7 +10244,7 @@
     "cognitiveLevel": "evaluation",
     "prompt": "In leadership meetings, members agree publicly but later say that dissenting views are dismissed. Which facilitation change best supports psychological safety and sound decisions?",
     "choices": [
-      "Use anonymous voting at the start of every meeting and adopt the majority preference without further discussion.",
+      "Use anonymous electronic voting at the start of every leadership meeting and then adopt whichever majority preference emerges without any further discussion of the dissenting views.",
       "Set and model inquiry norms, solicit perspectives before senior voices anchor discussion, document dissent and assumptions, and explain how contrary evidence affects the decision.",
       "Ask members to bring concerns privately to the principal after the decision so public meetings remain efficient.",
       "Rotate the chair but allow each chair to decide whether disagreement is relevant enough to enter the minutes."
@@ -10295,7 +10295,7 @@
     "cognitiveLevel": "application",
     "prompt": "The counseling and attendance teams disagree over who should contact families after repeated absences, and students receive duplicate messages. What should the principal do?",
     "choices": [
-      "Assign the work to the attendance team because its title gives it automatic ownership of every absence-related communication.",
+      "Assign all of the work to the attendance team, because the team’s title gives it automatic ownership of every absence-related communication with students and families.",
       "Let both teams continue contacting families so no student is missed, even if messages and advice differ.",
       "Clarify the shared student outcome, map responsibilities and handoffs, surface role and resource concerns, agree on a coordinated protocol, and review its effects.",
       "Require the teams to vote on ownership and prohibit the losing team from contributing to attendance cases."
@@ -10348,7 +10348,7 @@
     "choices": [
       "Explain that leaders sometimes need to move quickly and retain the schedule so reversing course does not weaken authority.",
       "Send an apology for any confusion while avoiding details about the consultation promise or the missing data.",
-      "Ask supervisors to reassure staff privately that the principal meant well and that future decisions may be more collaborative.",
+      "Ask supervisors to reassure staff members privately that the principal meant well and that future scheduling decisions of this kind may be handled far more collaboratively in the future.",
       "Acknowledge the broken commitment and incomplete evidence, explain immediate safeguards, reopen the decision through a credible process, and report what changes as a result."
     ],
     "answerIndex": 3,
@@ -10398,7 +10398,7 @@
     "prompt": "A custodian notices a blocked emergency exit but hesitates to report it because prior messengers were blamed for operational problems. What should school leaders change?",
     "choices": [
       "Correct the immediate hazard, protect and thank the reporter, establish a no-blame reporting and escalation process, and analyze why the condition and silence occurred.",
-      "Remind custodians that safety is part of their job and discipline the person assigned to the area before reviewing how the blockage occurred.",
+      "Remind all custodians that reporting safety hazards is part of their job description, and discipline the staff member assigned to that area before reviewing how the blockage actually occurred.",
       "Install an anonymous suggestion box and wait for the monthly facilities meeting to decide whether the exit needs attention.",
       "Limit future inspections to administrators so employees do not feel responsible for reporting conditions outside their formal role."
     ],
@@ -10448,7 +10448,7 @@
     "cognitiveLevel": "analysis",
     "prompt": "Staff absence, turnover intention, and missed planning deadlines rise during a schedule redesign. How should the principal address well-being and performance together?",
     "choices": [
-      "Offer an optional wellness webinar after school while maintaining every deadline and duplicate reporting requirement.",
+      "Offer an optional after-school wellness webinar on stress management while maintaining every existing deadline, meeting obligation, and duplicate reporting requirement exactly as originally scheduled.",
       "Examine workload, role clarity, control, resources, support, and implementation demands; redesign harmful conditions while maintaining clear priorities and monitoring student and staff effects.",
       "Lower all performance expectations until staff report that stress has disappeared from the workplace.",
       "Treat absence and delayed work as individual motivation problems unless an employee presents medical documentation."
@@ -10502,7 +10502,7 @@
       "Require each member to contribute one new resource per meeting and track contribution counts as the team’s primary outcome.",
       "Let the most experienced teacher select a strategy for every grade so meetings can focus on efficient implementation updates.",
       "Use a recurring inquiry cycle that begins with a shared learner question, examines common evidence, plans a supported action, and returns to implementation and outcome results.",
-      "Replace team meetings with individual data reports because independent accountability is more reliable than collective analysis."
+      "Replace the shared team meetings with individual written data reports, because independent personal accountability is a more reliable driver of improvement than any form of collective analysis."
     ],
     "answerIndex": 2,
     "rationale": "Collaboration becomes consequential when joint work is organized around learner evidence and iterative action. A structured cycle connects professional exchange to collective responsibility without reducing the meeting to compliance or activity sharing.",
@@ -10552,7 +10552,7 @@
     "choices": [
       "End recognition entirely because any public acknowledgment will inevitably create competition among employees.",
       "Give every employee the same award at each meeting so recognition is distributed with complete equality.",
-      "Ask administrators to nominate more people privately but keep the selection criteria confidential to prevent lobbying.",
+      "Ask administrators to nominate a greater number of staff members privately, but keep the underlying selection criteria entirely confidential so that no one is able to lobby for recognition or question the eventual outcome.",
       "Co-design transparent recognition criteria tied to shared values, invite varied evidence and nominations, and recognize both individual and collective contributions without turning praise into competition."
     ],
     "answerIndex": 3,
@@ -10603,7 +10603,7 @@
     "choices": [
       "Share verified facts, distinguish proposals from decisions, explain the authorized process and timeline, protect confidential matters, and name when the next update will occur.",
       "Deny that any staffing discussion is occurring because public uncertainty will damage morale before the board vote.",
-      "Release all preliminary personnel scenarios and employee names so the community can see that the district is fully transparent.",
+      "Release all of the preliminary personnel scenarios along with the affected employee names, so that the community can see for itself that the district is being completely transparent about the process.",
       "Wait until the board reaches a final decision because responding to rumors gives them legitimacy."
     ],
     "answerIndex": 0,
@@ -10652,7 +10652,7 @@
     "cognitiveLevel": "synthesis",
     "prompt": "A school improvement team makes strong decisions only when the principal attends; meetings stall whenever the principal is absent. What capacity should be developed?",
     "choices": [
-      "Require the principal to attend every meeting because consistent authority is the most efficient way to preserve team quality.",
+      "Require the principal to attend every single meeting, because a consistent source of authority in the room is the most efficient way to preserve the quality of team decisions.",
       "Build shared facilitation, evidence-use, decision, conflict, and follow-through routines with clear authority boundaries and coaching for multiple team members.",
       "Grant the team unrestricted authority over budgets and personnel so members are forced to become independent quickly.",
       "Cancel meetings when the principal is unavailable and collect individual recommendations by email instead."
@@ -10703,7 +10703,7 @@
     "cognitiveLevel": "evaluation",
     "prompt": "A principal’s close colleague requests the most desirable teaching assignment, and the principal has discretion over placement. What is the strongest ethical approach?",
     "choices": [
-      "Grant the request because familiarity gives the principal better evidence of the colleague’s strengths than a formal assignment process would.",
+      "Grant the request, because personal familiarity gives the principal far better evidence of that colleague’s instructional strengths than any formal assignment process could realistically provide.",
       "Deny the request automatically because avoiding any benefit to an acquaintance is the only way to prevent a conflict.",
       "Apply transparent role-related criteria consistently, document the decision, seek an independent review if the relationship could affect judgment, and communicate within privacy limits.",
       "Ask the colleague to keep the request private and make the assignment without documenting the relationship or rationale."
@@ -10753,7 +10753,7 @@
     "prompt": "A vendor offering a student-support platform invites the selection committee chair to a paid conference after proposals are submitted. What should the chair do?",
     "choices": [
       "Accept the invitation if the chair promises not to discuss the active proposal during conference sessions.",
-      "Ask the vendor to extend the invitation to every committee member so all evaluators receive equivalent professional learning.",
+      "Ask the vendor to extend the same paid invitation to every member of the selection committee, so that all of the evaluators receive an equivalent professional learning opportunity.",
       "Complete the scoring first and disclose the trip only if the vendor receives the contract.",
       "Decline and disclose the offer, follow procurement and ethics requirements, preserve the evaluation record, and obtain guidance about any needed recusal or corrective step."
     ],
@@ -10803,7 +10803,7 @@
     "choices": [
       "Compare current assets, student access, instructional need, implementation capacity, and expected impact, then allocate resources by transparent criteria designed to reduce opportunity barriers.",
       "Give every classroom the same dollar amount because any variation in allocation would constitute unfair treatment.",
-      "Send all available devices to the school with the lowest score without examining curriculum use, infrastructure, or student-level barriers.",
+      "Send all of the available devices to whichever school records the lowest score, without examining curriculum use, building infrastructure, home connectivity, or student-level barriers to access at that site.",
       "Let principals negotiate privately for resources because local leaders understand their needs better than a district formula can."
     ],
     "answerIndex": 0,
@@ -10852,7 +10852,7 @@
     "choices": [
       "Describe the allegations in detail but remind families that the administrator is presumed innocent until the investigation ends.",
       "Explain the applicable process, interim leadership arrangements, decision authority, and expected update points while protecting personnel privacy and avoiding prejudgment.",
-      "State that the school cannot discuss anything related to personnel and provide no information about continuity or decision making.",
+      "State only that the school cannot discuss anything at all related to personnel matters, and provide the families with no information about continuity of services or decision making.",
       "Assure families that the complaint is minor so concern does not disrupt school routines during the investigation."
     ],
     "answerIndex": 1,
@@ -10899,7 +10899,7 @@
     "cognitiveLevel": "evaluation",
     "prompt": "A communications director proposes highlighting one subgroup’s large gain while omitting that overall access to the program declined. What should the superintendent require?",
     "choices": [
-      "Publish the gain alone because positive communications are intended to build support rather than provide a complete evaluation.",
+      "Publish the subgroup gain by itself, because positive communications are intended to build public support for the program rather than to provide a complete evaluation of it.",
       "Suppress the subgroup result because reporting any favorable finding before every group improves would be inequitable.",
       "Present the gain with participation, subgroup, baseline, implementation, and limitation information so audiences can understand both the result and who had access.",
       "Combine access and outcome measures into one index so the report contains a single favorable or unfavorable conclusion."
@@ -10950,7 +10950,7 @@
     "choices": [
       "Make the change because the supervisor owns district accountability and can decide how attendance should be reported.",
       "Delete the disputed records before responding so neither the principal nor supervisor can be accused of altering them.",
-      "Post the directive publicly on social media before seeking internal guidance so outside attention prevents concealment.",
+      "Post the supervisor’s directive publicly on social media before seeking any internal guidance or legal advice, so that immediate outside attention makes any later concealment of the request impossible.",
       "Decline to falsify records, preserve accurate evidence, document and clarify the directive, consult current policy and qualified authority, and use protected reporting channels as appropriate."
     ],
     "answerIndex": 3,
@@ -10999,7 +10999,7 @@
     "choices": [
       "Assess the educational purpose, validity, bias, data quality, rights, human review, due process, privacy, security, alternatives, and disparate effects with affected stakeholders.",
       "Adopt the system if its vendor reports high overall accuracy because errors will be distributed randomly across the student body.",
-      "Use predictions only for students with prior discipline records because historical data make restrictions objective for that group.",
+      "Apply the predictions only to students who already have prior discipline records, because the existing historical data make any resulting restrictions objective and defensible for that group.",
       "Keep the scoring method confidential from families so students cannot manipulate the factors that predict disruption."
     ],
     "answerIndex": 0,
@@ -11048,7 +11048,7 @@
     "choices": [
       "Keep the original schedule and reduce program quality so the principal can honor the public promise exactly.",
       "Acknowledge the inaccurate assurance, share the new evidence and tradeoffs, seek affected perspectives, revise the plan through authorized processes, and report the final rationale.",
-      "Change the schedule quietly because discussing the earlier assurance would create unnecessary controversy and delay.",
+      "Change the schedule quietly without comment, because revisiting the earlier public assurance would only create unnecessary controversy and delay the program’s full implementation this year.",
       "Cancel the program because leaders lose authority to revise any condition once a public commitment has been made."
     ],
     "answerIndex": 1,
@@ -11095,7 +11095,7 @@
     "cognitiveLevel": "application",
     "prompt": "A principal wants to show individual attendance histories at an all-staff meeting so every employee can help identify absent students. What should happen instead?",
     "choices": [
-      "Share the histories because all employees qualify as school officials and therefore may view any student record maintained by the school.",
+      "Share the individual histories, because all school employees qualify as school officials and therefore may view any student record that the school maintains for any legitimate purpose.",
       "Remove student names but display unique identification numbers that most staff can connect to their assigned students.",
       "Limit identifiable records to personnel with a legitimate educational interest, use de-identified patterns for broader planning, and follow current FERPA and local access procedures.",
       "Avoid discussing attendance evidence with anyone outside the administrative team because privacy rules prohibit collaborative planning."
@@ -11152,7 +11152,7 @@
     "choices": [
       "Treat a small pilot as low risk because the application has no license fee and will begin with a limited group of students.",
       "Ask families to accept the vendor’s consumer terms so individual consent shifts the district’s data responsibilities to parents.",
-      "Use coded student names while sending real work, identifiers, and usage patterns because names are the primary protected element.",
+      "Use coded student names while still transmitting the real student work, device identifiers, and usage patterns, because the names themselves are the primary protected element of the student record.",
       "Complete authorized privacy, security, contractual, accessibility, records, and instructional review, including data purpose, access, retention, deletion, incident response, and oversight."
     ],
     "answerIndex": 3,
@@ -11207,7 +11207,7 @@
     "choices": [
       "Use multiple valid sources and appropriately administered measures, account for language and cultural factors, assess all suspected areas, and rely on a qualified team rather than one score.",
       "Use the screener because computer administration removes examiner bias and makes the score language neutral.",
-      "Delay evaluation until the student reaches grade-level English proficiency so language no longer complicates interpretation.",
+      "Delay the entire evaluation until the student reaches grade-level English proficiency, so that language differences no longer complicate the interpretation of any screening result that is obtained.",
       "Identify the disability provisionally and use later classroom grades to decide whether the designation should remain."
     ],
     "answerIndex": 0,
@@ -11260,7 +11260,7 @@
     "cognitiveLevel": "application",
     "prompt": "A student has received increasingly intensive intervention, but progress remains weak and staff suspect a disability. The team plans another intervention cycle before considering evaluation. What should the leader say?",
     "choices": [
-      "Require completion of every intervention tier because evaluation is valid only after the school proves that general education cannot help.",
+      "Require documented completion of every intervention tier first, because an evaluation is valid only after the school has proven that general education alone cannot help this particular student.",
       "Continue useful supports while promptly reviewing the suspected-disability evidence and child-find obligations; intervention procedures must not be used to postpone a warranted evaluation.",
       "Stop all intervention once evaluation is discussed so later assessment results are not influenced by additional instruction.",
       "Ask the family to choose between continued intervention and evaluation because simultaneous services would duplicate school resources."
@@ -11315,7 +11315,7 @@
     "cognitiveLevel": "application",
     "prompt": "A veteran employee may face serious discipline after conflicting witness reports. Which process should the principal follow?",
     "choices": [
-      "Announce the likely sanction before interviewing the employee so the school demonstrates a firm commitment to accountability.",
+      "Announce the likely sanction publicly before interviewing the employee or reviewing the conflicting witness statements, so that the school demonstrates a firm institutional commitment to accountability and consistency.",
       "Transfer the employee to an undesirable assignment without documentation because reassignment is less formal than discipline.",
       "Preserve evidence, investigate impartially, provide required notice and a meaningful opportunity to respond, apply current policy and agreements consistently, and use authorized decision and appeal procedures.",
       "Ask the witnesses to decide collectively which account is most credible and adopt the majority view as the final finding."
@@ -11371,7 +11371,7 @@
     "prompt": "A family requests an access adjustment for a school event because a student has a disability, but the usual event plan does not include it. What should the leader do?",
     "choices": [
       "Deny the request because changing the established event plan would give one student a benefit not offered to peers.",
-      "Approve the family’s preferred adjustment immediately without examining safety, effectiveness, or the applicable individualized plan.",
+      "Approve the family’s preferred adjustment immediately and exactly as requested, without examining safety implications, likely effectiveness, or the terms of the student’s applicable individualized plan.",
       "Suggest that the student attend a different event already designed for participants with disabilities.",
       "Respond promptly through the applicable individualized process, clarify the access need, examine effective options with qualified personnel and the family, and document the authorized decision."
     ],
@@ -11426,7 +11426,7 @@
     "prompt": "An employee reports possible national-origin discrimination and then is removed from a committee by the supervisor named in the complaint. What should district leadership do?",
     "choices": [
       "Protect against further retaliation, preserve evidence, use an impartial prompt process, assess the committee action, communicate support and procedures, and apply current civil-rights requirements.",
-      "Wait for the discrimination investigation to end because the committee removal matters only if the original allegation is substantiated.",
+      "Wait until the discrimination investigation has concluded, because the committee removal only matters if the original national-origin allegation is ultimately found to be substantiated by the investigator.",
       "Return the employee to the committee and close both matters because restoration removes the need for further investigation.",
       "Ask the named supervisor to explain the reassignment informally and accept the explanation if it cites team harmony."
     ],
@@ -11482,7 +11482,7 @@
     "choices": [
       "Follow the older district policy because local written rules remain controlling until the board formally republishes them.",
       "Preserve immediate rights and safety, verify the current controlling authority with qualified district or legal guidance, document the conflict, and communicate an authorized interim and final course.",
-      "Implement the state directive exactly as personally interpreted because state documents automatically answer every local application question.",
+      "Implement the new state directive exactly as personally interpreted, because state-issued documents automatically answer every local application question without any further legal or policy review at all.",
       "Let each administrator choose the source that seems most reasonable until a court resolves the inconsistency."
     ],
     "answerIndex": 1,
@@ -11538,7 +11538,7 @@
       "Reduce every budget line by the same percentage so no department can argue that the process favored another program.",
       "Eliminate the least visible student supports first because cuts to public events would create stronger community opposition.",
       "Protect legal, safety, and core instructional obligations; compare expenditures by impact and equity evidence; consult affected groups; and document prioritized reductions with monitoring plans.",
-      "Freeze instructional spending but preserve all prior purchases because reversing established allocations would signal poor planning."
+      "Freeze all remaining instructional spending while preserving every prior purchase commitment, because reversing established allocations midyear would signal poor planning to the staff and to families."
     ],
     "answerIndex": 2,
     "rationale": "Strategic budgeting connects finite resources to mission, obligations, student impact, and equitable access. Transparent criteria and monitoring make difficult reductions more defensible than across-the-board cuts or decisions driven by convenience and visibility.",
@@ -11588,7 +11588,7 @@
     "cognitiveLevel": "analysis",
     "prompt": "A grant can purchase intervention materials but cannot pay ongoing staff salaries, and the proposed program requires substantial coaching. What should leaders do before accepting the grant?",
     "choices": [
-      "Accept the grant and use existing teachers’ planning time for coaching because the external funds cover the program’s visible cost.",
+      "Accept the grant and reassign the existing teachers’ contractual planning time to cover the ongoing coaching requirement, because the external funds already cover all of the program’s most visible material costs up front.",
       "Decline every restricted grant because limits on spending prevent school leaders from aligning resources strategically.",
       "Purchase the materials immediately and decide how to staff the program after the grant deadline has passed.",
       "Verify allowable uses, calculate full implementation and continuation costs, identify sustainable capacity and funding, and decide whether the program advances the strategic need without displacing stronger options."
@@ -11643,7 +11643,7 @@
     "choices": [
       "Compare total lifecycle cost, accessibility, privacy and security, interoperability, support, implementation capacity, instructional fit, and evidence of benefit over the expected use period.",
       "Choose the platform with the lower first-year license because later costs can be addressed through future budget cycles.",
-      "Choose the platform with more features because a larger feature list provides greater value regardless of actual instructional use.",
+      "Choose whichever platform advertises more features, because a longer feature list always provides greater value to the district regardless of how much of it is actually used in classroom instruction.",
       "Split the purchase between both platforms so each vendor’s strengths are available and neither option is excluded."
     ],
     "answerIndex": 0,
@@ -11694,7 +11694,7 @@
     "cognitiveLevel": "application",
     "prompt": "After bids are opened, a committee wants to change the scoring rubric because its preferred vendor performed poorly on the published criteria. What should the administrator do?",
     "choices": [
-      "Revise the rubric if every committee member agrees because unanimous professional judgment protects the fairness of the change.",
+      "Revise the published rubric after the bids are opened if every committee member agrees, because unanimous professional judgment is itself sufficient to protect the fairness of the revised process.",
       "Preserve the announced criteria and evaluation record, disclose the concern, follow procurement rules for clarification or cancellation, and avoid tailoring the process to a preferred outcome.",
       "Add an unscored interview for the preferred vendor so the committee can consider qualities omitted from the rubric.",
       "Award the contract under the original rubric and privately promise the preferred vendor the next available purchase."

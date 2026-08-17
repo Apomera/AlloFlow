@@ -85,8 +85,17 @@ describe('Educator Hub modal runtime accessibility', () => {
 
     const dialog = host.querySelector('[role="dialog"]');
     let buttons = Array.from(dialog.querySelectorAll('button'));
-    expect(dialog.querySelectorAll('button[data-hub-launch="true"]')).toHaveLength(17);
-    expect(dialog.querySelectorAll('button[data-hub-favorite="true"]')).toHaveLength(17);
+    // Re-anchored 2026-08-17 (X8): derive the expected card count from the
+    // SOURCE (a literal 17 went stale the day an 18th card landed and this
+    // suite sat red for it). Full visibility here is correct: this harness
+    // passes no role props, and X7's role scoping defaults to showing all —
+    // the hidden-card contract lives in tests/educator_hub_role_scope.test.js.
+    const sourceCardCount = (require('node:fs')
+      .readFileSync(resolve(process.cwd(), 'view_educator_hub_modal_source.jsx'), 'utf8')
+      .match(/data-hub-id="/g) || []).length;
+    expect(sourceCardCount).toBeGreaterThanOrEqual(17);
+    expect(dialog.querySelectorAll('button[data-hub-launch="true"]')).toHaveLength(sourceCardCount);
+    expect(dialog.querySelectorAll('button[data-hub-favorite="true"]')).toHaveLength(sourceCardCount);
     expect(buttons.length).toBeGreaterThan(19);
     expect(document.activeElement).toBe(buttons[0]);
     expect(dialog.getAttribute('aria-labelledby')).toBe('educator-hub-title');

@@ -36,9 +36,14 @@ const FLAG_RATE = 0.40;
 // option into a red gate. One item in 500 is 0.2%; allow half a point.
 const TOLERANCE = 0.005;
 
+// EPPP was excluded here until 2026-08-17, which made the largest single bank in
+// the product the one nothing measured. Measured, it carries the strongest
+// length tell in the corpus: 50.3% key-is-longest across 1,500 items, of which
+// 43.9% are strictly longer and 19.3% longer by ten characters or more. It is
+// included now and ratcheted like everything else.
 function packFiles() {
   return fs.readdirSync(sourceDir)
-    .filter((name) => name.endsWith('_pack.json') && !name.startsWith('eppp_'))
+    .filter((name) => name.endsWith('_pack.json'))
     .sort();
 }
 

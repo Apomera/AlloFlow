@@ -105,14 +105,27 @@ describe('district evaluation portal launcher', () => {
     expect(save).toHaveBeenCalledWith('');
   });
 
-  it('labels the unconfigured fallback as a demonstration, not a ready personnel tool', () => {
+  it('labels the unconfigured fallback as the on-device workspace with the official-record boundary', () => {
     const container = mount({
       t: () => '', studentProjectSettings: {}, setStudentProjectSettings: vi.fn(), isTeacherMode: true,
       handleSetIsProjectSettingsOpenToFalse: vi.fn(), onOpenPrincipalEvaluation: vi.fn(),
       evaluationPortalUrl: '', isEvaluationPortalConnected: false, onSaveEvaluationPortalUrl: vi.fn(),
     });
-    expect(container.textContent).toContain('Demonstration only, not connected');
-    expect(container.textContent).toContain('is not a personnel record');
-    expect(button(container, 'Open the demonstration')).toBeTruthy();
+    expect(container.textContent).toContain('On-device workspace · portal not connected');
+    expect(container.textContent).toContain('is not the official personnel record');
+    expect(button(container, 'Open Educator Evaluation')).toBeTruthy();
+  });
+});
+
+describe('evaluation launcher: manual discoverability', () => {
+  it('offers the user manual next to the launch button, in the shipped module too', () => {
+    const read = (file) => readFileSync(resolve(process.cwd(), file), 'utf8');
+    const source = read('view_project_settings_source.jsx');
+    const built = read('view_project_settings_module.js');
+    const mirror = read('desktop/web-app/public/view_project_settings_module.js');
+    for (const text of [source, built, mirror]) {
+      expect(text).toContain('https://alloflow-cdn.pages.dev/educator-evaluation-manual');
+      expect(text).toContain('Read the user manual');
+    }
   });
 });

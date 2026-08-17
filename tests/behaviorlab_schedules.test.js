@@ -311,3 +311,61 @@ describe('classical conditioning curve', () => {
     expect(start - e[0]).toBeGreaterThan(e[e.length - 2] - e[e.length - 1]);
   });
 });
+
+// ── Glossary coverage ───────────────────────────────────────────────────────
+// Every level card lists its own vocabulary, and the tool ships a glossary panel.
+// Twenty-one of those terms were missing from it — the entire classical-conditioning
+// set (US, UR, CS, CR, acquisition, spontaneous recovery), which is all of Level 9's
+// vocabulary, and all four schedule terms from Level 4. A student meets the term on
+// the card, opens the glossary, and it is not there.
+//
+// This is a cross-reference between two hand-maintained lists, which is exactly the
+// kind of thing that drifts the next time someone adds a level.
+describe('glossary covers what the levels teach', () => {
+  const ARRAY_END = '\n          ];';
+
+  // Both sides carry parenthetical glosses ("SD (Discriminative Stimulus)"), and a
+  // level may name either half. Compare on a normalised head word, and accept a
+  // match against the parenthetical too — a substring test would silently pair
+  // "US" with "Stimulus", which is how the first version of this check reported
+  // Level 9 as covered when none of its terms were.
+  const norm = (t) => t
+    .replace(/\\u[0-9A-Fa-f]{4}/g, '')
+    .replace(/\(.*?\)/g, ' ')
+    .replace(/[^A-Za-z ]/g, ' ')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, ' ');
+
+  const inners = (t) => [...t.matchAll(/\((.*?)\)/g)].map((m) => norm(m[1]));
+
+  it('defines every term any level names', () => {
+    const src = fs.readFileSync(SOURCE, 'utf8');
+
+    const gi = src.indexOf('var ABA_GLOSSARY');
+    const gj = src.indexOf(ARRAY_END, gi);
+    const terms = [...src.slice(gi, gj).matchAll(/term:\s*'((?:[^'\\]|\\.)*)'/g)].map((m) => m[1]);
+    expect(terms.length, 'the glossary did not parse').toBeGreaterThan(30);
+
+    const known = new Set();
+    for (const t of terms) {
+      known.add(norm(t));
+      for (const inner of inners(t)) known.add(inner);
+    }
+
+    const li = src.indexOf('var LEVELS = [');
+    const lj = src.indexOf(ARRAY_END, li);
+    const levels = src.slice(li, lj);
+
+    const missing = [];
+    for (const m of levels.matchAll(/id: (\d+),[\s\S]*?vocab: \[([^\]]*)\]/g)) {
+      const listed = [...m[2].matchAll(/'((?:[^'\\]|\\.)*)'/g)].map((x) => x[1]);
+      expect(listed.length, `level ${m[1]} lists no vocab`).toBeGreaterThan(0);
+      for (const t of listed) {
+        if ([norm(t), ...inners(t)].some((a) => known.has(a))) continue;
+        missing.push(`L${m[1]}: ${t}`);
+      }
+    }
+    expect(missing, `terms taught but never defined:\n  ${missing.join('\n  ')}`).toEqual([]);
+  });
+});

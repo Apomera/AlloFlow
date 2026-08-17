@@ -247,11 +247,24 @@ describe('calculateAimline — RTI decision-rule thresholds (P2-4)', () => {
   it('is exposed on the test seam', () => {
     expect(typeof SAI.calculateAimline).toBe('function');
   });
-  it('default (no threshold) reproduces the fixed 4-warn / 6-change rule EXACTLY', () => {
-    expect(SAI.calculateAimline(goal, belowPoints(3)).alert).toBe('ok');
+  it('default (no threshold) keeps the 4-warn / 6-change thresholds', () => {
     expect(SAI.calculateAimline(goal, belowPoints(4)).alert).toBe('warning');
     expect(SAI.calculateAimline(goal, belowPoints(6)).alert).toBe('critical');
     expect(SAI.calculateAimline(goal, belowPoints(6))).toMatchObject({ warnThreshold: 4, changeThreshold: 6, consecutiveBelow: 6 });
+  });
+  it('below its minimum, four-point returns no verdict instead of a green one', () => {
+    // CHANGED 2026-08-17, deliberately. This previously asserted 'ok' for three
+    // points, and 'ok' renders as "On track toward goal" — for a student who was
+    // below the aimline at EVERY measurement. Three points is simply too few to
+    // apply a four-point rule; the honest answer is "no decision yet", so the
+    // rule now declares a minimum and reports 'insufficient' under it. The
+    // 4/6 thresholds themselves are untouched (see the test above).
+    const a = SAI.calculateAimline(goal, belowPoints(3));
+    expect(a.alert).toBe('insufficient');
+    expect(a.minPoints).toBe(4);
+    expect(a.detail).toContain('3 of 4 points');
+    // The streak is still counted, so the banner can report it once earned.
+    expect(a.consecutiveBelow).toBe(3);
   });
   it('picker threshold shifts when warning/critical fire', () => {
     // threshold 6 → warn@6 / change@8: 6 consecutive below is only a WARNING now.

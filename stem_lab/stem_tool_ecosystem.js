@@ -400,6 +400,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
   }
 
   // ── CSS animations for ecosystem UI ──
+  // Lift a species accent until it clears 4.5:1 on the dark canvas. Raising HSL
+  // lightness holds hue and saturation exactly — mixing toward white instead washed
+  // the browns out (#92400e became a pastel #b67f5e rather than a vivid #e36416).
+  var ecoAccentDarkCache = {};
+  function ecoAccentOnDark(hex) {
+    if (typeof hex !== 'string' || !/^#[0-9a-fA-F]{6}$/.test(hex)) return hex;
+    if (ecoAccentDarkCache[hex]) return ecoAccentDarkCache[hex];
+    // Lightest of the dark grounds this accent appears on, so one value covers them
+    // all. Measured across the six composited backgrounds the accents land on; the
+    // species-tinted preview card (rgb(44,30,57)) is the lightest, not the flat panel.
+    var GROUND = [44, 30, 57];
+    function toLin(v) { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }
+    function lum(c) { return 0.2126 * toLin(c[0]) + 0.7152 * toLin(c[1]) + 0.0722 * toLin(c[2]); }
+    function ratio(a, b) { var x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
+    var rgb = [1, 3, 5].map(function (i) { return parseInt(hex.slice(i, i + 2), 16); });
+    if (ratio(rgb, GROUND) >= 4.5) { ecoAccentDarkCache[hex] = hex; return hex; }
+    var r = rgb[0] / 255, g = rgb[1] / 255, b = rgb[2] / 255;
+    var mx = Math.max(r, g, b), mn = Math.min(r, g, b), l0 = (mx + mn) / 2, hh = 0, ss = 0;
+    if (mx !== mn) {
+      var d = mx - mn;
+      ss = l0 > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
+      hh = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+      hh /= 6;
+    }
+    function fromHsl(li) {
+      if (!ss) return [li * 255, li * 255, li * 255];
+      var q = li < 0.5 ? li * (1 + ss) : li + ss - li * ss, p = 2 * li - q;
+      function ch(t) {
+        t = (t + 1) % 1;
+        if (t < 1 / 6) return p + (q - p) * 6 * t;
+        if (t < 0.5) return q;
+        if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+        return p;
+      }
+      return [ch(hh + 1 / 3) * 255, ch(hh) * 255, ch(hh - 1 / 3) * 255];
+    }
+    var out = '#ffffff';
+    for (var li = l0; li <= 1.0001; li += 0.005) {
+      var cand = fromHsl(li);
+      if (ratio(cand, GROUND) >= 4.55) {
+        out = '#' + cand.map(function (v) {
+          return Math.max(0, Math.min(255, Math.round(v))).toString(16).replace(/^(.)$/, '0$1');
+        }).join('');
+        break;
+      }
+    }
+    ecoAccentDarkCache[hex] = out;
+    return out;
+  }
+
   if (!document.getElementById('eco-css-anims')) {
     var ecoStyle = document.createElement('style');
     ecoStyle.id = 'eco-css-anims';
@@ -414,7 +464,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
       '.eco-badge { animation: ecoBadgePop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); }',
       '.eco-stat-bar { animation: ecoBarFill 0.6s ease-out; }',
       '.eco-extinction { animation: ecoExtinction 2s ease-in-out infinite; }',
-      '.eco-glow { animation: ecoGlow 2s ease-in-out infinite; }'
+      '.eco-glow { animation: ecoGlow 2s ease-in-out infinite; }',
+      // Species accent as text. Dark is the base because an unthemed host falls back
+      // to the dark canvas; .theme-default puts the authored colour back.
+      '.eco-accent { color: var(--eco-acc-dark, currentColor); }',
+      '.theme-default .eco-accent { color: var(--eco-acc-light, currentColor); }',
+      // The deep-dive panel hardcodes a dark gradient in every theme, so its accent
+      // never switches.
+      '.eco-accent-fixed { color: var(--eco-acc-dark, currentColor); }',
+      '.theme-contrast .eco-accent, .theme-contrast .eco-accent-fixed { color: var(--allo-stem-text, #ffff00); }'
     ].join('\n');
     document.head.appendChild(ecoStyle);
   }
@@ -2484,9 +2542,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         var tick = 0;
         var animId = null;
         var ecoAlive = true;
+        // Starts true so the scene runs if IntersectionObserver is unavailable or its
+        // first callback has not arrived yet.
+        var ecoOnScreen = true;
+        var ecoViewObserver = null;
         var wasDay = true;
 
         function isEcoHidden() {
+          // Scrolled out of view counts the same as a hidden tab: the frame is not
+          // seen, so it is not worth drawing.
+          if (!ecoOnScreen) return true;
           return typeof document !== 'undefined' && !!document.hidden;
         }
 
@@ -2513,6 +2578,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           canvas.removeEventListener('touchend', onMouseUp);
           canvas.removeEventListener('touchcancel', onMouseUp);
           if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onEcoVisibilityChange);
+          if (ecoViewObserver) { ecoViewObserver.disconnect(); ecoViewObserver = null; }
           canvas._ecoInit = false;
           canvas._ecoCleanup = null;
           canvas._ecoSchedule = null;
@@ -2621,6 +2687,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         canvas.addEventListener('touchend', onMouseUp);
         canvas.addEventListener('touchcancel', onMouseUp);
         if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onEcoVisibilityChange);
+
+        // This canvas mounts below the fold, so this is not an edge case: without it
+        // the simulation ran unwatched from first paint until the student scrolled to it.
+        if (typeof IntersectionObserver === 'function') {
+          ecoViewObserver = new IntersectionObserver(function (entries) {
+            var entry = entries[entries.length - 1];
+            if (!entry) return;
+            ecoOnScreen = entry.isIntersecting;
+            if (ecoOnScreen) { cancelEcoFrame(); draw(); }
+            else cancelEcoFrame();
+          }, { rootMargin: '200px' });
+          ecoViewObserver.observe(canvas);
+        }
         canvas._ecoCleanup = cleanupEcoCanvas;
         canvas._ecoSchedule = scheduleEcoFrame;
         if (typeof window !== 'undefined') window._ecosystemCanvasCleanup = cleanupEcoCanvas;
@@ -4683,7 +4762,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
       // Event definitions for buttons
       var eventDefs = [
-        { id: 'drought',   icon: activeScenario.events.drought.icon, label: activeScenario.events.drought.label, color: 'bg-amber-600' },
+        { id: 'drought',   icon: activeScenario.events.drought.icon, label: activeScenario.events.drought.label, color: 'bg-amber-700' },
         { id: 'disease',   icon: activeScenario.events.disease.icon, label: activeScenario.events.disease.label, color: 'bg-green-700' },
         { id: 'foodBoom',  icon: activeScenario.events.foodBoom.icon, label: activeScenario.events.foodBoom.label, color: 'bg-emerald-700' },
         { id: 'migration', icon: activeScenario.events.migration.icon, label: activeScenario.events.migration.label, color: 'bg-blue-700' },
@@ -5319,11 +5398,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   return [
                     h('div', { key: 'sp', className: 'bg-green-50 dark:bg-green-900/20 rounded p-1' },
                       h('div', { className: 'text-[11px] text-slate-600' }, __alloT('stem.ecosystem.peak_prey', 'Peak Prey')),
-                      h('div', { className: 'text-sm font-bold text-green-600' }, lpMax)
+                      h('div', { className: 'text-sm font-bold text-green-700' }, lpMax)
                     ),
                     h('div', { key: 'sd', className: 'bg-red-50 dark:bg-red-900/20 rounded p-1' },
                       h('div', { className: 'text-[11px] text-slate-600' }, __alloT('stem.ecosystem.peak_pred', 'Peak Pred')),
-                      h('div', { className: 'text-sm font-bold text-red-600' }, ldMax)
+                      h('div', { className: 'text-sm font-bold text-red-700' }, ldMax)
                     ),
                     h('div', { key: 'sr', className: 'bg-purple-50 dark:bg-purple-900/20 rounded p-1' },
                       h('div', { className: 'text-[11px] text-slate-600' }, __alloT('stem.ecosystem.ratio', 'Ratio')),
@@ -5511,7 +5590,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               POE_STAGES.map(function(stage) {
                 var active = poeStage === stage.id;
                 var reached = stage.id === 'predict' || (stage.id === 'observe' && (poeStage === 'observe' || poeStage === 'explain')) || (stage.id === 'explain' && poeStage === 'explain');
-                return h('div', { key: stage.id, role: 'listitem', 'aria-current': active ? 'step' : undefined, className: 'rounded px-2 py-1 text-center text-[11px] font-bold ' + (active ? 'bg-cyan-700 text-white' : reached ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-200' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400') }, (reached ? '\u2713 ' : '') + stage.label);
+                return h('div', { key: stage.id, role: 'listitem', 'aria-current': active ? 'step' : undefined, className: 'rounded px-2 py-1 text-center text-[11px] font-bold ' + (active ? 'bg-cyan-700 text-white' : reached ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-200' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400') }, (reached ? '\u2713 ' : '') + stage.label);
               })
             ),
             h('div', { role: 'status', 'aria-live': 'polite', className: 'text-[11px] text-slate-600 dark:text-slate-300' },
@@ -5670,11 +5749,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             h('div', { className: 'grid grid-cols-4 gap-1 text-center' },
               h('div', { className: 'bg-green-50 dark:bg-green-900/20 rounded p-1' },
                 h('div', { className: 'text-[11px] text-slate-600' }, __alloT('stem.ecosystem.peak_prey', 'Peak Prey')),
-                h('div', { className: 'text-sm font-bold text-green-600' }, peakPrey)
+                h('div', { className: 'text-sm font-bold text-green-700' }, peakPrey)
               ),
               h('div', { className: 'bg-red-50 dark:bg-red-900/20 rounded p-1' },
                 h('div', { className: 'text-[11px] text-slate-600' }, __alloT('stem.ecosystem.peak_pred', 'Peak Pred')),
-                h('div', { className: 'text-sm font-bold text-red-600' }, peakPred)
+                h('div', { className: 'text-sm font-bold text-red-700' }, peakPred)
               ),
               h('div', { className: 'bg-purple-50 dark:bg-purple-900/20 rounded p-1' },
                 h('div', { className: 'text-[11px] text-slate-600' }, __alloT('stem.ecosystem.ratio', 'Ratio')),
@@ -5974,7 +6053,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                     done && h('span', { className: 'text-[11px] text-green-700 font-bold ml-auto' }, '✔')
                   ),
                   h('p', { className: 'text-[11px] text-slate-600 mb-1' }, __alloT('stem.ecosystem.' + (ch.id) + '_desc', ch.desc)),
-                  h('p', { className: 'text-[11px] font-bold ' + (done ? 'text-green-600' : 'text-amber-600') },
+                  h('p', { className: 'text-[11px] font-bold ' + (done ? 'text-green-700' : 'text-amber-700') },
                     done ? '✔ ' + __alloT('stem.ecosystem.completed_excl', 'Completed!') : '⭐ +' + ch.reward + ' RP')
                 );
               })
@@ -6130,7 +6209,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   if (canvasEl) canvasEl.dataset.speed = newSpeed.toString();
                 }
               }),
-              h('span', { className: 'text-[11px] font-bold text-teal-600 min-w-[28px] text-right' }, speedLabel(simSpeed))
+              h('span', { className: 'text-[11px] font-bold text-teal-700 min-w-[28px] text-right' }, speedLabel(simSpeed))
             )
           ),
 
@@ -6178,15 +6257,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               return [
                 h('div', { key: 'sbp', className: 'bg-green-50 dark:bg-green-900/20 rounded p-1.5' },
                   h('div', { className: 'text-[11px] text-slate-600' }, activeScenario.prey.emoji + ' ' + preySeriesLabel),
-                  h('div', { className: 'text-sm font-bold text-green-600' }, preyNow)
+                  h('div', { className: 'text-sm font-bold text-green-700' }, preyNow)
                 ),
                 h('div', { key: 'sbd', className: 'bg-red-50 dark:bg-red-900/20 rounded p-1.5' },
                   h('div', { className: 'text-[11px] text-slate-600' }, activeScenario.predator.emoji + ' ' + predatorSeriesLabel),
-                  h('div', { className: 'text-sm font-bold text-red-600' }, predNow)
+                  h('div', { className: 'text-sm font-bold text-red-700' }, predNow)
                 ),
                 h('div', { key: 'sbv', className: 'bg-emerald-50 dark:bg-emerald-900/20 rounded p-1.5' },
                   h('div', { className: 'text-[11px] text-slate-600' }, activeScenario.producer.emoji + ' ' + activeScenario.producer.label + ' resource'),
-                  h('div', { className: 'text-sm font-bold text-emerald-600' }, vegNow + '%')
+                  h('div', { className: 'text-sm font-bold text-emerald-700' }, vegNow + '%')
                 )
               ];
             })()
@@ -6454,7 +6533,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 )
               ),
               h('p', { style: { margin: '0 0 10px 0', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13.5, lineHeight: 1.6 } }, conserve.aiReadResponse),
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', lineHeight: 1.5, paddingTop: 8, borderTop: '1px solid rgba(56,189,248,0.2)', fontStyle: 'italic' } },
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5, paddingTop: 8, borderTop: '1px solid rgba(56,189,248,0.2)', fontStyle: 'italic' } },
                 __alloT('stem.ecosystem.ai_educator_disclaimer1', 'AI conservation biology educator. '),
                 h('strong', null, __alloT('stem.ecosystem.ai_disclaimer2', 'It is not a Wabanaki person, not a wildlife professional, and does not speak for any Wabanaki nation, agency, or organization.')),
                 __alloT('stem.ecosystem.ai_disclaimer3', ' For authoritative voices on Maine conservation work, consult Penobscot Cultural and Historic Preservation Department, Passamaquoddy Cultural Heritage Museum, Wabanaki Public Health and Wellness, Maine Indian Basketmakers Alliance, Maine Department of Inland Fisheries and Wildlife, and the Atlantic Salmon Federation.')
@@ -6505,7 +6584,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             return h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 12, padding: 8, marginBottom: 12, border: '1px solid var(--allo-stem-border, #1e293b)' } },
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6, paddingLeft: 4, display: 'flex', alignItems: 'center', gap: 8 } },
                 h('span', null, __alloT('stem.ecosystem.foodweb_cascade_caption', 'Food web: cascade rules active in real time')),
-                h('span', { style: { marginLeft: 'auto', fontSize: 10, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic' } }, __alloT('stem.ecosystem.click_species_deepdive', 'Click any species for deep-dive →'))
+                h('span', { style: { marginLeft: 'auto', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, __alloT('stem.ecosystem.click_species_deepdive', 'Click any species for deep-dive →'))
               ),
               h('svg', { viewBox: '0 0 ' + w + ' ' + hgt, style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8 }, role: 'img', 'aria-label': __alloT('stem.ecosystem.aria_foodweb_diagram', 'Food-web diagram of the 6 Maine species') },
                 h('rect', { x: 0, y: 0, width: w, height: hgt, fill: '#020617', rx: 6 }),
@@ -6618,9 +6697,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 } },
                 h('span', { style: { fontSize: 36 } }, def.icon),
                 h('div', { style: { flex: 1 } },
-                  h('div', { style: { fontSize: 11, color: def.color, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, __alloT('stem.ecosystem.species_deepdive', 'Species deep-dive')),
+                  h('div', { style: { fontSize: 11, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase', '--eco-acc-light': def.color, '--eco-acc-dark': ecoAccentOnDark(def.color) }, className: 'eco-accent-fixed' }, __alloT('stem.ecosystem.species_deepdive', 'Species deep-dive')),
                   h('h3', { id: 'ecosystem-deep-dive-title-' + def.id, style: { margin: '2px 0 0', color: '#fff', fontSize: 20 } }, def.name),
-                  h('div', { style: { color: def.color, fontSize: 13, marginTop: 4, fontStyle: 'italic' } }, def.role)
+                  h('div', { style: { fontSize: 13, marginTop: 4, fontStyle: 'italic', '--eco-acc-light': def.color, '--eco-acc-dark': ecoAccentOnDark(def.color) }, className: 'eco-accent-fixed' }, def.role)
                 ),
                 h('button', { onClick: closeConservDeepDive,
                   style: { background: 'rgba(15,23,42,0.6)', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #cbd5e1)', cursor: 'pointer', borderRadius: 8, padding: '6px 12px', fontWeight: 700, fontSize: 13 } }, '✕ ' + __alloT('stem.ecosystem.close', 'Close'))
@@ -6837,13 +6916,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   return h('div', { key: s.id, style: { background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid ' + s.color, borderRadius: 10, padding: 12 } },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                       h('span', { style: { fontSize: 22 } }, s.icon),
-                      h('strong', { style: { color: s.color } }, s.name)
+                      h('strong', { className: 'eco-accent', style: { '--eco-acc-light': s.color, '--eco-acc-dark': ecoAccentOnDark(s.color) } }, s.name)
                     ),
                     h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4 } }, s.role),
                     h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 8 } }, __alloT('stem.ecosystem.' + (s.id) + '_desc', s.desc)),
                     h('button', { onClick: function() { openConservDeepDive(s.id); },
                       'aria-label': __alloT('stem.ecosystem.aria_open_deepdive_pre', 'Open deep-dive for ') + s.name,
-                      style: { width: '100%', padding: '6px 10px', borderRadius: 8, border: '1px solid ' + s.color + '88', background: s.color + '22', color: s.color, cursor: 'pointer', fontWeight: 700, fontSize: 11.5 }
+                      className: 'eco-accent',
+                      style: { width: '100%', padding: '6px 10px', borderRadius: 8, border: '1px solid ' + s.color + '88', background: s.color + '22', '--eco-acc-light': s.color, '--eco-acc-dark': ecoAccentOnDark(s.color), cursor: 'pointer', fontWeight: 700, fontSize: 11.5 }
                     }, '📚 ' + __alloT('stem.ecosystem.species_deepdive', 'Species deep-dive') + ' →')
                   );
                 })
@@ -6898,10 +6978,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   var hit = s.pop >= targets.pop && s.habitat >= targets.habitat && s.support >= targets.support;
                   var artifact = speciesArtifact(s);
                   return h('div', { key: s.id, style: { background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid ' + def.color, borderRadius: 10, padding: 12, fontSize: 12 } },
-                    h('div', { style: { fontWeight: 700, color: def.color, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 } },
+                    h('div', { style: { fontWeight: 700, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6, '--eco-acc-light': def.color, '--eco-acc-dark': ecoAccentOnDark(def.color) }, className: 'eco-accent' },
                       h('span', null, def.icon + ' ' + def.name + (hit ? ' ✓' : '')),
                       def.deepDive ? h('button', { onClick: function() { openConservDeepDive(s.id); }, 'aria-label': __alloT('stem.ecosystem.aria_deepdive', 'Deep-dive'), title: __alloT('stem.ecosystem.species_deepdive', 'Species deep-dive'),
-                        style: { marginLeft: 'auto', background: 'transparent', border: '1px solid ' + def.color + '66', color: def.color, cursor: 'pointer', borderRadius: 6, padding: '0 6px', fontSize: 11 } }, '📚') : null
+                        className: 'eco-accent', style: { marginLeft: 'auto', background: 'transparent', border: '1px solid ' + def.color + '66', '--eco-acc-light': def.color, '--eco-acc-dark': ecoAccentOnDark(def.color), cursor: 'pointer', borderRadius: 6, padding: '0 6px', fontSize: 11 } }, '📚') : null
                     ),
                     h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
                       __alloT('stem.ecosystem.population_colon', 'Population: ') + Math.round(s.pop) + ' / ' + targets.pop,
@@ -6947,7 +7027,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   style: { padding: '10px 16px', borderRadius: 10, border: '1px solid #38bdf8', cursor: 'pointer', background: 'rgba(56,189,248,0.15)', color: '#bae6fd', fontWeight: 700 } }, '🔁 ' + __alloT('stem.ecosystem.replay_same', 'Replay same conditions'))
               ),
               h('div', { style: { marginTop: 8, padding: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8, fontSize: 11.5, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, monospace' } },
-                h('span', { style: { color: 'var(--allo-stem-text-soft, #64748b)' } }, __alloT('stem.ecosystem.campaign_seed', 'Campaign seed: ')),
+                h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.ecosystem.campaign_seed', 'Campaign seed: ')),
                 h('strong', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, conserve.seed)
               )
             );
@@ -6993,7 +7073,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   // Deer is "good if down" since the conservation target is lower
                   var popGoodIfDown = (preS.id === 'deer');
                   return h('div', { key: preS.id, style: { fontSize: 12, padding: '4px 0', borderTop: '1px solid var(--allo-stem-border, #1e293b)' } },
-                    h('strong', { style: { color: def.color, marginRight: 8 } }, def.icon + ' ' + def.name),
+                    h('strong', { className: 'eco-accent', style: { marginRight: 8, '--eco-acc-light': def.color, '--eco-acc-dark': ecoAccentOnDark(def.color) } }, def.icon + ' ' + def.name),
                     delta(__alloT('stem.ecosystem.delta_pop', 'Pop'), preS.pop, postS.pop, popGoodIfDown),
                     delta(__alloT('stem.ecosystem.delta_hab', 'Hab'), preS.habitat, postS.habitat, false),
                     delta(__alloT('stem.ecosystem.delta_sup', 'Sup'), preS.support, postS.support, false)
@@ -7067,11 +7147,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
                     h('span', { style: { fontSize: 22 } }, def.icon),
                     h('div', { style: { flex: 1 } },
-                      h('div', { style: { fontWeight: 700, color: def.color, fontSize: 14 } }, def.name),
+                      h('div', { style: { fontWeight: 700, fontSize: 14, '--eco-acc-light': def.color, '--eco-acc-dark': ecoAccentOnDark(def.color) }, className: 'eco-accent' }, def.name),
                       h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, def.role)
                     ),
                     def.deepDive ? h('button', { onClick: function() { openConservDeepDive(s.id); }, 'aria-label': __alloT('stem.ecosystem.aria_deepdive_for_pre', 'Deep-dive for ') + def.name, title: __alloT('stem.ecosystem.species_deepdive', 'Species deep-dive'),
-                      style: { background: 'transparent', border: '1px solid ' + def.color + '66', color: def.color, cursor: 'pointer', borderRadius: 6, padding: '2px 8px', fontSize: 11, fontWeight: 700 } }, '📚') : null
+                      className: 'eco-accent', style: { background: 'transparent', border: '1px solid ' + def.color + '66', '--eco-acc-light': def.color, '--eco-acc-dark': ecoAccentOnDark(def.color), cursor: 'pointer', borderRadius: 6, padding: '2px 8px', fontSize: 11, fontWeight: 700 } }, '📚') : null
                   ),
                   h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 8 } },
                     [[__alloT('stem.ecosystem.delta_pop', 'Pop'), Math.round(s.pop), s.pop < 25 ? '#ef4444' : s.pop < 50 ? '#f59e0b' : '#22c55e', def.targets.pop],
@@ -7081,7 +7161,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                       return h('div', { key: si, style: { background: 'var(--allo-stem-panel, #1e293b)', padding: 6, borderRadius: 6, textAlign: 'center' } },
                         h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, st[0]),
                         h('div', { style: { fontSize: 15, fontWeight: 800, color: st[2] } }, st[1]),
-                        h('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #64748b)' } }, __alloT('stem.ecosystem.goal_prefix', 'goal ') + st[3])
+                        h('div', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.ecosystem.goal_prefix', 'goal ') + st[3])
                       );
                     })
                   ),
@@ -7109,7 +7189,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               conserve.yearActions.map(function(a, ai) {
                 return h('div', { key: ai }, '· ' + a.tech + ' → ' + a.species + ' (' + a.hours + 'h)');
               })
-            ) : h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #64748b)', fontStyle: 'italic' } }, __alloT('stem.ecosystem.no_actions_yet', 'No actions yet this year. Pick a species, pick a technique.'))
+            ) : h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, __alloT('stem.ecosystem.no_actions_yet', 'No actions yet this year. Pick a species, pick a technique.'))
           );
         })(),
 
@@ -7314,7 +7394,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           h('div', { className: 'bg-white dark:bg-slate-900 rounded-xl border border-slate-400 dark:border-slate-700 p-4 space-y-3' },
             h('div', { className: 'flex justify-between items-center' },
               h('span', { className: 'text-xs font-bold text-slate-700 dark:text-slate-200' }, __alloT('stem.ecosystem.question_prefix', 'Question ') + ((quizIndex % QUIZ_QUESTIONS.length) + 1) + __alloT('stem.ecosystem.of_mid', ' of ') + QUIZ_QUESTIONS.length),
-              h('span', { className: 'text-xs text-emerald-600 font-bold' }, '\u2714 ' + quizCorrect + '/' + quizTotal)
+              h('span', { className: 'text-xs text-emerald-700 font-bold' }, '\u2714 ' + quizCorrect + '/' + quizTotal)
             ),
             h('p', { className: 'text-sm font-semibold text-slate-800 dark:text-slate-100' }, currentQ.q),
             callTTS && h('button', { 'aria-label': __alloT('stem.ecosystem.read_question', 'Read question'),

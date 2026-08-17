@@ -412,8 +412,9 @@ function HeaderBar(props) {
   const selectedReadingThemeLabel = t("header." + selectedReadingThemeKey) || readingThemeFallbackLabels[readingTheme] || readingThemeFallbackLabels.default;
   const piiWarningText = t("header.pii_warning");
   const compactRoleLabel = isIndependentMode ? t("roles.independent") || "Independent Learner" : isParentMode ? t("roles.parent") || "Parent" : isTeacherMode ? t("roles.teacher") || "Teacher" : t("roles.student") || "Student";
+  const dashboardNavLabel = isParentMode ? t("dashboard.title_parent") || "Family Dashboard" : t("dashboard.title") || "Dashboard";
   const compactViewFallback = String(activeView || "").replace(/[-_]+/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
-  const compactContextLabel = guidedMode ? t("launch_pad.guided_title") || "Guided Mode" : activeView === "dashboard" ? t("dashboard.title") || "Dashboard" : activeView === "input" ? t("tools.source") || "Source Material" : compactViewFallback || (t("common.ready") || "Ready");
+  const compactContextLabel = guidedMode ? t("launch_pad.guided_title") || "Guided Mode" : activeView === "dashboard" ? dashboardNavLabel : activeView === "input" ? t("tools.source") || "Source Material" : compactViewFallback || (t("common.ready") || "Ready");
   const openJoinFromCompactHeader = () => {
     setHeaderCollapsed(false);
     try {
@@ -460,11 +461,11 @@ function HeaderBar(props) {
       onClick: handleSetActiveViewToDashboard,
       "data-help-key": "header_dashboard",
       className: `hidden sm:inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-3 transition-colors ${activeView === "dashboard" ? "bg-white text-indigo-900 shadow-lg" : "text-white/85 hover:bg-white/10 hover:text-white"}`,
-      title: t("dashboard.title"),
-      "aria-label": t("dashboard.title")
+      title: dashboardNavLabel,
+      "aria-label": dashboardNavLabel
     },
     /* @__PURE__ */ React.createElement(Layout, { size: 18, "aria-hidden": "true" }),
-    /* @__PURE__ */ React.createElement("span", { className: "hidden 2xl:inline text-xs font-bold" }, t("dashboard.title"))
+    /* @__PURE__ */ React.createElement("span", { className: "hidden 2xl:inline text-xs font-bold" }, dashboardNavLabel)
   ), setShowLearningHub && /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -871,8 +872,8 @@ function HeaderBar(props) {
       onClick: handleSetActiveViewToDashboard,
       "data-help-key": "header_dashboard",
       className: `p-2 rounded-xl transition-all flex items-center gap-2 ${activeView === "dashboard" ? "bg-white text-indigo-900 shadow-lg" : "hover:bg-white/10 text-white/80 hover:text-white"}`,
-      title: t("dashboard.title"),
-      "aria-label": t("dashboard.title")
+      title: dashboardNavLabel,
+      "aria-label": dashboardNavLabel
     },
     /* @__PURE__ */ React.createElement(Layout, { size: 20 })
   ), !isTeacherMode && /* @__PURE__ */ React.createElement(

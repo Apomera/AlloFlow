@@ -8,8 +8,6 @@
     "AlloFlowANTI.txt::isProgressSyncing",
     "AlloFlowANTI.txt::lastProgressSync",
     "AlloFlowANTI.txt::learningWebRegistryRevision",
-    "AlloFlowANTI.txt::mathFluencyActive",
-    "AlloFlowANTI.txt::mathFluencyResults",
     "AlloFlowANTI.txt::modulesReady",
     "AlloFlowANTI.txt::nlAnswer",
     "AlloFlowANTI.txt::nlFeedback",

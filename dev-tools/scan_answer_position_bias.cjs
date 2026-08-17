@@ -131,7 +131,24 @@ for (const f of files) {
   // (also written `* 7) + 3) %`) used by every rotation IIFE in the catalog —
   // geometryworld's gwRotateQuestionTree and punnett's punnettRotateBank were
   // flagged as unshuffled for months because this check only knew shuffles.
-  const hasShuffle = /Fisher|shuffle|Shuffle|sort\(\s*function\s*\(\s*\)\s*\{\s*return\s+Math\.random|\*\s*7\s*\)?\s*\+\s*3\s*\)\s*%/.test(src);
+  //
+  // Two ways this check used to answer "yes" to a file that neutralises nothing:
+  //   1. It read the WHOLE source, comments included. A tool whose 3-D section
+  //      says "a scene that reshuffles itself is distracting" scored a shuffle it
+  //      does not have. Any prose containing the word passed the bank.
+  //   2. The rotation fingerprint was pinned to the literal 7/3 recipe, so an
+  //      equally valid `(i * 3 + 1) % len` did not count and only rescued a tool
+  //      by accident, through reason 1.
+  // Comments are stripped first, and the recipe is matched by SHAPE.
+  const code = src
+    .replace(/\/\*[\s\S]*?\*\//g, ' ')
+    .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
+  // Match the RECIPE, not the counter expression: the multiplicand may be `i`,
+  // `counter.i++`, `idx`, anything. Pinning the operand shape rejected
+  // geometryworld's `((counter.i++ * 7) + 3) % n`, which is a real rotation.
+  const ROTATION = /\*\s*\d+\s*\)?\s*\+\s*\d+\s*\)?\s*%/;
+  const hasShuffle = /Fisher|shuffle|Shuffle|sort\(\s*function\s*\(\s*\)\s*\{\s*return\s+Math\.random/.test(code)
+    || ROTATION.test(code);
 
   // judge the dominant arity only
   const arity = Object.keys(counts).sort((a, b) => counts[b].reduce((x, y) => x + y, 0) - counts[a].reduce((x, y) => x + y, 0))[0];

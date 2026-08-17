@@ -1,6 +1,10 @@
 function EvaluationPortalQr(props) {
   var React = window.React;
   var url = String(props && props.url || '').trim();
+  // Routed through the same translator the rest of this file uses. Keys are not
+  // in ui_strings.js yet, and the host t() returns undefined on a miss, so the
+  // English fallback renders until the translation lane adds them.
+  var t = (props && props.t) || function() { return undefined; };
   var _state = React.useState({ status: 'loading', svg: '', error: '' });
   var state = _state[0];
   var setState = _state[1];
@@ -16,7 +20,7 @@ function EvaluationPortalQr(props) {
         if (attempts++ < 20) {
           timer = setTimeout(build, 250);
         } else if (!cancelled) {
-          setState({ status: 'error', svg: '', error: 'The QR generator is not available in this build.' });
+          setState({ status: 'error', svg: '', error: t('project_settings.qr_unavailable_build') || 'The QR generator is not available in this build.' });
         }
         return;
       }
@@ -53,14 +57,14 @@ function EvaluationPortalQr(props) {
   };
   return (
     <div className="mt-4 grid gap-4 rounded-2xl border border-violet-200 bg-violet-50/60 p-4 sm:grid-cols-[auto,1fr] sm:items-center">
-      <div className="flex min-h-44 min-w-44 items-center justify-center rounded-xl border-2 border-violet-200 bg-white p-3" aria-label="Educator Evaluation district portal QR code">
+      <div className="flex min-h-44 min-w-44 items-center justify-center rounded-xl border-2 border-violet-200 bg-white p-3" aria-label={t('project_settings.portal_qr_aria') || "Educator Evaluation district portal QR code"}>
         {state.status === 'ready' && state.svg
           ? <div className="h-40 w-40 [&_svg]:h-full [&_svg]:w-full" dangerouslySetInnerHTML={{ __html: state.svg }} />
           : <span className="px-3 text-center text-xs font-bold text-violet-800">{state.status === 'error' ? 'QR unavailable' : 'Preparing QR code…'}</span>}
       </div>
       <div>
-        <p className="text-xs font-black uppercase tracking-wider text-violet-700">Portal QR code</p>
-        <h5 className="mt-1 text-sm font-black text-slate-900">Open the district evaluation portal on another device</h5>
+        <p className="text-xs font-black uppercase tracking-wider text-violet-700">{t('project_settings.portal_qr_label') || "Portal QR code"}</p>
+        <h5 className="mt-1 text-sm font-black text-slate-900">{t('project_settings.portal_qr_title') || "Open the district evaluation portal on another device"}</h5>
         <p className="mt-1 text-xs leading-relaxed text-slate-600">Scanning opens the same authenticated district portal. Google sign-in and server-side assignments still control access; the QR code does not grant permission by itself.</p>
         {state.error && <p className="mt-2 text-xs font-bold text-rose-700">{state.error}</p>}
         <button type="button" onClick={copyPortalLink} className="mt-3 min-h-10 rounded-xl border border-violet-300 bg-white px-3 py-2 text-xs font-black text-violet-800 hover:bg-violet-100 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2">Copy portal link</button>
@@ -301,20 +305,29 @@ function ProjectSettingsView(props) {
                       about to get. Before this the not-connected state read
                       "Local preview available", which does not tell a principal
                       whether the tool is ready to use on real staff. */}
-                  <p className={`text-xs font-black uppercase tracking-wider ${isEvaluationPortalConnected ? 'text-indigo-700' : 'text-amber-700'}`}>{isEvaluationPortalConnected ? 'District portal connected' : 'Demonstration only, not connected'}</p>
+                  <p className={`text-xs font-black uppercase tracking-wider ${isEvaluationPortalConnected ? 'text-indigo-700' : 'text-amber-700'}`}>{isEvaluationPortalConnected ? 'District portal connected' : 'On-device workspace · portal not connected'}</p>
                   <h4 id="principal-evaluation-title" className="mt-1 text-base font-black text-slate-900">Principal Evaluation</h4>
                   <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-600">
                     {isEvaluationPortalConnected
                       ? 'Opens the Google-authenticated district portal for walkthroughs, formal observations, SPM and SLO workflow, feedback, and trends. Sign-in and server-side assignments decide what each person sees.'
-                      : 'No district portal is connected, so this opens a demonstration you can click through. Anything you type stays in this browser, is visible to anyone using this device, and is not a personnel record. Do not enter real staff information here.'}
+                      : 'Opens your private on-device workspace with walkthroughs, observations, SPM/SLO workflow, and trends. Nothing is uploaded. It is per-device (anyone using this device can open it) and is not the official personnel record; connect your district portal for shared, authenticated records.'}
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={onOpenPrincipalEvaluation}
                   className={`shrink-0 rounded-xl px-4 py-2.5 text-sm font-black shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${isEvaluationPortalConnected ? 'bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500' : 'border border-amber-500 bg-white text-amber-800 hover:bg-amber-50 focus:ring-amber-500'}`}
-                >{isEvaluationPortalConnected ? 'Open district portal' : 'Open the demonstration'}</button>
+                >{isEvaluationPortalConnected ? 'Open district portal' : 'Open Educator Evaluation'}</button>
               </div>
+              <p className="mt-2 text-xs font-semibold">
+                <a
+                  href="https://alloflow-cdn.pages.dev/educator-evaluation-manual"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-indigo-700 underline hover:text-indigo-900"
+                >Read the user manual</a>
+                <span className="ml-1 font-normal text-slate-600">covers both versions, the evaluation cycle, privacy, and district setup.</span>
+              </p>
               {typeof onSaveEvaluationPortalUrl === 'function' && (
                 <>
                   <form className="mt-4 border-t border-indigo-100 pt-4" onSubmit={function(event) { event.preventDefault(); applyEvaluationPortalUrl(portalUrlDraft); }}>
@@ -359,7 +372,7 @@ function ProjectSettingsView(props) {
                       <p>The full setup and compliance checklist ships with the package, at <code>apps_script/educator_evaluation/README.md</code>.</p>
                     </div>
                   </details>
-                  <EvaluationPortalQr url={isEvaluationPortalConnected ? evaluationPortalUrl : ''} />
+                  <EvaluationPortalQr t={t} url={isEvaluationPortalConnected ? evaluationPortalUrl : ''} />
                 </>
               )}
             </section>

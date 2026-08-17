@@ -164,3 +164,87 @@ describe('local standards provider', () => {
         expect(source).not.toMatch(/XMLHttpRequest/);
     });
 });
+
+describe('learning components in the local provider (2026-08-17)', () => {
+    let sandbox;
+    let api;
+
+    function componentSnapshot() {
+        const standards = [
+            { id: 's-root', code: 'X.1', label: 'Root standard', text: 'Root standard', kind: 'standard', resolvable: true, framework: 'F', frameworkId: 'f1', jurisdiction: 'J', grade: '5', subject: 'S', sourceUrl: '', sourceUrls: [] },
+            { id: 's-peer', code: 'X.2', label: 'Peer standard', text: 'Peer standard', kind: 'standard', resolvable: true, framework: 'F', frameworkId: 'f1', jurisdiction: 'J', grade: '5', subject: 'S', sourceUrl: '', sourceUrls: [] },
+            { id: 's-next', code: 'X.3', label: 'Next standard', text: 'Next standard', kind: 'standard', resolvable: true, framework: 'F', frameworkId: 'f1', jurisdiction: 'J', grade: '5', subject: 'S', sourceUrl: '', sourceUrls: [] },
+        ];
+        const relationships = [
+            { fromId: 's-root', toId: 's-next', type: 'buildsTowards', source: 'test' },
+            { fromId: 's-root', toId: 's-peer', type: 'relatesTo', source: 'test' },
+        ];
+        for (let i = 0; i < 10; i += 1) {
+            standards.push({ id: 'c-' + i, code: 'c-' + i, label: 'Component ' + i, text: 'Component ' + i, kind: 'component', resolvable: false, framework: '', frameworkId: '', jurisdiction: '', grade: '', subject: '', sourceUrl: '', sourceUrls: [] });
+            relationships.push({ fromId: 'c-' + i, toId: 's-root', type: 'supports', source: 'test' });
+        }
+        return {
+            schemaVersion: 'alloflow-standards-snapshot/v1',
+            dataset: { provider: 'test', datasetVersion: 'v0', snapshotId: 'component-fixture', license: 'x', attribution: 'y' },
+            standards,
+            relationships,
+        };
+    }
+
+    beforeAll(() => {
+        sandbox = { console };
+        sandbox.window = sandbox;
+        sandbox.globalThis = sandbox;
+        vm.createContext(sandbox);
+        loadIntoSandbox(sandbox, 'standards_provider_module.js');
+        api = sandbox.AlloModules.StandardsProvider;
+    });
+
+    it('getLearningComponents prefers supports edges and reports edgeSource', () => {
+        const provider = api.createLocalProvider(componentSnapshot());
+        const result = provider.getLearningComponents('s-root');
+        expect(result.edgeSource).toBe('supports');
+        expect(result.components.length).toBe(10);
+        expect(result.components.every((component) => component.kind === 'component')).toBe(true);
+        // A standard with no supports edges falls back to the hasChild approximation.
+        const fallback = provider.getLearningComponents('s-peer');
+        expect(fallback.edgeSource).toBe('hasChild');
+        expect(fallback.components.length).toBe(0);
+    });
+
+    it('components stay invisible to search and resolution', () => {
+        const provider = api.createLocalProvider(componentSnapshot());
+        expect(provider.resolveStandard('c-0').status).not.toBe('resolved');
+        expect(provider.resolveStandard('X.1').status).toBe('resolved');
+    });
+
+    it('caps components in neighborhoods so they cannot starve standards context', () => {
+        const provider = api.createLocalProvider(componentSnapshot());
+        // maxNodes 12: default cap = max(4, floor(12 / 3)) = 4 components.
+        const bounded = provider.getNeighborhood('s-root', { depth: 2, maxNodes: 12, maxEdges: 48 });
+        const kinds = {};
+        bounded.nodes.forEach((node) => { kinds[node.kind] = (kinds[node.kind] || 0) + 1; });
+        expect(kinds.component).toBe(4);
+        expect(kinds.standard).toBe(3);
+        expect(bounded.truncated).toBe(true);
+        // Explicit override restores the uncapped behavior.
+        const open = provider.getNeighborhood('s-root', { depth: 2, maxNodes: 20, maxEdges: 48, maxComponents: 99 });
+        const openKinds = {};
+        open.nodes.forEach((node) => { openKinds[node.kind] = (openKinds[node.kind] || 0) + 1; });
+        expect(openKinds.component).toBe(10);
+        // maxComponents: 0 removes components entirely.
+        const none = provider.getNeighborhood('s-root', { depth: 2, maxNodes: 20, maxEdges: 48, maxComponents: 0 });
+        expect(none.nodes.every((node) => node.kind !== 'component')).toBe(true);
+        expect(none.truncated).toBe(true);
+    });
+
+    it('getPrerequisiteGaps reports prerequisiteEdgesExamined so "no gaps" is distinguishable from "nothing checked"', () => {
+        const provider = api.createLocalProvider(componentSnapshot());
+        const checked = provider.getPrerequisiteGaps(['X.3']);
+        expect(checked.prerequisiteEdgesExamined).toBe(1);
+        expect(checked.missing.length).toBe(1);
+        const nothingToCheck = provider.getPrerequisiteGaps(['X.1']);
+        expect(nothingToCheck.missing.length).toBe(0);
+        expect(nothingToCheck.prerequisiteEdgesExamined).toBe(0);
+    });
+});

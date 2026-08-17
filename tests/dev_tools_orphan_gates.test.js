@@ -23,6 +23,14 @@
 //     pre-commit concern and would be meaningless (or flaky) here.
 //   * check_sel_tool_interactions — passes (96 checks) but takes ~25s, enough
 //     to be worth a deliberate decision rather than a silent add.
+//   * theme_contrast_sweep.cjs — renders every tool in a real browser in BOTH
+//     themes and diffs axe counts. Needs Chromium AND the Tailwind CDN (its own
+//     header records light-theme counts of 5, 9, 11, 11 across four runs of the
+//     same tool, because the CDN compiles on demand), so it is a diagnostic
+//     sweep, not a pass/fail invariant. Excluded for the same reason as the
+//     check_*_live scripts above. Recorded here so its absence is a decision:
+//     it had zero callers and, being named outside the check_*|scan_* pattern,
+//     was invisible to the 2026-08-11 audit that produced this file.
 
 import { describe, it, expect } from 'vitest';
 import { execFileSync } from 'node:child_process';
@@ -56,6 +64,8 @@ const GATES = [
     'the cost of the guard in the line above WORKING: a `cv._fooInit`-guarded ref body runs once, so frame() and any listener made inside it keep the FIRST render closure forever. Migration shipped three DEAD controls that way — clicking the wind field placed nothing, the Lines/Dots toggle never reached the canvas, and picking a species never animated the route — plus a leader-rotation counter stuck at 1. Screenshot tests all pass, because mounting WITH the state set renders correctly. Baselined at 2 (artstudio, geo); a NEW one fails'],
   ['scan_write_only_state.cjs', 60_000,
     "a `const [x, setX] = useState()` whose getter is never read renders nothing, and when the setter IS still called the caller is usually a dead feature path that still runs side effects. mathFluencyActive appeared exactly ONCE in the repo while its caller kept starting a 120s timer that wrote a fabricated 0-attempt CBM probe result into a student's history. Baselined at 46; a NEW one fails"],
+  ['scan_contrast_pairs.cjs', 90_000,
+    "a background and a text utility shipped in the SAME string literal, same Tailwind family, too close in shade to be readable — provably unreadable with no palette lookup or judgement call. It found five toggle OFF-state labels at 1.13:1 in stem_tool_music.js, text telling a student what is currently switched off. It was itself an orphan until 2026-08-17: named static_contrast_pairs.cjs, it did not match the check_*|scan_* convention THIS file audits, so the check built to find unrun gates could not see it. Currently 0 actionable (2 exempt disabled-control pairs in geo)"],
 ];
 
 // Timeouts are deliberately generous. These scripts each re-read and re-parse

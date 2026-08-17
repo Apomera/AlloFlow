@@ -28,14 +28,14 @@
 #   pinned addAiTableCaptions(html) and never injected _neutralizePromptFence, so a per-table
 #   catch swallowed a ReferenceError for every table. Anchors are now arity-agnostic + uniqueness-asserted.
 
+# 2026-08-17 (X8) — +2 released, verified twice consecutively in isolation (17 assertions,
+#   0 failures): app_shell_runtime_a11y, chatgpt_phase2_reliability.
 # 2026-08-10 — +3 released (verified independently: 3 files, 129 assertions, 0 failures, not
 #   just taken from the gate): brain_atlas_golden, lumen_render_golden, stem_tool_golden.
 
-tests/app_shell_runtime_a11y.test.js  # 1 failing · application shell accessibility remediation provides a non-empty fallback name for the global mute button
-tests/chatgpt_phase2_reliability.test.js  # 2 failing · finding 5 — sliced-audit coverage honesty ranges keep identity, failed ranges get one calm-gated sequential re
-tests/deep_dive_batch3_fixes.test.js  # 1 failing · M1/M2/M6 — circle-back covers null audits, respects the wall, and keeps the status honest M6: the wait ticks t
-tests/individual_remediation_polish.test.js  # 4 failing · remediation outcome is separate from verification completeness calls a target-reaching, axe-clean, AI-complete
-tests/plt_k6_5622_pack.test.js  # 1 failing · Praxis PLT K–6 5622 diagnostic bank is candid that guided activities are not independent, expert-validated exa
+tests/deep_dive_batch3_fixes.test.js  # 1 failing (verified in isolation 2026-08-17) · M6 wait-tick/gen-bump assertion; deterministic, needs a mechanism read, not a re-anchor
+tests/individual_remediation_polish.test.js  # 2 failing as of 2026-08-17 (was 4) · outcome-vs-completeness + M23 nested-dialog Escape; deterministic
+tests/plt_k6_5622_pack.test.js  # 5 failing as of 2026-08-17 (was 1 — GREW; the pack content moved under it) · registration/candour/diagnostic pins; needs a content-owner pass
 tests/stem_big_tools_golden.test.js  # 8 failing · big STEM tool render goldens (default state) renders + pins a digest for roadReady
 tests/stem_graph_tools_golden.test.js  # 10 failing · math/logic graph cluster render goldens (default state) renders + pins a digest for algebraCAS
 tests/stem_longtail_tools_golden.test.js  # 9 failing · career/nature long-tail render goldens (default state) renders + pins a digest for decomposer

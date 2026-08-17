@@ -235,6 +235,9 @@ const DEFAULT_TARGETS = [
   'view_sidebar_tabs_nav_source.jsx',
   'view_renderers_source.jsx',
   'onboarding_coach_source.jsx',
+  // 2026-08-17: never watched, and it hosts the Standards Finder / lesson-direction
+  // surface (the shipped Phase 5 flow) whose strings were entirely hardcoded.
+  'view_misc_panels_source.jsx',
   // Learning Web / knowledge graph
   'learning_web_explorer_module.js',
   'learning_web_registry_module.js',

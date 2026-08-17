@@ -822,24 +822,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
   var QUIZ_RAW = [
     { q: 'A seedling on the forest floor grows faster when a gap opens in the canopy above it. What was limiting it before?', a: ['Light', 'Carbon dioxide', 'Soil nitrogen', 'Temperature'], correct: 0, band: 'k2',
       why: 'Under a closed canopy almost no light reaches the floor, so the light term is the smallest one. Open a gap and the same seedling is suddenly limited by something else instead.' },
-    { q: 'On a hot, dry afternoon a tree closes its stomata. What does it lose by doing that?', a: ['Nothing, it is purely protective', 'It stops taking in ' + CO2 + ', so photosynthesis nearly stops', 'It stops respiring', 'It loses its leaves'], correct: 1, band: 'g35',
+    { q: 'On a hot, dry afternoon a tree closes its stomata. What does it lose by doing that?', a: ['Nothing important, because closing the pore is purely protective', 'It stops taking in ' + CO2 + ', so photosynthesis nearly stops', 'It stops respiring, so it can no longer use its stored sugar', 'It drops its leaves to cut the water loss even further'], correct: 1, band: 'g35',
       why: 'The same pore that lets water out is the one that lets ' + CO2 + ' in. Closing it saves water and costs carbon. There is no setting that does only the good half.' },
     { q: 'Which tissue carries sugar DOWN from the leaves to the roots?', a: ['Xylem', 'Phloem', 'Cambium', 'Heartwood'], correct: 1, band: 'g68',
       why: 'Xylem carries water up under tension. Phloem carries sugar from wherever it is made to wherever it is spent, which is usually downward but reverses in spring.' },
-    { q: 'An old tree lays down narrower rings than it did at fifty. Does that always mean it is growing less wood?', a: ['Yes, narrow rings always mean decline', 'No, the same volume spread around a bigger trunk makes a thinner ring', 'Yes, old trees always shrink', 'No, rings have nothing to do with wood'], correct: 1, band: 'g68',
+    { q: 'An old tree lays down narrower rings than it did at fifty. Does that always mean it is growing less wood?', a: ['Yes, a narrower ring is always less wood than a wider one', 'No, the same volume spread around a bigger trunk makes a thinner ring', 'Yes, old trees always add less wood than they did when young', 'No, ring width records only the rainfall of that year and nothing about wood'], correct: 1, band: 'g68',
       why: 'Circumference grows with diameter, so an identical volume of new wood spreads thinner every year. Many old trees add MORE wood per year while their rings get narrower.' },
-    { q: 'Why does a very large tree need so much more photosynthesis than a sapling just to break even?', a: ['Its leaves are less efficient', 'Maintenance respiration scales with the living tissue it must keep alive', 'It has more competitors', 'Large trees photosynthesise at night'], correct: 1, band: 'g912',
+    { q: 'Why does a very large tree need so much more photosynthesis than a sapling just to break even?', a: ['Its leaves become steadily less efficient at making sugar as it ages', 'Maintenance respiration scales with the living tissue it must keep alive', 'It has to share the light, water and nutrients with far more competitors nearby', 'Its height means it can only photosynthesise late in the day'], correct: 1, band: 'g912',
       why: 'Every kilogram of living sapwood, fine root and leaf costs energy every hour. The tree pays that bill before a single gram goes into a ring.' },
-    { q: 'An aspen stand spreading by root suckers is hit by a root pathogen. Why is the whole stand at risk at once?', a: ['Suckers are weaker than seedlings', 'The stems are genetically identical and share a root system', 'Suckers cannot photosynthesise', 'Pathogens only attack aspen'], correct: 1, band: 'g68',
+    { q: 'An aspen stand spreading by root suckers is hit by a root pathogen. Why is the whole stand at risk at once?', a: ['Root suckers are always weaker than trees grown from seed', 'The stems are genetically identical and share a root system', 'Suckers cannot photosynthesise until they are several years old', 'This pathogen can only infect aspen and no other species'], correct: 1, band: 'g68',
       why: 'Clonal spread trades genetic diversity for reliability. Every stem has the same susceptibility and a physical root connection to carry the infection.' },
-    { q: 'Heartwood is dead tissue. What follows from that?', a: ['The tree is dying', 'It costs nothing to maintain, so it is cheap structural support', 'It cannot hold weight', 'It must be shed each year'], correct: 1, band: 'g912',
+    { q: 'Heartwood is dead tissue. What follows from that?', a: ['The tree is dying from the inside out and will soon fall', 'It costs nothing to maintain, so it is cheap structural support', 'It cannot hold weight, so the sapwood carries the whole load', 'It must be shed and replaced each year like leaves to keep the trunk sound'], correct: 1, band: 'g912',
       why: 'Converting sapwood to heartwood is how a tree gets bigger without its respiration bill rising forever. Dead wood is free to carry.' },
     { q: 'Which of these is NOT a way a tree makes more of itself without seeds?', a: ['Root suckers', 'Layering', 'Basal resprouting', 'Pollination'], correct: 3, band: 'k2',
       why: 'Pollination is part of making seeds. The other three make a new stem from the parent tree itself, with no seed involved.' },
-    { q: 'A pine keeps its needles through winter. What advantage does that give over a bare oak in February?', a: ['It can fix carbon on a mild winter day', 'It needs no water', 'It cannot freeze', 'It grows only in winter'], correct: 0, band: 'g35',
+    { q: 'A pine keeps its needles through winter. What advantage does that give over a bare oak in February?', a: ['It can fix carbon on a mild winter day', 'It stops losing water once the soil has frozen', 'Its needles cannot freeze in any weather', 'It does all of its growing during the winter'], correct: 0, band: 'g35',
       why: 'Leaves already built and in place mean the pine can work whenever conditions allow, instead of spending the first weeks of spring rebuilding a canopy.' },
-    { q: 'Raising ' + CO2 + ' boosts a tree that is CO2-limited but does little for one that is water-limited. Why?', a: ['CO2 damages dry trees', 'A stoma that is mostly shut admits very little CO2, so the extra buys almost nothing', 'Water-limited trees do not photosynthesise', 'CO2 only helps needles'], correct: 1, band: 'g912',
-      why: 'The PERCENTAGE gain from extra CO2 is about the same at any water status. What drought changes is the rate that percentage applies to: a tree with its stomata mostly shut gains a large share of almost nothing. Absolute gain, not percentage, is the honest measure.' }
+    { q: 'Raising ' + CO2 + ' boosts a tree that is CO2-limited but does little for one that is water-limited. Why?', a: ['Extra ' + CO2 + ' becomes toxic to a tree that is already short of water', 'A stoma mostly shut admits very little ' + CO2 + ', so the extra buys almost nothing', 'A tree short of water stops photosynthesising altogether, so nothing at all helps', 'Extra ' + CO2 + ' can only be used by needles, and this tree has broad leaves'], correct: 1, band: 'g912',
+      why: 'The PERCENTAGE gain from extra CO2 is about the same at any water status. What drought changes is the rate that percentage applies to: a tree with its stomata mostly shut gains a large share of almost nothing. Absolute gain, not percentage, is the honest measure.' },
+    // Appended, never inserted: the rotation shift is a function of the index, and
+    // quizSeen / the translation keys are indexed too, so inserting mid-bank would
+    // silently re-key every question after it.
+    { q: 'Someone cuts a complete ring of bark from all the way around a trunk. The leaves stay green all summer. Why does the tree die anyway?', a: ['The cut stops water from reaching the leaves, so they dry out slowly', 'The phloem is cut, so no sugar can reach the roots and they starve', 'The wound lets in disease that spreads through the whole trunk', 'The tree loses its stored heartwood through the open wound'], correct: 1, band: 'g68',
+      why: 'Phloem sits in a thin band just inside the bark; xylem is deeper in the wood. Water keeps arriving, so the canopy looks fine for a season. The roots are the ones cut off from sugar, and they starve first.' },
+    { q: 'In early spring, before a broadleaf has opened any leaves, which way is sugar moving in its phloem?', a: ['Downward, because sugar in a tree can only travel from leaves to roots', 'Upward, from stored reserves to the buds that are being built', 'It is not moving at all until the first leaves have opened', 'Both ways at once and in equal amounts, all through the year'], correct: 1, band: 'g912',
+      why: 'Phloem runs from any source to any sink, and neither is fixed. In spring the source is stored carbon in the roots and trunk and the sink is the canopy being built, so the flow runs upward.' },
+    { q: 'You want to find out whether more light makes your tree grow taller. You run one trial, then a second. What must be true of the second trial?', a: ['Everything is kept the same as the first trial except the light', 'The light and the water are both raised so the tree grows faster', 'A different species is used so the result is more general', 'It runs for many more years so the difference has time to show'], correct: 0, band: 'g35',
+      why: 'A comparison points at one cause only when one thing differs. Raise the light and the water together and any difference in growth cannot be pinned on either of them.' }
   ];
   // Rotate once, at module scope, deterministically.
   var QUIZ = QUIZ_RAW.map(function (item, i) {
@@ -861,11 +870,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
   // It cannot be a hook: every view below lives inside a switch, so a hook here
   // would be conditionally called and would blow up on navigation.
   // ─────────────────────────────────────────────────────────
+  // `en` is the source string, `label` is what the shell renders. The shell reads
+  // cfg.parts[i].label at CALL time (not at mk(cfg) time), so render refreshes the
+  // labels through ctx.t each pass — the same live-config trick CFG.home uses. The
+  // English text has to be kept separately because label is overwritten in place,
+  // and a fallback that has already been translated once is not a fallback.
   var TREE_PARTS = [
-    { id: 'crown',  label: 'Crown (leaves)',  color: '#4ade80' },
-    { id: 'trunk',  label: 'Trunk (wood)',    color: '#a16207' },
-    { id: 'roots',  label: 'Root system',     color: '#78350f' },
-    { id: 'clones', label: 'Clonal offspring', color: '#86efac' }
+    { id: 'crown',  en: 'Crown (leaves)',    label: 'Crown (leaves)',   color: '#4ade80' },
+    { id: 'trunk',  en: 'Trunk (wood)',      label: 'Trunk (wood)',     color: '#a16207' },
+    { id: 'roots',  en: 'Root system',       label: 'Root system',      color: '#78350f' },
+    { id: 'clones', en: 'Clonal offspring',  label: 'Clonal offspring', color: '#86efac' }
   ];
 
   // Resolved LAZILY, on first use, rather than captured at module load.
@@ -3262,6 +3276,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     render: function (ctx) {
       var h = ctx.React.createElement;
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // The 3-D shell owns the part labels and reads them from cfg on demand, so they
+      // are refreshed here rather than at module load, where ctx.t does not exist yet.
+      TREE_PARTS.forEach(function (p) { p.label = __alloT('stem.treelab.part_' + p.id, p.en); });
+      // Grade band names reach the screen in the quiz subtitle and the level menu.
+      function bandLabel(b) { return __alloT('stem.treelab.band_' + b, BAND_LABEL[b] || b); }
+      // Clock speeds: the label is on the button, the hint under it, and both are
+      // spoken on change. All three read the same two keys.
+      function speedLabel(o) { return __alloT('stem.treelab.speed_' + o.id, o.label); }
+      function speedHint(o) { return __alloT('stem.treelab.speed_hint_' + o.id, o.hint); }
       var d = (ctx.toolData && ctx.toolData.treeLab) || {};
       var addToast = ctx.addToast;
       var a11yClick = ctx.a11yClick;
@@ -3306,7 +3329,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       // Scoped interaction and responsive polish. Everything lives below
       // .allo-tree-lab so neighbouring STEAM tools remain untouched.
       var visualCss = [
-        '.allo-tree-lab{position:relative;isolation:isolate;overflow:visible;}',
+        // width:100% + border-box, because the mounting context is not always a block
+        // formatting context. As a flex item (the e2e harness wrap, and any hub layout
+        // that reaches for flex) a block div shrinks to fit-content, so the tool was
+        // a different width on every tab — as wide as its widest fixed element. And
+        // align-self:flex-start, because a fixed-height flex row STRETCHES the item to
+        // that height: content past it overflowed the painted background. The explicit
+        // width keeps flex-column parents from shrink-wrapping the width instead.
+        '.allo-tree-lab{position:relative;isolation:isolate;overflow:visible;width:100%;box-sizing:border-box;min-width:0;align-self:flex-start;}',
         '.allo-tree-lab:before{content:"";position:absolute;inset:0 0 auto 0;height:280px;pointer-events:none;z-index:-1;background:radial-gradient(circle at 8% 5%,var(--tree-glow),transparent 36%),radial-gradient(circle at 92% 0,var(--sun-glow),transparent 30%);}',
         '.allo-tree-hero{position:relative;overflow:hidden;}',
         '.allo-tree-hero:after{content:"";position:absolute;width:180px;height:180px;right:-72px;bottom:-112px;border-radius:50%;border:28px solid var(--hero-ring);pointer-events:none;}',
@@ -3339,6 +3369,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         'body.allo-treelab-immersive .stem-active-toolbar{display:none!important;}',
         'body.allo-treelab-immersive .stem-lab-topbar,body.allo-treelab-immersive .stem-lab-tablist{display:none!important;}',
         '.allo-tree-card{transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease;}',
+        '.allo-tree-quiz-opt{transition:transform .14s ease,box-shadow .14s ease,border-color .14s ease;}',
+        '.allo-tree-quiz-opt:not(:disabled):hover{border-color:var(--tree-accent);transform:translateY(-1px);box-shadow:0 4px 12px var(--tree-shadow);}',
 
         '.allo-tree-button,.allo-tree-tab{transition:transform .14s ease,box-shadow .14s ease,background .14s ease,border-color .14s ease;}',
         '.allo-tree-button:not(:disabled):hover,.allo-tree-tab:hover{transform:translateY(-1px);box-shadow:0 5px 14px var(--tree-shadow);}',
@@ -3347,7 +3379,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         '.allo-tree-tab[aria-selected="true"]{box-shadow:0 6px 16px var(--accent-shadow);}',
         '.allo-tree-panel{animation:tree-panel-in .22s ease-out;}',
         '@keyframes tree-panel-in{from{opacity:.45;transform:translateY(4px)}to{opacity:1;transform:none}}',
-        '@media (prefers-reduced-motion:reduce){.allo-tree-card,.allo-tree-button,.allo-tree-tab,.allo-tree-panel{transition:none!important;animation:none!important}}',
+        '@media (prefers-reduced-motion:reduce){.allo-tree-card,.allo-tree-button,.allo-tree-tab,.allo-tree-panel,.allo-tree-quiz-opt{transition:none!important;animation:none!important}}',
         '@media (max-width:960px){.allo-tree-workbench{grid-template-columns:minmax(0,1fr)}.allo-tree-workbench-sticky{position:static}}',
         '@media (max-width:620px){.allo-tree-lab{padding:10px!important}.allo-tree-hero{padding:15px!important}.allo-tree-hero-controls{width:100%;justify-content:flex-start!important}.allo-tree-hero-field{flex:1 1 130px;flex-direction:column;align-items:stretch!important}.allo-tree-hero-field select{width:100%}.allo-tree-tabs{flex-wrap:nowrap!important;overflow-x:auto;padding-bottom:7px!important}.allo-tree-tab{flex:0 0 auto}.allo-tree-card{border-radius:14px!important;padding:12px!important}.allo-tree-workbench-scene [role="img"]{height:clamp(280px,55svh,420px)!important}}'
       ].join('');
@@ -3451,18 +3483,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       }
       // Sliders are native inputs on purpose: they are keyboard operable and screen
       // reader labelled for free, which a div with role="slider" is not.
-      function slider(key, labelTxt, value, min, max, step, onChange, fmt, disabled) {
+      function slider(key, labelTxt, value, min, max, step, onChange, fmt, disabled, hue) {
         var id = 'treelab-' + key;
         return h('div', { key: key, style: { marginBottom: 10 } }, [
           h('label', { key: 'l', htmlFor: id, style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, color: T.dim, marginBottom: 4 } }, [
-            h('span', { key: 'a' }, labelTxt),
+            h('span', { key: 'a', style: hue ? { display: 'flex', alignItems: 'center', gap: 6 } : undefined }, hue ? [
+              h('span', { key: 'sw', 'aria-hidden': 'true', style: { width: 10, height: 10, borderRadius: 2, background: hue, display: 'inline-block', flex: '0 0 auto', border: isContrast ? '1px solid ' + T.text : 'none' } }),
+              h('span', { key: 'tx' }, labelTxt)
+            ] : labelTxt),
             h('span', { key: 'b', style: { fontWeight: 700, color: T.text } }, fmt ? fmt(value) : String(value))
           ]),
           h('input', {
             key: 'i', id: id, type: 'range', min: min, max: max, step: step, value: value,
             disabled: !!disabled,
             onChange: function (e) { onChange(parseFloat(e.target.value)); },
-            style: { width: '100%', accentColor: T.accent, opacity: disabled ? 0.55 : 1 }
+            style: { width: '100%', accentColor: hue || T.accent, opacity: disabled ? 0.55 : 1 }
           })
         ]);
       }
@@ -3631,11 +3666,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         updMulti({ tree: st, limitsSeen: seen });
         if (!st.alive) {
           sfxBad();
-          srSay('The tree died at age ' + st.age + '.');
-          if (addToast) addToast('The tree died at age ' + st.age, 'error');
+          srSay(__alloT('stem.treelab.say_died_age', 'The tree died at age ') + st.age + '.');
+          if (addToast) addToast(__alloT('stem.treelab.say_died_age', 'The tree died at age ') + st.age, 'error');
         } else {
           sfxGrow();
-          srSay('Advanced ' + n + ' year' + (n === 1 ? '' : 's') + '. Age ' + st.age + ', height ' + round(st.heightM, 1) + ' metres.');
+          srSay(__alloT('stem.treelab.say_advanced', 'Advanced ') + n + ' '
+            + (n === 1 ? __alloT('stem.treelab.year_one', 'year') : __alloT('stem.treelab.year_many', 'years'))
+            + '. ' + __alloT('stem.treelab.say_age', 'Age ') + st.age + ', '
+            + __alloT('stem.treelab.say_height', 'height ') + round(st.heightM, 1) + ' '
+            + __alloT('stem.treelab.metres', 'metres') + '.');
         }
         if (n >= 10) xp(4);
       }
@@ -3660,9 +3699,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         if (!st.alive) {
           patch.playing = false;
           sfxBad();
-          srSay('The tree died at age ' + st.age + '. ' +
-            (st.causeOfDeath === 'senescence' ? 'It reached the end of its lifespan.' : 'It spent more than it made for too long.'));
-          if (addToast) addToast('The tree died at age ' + st.age, 'error');
+          srSay(__alloT('stem.treelab.say_died_age', 'The tree died at age ') + st.age + '. ' +
+            (st.causeOfDeath === 'senescence'
+              ? __alloT('stem.treelab.say_died_old', 'It reached the end of its lifespan.')
+              : __alloT('stem.treelab.say_died_starved', 'It spent more than it made for too long.')));
+          if (addToast) addToast(__alloT('stem.treelab.say_died_age', 'The tree died at age ') + st.age, 'error');
         }
         updMulti(patch);
       }
@@ -3682,10 +3723,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           return;
         }
         var next = !d.playing;
-        if (next && !tree.alive) { sfxBad(); srSay('This tree has died. Start a new seedling first.'); return; }
+        if (next && !tree.alive) { sfxBad(); srSay(__alloT('stem.treelab.say_dead_first', 'This tree has died. Start a new seedling first.')); return; }
         upd('playing', next);
         sfxTick();
-        srSay(next ? 'Playing at ' + speed.label + '.' : 'Paused at age ' + tree.age + '.');
+        srSay(next
+          ? __alloT('stem.treelab.say_playing', 'Playing at ') + speedLabel(speed) + '.'
+          : __alloT('stem.treelab.say_paused', 'Paused at age ') + tree.age + '.');
       }
 
       function sendDrought(years) {
@@ -3724,7 +3767,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           }
         });
         CLOCK.stop();
-        srSay('Reset to a new ' + speciesById(sid).name + ' seedling.');
+        srSay(__alloT('stem.treelab.say_reset_pre', 'Reset to a new ')
+          + __alloT('stem.treelab.species_' + sid, speciesById(sid).name)
+          + __alloT('stem.treelab.say_reset_post', ' seedling.'));
       }
 
       // ── 3D panel. TREE3D.attach is a stable module-scope function, so React mounts
@@ -3979,18 +4024,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         var status = d.viewerStatus || 'idle';
         var full = !!d.viewerFull;
         var viewerLimit = experimentFactorLabel(live.limiting && live.limiting.id);
+        // This is the ONLY description of the scene a screen-reader user gets, so it
+        // is translated like any other visible text rather than left in English.
         var sceneCondition = !tree.alive
-          ? ' The tree is dead and its bare frame remains visible.'
+          ? ' ' + __alloT('stem.treelab.alt_dead', 'The tree is dead and its bare frame remains visible.')
           : (treeVisual.severeWaterStress
-            ? ' Its leaves are visibly wilted by water stress.'
-            : (treeVisual.waterStress > 0.28 ? ' Its foliage shows mild water stress.' : ''));
+            ? ' ' + __alloT('stem.treelab.alt_wilted', 'Its leaves are visibly wilted by water stress.')
+            : (treeVisual.waterStress > 0.28 ? ' ' + __alloT('stem.treelab.alt_mild_stress', 'Its foliage shows mild water stress.') : ''));
         if (tree.alive && treeVisual.chronicDeficit) {
-          sceneCondition += ' Its canopy is thinned by a chronic carbon deficit.';
+          sceneCondition += ' ' + __alloT('stem.treelab.alt_thinned', 'Its canopy is thinned by a chronic carbon deficit.');
         }
-        var sceneAlt = 'Three-dimensional ' + season + ' view of ' + sp.name +
-          ', age ' + tree.age + ' years, ' + round(tree.heightM, 1) +
-          ' metres tall, with ' + cloneCount + ' clonal stems.' + sceneCondition +
-          ' Current limiting factor: ' + viewerLimit + '.';
+        var sceneAlt = __alloT('stem.treelab.alt_3d', 'Three-dimensional ')
+          + __alloT('stem.treelab.season_' + season, season) + ' '
+          + __alloT('stem.treelab.alt_view_of', 'view of ')
+          + __alloT('stem.treelab.species_' + sp.id, sp.name)
+          + ', ' + __alloT('stem.treelab.age', 'age') + ' ' + tree.age + ' '
+          + __alloT('stem.treelab.year_many', 'years') + ', ' + round(tree.heightM, 1) + ' '
+          + __alloT('stem.treelab.alt_tall_with', 'metres tall, with ') + cloneCount + ' '
+          + __alloT('stem.treelab.alt_clonal_stems', 'clonal stems.') + sceneCondition + ' '
+          + __alloT('stem.treelab.alt_limiting_now', 'Current limiting factor: ') + viewerLimit + '.';
         var anatomyParts = [
           { id: 'crown', icon: '🍃', label: __alloT('stem.treelab.part_leaves', 'Leaves') },
           { id: 'trunk', icon: '🪵', label: __alloT('stem.treelab.part_trunk', 'Trunk') },
@@ -4010,9 +4062,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         return card([
           h('div', { key: 'hd', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexWrap: 'wrap', gap: 6 } }, [
             h('div', { key: 'a', style: { fontWeight: 700, color: T.text, fontSize: 14 } },
-              sp.emoji + ' ' + sp.name + ' · ' + __alloT('stem.treelab.age', 'age') + ' ' + tree.age),
+              sp.emoji + ' ' + __alloT('stem.treelab.species_' + sp.id, sp.name) + ' · ' + __alloT('stem.treelab.age', 'age') + ' ' + tree.age),
             h('div', { key: 'b', style: { fontSize: 12, color: T.dim } },
-              round(tree.heightM, 1) + ' m tall · ' + round(tree.dbhCm, 1) + ' cm across'),
+              round(tree.heightM, 1) + ' ' + __alloT('stem.treelab.m_tall', 'm tall') + ' · '
+              + round(tree.dbhCm, 1) + ' ' + __alloT('stem.treelab.cm_across', 'cm across')),
             // Same dead-gate the full-screen HUD carries: naming a limiting factor for
             // a dead tree invites the student to go and fix it.
             h('div', { key: 'lim', style: { padding: '4px 8px', borderRadius: 999, background: T.cardAlt, border: '1px solid ' + (tree.alive ? T.accent : T.bad), fontSize: 10, fontWeight: 800, color: tree.alive ? T.text : T.bad } },
@@ -4123,9 +4176,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                 : __alloT('stem.treelab.play', 'Play')), togglePlay,
                 { small: true, pressed: playing, disabled: !tree.alive || experimentActive }) : null,
               full ? SPEEDS.map(function (option) {
-                return btn('fsp-' + option.id, option.label, function () {
+                return btn('fsp-' + option.id, speedLabel(option), function () {
                   updMulti({ speed: option.id });
-                  srSay('Speed set to ' + option.label + '. ' + option.hint);
+                  srSay(__alloT('stem.treelab.say_speed_set', 'Speed set to ') + speedLabel(option) + '. ' + speedHint(option));
                 }, { small: true, pressed: speed.id === option.id, disabled: experimentActive });
               }) : null,
               full ? btn('fdry', inDrought
@@ -4155,8 +4208,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                   var nextPart = selected ? null : part.id;
                   upd('selectedPart', nextPart);
                   srSay(nextPart
-                    ? part.label + ' selected in the three-dimensional view.'
-                    : 'Anatomy selection cleared.');
+                    ? part.label + ' ' + __alloT('stem.treelab.say_part_selected', 'selected in the three-dimensional view.')
+                    : __alloT('stem.treelab.say_part_cleared', 'Anatomy selection cleared.'));
                 }, {
                   small: true, pressed: selected, disabled: disabled,
                   ariaLabel: __alloT('stem.treelab.inspect_part', 'Inspect ') + part.label
@@ -4275,6 +4328,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                 : __alloT('stem.treelab.tile_resp_k2', 'Sugar used to stay alive'), round(liveResp, 2) + ' kg C', T.warn),
               statTile('net', atLeast(band, 'g68') ? 'Net carbon' : 'Left to grow with', round(liveNet, 2) + ' kg C', liveNet >= 0 ? T.accent : T.bad)
             ]),
+          // The three tiles are one subtraction, so it is also drawn AS one: a single
+          // bar of the year's gross, split into the slice burned to stay alive and
+          // the slice left to grow with. In a deficit year the bar is the spending
+          // instead, and the uncovered slice is the draw on reserves — the same red
+          // as the warning text below it.
+          !tree.alive ? null : (function () {
+            var gross = Math.max(0, live.gross), resp = Math.max(0, liveResp);
+            var total = Math.max(gross, resp);
+            if (total <= 0) return null;
+            var deficit = liveNet < 0;
+            // Slice colours repeat the tile colours above them: gross/good,
+            // respiration/warn, net/accent, deficit/bad — one legend, learned once.
+            var segs = deficit
+              ? [[gross, T.good], [resp - gross, T.bad]]
+              : [[resp, T.warn], [Math.max(0, liveNet), T.accent]];
+            var lbl = deficit
+              ? __alloT('stem.treelab.budget_bar_deficit', 'Respiration exceeds what was made; the difference is drawn from reserves.')
+              : __alloT('stem.treelab.budget_bar_credit', 'Spent to stay alive · left to grow with');
+            return h('div', {
+              key: 'eq', role: 'img',
+              'aria-label': __alloT('stem.treelab.budget_bar_alt', 'Budget bar. ')
+                + round(gross, 2) + ' ' + __alloT('stem.treelab.alt_kgc_made', 'kg C made') + ', '
+                + round(resp, 2) + ' ' + __alloT('stem.treelab.alt_kgc_maint', 'kg C spent on maintenance') + ', '
+                + (deficit
+                  ? round(-liveNet, 2) + ' ' + __alloT('stem.treelab.alt_kgc_reserves', 'kg C drawn from reserves.')
+                  : round(liveNet, 2) + ' ' + __alloT('stem.treelab.alt_kgc_left', 'kg C left to grow with.')),
+              style: { marginBottom: 10 }
+            }, [
+              h('div', { key: 'bar', style: { display: 'flex', height: 14, borderRadius: 7, overflow: 'hidden', border: '1px solid ' + T.border } },
+                segs.map(function (s, i) {
+                  var w = Math.max(0, Math.round((s[0] / total) * 1000) / 10);
+                  return h('div', {
+                    key: 'seg' + i,
+                    style: {
+                      width: w + '%', background: s[1],
+                      borderRight: i === 0 && w > 0 && w < 100 ? '2px solid ' + T.card : 'none'
+                    }
+                  });
+                })),
+              h('div', { key: 'cap', style: { fontSize: 11, color: T.dim, marginTop: 3 } }, lbl)
+            ]);
+          })(),
           h('div', {
             key: 'lim',
             style: {
@@ -4307,14 +4402,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         pushKeyed(kids, card([
           heading(__alloT('stem.treelab.conditions', 'Conditions'),
             __alloT('stem.treelab.conditions_sub', 'Change one thing at a time and watch which factor takes over as the limit.')),
+          // Each condition wears the same hue its factor carries everywhere else —
+          // the Chemistry curves, the limit bars, the ring strip. Same idea, same ink.
           slider('light', __alloT('stem.treelab.light', 'Light reaching the leaves'), envCfg.light, 0, 1, 0.05,
-            function (v) { upd('light', v); }, function (v) { return Math.round(v * 100) + '%'; }, experimentLocked),
+            function (v) { upd('light', v); }, function (v) { return Math.round(v * 100) + '%'; }, experimentLocked, tone(FACTOR_HUE('light'))),
           slider('water', __alloT('stem.treelab.soil_water', 'Soil water'), envCfg.soilWater, 0, 1, 0.05,
-            function (v) { upd('soilWater', v); }, function (v) { return Math.round(v * 100) + '%'; }, experimentLocked),
+            function (v) { upd('soilWater', v); }, function (v) { return Math.round(v * 100) + '%'; }, experimentLocked, tone(FACTOR_HUE('water'))),
           slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC, -5, 45, 1,
-            function (v) { upd('tempC', v); }, function (v) { return v + ' ' + DEG + 'C'; }, experimentLocked),
+            function (v) { upd('tempC', v); }, function (v) { return v + ' ' + DEG + 'C'; }, experimentLocked, tone(FACTOR_HUE('temperature'))),
           atLeast(band, 'g68') ? slider('co2', CO2 + ' concentration', envCfg.co2ppm, 180, 900, 10,
-            function (v) { upd('co2ppm', v); }, function (v) { return v + ' ppm'; }, experimentLocked) : null,
+            function (v) { upd('co2ppm', v); }, function (v) { return v + ' ppm'; }, experimentLocked, tone(FACTOR_HUE('co2'))) : null,
           h('div', { key: 'drought', style: { marginTop: 10, paddingTop: 10, borderTop: '1px dashed ' + T.border } }, [
             h('div', { key: 'lbl', style: { fontSize: 12, color: T.dim, marginBottom: 6, lineHeight: 1.5 } },
               inDrought
@@ -4337,6 +4434,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         pushKeyed(kids, card([
           heading(__alloT('stem.treelab.spend_it', 'Where does the surplus go?'),
             __alloT('stem.treelab.spend_it_sub', 'The tree cannot do all of these at once. More wood means fewer seeds this year.')),
+          // The five sliders are shares of ONE surplus, so the whole is drawn as one
+          // strip. `alloc` is already normalised by the time it renders, so the strip
+          // and the slider percentages always agree — no ≠100% case exists here.
+          (function () {
+            var parts = [
+              ['leaf', '#22c55e', __alloT('stem.treelab.leaves', 'Leaves')],
+              ['root', '#a16207', __alloT('stem.treelab.roots', 'Roots')],
+              ['wood', '#f59e0b', __alloT('stem.treelab.wood', 'Wood (height and rings)')],
+              ['repro', '#ec4899', __alloT('stem.treelab.reproduction', 'Reproduction')],
+              ['store', '#38bdf8', __alloT('stem.treelab.reserves', 'Stored reserves')]
+            ];
+            var sum = 0;
+            parts.forEach(function (p) { sum += Math.max(0, alloc[p[0]] || 0); });
+            if (sum <= 0) return null;
+            return h('div', { key: 'mix', style: { marginBottom: 12 } }, [
+              h('div', {
+                key: 'strip', role: 'img',
+                'aria-label': __alloT('stem.treelab.alloc_strip_alt', 'How the surplus divides: ')
+                  + parts.map(function (p) { return p[2] + ' ' + Math.round((Math.max(0, alloc[p[0]] || 0) / sum) * 100) + '%'; }).join(', '),
+                style: { display: 'flex', height: 12, borderRadius: 6, overflow: 'hidden', border: '1px solid ' + T.border }
+              }, parts.map(function (p, i) {
+                var w = Math.round((Math.max(0, alloc[p[0]] || 0) / sum) * 1000) / 10;
+                return h('div', {
+                  key: p[0],
+                  style: {
+                    width: w + '%', background: tone(p[1]),
+                    borderRight: i < parts.length - 1 && w > 0 ? '1px solid ' + T.card : 'none'
+                  }
+                });
+              }))
+            ]);
+          })(),
           allocSlider('leaf', __alloT('stem.treelab.leaves', 'Leaves'), '#22c55e'),
           allocSlider('root', __alloT('stem.treelab.roots', 'Roots'), '#a16207'),
           allocSlider('wood', __alloT('stem.treelab.wood', 'Wood (height and rings)'), '#f59e0b'),
@@ -4444,9 +4573,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
               : __alloT('stem.treelab.play', 'Play')), togglePlay, { pressed: playing, disabled: !tree.alive || experimentActive }),
             h('span', { key: 'gap', style: { display: 'inline-block', width: 10 } }),
             SPEEDS.map(function (option) {
-              return btn('sp-' + option.id, option.label, function () {
+              return btn('sp-' + option.id, speedLabel(option), function () {
                 updMulti({ speed: option.id });
-                srSay('Speed set to ' + option.label + '. ' + option.hint);
+                srSay(__alloT('stem.treelab.say_speed_set', 'Speed set to ') + speedLabel(option) + '. ' + speedHint(option));
               }, { small: true, pressed: speed.id === option.id, disabled: experimentActive });
             })
           ]),
@@ -4457,7 +4586,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
               ? statTile('sea', __alloT('stem.treelab.season_label', 'Season'), seasonLabel, tone('#f59e0b'))
               : statTile('rings', __alloT('stem.treelab.rings_laid', 'Rings laid'), String(tree.rings.length), tone('#a16207'))
           ]),
-          h('div', { key: 'hint', style: { fontSize: 11, color: T.dim, marginTop: 6, lineHeight: 1.5 } }, speed.hint),
+          h('div', { key: 'hint', style: { fontSize: 11, color: T.dim, marginTop: 6, lineHeight: 1.5 } }, speedHint(speed)),
           !tree.alive ? h('div', { key: 'dead', style: { fontSize: 12, color: T.bad, marginTop: 6, lineHeight: 1.5 } },
             __alloT('stem.treelab.clock_stopped', 'The clock stopped when the tree died. Start a new seedling to run it again.')) : null
         ]);
@@ -4480,14 +4609,89 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         }[id] || __alloT('stem.treelab.not_selected', 'Not selected');
       }
 
+      // The Explain step asks the student to "use the limiting factor and carbon
+      // evidence" — and then showed four end-point tiles. The per-year record was
+      // sitting in result.tree.history all along (simulateYear logs net, height and
+      // the limiter every year, and trial snapshots keep it through save/load), so
+      // the evidence is drawn: net carbon bars above/below a zero line, with the
+      // year's limiting factor as a strip underneath in the factor hues every other
+      // panel already uses. No engine change — this is a window onto stored truth.
+      function experimentEvidence(sum2, tr) {
+        if (!tr || !sum2 || !Array.isArray(tr.history)) return null;
+        var yrs = tr.history.slice(-Math.max(1, Math.min(sum2.yearsCompleted || 0, tr.history.length)));
+        if (!yrs.length || sum2.yearsCompleted <= 0) return null;
+
+        var W = 300, H = 104, PADL = 34, PADR = 6, PADT = 8, STRIP = 11, GAPY = 3, PADB = 4;
+        var plotW = W - PADL - PADR, plotH = H - PADT - STRIP - GAPY - PADB;
+        var maxAbs = 0.01;
+        yrs.forEach(function (y2) {
+          var n2 = typeof y2.net === 'number' && isFinite(y2.net) ? Math.abs(y2.net) : 0;
+          if (n2 > maxAbs) maxAbs = n2;
+        });
+        var y0 = PADT + plotH / 2;
+        var n = yrs.length;
+        var slot = plotW / n;
+        var barW = Math.max(1, Math.min(10, slot * 0.72));
+
+        var bars = [], strip = [], seen = {};
+        yrs.forEach(function (y2, i) {
+          var x = PADL + slot * i + (slot - barW) / 2;
+          var net2 = typeof y2.net === 'number' && isFinite(y2.net) ? y2.net : 0;
+          var hgt = Math.abs(net2) / maxAbs * (plotH / 2);
+          bars.push(h('rect', {
+            key: 'b' + i, x: round(x, 2), width: round(barW, 2),
+            y: round(net2 >= 0 ? y0 - hgt : y0, 2), height: round(Math.max(0.5, hgt), 2),
+            fill: net2 >= 0 ? T.good : T.bad
+          }));
+          seen[y2.limiting] = true;
+          strip.push(h('rect', {
+            key: 's' + i, x: round(PADL + slot * i, 2), width: round(Math.max(0.5, slot - 1), 2),
+            y: PADT + plotH + GAPY, height: STRIP, rx: 1.5,
+            fill: tone(FACTOR_HUE(y2.limiting))
+          }));
+        });
+
+        // "Water set the limit in 7 of 10 years" — the counts the summary already
+        // keeps, said in one sentence next to the picture of the same thing.
+        var domN = (sum2.limiterCounts && sum2.limiterCounts[sum2.dominantLimiter]) || 0;
+        var countsLine = LIMIT_NAME[sum2.dominantLimiter]
+          ? __alloT('stem.treelab.evidence_counts_pre', 'Limit, year by year — ')
+            + LIMIT_NAME[sum2.dominantLimiter]
+            + __alloT('stem.treelab.evidence_counts_mid', ' set it in ')
+            + domN + ' / ' + sum2.yearsCompleted + ' ' + __alloT('stem.treelab.years', 'years')
+          : '';
+
+        var alt = __alloT('stem.treelab.evidence_alt', 'Trial evidence, year by year. Bars above the line are years the tree made more than it spent; bars below are deficit years. The strip underneath shows which factor limited each year. ')
+          + countsLine;
+
+        return h('div', { key: 'evidence', style: { marginBottom: 10 } }, [
+          h('svg', {
+            key: 'svg', viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': alt,
+            style: { width: '100%', height: 'auto', display: 'block', background: T.card, borderRadius: 8, border: '1px solid ' + T.border }
+          }, [
+            h('line', { key: 'zero', x1: PADL, y1: y0, x2: PADL + plotW, y2: y0, stroke: T.border, strokeWidth: 1 }),
+            h('text', { key: 'ymax', x: PADL - 4, y: PADT + 6, textAnchor: 'end', style: { fontSize: '8.5px', fill: T.dim, fontVariantNumeric: 'tabular-nums' } }, '+' + round(maxAbs, 1)),
+            h('text', { key: 'y0', x: PADL - 4, y: y0 + 3, textAnchor: 'end', style: { fontSize: '8.5px', fill: T.dim } }, '0'),
+            h('text', { key: 'ymin', x: PADL - 4, y: PADT + plotH, textAnchor: 'end', style: { fontSize: '8.5px', fill: T.dim, fontVariantNumeric: 'tabular-nums' } }, '-' + round(maxAbs, 1)),
+            h('g', { key: 'bars' }, bars),
+            h('g', { key: 'strip' }, strip)
+          ]),
+          h('div', { key: 'cap', style: { display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', fontSize: 11, color: T.dim, marginTop: 3, lineHeight: 1.45 } }, [
+            h('span', { key: 'a' }, __alloT('stem.treelab.evidence_cap', 'Net carbon each year (kg C), above or below zero')),
+            countsLine ? h('span', { key: 'b', style: { fontWeight: 700, color: T.text } }, countsLine) : null
+          ])
+        ]);
+      }
+
       function experimentPanel() {
         var phase = experiment.phase;
         var stepIndex = phase === 'predict' ? 0 : (phase === 'ready' ? 1 : (phase === 'explain' ? 2 : -1));
         var canLock = !!experiment.prediction.limiter && !!experiment.prediction.outcome;
         var result = experiment.result && experiment.result.summary;
-        var predictionMatched = result &&
-          experiment.prediction.limiter === result.dominantLimiter &&
-          experiment.prediction.outcome === result.observedOutcome;
+        var limitHit = !!result && experiment.prediction.limiter === result.dominantLimiter;
+        var outcomeHit = !!result && experiment.prediction.outcome === result.observedOutcome;
+        var predictionMatched = limitHit && outcomeHit;
+        var predictionHalf = !!result && !predictionMatched && (limitHit || outcomeHit);
         var children = [
           heading(__alloT('stem.treelab.investigation_title', 'Investigation studio'),
             __alloT('stem.treelab.investigation_sub', 'Freeze a starting tree, predict what will happen, run a controlled trial, and explain the evidence.')),
@@ -4584,15 +4788,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             h('div', { key: 'h', style: { fontSize: 13, fontWeight: 800, color: T.text, marginBottom: 4 } },
               predictionMatched
                 ? '✓ ' + __alloT('stem.treelab.prediction_matched', 'The evidence matched your prediction')
-                : '↺ ' + __alloT('stem.treelab.prediction_surprised', 'The evidence changed the story')),
+                : (predictionHalf
+                  // Half right is its own result, and calling it a miss teaches that a
+                  // prediction is one lump rather than separate claims that each stand
+                  // or fall on their own evidence.
+                  ? '◐ ' + __alloT('stem.treelab.prediction_half', 'You had one of the two right')
+                  : '↺ ' + __alloT('stem.treelab.prediction_surprised', 'The evidence changed the story'))),
             h('p', { key: 'p', style: { margin: '0 0 9px', fontSize: 11, color: T.dim, lineHeight: 1.5 } },
               __alloT('stem.treelab.observed_summary', 'Compare predicted and observed results. A mismatch is useful evidence, not a wrong experiment.')),
+            // "Compare predicted and observed results" was impossible to do here: the
+            // prediction was displayed in the Ready phase and then disappeared at the
+            // exact moment the student is asked to compare against it. Both sides are
+            // now on screen together, per row, with the row marked where they differ —
+            // and a prediction can be half right, which two summary states could not
+            // express and this can.
+            (function () {
+              var pr = experiment.prediction;
+              if (!pr || !pr.limiter || !pr.outcome) return null;
+              var rows2 = [
+                ['lim', __alloT('stem.treelab.limit_word', 'Limit'),
+                  experimentFactorLabel(pr.limiter), experimentFactorLabel(result.dominantLimiter),
+                  pr.limiter === result.dominantLimiter],
+                ['out', __alloT('stem.treelab.outcome_word', 'Outcome'),
+                  experimentOutcomeLabel(pr.outcome), experimentOutcomeLabel(result.observedOutcome),
+                  pr.outcome === result.observedOutcome]
+              ];
+              return h('div', { key: 'vs', style: { marginBottom: 10, border: '1px solid ' + T.border, borderRadius: 9, overflow: 'hidden' } }, [
+                h('div', { key: 'hd', style: { display: 'grid', gridTemplateColumns: '64px 1fr 1fr 22px', gap: 6, padding: '5px 8px', background: T.card, fontSize: 10, fontWeight: 800, color: T.dim, textTransform: 'uppercase', letterSpacing: '.05em' } }, [
+                  h('span', { key: 'a' }, ''),
+                  h('span', { key: 'b' }, __alloT('stem.treelab.you_said', 'You said')),
+                  h('span', { key: 'c' }, __alloT('stem.treelab.trial_showed', 'The trial showed')),
+                  h('span', { key: 'd' }, '')
+                ])
+              ].concat(rows2.map(function (r2) {
+                return h('div', {
+                  key: r2[0],
+                  style: {
+                    display: 'grid', gridTemplateColumns: '64px 1fr 1fr 22px', gap: 6, alignItems: 'center',
+                    padding: '6px 8px', fontSize: 12, borderTop: '1px solid ' + T.border,
+                    background: r2[4] ? 'transparent' : (isContrast ? T.cardAlt : (isDark ? 'rgba(251,191,36,.08)' : 'rgba(251,191,36,.10)'))
+                  }
+                }, [
+                  h('span', { key: 'l', style: { fontSize: 11, color: T.dim, fontWeight: 700 } }, r2[1]),
+                  h('span', { key: 'p', style: { color: T.text } }, r2[2]),
+                  h('span', { key: 'o', style: { color: T.text, fontWeight: r2[4] ? 400 : 700 } }, r2[3]),
+                  h('span', { key: 'm', 'aria-hidden': 'true', style: { textAlign: 'right', fontWeight: 800, color: r2[4] ? T.good : T.warn } }, r2[4] ? '✓' : '↺')
+                ]);
+              })));
+            })(),
+            // What they wrote BEFORE running, brought back to be argued with.
+            (experiment.prediction && (experiment.prediction.reason || '').trim())
+              ? h('div', { key: 'because', style: { marginBottom: 10, padding: '6px 9px', borderRadius: 8, background: T.card, borderLeft: '3px solid ' + T.border, fontSize: 11, color: T.text, lineHeight: 1.5, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, [
+                h('span', { key: 'l', style: { color: T.dim, fontWeight: 700 } }, __alloT('stem.treelab.you_reasoned', 'Before the run you wrote: ')),
+                h('span', { key: 't' }, experiment.prediction.reason.trim())
+              ])
+              : null,
             h('div', { key: 'grid', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(125px,1fr))', gap: 7, marginBottom: 10 } }, [
               statTile('ol', __alloT('stem.treelab.observed_limit', 'Observed limit'), experimentFactorLabel(result.dominantLimiter), T.accent),
               statTile('oo', __alloT('stem.treelab.observed_outcome', 'Observed outcome'), experimentOutcomeLabel(result.observedOutcome), result.observedOutcome === 'die' ? T.bad : T.good),
               statTile('oh', __alloT('stem.treelab.height_change', 'Height change'), (result.heightDelta >= 0 ? '+' : '') + round(result.heightDelta, 2) + ' m', tone('#22c55e')),
               statTile('on', __alloT('stem.treelab.mean_net', 'Mean net carbon'), round(result.meanNet, 2) + ' kg C', result.meanNet >= 0 ? T.good : T.bad)
             ]),
+            experimentEvidence(result, experiment.result.tree),
             h('label', { key: 'el', htmlFor: 'treelab-explanation', style: { display: 'block', fontSize: 11, fontWeight: 700, color: T.dim, marginBottom: 4 } },
               __alloT('stem.treelab.explanation_prompt', 'Explain what caused the result. Use the limiting factor and carbon evidence.')),
             h('textarea', { key: 'e', id: 'treelab-explanation', value: experiment.explanation, rows: 3,
@@ -4635,6 +4892,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             experimentOutcomeLabel(sum.observedOutcome) + ' · ' + experimentFactorLabel(sum.dominantLimiter)),
           h('div', { key: 'metrics', style: { fontSize: 11, color: T.dim, marginTop: 4, lineHeight: 1.45 } },
             signedMetric(sum.heightDelta, 'm') + ' · ' + signedMetric(sum.meanNet, 'kg C') + ' · ' + sum.yearsCompleted + ' ' + __alloT('stem.treelab.years', 'years')),
+          // What the student PREDICTED, kept next to what happened. The record stored
+          // it all along and only the live Explain step ever showed it, so a saved
+          // trial lost the half of the investigation that makes it an investigation.
+          // A miss is not marked wrong: it is marked as the thing worth explaining.
+          (function () {
+            var pr = trial.prediction;
+            if (!pr || !pr.limiter || !pr.outcome) return null;
+            // Same three states as the Explain step, so a trial does not change its
+            // own verdict on the way into the notebook.
+            var lHit = pr.limiter === sum.dominantLimiter, oHit = pr.outcome === sum.observedOutcome;
+            var hit = lHit && oHit, half = !hit && (lHit || oHit);
+            return h('div', {
+              key: 'pred',
+              style: {
+                fontSize: 11, marginTop: 6, padding: '4px 7px', borderRadius: 6,
+                background: T.card, border: '1px solid ' + (hit ? T.good : T.warn),
+                color: T.dim, lineHeight: 1.45
+              }
+            }, [
+              h('span', { key: 'k', style: { fontWeight: 700, color: hit ? T.good : T.warn } },
+                (hit ? '✓ ' : (half ? '◐ ' : '↺ ')) + __alloT('stem.treelab.you_predicted', 'You predicted: ')),
+              h('span', { key: 'v', style: { color: T.text } },
+                experimentOutcomeLabel(pr.outcome) + ' · ' + experimentFactorLabel(pr.limiter))
+            ]);
+          })(),
+          // The saved snapshot keeps the whole history, so each slot wears its own
+          // year-by-year limiter strip — two strips side by side ARE the comparison.
+          (function () {
+            var tr2 = trial.result.tree;
+            if (!tr2 || !Array.isArray(tr2.history) || sum.yearsCompleted <= 0) return null;
+            var yrs2 = tr2.history.slice(-Math.min(sum.yearsCompleted, tr2.history.length));
+            if (!yrs2.length) return null;
+            return h('div', {
+              key: 'strip', role: 'img',
+              'aria-label': __alloT('stem.treelab.trial_strip_alt', 'Limiting factor, year by year: ')
+                + yrs2.map(function (y2) { return LIMIT_NAME[y2.limiting] || y2.limiting; }).join(', '),
+              style: { display: 'flex', gap: 1, height: 8, borderRadius: 4, overflow: 'hidden', margin: '7px 0 8px' }
+            }, yrs2.map(function (y2, i) {
+              return h('div', { key: i, style: { flex: '1 1 0', background: tone(FACTOR_HUE(y2.limiting)) } });
+            }));
+          })(),
+          // The student's own words, kept. Writing an explanation into a box that
+          // then swallows it teaches that the writing was busywork; a notebook that
+          // holds the reasoning next to the evidence is the point of a notebook.
+          // Scrolls rather than truncates — nobody's sentence gets cut mid-thought.
+          (function () {
+            var why = (trial.explanation || '').trim();
+            if (!why) return null;
+            return h('div', {
+              key: 'why', 'data-trial-explanation': slot,
+              style: {
+                fontSize: 11, color: T.text, lineHeight: 1.5, marginBottom: 8,
+                padding: '6px 8px', borderRadius: 6, background: T.card,
+                borderLeft: '3px solid ' + T.accent, maxHeight: 78, overflowY: 'auto',
+                whiteSpace: 'pre-wrap', overflowWrap: 'anywhere'
+              }
+            }, [
+              h('div', { key: 'l', style: { fontSize: 10, fontWeight: 700, color: T.dim, marginBottom: 2, textTransform: 'uppercase', letterSpacing: '.05em' } },
+                __alloT('stem.treelab.your_explanation', 'Your explanation')),
+              h('div', { key: 't' }, why)
+            ]);
+          })(),
           btn('clear-' + slot, __alloT('stem.treelab.clear_trial', 'Clear trial'), function () {
             var next = { A: experimentTrials.A, B: experimentTrials.B };
             next[slot] = null;
@@ -4670,10 +4989,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             [__alloT('stem.treelab.mean_ring', 'Mean ring width'), a.result.summary.meanRingWidth, b.result.summary.meanRingWidth, 'mm'],
             [__alloT('stem.treelab.reproduction_change', 'Reproduction banked'), a.result.summary.reproductionDelta, b.result.summary.reproductionDelta, 'kg C']
           ];
-          kids.push(h('div', { key: 'control', role: 'note', style: { padding: 9, borderRadius: 9, border: '1px solid ' + (controlled ? T.good : T.warn), background: T.cardAlt, color: T.text, fontSize: 11, lineHeight: 1.5, marginBottom: 9 } },
-            controlled
-              ? '✓ ' + __alloT('stem.treelab.controlled_pair', 'Controlled pair: both trials began with the same species, age and height.')
-              : '⚠ ' + __alloT('stem.treelab.uncontrolled_pair', 'These trials began from different trees. Compare cautiously, or prepare Trial B from A.')));
+          // "Controlled" used to mean only "same starting tree" — but a controlled
+          // experiment is same start AND exactly one changed variable, and the
+          // treatments were never inspected. Both are stored, so the panel now names
+          // what changed between A and B: one change is the only case where the
+          // difference column has a single cause. This is the whole scientific
+          // method of the notebook, said at the moment it applies.
+          var diffs = [];
+          (function () {
+            var ea = a.treatment.env, eb = b.treatment.env;
+            function pctS(v) { return Math.round(v * 100) + '%'; }
+            if (Math.abs(ea.light - eb.light) > 0.001) diffs.push(LIMIT_NAME.light + ' ' + pctS(ea.light) + ' → ' + pctS(eb.light));
+            if (Math.abs(ea.soilWater - eb.soilWater) > 0.001) diffs.push(__alloT('stem.treelab.soil_water', 'Soil water') + ' ' + pctS(ea.soilWater) + ' → ' + pctS(eb.soilWater));
+            if (Math.abs(ea.tempC - eb.tempC) > 0.001) diffs.push(LIMIT_NAME.temperature + ' ' + round(ea.tempC, 0) + ' → ' + round(eb.tempC, 0) + ' ' + DEG + 'C');
+            if (Math.abs(ea.co2ppm - eb.co2ppm) > 0.5) diffs.push(CO2 + ' ' + Math.round(ea.co2ppm) + ' → ' + Math.round(eb.co2ppm) + ' ppm');
+            // Without this line a drought-vs-no-drought pair would read as
+            // "identical treatments" — the drought lives in env.droughtYears.
+            if ((ea.droughtYears || []).join(',') !== ((eb.droughtYears || []).join(',')))
+              diffs.push(__alloT('stem.treelab.diff_drought', 'Drought schedule'));
+            var allocDiff = ['leaf', 'root', 'wood', 'repro', 'store'].some(function (k2) {
+              return Math.abs((a.treatment.alloc[k2] || 0) - (b.treatment.alloc[k2] || 0)) > 0.001;
+            });
+            if (allocDiff) diffs.push(__alloT('stem.treelab.diff_alloc', 'Carbon allocation'));
+            if (a.duration !== b.duration) diffs.push(__alloT('stem.treelab.trial_length', 'Trial length') + ' ' + a.duration + ' → ' + b.duration + ' ' + __alloT('stem.treelab.years', 'years'));
+          })();
+          var oneVariable = controlled && diffs.length === 1;
+          var diffLine;
+          if (!controlled) {
+            diffLine = null;   // the start mismatch is the bigger problem; say only that
+          } else if (diffs.length === 1) {
+            diffLine = '✓ ' + __alloT('stem.treelab.one_variable', 'One variable changed: ') + diffs[0] + '. '
+              + __alloT('stem.treelab.one_variable_note', 'Whatever differs in the evidence below, this change caused it.');
+          } else if (diffs.length === 0) {
+            diffLine = __alloT('stem.treelab.zero_variables', 'Identical treatments — the two trials should match, and every difference below should be zero.');
+          } else {
+            diffLine = '⚠ ' + diffs.length + ' ' + __alloT('stem.treelab.many_variables', 'things changed: ') + diffs.join(' · ') + '. '
+              + __alloT('stem.treelab.many_variables_note', 'The differences below cannot be pinned on any one of them. Change one thing at a time.');
+          }
+          kids.push(h('div', {
+            key: 'control', role: 'note',
+            style: {
+              padding: 9, borderRadius: 9,
+              border: '1px solid ' + (controlled ? (oneVariable ? T.good : (diffs.length > 1 ? T.warn : T.border)) : T.warn),
+              background: T.cardAlt, color: T.text, fontSize: 11, lineHeight: 1.5, marginBottom: 9
+            }
+          }, [
+            h('div', { key: 'start' },
+              controlled
+                ? '✓ ' + __alloT('stem.treelab.controlled_pair', 'Controlled pair: both trials began with the same species, age and height.')
+                : '⚠ ' + __alloT('stem.treelab.uncontrolled_pair', 'These trials began from different trees. Compare cautiously, or prepare Trial B from A.')),
+            diffLine ? h('div', { key: 'vars', style: { marginTop: 4 } }, diffLine) : null
+          ]));
           kids.push(h('div', { key: 'tablewrap', style: { overflowX: 'auto' } },
             h('table', { style: { width: '100%', minWidth: 480, borderCollapse: 'collapse', fontSize: 11, color: T.text } }, [
               h('caption', { key: 'cap', style: { textAlign: 'left', color: T.dim, paddingBottom: 6 } },
@@ -4805,7 +5171,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             key: 'svg', viewBox: '0 0 ' + W + ' ' + H, preserveAspectRatio: 'none',
             style: { width: '100%', height: 120, background: T.cardAlt, borderRadius: 8, border: '1px solid ' + T.border },
             role: 'img',
-            'aria-label': 'Ring width for the last ' + rings.length + ' years. Widest ring ' + round(maxW, 2) + ' millimetres.'
+            'aria-label': __alloT('stem.treelab.alt_rings_pre', 'Ring width for the last ') + rings.length + ' '
+              + __alloT('stem.treelab.year_many', 'years') + '. '
+              + __alloT('stem.treelab.alt_rings_widest', 'Widest ring ') + round(maxW, 2) + ' '
+              + __alloT('stem.treelab.millimetres', 'millimetres') + '.'
           }, bars.concat([
             h('line', { key: 'base', x1: 0, y1: H - 14, x2: W, y2: H - 14, stroke: T.border, strokeWidth: 0.5 })
           ])),
@@ -4890,6 +5259,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           var area = line + ' L' + round(sx(c.max), 1) + ' ' + (PADT + PH) + ' L' + round(sx(c.min), 1) + ' ' + (PADT + PH) + ' Z';
           var atX = clamp(c.at, c.min, c.max);
           var here = { x: sx(atX), y: sy(live.gross) };
+          // The best this factor could do ALONE, from the same sweep the curve is
+          // drawn from — for the saturating curves that is the right end, for
+          // temperature it is the optimum, never the (lethal) maximum.
+          var peakPt = s2.pts[0] || { x: c.min, y: 0 };
+          s2.pts.forEach(function (p) { if (p.y > peakPt.y) peakPt = p; });
+          var headroom = Math.max(0, peakPt.y - live.gross);
+          // Annotate only a gap worth acting on, and never on top of the here-dot:
+          // when the dot sits at the peak the headroom IS the flatness being shown.
+          var peakX = sx(peakPt.x), peakY = sy(peakPt.y);
+          var showHeadroom = tree.alive && headroom > yMax * 0.04
+            && (Math.abs(peakX - here.x) > 26 || Math.abs(peakY - here.y) > 16);
 
           return h('div', {
             key: c.id,
@@ -4920,7 +5300,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                 c.label + ' response curve. At ' + c.fmt(atX) + ' the tree makes '
                 + round(live.gross, 2) + ' kg C a year'
                 + (limiting ? ', and this is the factor holding the rate down.'
-                            : '. Raising this alone would not lift the rate, because something else is smaller.')),
+                            : '. Raising this alone would not lift the rate, because something else is smaller.'))
+                + (showHeadroom
+                  ? ' ' + __alloT('stem.treelab.curve_alt_headroom', 'At its best value this factor alone would add ')
+                    + round(headroom, 2) + ' kg C.'
+                  : ''),
               style: { width: '100%', height: 'auto', display: 'block' }
             }, [
               // Hairline, SOLID, one step off the surface. Dashed grid reads as a
@@ -4945,6 +5329,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                 key: 'dot', cx: here.x, cy: here.y, r: 5,
                 fill: hue, stroke: T.cardAlt, strokeWidth: 2
               }),
+              showHeadroom ? h('g', { key: 'head' }, [
+                h('circle', {
+                  key: 'pk', cx: peakX, cy: peakY, r: 2.8,
+                  fill: 'none', stroke: hue, strokeWidth: 1.4
+                }),
+                h('text', {
+                  key: 'tx',
+                  x: peakX > PADL + PW * 0.6 ? peakX - 7 : peakX + 7,
+                  y: clamp(peakY + 4, PADT + 10, PADT + PH - 4),
+                  textAnchor: peakX > PADL + PW * 0.6 ? 'end' : 'start',
+                  style: { fontSize: '10px', fontWeight: 700, fill: T.text }
+                }, '+' + round(headroom, 2) + ' kg C')
+              ]) : null,
               h('text', {
                 key: 'y1', x: PADL - 5, y: PADT + 4, textAnchor: 'end',
                 style: { fontSize: '10px', fill: T.dim, fontVariantNumeric: 'tabular-nums' }
@@ -5104,8 +5501,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         });
         try { if (ctx.setStemLabTab) ctx.setStemLabTab('explore'); } catch (e) {}
         try { if (ctx.setStemLabTool) ctx.setStemLabTool(toolId); } catch (e) {}
-        srSay('Opening ' + labelTxt + '.');
-        if (addToast) addToast('Opening ' + labelTxt, 'info');
+        srSay(__alloT('stem.treelab.say_opening', 'Opening ') + labelTxt + '.');
+        if (addToast) addToast(__alloT('stem.treelab.say_opening', 'Opening ') + labelTxt, 'info');
       }
 
       // Where this year's sugar is actually going, straight from the student's own
@@ -5208,25 +5605,70 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             __alloT('stem.treelab.xs_bark', 'Bark — the outer protection')]
         ];
 
+        // Numbered leader lines from the disc to the legend, because three of the five
+        // layers are under 8 units wide: a swatch-only legend left the reader to find
+        // a 2-unit green ring by eye. Numbers, not text, inside the SVG — the labels
+        // are localized strings and belong in HTML. All five anchor dots sit on one
+        // ray (up-right, 40°), so the fan to the vertically-ordered badges cannot
+        // self-cross: sources are ordered along a line, targets along another.
+        var outsideIn = layers.slice().reverse();   // bark, phloem, cambium, sap, heart
+        var anchorR = {
+          bark: R - barkW / 2,
+          phloem: woodR + cambiumW + phloemW / 2,
+          cambium: woodR + cambiumW / 2,
+          sap: (heartR + woodR) / 2,
+          heart: Math.max(2.5, heartR / 2)
+        };
+        var UX = 0.766, UY = -0.643;                // cos/sin of the anchor ray
+        var BADGE_X = 106, BADGE_Y = [-64, -36, -8, 20, 48];
+        var callouts = [];
+        outsideIn.forEach(function (L, i) {
+          var ar = anchorR[L[0]];
+          var ax = round(UX * ar, 1), ay = round(UY * ar, 1);
+          var by = BADGE_Y[i];
+          callouts.push(h('g', { key: 'co' + L[0], 'aria-hidden': 'true' }, [
+            h('line', {
+              key: 'ln', x1: ax, y1: ay, x2: BADGE_X - 9, y2: by,
+              stroke: T.dim, strokeWidth: 0.8, strokeOpacity: 0.8
+            }),
+            // In high contrast the number carries the mapping and every ring goes to
+            // the text colour: a #555 ring on black fails the 3:1 graphics minimum.
+            h('circle', { key: 'dt', cx: ax, cy: ay, r: 2.2, fill: L[2], stroke: isContrast ? T.text : T.card, strokeWidth: 1 }),
+            h('circle', { key: 'bg', cx: BADGE_X, cy: by, r: 8, fill: T.card, stroke: isContrast ? T.text : L[2], strokeWidth: 1.6 }),
+            h('text', {
+              key: 'n', x: BADGE_X, y: by + 3.4, textAnchor: 'middle',
+              style: { fontSize: '9.5px', fontWeight: 700, fill: T.text }
+            }, String(i + 1))
+          ]));
+        });
+
         return h('div', { key: 'xs' }, [
           h('div', { key: 'wrap', style: { display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center' } }, [
             h('svg', {
-              key: 'svg', viewBox: '-84 -84 168 168',
-              style: { width: 172, height: 172, flex: '0 0 auto', background: T.cardAlt, borderRadius: 10, border: '1px solid ' + T.border },
+              key: 'svg', viewBox: '-84 -84 204 168',
+              style: { width: '100%', maxWidth: 250, flex: '1 1 210px', background: T.cardAlt, borderRadius: 10, border: '1px solid ' + T.border },
               role: 'img',
               'aria-label': __alloT('stem.treelab.xs_alt', 'Cross-section of the trunk. From the outside in: bark, phloem, cambium, sapwood, heartwood. ')
-                + round(tree.dbhCm, 1) + ' cm across, '
-                + (tree.rings || []).length + ' growth rings, '
-                + round(tree.heartwoodMass, 1) + ' kg of carbon in dead heartwood.'
+                + round(tree.dbhCm, 1) + ' ' + __alloT('stem.treelab.cm_across', 'cm across') + ', '
+                + (tree.rings || []).length + ' ' + __alloT('stem.treelab.alt_growth_rings', 'growth rings') + ', '
+                + round(tree.heartwoodMass, 1) + ' ' + __alloT('stem.treelab.alt_kgc_heartwood', 'kg of carbon in dead heartwood.')
             },
               // Outermost first, so each inner layer paints over the one before it.
               layers.slice().reverse().map(function (L) {
                 return h('circle', { key: L[0], cx: 0, cy: 0, r: L[1], fill: L[2] });
-              }).concat(ringEls)),
+              }).concat(ringEls).concat(callouts)),
             h('div', { key: 'key', style: { flex: '1 1 190px', minWidth: 170 } },
-              layers.slice().reverse().map(function (L) {
+              outsideIn.map(function (L, i) {
                 return h('div', { key: L[0], style: { display: 'flex', alignItems: 'flex-start', gap: 7, marginBottom: 5, fontSize: 11, color: T.dim, lineHeight: 1.45 } }, [
-                  h('span', { key: 's', style: { width: 10, height: 10, borderRadius: 2, background: L[2], display: 'inline-block', flex: '0 0 auto', marginTop: 2, border: '1px solid ' + T.border } }),
+                  h('span', {
+                    key: 's',
+                    style: {
+                      width: 16, height: 16, borderRadius: '50%', flex: '0 0 auto',
+                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                      border: '2px solid ' + (isContrast ? T.text : L[2]), color: T.text, background: T.card,
+                      fontSize: 9, fontWeight: 700
+                    }
+                  }, String(i + 1)),
                   h('span', { key: 't' }, L[3])
                 ]);
               }))
@@ -5595,19 +6037,82 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           h('svg', {
             key: 'map', viewBox: '0 0 ' + SIZE + ' ' + SIZE, role: 'img', 'aria-label': alt,
             style: { width: '100%', maxWidth: 420, height: 'auto', display: 'block', margin: '0 auto' }
-          }, [
-            h('circle', { key: 'bg', cx: C, cy: C, r: R + 6, fill: T.cardAlt, stroke: T.border }),
-            h('g', { key: 'rings' }, [0.34, 0.67, 1].map(function (f, i) {
+          }, (function () {
+            // An overhead map that is supposed to be the ground around a tree was a
+            // flat grey disc. Drawn as one — pale grass falling off toward the edge,
+            // a lobed canopy with a shadow — the "seen from above" framing lands
+            // before the caption is read. High contrast keeps the flat disc: every
+            // decorative green would collapse onto the one accent anyway, and the
+            // texture would cost mark legibility.
+            var kids = [];
+            if (!isContrast) {
+              kids.push(h('defs', { key: 'defs' }, [
+                h('radialGradient', { key: 'g1', id: 'treelab-ground-g' }, [
+                  h('stop', { key: 'a', offset: '0%', stopColor: isDark ? '#233420' : '#edf5df' }),
+                  h('stop', { key: 'b', offset: '70%', stopColor: isDark ? '#1b2a1a' : '#dcebc9' }),
+                  h('stop', { key: 'c', offset: '100%', stopColor: isDark ? '#152114' : '#c9deb2' })
+                ]),
+                h('radialGradient', { key: 'g2', id: 'treelab-canopy-g', cx: '38%', cy: '32%', r: '85%' }, [
+                  h('stop', { key: 'a', offset: '0%', stopColor: isDark ? '#35854a' : '#46a55f' }),
+                  h('stop', { key: 'b', offset: '100%', stopColor: isDark ? '#14532d' : '#166534' })
+                ])
+              ]));
+            }
+            kids.push(h('circle', {
+              key: 'bg', cx: C, cy: C, r: R + 6,
+              fill: isContrast ? T.cardAlt : 'url(#treelab-ground-g)',
+              stroke: isContrast ? T.border : (isDark ? '#2e4128' : '#aac48d')
+            }));
+            if (!isContrast) {
+              // Sparse tufts, seeded once — the same ground on every render.
+              var trand = seeded(20260817);
+              var tufts = [];
+              for (var ti = 0; ti < 54; ti++) {
+                var ta = trand() * Math.PI * 2;
+                var trr = Math.sqrt(trand()) * (R - 4);
+                if (trr < INNER + 4) continue;   // keep the parent's footprint clean
+                var tx = C + Math.cos(ta) * trr, ty = C + Math.sin(ta) * trr;
+                tufts.push(h('line', {
+                  key: 'tf' + ti, x1: round(tx - 1.5, 1), y1: round(ty + 1.1, 1),
+                  x2: round(tx + 0.4, 1), y2: round(ty - 1.4, 1),
+                  stroke: isDark ? '#324629' : '#b5cd94', strokeWidth: 1, strokeLinecap: 'round'
+                }));
+              }
+              kids.push(h('g', { key: 'tufts', 'aria-hidden': 'true' }, tufts));
+            }
+            kids.push(h('g', { key: 'rings' }, [0.34, 0.67, 1].map(function (f, i) {
               return h('circle', {
                 key: 'r' + i, cx: C, cy: C, r: R * f, fill: 'none',
-                stroke: T.border, strokeWidth: 1, strokeDasharray: '3 4'
+                stroke: isContrast ? T.border : (isDark ? '#4a6140' : '#8fa974'),
+                strokeWidth: 1, strokeDasharray: '3 4'
               });
-            })),
-            h('g', { key: 'marks' }, marks),
+            })));
+            kids.push(h('g', { key: 'marks' }, marks));
             // The parent, drawn last so nothing sits on top of it.
-            h('circle', { key: 'p1', cx: C, cy: C, r: PARENT_R, fill: tone('#166534'), stroke: T.card, strokeWidth: 2 }),
-            h('circle', { key: 'p2', cx: C, cy: C, r: 4, fill: tone('#78350f') })
-          ]),
+            if (isContrast) {
+              kids.push(h('circle', { key: 'p1', cx: C, cy: C, r: PARENT_R, fill: tone('#166534'), stroke: T.card, strokeWidth: 2 }));
+              kids.push(h('circle', { key: 'p2', cx: C, cy: C, r: 4, fill: tone('#78350f') }));
+            } else {
+              var lobes = [
+                [C - 7.5, C - 4, 7], [C + 7, C - 5, 6.5],
+                [C + 5.5, C + 6.5, 6.5], [C - 5, C + 7, 6], [C, C, PARENT_R]
+              ];
+              kids.push(h('ellipse', {
+                key: 'psh', cx: C + 2.5, cy: C + 3.5, rx: PARENT_R + 4.5, ry: PARENT_R + 2,
+                fill: '#000000', opacity: isDark ? 0.30 : 0.14
+              }));
+              // Rim first, gradient clumps over it: stroking the lobes themselves
+              // would draw every internal overlap line.
+              kids.push(h('g', { key: 'prim', fill: isDark ? '#0d3b20' : '#0f4d28' }, lobes.map(function (l, i) {
+                return h('circle', { key: 'u' + i, cx: l[0], cy: l[1], r: l[2] + 1.2 });
+              })));
+              kids.push(h('g', { key: 'pcan', fill: 'url(#treelab-canopy-g)' }, lobes.map(function (l, i) {
+                return h('circle', { key: 'c' + i, cx: l[0], cy: l[1], r: l[2] });
+              })));
+              kids.push(h('circle', { key: 'p2', cx: C, cy: C, r: 3.4, fill: '#78350f', opacity: 0.9 }));
+            }
+            return kids;
+          })()),
           h('div', { key: 'leg', style: { marginTop: 8, textAlign: 'center' } }, [
             legendItem('a', sw('diverse'), __alloT('stem.treelab.map_leg_seed', 'Grew from seed')),
             legendItem('b', sw('clonal'), __alloT('stem.treelab.map_leg_clone', 'Clonal stem')),
@@ -5875,7 +6380,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           compareChart(runs, years, maxH)
         ])];
 
-        runs.forEach(function (r) {
+        runs.forEach(function (r, ri) {
           var isCurrent = r.sp.id === sp.id;
           var W = 100, H = 44;
           var span = Math.max(1, Math.ceil(years / 2));   // one sample every other year
@@ -5883,11 +6388,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             var x = (i / span) * W;
             return x.toFixed(1) + ',' + (H - (v / maxH) * (H - 2)).toFixed(1);
           }).join(' ');
+          // The card wears the same hue (and, in high contrast, the same dash) as the
+          // species' line on the shared chart above — one identity, two places.
+          var cardHue = isContrast ? T.accent : (isDark ? SPECIES_HUE_DARK : SPECIES_HUE_LIGHT)[ri % 5];
+          var cardDash = isContrast ? SPECIES_DASH[ri % 5] : '';
+          var lastPX = r.track.length ? ((r.track.length - 1) / span) * W : 0;
           kids.push(card([
             h('div', { key: 'hd', style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', alignItems: 'baseline' } }, [
-              h('div', { key: 'a', style: { fontWeight: 700, color: T.text, fontSize: 14 } },
-                r.sp.emoji + ' ' + __alloT('stem.treelab.species_' + r.sp.id, r.sp.name)
-                + (isCurrent ? ' · ' + __alloT('stem.treelab.your_tree', 'your tree') : '')),
+              h('div', { key: 'a', style: { fontWeight: 700, color: T.text, fontSize: 14, display: 'flex', alignItems: 'center', gap: 7 } }, [
+                isContrast ? null : h('span', {
+                  key: 'sw', 'aria-hidden': 'true',
+                  style: { width: 10, height: 10, borderRadius: 3, background: cardHue, flex: '0 0 auto', display: 'inline-block' }
+                }),
+                h('span', { key: 'tx' },
+                  r.sp.emoji + ' ' + __alloT('stem.treelab.species_' + r.sp.id, r.sp.name)
+                  + (isCurrent ? ' · ' + __alloT('stem.treelab.your_tree', 'your tree') : ''))
+              ]),
               h('div', { key: 'b', style: { fontSize: 12, color: T.dim } },
                 r.diedAt
                   ? __alloT('stem.treelab.died_at', 'died at ') + r.diedAt + ' ' + __alloT('stem.treelab.yr', 'yr')
@@ -5905,7 +6421,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                 + ' ' + __alloT('stem.treelab.after_years', 'after ') + years + ' ' + __alloT('stem.treelab.yr', 'yr')
             }, [
               h('line', { key: 'base', x1: 0, y1: H - 1, x2: W, y2: H - 1, stroke: T.border, strokeWidth: 0.6 }),
-              pts ? h('polyline', { key: 'ln', points: pts, fill: 'none', stroke: isCurrent ? T.accent : tone('#22c55e'), strokeWidth: isCurrent ? 2 : 1.3, vectorEffect: 'non-scaling-stroke' }) : null,
+              // Area under the curve, so the card reads as a filled height profile
+              // rather than a hairline in a grey box. Skipped in high contrast, where
+              // a translucent fill is just a smear over black.
+              (pts && !isContrast) ? h('polygon', {
+                key: 'fill', points: pts + ' ' + lastPX.toFixed(1) + ',' + (H - 1) + ' 0,' + (H - 1),
+                fill: cardHue, fillOpacity: isDark ? 0.16 : 0.12, stroke: 'none'
+              }) : null,
+              pts ? h('polyline', { key: 'ln', points: pts, fill: 'none', stroke: cardHue, strokeWidth: isCurrent ? 2 : 1.4, strokeDasharray: cardDash || undefined, vectorEffect: 'non-scaling-stroke' }) : null,
               // Mark where a run stopped, so a short life reads as a short life rather
               // than as a line that happens to end.
               (r.diedAt && r.track.length) ? h('line', {
@@ -5948,7 +6471,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
 
         return [card([
           heading(__alloT('stem.treelab.check', 'Knowledge check'),
-            __alloT('stem.treelab.check_sub', 'Question ') + (idx + 1) + ' / ' + pool.length + ' · ' + BAND_LABEL[band]),
+            __alloT('stem.treelab.check_sub', 'Question ') + (idx + 1) + ' / ' + pool.length + ' · ' + bandLabel(band)),
           scoreStrip(pool),
           h('p', { key: 'q', style: { fontSize: 14, color: T.text, lineHeight: 1.6, marginBottom: 10, fontWeight: 600 } },
             __alloT('stem.treelab.quiz' + qKey + '_q', q.q)),
@@ -5958,8 +6481,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             var bg = T.cardAlt, bd = T.border;
             if (answered && isCorrect) { bg = isContrast ? '#003300' : (isDark ? '#14532d' : '#dcfce7'); bd = T.good; }
             else if (answered && chosen) { bg = isContrast ? '#330000' : (isDark ? '#7f1d1d' : '#fee2e2'); bd = T.bad; }
+            // The letter lives in a chip rather than running into the sentence, and
+            // once answered the chip flips to ✓/✕ — the verdict is readable at the
+            // left edge without re-parsing row colours. The letter stays in the
+            // accessible name via aria-label on the button.
+            // Dark theme's good/bad are light tints, so the glyph goes dark there.
+            var chipBg = T.cardAlt, chipBd = T.border, chipTx = T.dim, chipGlyph = String.fromCharCode(65 + i);
+            if (answered && isCorrect) { chipBg = T.good; chipBd = T.good; chipTx = isContrast ? '#000000' : (isDark ? '#052e16' : '#ffffff'); chipGlyph = '✓'; }
+            else if (answered && chosen) { chipBg = T.bad; chipBd = T.bad; chipTx = isContrast ? '#000000' : (isDark ? '#450a0a' : '#ffffff'); chipGlyph = '✕'; }
             return h('button', {
               key: 'o' + i, type: 'button', disabled: answered,
+              className: 'allo-tree-quiz-opt',
+              'aria-label': String.fromCharCode(65 + i) + '. ' + __alloT('stem.treelab.quiz' + qKey + '_opt' + i, opt),
               onClick: function () {
                 var seen = Object.assign({}, d.quizSeen || {});
                 var first = !seen[qKey];
@@ -5975,11 +6508,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                 }
               },
               style: {
-                display: 'block', width: '100%', textAlign: 'left', padding: '10px 12px',
-                marginBottom: 6, borderRadius: 8, border: '1px solid ' + bd, background: bg,
-                color: T.text, fontSize: 13, cursor: answered ? 'default' : 'pointer', lineHeight: 1.5
+                display: 'flex', alignItems: 'center', gap: 10, width: '100%', textAlign: 'left',
+                padding: '9px 12px', marginBottom: 6, borderRadius: 10, border: '1px solid ' + bd,
+                background: bg, color: T.text, fontSize: 13,
+                cursor: answered ? 'default' : 'pointer', lineHeight: 1.5
               }
-            }, String.fromCharCode(65 + i) + '. ' + __alloT('stem.treelab.quiz' + qKey + '_opt' + i, opt));
+            }, [
+              h('span', {
+                key: 'chip', 'aria-hidden': 'true',
+                style: {
+                  flex: '0 0 auto', width: 26, height: 26, borderRadius: '50%',
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  border: '1px solid ' + chipBd, background: chipBg, color: chipTx,
+                  fontSize: 12, fontWeight: 800
+                }
+              }, chipGlyph),
+              h('span', { key: 'tx' }, __alloT('stem.treelab.quiz' + qKey + '_opt' + i, opt))
+            ]);
           })),
           answered ? h('div', { key: 'why', style: { marginTop: 8, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, borderLeft: '4px solid ' + T.accent, fontSize: 12, color: T.text, lineHeight: 1.6 } },
             __alloT('stem.treelab.quiz' + qKey + '_why', q.why)) : null,
@@ -6059,9 +6604,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
               __alloT('stem.treelab.level', 'Level')),
             h('select', {
               key: 'bs', id: 'treelab-band', value: band,
-              onChange: function (e) { upd('bandOverride', e.target.value); srSay('Level set to ' + BAND_LABEL[e.target.value] + '.'); },
+              onChange: function (e) { upd('bandOverride', e.target.value); srSay(__alloT('stem.treelab.say_level_set', 'Level set to ') + bandLabel(e.target.value) + '.'); },
               style: { padding: '7px 10px', minHeight: 34, borderRadius: 9, background: T.card, color: T.text, border: '1px solid ' + T.border, fontSize: 12, fontWeight: 600 }
-              }, BANDS.map(function (b) { return h('option', { key: b, value: b }, BAND_LABEL[b]); }))
+              }, BANDS.map(function (b) { return h('option', { key: b, value: b }, bandLabel(b)); }))
             ]),
             h('div', { key: 'species-field', className: 'allo-tree-hero-field', style: { display: 'flex', alignItems: 'center', gap: 6 } }, [
               h('label', { key: 'sl', htmlFor: 'treelab-species', style: { fontSize: 11, color: T.dim } },
@@ -6074,7 +6619,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             ])
           ])
         ]),
-        h('div', { key: 'tabs', className: 'allo-tree-tabs', role: 'tablist', 'aria-label': 'Tree Life Lab sections', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14, padding: 6, borderRadius: 14, background: T.card, border: '1px solid ' + T.border, boxShadow: isContrast ? 'none' : (isDark ? '0 8px 24px rgba(2,6,23,.2)' : '0 8px 24px rgba(15,23,42,.06)') } },
+        h('div', { key: 'tabs', className: 'allo-tree-tabs', role: 'tablist', 'aria-label': __alloT('stem.treelab.tabs_label', 'Tree Life Lab sections'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14, padding: 6, borderRadius: 14, background: T.card, border: '1px solid ' + T.border, boxShadow: isContrast ? 'none' : (isDark ? '0 8px 24px rgba(2,6,23,.2)' : '0 8px 24px rgba(15,23,42,.06)') } },
           TABS.map(function (t, ti) {
             var selected = view === t.id;
             return h('button', {

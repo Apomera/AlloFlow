@@ -106,6 +106,17 @@ function PdfDiffViewer(props) {
   // to labels-as-keys instead of taking down AlloFlowErrorBoundary.
   let { t } = props;
   if (typeof t !== 'function') t = (key) => key;
+  // Localised text with placeholder interpolation. Two misses to guard, not one:
+  // t() returns undefined for an untranslated key, AND the passthrough shim just
+  // above returns the KEY ITSELF when a stale host bundle passes no `t` at all.
+  // Both must fall through to English, or the panel renders raw key strings.
+  const dvText = (key, fallback, params) => {
+    const full = 'diff_view.' + key;
+    let s = t(full, params);
+    if (!s || s === full) s = fallback;
+    if (params) Object.keys(params).forEach(p => { s = s.replace('{' + p + '}', params[p]); });
+    return s;
+  };
   const {
     _applyTextSurgery, _lastDiffFingerprintRef, addToast, applyingRemarkup,
     callGemini, capturePdfHtmlCommitToken, commitPdfFixResultIfCurrent,
@@ -344,20 +355,20 @@ function PdfDiffViewer(props) {
             if (combined > CHARS_GUARD_THRESHOLD) {
               const approxSec = Math.round((combined * combined) / 1e9);
               const accepted = await requestDiffConfirmation({
-                title: 'Use character-level comparison?',
-                message: `This document contains ${combined.toLocaleString()} characters. Character comparison may freeze the browser for about ${Math.max(5, approxSec)} seconds or longer. Words or Sentences will be faster.`,
-                confirmLabel: 'Use characters',
-                cancelLabel: 'Keep current view'
+                title: dvText('confirm_chars_title', 'Use character-level comparison?'),
+                message: dvText('confirm_chars_message', 'This document contains {chars} characters. Character comparison may freeze the browser for about {seconds} seconds or longer. Words or Sentences will be faster.', { chars: combined.toLocaleString(), seconds: Math.max(5, approxSec) }),
+                confirmLabel: dvText('confirm_chars_ok', 'Use characters'),
+                cancelLabel: dvText('confirm_chars_cancel', 'Keep current view')
               });
               if (!accepted) return;
             }
           }
           if (_chunks && _chunks.some(c => c.rejected)) {
             const accepted = await requestDiffConfirmation({
-              title: 'Reset rejected changes?',
-              message: 'Changing comparison granularity will reset every rejected change in this diff.',
-              confirmLabel: 'Change and reset',
-              cancelLabel: 'Keep rejections'
+              title: dvText('confirm_reset_title', 'Reset rejected changes?'),
+              message: dvText('confirm_reset_message', 'Changing comparison granularity will reset every rejected change in this diff.'),
+              confirmLabel: dvText('confirm_reset_ok', 'Change and reset'),
+              cancelLabel: dvText('confirm_reset_cancel', 'Keep rejections')
             });
             if (!accepted) return;
           }
@@ -510,7 +521,7 @@ function PdfDiffViewer(props) {
             _applyVerificationFailed: null,
           }) : p);
           setDiffChunks(null);
-          addToast('Reverted to the state before your last Apply.', 'info');
+          addToast(dvText('toast_reverted', 'Reverted to the state before your last Apply.'), 'info');
           try { window.dispatchEvent(new CustomEvent('alloflow:fidelity-stale')); } catch (_) {}
         };
         const _canRevert = !!(pdfFixResult && pdfFixResult._preApplyHtml);
@@ -598,7 +609,7 @@ function PdfDiffViewer(props) {
         const _closeDiff = () => {
           const cancelledRemarkup = cancelRemarkupOperation();
           if (cancelledRemarkup) {
-            addToast('AI edit cancelled; no document changes were applied.', 'info');
+            addToast(dvText('toast_ai_cancelled', 'AI edit cancelled; no document changes were applied.'), 'info');
           }
           if (pdfFixResult && pdfFixResult._diffOverride) { try { setPdfFixResult(p => p ? ({ ...p, _diffOverride: null }) : p); } catch (_) {} }
           setDiffViewOpen(false);
@@ -647,28 +658,28 @@ function PdfDiffViewer(props) {
                     <span className="inline-flex items-center gap-1 text-slate-600"><span className="w-3 h-3 rounded-sm bg-slate-100 border border-slate-400" /> <span className="font-bold">{_same.toLocaleString()}</span> unchanged</span>
                     {_rejCount > 0 && (
                       <span className="inline-flex items-center gap-1 ml-1 bg-amber-100 border border-amber-300 px-1.5 py-0.5 rounded font-bold text-amber-800">
-                        {_rejCount.toLocaleString()} rejected
+                        {dvText('rejected_count', '{count} rejected', { count: _rejCount.toLocaleString() })}
                         <button onClick={_undoAllRejections} className="ml-1 underline hover:no-underline text-amber-900" title={t('diff_view.undo_all_tooltip') || 'Undo every rejection in this view'}>{t('diff_view.undo_all_button') || 'undo all'}</button>
                       </span>
                     )}
                     {_ocrEnabled && _ocrHighCount > 0 && (
-                      <span className="inline-flex items-center gap-1 ml-1 bg-rose-200 border border-rose-500 px-1.5 py-0.5 rounded font-bold text-rose-900" title="Tokens that both Tesseract and Vision OCR saw in the source but that don't appear in the remediated final — high-confidence accidental drops.">
+                      <span className="inline-flex items-center gap-1 ml-1 bg-rose-200 border border-rose-500 px-1.5 py-0.5 rounded font-bold text-rose-900" title={dvText('ocr_high_title', "Tokens that both Tesseract and Vision OCR saw in the source but that don't appear in the remediated final — high-confidence accidental drops.")}>
                         <span aria-hidden="true">✓✓</span>
-                        <span className="sr-only">Both OCR engines agreed:</span>
-                        <span>{_ocrHighCount.toLocaleString()} likely dropped</span>
+                        <span className="sr-only">{dvText('ocr_high_sr', 'Both OCR engines agreed:')}</span>
+                        <span>{dvText('ocr_high_count', '{count} likely dropped', { count: _ocrHighCount.toLocaleString() })}</span>
                       </span>
                     )}
                     {_ocrEnabled && _ocrMedCount > 0 && (
-                      <span className="inline-flex items-center gap-1 ml-1 bg-amber-100 border border-amber-400 px-1.5 py-0.5 rounded font-bold text-amber-800" title="Tokens that ONE OCR engine saw but the other did not — could be a hallucination by the engine that saw it, or a real miss by the other. Review.">
+                      <span className="inline-flex items-center gap-1 ml-1 bg-amber-100 border border-amber-400 px-1.5 py-0.5 rounded font-bold text-amber-800" title={dvText('ocr_med_title', 'Tokens that ONE OCR engine saw but the other did not — could be a hallucination by the engine that saw it, or a real miss by the other. Review.')}>
                         <span aria-hidden="true">✓?</span>
-                        <span className="sr-only">One OCR engine only:</span>
-                        <span>{_ocrMedCount.toLocaleString()} needs review</span>
+                        <span className="sr-only">{dvText('ocr_med_sr', 'One OCR engine only:')}</span>
+                        <span>{dvText('ocr_med_count', '{count} needs review', { count: _ocrMedCount.toLocaleString() })}</span>
                       </span>
                     )}
                   </div>
                 )}
                 <div className="ml-auto text-[11px] text-slate-500">
-                  <span className="font-mono">{_src.length.toLocaleString()}</span> → <span className="font-mono">{_fin.length.toLocaleString()}</span> chars
+                  <span className="font-mono">{_src.length.toLocaleString()}</span> → <span className="font-mono">{_fin.length.toLocaleString()}</span> {dvText('chars_label', 'chars')}
                 </div>
               </div>
               <div
@@ -677,12 +688,12 @@ function PdfDiffViewer(props) {
               >
                 {!diffLibReady && diffLibLoading && (
                   <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> Loading diff engine (jsdiff)…
+                    <RefreshCw size={14} className="animate-spin motion-reduce:animate-none" /> {dvText('loading_engine', 'Loading diff engine (jsdiff)…')}
                   </div>
                 )}
                 {!diffLibReady && !diffLibLoading && (
                   <div className="text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-lg p-3">
-                    Couldn't load the diff engine (network blocked?). Try re-opening the diff view, or check your connection.
+                    {dvText('load_failed', "Couldn't load the diff engine (network blocked?). Try re-opening the diff view, or check your connection.")}
                   </div>
                 )}
                 {/* Fallback branch — lib loaded but chunks haven't built yet
@@ -713,10 +724,14 @@ function PdfDiffViewer(props) {
                   <details className="mb-3 bg-rose-50 border border-rose-300 rounded-lg p-3" open>
                     <summary className="cursor-pointer font-bold text-rose-900 text-sm flex items-center gap-2">
                       <span aria-hidden="true">✓✓</span>
-                      <span>{_ocrHighList.length} likely-dropped token{_ocrHighList.length === 1 ? '' : 's'} (both Tesseract & Vision OCR saw these)</span>
+                      <span>{dvText(_ocrHighList.length === 1 ? 'ocr_panel_summary_one' : 'ocr_panel_summary_other',
+                        _ocrHighList.length === 1
+                          ? '{count} likely-dropped token (both Tesseract & Vision OCR saw these)'
+                          : '{count} likely-dropped tokens (both Tesseract & Vision OCR saw these)',
+                        { count: _ocrHighList.length })}</span>
                     </summary>
                     <p className="text-[11px] text-rose-800 mt-2 mb-2 leading-relaxed">
-                      Click any token to jump to it in the diff. Both OCR engines saw these words in the source — they're high-confidence accidental drops, not intentional remediation removals.
+                      {dvText('ocr_panel_help', "Click any token to jump to it in the diff. Both OCR engines saw these words in the source — they're high-confidence accidental drops, not intentional remediation removals.")}
                     </p>
                     <div className="flex flex-wrap gap-1.5">
                       {_ocrHighList.slice(0, 100).map(item => (
@@ -725,11 +740,11 @@ function PdfDiffViewer(props) {
                           type="button"
                           onClick={() => _scrollToChunk(item.id)}
                           className="px-2 py-0.5 text-[12px] font-mono bg-white text-rose-900 border border-rose-400 rounded hover:bg-rose-100 hover:ring-1 hover:ring-rose-500"
-                          title="Click to scroll to this token in the diff"
+                          title={dvText('token_scroll_title', 'Click to scroll to this token in the diff')}
                         >{String(item.value).trim().slice(0, 40)}{String(item.value).length > 40 ? '…' : ''}</button>
                       ))}
                       {_ocrHighList.length > 100 && (
-                        <span className="text-[11px] text-rose-700 self-center ml-1">…and {_ocrHighList.length - 100} more in the diff below</span>
+                        <span className="text-[11px] text-rose-700 self-center ml-1">{dvText('ocr_panel_more', '…and {count} more in the diff below', { count: _ocrHighList.length - 100 })}</span>
                       )}
                     </div>
                   </details>
@@ -830,7 +845,7 @@ function PdfDiffViewer(props) {
                     className="ml-auto px-3 py-1.5 bg-white border border-slate-400 hover:bg-slate-100 disabled:opacity-60 text-slate-700 rounded-md font-bold inline-flex items-center gap-1.5"
                     title={t('diff_view.revert_tooltip') || 'Restore the accessible HTML to the state before your last Apply & Export'}
                   >
-                    ↶ Revert last Apply
+                    ↶ {dvText('revert_button', 'Revert last Apply')}
                   </button>
                 )}
                 {_rejCount > 0 && (
@@ -840,7 +855,7 @@ function PdfDiffViewer(props) {
                     className={(_canRevert ? '' : 'ml-auto ') + 'px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white rounded-md font-bold inline-flex items-center gap-1.5 shadow'}
                     title={t('diff_view.apply_export_tooltip') || "Apply rejections via text surgery (preserves all markup, instant, no Gemini call). Falls back to Gemini round-trip only if surgery can't map some chunks."}
                   >
-                    {applyingRemarkup ? <><RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> Applying…</> : <>✓ Apply &amp; Export ({_rejCount})</>}
+                    {applyingRemarkup ? <><RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> {dvText('applying', 'Applying…')}</> : <>✓ {dvText('apply_export_button', 'Apply & Export ({count})', { count: _rejCount })}</>}
                   </button>
                 )}
               </div>
@@ -883,6 +898,14 @@ function GroupSessionModal(props) {
   // Component scope: the "Active groups" column and the per-resource group
   // chips both render this list; a narrower declaration is a ReferenceError.
   const activeSessionGroups = Object.entries(sessionData?.groups || {}).filter(([_, g]) => g !== null);
+  // Localised text with placeholder interpolation on BOTH paths: t(key, params)
+  // interpolates when a pack supplies the string, and the same replace runs over
+  // the English fallback when t() returns undefined (no pack / untranslated key).
+  const gsText = (key, fallback, params) => {
+    let s = t('groups.' + key, params) || fallback;
+    if (params) Object.keys(params).forEach(p => { s = s.replace('{' + p + '}', params[p]); });
+    return s;
+  };
   const containGroupFocus = (event) => {
     if (!event || !groupDialogRef.current) return;
     if (event.key === 'Escape') { event.preventDefault(); handleSetShowGroupModalToFalse(); return; }
@@ -1047,7 +1070,7 @@ function GroupSessionModal(props) {
                         <div className="flex items-center gap-2 mb-3">
                             <FileText size={16} className="text-indigo-600" />
                             <h3 className="text-sm font-bold text-indigo-600 uppercase tracking-wider">{t('groups.resource_library')}</h3>
-                            <span className="text-xs text-slate-600 ml-2">({sessionData.resources?.length || 0} items)</span>
+                            <span className="text-xs text-slate-600 ml-2">{gsText('resource_count', '({count} items)', { count: sessionData.resources?.length || 0 })}</span>
                             <span className="text-[11px] text-purple-700 ml-auto italic flex items-center gap-1">
                                 <GripVertical size={12} /> {t('groups.drag_to_reorder') || 'Drag or use Move earlier/later'}
                             </span>
@@ -1126,9 +1149,9 @@ function GroupSessionModal(props) {
                                                         <Users size={10} /> {assignedGroup[1].name}
                                                     </div>
                                                 )}
-                                                <div role="group" aria-label={`Reorder ${res.title || 'Untitled'}`} className="mt-2 grid grid-cols-2 gap-1">
-                                                    <button type="button" onClick={() => moveResourceBy(res.id, -1)} disabled={index === 0} className="rounded border border-slate-300 bg-white px-1.5 py-1 text-[11px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40" aria-label={`Move ${res.title || 'resource'} earlier`}>← Earlier</button>
-                                                    <button type="button" onClick={() => moveResourceBy(res.id, 1)} disabled={index === sessionData.resources.length - 1} className="rounded border border-slate-300 bg-white px-1.5 py-1 text-[11px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40" aria-label={`Move ${res.title || 'resource'} later`}>Later →</button>
+                                                <div role="group" aria-label={gsText('reorder_aria', 'Reorder {title}', { title: res.title || (t('common.untitled') || 'Untitled') })} className="mt-2 grid grid-cols-2 gap-1">
+                                                    <button type="button" onClick={() => moveResourceBy(res.id, -1)} disabled={index === 0} className="rounded border border-slate-300 bg-white px-1.5 py-1 text-[11px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40" aria-label={gsText('move_earlier_aria', 'Move {title} earlier', { title: res.title || gsText('untitled_resource', 'resource') })}>← {gsText('move_earlier', 'Earlier')}</button>
+                                                    <button type="button" onClick={() => moveResourceBy(res.id, 1)} disabled={index === sessionData.resources.length - 1} className="rounded border border-slate-300 bg-white px-1.5 py-1 text-[11px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40" aria-label={gsText('move_later_aria', 'Move {title} later', { title: res.title || gsText('untitled_resource', 'resource') })}>{gsText('move_later', 'Later')} →</button>
                                                 </div>
                                             </div>
                                         );
@@ -1253,6 +1276,14 @@ function FluencyModePanel(props) {
   } = props;
   const [isReviewingFluency, setIsReviewingFluency] = React.useState(false);
   const [fluencyReviewDraft, setFluencyReviewDraft] = React.useState(null);
+  // Localised text with placeholder interpolation on BOTH paths: t(key, params)
+  // interpolates when a pack supplies the string, and the same replace runs over
+  // the English fallback when t() returns undefined (no pack / untranslated key).
+  const flText = (key, fallback, params) => {
+    let s = t('fluency.' + key, params) || fallback;
+    if (params) Object.keys(params).forEach(p => { s = s.replace('{' + p + '}', params[p]); });
+    return s;
+  };
 
   const beginFluencyReview = () => {
     if (!fluencyResult?.wordData) return;
@@ -1322,10 +1353,9 @@ function FluencyModePanel(props) {
                                     data-help-key="fluency_mode_time_limit"
                                 >
                                     <option value={0}>{t('fluency.time_limit_none')}</option>
-                                    <option value={30}>30 sec</option>
-                                    <option value={60}>60 sec</option>
-                                    <option value={90}>90 sec</option>
-                                    <option value={120}>120 sec</option>
+                                    {[30, 60, 90, 120].map(sec => (
+                                        <option key={sec} value={sec}>{flText('time_limit_seconds', '{seconds} sec', { seconds: sec })}</option>
+                                    ))}
                                 </select>
                                 {fluencyTimeLimit > 0 && (
                                     <select aria-label={t('common.timer_display')}
@@ -1423,9 +1453,11 @@ function FluencyModePanel(props) {
                             {evidenceSummary && (
                                 <div className={`mb-4 rounded-xl border p-3 text-left ${evidenceSummary.benchmarkReady ? 'bg-emerald-50 border-emerald-200' : 'bg-sky-50 border-sky-200'}`}>
                                     <div className="flex flex-wrap items-center justify-between gap-2">
-                                        <div className="text-xs font-black text-slate-700 uppercase tracking-wide">Recent reading evidence</div>
+                                        <div className="text-xs font-black text-slate-700 uppercase tracking-wide">{flText('evidence_title', 'Recent reading evidence')}</div>
                                         <div className="text-xs font-bold text-slate-700">
-                                            {evidenceSummary.sampleCount >= 3 ? `Median of ${evidenceSummary.sampleCount}: ` : 'Current sample: '}
+                                            {evidenceSummary.sampleCount >= 3
+                                                ? flText('evidence_median', 'Median of {count}: ', { count: evidenceSummary.sampleCount })
+                                                : flText('evidence_current', 'Current sample: ')}
                                             {evidenceSummary.medianWcpm ?? 0} WCPM
                                             {evidenceSummary.medianAccuracy != null ? ` | ${evidenceSummary.medianAccuracy}% accuracy` : ''}
                                         </div>
@@ -1489,22 +1521,26 @@ function FluencyModePanel(props) {
                                         </div>
                                         <div>
                                             <div className="text-xs font-bold text-slate-700">{t('fluency.ai_confidence_title') || 'AI Confidence in This Analysis'}</div>
-                                            <div className="text-[11px] text-slate-600">{fluencyResult.confidence.overall >= 7 ? 'High confidence' : fluencyResult.confidence.overall >= 4 ? 'Moderate confidence — some results may be inaccurate' : 'Low confidence — human verification recommended'}</div>
+                                            <div className="text-[11px] text-slate-600">{fluencyResult.confidence.overall >= 7
+                                                ? flText('confidence_high', 'High confidence')
+                                                : fluencyResult.confidence.overall >= 4
+                                                    ? flText('confidence_moderate', 'Moderate confidence — some results may be inaccurate')
+                                                    : flText('confidence_low', 'Low confidence — human verification recommended')}</div>
                                         </div>
                                     </div>
                                     <div className="flex gap-3 text-[11px] mb-2">
-                                        <span className="text-slate-600">🎙️ Audio: {fluencyResult.confidence.audioQuality}/10</span>
-                                        <span className="text-slate-600">🗣️ Clarity: {fluencyResult.confidence.speakerClarity}/10</span>
+                                        <span className="text-slate-600">🎙️ {flText('audio_label', 'Audio:')} {fluencyResult.confidence.audioQuality}/10</span>
+                                        <span className="text-slate-600">🗣️ {flText('clarity_label', 'Clarity:')} {fluencyResult.confidence.speakerClarity}/10</span>
                                         {fluencyResult.confidence.accentDetected && <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">{t('fluency.accent_detected_badge') || 'Accent detected — scored conservatively'}</span>}
                                         {fluencyResult.confidence.youngVoiceDetected && <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold">{t('fluency.young_voice_badge') || 'Young voice detected'}</span>}
                                         {fluencyResult.confidence.dialectalPatternsDetected && <span className="bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full font-bold">{t('fluency.dialectal_patterns_badge') || 'Dialectal patterns respected'}</span>}
                                     </div>
                                     {fluencyResult.confidence.lowConfidenceWordCount > 0 && (
-                                        <div className="text-[11px] text-amber-700 font-medium">⚠ {fluencyResult.confidence.lowConfidenceWordCount} word(s) marked with low confidence — look for ⚠ in the word display below</div>
+                                        <div className="text-[11px] text-amber-700 font-medium">⚠ {flText('low_confidence_words', '{count} word(s) marked with low confidence — look for ⚠ in the word display below', { count: fluencyResult.confidence.lowConfidenceWordCount })}</div>
                                     )}
                                     {fluencyResult.confidence.note && <div className="text-[11px] text-slate-600 mt-1 italic">{fluencyResult.confidence.note}</div>}
                                     {fluencyResult.confidence.limitationsApplied && fluencyResult.confidence.limitationsApplied !== 'none' && fluencyResult.confidence.limitationsApplied !== 'none detected' && (
-                                        <div className="text-[11px] text-slate-600 mt-1">Research basis: {fluencyResult.confidence.limitationsApplied}</div>
+                                        <div className="text-[11px] text-slate-600 mt-1">{flText('research_basis', 'Research basis:')} {fluencyResult.confidence.limitationsApplied}</div>
                                     )}
                                 </div>
                             )}
@@ -1523,12 +1559,14 @@ function FluencyModePanel(props) {
                             <div className={`mb-4 rounded-xl border p-3 flex flex-wrap items-center justify-between gap-3 ${fluencyResult.review?.status === 'reviewed' ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'}`}>
                                 <div className="text-left">
                                     <div className="text-xs font-black text-slate-700 uppercase tracking-wide">
-                                        {fluencyResult.review?.status === 'reviewed' ? 'Teacher-reviewed running record' : 'Automated running record - review recommended'}
+                                        {fluencyResult.review?.status === 'reviewed'
+                                            ? flText('record_reviewed', 'Teacher-reviewed running record')
+                                            : flText('record_automated', 'Automated running record - review recommended')}
                                     </div>
                                     {fluencyResult.review?.status === 'reviewed' && (
                                         <div className="text-[11px] text-slate-600 mt-0.5">
-                                            Revision {fluencyResult.review.revision || 1} by {fluencyResult.review.reviewer || 'Educator'}
-                                            {fluencyResult.review.correctedWordCount ? ` | ${fluencyResult.review.correctedWordCount} corrected word classification(s)` : ''}
+                                            {flText('revision_line', 'Revision {revision} by {reviewer}', { revision: fluencyResult.review.revision || 1, reviewer: fluencyResult.review.reviewer || flText('default_reviewer', 'Educator') })}
+                                            {fluencyResult.review.correctedWordCount ? flText('revision_corrected', ' | {count} corrected word classification(s)', { count: fluencyResult.review.correctedWordCount }) : ''}
                                         </div>
                                     )}
                                 </div>
@@ -1537,44 +1575,44 @@ function FluencyModePanel(props) {
                                         type="button"
                                         onClick={beginFluencyReview}
                                         className="px-3 py-2 rounded-lg text-xs font-bold bg-white text-indigo-700 border border-indigo-300 hover:bg-indigo-50"
-                                        aria-label="Review and correct the automated running record"
+                                        aria-label={flText('review_button_aria', 'Review and correct the automated running record')}
                                     >
-                                        Review word classifications
+                                        {flText('review_button', 'Review word classifications')}
                                     </button>
                                 )}
                             </div>
                             {isReviewingFluency && fluencyReviewDraft && (
                                 <div className="w-full rounded-xl border border-indigo-200 bg-white p-4" data-help-key="fluency_teacher_review">
                                     <p className="text-xs text-slate-600 mb-3 text-left">
-                                        Listen again when possible. Change only classifications you can verify; the automated result remains in the audit trail.
+                                        {flText('review_intro', 'Listen again when possible. Change only classifications you can verify; the automated result remains in the audit trail.')}
                                     </p>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                                         {fluencyReviewDraft.wordData.map((word, index) => (
                                             <div key={index} className={`rounded-lg border p-2 ${word.lowConfidence ? 'border-amber-300 bg-amber-50' : 'border-slate-200 bg-slate-50'}`}>
                                                 <div className="font-serif text-base font-bold text-slate-800 truncate" title={word.word}>{word.word}</div>
                                                 <label className="block text-[11px] font-bold text-slate-600 mt-1">
-                                                    Classification
+                                                    {flText('classification_label', 'Classification')}
                                                     <select
                                                         value={word.status}
                                                         onChange={(event) => updateFluencyReviewWord(index, 'status', event.target.value)}
                                                         className="mt-0.5 w-full text-[11px] border border-slate-400 rounded px-1 py-1 bg-white"
-                                                        aria-label={`Classification for ${word.word}`}
+                                                        aria-label={flText('classification_aria', 'Classification for {word}', { word: word.word })}
                                                     >
-                                                        <option value="correct">Correct</option>
-                                                        <option value="stumbled">Hesitation</option>
-                                                        <option value="self_corrected">Self-corrected</option>
-                                                        <option value="mispronounced">Substitution / mispronounced</option>
-                                                        <option value="missed">Omission</option>
+                                                        <option value="correct">{flText('status_correct', 'Correct')}</option>
+                                                        <option value="stumbled">{flText('status_stumbled', 'Hesitation')}</option>
+                                                        <option value="self_corrected">{flText('status_self_corrected', 'Self-corrected')}</option>
+                                                        <option value="mispronounced">{flText('status_mispronounced', 'Substitution / mispronounced')}</option>
+                                                        <option value="missed">{flText('status_missed', 'Omission')}</option>
                                                     </select>
                                                 </label>
                                                 {(word.status === 'mispronounced' || word.status === 'self_corrected') && (
                                                     <label className="block text-[11px] font-bold text-slate-600 mt-1">
-                                                        Student said
+                                                        {flText('student_said', 'Student said')}
                                                         <input
                                                             value={word.said || ''}
                                                             onChange={(event) => updateFluencyReviewWord(index, 'said', event.target.value)}
                                                             className="mt-0.5 w-full text-[11px] border border-slate-400 rounded px-1 py-1 bg-white"
-                                                            aria-label={`What the student said for ${word.word}`}
+                                                            aria-label={flText('student_said_aria', 'What the student said for {word}', { word: word.word })}
                                                         />
                                                     </label>
                                                 )}
@@ -1583,16 +1621,16 @@ function FluencyModePanel(props) {
                                     </div>
                                     <div className="grid sm:grid-cols-2 gap-3 mt-4 text-left">
                                         <label className="text-xs font-bold text-slate-700">
-                                            Inserted words
+                                            {flText('inserted_words', 'Inserted words')}
                                             <input
                                                 value={fluencyReviewDraft.insertionsText}
                                                 onChange={(event) => setFluencyReviewDraft(prev => ({ ...prev, insertionsText: event.target.value }))}
-                                                placeholder="Comma-separated, or leave blank"
+                                                placeholder={flText('inserted_placeholder', 'Comma-separated, or leave blank')}
                                                 className="mt-1 w-full text-sm border border-slate-400 rounded-lg px-2 py-2 bg-white"
                                             />
                                         </label>
                                         <label className="text-xs font-bold text-slate-700">
-                                            Reviewer
+                                            {flText('reviewer_label', 'Reviewer')}
                                             <input
                                                 value={fluencyReviewDraft.reviewer}
                                                 onChange={(event) => setFluencyReviewDraft(prev => ({ ...prev, reviewer: event.target.value }))}
@@ -1601,11 +1639,11 @@ function FluencyModePanel(props) {
                                         </label>
                                     </div>
                                     <label className="block text-xs font-bold text-slate-700 mt-3 text-left">
-                                        Review note
+                                        {flText('review_note', 'Review note')}
                                         <textarea
                                             value={fluencyReviewDraft.note}
                                             onChange={(event) => setFluencyReviewDraft(prev => ({ ...prev, note: event.target.value }))}
-                                            placeholder="Optional context, such as audio quality or dialect consideration"
+                                            placeholder={flText('review_note_placeholder', 'Optional context, such as audio quality or dialect consideration')}
                                             className="mt-1 w-full min-h-16 text-sm border border-slate-400 rounded-lg px-2 py-2 bg-white"
                                         />
                                     </label>
@@ -1615,14 +1653,14 @@ function FluencyModePanel(props) {
                                             onClick={() => { setIsReviewingFluency(false); setFluencyReviewDraft(null); }}
                                             className="px-3 py-2 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200"
                                         >
-                                            Cancel
+                                            {t('common.cancel') || 'Cancel'}
                                         </button>
                                         <button
                                             type="button"
                                             onClick={commitFluencyReview}
                                             className="px-3 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700"
                                         >
-                                            Save reviewed record
+                                            {flText('save_review', 'Save reviewed record')}
                                         </button>
                                     </div>
                                 </div>
@@ -1694,15 +1732,15 @@ function FluencyModePanel(props) {
                                     aria-label={t('common.print_score_sheet')}
                                     data-help-key="fluency_mode_print_score_sheet_btn"
                                 >
-                                    <FileText size={15} /> Print Score Sheet
+                                    <FileText size={15} /> {t('common.print_score_sheet') || 'Print Score Sheet'}
                                 </button>
                                 <button
                                     onClick={exportFluencyCSV}
-                                    className="flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm bg-emerald-50 text-emerald-300 border border-emerald-200 hover:bg-emerald-100 transition-colors"
+                                    className="flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors"
                                     aria-label={t('common.export_fluency_csv')}
                                     data-help-key="fluency_mode_export_csv_btn"
                                 >
-                                    <Download size={15} /> Export Fluency CSV
+                                    <Download size={15} /> {t('common.export_fluency_csv') || 'Export Fluency CSV'}
                                 </button>
                             </div>
                         </div>
@@ -2884,11 +2922,39 @@ function VolumeBuilderView(props) {
                                             }})
                                         ));
                                     }
+                            // Localised text with placeholder interpolation that works on BOTH
+                            // paths: t(key, params) interpolates when a pack supplies the
+                            // string, and the same replace runs over the English fallback when
+                            // t() returns undefined (no pack loaded, or key not yet translated).
+                            const vbText = (key, fallback, params) => {
+                                let s = t('volume_builder.' + key, params) || fallback;
+                                if (params) Object.keys(params).forEach(p => { s = s.replace('{' + p + '}', params[p]); });
+                                return s;
+                            };
+                            // ONE derivation of the answer check. The Enter-key handler and the
+                            // Check button each built these messages independently from the same
+                            // rules, so a fix to one would silently miss the other.
+                            const checkCubeAnswer = () => {
+                                if (!cubeChallenge) return;
+                                const ans = parseInt(cubeAnswer);
+                                const isLB = cubeChallenge.shape === 'lblock';
+                                const correctMsg = '✅ ' + (isLB
+                                    ? vbText('feedback_correct_lblock', 'Correct! ({l}×{w}×{h}) − ({nl}×{nw}×{nh}) = {answer} cubic units', {
+                                        l: cubeChallenge.l, w: cubeChallenge.w, h: cubeChallenge.h,
+                                        nl: cubeChallenge.notch.l, nw: cubeChallenge.notch.w, nh: cubeChallenge.notch.h,
+                                        answer: cubeChallenge.answer })
+                                    : vbText('feedback_correct_rect', 'Correct! {l} × {w} × {h} = {answer} cubic units', {
+                                        l: cubeChallenge.l, w: cubeChallenge.w, h: cubeChallenge.h, answer: cubeChallenge.answer }));
+                                const wrongMsg = '❌ ' + (isLB
+                                    ? vbText('feedback_wrong_lblock', 'Not quite. Try V = (L × W × H) − notch')
+                                    : vbText('feedback_wrong_rect', 'Not quite. Try V = L × W × H'));
+                                setCubeFeedback(ans === cubeChallenge.answer ? { correct: true, msg: correctMsg } : { correct: false, msg: wrongMsg });
+                            };
                             return (
                             <div className="space-y-3 p-3 bg-emerald-50 rounded-xl border border-emerald-200 animate-in fade-in slide-in-from-top-1" data-help-key="volume_builder_panel">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2 text-emerald-800 font-bold text-sm">
-                                        📦 3D Volume Explorer
+                                        📦 {t('volume_builder.title') || '3D Volume Explorer'}
                                     </div>
                                     <div className="flex items-center gap-1">
                                         <button onClick={() => setCubeScale(s => Math.max(0.4, s - 0.15))} className="w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 transition-all flex items-center justify-center" aria-label={t('volume_builder.zoom_out_aria') || 'Zoom out'}>−</button>
@@ -2897,13 +2963,13 @@ function VolumeBuilderView(props) {
                                         <button onClick={() => { setCubeRotation({ x: -25, y: -35 }); setCubeScale(1.0); }} className="ml-1 px-2 py-1 rounded-md bg-white border border-emerald-300 text-emerald-700 font-bold text-[11px] hover:bg-emerald-100 transition-all" aria-label={t('volume_builder.reset_view_aria') || 'Reset view'}>↺</button>
                                     </div>
                                 </div>
-                                <div role="group" aria-label="Rotate 3D volume" className="flex flex-wrap items-center gap-1.5">
-                                    <span className="text-[11px] font-bold text-emerald-800 mr-1">Rotate:</span>
-                                    <button type="button" onClick={() => setCubeRotation(prev => ({ ...prev, y: prev.y - 15 }))} className="min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100" aria-label="Rotate volume left">Left</button>
-                                    <button type="button" onClick={() => setCubeRotation(prev => ({ ...prev, y: prev.y + 15 }))} className="min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100" aria-label="Rotate volume right">Right</button>
-                                    <button type="button" onClick={() => setCubeRotation(prev => ({ ...prev, x: Math.max(-80, prev.x - 10) }))} className="min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100" aria-label="Tilt volume up">Up</button>
-                                    <button type="button" onClick={() => setCubeRotation(prev => ({ ...prev, x: Math.min(10, prev.x + 10) }))} className="min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100" aria-label="Tilt volume down">Down</button>
-                                    <output className="ml-auto text-[11px] font-mono text-emerald-700" aria-live="polite">Tilt {Math.round(cubeRotation.x)} degrees, turn {Math.round(cubeRotation.y)} degrees, zoom {Math.round(cubeScale * 100)} percent</output>
+                                <div role="group" aria-label={t('volume_builder.rotate_group_aria') || 'Rotate 3D volume'} className="flex flex-wrap items-center gap-1.5">
+                                    <span className="text-[11px] font-bold text-emerald-800 mr-1">{t('volume_builder.rotate_label') || 'Rotate:'}</span>
+                                    <button type="button" onClick={() => setCubeRotation(prev => ({ ...prev, y: prev.y - 15 }))} className="min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100" aria-label={t('volume_builder.rotate_left_aria') || 'Rotate volume left'}>{t('volume_builder.rotate_left') || 'Left'}</button>
+                                    <button type="button" onClick={() => setCubeRotation(prev => ({ ...prev, y: prev.y + 15 }))} className="min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100" aria-label={t('volume_builder.rotate_right_aria') || 'Rotate volume right'}>{t('volume_builder.rotate_right') || 'Right'}</button>
+                                    <button type="button" onClick={() => setCubeRotation(prev => ({ ...prev, x: Math.max(-80, prev.x - 10) }))} className="min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100" aria-label={t('volume_builder.tilt_up_aria') || 'Tilt volume up'}>{t('volume_builder.tilt_up') || 'Up'}</button>
+                                    <button type="button" onClick={() => setCubeRotation(prev => ({ ...prev, x: Math.min(10, prev.x + 10) }))} className="min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100" aria-label={t('volume_builder.tilt_down_aria') || 'Tilt volume down'}>{t('volume_builder.tilt_down') || 'Down'}</button>
+                                    <output className="ml-auto text-[11px] font-mono text-emerald-700" aria-live="polite">{vbText('orientation_status', 'Tilt {tilt} degrees, turn {turn} degrees, zoom {zoom} percent', { tilt: Math.round(cubeRotation.x), turn: Math.round(cubeRotation.y), zoom: Math.round(cubeScale * 100) })}</output>
                                 </div>
                                 <p className="text-xs text-emerald-700/70">{t('volume_builder.help_caption') || 'Use the rotate and zoom buttons, or drag and scroll, to inspect rectangular prisms and L-blocks (5.MD.3-5).'}</p>
                                 {/* Shape selector — toggle between a solid rectangular prism
@@ -2911,8 +2977,8 @@ function VolumeBuilderView(props) {
                                     out so volume becomes additive: V = L*W*H − notch_l*notch_w*notch_h). */}
                                 <div className="flex gap-2 justify-center" role="radiogroup" aria-label={t('volume_builder.shape_radiogroup_aria') || 'Volume Builder shape'} data-help-key="volume_builder_shape_selector">
                                     {[
-                                        { id: 'rect',   label: '🧊 Rectangular' },
-                                        { id: 'lblock', label: '📐 L-Block' },
+                                        { id: 'rect',   label: '🧊 ' + (t('volume_builder.shape_rect') || 'Rectangular') },
+                                        { id: 'lblock', label: '📐 ' + (t('volume_builder.shape_lblock') || 'L-Block') },
                                     ].map(s => {
                                         const sel = cubeShape === s.id;
                                         return (
@@ -2929,32 +2995,48 @@ function VolumeBuilderView(props) {
                                     })}
                                 </div>
                                 <div className="grid grid-cols-3 gap-2" data-help-key="volume_builder_dimensions_input">
-                                    {['l','w','h'].map(dim => (
+                                    {['l','w','h'].map(dim => {
+                                        const dimLabel = dim === 'l' ? (t('volume_builder.dim_length') || 'Length')
+                                            : dim === 'w' ? (t('volume_builder.dim_width') || 'Width')
+                                            : (t('volume_builder.dim_height') || 'Height');
+                                        return (
                                         <div key={dim}>
-                                            <label className="block text-xs text-slate-600 mb-1 font-bold uppercase">{dim === 'l' ? 'Length' : dim === 'w' ? 'Width' : 'Height'}</label>
+                                            <label className="block text-xs text-slate-600 mb-1 font-bold uppercase">{dimLabel}</label>
                                             <input type="range" min="1" max="10" value={cubeDims[dim]}
                                                 onChange={(e) => { setCubeDims(prev => ({...prev, [dim]: parseInt(e.target.value)})); setCubeChallenge(null); setCubeFeedback(null); setCubeShowLayers(null); }}
                                                 className="w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
-                                                aria-label={dim === 'l' ? 'Length' : dim === 'w' ? 'Width' : 'Height'} />
+                                                aria-label={dimLabel} />
                                             <div className="text-center text-sm font-bold text-emerald-700 mt-1">{cubeDims[dim]}</div>
                                         </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                                 {/* Notch sliders — only when L-block is selected. Each
                                     notch axis is capped at parent_axis − 1 so the prism
                                     always retains at least one row in each direction. */}
                                 {isLBlock && (
                                     <div className="grid grid-cols-3 gap-2 mt-2 p-2 rounded-lg bg-amber-50 border border-amber-200">
-                                        {['l','w','h'].map(dim => (
+                                        {['l','w','h'].map(dim => {
+                                            // Whole labels, not "<dim> + ' Notch'": adjective/noun
+                                            // order is not universal, so a concatenated suffix
+                                            // cannot be translated correctly.
+                                            const notchLabel = dim === 'l' ? (t('volume_builder.notch_label_length') || 'Length Notch')
+                                                : dim === 'w' ? (t('volume_builder.notch_label_width') || 'Width Notch')
+                                                : (t('volume_builder.notch_label_height') || 'Height Notch');
+                                            const notchAria = dim === 'l' ? (t('volume_builder.notch_aria_length') || 'Notch length')
+                                                : dim === 'w' ? (t('volume_builder.notch_aria_width') || 'Notch width')
+                                                : (t('volume_builder.notch_aria_height') || 'Notch height');
+                                            return (
                                             <div key={'notch-' + dim}>
-                                                <label className="block text-[10px] text-amber-700 mb-1 font-bold uppercase">{(dim === 'l' ? 'Length' : dim === 'w' ? 'Width' : 'Height') + ' Notch'}</label>
+                                                <label className="block text-[10px] text-amber-700 mb-1 font-bold uppercase">{notchLabel}</label>
                                                 <input type="range" min="1" max={Math.max(1, cubeDims[dim] - 1)} value={Math.min(cubeNotch[dim], Math.max(1, cubeDims[dim] - 1))}
                                                     onChange={(e) => { setCubeNotch(prev => ({...prev, [dim]: parseInt(e.target.value)})); setCubeChallenge(null); setCubeFeedback(null); }}
                                                     className="w-full h-2 bg-amber-200 rounded-lg appearance-none cursor-pointer accent-amber-600"
-                                                    aria-label={'Notch ' + (dim === 'l' ? 'length' : dim === 'w' ? 'width' : 'height')} />
+                                                    aria-label={notchAria} />
                                                 <div className="text-center text-xs font-bold text-amber-700 mt-1">{Math.min(cubeNotch[dim], Math.max(1, cubeDims[dim] - 1))}</div>
                                             </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 )}
                                 <div
@@ -2980,13 +3062,13 @@ function VolumeBuilderView(props) {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2 bg-white/80 rounded-lg p-2 border border-emerald-100">
-                                    <span className="text-xs font-bold text-emerald-700 whitespace-nowrap">Layers:</span>
+                                    <span className="text-xs font-bold text-emerald-700 whitespace-nowrap">{t('volume_builder.layers_label') || 'Layers:'}</span>
                                     <input type="range" min="1" max={cubeDims.h} value={cubeShowLayers !== null ? cubeShowLayers : cubeDims.h}
                                         aria-label={t('stem.layers_slider') || 'Visible layers'}
                                         onChange={(e) => setCubeShowLayers(parseInt(e.target.value))}
                                         className="flex-1 h-1.5 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-emerald-600" />
                                     <span className="text-xs font-mono text-emerald-600 w-12 text-center">{cubeShowLayers !== null ? cubeShowLayers : cubeDims.h} / {cubeDims.h}</span>
-                                    {cubeShowLayers !== null && cubeShowLayers < cubeDims.h && <button onClick={() => setCubeShowLayers(null)} className="text-xs text-emerald-500 hover:text-emerald-700 font-bold">All</button>}
+                                    {cubeShowLayers !== null && cubeShowLayers < cubeDims.h && <button onClick={() => setCubeShowLayers(null)} className="text-xs text-emerald-500 hover:text-emerald-700 font-bold">{t('volume_builder.layers_all') || 'All'}</button>}
                                 </div>
                                 <div className="bg-white/80 rounded-lg p-3 border border-emerald-100" data-help-key="volume_builder_volume_readout">
                                     <div className="grid grid-cols-2 gap-3">
@@ -2999,10 +3081,10 @@ function VolumeBuilderView(props) {
                                                     <>V = {cubeDims.l} × {cubeDims.w} × {cubeDims.h} = <span className="text-2xl text-emerald-600">{volume}</span></>
                                                 )}
                                             </div>
-                                            <div className="text-xs text-slate-600">{volume} unit cube{volume !== 1 ? 's' : ''}</div>
+                                            <div className="text-xs text-slate-600">{vbText(volume === 1 ? 'unit_cubes_one' : 'unit_cubes_other', volume === 1 ? '{count} unit cube' : '{count} unit cubes', { count: volume })}</div>
                                         </div>
                                         <div className="text-center">
-                                            <div className="text-xs font-bold text-teal-600 uppercase tracking-wider mb-1">{t('stem.surface_area')}{isLBlock && <span className="ml-1 text-[10px] font-normal text-teal-500/70">(approx — full prism)</span>}</div>
+                                            <div className="text-xs font-bold text-teal-600 uppercase tracking-wider mb-1">{t('stem.surface_area')}{isLBlock && <span className="ml-1 text-[10px] font-normal text-teal-500/70">{t('volume_builder.surface_area_approx') || '(approx — full prism)'}</span>}</div>
                                             <div className="text-lg font-bold text-teal-800">
                                                 SA {isLBlock ? '≈ ' : '= '}<span className="text-2xl text-teal-600">{surfaceArea}</span>
                                             </div>
@@ -3011,9 +3093,9 @@ function VolumeBuilderView(props) {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2 mb-2">
-                                    <span className="text-xs font-bold text-emerald-700">Difficulty:</span>
+                                    <span className="text-xs font-bold text-emerald-700">{t('volume_builder.difficulty_label') || 'Difficulty:'}</span>
                                     <div className="flex gap-0.5">
-                                        {['easy','medium','hard'].map(d => <button key={d} onClick={() => setExploreDifficulty(d)} className={"text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-all " + (exploreDifficulty === d ? (d === 'easy' ? 'bg-green-700 text-white' : d === 'hard' ? 'bg-red-700 text-white' : 'bg-emerald-700 text-white') : 'bg-slate-100 text-slate-600 hover:bg-slate-200')}>{d}</button>)}
+                                        {['easy','medium','hard'].map(d => <button key={d} onClick={() => setExploreDifficulty(d)} className={"text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-all " + (exploreDifficulty === d ? (d === 'easy' ? 'bg-green-700 text-white' : d === 'hard' ? 'bg-red-700 text-white' : 'bg-emerald-700 text-white') : 'bg-slate-100 text-slate-600 hover:bg-slate-200')}>{t('volume_builder.difficulty_' + d) || d}</button>)}
                                     </div>
                                 </div>
                                 <div className="flex gap-2">
@@ -3037,29 +3119,31 @@ function VolumeBuilderView(props) {
                                         setCubeFeedback(null);
                                         setCubeShowLayers(null);
                                     }} className="flex-1 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-lg text-sm hover:from-emerald-600 hover:to-teal-600 transition-all shadow-md" data-help-key="volume_builder_random_challenge_btn">
-                                        🎲 Random Challenge
+                                        🎲 {t('volume_builder.random_challenge') || 'Random Challenge'}
                                     </button>
                                     <button onClick={() => { setCubeDims({ l: 3, w: 2, h: 2 }); setCubeChallenge(null); setCubeFeedback(null); setCubeShowLayers(null); setCubeRotation({ x: -25, y: -35 }); setCubeScale(1.0); }}
                                         className="px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all" data-help-key="volume_builder_reset_btn">
-                                        ↺ Reset
+                                        ↺ {t('common.reset') || 'Reset'}
                                     </button>
                                 </div>
                                 {cubeChallenge && (
                                     <div className="bg-amber-50 rounded-lg p-3 border border-amber-200">
-                                        <p className="text-sm font-bold text-amber-800 mb-2">🤔 What is the volume of this {cubeChallenge.shape === 'lblock' ? 'L-block' : 'rectangular prism'}?</p>
+                                        <p className="text-sm font-bold text-amber-800 mb-2">🤔 {cubeChallenge.shape === 'lblock'
+                                            ? (t('volume_builder.challenge_prompt_lblock') || 'What is the volume of this L-block?')
+                                            : (t('volume_builder.challenge_prompt_rect') || 'What is the volume of this rectangular prism?')}</p>
                                         <div className="flex gap-2 items-center">
                                             <input type="number" value={cubeAnswer}
                                                 onChange={(e) => setCubeAnswer(e.target.value)}
-                                                onKeyDown={(e) => { if (e.key === 'Enter' && cubeAnswer) { const ans = parseInt(cubeAnswer); const isLB = cubeChallenge.shape === 'lblock'; const correctMsg = isLB ? ('✅ Correct! (' + cubeChallenge.l + '×' + cubeChallenge.w + '×' + cubeChallenge.h + ') − (' + cubeChallenge.notch.l + '×' + cubeChallenge.notch.w + '×' + cubeChallenge.notch.h + ') = ' + cubeChallenge.answer + ' cubic units') : ('✅ Correct! ' + cubeChallenge.l + ' × ' + cubeChallenge.w + ' × ' + cubeChallenge.h + ' = ' + cubeChallenge.answer + ' cubic units'); const wrongMsg = isLB ? '❌ Not quite. Try V = (L × W × H) − notch' : '❌ Not quite. Try V = L × W × H'; setCubeFeedback(ans === cubeChallenge.answer ? { correct: true, msg: correctMsg } : { correct: false, msg: wrongMsg }); } }}
+                                                onKeyDown={(e) => { if (e.key === 'Enter' && cubeAnswer) checkCubeAnswer(); }}
                                                 placeholder={t('volume_builder.answer_placeholder') || 'Enter volume...'}
                                                 className="flex-1 px-3 py-2 border border-amber-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-amber-400 outline-none"
                                                 aria-label={t('volume_builder.answer_aria') || 'Volume answer'}
                                                 data-help-key="volume_builder_answer_field" />
-                                            <button onClick={() => { const ans = parseInt(cubeAnswer); const isLB = cubeChallenge.shape === 'lblock'; const correctMsg = isLB ? ('✅ Correct! (' + cubeChallenge.l + '×' + cubeChallenge.w + '×' + cubeChallenge.h + ') − (' + cubeChallenge.notch.l + '×' + cubeChallenge.notch.w + '×' + cubeChallenge.notch.h + ') = ' + cubeChallenge.answer + ' cubic units') : ('✅ Correct! ' + cubeChallenge.l + ' × ' + cubeChallenge.w + ' × ' + cubeChallenge.h + ' = ' + cubeChallenge.answer + ' cubic units'); const wrongMsg = isLB ? '❌ Not quite. Try V = (L × W × H) − notch' : '❌ Not quite. Try V = L × W × H'; setCubeFeedback(ans === cubeChallenge.answer ? { correct: true, msg: correctMsg } : { correct: false, msg: wrongMsg }); }}
+                                            <button onClick={checkCubeAnswer}
                                                 disabled={!cubeAnswer}
                                                 className="px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-600 disabled:opacity-40 transition-all"
                                                 data-help-key="volume_builder_check_btn">
-                                                Check
+                                                {t('volume_builder.check') || 'Check'}
                                             </button>
                                         </div>
                                         {cubeFeedback && <p className={'text-sm font-bold mt-2 ' + (cubeFeedback.correct ? 'text-green-600' : 'text-red-600')}>{cubeFeedback.msg}</p>}

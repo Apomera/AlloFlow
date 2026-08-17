@@ -23,11 +23,11 @@ A hard-QA pass does not mean every pack has 500 independent questions. Guided tr
 
 | Pack | Independent practice | Distinct kernels | Guided review | New independent questions needed | Hard findings | Warning items |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Audiology 5343 diagnostics | 300 | 204 | 200 | 296 | 0 | 222 |
-| Early Childhood Education (5025) | 300 | 205 | 200 | 295 | 0 | 216 |
-| Educational Leadership (5412) | 300 | 200 | 200 | 300 | 0 | 233 |
+| Audiology 5343 diagnostics | 300 | 204 | 200 | 296 | 0 | 220 |
+| Early Childhood Education (5025) | 300 | 205 | 200 | 295 | 0 | 217 |
+| Educational Leadership (5412) | 300 | 200 | 200 | 300 | 0 | 235 |
 | Praxis ESOL (5362) | 200 | 100 | 300 | 400 | 0 | 198 |
-| ParaPro diagnostic batches 1-2 | 500 | 500 | 0 | 0 | 0 | 420 |
+| ParaPro diagnostic batches 1-2 | 500 | 500 | 0 | 0 | 0 | 418 |
 | PLT: Grades 5–9 (5623) | 200 | 100 | 300 | 400 | 0 | 198 |
 | PLT: Grades 7–12 (5624) | 200 | 100 | 300 | 400 | 0 | 198 |
 | PLT: Early Childhood (5621) | 200 | 100 | 300 | 400 | 0 | 198 |

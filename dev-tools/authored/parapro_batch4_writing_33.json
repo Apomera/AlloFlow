@@ -729,7 +729,7 @@
     "prompt": "A writer needs to verify the exact wording and adoption date of a school board resolution from 1998. Which source would be most appropriate?",
     "choices": [
       "A current thesaurus entry for the word \"resolution\"",
-      "A historical novel set in the community during the 1990s",
+      "A historical novel that is set in the same community during the 1990s",
       "The official archived minutes from the 1998 school board meeting",
       "An anonymous online comment recalling the meeting"
     ],
@@ -811,7 +811,7 @@
     "prompt": "Which thesis statement gives the clearest focus for a report about desert-plant adaptations?",
     "choices": [
       "Waxy surfaces, shallow spreading roots, and water-storing stems help many desert plants conserve or obtain scarce water.",
-      "Desert plants are an interesting topic that many people have studied.",
+      "Desert plants are a very interesting topic that a great many different people have studied quite carefully over the years.",
       "What are some things that plants in deserts might do?",
       "This report contains several paragraphs and photographs about plants."
     ],
@@ -893,7 +893,7 @@
     "prompt": "A student chooses \"animals\" as the topic for a three-page informational report and then gathers unrelated facts about dozens of species. Which paraeducator support would best help during prewriting?",
     "choices": [
       "Select one animal and write the report's thesis for the student.",
-      "Tell the student to keep every fact and reduce the font size so all of them fit.",
+      "Tell the student to keep every collected fact and simply reduce the font size until all of them fit within the assigned three report pages.",
       "Help the student list possible audiences and subtopics, choose one focused question, and sort only relevant notes under that question.",
       "Begin correcting commas in the notes before the student narrows the topic."
     ],
@@ -933,7 +933,7 @@
     "difficulty": "applied",
     "prompt": "A student means that a new schedule may influence the number of students present but is unsure whether to write \"The new schedule may affect attendance\" or \"The new schedule may effect attendance.\" Which support best builds the student's independent use of reference materials?",
     "choices": [
-      "Tell the student to choose the spelling that appears more often in the draft.",
+      "Tell the student to simply choose whichever spelling already appears more often elsewhere in the surrounding paragraphs of the draft.",
       "Replace the sentence yourself without explaining the distinction.",
       "Have the student ask several classmates to vote on which word looks correct.",
       "Use a learner's dictionary to compare each word's part of speech, meaning, and examples, then test the choices in the sentence."
@@ -976,7 +976,7 @@
     "choices": [
       "What relationship do your data show between tree cover, shade, and neighborhood temperature, and how can you state that relationship in one sentence?",
       "Can you replace \"interesting\" with the longest synonym in a thesaurus?",
-      "Can you add three facts about indoor houseplants even if they do not relate to neighborhood temperature?",
+      "Can you add three more interesting facts about indoor houseplants, even if they do not relate at all to the neighborhood shade and temperature data set?",
       "Can you copy the title of the first source and use it as your thesis?"
     ],
     "answerIndex": 0,
@@ -1015,7 +1015,7 @@
     "difficulty": "applied",
     "prompt": "A student's paragraph explains how lunar phases result from the Moon's changing position relative to Earth and the Sun. One sentence describes the food astronauts eat in orbit. Which support best helps the student improve paragraph unity?",
     "choices": [
-      "Ask the student to add more details about astronaut meals throughout the paragraph.",
+      "Ask the student to add several more descriptive details about astronaut meals and their daily training routines throughout the paragraph.",
       "Have the student state the paragraph's main idea, test each sentence against it, and remove or relocate the astronaut-food sentence.",
       "Correct the spelling in the unrelated sentence and leave it in place.",
       "Replace the paragraph with a diagram created entirely by the paraeducator."
@@ -1056,7 +1056,7 @@
     "difficulty": "applied",
     "prompt": "A student ends a report about three local water-conservation methods by introducing a brand-new statistic that the report never explains. Which feedback would best support revision of the conclusion?",
     "choices": [
-      "Keep the statistic in the conclusion because all new information should appear in the last paragraph.",
+      "Keep the new statistic in the conclusion, because all of the most important new information should always appear in the very final paragraph of any report.",
       "Delete the entire conclusion and end the report immediately after the final body paragraph.",
       "If the statistic is relevant, develop it in the body; then revise the conclusion to synthesize the three methods and explain their overall significance.",
       "Replace the statistic with an unrelated quotation so the ending sounds more formal."
@@ -1098,7 +1098,7 @@
     "prompt": "A student repeatedly joins two complete sentences with only a comma. Which instructional support is most likely to help the student correct this pattern independently?",
     "choices": [
       "Erase every comma in the draft, including commas used correctly in lists.",
-      "Write a corrected copy of the draft and ask the student to copy it without discussion.",
+      "Write out a fully corrected copy of the entire draft and then ask the student to copy it over without any discussion of the original punctuation errors that were made.",
       "Tell the student to make every sentence shorter than five words.",
       "Color-code the subject and predicate in each clause, model valid joining options, and have the student choose and explain a correction for each comma splice."
     ],
@@ -1140,7 +1140,7 @@
     "choices": [
       "Have the student use text-to-speech while tracking each printed word, pause where the spoken sentence sounds incomplete, and compare that location with the intended sentence.",
       "Insert every missing word for the student before the student rereads the draft.",
-      "Tell the student to trust the first silent rereading because writers always see exactly what is on the page.",
+      "Tell the student to trust that first silent rereading completely, because writers always see exactly what is actually on the page rather than what they had intended to write there.",
       "Ask the student to correct punctuation first and skip any sentence that sounds incomplete."
     ],
     "answerIndex": 0,
@@ -1182,7 +1182,7 @@
       "Read the entire handbook page rapidly so every sentence is included.",
       "Select the few actions students must take, state them in concise spoken language and logical order, and repeat only the most critical time or location detail.",
       "Replace the safety directions with a personal story about an unrelated school day.",
-      "Use longer technical terms wherever possible so the announcement sounds more official."
+      "Use longer and more technical terms wherever possible throughout the announcement, so that the finished morning broadcast sounds considerably more official to listeners."
     ],
     "answerIndex": 1,
     "rationale": "A brief spoken announcement must prioritize essential actions, use language listeners can process once, and make crucial logistical information memorable. The keyed guidance adapts content without sacrificing the safety purpose.",
@@ -1220,7 +1220,7 @@
     "difficulty": "applied",
     "prompt": "A compare-and-contrast assignment asks students to explain how a salt marsh and a freshwater wetland are alike and different. One student has a list of unrelated facts about each ecosystem. Which support best helps organize the draft?",
     "choices": [
-      "Have the student write all salt-marsh facts first and all wetland facts second without identifying shared criteria.",
+      "Have the student write out all of the salt-marsh facts first and all of the wetland facts second, without ever identifying any shared comparison criteria.",
       "Remove every difference so the report discusses only similarities.",
       "Use a comparison matrix for shared criteria such as water, plants, and animals, then organize paragraphs by those criteria with comparison transitions.",
       "Write the finished comparison for the student and ask the student to add a title."
@@ -1261,7 +1261,7 @@
     "difficulty": "applied",
     "prompt": "During revision, a student asks a paraeducator, \"Just tell me the exact sentences I should write.\" Which response best preserves student authorship while providing useful support?",
     "choices": [
-      "Dictate a complete replacement paragraph and have the student type it.",
+      "Dictate a complete replacement paragraph sentence by sentence and have the student type it out exactly as it is being spoken aloud to them in class.",
       "Take the draft home and revise it without the student present.",
       "Tell the student that no help is allowed during revision.",
       "Use the assignment rubric to ask focused questions, offer two possible revision strategies, and have the student choose and compose the changes."
@@ -1304,7 +1304,7 @@
     "choices": [
       "Add decorative adjectives to every step without changing the directions.",
       "Alphabetize all words in the draft to make them easier to locate.",
-      "Have the paraeducator silently rewrite the procedure and replace the student's draft.",
+      "Have the paraeducator silently rewrite the entire calibration procedure and simply replace the student’s original draft with that corrected version before it is ever submitted.",
       "Ask a peer to follow the directions literally while the writer notes breakdowns, then have the writer add needed quantities and separate actions into an accurate sequence."
     ],
     "answerIndex": 3,

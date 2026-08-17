@@ -17,6 +17,7 @@
       "PORTAL-ESCAPE|document.body": 2
     },
     "app_styles_source.jsx": {
+      "DARK-ONLY-DEF|.allo-docsuite": 1,
       "DARK-ONLY-DEF|.allo-docsuite .group:hover [class~=\"group-hover:bg-blue-300\"], .theme": 1,
       "DARK-ONLY-DEF|.allo-docsuite .group:hover [class~=\"group-hover:bg-green-300\"], .them": 1,
       "DARK-ONLY-DEF|.allo-docsuite .group:hover [class~=\"group-hover:from-indigo-200\"], .t": 2,
@@ -126,8 +127,14 @@
       "DARK-ONLY-DEF|.prose code": 1,
       "DARK-ONLY-DEF|.prose h1, .theme-dark .prose h2, .theme-dark .prose h3, .theme-dark .": 1,
       "DARK-ONLY-DEF|.prose strong": 1,
+      "DARK-ONLY-DEF|.ring-1.ring-slate-300": 1,
       "DARK-ONLY-DEF|.sort-card": 1,
       "DARK-ONLY-DEF|[class*=\"bg-\"]": 1,
+      "DARK-ONLY-DEF|[style*=\"background: #0f172a\"], .theme-contrast [style*=\"background:#0": 1,
+      "DARK-ONLY-DEF|[style*=\"background: rgba(15,23,42\"], .theme-contrast [style*=\"backgro": 1,
+      "DARK-ONLY-DEF|[style*=\"background: white\"], .theme-contrast [style*=\"background:#fff": 1,
+      "DARK-ONLY-DEF|[style*=\"border: 1px solid #334155\"], .theme-contrast [style*=\"border:": 1,
+      "DARK-ONLY-DEF|[style*=\"color: #cbd5e1\"], .theme-contrast [style*=\"color:#cbd5e1\"], .": 1,
       "DARK-ONLY-DEF|h1, .theme-contrast h2, .theme-contrast h3, .theme-contrast h4, .theme": 1
     },
     "view_header_source.jsx": {

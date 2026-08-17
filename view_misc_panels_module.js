@@ -126,6 +126,15 @@ function _createPdfDiffOperationManager(controllerFactory) {
 function PdfDiffViewer(props) {
   let { t } = props;
   if (typeof t !== "function") t = (key) => key;
+  const dvText = (key, fallback, params) => {
+    const full = "diff_view." + key;
+    let s = t(full, params);
+    if (!s || s === full) s = fallback;
+    if (params) Object.keys(params).forEach((p) => {
+      s = s.replace("{" + p + "}", params[p]);
+    });
+    return s;
+  };
   const {
     _applyTextSurgery,
     _lastDiffFingerprintRef,
@@ -388,20 +397,20 @@ function PdfDiffViewer(props) {
         if (combined > CHARS_GUARD_THRESHOLD) {
           const approxSec = Math.round(combined * combined / 1e9);
           const accepted = await requestDiffConfirmation({
-            title: "Use character-level comparison?",
-            message: `This document contains ${combined.toLocaleString()} characters. Character comparison may freeze the browser for about ${Math.max(5, approxSec)} seconds or longer. Words or Sentences will be faster.`,
-            confirmLabel: "Use characters",
-            cancelLabel: "Keep current view"
+            title: dvText("confirm_chars_title", "Use character-level comparison?"),
+            message: dvText("confirm_chars_message", "This document contains {chars} characters. Character comparison may freeze the browser for about {seconds} seconds or longer. Words or Sentences will be faster.", { chars: combined.toLocaleString(), seconds: Math.max(5, approxSec) }),
+            confirmLabel: dvText("confirm_chars_ok", "Use characters"),
+            cancelLabel: dvText("confirm_chars_cancel", "Keep current view")
           });
           if (!accepted) return;
         }
       }
       if (_chunks && _chunks.some((c) => c.rejected)) {
         const accepted = await requestDiffConfirmation({
-          title: "Reset rejected changes?",
-          message: "Changing comparison granularity will reset every rejected change in this diff.",
-          confirmLabel: "Change and reset",
-          cancelLabel: "Keep rejections"
+          title: dvText("confirm_reset_title", "Reset rejected changes?"),
+          message: dvText("confirm_reset_message", "Changing comparison granularity will reset every rejected change in this diff."),
+          confirmLabel: dvText("confirm_reset_ok", "Change and reset"),
+          cancelLabel: dvText("confirm_reset_cancel", "Keep rejections")
         });
         if (!accepted) return;
       }
@@ -569,7 +578,7 @@ ${_effectiveText}`;
         _applyVerificationFailed: null
       } : p);
       setDiffChunks(null);
-      addToast("Reverted to the state before your last Apply.", "info");
+      addToast(dvText("toast_reverted", "Reverted to the state before your last Apply."), "info");
       try {
         window.dispatchEvent(new CustomEvent("alloflow:fidelity-stale"));
       } catch (_) {
@@ -669,7 +678,7 @@ ${_effectiveText}`;
     const _closeDiff = () => {
       const cancelledRemarkup = cancelRemarkupOperation();
       if (cancelledRemarkup) {
-        addToast("AI edit cancelled; no document changes were applied.", "info");
+        addToast(dvText("toast_ai_cancelled", "AI edit cancelled; no document changes were applied."), "info");
       }
       if (pdfFixResult && pdfFixResult._diffOverride) {
         try {
@@ -712,14 +721,14 @@ ${_effectiveText}`;
           "aria-pressed": diffGranularity === g
         },
         g.charAt(0).toUpperCase() + g.slice(1)
-      ))), _chunks && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 ml-2 text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "w-3 h-3 rounded-sm bg-emerald-200 border border-emerald-400" }), " ", /* @__PURE__ */ React.createElement("span", { className: "font-bold text-emerald-700" }, _ins.toLocaleString()), " added"), /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "w-3 h-3 rounded-sm bg-rose-200 border border-rose-400" }), " ", /* @__PURE__ */ React.createElement("span", { className: "font-bold text-rose-700" }, _del.toLocaleString()), " removed"), /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1 text-slate-600" }, /* @__PURE__ */ React.createElement("span", { className: "w-3 h-3 rounded-sm bg-slate-100 border border-slate-400" }), " ", /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, _same.toLocaleString()), " unchanged"), _rejCount > 0 && /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1 ml-1 bg-amber-100 border border-amber-300 px-1.5 py-0.5 rounded font-bold text-amber-800" }, _rejCount.toLocaleString(), " rejected", /* @__PURE__ */ React.createElement("button", { onClick: _undoAllRejections, className: "ml-1 underline hover:no-underline text-amber-900", title: t("diff_view.undo_all_tooltip") || "Undo every rejection in this view" }, t("diff_view.undo_all_button") || "undo all")), _ocrEnabled && _ocrHighCount > 0 && /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1 ml-1 bg-rose-200 border border-rose-500 px-1.5 py-0.5 rounded font-bold text-rose-900", title: "Tokens that both Tesseract and Vision OCR saw in the source but that don't appear in the remediated final \u2014 high-confidence accidental drops." }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2713\u2713"), /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, "Both OCR engines agreed:"), /* @__PURE__ */ React.createElement("span", null, _ocrHighCount.toLocaleString(), " likely dropped")), _ocrEnabled && _ocrMedCount > 0 && /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1 ml-1 bg-amber-100 border border-amber-400 px-1.5 py-0.5 rounded font-bold text-amber-800", title: "Tokens that ONE OCR engine saw but the other did not \u2014 could be a hallucination by the engine that saw it, or a real miss by the other. Review." }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2713?"), /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, "One OCR engine only:"), /* @__PURE__ */ React.createElement("span", null, _ocrMedCount.toLocaleString(), " needs review"))), /* @__PURE__ */ React.createElement("div", { className: "ml-auto text-[11px] text-slate-500" }, /* @__PURE__ */ React.createElement("span", { className: "font-mono" }, _src.length.toLocaleString()), " \u2192 ", /* @__PURE__ */ React.createElement("span", { className: "font-mono" }, _fin.length.toLocaleString()), " chars")), /* @__PURE__ */ React.createElement(
+      ))), _chunks && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 ml-2 text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "w-3 h-3 rounded-sm bg-emerald-200 border border-emerald-400" }), " ", /* @__PURE__ */ React.createElement("span", { className: "font-bold text-emerald-700" }, _ins.toLocaleString()), " added"), /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "w-3 h-3 rounded-sm bg-rose-200 border border-rose-400" }), " ", /* @__PURE__ */ React.createElement("span", { className: "font-bold text-rose-700" }, _del.toLocaleString()), " removed"), /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1 text-slate-600" }, /* @__PURE__ */ React.createElement("span", { className: "w-3 h-3 rounded-sm bg-slate-100 border border-slate-400" }), " ", /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, _same.toLocaleString()), " unchanged"), _rejCount > 0 && /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1 ml-1 bg-amber-100 border border-amber-300 px-1.5 py-0.5 rounded font-bold text-amber-800" }, dvText("rejected_count", "{count} rejected", { count: _rejCount.toLocaleString() }), /* @__PURE__ */ React.createElement("button", { onClick: _undoAllRejections, className: "ml-1 underline hover:no-underline text-amber-900", title: t("diff_view.undo_all_tooltip") || "Undo every rejection in this view" }, t("diff_view.undo_all_button") || "undo all")), _ocrEnabled && _ocrHighCount > 0 && /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1 ml-1 bg-rose-200 border border-rose-500 px-1.5 py-0.5 rounded font-bold text-rose-900", title: dvText("ocr_high_title", "Tokens that both Tesseract and Vision OCR saw in the source but that don't appear in the remediated final \u2014 high-confidence accidental drops.") }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2713\u2713"), /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, dvText("ocr_high_sr", "Both OCR engines agreed:")), /* @__PURE__ */ React.createElement("span", null, dvText("ocr_high_count", "{count} likely dropped", { count: _ocrHighCount.toLocaleString() }))), _ocrEnabled && _ocrMedCount > 0 && /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1 ml-1 bg-amber-100 border border-amber-400 px-1.5 py-0.5 rounded font-bold text-amber-800", title: dvText("ocr_med_title", "Tokens that ONE OCR engine saw but the other did not \u2014 could be a hallucination by the engine that saw it, or a real miss by the other. Review.") }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2713?"), /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, dvText("ocr_med_sr", "One OCR engine only:")), /* @__PURE__ */ React.createElement("span", null, dvText("ocr_med_count", "{count} needs review", { count: _ocrMedCount.toLocaleString() })))), /* @__PURE__ */ React.createElement("div", { className: "ml-auto text-[11px] text-slate-500" }, /* @__PURE__ */ React.createElement("span", { className: "font-mono" }, _src.length.toLocaleString()), " \u2192 ", /* @__PURE__ */ React.createElement("span", { className: "font-mono" }, _fin.length.toLocaleString()), " ", dvText("chars_label", "chars"))), /* @__PURE__ */ React.createElement(
         "div",
         {
           className: "flex-1 overflow-auto p-4 bg-slate-50 relative",
           onScroll: diffSelection ? () => setDiffSelection(null) : void 0
         },
-        !diffLibReady && diffLibLoading && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 text-sm text-slate-600" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin motion-reduce:animate-none" }), " Loading diff engine (jsdiff)\u2026"),
-        !diffLibReady && !diffLibLoading && /* @__PURE__ */ React.createElement("div", { className: "text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-lg p-3" }, "Couldn't load the diff engine (network blocked?). Try re-opening the diff view, or check your connection."),
+        !diffLibReady && diffLibLoading && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 text-sm text-slate-600" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin motion-reduce:animate-none" }), " ", dvText("loading_engine", "Loading diff engine (jsdiff)\u2026")),
+        !diffLibReady && !diffLibLoading && /* @__PURE__ */ React.createElement("div", { className: "text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-lg p-3" }, dvText("load_failed", "Couldn't load the diff engine (network blocked?). Try re-opening the diff view, or check your connection.")),
         diffLibReady && !_chunks && !diffLibLoading && /* @__PURE__ */ React.createElement("div", { className: "text-sm text-amber-800 bg-amber-50 border border-amber-300 rounded-lg p-3 flex items-center gap-3" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin motion-reduce:animate-none shrink-0" }), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold mb-1" }, t("diff_view.computing") || "Computing diff\u2026"), /* @__PURE__ */ React.createElement("div", { className: "text-[12px] text-amber-700 leading-relaxed" }, t("diff_view.computing_stale_hint") || "If this persists, the source text and remediated HTML may have drifted out of sync (or the diff cache is stale).")), /* @__PURE__ */ React.createElement(
           "button",
           {
@@ -736,18 +745,22 @@ ${_effectiveText}`;
           },
           t("diff_view.rebuild_button") || "Rebuild diff"
         )),
-        diffLibReady && _chunks && _ocrEnabled && _ocrHighList.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "mb-3 bg-rose-50 border border-rose-300 rounded-lg p-3", open: true }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-rose-900 text-sm flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2713\u2713"), /* @__PURE__ */ React.createElement("span", null, _ocrHighList.length, " likely-dropped token", _ocrHighList.length === 1 ? "" : "s", " (both Tesseract & Vision OCR saw these)")), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-rose-800 mt-2 mb-2 leading-relaxed" }, "Click any token to jump to it in the diff. Both OCR engines saw these words in the source \u2014 they're high-confidence accidental drops, not intentional remediation removals."), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, _ocrHighList.slice(0, 100).map((item) => /* @__PURE__ */ React.createElement(
+        diffLibReady && _chunks && _ocrEnabled && _ocrHighList.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "mb-3 bg-rose-50 border border-rose-300 rounded-lg p-3", open: true }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-rose-900 text-sm flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2713\u2713"), /* @__PURE__ */ React.createElement("span", null, dvText(
+          _ocrHighList.length === 1 ? "ocr_panel_summary_one" : "ocr_panel_summary_other",
+          _ocrHighList.length === 1 ? "{count} likely-dropped token (both Tesseract & Vision OCR saw these)" : "{count} likely-dropped tokens (both Tesseract & Vision OCR saw these)",
+          { count: _ocrHighList.length }
+        ))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-rose-800 mt-2 mb-2 leading-relaxed" }, dvText("ocr_panel_help", "Click any token to jump to it in the diff. Both OCR engines saw these words in the source \u2014 they're high-confidence accidental drops, not intentional remediation removals.")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, _ocrHighList.slice(0, 100).map((item) => /* @__PURE__ */ React.createElement(
           "button",
           {
             key: item.id,
             type: "button",
             onClick: () => _scrollToChunk(item.id),
             className: "px-2 py-0.5 text-[12px] font-mono bg-white text-rose-900 border border-rose-400 rounded hover:bg-rose-100 hover:ring-1 hover:ring-rose-500",
-            title: "Click to scroll to this token in the diff"
+            title: dvText("token_scroll_title", "Click to scroll to this token in the diff")
           },
           String(item.value).trim().slice(0, 40),
           String(item.value).length > 40 ? "\u2026" : ""
-        )), _ocrHighList.length > 100 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-rose-700 self-center ml-1" }, "\u2026and ", _ocrHighList.length - 100, " more in the diff below"))),
+        )), _ocrHighList.length > 100 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-rose-700 self-center ml-1" }, dvText("ocr_panel_more", "\u2026and {count} more in the diff below", { count: _ocrHighList.length - 100 })))),
         diffLibReady && _chunks && /* @__PURE__ */ React.createElement(
           "pre",
           {
@@ -844,7 +857,8 @@ ${_effectiveText}`;
           className: "ml-auto px-3 py-1.5 bg-white border border-slate-400 hover:bg-slate-100 disabled:opacity-60 text-slate-700 rounded-md font-bold inline-flex items-center gap-1.5",
           title: t("diff_view.revert_tooltip") || "Restore the accessible HTML to the state before your last Apply & Export"
         },
-        "\u21B6 Revert last Apply"
+        "\u21B6 ",
+        dvText("revert_button", "Revert last Apply")
       ), _rejCount > 0 && /* @__PURE__ */ React.createElement(
         "button",
         {
@@ -853,7 +867,7 @@ ${_effectiveText}`;
           className: (_canRevert ? "" : "ml-auto ") + "px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white rounded-md font-bold inline-flex items-center gap-1.5 shadow",
           title: t("diff_view.apply_export_tooltip") || "Apply rejections via text surgery (preserves all markup, instant, no Gemini call). Falls back to Gemini round-trip only if surgery can't map some chunks."
         },
-        applyingRemarkup ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin motion-reduce:animate-none" }), " Applying\u2026") : /* @__PURE__ */ React.createElement(React.Fragment, null, "\u2713 Apply & Export (", _rejCount, ")")
+        applyingRemarkup ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin motion-reduce:animate-none" }), " ", dvText("applying", "Applying\u2026")) : /* @__PURE__ */ React.createElement(React.Fragment, null, "\u2713 ", dvText("apply_export_button", "Apply & Export ({count})", { count: _rejCount }))
       ))),
       diffConfirmation && /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[320] bg-slate-950/70 flex items-center justify-center p-4" }, /* @__PURE__ */ React.createElement(
         "div",
@@ -910,6 +924,13 @@ function GroupSessionModal(props) {
   const groupDialogRef = React.useRef(null);
   const groupCloseRef = React.useRef(null);
   const activeSessionGroups = Object.entries(sessionData?.groups || {}).filter(([_, g]) => g !== null);
+  const gsText = (key, fallback, params) => {
+    let s = t("groups." + key, params) || fallback;
+    if (params) Object.keys(params).forEach((p) => {
+      s = s.replace("{" + p + "}", params[p]);
+    });
+    return s;
+  };
   const containGroupFocus = (event) => {
     if (!event || !groupDialogRef.current) return;
     if (event.key === "Escape") {
@@ -1083,7 +1104,7 @@ function GroupSessionModal(props) {
     /* @__PURE__ */ React.createElement(Plus, { size: 18 }),
     " ",
     t("groups.add_button")
-  )), /* @__PURE__ */ React.createElement("button", { ref: groupCloseRef, type: "button", onClick: handleSetShowGroupModalToFalse, className: "p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-white/80 transition-colors", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 24 }))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 grid grid-cols-1 lg:grid-cols-3 gap-5 p-5 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "lg:col-span-2 flex flex-col min-h-0", "data-help-key": "group_resource_library" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement(FileText, { size: 16, className: "text-indigo-600" }), /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-indigo-600 uppercase tracking-wider" }, t("groups.resource_library")), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 ml-2" }, "(", sessionData.resources?.length || 0, " items)"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-purple-700 ml-auto italic flex items-center gap-1" }, /* @__PURE__ */ React.createElement(GripVertical, { size: 12 }), " ", t("groups.drag_to_reorder") || "Drag or use Move earlier/later")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 bg-gradient-to-br from-indigo-50/80 to-purple-50/80 rounded-xl p-4 border border-indigo-100 overflow-y-auto custom-scrollbar" }, sessionData.resources && sessionData.resources.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3", style: { gridAutoRows: "min-content" } }, sessionData.resources.map((res, index) => {
+  )), /* @__PURE__ */ React.createElement("button", { ref: groupCloseRef, type: "button", onClick: handleSetShowGroupModalToFalse, className: "p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-white/80 transition-colors", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 24 }))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 grid grid-cols-1 lg:grid-cols-3 gap-5 p-5 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "lg:col-span-2 flex flex-col min-h-0", "data-help-key": "group_resource_library" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-3" }, /* @__PURE__ */ React.createElement(FileText, { size: 16, className: "text-indigo-600" }), /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-indigo-600 uppercase tracking-wider" }, t("groups.resource_library")), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 ml-2" }, gsText("resource_count", "({count} items)", { count: sessionData.resources?.length || 0 })), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-purple-700 ml-auto italic flex items-center gap-1" }, /* @__PURE__ */ React.createElement(GripVertical, { size: 12 }), " ", t("groups.drag_to_reorder") || "Drag or use Move earlier/later")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 bg-gradient-to-br from-indigo-50/80 to-purple-50/80 rounded-xl p-4 border border-indigo-100 overflow-y-auto custom-scrollbar" }, sessionData.resources && sessionData.resources.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3", style: { gridAutoRows: "min-content" } }, sessionData.resources.map((res, index) => {
     const assignedGroup = sessionData.groups && Object.entries(sessionData.groups).find(([_, g]) => g && g.resourceId === res.id);
     const icon = typeIcons[res.type] || typeIcons.default;
     const description = getResourceDescription(res);
@@ -1115,7 +1136,7 @@ function GroupSessionModal(props) {
       description && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-purple-500 bg-purple-50 px-2 py-1 rounded-md mb-1", style: { display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" } }, description),
       (language || dateStr) && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1 mb-1" }, language && (Array.isArray(language) ? language.slice(0, 5).map((lang, li) => /* @__PURE__ */ React.createElement("span", { key: li, className: "inline-flex items-center gap-0.5 text-[11px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-medium" }, /* @__PURE__ */ React.createElement(Globe, { size: 8 }), " ", lang)) : /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-0.5 text-[11px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-medium" }, /* @__PURE__ */ React.createElement(Globe, { size: 8 }), " ", language)), dateStr && /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-0.5 text-[11px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded" }, /* @__PURE__ */ React.createElement(Clock, { size: 8 }), " ", dateStr)),
       assignedGroup && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[11px] font-bold text-green-800 bg-green-100 px-2 py-1 rounded-md flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Users, { size: 10 }), " ", assignedGroup[1].name),
-      /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": `Reorder ${res.title || "Untitled"}`, className: "mt-2 grid grid-cols-2 gap-1" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => moveResourceBy(res.id, -1), disabled: index === 0, className: "rounded border border-slate-300 bg-white px-1.5 py-1 text-[11px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40", "aria-label": `Move ${res.title || "resource"} earlier` }, "\u2190 Earlier"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => moveResourceBy(res.id, 1), disabled: index === sessionData.resources.length - 1, className: "rounded border border-slate-300 bg-white px-1.5 py-1 text-[11px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40", "aria-label": `Move ${res.title || "resource"} later` }, "Later \u2192"))
+      /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": gsText("reorder_aria", "Reorder {title}", { title: res.title || (t("common.untitled") || "Untitled") }), className: "mt-2 grid grid-cols-2 gap-1" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => moveResourceBy(res.id, -1), disabled: index === 0, className: "rounded border border-slate-300 bg-white px-1.5 py-1 text-[11px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40", "aria-label": gsText("move_earlier_aria", "Move {title} earlier", { title: res.title || gsText("untitled_resource", "resource") }) }, "\u2190 ", gsText("move_earlier", "Earlier")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => moveResourceBy(res.id, 1), disabled: index === sessionData.resources.length - 1, className: "rounded border border-slate-300 bg-white px-1.5 py-1 text-[11px] font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-40", "aria-label": gsText("move_later_aria", "Move {title} later", { title: res.title || gsText("untitled_resource", "resource") }) }, gsText("move_later", "Later"), " \u2192"))
     );
   })) : /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center h-full text-slate-600 italic" }, t("groups.no_resources") || "No resources in this session"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-5 min-h-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col min-h-0" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Layers, { size: 14 }), " ", t("groups.active_groups")), /* @__PURE__ */ React.createElement("div", { className: "flex-1 space-y-3 overflow-y-auto custom-scrollbar pr-1", "data-help-key": "group_active_list" }, sessionData.groups && activeSessionGroups.map(([gid, group]) => /* @__PURE__ */ React.createElement("div", { key: gid, className: "bg-white p-4 rounded-xl border border-slate-400 shadow-sm hover:shadow-md transition-shadow" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-3" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, group.name), /* @__PURE__ */ React.createElement("button", { onClick: () => handleDeleteGroup(gid), className: "text-red-600 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors", "aria-label": t("common.delete") }, /* @__PURE__ */ React.createElement(X, { size: 16 }))), /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1 block flex items-center gap-2" }, t("groups.assign_resource_label"), isPushingResource[gid] === "pushing" && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1 text-[10px] text-purple-600 font-bold normal-case" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 11, className: "animate-spin motion-reduce:animate-none" }), " ", t("groups.pushing") || "Pushing\u2026"), isPushingResource[gid] === "success" && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1 text-[10px] text-emerald-600 font-bold normal-case" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 11 }), " ", t("groups.pushed") || "Sent")), /* @__PURE__ */ React.createElement(
     "select",
@@ -1197,6 +1218,13 @@ function FluencyModePanel(props) {
   } = props;
   const [isReviewingFluency, setIsReviewingFluency] = React.useState(false);
   const [fluencyReviewDraft, setFluencyReviewDraft] = React.useState(null);
+  const flText = (key, fallback, params) => {
+    let s = t("fluency." + key, params) || fallback;
+    if (params) Object.keys(params).forEach((p) => {
+      s = s.replace("{" + p + "}", params[p]);
+    });
+    return s;
+  };
   const beginFluencyReview = () => {
     if (!fluencyResult?.wordData) return;
     setFluencyReviewDraft({
@@ -1253,10 +1281,7 @@ function FluencyModePanel(props) {
         "data-help-key": "fluency_mode_time_limit"
       },
       /* @__PURE__ */ React.createElement("option", { value: 0 }, t("fluency.time_limit_none")),
-      /* @__PURE__ */ React.createElement("option", { value: 30 }, "30 sec"),
-      /* @__PURE__ */ React.createElement("option", { value: 60 }, "60 sec"),
-      /* @__PURE__ */ React.createElement("option", { value: 90 }, "90 sec"),
-      /* @__PURE__ */ React.createElement("option", { value: 120 }, "120 sec")
+      [30, 60, 90, 120].map((sec) => /* @__PURE__ */ React.createElement("option", { key: sec, value: sec }, flText("time_limit_seconds", "{seconds} sec", { seconds: sec })))
     ), fluencyTimeLimit > 0 && /* @__PURE__ */ React.createElement(
       "select",
       {
@@ -1306,7 +1331,7 @@ function FluencyModePanel(props) {
           placeholder: "0",
           "aria-label": `${s} target WCPM`
         }
-      ), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 font-bold uppercase" }, t(`fluency.season_${s}`) || s)))), evidenceSummary && /* @__PURE__ */ React.createElement("div", { className: `mb-4 rounded-xl border p-3 text-left ${evidenceSummary.benchmarkReady ? "bg-emerald-50 border-emerald-200" : "bg-sky-50 border-sky-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-black text-slate-700 uppercase tracking-wide" }, "Recent reading evidence"), /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-700" }, evidenceSummary.sampleCount >= 3 ? `Median of ${evidenceSummary.sampleCount}: ` : "Current sample: ", evidenceSummary.medianWcpm ?? 0, " WCPM", evidenceSummary.medianAccuracy != null ? ` | ${evidenceSummary.medianAccuracy}% accuracy` : "")), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-1" }, evidenceSummary.message)), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-red-50 border border-red-200 rounded-xl p-3 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-red-600" }, rrMetrics.substitutions), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("fluency.substitutions"))), /* @__PURE__ */ React.createElement("div", { className: "bg-orange-50 border border-orange-200 rounded-xl p-3 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-orange-600" }, rrMetrics.omissions), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("fluency.omissions"))), /* @__PURE__ */ React.createElement("div", { className: "bg-purple-50 border border-purple-200 rounded-xl p-3 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-purple-600" }, rrMetrics.insertions), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("fluency.insertions_label"))), /* @__PURE__ */ React.createElement("div", { className: "bg-blue-50 border border-blue-200 rounded-xl p-3 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-blue-600" }, rrMetrics.selfCorrections), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("fluency.self_corrections")))), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center gap-6 mb-6 text-xs" }, /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("span", { className: "block text-lg font-black text-slate-700" }, "1:", rrMetrics.errorRate), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-bold uppercase" }, t("fluency.error_rate"))), /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("span", { className: "block text-lg font-black text-slate-700" }, rrMetrics.scRate, "%"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-bold uppercase" }, t("fluency.sc_rate"))), /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("span", { className: "block text-lg font-black text-slate-700" }, rrMetrics.totalErrors), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-bold uppercase" }, t("fluency.errors_label")))), fluencyResult.prosody && /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-3 mb-4 animate-in fade-in duration-300" }, [
+      ), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 font-bold uppercase" }, t(`fluency.season_${s}`) || s)))), evidenceSummary && /* @__PURE__ */ React.createElement("div", { className: `mb-4 rounded-xl border p-3 text-left ${evidenceSummary.benchmarkReady ? "bg-emerald-50 border-emerald-200" : "bg-sky-50 border-sky-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-black text-slate-700 uppercase tracking-wide" }, flText("evidence_title", "Recent reading evidence")), /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-700" }, evidenceSummary.sampleCount >= 3 ? flText("evidence_median", "Median of {count}: ", { count: evidenceSummary.sampleCount }) : flText("evidence_current", "Current sample: "), evidenceSummary.medianWcpm ?? 0, " WCPM", evidenceSummary.medianAccuracy != null ? ` | ${evidenceSummary.medianAccuracy}% accuracy` : "")), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-1" }, evidenceSummary.message)), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-red-50 border border-red-200 rounded-xl p-3 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-red-600" }, rrMetrics.substitutions), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("fluency.substitutions"))), /* @__PURE__ */ React.createElement("div", { className: "bg-orange-50 border border-orange-200 rounded-xl p-3 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-orange-600" }, rrMetrics.omissions), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("fluency.omissions"))), /* @__PURE__ */ React.createElement("div", { className: "bg-purple-50 border border-purple-200 rounded-xl p-3 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-purple-600" }, rrMetrics.insertions), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("fluency.insertions_label"))), /* @__PURE__ */ React.createElement("div", { className: "bg-blue-50 border border-blue-200 rounded-xl p-3 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-blue-600" }, rrMetrics.selfCorrections), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase" }, t("fluency.self_corrections")))), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center gap-6 mb-6 text-xs" }, /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("span", { className: "block text-lg font-black text-slate-700" }, "1:", rrMetrics.errorRate), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-bold uppercase" }, t("fluency.error_rate"))), /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("span", { className: "block text-lg font-black text-slate-700" }, rrMetrics.scRate, "%"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-bold uppercase" }, t("fluency.sc_rate"))), /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("span", { className: "block text-lg font-black text-slate-700" }, rrMetrics.totalErrors), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 font-bold uppercase" }, t("fluency.errors_label")))), fluencyResult.prosody && /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-3 mb-4 animate-in fade-in duration-300" }, [
         { key: "pacing", label: t("fluency.prosody_pacing") || "Pacing", color: "indigo" },
         { key: "expression", label: t("fluency.prosody_expression") || "Expression", color: "violet" },
         { key: "phrasing", label: t("fluency.prosody_phrasing") || "Phrasing", color: "fuchsia" }
@@ -1314,58 +1339,58 @@ function FluencyModePanel(props) {
         const val = fluencyResult.prosody[key] || 0;
         const pct = val / 5 * 100;
         return /* @__PURE__ */ React.createElement("div", { key, className: `bg-${color}-50 border border-${color}-200 rounded-xl p-3 text-center` }, /* @__PURE__ */ React.createElement("div", { className: `text-2xl font-black text-${color}-600` }, val, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold text-slate-600" }, "/5")), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, label), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-200 rounded-full h-1.5 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: `h-full bg-${color}-500 rounded-full transition-all duration-500`, style: { width: `${pct}%` } })));
-      }), Boolean(fluencyResult.prosody.note) && /* @__PURE__ */ React.createElement("div", { className: "col-span-3 text-xs text-slate-600 italic text-center mt-1" }, fluencyResult.prosody.note)), fluencyResult.confidence && /* @__PURE__ */ React.createElement("div", { className: `rounded-xl p-4 mb-4 border ${fluencyResult.confidence.overall >= 7 ? "bg-green-50 border-green-200" : fluencyResult.confidence.overall >= 4 ? "bg-amber-50 border-amber-200" : "bg-red-50 border-red-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mb-2" }, /* @__PURE__ */ React.createElement("div", { className: `text-2xl font-black ${fluencyResult.confidence.overall >= 7 ? "text-green-600" : fluencyResult.confidence.overall >= 4 ? "text-amber-600" : "text-red-600"}` }, fluencyResult.confidence.overall, /* @__PURE__ */ React.createElement("span", { className: "text-sm opacity-60" }, "/10")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-700" }, t("fluency.ai_confidence_title") || "AI Confidence in This Analysis"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600" }, fluencyResult.confidence.overall >= 7 ? "High confidence" : fluencyResult.confidence.overall >= 4 ? "Moderate confidence \u2014 some results may be inaccurate" : "Low confidence \u2014 human verification recommended"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 text-[11px] mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "\u{1F399}\uFE0F Audio: ", fluencyResult.confidence.audioQuality, "/10"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "\u{1F5E3}\uFE0F Clarity: ", fluencyResult.confidence.speakerClarity, "/10"), fluencyResult.confidence.accentDetected && /* @__PURE__ */ React.createElement("span", { className: "bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold" }, t("fluency.accent_detected_badge") || "Accent detected \u2014 scored conservatively"), fluencyResult.confidence.youngVoiceDetected && /* @__PURE__ */ React.createElement("span", { className: "bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold" }, t("fluency.young_voice_badge") || "Young voice detected"), fluencyResult.confidence.dialectalPatternsDetected && /* @__PURE__ */ React.createElement("span", { className: "bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full font-bold" }, t("fluency.dialectal_patterns_badge") || "Dialectal patterns respected")), fluencyResult.confidence.lowConfidenceWordCount > 0 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700 font-medium" }, "\u26A0 ", fluencyResult.confidence.lowConfidenceWordCount, " word(s) marked with low confidence \u2014 look for \u26A0 in the word display below"), fluencyResult.confidence.note && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-1 italic" }, fluencyResult.confidence.note), fluencyResult.confidence.limitationsApplied && fluencyResult.confidence.limitationsApplied !== "none" && fluencyResult.confidence.limitationsApplied !== "none detected" && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-1" }, "Research basis: ", fluencyResult.confidence.limitationsApplied)));
-    })(), fluencyFeedback && /* @__PURE__ */ React.createElement("div", { className: "mb-6 animate-in slide-in-from-bottom-2 fade-in" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-2 text-left bg-indigo-50 p-3 rounded-lg border border-indigo-100" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 p-1.5 rounded-full text-indigo-600 mt-0.5 shrink-0" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 14 })), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-indigo-900 leading-relaxed font-medium" }, fluencyFeedback))), /* @__PURE__ */ React.createElement("div", { className: `mb-4 rounded-xl border p-3 flex flex-wrap items-center justify-between gap-3 ${fluencyResult.review?.status === "reviewed" ? "bg-emerald-50 border-emerald-200" : "bg-amber-50 border-amber-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "text-left" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-black text-slate-700 uppercase tracking-wide" }, fluencyResult.review?.status === "reviewed" ? "Teacher-reviewed running record" : "Automated running record - review recommended"), fluencyResult.review?.status === "reviewed" && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-0.5" }, "Revision ", fluencyResult.review.revision || 1, " by ", fluencyResult.review.reviewer || "Educator", fluencyResult.review.correctedWordCount ? ` | ${fluencyResult.review.correctedWordCount} corrected word classification(s)` : "")), isTeacherMode && !isReviewingFluency && /* @__PURE__ */ React.createElement(
+      }), Boolean(fluencyResult.prosody.note) && /* @__PURE__ */ React.createElement("div", { className: "col-span-3 text-xs text-slate-600 italic text-center mt-1" }, fluencyResult.prosody.note)), fluencyResult.confidence && /* @__PURE__ */ React.createElement("div", { className: `rounded-xl p-4 mb-4 border ${fluencyResult.confidence.overall >= 7 ? "bg-green-50 border-green-200" : fluencyResult.confidence.overall >= 4 ? "bg-amber-50 border-amber-200" : "bg-red-50 border-red-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 mb-2" }, /* @__PURE__ */ React.createElement("div", { className: `text-2xl font-black ${fluencyResult.confidence.overall >= 7 ? "text-green-600" : fluencyResult.confidence.overall >= 4 ? "text-amber-600" : "text-red-600"}` }, fluencyResult.confidence.overall, /* @__PURE__ */ React.createElement("span", { className: "text-sm opacity-60" }, "/10")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-700" }, t("fluency.ai_confidence_title") || "AI Confidence in This Analysis"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600" }, fluencyResult.confidence.overall >= 7 ? flText("confidence_high", "High confidence") : fluencyResult.confidence.overall >= 4 ? flText("confidence_moderate", "Moderate confidence \u2014 some results may be inaccurate") : flText("confidence_low", "Low confidence \u2014 human verification recommended")))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 text-[11px] mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "\u{1F399}\uFE0F ", flText("audio_label", "Audio:"), " ", fluencyResult.confidence.audioQuality, "/10"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, "\u{1F5E3}\uFE0F ", flText("clarity_label", "Clarity:"), " ", fluencyResult.confidence.speakerClarity, "/10"), fluencyResult.confidence.accentDetected && /* @__PURE__ */ React.createElement("span", { className: "bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold" }, t("fluency.accent_detected_badge") || "Accent detected \u2014 scored conservatively"), fluencyResult.confidence.youngVoiceDetected && /* @__PURE__ */ React.createElement("span", { className: "bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold" }, t("fluency.young_voice_badge") || "Young voice detected"), fluencyResult.confidence.dialectalPatternsDetected && /* @__PURE__ */ React.createElement("span", { className: "bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full font-bold" }, t("fluency.dialectal_patterns_badge") || "Dialectal patterns respected")), fluencyResult.confidence.lowConfidenceWordCount > 0 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700 font-medium" }, "\u26A0 ", flText("low_confidence_words", "{count} word(s) marked with low confidence \u2014 look for \u26A0 in the word display below", { count: fluencyResult.confidence.lowConfidenceWordCount })), fluencyResult.confidence.note && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-1 italic" }, fluencyResult.confidence.note), fluencyResult.confidence.limitationsApplied && fluencyResult.confidence.limitationsApplied !== "none" && fluencyResult.confidence.limitationsApplied !== "none detected" && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-1" }, flText("research_basis", "Research basis:"), " ", fluencyResult.confidence.limitationsApplied)));
+    })(), fluencyFeedback && /* @__PURE__ */ React.createElement("div", { className: "mb-6 animate-in slide-in-from-bottom-2 fade-in" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-2 text-left bg-indigo-50 p-3 rounded-lg border border-indigo-100" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 p-1.5 rounded-full text-indigo-600 mt-0.5 shrink-0" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 14 })), /* @__PURE__ */ React.createElement("div", { className: "text-sm text-indigo-900 leading-relaxed font-medium" }, fluencyFeedback))), /* @__PURE__ */ React.createElement("div", { className: `mb-4 rounded-xl border p-3 flex flex-wrap items-center justify-between gap-3 ${fluencyResult.review?.status === "reviewed" ? "bg-emerald-50 border-emerald-200" : "bg-amber-50 border-amber-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "text-left" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-black text-slate-700 uppercase tracking-wide" }, fluencyResult.review?.status === "reviewed" ? flText("record_reviewed", "Teacher-reviewed running record") : flText("record_automated", "Automated running record - review recommended")), fluencyResult.review?.status === "reviewed" && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-0.5" }, flText("revision_line", "Revision {revision} by {reviewer}", { revision: fluencyResult.review.revision || 1, reviewer: fluencyResult.review.reviewer || flText("default_reviewer", "Educator") }), fluencyResult.review.correctedWordCount ? flText("revision_corrected", " | {count} corrected word classification(s)", { count: fluencyResult.review.correctedWordCount }) : "")), isTeacherMode && !isReviewingFluency && /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
         onClick: beginFluencyReview,
         className: "px-3 py-2 rounded-lg text-xs font-bold bg-white text-indigo-700 border border-indigo-300 hover:bg-indigo-50",
-        "aria-label": "Review and correct the automated running record"
+        "aria-label": flText("review_button_aria", "Review and correct the automated running record")
       },
-      "Review word classifications"
-    )), isReviewingFluency && fluencyReviewDraft && /* @__PURE__ */ React.createElement("div", { className: "w-full rounded-xl border border-indigo-200 bg-white p-4", "data-help-key": "fluency_teacher_review" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-3 text-left" }, "Listen again when possible. Change only classifications you can verify; the automated result remains in the audit trail."), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2" }, fluencyReviewDraft.wordData.map((word, index) => /* @__PURE__ */ React.createElement("div", { key: index, className: `rounded-lg border p-2 ${word.lowConfidence ? "border-amber-300 bg-amber-50" : "border-slate-200 bg-slate-50"}` }, /* @__PURE__ */ React.createElement("div", { className: "font-serif text-base font-bold text-slate-800 truncate", title: word.word }, word.word), /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 mt-1" }, "Classification", /* @__PURE__ */ React.createElement(
+      flText("review_button", "Review word classifications")
+    )), isReviewingFluency && fluencyReviewDraft && /* @__PURE__ */ React.createElement("div", { className: "w-full rounded-xl border border-indigo-200 bg-white p-4", "data-help-key": "fluency_teacher_review" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-3 text-left" }, flText("review_intro", "Listen again when possible. Change only classifications you can verify; the automated result remains in the audit trail.")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2" }, fluencyReviewDraft.wordData.map((word, index) => /* @__PURE__ */ React.createElement("div", { key: index, className: `rounded-lg border p-2 ${word.lowConfidence ? "border-amber-300 bg-amber-50" : "border-slate-200 bg-slate-50"}` }, /* @__PURE__ */ React.createElement("div", { className: "font-serif text-base font-bold text-slate-800 truncate", title: word.word }, word.word), /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 mt-1" }, flText("classification_label", "Classification"), /* @__PURE__ */ React.createElement(
       "select",
       {
         value: word.status,
         onChange: (event) => updateFluencyReviewWord(index, "status", event.target.value),
         className: "mt-0.5 w-full text-[11px] border border-slate-400 rounded px-1 py-1 bg-white",
-        "aria-label": `Classification for ${word.word}`
+        "aria-label": flText("classification_aria", "Classification for {word}", { word: word.word })
       },
-      /* @__PURE__ */ React.createElement("option", { value: "correct" }, "Correct"),
-      /* @__PURE__ */ React.createElement("option", { value: "stumbled" }, "Hesitation"),
-      /* @__PURE__ */ React.createElement("option", { value: "self_corrected" }, "Self-corrected"),
-      /* @__PURE__ */ React.createElement("option", { value: "mispronounced" }, "Substitution / mispronounced"),
-      /* @__PURE__ */ React.createElement("option", { value: "missed" }, "Omission")
-    )), (word.status === "mispronounced" || word.status === "self_corrected") && /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 mt-1" }, "Student said", /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("option", { value: "correct" }, flText("status_correct", "Correct")),
+      /* @__PURE__ */ React.createElement("option", { value: "stumbled" }, flText("status_stumbled", "Hesitation")),
+      /* @__PURE__ */ React.createElement("option", { value: "self_corrected" }, flText("status_self_corrected", "Self-corrected")),
+      /* @__PURE__ */ React.createElement("option", { value: "mispronounced" }, flText("status_mispronounced", "Substitution / mispronounced")),
+      /* @__PURE__ */ React.createElement("option", { value: "missed" }, flText("status_missed", "Omission"))
+    )), (word.status === "mispronounced" || word.status === "self_corrected") && /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600 mt-1" }, flText("student_said", "Student said"), /* @__PURE__ */ React.createElement(
       "input",
       {
         value: word.said || "",
         onChange: (event) => updateFluencyReviewWord(index, "said", event.target.value),
         className: "mt-0.5 w-full text-[11px] border border-slate-400 rounded px-1 py-1 bg-white",
-        "aria-label": `What the student said for ${word.word}`
+        "aria-label": flText("student_said_aria", "What the student said for {word}", { word: word.word })
       }
-    ))))), /* @__PURE__ */ React.createElement("div", { className: "grid sm:grid-cols-2 gap-3 mt-4 text-left" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-700" }, "Inserted words", /* @__PURE__ */ React.createElement(
+    ))))), /* @__PURE__ */ React.createElement("div", { className: "grid sm:grid-cols-2 gap-3 mt-4 text-left" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-700" }, flText("inserted_words", "Inserted words"), /* @__PURE__ */ React.createElement(
       "input",
       {
         value: fluencyReviewDraft.insertionsText,
         onChange: (event) => setFluencyReviewDraft((prev) => ({ ...prev, insertionsText: event.target.value })),
-        placeholder: "Comma-separated, or leave blank",
+        placeholder: flText("inserted_placeholder", "Comma-separated, or leave blank"),
         className: "mt-1 w-full text-sm border border-slate-400 rounded-lg px-2 py-2 bg-white"
       }
-    )), /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-700" }, "Reviewer", /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-700" }, flText("reviewer_label", "Reviewer"), /* @__PURE__ */ React.createElement(
       "input",
       {
         value: fluencyReviewDraft.reviewer,
         onChange: (event) => setFluencyReviewDraft((prev) => ({ ...prev, reviewer: event.target.value })),
         className: "mt-1 w-full text-sm border border-slate-400 rounded-lg px-2 py-2 bg-white"
       }
-    ))), /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-700 mt-3 text-left" }, "Review note", /* @__PURE__ */ React.createElement(
+    ))), /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-700 mt-3 text-left" }, flText("review_note", "Review note"), /* @__PURE__ */ React.createElement(
       "textarea",
       {
         value: fluencyReviewDraft.note,
         onChange: (event) => setFluencyReviewDraft((prev) => ({ ...prev, note: event.target.value })),
-        placeholder: "Optional context, such as audio quality or dialect consideration",
+        placeholder: flText("review_note_placeholder", "Optional context, such as audio quality or dialect consideration"),
         className: "mt-1 w-full min-h-16 text-sm border border-slate-400 rounded-lg px-2 py-2 bg-white"
       }
     )), /* @__PURE__ */ React.createElement("div", { className: "flex justify-end gap-2 mt-3" }, /* @__PURE__ */ React.createElement(
@@ -1378,7 +1403,7 @@ function FluencyModePanel(props) {
         },
         className: "px-3 py-2 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200"
       },
-      "Cancel"
+      t("common.cancel") || "Cancel"
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -1386,7 +1411,7 @@ function FluencyModePanel(props) {
         onClick: commitFluencyReview,
         className: "px-3 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700"
       },
-      "Save reviewed record"
+      flText("save_review", "Save reviewed record")
     ))), !isReviewingFluency && /* @__PURE__ */ React.createElement("div", { className: "text-xl md:text-2xl font-serif leading-loose text-center flex flex-wrap justify-center gap-1.5", "data-help-key": "fluency_mode_word_analysis" }, fluencyResult.wordData.map((w, i) => /* @__PURE__ */ React.createElement(
       "span",
       {
@@ -1405,17 +1430,19 @@ function FluencyModePanel(props) {
         "data-help-key": "fluency_mode_print_score_sheet_btn"
       },
       /* @__PURE__ */ React.createElement(FileText, { size: 15 }),
-      " Print Score Sheet"
+      " ",
+      t("common.print_score_sheet") || "Print Score Sheet"
     ), /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: exportFluencyCSV,
-        className: "flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm bg-emerald-50 text-emerald-300 border border-emerald-200 hover:bg-emerald-100 transition-colors",
+        className: "flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors",
         "aria-label": t("common.export_fluency_csv"),
         "data-help-key": "fluency_mode_export_csv_btn"
       },
       /* @__PURE__ */ React.createElement(Download, { size: 15 }),
-      " Export Fluency CSV"
+      " ",
+      t("common.export_fluency_csv") || "Export Fluency CSV"
     ))) : /* @__PURE__ */ React.createElement("div", { className: "max-w-2xl" }, fluencyTranscript && /* @__PURE__ */ React.createElement("div", { className: "mb-8 p-4 bg-white rounded-xl border border-slate-400 shadow-sm text-sm text-slate-300 italic" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold uppercase text-xs text-rose-400 block mb-1" }, t("fluency.hearing_label")), '"', fluencyTranscript, '"'), /* @__PURE__ */ React.createElement("div", { className: "text-xl md:text-3xl font-serif text-slate-800 leading-loose text-center", "data-help-key": "fluency_mode_passage_display" }, typeof generatedContent?.data === "string" ? generatedContent?.data.split("--- ENGLISH TRANSLATION ---")[0].replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/\[\d+\]/g, "").replace(/[⁽][⁰¹²³⁴⁵⁶⁷⁸⁹]+[⁾]/g, "").replace(/https?:\/\/[^\s]+/g, "").replace(/^#{1,6}\s/gm, "").replace(/\*{1,3}/g, "").trim() : /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 italic text-base" }, t("fluency.format_error"))))),
     /* @__PURE__ */ React.createElement("div", { className: "p-6 bg-white border-t border-slate-100 flex flex-col items-center justify-center shrink-0 gap-4" }, fluencyStatus === "listening" && fluencyTimeLimit > 0 && fluencyTimerVisibility === "visible" && /* @__PURE__ */ React.createElement("div", { className: `text-4xl font-black tabular-nums transition-colors ${fluencyTimeRemaining <= 10 ? "text-red-500 animate-pulse motion-reduce:animate-none" : fluencyTimeRemaining <= 30 ? "text-yellow-500" : "text-indigo-600"}` }, Math.floor(fluencyTimeRemaining / 60), ":", (fluencyTimeRemaining % 60).toString().padStart(2, "0")), /* @__PURE__ */ React.createElement("div", { className: `text-sm font-bold uppercase tracking-widest transition-colors ${fluencyStatus === "listening" ? "text-red-500" : fluencyStatus === "processing" ? "text-indigo-500 animate-pulse motion-reduce:animate-none" : "text-slate-600"}` }, fluencyStatus === "listening" ? t("fluency.listening") : fluencyStatus === "processing" ? t("fluency.processing") : fluencyStatus === "complete" ? t("fluency.complete") : t("fluency.prompt")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-4 items-center" }, fluencyStatus === "complete" && /* @__PURE__ */ React.createElement(
       "button",
@@ -2353,12 +2380,40 @@ function VolumeBuilderView(props) {
           )
         );
       }
-  return /* @__PURE__ */ React.createElement("div", { className: "space-y-3 p-3 bg-emerald-50 rounded-xl border border-emerald-200 animate-in fade-in slide-in-from-top-1", "data-help-key": "volume_builder_panel" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 text-emerald-800 font-bold text-sm" }, "\u{1F4E6} 3D Volume Explorer"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => setCubeScale((s) => Math.max(0.4, s - 0.15)), className: "w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 transition-all flex items-center justify-center", "aria-label": t("volume_builder.zoom_out_aria") || "Zoom out" }, "\u2212"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-emerald-600 font-mono w-10 text-center" }, Math.round(cubeScale * 100), "%"), /* @__PURE__ */ React.createElement("button", { onClick: () => setCubeScale((s) => Math.min(2.5, s + 0.15)), className: "w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 transition-all flex items-center justify-center", "aria-label": t("volume_builder.zoom_in_aria") || "Zoom in" }, "+"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+  const vbText = (key, fallback, params) => {
+    let s = t("volume_builder." + key, params) || fallback;
+    if (params) Object.keys(params).forEach((p) => {
+      s = s.replace("{" + p + "}", params[p]);
+    });
+    return s;
+  };
+  const checkCubeAnswer = () => {
+    if (!cubeChallenge) return;
+    const ans = parseInt(cubeAnswer);
+    const isLB = cubeChallenge.shape === "lblock";
+    const correctMsg = "\u2705 " + (isLB ? vbText("feedback_correct_lblock", "Correct! ({l}\xD7{w}\xD7{h}) \u2212 ({nl}\xD7{nw}\xD7{nh}) = {answer} cubic units", {
+      l: cubeChallenge.l,
+      w: cubeChallenge.w,
+      h: cubeChallenge.h,
+      nl: cubeChallenge.notch.l,
+      nw: cubeChallenge.notch.w,
+      nh: cubeChallenge.notch.h,
+      answer: cubeChallenge.answer
+    }) : vbText("feedback_correct_rect", "Correct! {l} \xD7 {w} \xD7 {h} = {answer} cubic units", {
+      l: cubeChallenge.l,
+      w: cubeChallenge.w,
+      h: cubeChallenge.h,
+      answer: cubeChallenge.answer
+    }));
+    const wrongMsg = "\u274C " + (isLB ? vbText("feedback_wrong_lblock", "Not quite. Try V = (L \xD7 W \xD7 H) \u2212 notch") : vbText("feedback_wrong_rect", "Not quite. Try V = L \xD7 W \xD7 H"));
+    setCubeFeedback(ans === cubeChallenge.answer ? { correct: true, msg: correctMsg } : { correct: false, msg: wrongMsg });
+  };
+  return /* @__PURE__ */ React.createElement("div", { className: "space-y-3 p-3 bg-emerald-50 rounded-xl border border-emerald-200 animate-in fade-in slide-in-from-top-1", "data-help-key": "volume_builder_panel" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 text-emerald-800 font-bold text-sm" }, "\u{1F4E6} ", t("volume_builder.title") || "3D Volume Explorer"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => setCubeScale((s) => Math.max(0.4, s - 0.15)), className: "w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 transition-all flex items-center justify-center", "aria-label": t("volume_builder.zoom_out_aria") || "Zoom out" }, "\u2212"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-emerald-600 font-mono w-10 text-center" }, Math.round(cubeScale * 100), "%"), /* @__PURE__ */ React.createElement("button", { onClick: () => setCubeScale((s) => Math.min(2.5, s + 0.15)), className: "w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 transition-all flex items-center justify-center", "aria-label": t("volume_builder.zoom_in_aria") || "Zoom in" }, "+"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
     setCubeRotation({ x: -25, y: -35 });
     setCubeScale(1);
-  }, className: "ml-1 px-2 py-1 rounded-md bg-white border border-emerald-300 text-emerald-700 font-bold text-[11px] hover:bg-emerald-100 transition-all", "aria-label": t("volume_builder.reset_view_aria") || "Reset view" }, "\u21BA"))), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": "Rotate 3D volume", className: "flex flex-wrap items-center gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-emerald-800 mr-1" }, "Rotate:"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setCubeRotation((prev) => ({ ...prev, y: prev.y - 15 })), className: "min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100", "aria-label": "Rotate volume left" }, "Left"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setCubeRotation((prev) => ({ ...prev, y: prev.y + 15 })), className: "min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100", "aria-label": "Rotate volume right" }, "Right"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setCubeRotation((prev) => ({ ...prev, x: Math.max(-80, prev.x - 10) })), className: "min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100", "aria-label": "Tilt volume up" }, "Up"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setCubeRotation((prev) => ({ ...prev, x: Math.min(10, prev.x + 10) })), className: "min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100", "aria-label": "Tilt volume down" }, "Down"), /* @__PURE__ */ React.createElement("output", { className: "ml-auto text-[11px] font-mono text-emerald-700", "aria-live": "polite" }, "Tilt ", Math.round(cubeRotation.x), " degrees, turn ", Math.round(cubeRotation.y), " degrees, zoom ", Math.round(cubeScale * 100), " percent")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-emerald-700/70" }, t("volume_builder.help_caption") || "Use the rotate and zoom buttons, or drag and scroll, to inspect rectangular prisms and L-blocks (5.MD.3-5)."), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 justify-center", role: "radiogroup", "aria-label": t("volume_builder.shape_radiogroup_aria") || "Volume Builder shape", "data-help-key": "volume_builder_shape_selector" }, [
-    { id: "rect", label: "\u{1F9CA} Rectangular" },
-    { id: "lblock", label: "\u{1F4D0} L-Block" }
+  }, className: "ml-1 px-2 py-1 rounded-md bg-white border border-emerald-300 text-emerald-700 font-bold text-[11px] hover:bg-emerald-100 transition-all", "aria-label": t("volume_builder.reset_view_aria") || "Reset view" }, "\u21BA"))), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": t("volume_builder.rotate_group_aria") || "Rotate 3D volume", className: "flex flex-wrap items-center gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-emerald-800 mr-1" }, t("volume_builder.rotate_label") || "Rotate:"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setCubeRotation((prev) => ({ ...prev, y: prev.y - 15 })), className: "min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100", "aria-label": t("volume_builder.rotate_left_aria") || "Rotate volume left" }, t("volume_builder.rotate_left") || "Left"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setCubeRotation((prev) => ({ ...prev, y: prev.y + 15 })), className: "min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100", "aria-label": t("volume_builder.rotate_right_aria") || "Rotate volume right" }, t("volume_builder.rotate_right") || "Right"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setCubeRotation((prev) => ({ ...prev, x: Math.max(-80, prev.x - 10) })), className: "min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100", "aria-label": t("volume_builder.tilt_up_aria") || "Tilt volume up" }, t("volume_builder.tilt_up") || "Up"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setCubeRotation((prev) => ({ ...prev, x: Math.min(10, prev.x + 10) })), className: "min-h-[36px] rounded-lg border border-emerald-300 bg-white px-3 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-100", "aria-label": t("volume_builder.tilt_down_aria") || "Tilt volume down" }, t("volume_builder.tilt_down") || "Down"), /* @__PURE__ */ React.createElement("output", { className: "ml-auto text-[11px] font-mono text-emerald-700", "aria-live": "polite" }, vbText("orientation_status", "Tilt {tilt} degrees, turn {turn} degrees, zoom {zoom} percent", { tilt: Math.round(cubeRotation.x), turn: Math.round(cubeRotation.y), zoom: Math.round(cubeScale * 100) }))), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-emerald-700/70" }, t("volume_builder.help_caption") || "Use the rotate and zoom buttons, or drag and scroll, to inspect rectangular prisms and L-blocks (5.MD.3-5)."), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 justify-center", role: "radiogroup", "aria-label": t("volume_builder.shape_radiogroup_aria") || "Volume Builder shape", "data-help-key": "volume_builder_shape_selector" }, [
+    { id: "rect", label: "\u{1F9CA} " + (t("volume_builder.shape_rect") || "Rectangular") },
+    { id: "lblock", label: "\u{1F4D0} " + (t("volume_builder.shape_lblock") || "L-Block") }
   ].map((s) => {
     const sel = cubeShape === s.id;
     return /* @__PURE__ */ React.createElement(
@@ -2376,38 +2431,45 @@ function VolumeBuilderView(props) {
       },
       s.label
     );
-  })), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-2", "data-help-key": "volume_builder_dimensions_input" }, ["l", "w", "h"].map((dim) => /* @__PURE__ */ React.createElement("div", { key: dim }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-bold uppercase" }, dim === "l" ? "Length" : dim === "w" ? "Width" : "Height"), /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      type: "range",
-      min: "1",
-      max: "10",
-      value: cubeDims[dim],
-      onChange: (e) => {
-        setCubeDims((prev) => ({ ...prev, [dim]: parseInt(e.target.value) }));
-        setCubeChallenge(null);
-        setCubeFeedback(null);
-        setCubeShowLayers(null);
-      },
-      className: "w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-emerald-600",
-      "aria-label": dim === "l" ? "Length" : dim === "w" ? "Width" : "Height"
-    }
-  ), /* @__PURE__ */ React.createElement("div", { className: "text-center text-sm font-bold text-emerald-700 mt-1" }, cubeDims[dim])))), isLBlock && /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-2 mt-2 p-2 rounded-lg bg-amber-50 border border-amber-200" }, ["l", "w", "h"].map((dim) => /* @__PURE__ */ React.createElement("div", { key: "notch-" + dim }, /* @__PURE__ */ React.createElement("label", { className: "block text-[10px] text-amber-700 mb-1 font-bold uppercase" }, (dim === "l" ? "Length" : dim === "w" ? "Width" : "Height") + " Notch"), /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      type: "range",
-      min: "1",
-      max: Math.max(1, cubeDims[dim] - 1),
-      value: Math.min(cubeNotch[dim], Math.max(1, cubeDims[dim] - 1)),
-      onChange: (e) => {
-        setCubeNotch((prev) => ({ ...prev, [dim]: parseInt(e.target.value) }));
-        setCubeChallenge(null);
-        setCubeFeedback(null);
-      },
-      className: "w-full h-2 bg-amber-200 rounded-lg appearance-none cursor-pointer accent-amber-600",
-      "aria-label": "Notch " + (dim === "l" ? "length" : dim === "w" ? "width" : "height")
-    }
-  ), /* @__PURE__ */ React.createElement("div", { className: "text-center text-xs font-bold text-amber-700 mt-1" }, Math.min(cubeNotch[dim], Math.max(1, cubeDims[dim] - 1)))))), /* @__PURE__ */ React.createElement(
+  })), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-2", "data-help-key": "volume_builder_dimensions_input" }, ["l", "w", "h"].map((dim) => {
+    const dimLabel = dim === "l" ? t("volume_builder.dim_length") || "Length" : dim === "w" ? t("volume_builder.dim_width") || "Width" : t("volume_builder.dim_height") || "Height";
+    return /* @__PURE__ */ React.createElement("div", { key: dim }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-bold uppercase" }, dimLabel), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "range",
+        min: "1",
+        max: "10",
+        value: cubeDims[dim],
+        onChange: (e) => {
+          setCubeDims((prev) => ({ ...prev, [dim]: parseInt(e.target.value) }));
+          setCubeChallenge(null);
+          setCubeFeedback(null);
+          setCubeShowLayers(null);
+        },
+        className: "w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-emerald-600",
+        "aria-label": dimLabel
+      }
+    ), /* @__PURE__ */ React.createElement("div", { className: "text-center text-sm font-bold text-emerald-700 mt-1" }, cubeDims[dim]));
+  })), isLBlock && /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-2 mt-2 p-2 rounded-lg bg-amber-50 border border-amber-200" }, ["l", "w", "h"].map((dim) => {
+    const notchLabel = dim === "l" ? t("volume_builder.notch_label_length") || "Length Notch" : dim === "w" ? t("volume_builder.notch_label_width") || "Width Notch" : t("volume_builder.notch_label_height") || "Height Notch";
+    const notchAria = dim === "l" ? t("volume_builder.notch_aria_length") || "Notch length" : dim === "w" ? t("volume_builder.notch_aria_width") || "Notch width" : t("volume_builder.notch_aria_height") || "Notch height";
+    return /* @__PURE__ */ React.createElement("div", { key: "notch-" + dim }, /* @__PURE__ */ React.createElement("label", { className: "block text-[10px] text-amber-700 mb-1 font-bold uppercase" }, notchLabel), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        type: "range",
+        min: "1",
+        max: Math.max(1, cubeDims[dim] - 1),
+        value: Math.min(cubeNotch[dim], Math.max(1, cubeDims[dim] - 1)),
+        onChange: (e) => {
+          setCubeNotch((prev) => ({ ...prev, [dim]: parseInt(e.target.value) }));
+          setCubeChallenge(null);
+          setCubeFeedback(null);
+        },
+        className: "w-full h-2 bg-amber-200 rounded-lg appearance-none cursor-pointer accent-amber-600",
+        "aria-label": notchAria
+      }
+    ), /* @__PURE__ */ React.createElement("div", { className: "text-center text-xs font-bold text-amber-700 mt-1" }, Math.min(cubeNotch[dim], Math.max(1, cubeDims[dim] - 1))));
+  })), /* @__PURE__ */ React.createElement(
     "div",
     {
       role: "img",
@@ -2446,7 +2508,7 @@ function VolumeBuilderView(props) {
       width: cubeDims.l * cubeUnit + "px",
       height: cubeDims.h * cubeUnit + "px"
     } }, cubeGridElements)
-  ), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-white/80 rounded-lg p-2 border border-emerald-100" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-emerald-700 whitespace-nowrap" }, "Layers:"), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-white/80 rounded-lg p-2 border border-emerald-100" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-emerald-700 whitespace-nowrap" }, t("volume_builder.layers_label") || "Layers:"), /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "range",
@@ -2457,7 +2519,7 @@ function VolumeBuilderView(props) {
       onChange: (e) => setCubeShowLayers(parseInt(e.target.value)),
       className: "flex-1 h-1.5 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
     }
-  ), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-mono text-emerald-600 w-12 text-center" }, cubeShowLayers !== null ? cubeShowLayers : cubeDims.h, " / ", cubeDims.h), cubeShowLayers !== null && cubeShowLayers < cubeDims.h && /* @__PURE__ */ React.createElement("button", { onClick: () => setCubeShowLayers(null), className: "text-xs text-emerald-500 hover:text-emerald-700 font-bold" }, "All")), /* @__PURE__ */ React.createElement("div", { className: "bg-white/80 rounded-lg p-3 border border-emerald-100", "data-help-key": "volume_builder_volume_readout" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1" }, t("stem.volume_label")), /* @__PURE__ */ React.createElement("div", { className: "text-lg font-bold text-emerald-800" }, isLBlock ? /* @__PURE__ */ React.createElement(React.Fragment, null, "V = (", cubeDims.l, "\xD7", cubeDims.w, "\xD7", cubeDims.h, ") \u2212 (", safeNotch.l, "\xD7", safeNotch.w, "\xD7", safeNotch.h, ") = ", rectVolume, " \u2212 ", notchVolume, " = ", /* @__PURE__ */ React.createElement("span", { className: "text-2xl text-emerald-600" }, volume)) : /* @__PURE__ */ React.createElement(React.Fragment, null, "V = ", cubeDims.l, " \xD7 ", cubeDims.w, " \xD7 ", cubeDims.h, " = ", /* @__PURE__ */ React.createElement("span", { className: "text-2xl text-emerald-600" }, volume))), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600" }, volume, " unit cube", volume !== 1 ? "s" : "")), /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-teal-600 uppercase tracking-wider mb-1" }, t("stem.surface_area"), isLBlock && /* @__PURE__ */ React.createElement("span", { className: "ml-1 text-[10px] font-normal text-teal-500/70" }, "(approx \u2014 full prism)")), /* @__PURE__ */ React.createElement("div", { className: "text-lg font-bold text-teal-800" }, "SA ", isLBlock ? "\u2248 " : "= ", /* @__PURE__ */ React.createElement("span", { className: "text-2xl text-teal-600" }, surfaceArea)), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600" }, "2(", cubeDims.l, "\xD7", cubeDims.w, " + ", cubeDims.l, "\xD7", cubeDims.h, " + ", cubeDims.w, "\xD7", cubeDims.h, ")")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-emerald-700" }, "Difficulty:"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-0.5" }, ["easy", "medium", "hard"].map((d) => /* @__PURE__ */ React.createElement("button", { key: d, onClick: () => setExploreDifficulty(d), className: "text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-all " + (exploreDifficulty === d ? d === "easy" ? "bg-green-700 text-white" : d === "hard" ? "bg-red-700 text-white" : "bg-emerald-700 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200") }, d)))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
+  ), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-mono text-emerald-600 w-12 text-center" }, cubeShowLayers !== null ? cubeShowLayers : cubeDims.h, " / ", cubeDims.h), cubeShowLayers !== null && cubeShowLayers < cubeDims.h && /* @__PURE__ */ React.createElement("button", { onClick: () => setCubeShowLayers(null), className: "text-xs text-emerald-500 hover:text-emerald-700 font-bold" }, t("volume_builder.layers_all") || "All")), /* @__PURE__ */ React.createElement("div", { className: "bg-white/80 rounded-lg p-3 border border-emerald-100", "data-help-key": "volume_builder_volume_readout" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1" }, t("stem.volume_label")), /* @__PURE__ */ React.createElement("div", { className: "text-lg font-bold text-emerald-800" }, isLBlock ? /* @__PURE__ */ React.createElement(React.Fragment, null, "V = (", cubeDims.l, "\xD7", cubeDims.w, "\xD7", cubeDims.h, ") \u2212 (", safeNotch.l, "\xD7", safeNotch.w, "\xD7", safeNotch.h, ") = ", rectVolume, " \u2212 ", notchVolume, " = ", /* @__PURE__ */ React.createElement("span", { className: "text-2xl text-emerald-600" }, volume)) : /* @__PURE__ */ React.createElement(React.Fragment, null, "V = ", cubeDims.l, " \xD7 ", cubeDims.w, " \xD7 ", cubeDims.h, " = ", /* @__PURE__ */ React.createElement("span", { className: "text-2xl text-emerald-600" }, volume))), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600" }, vbText(volume === 1 ? "unit_cubes_one" : "unit_cubes_other", volume === 1 ? "{count} unit cube" : "{count} unit cubes", { count: volume }))), /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-teal-600 uppercase tracking-wider mb-1" }, t("stem.surface_area"), isLBlock && /* @__PURE__ */ React.createElement("span", { className: "ml-1 text-[10px] font-normal text-teal-500/70" }, t("volume_builder.surface_area_approx") || "(approx \u2014 full prism)")), /* @__PURE__ */ React.createElement("div", { className: "text-lg font-bold text-teal-800" }, "SA ", isLBlock ? "\u2248 " : "= ", /* @__PURE__ */ React.createElement("span", { className: "text-2xl text-teal-600" }, surfaceArea)), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600" }, "2(", cubeDims.l, "\xD7", cubeDims.w, " + ", cubeDims.l, "\xD7", cubeDims.h, " + ", cubeDims.w, "\xD7", cubeDims.h, ")")))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-emerald-700" }, t("volume_builder.difficulty_label") || "Difficulty:"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-0.5" }, ["easy", "medium", "hard"].map((d) => /* @__PURE__ */ React.createElement("button", { key: d, onClick: () => setExploreDifficulty(d), className: "text-[11px] font-bold px-1.5 py-0.5 rounded-full transition-all " + (exploreDifficulty === d ? d === "easy" ? "bg-green-700 text-white" : d === "hard" ? "bg-red-700 text-white" : "bg-emerald-700 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200") }, t("volume_builder.difficulty_" + d) || d)))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
     const vdiff = getAdaptiveDifficulty();
     const vmax = vdiff === "easy" ? 4 : vdiff === "hard" ? 10 : 7;
     const l = Math.floor(Math.random() * (vmax - 1)) + 1;
@@ -2475,7 +2537,7 @@ function VolumeBuilderView(props) {
     setCubeAnswer("");
     setCubeFeedback(null);
     setCubeShowLayers(null);
-  }, className: "flex-1 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-lg text-sm hover:from-emerald-600 hover:to-teal-600 transition-all shadow-md", "data-help-key": "volume_builder_random_challenge_btn" }, "\u{1F3B2} Random Challenge"), /* @__PURE__ */ React.createElement(
+  }, className: "flex-1 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-lg text-sm hover:from-emerald-600 hover:to-teal-600 transition-all shadow-md", "data-help-key": "volume_builder_random_challenge_btn" }, "\u{1F3B2} ", t("volume_builder.random_challenge") || "Random Challenge"), /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => {
@@ -2489,21 +2551,16 @@ function VolumeBuilderView(props) {
       className: "px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all",
       "data-help-key": "volume_builder_reset_btn"
     },
-    "\u21BA Reset"
-  )), cubeChallenge && /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 rounded-lg p-3 border border-amber-200" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-amber-800 mb-2" }, "\u{1F914} What is the volume of this ", cubeChallenge.shape === "lblock" ? "L-block" : "rectangular prism", "?"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(
+    "\u21BA ",
+    t("common.reset") || "Reset"
+  )), cubeChallenge && /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 rounded-lg p-3 border border-amber-200" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-amber-800 mb-2" }, "\u{1F914} ", cubeChallenge.shape === "lblock" ? t("volume_builder.challenge_prompt_lblock") || "What is the volume of this L-block?" : t("volume_builder.challenge_prompt_rect") || "What is the volume of this rectangular prism?"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "number",
       value: cubeAnswer,
       onChange: (e) => setCubeAnswer(e.target.value),
       onKeyDown: (e) => {
-        if (e.key === "Enter" && cubeAnswer) {
-          const ans = parseInt(cubeAnswer);
-          const isLB = cubeChallenge.shape === "lblock";
-          const correctMsg = isLB ? "\u2705 Correct! (" + cubeChallenge.l + "\xD7" + cubeChallenge.w + "\xD7" + cubeChallenge.h + ") \u2212 (" + cubeChallenge.notch.l + "\xD7" + cubeChallenge.notch.w + "\xD7" + cubeChallenge.notch.h + ") = " + cubeChallenge.answer + " cubic units" : "\u2705 Correct! " + cubeChallenge.l + " \xD7 " + cubeChallenge.w + " \xD7 " + cubeChallenge.h + " = " + cubeChallenge.answer + " cubic units";
-          const wrongMsg = isLB ? "\u274C Not quite. Try V = (L \xD7 W \xD7 H) \u2212 notch" : "\u274C Not quite. Try V = L \xD7 W \xD7 H";
-          setCubeFeedback(ans === cubeChallenge.answer ? { correct: true, msg: correctMsg } : { correct: false, msg: wrongMsg });
-        }
+        if (e.key === "Enter" && cubeAnswer) checkCubeAnswer();
       },
       placeholder: t("volume_builder.answer_placeholder") || "Enter volume...",
       className: "flex-1 px-3 py-2 border border-amber-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-amber-400 outline-none",
@@ -2513,18 +2570,12 @@ function VolumeBuilderView(props) {
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
-      onClick: () => {
-        const ans = parseInt(cubeAnswer);
-        const isLB = cubeChallenge.shape === "lblock";
-        const correctMsg = isLB ? "\u2705 Correct! (" + cubeChallenge.l + "\xD7" + cubeChallenge.w + "\xD7" + cubeChallenge.h + ") \u2212 (" + cubeChallenge.notch.l + "\xD7" + cubeChallenge.notch.w + "\xD7" + cubeChallenge.notch.h + ") = " + cubeChallenge.answer + " cubic units" : "\u2705 Correct! " + cubeChallenge.l + " \xD7 " + cubeChallenge.w + " \xD7 " + cubeChallenge.h + " = " + cubeChallenge.answer + " cubic units";
-        const wrongMsg = isLB ? "\u274C Not quite. Try V = (L \xD7 W \xD7 H) \u2212 notch" : "\u274C Not quite. Try V = L \xD7 W \xD7 H";
-        setCubeFeedback(ans === cubeChallenge.answer ? { correct: true, msg: correctMsg } : { correct: false, msg: wrongMsg });
-      },
+      onClick: checkCubeAnswer,
       disabled: !cubeAnswer,
       className: "px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-600 disabled:opacity-40 transition-all",
       "data-help-key": "volume_builder_check_btn"
     },
-    "Check"
+    t("volume_builder.check") || "Check"
   )), cubeFeedback && /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold mt-2 " + (cubeFeedback.correct ? "text-green-600" : "text-red-600") }, cubeFeedback.msg)));
 }
 window.AlloModules = window.AlloModules || {};

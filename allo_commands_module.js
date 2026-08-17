@@ -771,6 +771,13 @@ function buildAlloCommands(ctx, opts = {}) {
       c.setShowLearningHub(true);
       return t("cmd.open_learning_hub_done", "Learning Hub opened.");
     } },
+    // Leadership Hub pass 2026-08-17: the nine admin tools had NO palette/voice
+    // door — reachable only via Educator Hub -> card. roles 'teacher' matches
+    // X7's card scoping (parent/independent resolve to their own audiences).
+    { id: "open_leadership_hub", icon: "\u{1F3DB}\uFE0F", roles: "teacher", when: (c) => typeof c.openLeadershipHub === "function", label: t("cmd.open_leadership_hub", "Open the Leadership Hub"), aliases: ["leadership hub", "admin tools", "principal tools", "walkthrough tools", "mtss", "disproportionality", "sped timelines", "meeting documentation", "family announcements"], hint: t("cmd.open_leadership_hub_hint", "Walkthroughs, MTSS triage, equity analytics, timelines, meeting docs, and family announcements"), run: (c) => {
+      c.openLeadershipHub();
+      return t("cmd.open_leadership_hub_done", "Leadership Hub opened. Nine tools for principals, coaches, and student-services leaders.");
+    } },
     { id: "open_source_input", icon: "\u{1F4DD}", roles: ["teacher", "independent", "parent"], label: t("cmd.open_source_input", "Open source input"), aliases: ["source input", "source material", "input panel", "paste text", "write text", "add source", "new source"], hint: t("cmd.open_source_input_hint", "Paste, write, search, or generate source material"), run: (c) => {
       c.openSourceInput();
       return t("cmd.open_source_input_done", "Source input opened.");
@@ -796,6 +803,35 @@ function buildAlloCommands(ctx, opts = {}) {
     { id: "open_fluency_maze", icon: "\u{1F3AF}", roles: ["teacher", "independent", "parent"], when: (c) => typeof c.openFluencyMaze === "function", label: t("cmd.open_fluency_maze", "Open the Fluency Maze"), aliases: ["fluency maze", "math maze", "maze", "math maze game", "fluency game"], hint: t("cmd.open_fluency_maze_hint", "A maze students solve by answering math facts"), run: (c) => {
       c.openFluencyMaze();
       return t("cmd.open_fluency_maze_done", "Fluency Maze opened in the Math tool.");
+    } },
+    // X6 2026-08-17: doors for the six surfaces that joined the coverage
+    // baseline on 2026-08-16. Same shape as the W3 math-fluency pair above:
+    // every capability is host-supplied and `when`-guarded, so a host that
+    // lacks the seam never lists a command that would report success and do
+    // nothing (the silent-announcer class).
+    { id: "use_gemini_canvas", icon: "\u{1F680}", roles: "teacher", when: (c) => typeof c.setShowAIBackendModal === "function", label: t("cmd.use_gemini_canvas", "Use AlloFlow inside Gemini Canvas"), aliases: ["gemini canvas", "use canvas", "canvas setup", "free ai", "ai without a key", "no api key"], hint: t("cmd.use_gemini_canvas_hint", "Open AI setup, where the no-setup Canvas option leads"), run: (c) => {
+      c.setShowAIBackendModal(true);
+      return t("cmd.use_gemini_canvas_done", "AI setup opened. The first card explains using AlloFlow inside Gemini Canvas with no setup.");
+    } },
+    { id: "open_brainstorm_modes", icon: "\u{1F9E9}", roles: ["teacher", "independent", "parent"], when: (c) => typeof c.openBrainstormActivity === "function", label: t("cmd.open_brainstorm_modes", "Choose a brainstorm activity type"), aliases: ["brainstorm modes", "activity type", "brainstorm activity", "class activity types"], hint: t("cmd.open_brainstorm_modes_hint", "Ideas web, discussion kit, jigsaw, or simulation"), run: (c) => {
+      c.openBrainstormActivity(null);
+      return t("cmd.open_brainstorm_modes_done", "Brainstorm activity types opened. Pick ideas, discussion, jigsaw, or simulation.");
+    } },
+    { id: "open_discussion_builder", icon: "\u{1F4AC}", roles: ["teacher", "independent", "parent"], when: (c) => typeof c.openBrainstormActivity === "function", label: t("cmd.open_discussion_builder", "Build a class discussion"), aliases: ["discussion kit", "class discussion", "discussion protocol", "socratic seminar", "think pair share"], hint: t("cmd.open_discussion_builder_hint", "A discussion kit with protocols like think-pair-share"), run: (c) => {
+      c.openBrainstormActivity("discussion");
+      return t("cmd.open_discussion_builder_done", "Discussion builder opened in the Brainstorm tool. Choose a protocol, then generate.");
+    } },
+    { id: "open_jigsaw_builder", icon: "\u{1F9E9}", roles: ["teacher", "independent", "parent"], when: (c) => typeof c.openBrainstormActivity === "function", label: t("cmd.open_jigsaw_builder", "Build a jigsaw activity"), aliases: ["jigsaw", "jigsaw activity", "expert groups", "jigsaw groups"], hint: t("cmd.open_jigsaw_builder_hint", "Jigsaw expert-group activity with a group size you set"), run: (c) => {
+      c.openBrainstormActivity("jigsaw");
+      return t("cmd.open_jigsaw_builder_done", "Jigsaw builder opened in the Brainstorm tool. Set the group size, then generate.");
+    } },
+    { id: "jump_to_lesson_plan", icon: "\u{1F4CB}", roles: ["teacher", "independent", "parent"], when: (c) => typeof c.jumpToLatestLessonPlan === "function", label: t("cmd.jump_to_lesson_plan", "Jump to my lesson plan"), aliases: ["lesson plan", "my lesson plan", "latest lesson plan", "jump to lesson", "back to the lesson plan", "show the lesson plan"], hint: t("cmd.jump_to_lesson_plan_hint", "Reopen the most recent lesson plan"), run: (c) => {
+      c.jumpToLatestLessonPlan();
+      return t("cmd.jump_to_lesson_plan_done", "Latest lesson plan opened.");
+    } },
+    { id: "open_block_suggestions", icon: "\u{1F4A1}", roles: "teacher", when: (c) => typeof c.openExportPreview === "function", label: t("cmd.open_block_suggestions", "Get document block suggestions"), aliases: ["block suggestions", "suggest blocks", "what should i add to this document", "document suggestions"], hint: t("cmd.open_block_suggestions_hint", "Open the Document Builder, where suggestions sit at the top"), run: (c) => {
+      c.openExportPreview();
+      return t("cmd.open_block_suggestions_done", "Document Builder opened. Block suggestions are in the highlighted panel near the top.");
     } },
     { id: "open_history", icon: "\u{1F558}", roles: "all", label: t("cmd.open_history", "Open history"), aliases: ["history", "my history", "saved work", "previous work", "recent lessons", "projects"], hint: t("cmd.open_history_hint", "Browse saved lessons and projects"), run: (c) => {
       c.openHistory();
@@ -5023,6 +5059,14 @@ const CMD_GROUP = {
   surprise_me_contextually: "create",
   suggest_contextual_next_steps: "create",
   use_contextual_suggestion: "create",
+  // X6 2026-08-17: doors for the surfaces that joined the coverage baseline 08-16.
+  use_gemini_canvas: "navigate",
+  open_brainstorm_modes: "create",
+  open_discussion_builder: "create",
+  open_jigsaw_builder: "create",
+  jump_to_lesson_plan: "navigate",
+  open_block_suggestions: "create",
+  open_leadership_hub: "navigate",
   start_bingo_game: "create",
   start_crossword_game: "create",
   start_matching_game: "create",

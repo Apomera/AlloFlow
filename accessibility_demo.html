@@ -116,6 +116,9 @@ body.hc .demo-board-wrap { border-color: #fff; }
 @keyframes stripPop { 0% { transform: scale(0.8) translateY(4px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
 .demo-strip-placeholder { color: var(--gray-400); font-style: italic; font-size: 12px; }
 .demo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 14px; }
+/* role="row" wrappers exist for ARIA only; display:contents keeps the cells as
+   direct children of the CSS grid so the layout is unchanged. */
+.demo-row { display: contents; }
 .demo-cell { border-radius: 10px; padding: 10px 6px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; border: 2px solid #334155; background: #1e293b; transition: transform 0.12s, box-shadow 0.15s; min-height: 44px; min-width: 0; user-select: none; }
 .demo-cell:active { transform: scale(0.93); }
 .demo-cell .symbol { width: 56px; height: 56px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 28px; }
@@ -268,7 +271,7 @@ footer a { color: var(--purple); }
 <!-- shared mobile nav:end -->
 
 <!-- ════════ HERO ════════ -->
-<div class="hero">
+<header class="hero">
 <div class="container">
   <span class="badge badge-purple" style="background:rgba(255,255,255,0.15);color:#fff;">WCAG 2.2 AA-Oriented (AAC demo scope)</span>
   <h1 style="margin-top:12px;">Accessibility in AlloFlow</h1>
@@ -278,7 +281,7 @@ footer a { color: var(--purple); }
     <a href="#demo-board" class="btn" style="background:rgba(255,255,255,0.15);color:#fff;text-decoration:none;">Try the Demo Board</a>
   </div>
 </div>
-</div>
+</header>
 
 <!-- ── Anchor Nav ── -->
 <nav class="anchor-nav" aria-label="Page sections">
@@ -465,7 +468,7 @@ footer a { color: var(--purple); }
     <div class="card">
       <h3>ARIA Roles</h3>
       <p style="font-size:0.85rem;color:var(--text-muted);margin:6px 0 0;">
-        <code>role="grid"</code> on the board container. <code>role="gridcell"</code> on each symbol with a descriptive <code>aria-label</code> combining the word and its context (e.g., "happy: feeling joyful"). <code>role="log"</code> on the sentence strip. <code>role="tab"</code> / <code>role="tabpanel"</code> for multi-page boards.
+        <code>role="grid"</code> on the board container, <code>role="row"</code> on each row, and <code>role="gridcell"</code> on each symbol with a descriptive <code>aria-label</code> combining the word and its context (e.g., "happy: feeling joyful"). <code>role="log"</code> on the sentence strip. <code>role="tab"</code> / <code>role="tabpanel"</code> for multi-page boards.
       </p>
     </div>
     <div class="card">
@@ -585,7 +588,7 @@ footer a { color: var(--purple); }
 <footer role="contentinfo">
   <div class="container">
     <p>AlloFlow &middot; Created by Aaron Pomeranz, PsyD &middot; AI Collaboration with Claude (Anthropic)</p>
-    <p style="margin-top:4px;">This page is designed toward WCAG 2.2 AA for this demo and welcomes independent validation. <a href="accessibility_brief.md">View full accessibility brief</a></p>
+    <p style="margin-top:4px;">This page is designed toward WCAG 2.2 AA for this demo and welcomes independent validation. <a href="accessibility_brief.md" style="text-decoration:underline">View full accessibility brief</a></p>
 
 <!-- shared footer links:start -->
             <nav class="footer-links footer-link-groups" aria-label="Footer">
@@ -630,9 +633,27 @@ footer a { color: var(--purple); }
     document.addEventListener("keydown", onKey);
   }
 
+  // Columns must match the CSS grid so the ARIA rows describe the rows a
+  // sighted user actually sees. Kept in sync with the .demo-grid media query.
+  function gridColumns() {
+    return window.matchMedia("(max-width: 640px)").matches ? 2 : 4;
+  }
+
   function buildGrid() {
     grid.innerHTML = "";
+    // role="grid" requires role="row" children, and role="gridcell" requires a
+    // row parent. Cells used to be appended straight to the grid, which failed
+    // both rules. The rows carry display:contents so the 4-column CSS grid still
+    // lays the cells out itself.
+    var cols = gridColumns();
+    var row = null;
     SYMBOLS.forEach(function (sym, i) {
+      if (i % cols === 0) {
+        row = document.createElement("div");
+        row.className = "demo-row";
+        row.setAttribute("role", "row");
+        grid.appendChild(row);
+      }
       var cell = document.createElement("div");
       cell.className = "demo-cell";
       cell.setAttribute("role", "gridcell");
@@ -642,10 +663,18 @@ footer a { color: var(--purple); }
       cell.style.borderColor = sym.border;
       cell.innerHTML = '<div class="symbol" style="background:' + sym.bg + ';">' + sym.emoji + '</div><div class="label">' + sym.label + '</div>';
       cell.addEventListener("click", function () { tap(i); });
-      grid.appendChild(cell);
+      row.appendChild(cell);
     });
     cells = Array.from(grid.querySelectorAll("[role=gridcell]"));
   }
+
+  // Rebuild when the column count changes, so the rows keep matching the layout.
+  (function watchColumns() {
+    var mq = window.matchMedia("(max-width: 640px)");
+    var onChange = function () { if (grid) { buildGrid(); if (typeof focusCell === "function") focusCell(0); } };
+    if (mq.addEventListener) mq.addEventListener("change", onChange);
+    else if (mq.addListener) mq.addListener(onChange);
+  })();
 
   // ── Announce ──
   function ann(t, tag) {

@@ -1826,7 +1826,6 @@
         setToolSnapshots,
         showAssessmentBuilder,
         showStemLab,
-        startMathFluencyProbe,
         stemLabCreateMode,
         stemLabTab,
         stemLabTool,

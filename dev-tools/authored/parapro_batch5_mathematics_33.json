@@ -888,7 +888,7 @@
     "prompt": "A student says 7/6 cannot be greater than 1 because a fraction represents only part of one whole. Which support best addresses the misconception?",
     "choices": [
       "Tell the student that every fraction with a denominator greater than 1 is less than 1.",
-      "Replace 7/6 with 6/7 because proper fractions are the only fractions that can be modeled.",
+      "Replace 7/6 with 6/7, because proper fractions are the only kind of fractions that can ever be modeled visually.",
       "Build one whole with six sixth-size pieces, then add a seventh piece to show 7/6 = 1 1/6 on a number line.",
       "Round both 7 and 6 to 10 and conclude that the fraction equals exactly 1."
     ],
@@ -928,7 +928,7 @@
     "prompt": "A student calculates 2.4 times 0.3 as 7.2. Which response best helps the student correct the decimal placement?",
     "choices": [
       "Accept 7.2 because 24 times 3 equals 72.",
-      "Move the decimal one place right because multiplication must make numbers larger.",
+      "Move the decimal one place to the right, because multiplication must always make numbers larger.",
       "Add 2.4 and 0.3 to find 2.7 before multiplying.",
       "Connect 24 times 3 = 72 to hundredths: 24 tenths times 3 tenths is 72 hundredths, or 0.72."
     ],
@@ -968,7 +968,7 @@
     "prompt": "Three supply bins hold enough markers for 18 students. A student says 42 students need 27 bins because both numbers increased by 24. Which response best develops proportional reasoning?",
     "choices": [
       "Find that each bin serves 6 students, then divide 42 by 6 to obtain 7 bins and verify that 7/42 equals 3/18.",
-      "Accept 27 bins because equivalent ratios are formed by adding the same number to both quantities.",
+      "Accept 27 bins, because equivalent ratios are always formed by adding the same number to both of the quantities.",
       "Subtract 3 from 18 and 27 from 42 to check whether both differences are 15.",
       "Multiply 42 by 18 and divide by 3 to obtain 252 bins."
     ],
@@ -1007,7 +1007,7 @@
     "difficulty": "application",
     "prompt": "A student says 4.07 and 4.7 are equal because zeros do not affect a number's value. Which support best addresses the place-value misconception?",
     "choices": [
-      "Delete the zero from every decimal and tell the student that matching nonzero digits always make equal numbers.",
+      "Delete the zero from every decimal and then tell the student that matching nonzero digits will always make any two decimal numbers exactly equal to each other.",
       "Place both numbers in a place-value chart and model them on hundred grids, showing 4.07 as 4 ones and 7 hundredths and 4.7 as 4 ones and 7 tenths.",
       "Multiply both numbers by zero and use the equal products as proof that the original numbers are equal.",
       "Round both numbers to 4 and conclude that numbers with the same rounded value are exactly equal."
@@ -1050,7 +1050,7 @@
       "Agree because side lengths are the only properties used to classify quadrilaterals.",
       "Show a rectangle with unequal adjacent sides and call it a rhombus.",
       "Draw a rhombus with four equal sides but two acute and two obtuse angles, and compare its angles with a square's four right angles.",
-      "Explain that no square can be a rhombus because the names of the shapes are different."
+      "Explain that no square can ever be a rhombus, because the two shapes are simply given entirely different names in geometry textbooks."
     ],
     "answerIndex": 2,
     "rationale": "A counterexample with equal sides but nonright angles satisfies the definition of a rhombus while failing the additional square requirement. It identifies precisely which property the student's classification omitted.",
@@ -1089,7 +1089,7 @@
     "choices": [
       "Tell the student to add the inner-scale and outer-scale readings together.",
       "Accept 135 degrees because every protractor reading names the larger angle.",
-      "Place the protractor's center anywhere along one ray as long as a number is visible.",
+      "Place the protractor’s center point anywhere along one of the rays, as long as some number on the scale remains visible to the student.",
       "Align the center with the vertex and one ray with zero, then follow that zero scale to 45 degrees and check that the drawing is acute."
     ],
     "answerIndex": 3,
@@ -1128,7 +1128,7 @@
     "prompt": "A pencil begins at the 2.3-centimeter mark on a ruler and ends at the 8.9-centimeter mark. A student reports that it is 8.9 centimeters long. Which feedback is best?",
     "choices": [
       "Explain that length is the difference between the endpoint readings, so 8.9 - 2.3 = 6.6 centimeters, and verify by counting intervals.",
-      "Accept 8.9 centimeters because an object's length always equals its ending ruler mark.",
+      "Accept 8.9 centimeters, because an object’s measured length will always equal the number that is printed at its ending mark on the ruler.",
       "Add the two ruler readings to obtain 11.2 centimeters.",
       "Subtract the ending mark from the starting mark and report -6.6 centimeters."
     ],
@@ -1167,7 +1167,7 @@
     "difficulty": "application",
     "prompt": "For the scores 14, 7, 11, 9, 20, and 10, a student selects 11 as the median because it is the third listed value. Which response best supports accurate reasoning?",
     "choices": [
-      "Keep 11 because the order in which data are recorded determines the median.",
+      "Keep 11, because the order in which the data values happen to be recorded is what determines the median.",
       "Order the scores as 7, 9, 10, 11, 14, 20 and average the two middle values, 10 and 11, to obtain 10.5.",
       "Add all six scores and report the sum as the median.",
       "Choose 20 because the greatest value is always the median."
@@ -1207,7 +1207,7 @@
     "difficulty": "application",
     "prompt": "A student compares two line graphs of reading-fluency scores. Class A's vertical scale runs from 0 to 20, while Class B's runs from 0 to 100. The student says Class A improved more because its line looks steeper. Which response is best?",
     "choices": [
-      "Agree because visual steepness can always be compared directly across graphs with different scales.",
+      "Agree, because visual steepness can always be compared directly across two graphs that happen to have different scales.",
       "Ignore the numerical labels and compare only the angles formed by the lines.",
       "Compute each class's numerical change or redraw both data sets on the same scale before comparing improvement.",
       "Multiply every Class A score by 5 and treat the changed scores as the original data."
@@ -1247,7 +1247,7 @@
     "difficulty": "application",
     "prompt": "A pictograph uses one book symbol to represent 4 books read. One row shows 3 full symbols and a half symbol, but a student reports 3.5 books. Which feedback best addresses the error?",
     "choices": [
-      "Count each full symbol as 1 and ignore the half symbol because partial symbols have no value.",
+      "Count each full symbol as 1 and simply ignore the half symbol, because partial symbols carry no value at all on a pictograph.",
       "Add 4 to 3.5 because the key is used only once for the entire pictograph.",
       "Multiply only the half symbol by 4 and leave the full symbols unscaled.",
       "Apply the key to every symbol: 3 full symbols represent 12 books and the half symbol represents 2, for a total of 14 books."
@@ -1290,7 +1290,7 @@
       "Divide 37 by 10 first and disregard the number of classes and damaged cans.",
       "Add all three numbers because every number in a word problem represents an amount to combine.",
       "Find 4 times 37 = 148 total cans, subtract 28 to get 120 usable cans, and then divide by 10 to get 12 full boxes.",
-      "Subtract 37 from 28 because the word 'removed' means the first number stated must always be subtracted."
+      "Subtract 37 from 28, because the word ‘removed’ means that the first number stated must always be the one subtracted."
     ],
     "answerIndex": 2,
     "rationale": "The quantities' meanings determine the operations. Four equal class collections are combined by multiplication, damaged cans reduce that total by subtraction, and equal boxes are found by division: (4 times 37 - 28) / 10 = 12.",

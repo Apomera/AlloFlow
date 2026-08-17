@@ -10,7 +10,7 @@
       "Making the seed collection visible and easier to use increased student participation in the program.",
       "Herbs are the only plants that students can successfully grow from borrowed seeds.",
       "The librarian removed books from the checkout desk to make room for a seed cabinet.",
-      "Students preferred writing planting cards to checking out materials from the library."
+      "Students clearly preferred writing the planting cards to checking out any materials from the library."
     ],
     "answerIndex": 0,
     "rationale": "The passage links clearer labeling, practical directions, and a visible example with a large increase in seed borrowing, so the first choice captures both the change and its result without adding unsupported details.",
@@ -49,7 +49,7 @@
       "The measurements were taken at noon rather than before school.",
       "The thermometer under the shade recorded a temperature 13 degrees lower than the thermometer in the sun.",
       "Students often sit on the playground benches during recess.",
-      "The custodian used thermometers that were the same size and color."
+      "The custodian used two thermometers that happened to be exactly the same size, the same shape, and the same color."
     ],
     "answerIndex": 1,
     "rationale": "The 13-degree difference between otherwise comparable locations directly measures the effect relevant to heat exposure. The other facts concern timing, use, or appearance without demonstrating a reduction under the shade.",
@@ -88,7 +88,7 @@
       "Elena plans to donate both coats to the school office.",
       "Elena has decided to take a different bus home.",
       "Elena is trying to recover her own coat and return one that was mistakenly left for her.",
-      "Elena is preparing a photography project about clothing labels."
+      "Elena is preparing a photography project about the clothing labels she collected at home."
     ],
     "answerIndex": 2,
     "rationale": "Recording identifying information about her raincoat and bringing a different coat to the office are complementary actions consistent with a coat mix-up. The other choices require intentions or events that the passage does not suggest.",
@@ -241,7 +241,7 @@
     "difficulty": "developing",
     "prompt": "Read the passage. Students noticed that visitors often walked past the small campus history display. They interviewed longtime staff members, recorded short audio stories, and attached a scannable code to each photograph in the display. A survey later showed that visitors stayed longer and recalled more details. Which is the best summary?",
     "choices": [
-      "Visitors were required to complete a survey before entering the campus.",
+      "Visitors were required to complete a written survey form before they were allowed to enter the main campus.",
       "Longtime staff members replaced all photographs in the history display.",
       "Students added oral-history recordings to an overlooked display, increasing visitor engagement and recall.",
       "Scannable codes are too difficult for most campus visitors to use."
@@ -280,7 +280,7 @@
     "difficulty": "developing",
     "prompt": "Read the passage. On the morning of the assembly, Darius arrived early with a roll of colored tape. He marked an X at the front of the stage, then walked to the back row and asked a classmate whether the mark could be seen. After moving it twice, he placed the microphone directly above it. Which inference is best supported?",
     "choices": [
-      "Darius is measuring the stage so that new curtains can be ordered.",
+      "Darius is carefully measuring the stage area so that new curtains can eventually be ordered.",
       "Darius wants the back row to choose the assembly's music.",
       "Darius is hiding a damaged section of the stage with colored tape.",
       "Darius is selecting a visible position for a speaker to stand during the assembly."
@@ -400,7 +400,7 @@
       "All three sentences express judgments that cannot be checked.",
       "Only the sentence about fourteen species is an opinion.",
       "The planting date and camera count are verifiable, while the claim about the finest lunch spot expresses an opinion.",
-      "The word unquestionably turns every sentence in the excerpt into a fact."
+      "The word unquestionably turns every sentence in the newsletter excerpt into a fully verified statement of established fact."
     ],
     "answerIndex": 2,
     "rationale": "Records and camera data can verify when six shrubs were planted and how many species were observed. Calling the habitat the finest lunch spot is an evaluative judgment whose truth depends on preference, even when phrased confidently.",
@@ -478,7 +478,7 @@
       "Nia reserved a kit, presented both documents, inspected the contents with staff, and signed after the inspection.",
       "Owen reserved a kit and signed the form but took the unopened case without presenting identification.",
       "Priya presented identification and inspected a kit alone but had not made a reservation.",
-      "Luis reserved a kit and presented both documents but declined the joint inspection and condition form."
+      "Luis reserved a kit and presented both of the documents but declined the joint inspection and the required condition form."
     ],
     "answerIndex": 0,
     "rationale": "Nia completes every required action in a workable sequence: reservation, document presentation, joint inspection, and signature. Each other student omits at least one explicit requirement, so only Nia fully follows the text.",
@@ -594,7 +594,7 @@
     "choices": [
       "a topic that is fashionable",
       "an event happening at the present time",
-      "a continuous movement of electrical charge",
+      "a continuous movement of electrical charge through a conductor",
       "a steady movement of water in a particular direction"
     ],
     "answerIndex": 3,
@@ -906,7 +906,7 @@
     "choices": [
       "Ask the student to memorize both sentences without examining the target words.",
       "Replace the words with easier ones that begin with different letters.",
-      "Have the student identify only the final sound in each word and then guess the whole word.",
+      "Have the student identify only the final sound in each of the words and then guess at the whole word from the accompanying picture printed on the page.",
       "Model how s and h combine to represent /sh/ and c and h combine to represent /ch/, then guide the student to blend each word and reread it in context."
     ],
     "answerIndex": 3,
@@ -947,7 +947,7 @@
       "Invite students to examine the title and photograph, share what they know about roofs, plants, and heat, and record questions they expect the article to answer.",
       "Read the entire article aloud and state its main idea before students open their copies.",
       "Ask students to copy every unfamiliar word from the article before looking at its title.",
-      "Tell students that predictions are unnecessary because the heading already gives every important detail."
+      "Tell students that predictions are entirely unnecessary here, because the heading itself already gives away every important detail contained in the whole article."
     ],
     "answerIndex": 0,
     "rationale": "Previewing text features, connecting them with relevant knowledge, and generating questions prepares students to read purposefully while leaving the article's explanations and central ideas for students to determine.",
@@ -987,7 +987,7 @@
       "How many paragraphs and commas are on this page?",
       "How did the failed first expedition affect the subject's planning for the second expedition, and which details support your answer?",
       "What is the longest word in the account of the second expedition?",
-      "Can you repeat the final sentence exactly without referring to earlier events?"
+      "Can you repeat the final sentence of the biography exactly, without referring back to any of the earlier events described in the text?"
     ],
     "answerIndex": 1,
     "rationale": "The second question directs the student to connect events across the text and support a causal interpretation with evidence, moving beyond isolated recall while keeping the reasoning with the student.",
@@ -1027,7 +1027,7 @@
       "The student seemed to like the passage's illustration.",
       "The passage contained more than one paragraph.",
       "Across several words, the student omitted or altered inflectional endings while usually preserving the base word.",
-      "The student should be described simply as a poor reader without examples."
+      "The student should be described simply as a poor reader, without any specific examples drawn from the new passage."
     ],
     "answerIndex": 2,
     "rationale": "The three examples reveal a consistent, instructionally relevant pattern involving endings such as -ed and -ing. Recording the pattern and examples gives the teacher actionable evidence without assigning a broad label.",
@@ -1066,7 +1066,7 @@
     "choices": [
       "Choose the first page because every word beginning har appears there.",
       "Search under n because harness contains two n's.",
-      "Use the page containing harvest because harness comes after every word beginning harm.",
+      "Use the page containing harvest, because harness must always come after every single word that begins with the letters h-a-r-m in order.",
       "Compare harness with the guide words letter by letter; because it falls after harmony but before harvest, search the second page."
     ],
     "answerIndex": 3,
@@ -1105,7 +1105,7 @@
     "prompt": "A student labels the sentence \"The fundraiser collected $2,400, proving it was the school's best event\" entirely as fact because it contains a number. Which teacher-directed response would best correct the misconception?",
     "choices": [
       "Have the student verify the dollar amount in a record, then discuss why best remains a judgment unless a measurable criterion is defined and compared.",
-      "Tell the student that any sentence containing a number must be accepted as wholly factual.",
+      "Tell the student that any sentence containing a specific number must always be accepted as wholly factual regardless of the rest of its actual wording.",
       "Ask the student to replace $2,400 with the word many and keep the same label.",
       "Explain that fundraising records are opinions because people write them."
     ],
@@ -1147,7 +1147,7 @@
       "Ask the student to label custodian as the subject and unlocked as the verb without analyzing the order of events.",
       "Ask the student to rewrite the sentence as “The custodian unlocked the west doors after the alarm ended” and identify the first event.",
       "Ask whether the west doors were open after the alarm without deciding whether that was before or after it ended.",
-      "Have the student copy the sentence and circle the words associated with the alarm without restating the event order."
+      "Have the student copy out the sentence and circle all of the words associated with the alarm, without ever restating the order of events."
     ],
     "answerIndex": 1,
     "rationale": "Recasting the inverted construction into ordinary subject-verb order while preserving the temporal phrase makes the relationship explicit. Naming the first event then verifies that the student understands the doors were unlocked after the alarm ended.",
@@ -1185,7 +1185,7 @@
     "prompt": "A student reads, \"The crew raised the sail before leaving the harbor,\" and says sail means a special sale at a store because the words sound alike. Which response would best help the student use context to distinguish the homophones?",
     "choices": [
       "Tell the student that sale and sail are interchangeable because they sound alike.",
-      "Ask the student to choose sale because it appears more often in everyday advertisements.",
+      "Ask the student to choose the homophone sale instead, because that spelling appears far more often in everyday advertisements and printed store signs than the nautical meaning does in ordinary classroom reading.",
       "Compare the meaning of sale in a sentence about selling goods with the meaning of sail as material that catches wind to move a boat, then use crew, raised, and harbor to confirm the intended meaning.",
       "Replace the entire sentence so the student does not need to examine the target word."
     ],
@@ -1225,7 +1225,7 @@
     "prompt": "A student is using a print dictionary to find the word conserve but repeatedly stops at concert. Which support should the paraprofessional provide first?",
     "choices": [
       "Turn directly to conserve, point to its definition, and close the dictionary.",
-      "Tell the student that words sharing the first three letters appear on the same page.",
+      "Tell the student that any words sharing their first three letters will always appear together on the same dictionary page, so the search can safely stop at the entry for concert instead.",
       "Ask the student to search under the final letter e rather than the initial letter c.",
       "Have the student compare the words letter by letter through con, notice that c in concert comes before s in conserve at the first differing letter, and continue forward from concert."
     ],
@@ -1267,7 +1267,7 @@
       "Ask the student to number the four actions, point to each one while performing it, and pause after press tare to verify the display reads zero before adding the sample.",
       "Remove the directions and complete all measurements while the student watches silently.",
       "Tell the student to perform the steps in any order because each verb is equally important.",
-      "Have the student copy the instruction five times after the laboratory period ends without practicing it."
+      "Have the student copy the written instruction five times after the laboratory period has ended, without ever practicing the step in the actual laboratory activity itself."
     ],
     "answerIndex": 0,
     "rationale": "Chunking and numbering the procedural sentence, pairing each clause with its action, and checking the critical intermediate result directly support accurate reading and execution of the ordered directions.",
@@ -1304,7 +1304,7 @@
     "difficulty": "advanced",
     "prompt": "A student reads a passage stating that cafeteria food waste decreased after a share table opened, but the accompanying bar graph shows that the decrease began one month earlier. Which teacher-directed prompt would best help the student integrate the sources critically?",
     "choices": [
-      "Ignore the graph because prose always provides stronger evidence than a visual.",
+      "Ignore the accompanying graph entirely, because prose explanations always provide stronger and more reliable evidence than any visual display of the same information can offer to a reader.",
       "Ask when the graph shows the decline began, compare that date with the table's opening date in the passage, and revise any claim that the share table alone caused the entire decline.",
       "Have the student copy the graph title without examining its dates or bars.",
       "Tell the student that two sources included on the same page cannot disagree."

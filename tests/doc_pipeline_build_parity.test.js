@@ -9,7 +9,10 @@ import { describe, expect, it } from 'vitest';
 const ROOT = resolve(process.cwd());
 
 describe('document pipeline generated artifacts', function () {
-  it('match a fresh source build byte for byte in both shipping locations', function () {
+  // 120s, not the 5s default: this test runs the REAL builder, which takes
+  // ~28s cold (and more under a loaded machine). The missing per-test timeout
+  // kept this file red since it was written (X8, 2026-08-17).
+  it('match a fresh source build byte for byte in both shipping locations', { timeout: 120000 }, function () {
     const scratch = mkdtempSync(join(tmpdir(), 'alloflow-doc-pipeline-build-'));
     try {
       mkdirSync(join(scratch, 'desktop', 'web-app', 'public'), { recursive: true });

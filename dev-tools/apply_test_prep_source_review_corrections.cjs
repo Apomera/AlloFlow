@@ -20,6 +20,40 @@ function choiceFeedback(choices,answerIndex,rationale,notes){
 }
 
 const localPatches={
+  parapro:{
+    // writing-skills-001 and -023 both test the same rule: a prepositional
+    // phrase between subject and verb does not change the subject's number.
+    // Their prompts differ by one word ("uses correct" / "has correct"), so a
+    // learner meets the same teaching point twice. Confirmed by
+    // dev-tools/scan_semantic_duplicates.cjs. -001 stays as the canonical
+    // prepositional-phrase item; -023 is re-aimed at the proximity rule for
+    // correlative conjunctions, a distinct agreement principle in the same
+    // skill. Answer position is unchanged at index 3.
+    //
+    // Editing a source item breaks that pack's group-review binding by design.
+    // Renew it with:
+    //   node dev-tools/freeze_non_eppp_group_review_artifact_bindings.cjs \
+    //     --confirm-current-independent-review
+    // and the edit stays enumerable for a future human expert through
+    // dev-tools/track_post_review_source_drift.cjs.
+    'parapro-writing-skills-023':{
+      prompt:'Which sentence correctly matches the verb to its subject when the subjects are joined by a conjunction?',
+      choices:[
+        'Neither the coaches nor the captain plan to attend the assembly.',
+        'The teacher and the aide prepares the materials each morning.',
+        'Either the students or the teacher are leading the discussion.',
+        'Neither the posters nor the banner was ready before the assembly.',
+      ],
+      answerIndex:3,
+      rationale:'When subjects are joined by the correlative conjunctions neither/nor or either/or, the verb agrees with whichever subject is nearer to it. In the correct sentence the nearer subject "banner" is singular, so the singular verb "was" is required. A compound subject joined by "and" is a separate rule and takes a plural verb.',
+      notes:[
+        'With neither/nor the verb agrees with the nearer subject, and "captain" is singular, so "plans" is required.',
+        'Two subjects joined by "and" form a plural compound subject, so "prepare" is required rather than "prepares".',
+        'With either/or the verb agrees with the nearer subject, and "teacher" is singular, so "is leading" is required.',
+        '',
+      ],
+    },
+  },
   praxis_core_5752:{
     'core5752-b2-071':{
       prompt:'A printer uses 3 liters of ink for 2 production runs. At the same rate, how many liters of ink are used for 5 runs?',

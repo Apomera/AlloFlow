@@ -30,8 +30,10 @@ describe('Misc Panels dialog accessibility', () => {
 
   it('awaits both potentially destructive granularity decisions', () => {
     expect(source.match(/await requestDiffConfirmation\(/g)).toHaveLength(2);
-    expect(source).toContain("cancelLabel: 'Keep current view'");
-    expect(source).toContain("cancelLabel: 'Keep rejections'");
+    // Localised, but each destructive confirm must still offer a non-destructive
+    // way out — assert the key and its English fallback.
+    expect(source).toContain("cancelLabel: dvText('confirm_chars_cancel', 'Keep current view')");
+    expect(source).toContain("cancelLabel: dvText('confirm_reset_cancel', 'Keep rejections')");
   });
 
   it('focus-manages the Group Session dialog', () => {
@@ -45,18 +47,33 @@ describe('Misc Panels dialog accessibility', () => {
     expect(source).toContain('const moveResourceBy = async (resId, delta)');
     expect(source).toContain('onClick={() => moveResourceBy(res.id, -1)}');
     expect(source).toContain('onClick={() => moveResourceBy(res.id, 1)}');
-    expect(source).toContain("aria-label={`Move ${res.title || 'resource'} earlier`}");
-    expect(source).toContain("aria-label={`Move ${res.title || 'resource'} later`}");
+    // Localised, but the accessible name must still name the resource being
+    // moved — assert the key, its English fallback, and the {title} slot.
+    expect(source).toContain("gsText('move_earlier_aria', 'Move {title} earlier'");
+    expect(source).toContain("gsText('move_later_aria', 'Move {title} later'");
+    expect(source).toContain("res.title || gsText('untitled_resource', 'resource')");
   });
   it('provides button alternatives for 3D rotation and zoom gestures', () => {
-    for (const label of ['Rotate volume left', 'Rotate volume right', 'Tilt volume up', 'Tilt volume down']) {
-      expect(source).toContain(`aria-label="${label}"`);
+    // These labels are localised. Assert the key AND its English fallback:
+    // the accessible name must survive when no language pack is loaded, which
+    // is exactly what the `|| '…'` arm guarantees.
+    for (const [key, label] of [
+      ['rotate_left_aria', 'Rotate volume left'],
+      ['rotate_right_aria', 'Rotate volume right'],
+      ['tilt_up_aria', 'Tilt volume up'],
+      ['tilt_down_aria', 'Tilt volume down'],
+    ]) {
+      expect(source).toContain(`t('volume_builder.${key}') || '${label}'`);
     }
     expect(source).toContain("t('volume_builder.zoom_in_aria') || 'Zoom in'");
     expect(source).toContain("t('volume_builder.zoom_out_aria') || 'Zoom out'");
-    expect(source).toContain('role="group" aria-label="Rotate 3D volume"');
+    expect(source).toContain(`role="group" aria-label={t('volume_builder.rotate_group_aria') || 'Rotate 3D volume'}`);
     expect(source).toContain('role="img"');
-    expect(source).toContain('aria-live="polite">Tilt {Math.round(cubeRotation.x)} degrees');
+    // The orientation read-out stays aria-live and still reports all three
+    // axes — as ONE interpolated sentence rather than three concatenated
+    // fragments, which is what makes it translatable.
+    expect(source).toContain(`aria-live="polite">{vbText('orientation_status'`);
+    expect(source).toContain('Tilt {tilt} degrees, turn {turn} degrees, zoom {zoom} percent');
   });
   it('focus-manages and announces Tour Overlay steps', () => {
     expect(source).toContain('ref={tourDialogRef}');

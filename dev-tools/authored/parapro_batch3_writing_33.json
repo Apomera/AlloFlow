@@ -87,7 +87,7 @@
     "difficulty": "developing",
     "prompt": "The clause \"which won the recycling contest\" is nonessential in the sentence \"Ms. Patel's class which won the recycling contest will lead the assembly.\" Which punctuation change is correct?",
     "choices": [
-      "Place a comma only after \"contest.\"",
+      "Place a single comma only after the word \"contest\" in the sentence.",
       "Place a comma only after \"class.\"",
       "Place a comma only after \"lead.\"",
       "Place one comma after \"class\" and a second comma after \"contest.\""
@@ -289,7 +289,7 @@
     "choices": [
       "The alarm although ringing before sunrise.",
       "Although the alarm rang before sunrise, the volunteers reached the site by seven.",
-      "Although the alarm rang. Before sunrise the volunteers arrived.",
+      "Although the alarm rang. Before sunrise the tired volunteers had all already arrived.",
       "The volunteers reaching the site, although before sunrise."
     ],
     "answerIndex": 1,
@@ -736,7 +736,7 @@
       "A student survey reports that partner reading is the most enjoyable part of the literacy block for most classmates.",
       "A library inventory shows that the classroom offers six shelves containing both fiction and nonfiction titles.",
       "Comparable one-minute checks increased from 104 to 118 correct words per minute after six weeks while the fluency routine otherwise remained unchanged.",
-      "A teacher log confirms that daily partner reading occurred for six weeks but includes no measurements of fluency or reading rate."
+      "A teacher log confirms that daily partner reading occurred for six full weeks but includes no measurements at all of fluency, accuracy, or reading rate."
     ],
     "answerIndex": 2,
     "rationale": "The comparable checks document a class-level increase in the stated fluency measure, and the unchanged remainder of the routine makes the partner-reading explanation more plausible. The evidence supports the claim without proving that no other influence contributed.",
@@ -776,7 +776,7 @@
     "choices": [
       "Nguyen's 2024 report explains that established native plants generally require less irrigation, a benefit that could lower the garden's water use.",
       "Native plants need less water, and everyone already knows this important fact about gardens.",
-      "The source says, native plants generally need less irrigation after they are established, which proves the plan is perfect.",
+      "The source says, native plants generally need less irrigation after they are established, which proves the entire irrigation plan is absolutely perfect.",
       "In 2024 there was a report, and gardens have plants that can be native and established."
     ],
     "answerIndex": 0,
@@ -858,7 +858,7 @@
     "choices": [
       "School buses come in several sizes and are usually painted yellow.",
       "Together, the survey and route analysis support piloting the adjustment to reduce long waits without increasing the fleet.",
-      "Some students enjoy waiting with friends, while other students have different morning routines.",
+      "Some students enjoy waiting with their friends, while many other students simply have quite different morning routines at home.",
       "The transportation office should immediately change every route in the district."
     ],
     "answerIndex": 1,
@@ -900,7 +900,7 @@
       "Correct the spelling in the event list before the student plans the narrative.",
       "Choose the most dramatic event and write the opening paragraph for the student.",
       "Have the student arrange each event on a separate card, orally retell the sequence, and then choose an opening.",
-      "Ask the student to replace the narrative topic with one that requires fewer events."
+      "Ask the student to replace the narrative topic entirely with a different one that requires far fewer events overall."
     ],
     "answerIndex": 2,
     "rationale": "Sequencing movable event cards and rehearsing the story aloud directly address the student's planning difficulty. The student still makes the organizational and wording decisions, preserving ownership.",
@@ -940,7 +940,7 @@
     "choices": [
       "Reduce every writing assignment to a single copied sentence.",
       "Have a classmate decide which of the student's ideas should appear in the draft.",
-      "Ask the student to submit only an oral response and skip the writing process entirely.",
+      "Ask the student to submit only an oral response and skip the entire writing process altogether this time.",
       "Provide speech-to-text for drafting, then have the student review and revise the generated text."
     ],
     "answerIndex": 3,
@@ -982,7 +982,7 @@
       "Color-code each claim and its evidence, then add a sentence answering, \"Why does this evidence make the claim more likely?\"",
       "Replace each data value with a general word so the explanation sounds less technical.",
       "Copy the strongest claim three times at the end of the explanation for emphasis.",
-      "Correct all capitalization before discussing the relationship between claims and evidence."
+      "Correct all of the capitalization errors first, before discussing any relationship between the claims and the supporting evidence."
     ],
     "answerIndex": 0,
     "rationale": "The color coding makes existing claim-evidence pairs visible, and the focused question prompts the student to supply the missing logical connection. It targets reasoning without replacing the student's explanation.",
@@ -1023,7 +1023,7 @@
       "Assign the student the same topic and thesis used by the nearest classmate.",
       "Invite the student to list familiar processes, identify a likely audience for each, and choose one process to explain.",
       "Begin correcting sentence mechanics even though the student has not produced a draft.",
-      "Write an introduction for the student and require the student to copy it before continuing."
+      "Write a complete introduction for the student and then require the student to copy it out word for word before continuing."
     ],
     "answerIndex": 1,
     "rationale": "Connecting familiar knowledge to a real audience narrows the broad task and gives the student meaningful choices. This scaffolds idea generation while leaving topic selection and composition with the learner.",
@@ -1064,7 +1064,7 @@
       "Keep the blog figures because the page appeared first in the search results.",
       "Replace the figures with estimates so no source information is needed.",
       "Locate official census tables for both years, verify that the categories are comparable, and record the source information.",
-      "Use a recent social-media post that gives population figures but does not identify where they came from."
+      "Use a recent social-media post that gives population figures but does not identify where any of them originally came from at all."
     ],
     "answerIndex": 2,
     "rationale": "Official census tables are authoritative sources for population data. Checking that the years use comparable categories prevents a misleading comparison, and recording source information supports accurate attribution.",
@@ -1103,7 +1103,7 @@
     "difficulty": "applied",
     "prompt": "A student repeatedly writes fragments such as \"Because the temperature dropped overnight.\" Which support is most likely to build the student's ability to correct this pattern independently?",
     "choices": [
-      "Delete every sentence that begins with \"because\" from the student's draft.",
+      "Delete every sentence that begins with the word \"because\" from the draft before returning the draft to the student for later revision.",
       "Tell the student that fragments are wrong without examining an example.",
       "Supply a fully corrected draft and ask the student to copy it neatly.",
       "Compare an example and nonexample, then have the student attach each \"because\" clause to a complete thought and explain the change."
@@ -1147,7 +1147,7 @@
       "Ask the student to define or replace the technical terms, add a familiar example, and keep the explanation scientifically accurate.",
       "Add several more technical terms so the label sounds more advanced.",
       "Remove the explanation of erosion and replace it with an unrelated joke.",
-      "Copy a paragraph from a college geology text without adapting or citing it."
+      "Copy an entire paragraph directly from a college geology textbook without adapting the vocabulary or citing the original source at all."
     ],
     "answerIndex": 0,
     "rationale": "Young visitors need accessible language and concrete examples, but audience adaptation should preserve accurate content. The first guidance helps the student make deliberate language choices rather than removing the science or substituting someone else's writing.",
@@ -1185,7 +1185,7 @@
     "difficulty": "applied",
     "prompt": "A student is asked to write a persuasive letter to the city council supporting or opposing a proposed crosswalk. The draft only narrates one walk to school. Which guidance best helps the student match the required form and purpose?",
     "choices": [
-      "Add more events in chronological order without stating a position on the crosswalk.",
+      "Add still more events in strict chronological order without ever stating a clear position on the proposed crosswalk project.",
       "Turn the account into a dialogue-only scene and omit any request to the council.",
       "State a position, organize relevant reasons and evidence, and close the letter with a specific request to the council.",
       "Replace each sentence with a list of words that rhyme with \"street.\""
@@ -1229,7 +1229,7 @@
       "Replace the comparison task with copying vocabulary words alphabetically.",
       "Let the student rehearse with a comparison frame and a relevant word bank, then select and adapt the language for the paragraph.",
       "Write the complete English paragraph while the student watches silently.",
-      "Require the student to draft without discussion, models, or language resources."
+      "Require the student to draft the paragraph alone without any discussion, written models, or first-language resources available for support."
     ],
     "answerIndex": 1,
     "rationale": "Oral rehearsal, a flexible frame, and a focused word bank reduce the language-production barrier while requiring the learner to choose and adapt the final wording. The scaffold supports rather than replaces composition.",
@@ -1269,7 +1269,7 @@
     "choices": [
       "Allow the fastest student to finish alone so the group can submit early.",
       "Dictate a complete argument and assign each student one sentence to copy.",
-      "Ask the quiet students to decorate the page while the first student continues writing.",
+      "Ask the three quieter students to decorate the page borders while the first student simply continues writing all of the group’s remaining ideas.",
       "Use a turn-taking structure in which each student proposes evidence and explains its relevance before the group selects and organizes ideas."
     ],
     "answerIndex": 3,

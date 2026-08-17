@@ -1,7 +1,7 @@
 (function() {
 'use strict';
   // WCAG 2.1 AA: respect prefers-reduced-motion + keep slate-600 AA contrast
-  if (!document.getElementById("large-file-module-a11y")) { var _s = document.createElement("style"); _s.id = "large-file-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; }"; document.head.appendChild(_s); }
+  if (!document.getElementById("large-file-module-a11y")) { var _s = document.createElement("style"); _s.id = "large-file-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }"; document.head.appendChild(_s); }
 if (window.AlloModules && window.AlloModules.LargeFileModule) { console.log('[CDN] LargeFileModule already loaded, skipping'); return; }
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 var React = window.React || React;

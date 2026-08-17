@@ -892,7 +892,7 @@
       "Have the student correct the spelling on every note card before considering the paragraph plan.",
       "Shuffle the notes randomly and draft them in whatever order they appear.",
       "Have the student group notes by distinct reason, label evidence and explanation within each group, and turn the groups into an outline.",
-      "Write the introduction and conclusion for the student so the remaining notes will fit between them."
+      "Write both the introduction and the conclusion for the student so that all of the remaining notes will simply fit in between the two of them."
     ],
     "answerIndex": 2,
     "rationale": "Grouping notes by reason reveals repetition and relevance before drafting. Labeling evidence and explanation and then building an outline gives the student a usable structure while preserving responsibility for the writing.",
@@ -932,7 +932,7 @@
     "choices": [
       "Tell the student to select the longest word because longer words are always more precise.",
       "Have the student use the first thesaurus entry without checking whether it fits the sentence.",
-      "Choose a replacement word for the student and rewrite the sentence without explaining the decision.",
+      "Choose a replacement word for the student and then rewrite the entire sentence without ever explaining the reasoning behind that particular decision.",
       "Have the student list several thesaurus candidates, compare their definitions and usage in a dictionary, and reread each substitution in context."
     ],
     "answerIndex": 3,
@@ -974,7 +974,7 @@
       "Examine a brief model with the student, identify its greeting, specific expression of thanks, relevant visit detail, and closing, and have the student plan an original letter with those elements.",
       "Convert the bullet list into a finished letter for the student to copy word for word.",
       "Have the student copy a thank-you letter from the Internet and change only the guide's name.",
-      "Ask the student to add more museum facts to the bullet list without addressing the letter's audience or purpose."
+      "Ask the student to add still more museum facts to the existing bullet list, without ever addressing the letter’s intended audience, its overall purpose, or the form the finished writing should take."
     ],
     "answerIndex": 0,
     "rationale": "Analyzing a model makes the form's purpose and structural features visible. Planning an original response from those features supports transfer while keeping the student's ideas and language central.",
@@ -1012,7 +1012,7 @@
     "difficulty": "applied",
     "prompt": "A student's paragraph about an event in 1963 shifts repeatedly between present and past tense. Which teacher-directed support is most likely to help the student edit the paragraph independently?",
     "choices": [
-      "Tell the student to change every verb to future tense, regardless of the paragraph's time frame.",
+      "Tell the student to change every single verb in the paragraph to the future tense, regardless of the time frame that the surrounding sentences clearly establish for the reader of the passage.",
       "Have the student mark the time-setting words and verbs, model revising one shift to the appropriate past tense, and then have the student explain and revise the remaining shifts.",
       "Rewrite every verb for the student and ask the student to copy the corrected paragraph.",
       "Have the student replace all verbs with nouns so tense will no longer be an issue."
@@ -1056,7 +1056,7 @@
       "Tell the student to place an apostrophe before every final s in the draft.",
       "Erase every plural noun so the student will not need to make possession decisions.",
       "Sort examples by one owner and multiple owners, use the question \"Who owns it?\" to place apostrophes, and have the student apply the test to the draft.",
-      "Insert all apostrophes for the student without discussing how meaning determines their placement."
+      "Insert all of the apostrophes for the student without ever discussing how the intended meaning determines where each one of them should actually belong."
     ],
     "answerIndex": 2,
     "rationale": "Apostrophe placement depends on both possession and whether the owner is singular or plural. Sorting examples by meaning and applying a consistent ownership question teaches the decision the student has been skipping.",
@@ -1095,7 +1095,7 @@
     "prompt": "A student's instructional plan specifies screen magnification and an accessible digital template for written assignments because of low vision. Which paraeducator action best supports access and student authorship?",
     "choices": [
       "Replace the assignment with an adult-written response because visual access may take extra time.",
-      "Require the student to use the standard small-print worksheet before trying any approved support.",
+      "Require the student to use the standard small-print worksheet first, before being allowed to try any of the approved accessibility supports listed in the student plan.",
       "Read the prompt aloud and then decide what the student should write in each section.",
       "Open the accessible template, confirm that magnification and navigation work, let the student compose and revise, and report any access barrier to the teacher."
     ],
@@ -1136,7 +1136,7 @@
     "prompt": "A student has completed a factual report on cafeteria waste and must turn it into a persuasive speech asking classmates to reduce waste. Which guidance best addresses the change in mode, audience, and purpose?",
     "choices": [
       "Have the student state a clear position, select two strong findings from the report, explain why they matter to classmates, and end with a feasible call to action.",
-      "Have the student read the entire report word for word, including every citation and table entry.",
+      "Have the student read the entire report aloud word for word, including every citation, footnote, and table entry, before making any revision at all to the full draft.",
       "Remove all evidence so the speech consists only of the statement \"Waste is bad.\"",
       "Write the persuasive speech for the student and ask the student only to deliver it."
     ],
@@ -1179,7 +1179,7 @@
       "Tell the student to accept both suggestions because all peer comments must be used.",
       "Have the student compare each suggestion with the assignment's purpose and rubric, identify what the draft currently lacks, and choose the revision that best addresses that need.",
       "Choose one suggestion at random so the student can finish quickly.",
-      "Reject both comments and replace the draft with a paragraph written by the paraeducator."
+      "Reject both of the peer comments outright and replace the student’s entire draft with a fully corrected paragraph written by the paraeducator rather than by the student who originally produced it."
     ],
     "answerIndex": 1,
     "rationale": "Peer feedback is advice rather than a command. Evaluating each suggestion against the writing goal, rubric, and current draft teaches the student to make evidence-based revision choices and retain ownership.",
@@ -1220,7 +1220,7 @@
       "Have the student replace every source word with the first synonym listed in a thesaurus.",
       "Tell the student to omit the citation because several words have changed.",
       "Have the student close the source, explain the idea from brief notes in a new sentence structure, compare the result with the original for accuracy and independence, and cite the source.",
-      "Encourage the student to copy a longer passage so the context will make the borrowed wording acceptable."
+      "Encourage the student to copy an even longer passage from the source, on the theory that the additional surrounding context will make the borrowed wording acceptable without any citation at all."
     ],
     "answerIndex": 2,
     "rationale": "A genuine paraphrase restates the source's meaning through the writer's own wording and structure while still crediting the source. Drafting from notes before comparing reduces dependence on the original syntax.",
@@ -1259,7 +1259,7 @@
     "prompt": "A student understands the essay prompt but becomes overwhelmed by planning, drafting, revising, and editing the entire assignment at once. Which support best promotes completion and increasing independence?",
     "choices": [
       "Complete every stage for the student and ask only for a signature on the final copy.",
-      "Tell the student to work until the whole essay is finished without checking the assignment directions again.",
+      "Tell the student to keep working straight through until the whole essay is finished, without ever stopping to check the assignment directions or the posted scoring guide again at any point.",
       "Remove revising and editing from the assignment without consulting the teacher.",
       "Use the teacher's rubric to divide the task into visible, dated checkpoints, have the student select the next step and mark progress, and gradually reduce reminders as routines develop."
     ],
@@ -1300,7 +1300,7 @@
     "prompt": "A teacher asks a paraeducator to monitor whether a student is independently reducing run-on sentences in weekly writing. Which data-collection method would provide the most useful evidence?",
     "choices": [
       "Record whether each weekly topic seems interesting to the paraeducator.",
-      "Count the total words in one heavily prompted paragraph and assume more words mean better sentence boundaries.",
+      "Count the total number of words in one heavily prompted paragraph and assume that a greater number of words always means much better control of the sentence boundaries.",
       "Save only the student's neatest final copy and omit information about the support provided.",
       "Use comparable unprompted writing samples to record correct sentence boundaries out of total opportunities and separately note the type and amount of prompting needed."
     ],

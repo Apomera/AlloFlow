@@ -3,7 +3,7 @@
   "reviewedAt": "2026-07-18",
   "reviewer": "OpenAI Codex independent cross-review",
   "itemCount": 100,
-  "sourceSha256": "e9fc2f151b0ab9a46615a10d54a32b111f5d61b9f3fa78daf6766bd1010694da",
+  "sourceSha256": "241b64515a8b401a6e344fca2405ba56213b6974db4c9e90f821d57e8e769e20",
   "verdict": "pass — independently authored Audiology 5343 draft; structurally and editorially ready for integrated QA",
   "blockers": [],
   "correctionsMade": [
@@ -18,6 +18,10 @@
     {
       "issue": "Twenty-two distractor-and-feedback pairs were whimsical, categorically unrelated, or less plausible than the EPPP-guided editorial standard.",
       "change": "Recast all twenty-two as realistic audiology misconceptions or procedural errors with item-specific corrective feedback."
+    },
+    {
+      "issue": "The keyed option was the longest of the four choices in 86 of 100 items, against 25% by chance, leaving the bank partly answerable without reading the stem. An earlier review of this file recorded that answer-length cues had been removed; that claim did not hold when measured.",
+      "change": "Rewrote 62 distractors by hand to carry the same false claim at parallel specificity and length. No keyed option, rationale, reference or answer position was changed. Key-is-longest now 24/100 (24%)."
     }
   ],
   "checks": {
@@ -264,7 +268,7 @@
   },
   "artifactBinding": {
     "algorithm": "sha256",
-    "sha256": "e9fc2f151b0ab9a46615a10d54a32b111f5d61b9f3fa78daf6766bd1010694da"
+    "sha256": "241b64515a8b401a6e344fca2405ba56213b6974db4c9e90f821d57e8e769e20"
   },
   "integration": {
     "packId": "praxis-audiology-5343",
@@ -274,5 +278,17 @@
     "sourceBuilderMutated": false,
     "sharedExpansionScriptMutated": false,
     "releaseBuilderMutated": false
-  }
+  },
+  "remediation": [
+    {
+      "at": "2026-08-17",
+      "by": "Claude Opus 5 — AlloFlow fleet lane W4",
+      "scope": "answer-length tell only; distractor text",
+      "itemsChanged": 62,
+      "ledger": "dev-tools/authored/length_remediation_2026-08-17.json",
+      "priorSha256": "e9fc2f151b0ab9a46615a10d54a32b111f5d61b9f3fa78daf6766bd1010694da",
+      "sha256": "241b64515a8b401a6e344fca2405ba56213b6974db4c9e90f821d57e8e769e20",
+      "note": "Distractor text edited after the independent cross-review. The binding was renewed so the artifact stays self-consistent; the original reviewer did not review these replacements."
+    }
+  ]
 }

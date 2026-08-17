@@ -428,13 +428,21 @@ function HeaderBar(props) {
       : isTeacherMode
         ? (t('roles.teacher') || 'Teacher')
         : (t('roles.student') || 'Student');
+  // X7 (2026-08-17): dashboard.title reads "Teacher Grading Dashboard" — wrong
+  // words for a parent, who deliberately CAN reach this dashboard (the header
+  // lets all modes in). Wording only; which dashboard renders is unchanged
+  // (switching a parent to the student dashboard is an unverified behavior
+  // change — W3's call, left alone).
+  const dashboardNavLabel = isParentMode
+    ? (t('dashboard.title_parent') || 'Family Dashboard')
+    : (t('dashboard.title') || 'Dashboard');
   const compactViewFallback = String(activeView || '')
     .replace(/[-_]+/g, ' ')
     .replace(/\b\w/g, char => char.toUpperCase());
   const compactContextLabel = guidedMode
     ? (t('launch_pad.guided_title') || 'Guided Mode')
     : activeView === 'dashboard'
-      ? (t('dashboard.title') || 'Dashboard')
+      ? dashboardNavLabel
       : activeView === 'input'
         ? (t('tools.source') || 'Source Material')
         : (compactViewFallback || (t('common.ready') || 'Ready'));
@@ -546,11 +554,11 @@ function HeaderBar(props) {
                     onClick={handleSetActiveViewToDashboard}
                     data-help-key="header_dashboard"
                     className={`hidden sm:inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-3 transition-colors ${activeView === 'dashboard' ? 'bg-white text-indigo-900 shadow-lg' : 'text-white/85 hover:bg-white/10 hover:text-white'}`}
-                    title={t('dashboard.title')}
-                    aria-label={t('dashboard.title')}
+                    title={dashboardNavLabel}
+                    aria-label={dashboardNavLabel}
                   >
                     <Layout size={18} aria-hidden="true" />
-                    <span className="hidden 2xl:inline text-xs font-bold">{t('dashboard.title')}</span>
+                    <span className="hidden 2xl:inline text-xs font-bold">{dashboardNavLabel}</span>
                   </button>
                   {/* NOT gated on isTeacherMode. The Learning Hub IS the learner
                       surface, and the LaunchPad "Learning Tools" card drops the user
@@ -1089,8 +1097,8 @@ function HeaderBar(props) {
                                   onClick={handleSetActiveViewToDashboard}
                                   data-help-key="header_dashboard"
                                   className={`p-2 rounded-xl transition-all flex items-center gap-2 ${activeView === 'dashboard' ? 'bg-white text-indigo-900 shadow-lg' : 'hover:bg-white/10 text-white/80 hover:text-white'}`}
-                                  title={t('dashboard.title')}
-                                  aria-label={t('dashboard.title')}
+                                  title={dashboardNavLabel}
+                                  aria-label={dashboardNavLabel}
                                 >
                                   <Layout size={20} />
                                 </button>

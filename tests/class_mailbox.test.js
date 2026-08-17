@@ -765,7 +765,10 @@ describe('ANTI wiring pins', () => {
         // the Share & Collect dialog (ANTI, @afc130a59) and its rating controls
         // were simplified to defaults; these pins follow the surface that
         // actually ships rather than the one that was removed.
-        expect(anti).toContain('<option value="rating">Rating scale (not scored)</option>');
+        // Re-anchored 2026-08-17 (X8): the option label was extracted to
+        // t('share_collect.type_rating') during the wave-2 i18n sweep; the
+        // rating option itself is what this pin guards.
+        expect(anti).toContain('<option value="rating">{t(\'share_collect.type_rating\') || \'Rating scale (not scored)\'}</option>');
         expect(anti).toContain('const ratingMin = Math.max(1, Math.min(9,');
         expect(anti).toContain('const ratingMax = Math.max(ratingMin + 1, Math.min(10,');
     });

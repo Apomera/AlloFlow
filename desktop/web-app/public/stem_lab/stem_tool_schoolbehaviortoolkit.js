@@ -73,7 +73,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
     {
       tier: 3,
       name: 'Tier 3 — Intensive',
-      icon: '🔴', color: '#ef4444',
+      icon: '🔴', color: '#f87171',
       who: 'Students whose behavior poses safety concerns, or who have not responded to Tier 1 + Tier 2, or who have specific intensive needs (autism, severe trauma, complex disability).',
       percent: '~5% of students need Tier 3 individualized supports.',
       examples: 'Full functional behavior assessment (FBA) by a trained BCBA or school psych. Individualized BIP with replacement behavior, environmental modifications, reinforcement plan, crisis plan. Wraparound team meetings (school + family + outside providers). 1-on-1 paraprofessional support when justified. Therapeutic services (counseling, OT, SLP integration). Sometimes specialized placement.',
@@ -98,7 +98,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
     {
       function: 'Escape / Avoidance',
       functionAbbrev: 'ESC',
-      icon: '🚪', color: '#ef4444',
+      icon: '🚪', color: '#f87171',
       problemEx: 'Work refusal, ripping the worksheet, eloping from the classroom, aggression to end the demand',
       replacement: 'Break-request: a single break card the student can hand to the teacher (or tap on the desk, or use AAC) for a known-duration break in a known location. Plus a "need help" signal that pulls a teacher over instead of removing the demand.',
       teaching: 'Pre-teach when the student is calm. Practice handing the card. Honor it the first 50+ times no matter what — even if the student "abuses" it. Frequency naturally drops as the student trusts the system. Then layer in expectations (finish 3 problems, then break) once the trust is established.',
@@ -116,7 +116,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
     {
       function: 'Sensory / Automatic',
       functionAbbrev: 'AUT',
-      icon: '🪀', color: '#8b5cf6',
+      icon: '🪀', color: '#a78bfa',
       problemEx: 'Hand-flapping, vocal stimming, chewing on shirt collar, head-banging (when self-injurious)',
       replacement: 'MATCH THE SENSORY MODALITY. Oral input → gum, chewy necklace, crunchy snack. Proprioceptive → weighted lap pad, wall push-ups, heavy work. Tactile → fidget cube, putty. Vestibular → wobble cushion, spinning chair. Auditory → noise-canceling headphones or preferred music.',
       teaching: 'This is mostly accommodation, not extinction. Most stims serve real regulatory functions and do not need to be replaced — they need to be allowed and supported. The exception is genuinely dangerous self-injury, which needs a sensory-matched alternative AND mental-health consultation, not just a behavior plan.',
@@ -164,11 +164,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       signs: 'Early warning signs: off-task, verbal complaints, withdrawal, increased motor activity, darting eye contact, head down. Some students go quiet; some get loud. Both are agitation.',
       doThis: 'Reduce sensory load, offer the regulation break with no strings attached, validate the feeling without arguing the cause ("This is hard right now"), modify the demand.',
       dontDo: 'Don\'t lecture. Don\'t reason with logic. Don\'t insist on eye contact. Don\'t escalate your own voice. The thinking brain is already losing access.' },
-    { phase: 4, name: 'Acceleration', icon: '🌪️', color: '#ef4444',
+    { phase: 4, name: 'Acceleration', icon: '🌪️', color: '#f87171',
       signs: 'Provocative behavior aimed at getting a reaction: blame, intimidation, escalating language, threats, refusal to engage with anyone, scripted "I don\'t care" responses.',
       doThis: 'Stay quiet. Stay close enough to be safe, far enough to give space. Clear the audience if possible — peers in the room raise the stakes. State only what is absolutely necessary, in short sentences.',
       dontDo: 'Don\'t take the bait. Don\'t match the volume. Don\'t threaten consequences mid-cycle. Don\'t deliver speeches. Most adult mistakes happen here — Phase 4 is the moment teachers get pulled into being part of the escalation.' },
-    { phase: 5, name: 'Peak', icon: '🔥', color: '#ef4444',
+    { phase: 5, name: 'Peak', icon: '🔥', color: '#f87171',
       signs: 'Physical aggression, property destruction, elopement, full meltdown. The student is no longer in cognitive control. The thinking brain has gone offline.',
       doThis: 'Safety first. Move other students if needed. Use minimal language. Restraint only as a last resort with proper training and policy backing. Most of the work at Peak is just keeping the room safe and waiting.',
       dontDo: 'Don\'t teach. Don\'t reason. Don\'t process. Don\'t threaten. Don\'t give consequences mid-Peak. Recording the incident for documentation is appropriate; processing is not — yet.' },
@@ -220,7 +220,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       pitfall: 'Skipping hypothesis testing entirely and going straight to BIP development is the most common school-psych shortcut. It works when data is clean. It fails — sometimes spectacularly — when the hypothesis is wrong and the BIP reinforces the actual function.'
     },
     {
-      step: 5, name: 'BIP development', icon: '📝', color: '#ef4444',
+      step: 5, name: 'BIP development', icon: '📝', color: '#f87171',
       duration: 'team meeting + draft cycle',
       what: 'The hypothesis becomes the spine of the BIP. From the function statement, derive: (a) antecedent strategies that prevent the trigger or change its meaning, (b) replacement behavior that meets the same function (see Replacement Behaviors tab), (c) reinforcement plan that makes the replacement more efficient than the problem behavior, (d) response procedures for when the problem behavior still happens, (e) crisis plan, (f) data collection plan to monitor the BIP itself.',
       key: 'A BIP without a function statement is a punishment plan. The function statement is what distinguishes a real BIP from a list of consequences. If your draft BIP doesn\'t name a function, you don\'t yet have an FBA-driven plan — you have a behavior-management policy.',
@@ -263,7 +263,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
     },
     {
       group: 'Maine crisis resources (post-Phase-5 referral)',
-      icon: '🚨', color: '#ef4444',
+      icon: '🚨', color: '#f87171',
       bullets: [
         'Maine Crisis Line: dial 988 (national) — connects to Maine\'s in-state crisis system 24/7. Also reachable at 1-888-568-1112 (statewide Maine line).',
         'Maine Mobile Crisis (children): dispatched to the home or school on request, statewide. Available 24/7. Free regardless of insurance. School psychs can request directly during business hours; families can request anytime.',
@@ -342,7 +342,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       pitfall: 'Putting consequences in the response-procedures section is the most common BIP-writing error. Consequences are punishment, not response procedure. They go in the school discipline policy, not the BIP. The BIP describes how staff support the cycle, not how staff sanction the student.'
     },
     {
-      part: 7, name: 'Crisis plan', icon: '🚨', color: '#ef4444',
+      part: 7, name: 'Crisis plan', icon: '🚨', color: '#f87171',
       what: 'When a Phase 5 (Peak) crisis happens — concrete protocol for safety. Who is called, in what order. Where the student is supported. When parents are notified (Maine Chapter 33 = same-day). Restraint and seclusion authorization (which staff are CPI/NCI/Mandt-trained for this student) — only when documented imminent serious physical injury, never as a planned consequence. Required incident-report timeline.',
       sample: 'Crisis sequence for Avery: (1) signal Garcia (sped) via radio. (2) Garcia clears other students. (3) Liu (gen ed) calls main office; admin walks to room. (4) Pomera (school psych) called; arrives within 5 min. (5) If physical safety threatened: Garcia + admin (both CPI-trained for Avery) follow restraint protocol per Chapter 33. (6) Mom + Dad notified by Pomera same-day. (7) Incident report drafted within 24 hours; team debrief within 48 hours.',
       pitfall: 'Don\'t leave the crisis plan as boilerplate ("call the office"). Name the people. Map the room. Specify the timing. A vague crisis plan is the absence of a crisis plan — and the document the team reaches for at exactly the worst moment.'
@@ -414,7 +414,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
   var EQUITY_DATA = [
     {
       finding: 'Race × discipline',
-      icon: '⚖️', color: '#ef4444',
+      icon: '⚖️', color: '#f87171',
       stat: 'Black students are ~3× more likely to be suspended than white students for similar offenses.',
       detail: 'OCR 2020-21 data: Black students are 15% of public school enrollment but 38% of in-school suspensions and 39% of out-of-school suspensions. The gap is largest for "subjective" infractions (defiance, disrespect, disruption) — categories where adult judgment, not bright-line rules, drives the referral.',
       source: 'U.S. Department of Education Office for Civil Rights, Civil Rights Data Collection 2020-21'
@@ -428,7 +428,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
     },
     {
       finding: 'Race × restraint and seclusion',
-      icon: '✋', color: '#ef4444',
+      icon: '✋', color: '#f87171',
       stat: 'Students with disabilities account for ~12% of enrollment but ~75% of restraint cases nationally.',
       detail: 'Within that already-disproportionate use, Black students with disabilities are restrained at higher rates than white students with similar profiles. The compound disparity at the most coercive end of the discipline spectrum is the largest and most consistent finding across federal datasets.',
       source: 'OCR Civil Rights Data Collection; GAO-18-258'
@@ -479,7 +479,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
     { name: 'What restraint IS (and is NOT)', icon: '⚖️', color: '#fbbf24',
       content: 'Restraint = physical holding that restricts a student\'s freedom of movement. Three types: physical (staff hands on student), mechanical (devices that restrict — almost never appropriate in schools), chemical (medication used for behavioral control rather than treatment — never appropriate without prescription).',
       counter: 'NOT restraint: brief holding to prevent immediate injury (e.g., catching a falling kid); routine guidance (gentle hand on shoulder to redirect); typical physical contact in adapted PE or therapy. The line is restriction of freedom of movement.' },
-    { name: 'What seclusion IS (and is NOT)', icon: '🚪', color: '#ef4444',
+    { name: 'What seclusion IS (and is NOT)', icon: '🚪', color: '#f87171',
       content: 'Seclusion = involuntary confinement of a student alone in a room or area from which the student is physically prevented from leaving. The "physically prevented from leaving" part is what makes it seclusion legally.',
       counter: 'NOT seclusion: time-out where the student can leave (a "calm corner" with the door open); a quiet space chosen by the student; a sensory room used for regulation. Voluntary use of a separate space is not seclusion.' },
     { name: 'Maine Chapter 33 — the rule', icon: '🏛️', color: '#a78bfa',
@@ -552,9 +552,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
   // clicks here matches the function-card color one section down.
   var FUNCTIONS_KEY = [
     { code: 'ATT', label: 'Attention', icon: '👀', color: '#60a5fa' },
-    { code: 'ESC', label: 'Escape',    icon: '🚪', color: '#ef4444' },
+    { code: 'ESC', label: 'Escape',    icon: '🚪', color: '#f87171' },
     { code: 'TAN', label: 'Tangible',  icon: '🎮', color: '#f59e0b' },
-    { code: 'AUT', label: 'Sensory',   icon: '🪀', color: '#8b5cf6' }
+    { code: 'AUT', label: 'Sensory',   icon: '🪀', color: '#a78bfa' }
   ];
 
   // ─────────────────────────────────────────────────────────
@@ -574,7 +574,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       id: 'chair',
       title: 'The thrown chair',
       stem: 'An 8th-grade student is yelling profanity and has just thrown a classroom chair across an empty corner of the room. No one was hit. The student is breathing hard, eyes scanning the room. Three other students are present. You are the school psych called to the room.',
-      icon: '🪑', color: '#ef4444',
+      icon: '🪑', color: '#f87171',
       nodes: {
         start: {
           prompt: 'What is the FIRST decision?',
@@ -917,7 +917,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
             h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, ph.doThis)
           ),
           h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.30)' } },
-            h('div', { style: { fontSize: 9, fontWeight: 800, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, '✗ Don\'t'),
+            h('div', { style: { fontSize: 9, fontWeight: 800, color: '#f87171', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, '✗ Don\'t'),
             h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, ph.dontDo)
           )
         ),
@@ -1718,7 +1718,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                     h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, ph.doThis)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.20)' } },
-                    h('div', { style: { fontSize: 9, fontWeight: 800, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, __alloT('stem.schoolbehaviortoolkit.don_t_do', '✗ Don\'t do')),
+                    h('div', { style: { fontSize: 9, fontWeight: 800, color: '#f87171', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, __alloT('stem.schoolbehaviortoolkit.don_t_do', '✗ Don\'t do')),
                     h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, ph.dontDo)
                   )
                 )
@@ -1770,7 +1770,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           // every component traces back to the function statement") rendered as
           // flat card lists with no flow. This makes the spine visible. ──
           (function() {
-            var arrow = function(k) { return h('span', { key: k, style: { color: '#64748b', fontWeight: 800, fontSize: 13 } }, '→'); };
+            var arrow = function(k) { return h('span', { key: k, style: { color: '#94a3b8', fontWeight: 800, fontSize: 13 } }, '→'); };
             var bigArrowStyle = { color: '#fbbf24', fontWeight: 800, fontSize: 16, margin: '0 1px' };
             var chip = function(s) {
               return h('div', { key: 'fc-' + s.step, style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '6px 8px', borderRadius: 8, background: 'rgba(15,23,42,0.7)', border: '1px solid ' + s.color + '66', minWidth: 60 } },
@@ -1876,7 +1876,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         { id: 11, scenario: 'Whenever the lights are turned off for a video, Marco starts loudly humming a song. The teacher pauses the video, asks Marco to be quiet, then restarts. Marco hums again 30 seconds later.', correct: 'Attention',
           why: 'Pattern: behavior → teacher attention (pause + redirect) → repeat. The 30-second cycle is suspicious — that is reinforcer-driven repetition, not random vocalizing. If it were sensory, it would not pause when noticed.' },
         { id: 12, scenario: 'In gym, when the teacher announces a running drill, Sasha immediately complains of stomach pain and asks to sit out. She is fine for the rest of class, including the basketball drill that follows.', correct: 'Escape',
-          why: 'Behavior precedes the aversive demand and is specific to it. She is not avoiding gym in general — just the run. The selective onset + selective relief is the giveaway. Reinforcer = removal of the running demand.' }
+          why: 'Behavior precedes the aversive demand and is specific to it. She is not avoiding gym in general — just the run. The selective onset + selective relief is the giveaway. Reinforcer = removal of the running demand.' },
+
+        // Four more, moved from behaviorLab's Practice Scenarios: same task,
+        // same four answers, so they belonged with the drill rather than in a
+        // Skinner-box tool that no longer teaches the functions.
+        { id: 101, scenario: 'A student screams every time they are asked to complete a math worksheet. When they scream, the teacher sends them to the hallway.', correct: 'Escape',
+          why: 'The student screams and is removed from the math task. The screaming is negatively reinforced by escape from the aversive task (math worksheet). The teacher is accidentally reinforcing the screaming!' },
+        { id: 102, scenario: 'A child throws toys whenever their parent is on the phone. The parent stops the call to attend to the child.', correct: 'Attention',
+          why: 'The child throws toys and gets parent attention. The behavior is positively reinforced by the attention that follows. Phone calls = SD for throwing toys.' },
+        { id: 103, scenario: 'A student with autism rocks back and forth during independent work time. The rocking does not seem connected to getting or avoiding anything.', correct: 'Sensory',
+          why: 'Automatic (sensory) reinforcement! The behavior produces its own reinforcement through proprioceptive/vestibular stimulation. It is not maintained by social consequences.' },
+        { id: 104, scenario: 'Every time a specific toy is visible, a child cries until they get it. The crying stops immediately once they have the toy.', correct: 'Tangible',
+          why: 'Tangible reinforcement! The crying is maintained by access to a preferred item (the toy). The visibility of the toy acts as an MO (motivating operation).' }
       ];
 
       // The vignettes answer with a short id ('Escape'); FOUR_FUNCTIONS is keyed by
@@ -2078,6 +2090,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         var fnAnswered = !!d.fnAnswered;
         var fnPick = d.fnPick || null;
 
+        var fnDone = fnShown.length >= FN_VIGNETTES.length && fnAnswered;
+
         function nextVignette() {
           var remaining = [];
           for (var i = 0; i < FN_VIGNETTES.length; i++) {
@@ -2176,11 +2190,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                 })
               ),
               fnAnswered && h('div', { role: 'status', style: { marginTop: 10, padding: '10px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.75)', border: '1px solid rgba(100,116,139,0.3)', fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } }, v.why),
+              // Results card at the end. The version this drill was moved from had
+              // one; the rewrite wrapped silently instead, so finishing sixteen
+              // vignettes reset the counters and dropped the student back on the
+              // start button knowing nothing about how they did. It is also where
+              // the framing belongs, because it is the moment someone feels they
+              // have got it.
+              fnDone && h('div', { role: 'status',
+                style: { marginTop: 12, padding: '12px 14px', borderRadius: 10, background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.40)' } },
+                h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } },
+                  __alloT('stem.schoolbehaviortoolkit.fn_all_done', '\uD83C\uDFC6 Every vignette complete')),
+                h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } },
+                  __alloT('stem.schoolbehaviortoolkit.fn_final', 'Final: '),
+                  h('strong', null, fnScore + ' / ' + FN_VIGNETTES.length),
+                  fnScore === FN_VIGNETTES.length
+                    ? __alloT('stem.schoolbehaviortoolkit.fn_res_all', ' \u2014 every function correctly identified. That is the concept; on a real case the function is a hypothesis you confirm with ABC data and supervision, not a label you read off a paragraph.')
+                    : fnScore >= Math.ceil(FN_VIGNETTES.length * 0.8)
+                      ? __alloT('stem.schoolbehaviortoolkit.fn_res_strong', ' \u2014 strong. The pair most often confused is attention versus escape, because adult attention and demand removal usually arrive together; the question is which one the behaviour is working for.')
+                      : fnScore >= Math.ceil(FN_VIGNETTES.length * 0.55)
+                        ? __alloT('stem.schoolbehaviortoolkit.fn_res_ok', ' \u2014 a solid baseline. Re-read the reasoning on the ones you missed, looking for what the behaviour consistently PRODUCES versus what it PREVENTS.')
+                        : __alloT('stem.schoolbehaviortoolkit.fn_res_more', ' \u2014 these distinctions take many examples. Re-read the four reference cards above, then the reasoning on each miss, and run it again.'))
+              ),
               fnAnswered && h('button', {
                 onClick: nextVignette,
                 style: { marginTop: 10, padding: '9px 16px', borderRadius: 9, border: '1px solid #14b8a6', background: 'rgba(20,184,166,0.18)', color: '#5eead4', fontSize: 12, fontWeight: 800, cursor: 'pointer', minHeight: 40 }
-              }, fnShown.length >= FN_VIGNETTES.length
-                ? __alloT('stem.schoolbehaviortoolkit.start_over', '\u21BB Start over')
+              }, fnDone
+                ? __alloT('stem.schoolbehaviortoolkit.start_over', '\u21BB Run it again')
                 : __alloT('stem.schoolbehaviortoolkit.next_vignette', 'Next vignette \u2192'))
             )
           ),

@@ -549,6 +549,27 @@ describe('Tree Life Lab — banks and mirrors', () => {
     expect(maxShare).toBeLessThanOrEqual(0.5);
   });
 
+  it('does not let a student score the quiz by answer length', () => {
+    // The position rotation cannot help here: length travels WITH the option text,
+    // so shifting the order moves the tell around rather than removing it. The
+    // authored bank keyed the longest option in 7 of 10 questions — "pick the
+    // wordiest one" scored 70% knowing no biology. The usual cause is that the key
+    // gets a full explanation while the distractors are three-word throwaways.
+    const E = engine();
+    let longest = 0;
+    let shortest = 0;
+    for (const q of E.QUIZ) {
+      const lens = q.a.map((o) => String(o).length);
+      if (lens[q.correct] === Math.max(...lens)) longest++;
+      if (lens[q.correct] === Math.min(...lens)) shortest++;
+    }
+    // Chance is 1/4; the ceiling leaves room for a ten-question bank without
+    // leaving room for a strategy. Both directions are checked, because trimming
+    // every key is how a length tell gets reintroduced upside down.
+    expect(longest / E.QUIZ.length, 'key-is-longest tell').toBeLessThanOrEqual(0.4);
+    expect(shortest / E.QUIZ.length, 'key-is-shortest tell').toBeLessThanOrEqual(0.4);
+  });
+
   it('only seeds handoff keys the destination tool actually reads', () => {
     // The first handoff invented requestedEquation / requestedOrganelle /
     // requestedType. All three are plausible names that appear nowhere in either
@@ -1204,6 +1225,27 @@ describe('Tree Life Lab — banks and mirrors', () => {
       }
     }
     expect(leftovers, `untranslatable:\n  ${leftovers.join('\n  ')}`).toEqual([]);
+
+    // The sweep above strips TAGS, so accessible names were invisible to it — and
+    // that is exactly where the worst gap lived: the 3-D scene description, the only
+    // account of the canvas a screen-reader user ever gets, was assembled from bare
+    // English ("Three-dimensional summer view of White Oak, age 40 years...") and
+    // stayed English in every language. Attribute values get the same treatment as
+    // visible prose.
+    const attrLeftovers = [];
+    for (const [label, state] of SURFACES) {
+      const html = render({ treeLab: state }, { t: (k) => MARK + k + MARK });
+      const attrRe = /(?:aria-label|title|alt)="([^"]*)"/g;
+      let am;
+      while ((am = attrRe.exec(html))) {
+        const v = am[1]
+          .replace(new RegExp(MARK + '[^' + MARK + ']*' + MARK, 'g'), ' ')
+          .replace(/&[a-z]+;/g, ' ');
+        const words = v.split(/\s+/).filter((w) => /[a-zA-Z]{3}/.test(w));
+        if (words.length >= 4) attrLeftovers.push(`${label}: ${v.trim().slice(0, 100)}`);
+      }
+    }
+    expect(attrLeftovers, `untranslated accessible names:\n  ${attrLeftovers.join('\n  ')}`).toEqual([]);
   });
 
   it('avoids var() in canvas and THREE colour paths', () => {

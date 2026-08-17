@@ -1,0 +1,149 @@
+{
+  "note": "Within-bank duplication ratchet for non-EPPP source banks. Rates may fall, never rise. duplicateRate is the share of non-guided items sitting in a same-bank duplicate-kernel group; frameShare is the largest single 8-word prompt frame in any one bank. Guided banks are excluded because they are derived from source items by design. Regenerate with dev-tools/scan_source_bank_duplication.cjs --update after deliberate item work.",
+  "packs": {
+    "audiology_5343": {
+      "duplicateRate": 0,
+      "frameShare": 0.01,
+      "crossPackItems": 0,
+      "scaffoldPrompts": 0
+    },
+    "early_childhood_5025": {
+      "duplicateRate": 0,
+      "frameShare": 0.41,
+      "crossPackItems": 110,
+      "scaffoldPrompts": 110
+    },
+    "educational_leadership_5412": {
+      "duplicateRate": 0,
+      "frameShare": 0.01,
+      "crossPackItems": 0,
+      "scaffoldPrompts": 0
+    },
+    "eppp_2027_preview": {
+      "duplicateRate": 0,
+      "frameShare": 0.05,
+      "crossPackItems": 0,
+      "scaffoldPrompts": 0
+    },
+    "eppp_part_one": {
+      "duplicateRate": 0,
+      "frameShare": 0.02,
+      "crossPackItems": 0,
+      "scaffoldPrompts": 0
+    },
+    "esol_5362": {
+      "duplicateRate": 0,
+      "frameShare": 0.01,
+      "crossPackItems": 0,
+      "scaffoldPrompts": 0
+    },
+    "parapro": {
+      "duplicateRate": 0,
+      "frameShare": 0.04,
+      "crossPackItems": 26,
+      "scaffoldPrompts": 0
+    },
+    "plt_5_9_5623": {
+      "duplicateRate": 0,
+      "frameShare": 0.24,
+      "crossPackItems": 198,
+      "scaffoldPrompts": 200
+    },
+    "plt_7_12_5624": {
+      "duplicateRate": 0,
+      "frameShare": 0.09,
+      "crossPackItems": 198,
+      "scaffoldPrompts": 200
+    },
+    "plt_early_childhood_5621": {
+      "duplicateRate": 0,
+      "frameShare": 0.24,
+      "crossPackItems": 156,
+      "scaffoldPrompts": 200
+    },
+    "plt_k6_5622": {
+      "duplicateRate": 0,
+      "frameShare": 0.01,
+      "crossPackItems": 198,
+      "scaffoldPrompts": 0
+    },
+    "praxis_core_5752": {
+      "duplicateRate": 0,
+      "frameShare": 0.06,
+      "crossPackItems": 21,
+      "scaffoldPrompts": 0
+    },
+    "reading_specialist_5302": {
+      "duplicateRate": 0,
+      "frameShare": 0.01,
+      "crossPackItems": 174,
+      "scaffoldPrompts": 0
+    },
+    "school_counselor_5422": {
+      "duplicateRate": 0,
+      "frameShare": 0.01,
+      "crossPackItems": 0,
+      "scaffoldPrompts": 0
+    },
+    "school_librarian_5312": {
+      "duplicateRate": 0.66,
+      "frameShare": 0.26,
+      "crossPackItems": 0,
+      "scaffoldPrompts": 200
+    },
+    "school_psychologist_5403": {
+      "duplicateRate": 0,
+      "frameShare": 0.01,
+      "crossPackItems": 0,
+      "scaffoldPrompts": 0
+    },
+    "special_education_5355": {
+      "duplicateRate": 0,
+      "frameShare": 0.01,
+      "crossPackItems": 190,
+      "scaffoldPrompts": 0
+    },
+    "special_education_behavior_emotional_5372": {
+      "duplicateRate": 0,
+      "frameShare": 0.11,
+      "crossPackItems": 144,
+      "scaffoldPrompts": 0
+    },
+    "special_education_early_childhood_5692": {
+      "duplicateRate": 0,
+      "frameShare": 0.04,
+      "crossPackItems": 78,
+      "scaffoldPrompts": 0
+    },
+    "special_education_intellectual_disabilities_5322": {
+      "duplicateRate": 0,
+      "frameShare": 0.28,
+      "crossPackItems": 144,
+      "scaffoldPrompts": 0
+    },
+    "special_education_learning_disabilities_5383": {
+      "duplicateRate": 0,
+      "frameShare": 0.12,
+      "crossPackItems": 188,
+      "scaffoldPrompts": 0
+    },
+    "special_education_severe_profound_5547": {
+      "duplicateRate": 0,
+      "frameShare": 0.13,
+      "crossPackItems": 180,
+      "scaffoldPrompts": 0
+    },
+    "speech_language_pathology_5331": {
+      "duplicateRate": 0,
+      "frameShare": 0.01,
+      "crossPackItems": 0,
+      "scaffoldPrompts": 0
+    },
+    "teaching_reading_5205": {
+      "duplicateRate": 0,
+      "frameShare": 0.11,
+      "crossPackItems": 174,
+      "scaffoldPrompts": 0
+    }
+  }
+}

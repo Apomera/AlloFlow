@@ -401,7 +401,11 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).toContain('appendCoreRadarPlot');
     expect(source).toContain('timed radar plots');
     expect(source).toContain('Steady bearing + shrinking range = collision risk');
-    expect(source).toContain("'PLOT ' + trafficTrackDots.length + '/6 - 0.8 s interval'");
+    // The plot readout must show how many fixes are in and how far apart they
+    // are — six plots at 0.8 s is what makes the trend readable. Pinned as an
+    // invariant rather than as an exact caption, which last broke on a hyphen
+    // becoming a middle dot.
+    expect(source).toMatch(/'PLOT ' \+ trafficTrackDots\.length \+ '\/6[^']*0\.8 s interval'/);
     expect(source).toContain('gradeCoreEncounter');
     expect(source).toContain('Traffic encounter debrief.');
     expect(source).toContain('summarizeCoreRadarTrail');
@@ -1449,5 +1453,797 @@ describe('Fisher Lab chase camera and the shoreline', () => {
     expect(src).toContain('tree.position.set(x, groundY || 0, z)');
     expect(src).toContain('landHeightAt(mtx, mtz)');
     expect(src).toContain('islandHeightAt(dx, dz)');
+  });
+});
+
+// The 3-D scene has to survive a school Chromebook, not just a workstation.
+// Measured with hardwareConcurrency spoofed to 2: 47,424 triangles at full
+// detail against 26,313 on the low tier.
+describe('Fisher Lab low-power scaling', () => {
+  const src = () => fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+
+  it('★ defines the low-power test exactly once', () => {
+    // It used to be written out twice, 600 lines apart — once for the water
+    // tessellation and once inside the effects layer. Tuning the threshold in
+    // one place would silently have left the other on the old rule.
+    const matches = src().match(/navigator\.hardwareConcurrency <= \d+/g) || [];
+    expect(matches.length).toBe(1);
+    expect(src()).toContain('var LOW_POWER =');
+    expect(src()).not.toContain('lowPowerWater');
+  });
+
+  it('scales the scenery that was added without regard for the machine', () => {
+    // Terrain, islands and the shoal overlay were all built at a fixed
+    // resolution. Each is now driven off the single flag.
+    const s = src();
+    expect(s).toContain('var RINGS = LOW_POWER ? 5 : 7, SEG = LOW_POWER ? 11 : 16;');
+    expect(s).toContain('var NX = LOW_POWER ? 24 : 40, NZ = LOW_POWER ? 5 : 8');
+    expect(s).toContain('var NX = LOW_POWER ? 32 : 56, NZ = LOW_POWER ? 26 : 44;');
+    expect(s).toContain('var WATER_SEG = LOW_POWER ? 88 : 128;');
+  });
+
+  it('keeps the effects layer on the same flag rather than its own copy', () => {
+    expect(src()).toContain('var lowPower = LOW_POWER;');
+  });
+
+  it('folds reduced-motion into the same decision', () => {
+    // A reduced-motion request is also a request for less work, and the two
+    // used to be tangled together in both copies of the expression.
+    expect(src()).toMatch(/var LOW_POWER = reducedMotion \|\|/);
+  });
+});
+
+// The Chart Room is the tool's stated fallback for when WebGL is unavailable,
+// so it is the one surface a student is left with when the 3-D sim cannot run.
+describe('Fisher Lab chart room accessibility', () => {
+  const src = () => fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+
+  it('★ announces the fallback chart', () => {
+    // An aria-label on a bare <svg> is exposed inconsistently across screen
+    // readers; role="img" is what makes it reliable.
+    const s = src();
+    const from = s.indexOf("viewBox: '0 0 600 400'");
+    expect(from).toBeGreaterThan(-1);
+    const el = s.slice(from, from + 2200);
+    expect(el).toContain("role: 'img'");
+    expect(el).toMatch(/'aria-label': '[^']{120,}'/);   // a real description, not a stub
+  });
+
+  it('describes what the chart actually shows', () => {
+    const s = src();
+    const from = s.indexOf("viewBox: '0 0 600 400'");
+    const label = s.slice(from, from + 2200);
+    // The buoyage is the teachable content; a label that omits it is decoration.
+    expect(label).toMatch(/red nun/i);
+    expect(label).toMatch(/green can/i);
+    expect(label).toMatch(/Halfway Rock/i);
+  });
+
+  it('passes no stray function as a React child', () => {
+    // `[120, 180, 240].forEach,` sat in the argument list, handing the forEach
+    // FUNCTION to React as a child of the svg. Production React drops it
+    // silently, which is why it survived; the development build warns.
+    expect(src()).not.toMatch(/\]\.forEach,\s*$/m);
+  });
+});
+
+// ★ ANSWER-POSITION BIAS. The authored bank put 66% of correct answers in slot
+// B (measured 2/46/22/0) and never used slot D at all — a quiz you can pass by
+// always picking B. A deterministic per-question rotation fixes it, but nothing
+// was checking that it STAYS fixed, and this bug class recurs across this
+// codebase every time a bank grows.
+//
+// Measured off the shipped, post-rotation bank rather than by re-deriving the
+// rotation here: a test that reimplements the thing it is testing proves only
+// that two copies of the same arithmetic agree.
+describe('Fisher Lab quiz answer positions', () => {
+  const dist = () => window.__FisherLabCore.getCoreQuizAnswerDistribution();
+
+  it('does not let any one slot carry the bank', () => {
+    const d = dist();
+    expect(d.total).toBeGreaterThanOrEqual(60);
+    // Even spread over four options is 25%. Before the rotation this was 66%.
+    // 40% leaves room for the bank to grow without a hair-trigger failure,
+    // while still catching a return to guess-the-letter.
+    expect(d.peakShare, 'counts ' + JSON.stringify(d.counts)).toBeLessThan(0.4);
+  });
+
+  it('uses every answer slot', () => {
+    // The authored bank never once put the answer in slot D. A slot that is
+    // never correct is a distractor students learn to ignore.
+    const d = dist();
+    d.counts.forEach((n, i) => {
+      expect(n, 'slot ' + i + ' unused; counts ' + JSON.stringify(d.counts)).toBeGreaterThan(0);
+    });
+  });
+
+  it('keeps every correct index pointing at a real option', () => {
+    // The rotation remaps `correct` alongside the options. If those two ever
+    // came apart, the quiz would mark the wrong answer right — and the review
+    // screen reads q.a[q.correct], so it would explain the wrong one too.
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const from = src.indexOf('var QUIZ_QUESTIONS = [');
+    const bank = src.slice(from, src.indexOf('\n  ];', from));
+    const rows = [...bank.matchAll(/correct: (\d+)/g)].map((m) => Number(m[1]));
+    expect(rows.length).toBeGreaterThanOrEqual(60);
+    rows.forEach((c) => expect(c).toBeGreaterThanOrEqual(0));
+    const d = dist();
+    // Every counted question resolved to a slot inside its own option list.
+    expect(d.counts.reduce((a, b) => a + b, 0)).toBe(d.total);
+  });
+
+  it('rotates deterministically, not randomly', () => {
+    // A random shuffle would deal new options mid-question, because the quiz
+    // re-reads QUIZ_QUESTIONS[idx] on every render.
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const from = src.indexOf('// The authored bank put 66%');
+    const block = src.slice(from, from + 1200);
+    expect(from).toBeGreaterThan(-1);
+    expect(block).toContain('var shift = ((qi * 7) + 3) % n;');
+    expect(block).not.toMatch(/Math\.random/);
+  });
+});
+
+// ★ The boat's own navigation lights were on the WRONG SIDES.
+// The bow is at local +Z, and in a right-handed Y-up scene the starboard side
+// of a body facing +Z is local −X, not +X — point the bow at the camera and the
+// vessel's right hand is on the viewer's left. Authored as green at +0.8 and
+// red at −0.8, the model showed a GREEN light on its port bow and a RED light
+// on its starboard bow: exactly reversed from COLREGS Rule 23, and from the
+// light-sector diagram this same tool teaches on the Night Nav tab.
+//
+// Caught by taking forward × up from the model's own transform in a live scene
+// and projecting each light onto it, not by eye.
+describe('Fisher Lab navigation light sides', () => {
+  const at = (side) => window.__FisherLabCore.getCoreNavLightLocalX(side);
+
+  it('puts starboard on local −X for a bow-at-+Z hull', () => {
+    expect(at('starboard')).toBeLessThan(0);
+    expect(at('port')).toBeGreaterThan(0);
+  });
+
+  it('keeps the two lights exactly opposite', () => {
+    // A vessel with both lights on one side is not a vessel.
+    expect(at('port')).toBeCloseTo(-at('starboard'), 10);
+    expect(Math.abs(at('port'))).toBeGreaterThan(0);
+  });
+
+  it('places both lights through the one function', () => {
+    // They used to carry independent literals, so one could be corrected and
+    // the other left reversed — which still leaves the pair wrong.
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    expect(src).toContain("var PORT_X = getCoreNavLightLocalX('port'), STBD_X = getCoreNavLightLocalX('starboard');");
+    expect(src).toContain('portLight.position.set(PORT_X, 0.8, 2.0);');
+    expect(src).toContain('stbdLight.position.set(STBD_X, 0.8, 2.0);');
+    // The glows must follow their lights, or the lit halo sits on the far side.
+    expect(src).toContain('portGlow.position.set(PORT_X, 0.8, 2.0);');
+    expect(src).toContain('stbdGlow.position.set(STBD_X, 0.8, 2.0);');
+    // And no stray hard-coded ±0.8 left on a light.
+    expect(src).not.toMatch(/(port|stbd)(Light|Glow)\.position\.set\(-?0\.8/);
+  });
+
+  it('agrees with what the Night Nav tab teaches about the same lights', () => {
+    // Rule 23 as the tool states it: red to port, green to starboard. If the
+    // model and the lesson ever disagree again, one of them is lying.
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    expect(src).toMatch(/red \(port\), green \(starboard\)/i);
+    const from = src.indexOf('function flNavLightSectorsSvg');
+    const fig = src.slice(from, src.indexOf('// What each sector looks like', from));
+    expect(fig).toContain('GREEN');
+    expect(fig).toContain('RED');
+  });
+});
+
+// ★ The fallback chart contradicted its own caption, the Buoyage tab and the
+// 3-D sim about which side of the channel the red marks are on.
+//
+// The rose puts N at the top, so this is a north-up chart and outbound runs
+// DOWN the page. Facing south, port is east — page-right — and starboard is
+// west, page-left. Green to starboard when seaward therefore puts green on the
+// LEFT and red on the RIGHT. They were drawn the other way round.
+describe('Fisher Lab fallback chart buoyage', () => {
+  const chart = () => {
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const from = src.indexOf("viewBox: '0 0 600 400'");
+    return src.slice(from, src.indexOf('// compass rose', from));
+  };
+  const xs = (letter) => {
+    const m = chart().match(new RegExp("\\[\\{ x: (\\d+), y: \\d+, t: '" + letter + "'[\\s\\S]*?\\]"));
+    return m ? [...m[0].matchAll(/x: (\d+)/g)].map((n) => Number(n[1])) : [];
+  };
+
+  it('puts the red nuns east of the channel and the green cans west', () => {
+    const red = xs('R'), green = xs('G');
+    expect(red.length).toBe(3);
+    expect(green.length).toBe(3);
+    // The chart is 600 wide, channel on the centreline.
+    red.forEach((x) => expect(x, 'red at ' + x).toBeGreaterThan(300));
+    green.forEach((x) => expect(x, 'green at ' + x).toBeLessThan(300));
+  });
+
+  it('agrees with the caption printed underneath it', () => {
+    // The caption always said "east side"; only the drawing disagreed.
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    expect(src).toMatch(/Red marks \(nuns, even-numbered\) line the east side/);
+    const red = xs('R');
+    red.forEach((x) => expect(x).toBeGreaterThan(300));   // east == page-right
+  });
+
+  it('agrees with the rule the sim scores against', () => {
+    // evaluateCoreBuoyPass is the single source of the rule. Outbound, green is
+    // the starboard-hand mark; inbound, red is.
+    const { evaluateCoreBuoyPass } = window.__FisherLabCore;
+    expect(evaluateCoreBuoyPass('outbound', 'green', 'starboard').correct).toBe(true);
+    expect(evaluateCoreBuoyPass('returning', 'red', 'starboard').correct).toBe(true);
+    expect(evaluateCoreBuoyPass('outbound', 'red', 'starboard').correct).toBe(false);
+  });
+
+  it('shows the direction of travel, so the rule can be checked not just believed', () => {
+    expect(chart()).toContain('RETURNING');
+    expect(chart()).toContain('red to starboard');
+  });
+
+  it('★ draws safe water as vertical stripes here too', () => {
+    // Third place in this tool that drew this mark wrong. The Buoyage glyph and
+    // the 3-D buoy were corrected earlier; the fallback chart still had a red
+    // disc with a white ring, which is not the safe-water mark at all.
+    const c = chart();
+    expect(c).toContain('fl-chart-safewater');
+    expect(c).toMatch(/#f4f6f8/);            // the white stripe
+    expect(c).not.toMatch(/circle', \{ cx: 300, cy: 330, r: 8, fill: '#d03830', stroke: '#fff'/);
+  });
+});
+
+// ★ SAME FACT, TWO AUTHORINGS — the pattern behind the reversed nav lights, the
+// side-by-side cardinal topmark and the safe-water mark being drawn wrongly in
+// three separate places.
+//
+// The finfish rule already avoids it: getCoreFishRuleEvidence DERIVES its
+// bounds from the species record (species.slot, species.minSize,
+// species.dailyBag), so changing the data changes the rule. The shellfish rule
+// does not — getCoreShellfishReleaseReason carries its own literals per region.
+// They agree today. This is the guard that they keep agreeing.
+//
+// Deliberately a guard rather than a refactor: the shellfish rule also encodes
+// region-specific conditions with no counterpart in the species data (egg
+// sponge, male-only harvest, V-notch), and this function scores real student
+// decisions. Pinning the numbers costs nothing and risks nothing; rewriting the
+// scoring path to save a duplication does not clear that bar.
+describe('Fisher Lab shellfish bounds match the species records', () => {
+  const src = () => fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+
+  // Pull a species record's slot bounds using the SAME regex the finfish rule
+  // uses, so the test reads the data the way the tool does.
+  const slotBounds = (id) => {
+    const s = src();
+    const at = s.indexOf("{ id: '" + id + "'");
+    expect(at, 'species ' + id).toBeGreaterThan(-1);
+    const rec = s.slice(at, at + 900);
+    const slot = rec.match(/slot: '([^']*)'/);
+    return slot ? (String(slot[1]).match(/\d+(?:\.\d+)?/g) || []).map(Number) : [];
+  };
+
+  const reason = (spec) => window.__FisherLabCore.getCoreShellfishReleaseReason(spec);
+
+  it('uses the lobster record bounds for Maine', () => {
+    const [min, max] = slotBounds('lobster');
+    expect(min).toBe(3.25);
+    expect(max).toBe(5);
+    expect(reason({ length: min - 0.01 })).toContain(String(min));
+    expect(reason({ length: max + 0.01 })).toContain(String(max));
+    // Inside the slot, a clean specimen is not released for size.
+    expect(reason({ length: (min + max) / 2 })).not.toMatch(/below|above/);
+  });
+
+  it('uses the blue crab record minimum for the Chesapeake', () => {
+    const [min] = slotBounds('bluecrab');
+    expect(min).toBe(5);
+    expect(reason({ region: 'chesapeake', length: min - 0.01 })).toContain(String(min));
+    expect(reason({ region: 'chesapeake', length: min + 1 })).not.toMatch(/below/);
+  });
+
+  it('uses the Dungeness record minimum for the Pacific coast', () => {
+    const [min] = slotBounds('dungeness');
+    expect(min).toBe(6.25);
+    expect(reason({ region: 'pnw', length: min - 0.01 })).toContain(String(min));
+    expect(reason({ region: 'pnw', length: min + 1 })).not.toMatch(/below/);
+  });
+
+  it('judges each region against its OWN trap species, not Maine lobster', () => {
+    // A blue crab measured against the Maine lobster slot would be told it is
+    // "above the 5-inch maximum" at a legal size — the regional profiles exist
+    // precisely so that cannot happen.
+    const big = { region: 'chesapeake', length: 6 };
+    expect(reason(big)).not.toMatch(/Maine/);
+    expect(reason(big)).not.toMatch(/above the 5-inch/);
+    expect(reason({ region: 'pnw', length: 7 })).not.toMatch(/Maine/);
+  });
+
+  it('keeps the finfish rule deriving rather than duplicating', () => {
+    // If this ever stops reading the species record, the finfish limits gain
+    // the same divergence risk the shellfish ones have.
+    const s = src();
+    const from = s.indexOf('function getCoreFishRuleEvidence');
+    const body = s.slice(from, from + 1400);
+    expect(body).toContain('species.slot');
+    expect(body).toContain('species.minSize');
+    expect(body).not.toMatch(/\b23\b|\b17\b|\b28\b/);   // no hard-coded fish sizes
+  });
+});
+
+// Finishing a voyage is the moment the whole thing builds to, and it used to be
+// announced by one line of coloured text. The medallion gives it somewhere to
+// land; the next-rank strip is what turns a terminal screen into a reason to
+// cast off again.
+describe('Fisher Lab voyage rank progression', () => {
+  const next = (s, a, f) => window.__FisherLabCore.getCoreNextRank(s, a, f);
+  const rank = (s, a, f) => window.__FisherLabCore.getCoreVoyageRank(s, a, f);
+
+  it('still awards the same ranks as before the table refactor', () => {
+    expect(rank(225, 94, 41).id).toBe('gold');
+    expect(rank(168, 84, 26).id).toBe('silver');
+    expect(rank(96, 72, 34).id).toBe('bronze');
+    // Every criterion must be met, not just the score — a big score with a
+    // thin reserve is still a mismanaged trip.
+    expect(rank(250, 95, 25).id).toBe('silver');   // fuel 25 clears silver's 20, misses gold's 30
+    expect(rank(250, 95, 10).id).toBe('bronze');   // 10 misses silver's 20 as well
+    expect(rank(250, 70, 50).id).toBe('bronze');   // accuracy short of silver
+  });
+
+  it('names the specific gap to the next rank', () => {
+    const n = next(96, 72, 34);
+    expect(n.atTop).toBe(false);
+    expect(n.next.id).toBe('silver');
+    const byKey = Object.fromEntries(n.criteria.map((c) => [c.key, c]));
+    expect(byKey.score.shortfall).toBe(145 - 96);
+    expect(byKey.accuracy.shortfall).toBe(80 - 72);
+    expect(byKey.fuel.met).toBe(true);          // already clear on fuel
+  });
+
+  it('reports the top rank as finished rather than inventing a next one', () => {
+    const n = next(400, 100, 100);
+    expect(n.atTop).toBe(true);
+    expect(n.next).toBeNull();
+    expect(n.criteria).toEqual([]);
+  });
+
+  it('keeps progress bounded so a bar cannot overflow its track', () => {
+    next(1000, 100, 100);   // would be atTop; check a mid case instead
+    const n = next(300, 85, 25);
+    n.criteria.forEach((c) => {
+      expect(c.progress).toBeGreaterThanOrEqual(0);
+      expect(c.progress).toBeLessThanOrEqual(1);
+    });
+  });
+
+  it('reads the thresholds from one table rather than an inline chain', () => {
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    expect(src).toContain('var VOYAGE_RANKS = [');
+    // The old inline comparison chain is what made "how far to the next rank"
+    // unanswerable without writing the numbers out a second time.
+    expect(src).not.toMatch(/score >= 200 && accuracy >= 90 && fuel >= 30/);
+  });
+
+  it('describes the medallion and the strip for a screen reader', () => {
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const med = src.slice(src.indexOf('function flRankMedallionSvg'), src.indexOf('function flNextRankSvg'));
+    expect(med).toMatch(/'aria-label':/);
+    expect(med).toMatch(/not yet earned/);      // the unearned state is announced too
+    const strip = src.slice(src.indexOf('function flNextRankSvg'), src.indexOf('// ─── Camera rig geometry'));
+    // The strip's label has to carry the numbers, since the bars are the whole
+    // content and a bar conveys nothing on its own.
+    expect(strip).toMatch(/Progress toward/);
+    expect(strip).toMatch(/c\.have/);
+  });
+});
+
+// ★ Relative-motion radar. The plot used to be a 50-pixel div with 4-pixel dots
+// carrying the one judgement that decides whether two vessels collide.
+//
+// The whole read is geometric: join the successive contact positions, extend
+// that line, and see how close it passes to your own ship. That distance IS the
+// closest point of approach. Drawn, a student can check it; asserted in prose,
+// they can only believe it.
+describe('Fisher Lab radar relative-motion track', () => {
+  const track = (pts) => window.__FisherLabCore.getCoreRadarTrack(pts);
+  // Plot points arrive in the same frame the drawing uses: x to starboard,
+  // y forward-negative, own ship at the origin.
+  const line = (from, to, n) => Array.from({ length: n }, (_, i) => ({
+    x: from[0] + (to[0] - from[0]) * (i / (n - 1)),
+    y: from[1] + (to[1] - from[1]) * (i / (n - 1)),
+  }));
+
+  it('reads a track through own ship as a zero CPA', () => {
+    // Contact closing on a steady bearing: the classic collision course.
+    const t = track(line([16, -16], [4, -4], 6));
+    expect(t.valid).toBe(true);
+    expect(t.cpa.dist).toBeLessThan(0.5);
+    expect(t.cpa.ahead).toBe(true);
+  });
+
+  it('reads a swinging bearing as passing clear', () => {
+    const t = track(line([4, -22], [20, -6], 6));
+    expect(t.valid).toBe(true);
+    expect(t.cpa.dist).toBeGreaterThan(5);
+  });
+
+  it('★ marks a closest approach that has already happened', () => {
+    // A contact drawing away still has a nearest point on its track — but it is
+    // BEHIND it. Reported the same as one still to come, the display would
+    // imply an imminent close pass while the contact opens away.
+    const t = track(line([3, -3], [18, -18], 6));
+    expect(t.valid).toBe(true);
+    expect(t.cpa.ahead).toBe(false);
+  });
+
+  it('refuses to invent a track it cannot fit', () => {
+    expect(track([]).valid).toBe(false);
+    expect(track([{ x: 5, y: -5 }]).valid).toBe(false);
+    // A contact that has not moved between plots has no relative track at all.
+    expect(track([{ x: 5, y: -5 }, { x: 5, y: -5 }]).valid).toBe(false);
+    expect(track(null).valid).toBe(false);
+  });
+
+  it('ignores plots with unusable coordinates', () => {
+    const t = track([{ x: 16, y: -16 }, { x: NaN, y: 2 }, { x: 4, y: -4 }]);
+    expect(t.valid).toBe(true);
+    expect(t.cpa.dist).toBeLessThan(0.5);
+  });
+
+  it('shows the CPA state in the drawing, not just in the numbers', () => {
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const fig = src.slice(src.indexOf('function flRadarSvg'), src.indexOf('// ─── Camera rig geometry'));
+    expect(fig).toContain("'CPA passed'");
+    expect(fig).toContain('track.cpa.ahead');
+  });
+});
+
+// ★ Where a blip lands on the scope. The live contact and its history trail
+// were placed by two separately-written copies of the same formula, and the
+// floor in that formula (7 of 22 units, a third of the way out) collapsed the
+// whole trail onto one spot at close range — going blind exactly where a
+// closing contact matters most.
+describe('Fisher Lab radar plot placement', () => {
+  const at = (b, r) => window.__FisherLabCore.getCoreRadarPlotPoint(b, r);
+
+  it('keeps closing ranges distinguishable', () => {
+    // A contact coming from 20 sim units to 6 must visibly move inward.
+    const far = at(0, 20).units, near = at(0, 6).units;
+    expect(far).toBeGreaterThan(near * 1.9);
+  });
+
+  it('holds a contact off own ship at point-blank range', () => {
+    // Zero range must not put the blip under the own-ship marker, where it
+    // would be unreadable — that is the only thing the floor is for.
+    expect(at(45, 0).units).toBeGreaterThan(0);
+    expect(at(45, 0).units).toBeLessThan(3);
+  });
+
+  it('clamps a distant contact to the outer ring rather than off the face', () => {
+    expect(at(90, 500).units).toBeLessThanOrEqual(22);
+  });
+
+  it('puts relative bearing where a head-up scope puts it', () => {
+    expect(at(0, 20).y).toBeLessThan(0);            // dead ahead is up
+    expect(Math.abs(at(0, 20).x)).toBeLessThan(0.001);
+    expect(at(90, 20).x).toBeGreaterThan(0);        // starboard is right
+    expect(at(270, 20).x).toBeLessThan(0);          // port is left
+  });
+
+  it('★ scales the live contact and its trail through one function', () => {
+    // Two hand-written copies of this formula is how the scope and the trail
+    // would come to disagree about where the same vessel is.
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    expect(src).not.toMatch(/Math\.max\(7,[^)]*\/ 38 \* 22\)/);
+    const uses = src.match(/getCoreRadarPlotPoint\(/g) || [];
+    expect(uses.length).toBeGreaterThanOrEqual(3);  // definition + both call sites
+  });
+
+  it('★ labels the range rings in the units the readout uses', () => {
+    // A ring marked 7 beside a readout of "11.2 sim" cannot be compared, and
+    // comparing them is the entire purpose of a range ring.
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const fig = src.slice(src.indexOf('function flRadarSvg'), src.indexOf('// ─── Camera rig geometry'));
+    expect(fig).toContain('Math.round(RADAR_FULL_SCALE * f)');
+    expect(fig).not.toContain("'7'], [0.66");
+  });
+});
+
+// ★ The cast setup. Where you fish, how deep, on what, worked how — the
+// decision the whole rest of the trip hangs on — was six dropdowns over a
+// single number. "Target affinity 62/100" tells a student they are wrong
+// without telling them what wrong looks like.
+describe('Fisher Lab cast setup preview', () => {
+  const score = (over) => window.__FisherLabCore.scoreFishingSetup({
+    region: 'maine', speciesId: 'cod', spotId: 'ledge', tackleId: 'bottom-jig',
+    targetDepth: 'bottom', conditions: {}, presentation: {}, ...over,
+  });
+
+  it('publishes the target it scored, so the drawing cannot pick a different fish', () => {
+    const s = score();
+    expect(s.speciesId).toBe('cod');
+    expect(s.speciesZone).toBe('bottom');
+    expect(s.targetDepth).toBe('bottom');
+    expect(Array.isArray(s.spotTags)).toBe(true);
+    expect(s.tackleId).toBe('bottom-jig');
+  });
+
+  it('agrees with its own depth component about whether the rig is in the zone', () => {
+    // The picture says "IN THE ZONE" off depthMatched; the bars draw
+    // components.depth. If those two could disagree the panel would contradict
+    // itself in the same glance.
+    const hit = score({ targetDepth: 'bottom' });
+    expect(hit.depthMatched).toBe(true);
+    expect(hit.components.depth).toBeGreaterThan(0);
+
+    const miss = score({ targetDepth: 'surface' });
+    expect(miss.depthMatched).toBe(false);
+    expect(miss.components.depth).toBe(0);
+  });
+
+  it('tracks the target across regions rather than assuming cod', () => {
+    const striper = score({ region: 'chesapeake', speciesId: 'stripedbass', spotId: 'channel-edge' });
+    expect(striper.speciesId).toBe('stripedbass');
+    expect(striper.speciesZone).toBe('midwater');
+  });
+
+  it('★ draws from the published score instead of re-resolving the target', () => {
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const fig = src.slice(src.indexOf('function flCastPreviewSvg'), src.indexOf('function flSetupScoreBarsSvg'));
+    expect(fig).toContain('score.speciesZone');
+    expect(fig).toContain('score.targetDepth');
+    // A second lookup of the species table inside the drawing is exactly how
+    // the picture and the number beneath it would come to disagree.
+    expect(fig).not.toContain('CORE_FISHING_SPECIES');
+    expect(fig).not.toContain('getFishingSpot');
+    expect(fig).not.toContain('getFishingTackle');
+  });
+
+  it('★ tells the student which way to move, not just that they are wrong', () => {
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const fig = src.slice(src.indexOf('function flCastPreviewSvg'), src.indexOf('function flSetupScoreBarsSvg'));
+    expect(fig).toContain("'IN THE ZONE'");
+    expect(fig).toContain('DEEPER');
+    expect(fig).toContain('SHALLOWER');
+    // The zone order is what makes "deeper" mean deeper.
+    expect(src).toContain("var CAST_ZONES = ['surface', 'midwater', 'bottom']");
+  });
+
+  it('★ breaks the affinity total into the five parts it is made of', () => {
+    // One number says you are wrong; five bars say WHICH choice is wrong,
+    // which is the only version a student can act on.
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const keys = (src.match(/var CAST_SCORE_PARTS = \[[\s\S]*?\];/) || [''])[0];
+    ['habitat', 'depth', 'tackle', 'conditions', 'presentation'].forEach((k) => {
+      expect(keys).toContain("'" + k + "'");
+    });
+    // Every part drawn must be a component the scorer actually emits.
+    const comp = score().components;
+    ['habitat', 'depth', 'tackle', 'conditions', 'presentation'].forEach((k) => {
+      expect(typeof comp[k]).toBe('number');
+    });
+  });
+
+  it('leaves the accessible readouts carrying the content', () => {
+    // Both figures are decorative: the affinity progressbar and the evidence
+    // list already state all of it, and announcing it twice reads twice.
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const preview = src.slice(src.indexOf('function flCastPreviewSvg'), src.indexOf('function flSetupScoreBarsSvg'));
+    const bars = src.slice(src.indexOf('function flSetupScoreBarsSvg'), src.indexOf('// Where a contact sits on the scope'));
+    expect(preview).toContain("'aria-hidden': 'true'");
+    expect(bars).toContain("'aria-hidden': 'true'");
+    expect(src).toContain("'aria-label': 'Fishing setup affinity'");
+  });
+});
+
+// ★ The catch inspection. This is where the trip is settled, and there was
+// nothing to measure: the length arrived already decided in the heading, the
+// legal limit arrived as a separate sentence, and whether one cleared the
+// other was arithmetic the student did in their head between two paragraphs.
+describe('Fisher Lab measuring board', () => {
+  const ev = (len, species) => window.__FisherLabCore.getCoreFishRuleEvidence(len, species, {});
+  const COD = { name: 'Atlantic Cod', minSize: 19 };
+  const STRIPER = { name: 'Striped Bass', slot: '20-28 in' };
+
+  it('publishes the numeric bounds, not only the sentence', () => {
+    // The board must draw the same limits the decision is scored against.
+    // Re-parsing them back out of "Slot: 20-28 in" is a second derivation of
+    // the rule, and the two would eventually disagree.
+    expect(ev(18, COD)).toMatchObject({ measuredInches: 18, minInches: 19, maxInches: null });
+    expect(ev(24, STRIPER)).toMatchObject({ measuredInches: 24, minInches: 20, maxInches: 28 });
+  });
+
+  it('★ leaves an absent bound absent rather than turning it into zero', () => {
+    // Number(null) is 0 and isFinite(0) is true, so a bound guarded only by
+    // isFinite(Number(x)) reads "no maximum" as "maximum of zero" — and every
+    // legal fish then measures OVERSIZE against a limit that does not exist.
+    // That is the opposite of the correct call, and it renders confidently.
+    const noSlot = ev(24, COD);
+    expect(noSlot.maxInches).toBeNull();
+    expect(noSlot.maxInches).not.toBe(0);
+
+    const noRule = ev(15, { name: 'Pollock' });
+    expect(noRule.minInches).toBeNull();
+    expect(noRule.maxInches).toBeNull();
+
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const fig = src.slice(src.indexOf('function flMeasuringBoardSvg'), src.indexOf('// THE CAST SETUP'));
+    expect(fig).not.toContain('isFinite(Number(ev.maxInches))');
+    expect(fig).toContain('v == null');
+  });
+
+  it('agrees with the evaluator on every verdict it can draw', () => {
+    // The board's headline and the scored decision are two readings of one
+    // fact; if they can differ, the panel contradicts itself in one glance.
+    const cases = [
+      [18, COD, false], [19, COD, true], [24, COD, true],
+      [19, STRIPER, false], [24, STRIPER, true], [33, STRIPER, false],
+    ];
+    cases.forEach(([len, sp, legal]) => {
+      const e = ev(len, sp);
+      expect(e.legalToRetain, `${sp.name} at ${len} in`).toBe(legal);
+      // Whatever the board says, it reads legality off this same flag.
+      const short = e.minInches !== null && len < e.minInches;
+      const over = e.maxInches !== null && len > e.maxInches;
+      expect(!short && !over).toBe(legal);
+    });
+  });
+
+  it('★ does not call a bare minimum a slot', () => {
+    // A minimum has no upper bound. Reporting "IN THE SLOT" against it teaches
+    // a limit the regulation does not have.
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const fig = src.slice(src.indexOf('function flMeasuringBoardSvg'), src.indexOf('// THE CAST SETUP'));
+    expect(fig).toContain("'MEETS MINIMUM'");
+    expect(fig).toContain("hi !== null ? 'IN THE SLOT'");
+    expect(fig).toContain("(hi !== null ? 'SLOT ' : 'MIN ')");
+  });
+
+  it('declines to draw a board it has no reading for', () => {
+    const { flMeasuringBoardSvg } = window.__FisherLabCore;
+    const h = () => ({});
+    expect(flMeasuringBoardSvg(h, {}, 'Cod')).toBeNull();
+    expect(flMeasuringBoardSvg(h, { measuredInches: 0 }, 'Cod')).toBeNull();
+    expect(flMeasuringBoardSvg(h, { measuredInches: null }, 'Cod')).toBeNull();
+    expect(flMeasuringBoardSvg(h, null, 'Cod')).toBeNull();
+  });
+
+  it('states the shortfall as a number, not just as a colour', () => {
+    const fig = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8')
+      .slice(0);
+    const body = fig.slice(fig.indexOf('function flMeasuringBoardSvg'), fig.indexOf('// THE CAST SETUP'));
+    expect(body).toContain("' in under the '");
+    expect(body).toContain("' in over the '");
+    // Red-versus-green alone is unusable for a colourblind student.
+    expect(body).toContain("'SHORT'");
+    expect(body).toContain("'OVERSIZE'");
+  });
+});
+
+describe('Fisher Lab species identification plates', () => {
+  it('offers the candidates as pictures, not only as names', () => {
+    // Identifying a fish from prose against three names is a vocabulary quiz.
+    // Against three plates it is the real task: find the described field mark
+    // in the picture.
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const step = src.slice(src.indexOf("'1. Identify the species from its field marks'"),
+      src.indexOf("'2. Log the selected profile evidence'"));
+    expect(step).toContain('getCoreSpeciesArt(candidate.id)');
+    expect(step).toContain('plate.url');
+    // Decorative: the radio's own label already names the species.
+    expect(step).toContain("alt: ''");
+    expect(step).toContain("'aria-hidden': 'true'");
+  });
+
+  it('only ever points at artwork that is actually vendored', () => {
+    const { getCoreSpeciesArt } = window.__FisherLabCore;
+    const manifest = JSON.parse(fs.readFileSync('stem_lab/assets/fisherlab/asset-manifest.json', 'utf8'));
+    const files = new Set(JSON.stringify(manifest).match(/[a-z0-9-]+\.jpg/g) || []);
+    expect(files.size).toBeGreaterThan(0);
+    ['cod', 'haddock', 'pollock', 'striper'].forEach((id) => {
+      const art = getCoreSpeciesArt(id);
+      expect(art, id).toBeTruthy();
+      expect(files.has(art.file), `${id} → ${art.file}`).toBe(true);
+    });
+    // A species with no plate must yield null, not a broken image URL.
+    expect(getCoreSpeciesArt('not-a-species')).toBeNull();
+  });
+});
+
+// ★ Placing the cast and working it. These two beats sit between choosing the
+// rig and the fish taking it, and they were the flattest thing in the chain:
+// a range slider over a ten-pixel bar, then a button beside a progress bar.
+describe('Fisher Lab cast placement', () => {
+  const at = (m) => window.__FisherLabCore.getCoreCastPlacement(m);
+
+  it('★ authors the target band once', () => {
+    // It used to be spelled out five times — the success test (0.75/0.95), the
+    // accuracy centre (85), the control's label, the bar's 75fr/20fr/5fr grid
+    // ratios, and the failure sentence. Moving the target meant finding all
+    // five or shipping a display that disagreed with the rule behind it.
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    expect(src).toContain('var CAST_TARGET = { lo: 75, hi: 95 }');
+    expect(src).not.toContain('ratio >= 0.75 && ratio <= 0.95');
+    expect(src).not.toContain("gridTemplateColumns: '75fr 20fr 5fr'");
+    expect(src).not.toContain('target zone 75–95');
+    expect(src).not.toContain('Math.abs(meter - 85) / 85');
+    expect(src).not.toContain('outside the 75 to 95 percent');
+  });
+
+  it('agrees with the scored cast on both edges of the band', () => {
+    const { evaluateCast } = window.__FisherLabCore;
+    // The drawing colours itself off `inside`; the sim passes or fails the cast
+    // off evaluateCast. A one-percent disagreement between them would show as
+    // a green arc on a rejected throw.
+    [[74, false], [75, true], [85, true], [95, true], [96, false]].forEach(([m, want]) => {
+      expect(at(m).inside, `${m}%`).toBe(want);
+      const scored = evaluateCast({ accuracy: at(m).accuracy, distanceRatio: m / 100, assistMode: true });
+      // Inside the band and assisted, a centred-enough cast must be accepted;
+      // outside it, no accuracy can rescue the throw.
+      if (!want) expect(scored.success, `${m}% must fail`).toBe(false);
+    });
+  });
+
+  it('names which way the throw was wrong', () => {
+    expect(at(30)).toMatchObject({ short: true, long: false, inside: false });
+    expect(at(99)).toMatchObject({ short: false, long: true, inside: false });
+    expect(at(85)).toMatchObject({ short: false, long: false, inside: true });
+  });
+
+  it('peaks accuracy at the middle of the band and clamps its input', () => {
+    expect(at(85).accuracy).toBeCloseTo(1, 5);
+    expect(at(75).accuracy).toBeLessThan(1);
+    expect(at(95).accuracy).toBeLessThan(1);
+    expect(at(-40).meter).toBe(0);
+    expect(at(400).meter).toBe(100);
+    expect(at(null).meter).toBe(0);
+    expect(at(NaN).meter).toBe(0);
+  });
+
+  it('★ says the verdict in words, not only in colour', () => {
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const fig = src.slice(src.indexOf('function flCastArcSvg'), src.indexOf('function flPresentationSvg'));
+    ['ON THE FISH', 'FALLING SHORT', 'THROWN PAST'].forEach((w) => expect(fig).toContain(w));
+    // And the slider's own label repeats it, for anyone not seeing the figure.
+    expect(src).toContain("castPlace.inside ? 'on the fish' : castPlace.short ? 'falling short' : 'thrown past'");
+  });
+});
+
+describe('Fisher Lab presentation cadence', () => {
+  it('★ shows a fish deciding, which is the only reason to work a rig', () => {
+    // The count told you how many times you had pressed the button. It never
+    // showed the thing that makes a retrieve worth doing.
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const start = src.indexOf('function flPresentationSvg');
+    const fig = src.slice(start, src.indexOf('function flMeasuringBoardSvg', start));
+    expect(fig.length).toBeGreaterThan(500);
+    ['NOTHING YET', 'SOMETHING NOTICED', 'TRACKING THE RIG', 'CLOSING FAST', 'COMMITTED']
+      .forEach((w) => expect(fig).toContain(w));
+  });
+
+  it('draws the presentation that was actually selected', () => {
+    const body = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const fig = body.slice(body.indexOf('function flPresentationSvg'), body.indexOf('function flPresentationSvg') + 3000);
+    ['vertical-jig', 'slow-drift', 'fast-retrieve'].forEach((t) => expect(fig).toContain(t));
+    // It is handed the session's technique rather than assuming one.
+    expect(body).toContain('flPresentationSvg(h, activeFishing.presentationCount, activeFishing.presentationTarget, activeFishing.technique)');
+  });
+
+  it('★ faces the fish at the rig it is closing on', () => {
+    // Drawn nose-at-origin the silhouette points RIGHT; a fish approaching a
+    // lure on its left while pointing away says the opposite of the frame.
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    expect(src).toContain('function castFish(h, key, x, y, size, fill, opacity, faceLeft)');
+    expect(src).toContain("faceLeft ? -size : size");
+    // Every current scene puts the rig left of the fish, so all pass the flag.
+    // Matched by scanning windows rather than by a line-anchored regex: one
+    // call spans two lines, which a `$` without the m flag silently misses.
+    const calls = [];
+    for (let i = src.indexOf('castFish(h,'); i !== -1; i = src.indexOf('castFish(h,', i + 1)) {
+      if (src.slice(i - 9, i) === 'function ') continue;   // the definition, not a call
+      calls.push(src.slice(i, i + 300));
+    }
+    expect(calls.length).toBeGreaterThanOrEqual(3);
+    calls.forEach((c) => expect(c.slice(0, c.indexOf('));') + 3), c.slice(0, 70)).toContain('true'));
   });
 });

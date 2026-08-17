@@ -89,19 +89,20 @@ describe('the QR path is real, not a stub', () => {
 });
 
 describe('the card says which of the two things you are about to open', () => {
-  it('badges the unconnected state as a demonstration, not a preview', () => {
-    expect(settings).toContain("'Demonstration only, not connected'");
+  it('badges the unconnected state as the on-device workspace, not a preview', () => {
+    expect(settings).toContain("'On-device workspace · portal not connected'");
     expect(settings).not.toContain("'Local preview available'");
   });
 
   it('labels the button for what it opens', () => {
-    expect(settings).toContain("'Open the demonstration'");
+    expect(settings).toContain("'Open Educator Evaluation'");
     expect(settings).toContain("'Open district portal'");
     expect(settings).not.toContain("'Open local preview'");
   });
 
-  it('warns against entering real staff information in the demonstration', () => {
-    expect(settings).toContain('is not a personnel record. Do not enter real staff information here.');
+  it('keeps the official-record boundary explicit for the on-device workspace', () => {
+    expect(settings).toContain('is not the official personnel record; connect your district portal');
+    expect(settings).toContain('per-device (anyone using this device can open it)');
   });
 
   it('tells the reader where the /exec URL comes from, in the app', () => {
@@ -113,7 +114,7 @@ describe('the card says which of the two things you are about to open', () => {
 
   it('keeps the generated module in step with the source', () => {
     const built = readFileSync('view_project_settings_module.js', 'utf8');
-    expect(built).toContain('Demonstration only, not connected');
+    expect(built).toContain('On-device workspace · portal not connected');
     expect(built).toContain('Where does this URL come from?');
   });
 

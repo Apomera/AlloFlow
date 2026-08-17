@@ -995,7 +995,34 @@ hr {
   }
 }
 
+/* ── Read aloud (2026-08-17) ───────────────────────────────────────────
+   Injected by guide-search.js only when the browser has a speech engine, so
+   these rules simply never match otherwise. Uses the guide's own tokens so it
+   follows every theme, including the print overrides below. */
+.listen-btn {
+  margin-left: 0.6rem;
+  vertical-align: middle;
+  font: 600 0.75rem/1 inherit;
+  color: var(--brand-strong);
+  background: var(--brand-soft);
+  border: 1px solid var(--brand);
+  border-radius: 999px;
+  padding: 0.3rem 0.65rem;
+  cursor: pointer;
+}
+.listen-btn:hover { filter: brightness(0.97); }
+.listen-btn:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+.is-reading {
+  background: var(--brand-soft);
+  box-shadow: 0 0 0 4px var(--brand-soft);
+  border-radius: 3px;
+}
+
 @media print {
+  /* The listen control and its highlight are screen affordances. */
+  .listen-btn { display: none !important; }
+  .is-reading { background: none !important; box-shadow: none !important; }
+
   :root {
     color-scheme: light;
     --page: #ffffff;

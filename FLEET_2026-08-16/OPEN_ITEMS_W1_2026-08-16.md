@@ -24,8 +24,9 @@ The one path to serving non-CCSS states without ingesting each state separately.
 one streaming pass next time the corpus is downloaded; CCSS is the most-aligned-to framework, so
 the pull-in could be large and it lands on the CDN budget. (2) Implement the accessor when the
 Phase 2 Standards Finder drawer exists to display it; before then, option C degenerates into
-option B with extra code. Decision needed from Aaron: whether non-CCSS states matter for the
-current pilot. If yes, this jumps the queue; if no, it waits for Phase 2.
+option B with extra code. **DECIDED 2026-08-17 (Aaron): the pilot (Maine) is CCSS-focused, so
+the crosswalk waits for the Phase 2 Standards Finder drawer.** Measured cost when it lands:
+21,492 external partner standards for ccss-math, 2,388 for ccss-ela.
 
 ### A2. Snapshot size after the components rebuild — **[Aaron]**, S
 

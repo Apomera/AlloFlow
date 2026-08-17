@@ -9,6 +9,10 @@
       "itemId": "parapro-b5-writing-002",
       "issue": "The prompt explicitly asked candidates to evaluate both \"its\" and \"it's,\" but the original keyed sentence contained two correct instances of \"its\" and no instance of \"it's.\" Although it was the only error-free sentence, it did not demonstrate both forms as directly as the prompt required.",
       "change": "Revised the keyed choice to \"It's time for the robotics team to test its design.\" and updated the overall and keyed-choice feedback. The item now tests the contraction \"it's\" and the possessive determiner \"its\" unambiguously while preserving answer position B."
+    },
+    {
+      "issue": "The keyed option was the longest of the four choices in 21 of 33 items, against 25% by chance, leaving the bank partly answerable without reading the stem. An earlier review of this file recorded that answer-length cues had been removed; that claim did not hold when measured.",
+      "change": "Rewrote 11 distractors by hand to carry the same false claim at parallel specificity and length. No keyed option, rationale, reference or answer position was changed. Key-is-longest now 10/33 (30%)."
     }
   ],
   "checks": {
@@ -192,15 +196,27 @@
     }
   },
   "blockers": [],
-  "sourceSha256": "19c2121705ec2ac32f64e95b0063d33b6147ee302208e23ab888e2479b2a681f",
+  "sourceSha256": "c65d9b456ff4d55d34ae9eaf9f051a07f9cbed6383b91082bc11267291ce674c",
   "artifactBinding": {
     "algorithm": "sha256",
-    "sha256": "19c2121705ec2ac32f64e95b0063d33b6147ee302208e23ab888e2479b2a681f"
+    "sha256": "c65d9b456ff4d55d34ae9eaf9f051a07f9cbed6383b91082bc11267291ce674c"
   },
   "integration": {
     "packId": "parapro-1755-practice-1",
     "batchNumber": 5,
     "expectedInsertionTier": "assistant-authored-independent",
     "expectedDiagnosticBankSize": 100
-  }
+  },
+  "remediation": [
+    {
+      "at": "2026-08-17",
+      "by": "Claude Opus 5 — AlloFlow fleet lane W4",
+      "scope": "answer-length tell only; distractor text",
+      "itemsChanged": 11,
+      "ledger": "dev-tools/authored/length_remediation_2026-08-17.json",
+      "priorSha256": "19c2121705ec2ac32f64e95b0063d33b6147ee302208e23ab888e2479b2a681f",
+      "sha256": "c65d9b456ff4d55d34ae9eaf9f051a07f9cbed6383b91082bc11267291ce674c",
+      "note": "Distractor text edited after the independent cross-review. The binding was renewed so the artifact stays self-consistent; the original reviewer did not review these replacements."
+    }
+  ]
 }

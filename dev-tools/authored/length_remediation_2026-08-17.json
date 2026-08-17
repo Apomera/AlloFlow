@@ -1,0 +1,1299 @@
+{
+  "note": "Hand-authored answer-length remediation. Each entry replaces ONE distractor with a longer version of the SAME false claim, so the keyed option is no longer the longest of the four and the item stops being answerable by shape. Keys, rationales, choiceRationales, references and answer positions are untouched. Written per item, not generated: commit f6e08fe43 reverted an automated pass over these same banks that appended a filler clause to 30,215 choices, and named the genuine fix as parallel-length distractors. Applied by dev-tools/apply_length_remediation.cjs.",
+  "authoredBy": "Claude Opus 5 — AlloFlow fleet lane W4",
+  "authoredAt": "2026-08-17",
+  "files": {
+    "audiology_5343_batch3.json": {
+      "aud5343-b3-001": {
+        "choiceIndex": 3,
+        "text": "Its movement equalizes air pressure between the middle ear and the nasopharynx during swallowing and yawning."
+      },
+      "aud5343-b3-002": {
+        "choiceIndex": 2,
+        "text": "Failure of the semicircular canals to encode angular head acceleration during rotation despite otherwise normal cochlear function."
+      },
+      "aud5343-b3-003": {
+        "choiceIndex": 0,
+        "text": "Random ordering in which every fiber shares the same best frequency and differs only in the intensity at which it saturates."
+      },
+      "aud5343-b3-006": {
+        "choiceIndex": 2,
+        "text": "The listener detects a sound pressure twenty times greater than the standard atmospheric reference pressure of 20 micropascals."
+      },
+      "aud5343-b3-007": {
+        "choiceIndex": 0,
+        "text": "Constructive interference doubles the instantaneous pressure at every point in the combined waveform’s cycle."
+      },
+      "aud5343-b3-008": {
+        "choiceIndex": 1,
+        "text": "Its interaural timing sensitivity is reduced because a single input port cannot resolve arrival-time differences."
+      },
+      "aud5343-b3-009": {
+        "choiceIndex": 3,
+        "text": "Reflections increase visual access to the talker’s face and articulators while leaving auditory cues unchanged."
+      },
+      "aud5343-b3-010": {
+        "choiceIndex": 0,
+        "text": "The listener’s auditory threshold shifted between the two runs even though no listener participated in the coupler measurement."
+      },
+      "aud5343-b3-011": {
+        "choiceIndex": 3,
+        "text": "A speech-recognition score derived from the percentage of monosyllabic words repeated correctly."
+      },
+      "aud5343-b3-012": {
+        "choiceIndex": 0,
+        "text": "Perceived loudness is determined by frequency alone and is unaffected by the presentation level."
+      },
+      "aud5343-b3-013": {
+        "choiceIndex": 1,
+        "text": "The precedence effect, caused by a delayed copy of the signal arriving from a nearby reflecting surface."
+      },
+      "aud5343-b3-014": {
+        "choiceIndex": 3,
+        "text": "The Stenger effect, in which the louder of two same-frequency signals controls perception during nonorganic testing."
+      },
+      "aud5343-b3-015": {
+        "choiceIndex": 3,
+        "text": "Middle-ear muscle contraction selectively amplifies the target talker in one ear while attenuating the masker."
+      },
+      "aud5343-b3-016": {
+        "choiceIndex": 1,
+        "text": "The cochlear amplifier becomes measurably stronger whenever the words form a grammatical sentence."
+      },
+      "aud5343-b3-017": {
+        "choiceIndex": 1,
+        "text": "Reporting whether a 1000 Hz tone remains audible in quiet as its level is lowered in fixed five-decibel steps."
+      },
+      "aud5343-b3-018": {
+        "choiceIndex": 0,
+        "text": "Tympanometric peak-pressure estimation separates the two voices at the level of the middle ear."
+      },
+      "aud5343-b3-019": {
+        "choiceIndex": 1,
+        "text": "Time compression increases the listener’s usable cochlear frequency range and should therefore improve recognition."
+      },
+      "aud5343-b3-021": {
+        "choiceIndex": 1,
+        "text": "A tympanometer used before and after every shift to document changes in middle-ear peak pressure."
+      },
+      "aud5343-b3-025": {
+        "choiceIndex": 2,
+        "text": "Avoid hearing protection altogether because amplification is assumed to restore the ear’s normal resistance to hazardous workplace noise levels."
+      },
+      "aud5343-b3-027": {
+        "choiceIndex": 3,
+        "text": "Testing the referred ear alone would be invalid unless the opposite ear simultaneously receives continuous contralateral masking noise."
+      },
+      "aud5343-b3-028": {
+        "choiceIndex": 1,
+        "text": "Adjust every child’s recorded threshold by a fixed correction factor until the referral rate returns to its previously reported value."
+      },
+      "aud5343-b3-029": {
+        "choiceIndex": 3,
+        "text": "Assign a hearing aid immediately without any diagnostic evaluation, medical clearance, or family consultation."
+      },
+      "aud5343-b3-030": {
+        "choiceIndex": 0,
+        "text": "Loss to follow-up, because none of the infants in this database actually received the recommended diagnostic service."
+      },
+      "aud5343-b3-031": {
+        "choiceIndex": 1,
+        "text": "25 dB HL, because threshold must always be placed one full five-decibel step above the softest reliable response."
+      },
+      "aud5343-b3-032": {
+        "choiceIndex": 2,
+        "text": "A supra-aural earphone pressed more firmly against the pinna prevents canal collapse and preserves the validity of the recorded thresholds."
+      },
+      "aud5343-b3-033": {
+        "choiceIndex": 3,
+        "text": "As proof that follow-up tympanometry and otoacoustic emissions will also be normal in both ears."
+      },
+      "aud5343-b3-034": {
+        "choiceIndex": 3,
+        "text": "An aided speech-in-noise test performed before the asymmetric unmasked thresholds have been independently verified."
+      },
+      "aud5343-b3-035": {
+        "choiceIndex": 3,
+        "text": "Increase the presentation level without output limits until the recognition score returns to one hundred percent."
+      },
+      "aud5343-b3-036": {
+        "choiceIndex": 1,
+        "text": "Translate individual test words spontaneously during administration and continue to apply the original monolingual norms without any adjustment."
+      },
+      "aud5343-b3-037": {
+        "choiceIndex": 1,
+        "text": "Diagnose permanent progression directly from the numerical difference between the two audiograms without repeating any part of the measurement."
+      },
+      "aud5343-b3-039": {
+        "choiceIndex": 3,
+        "text": "Raise all of the final thresholds by a fixed correction amount without collecting any additional response evidence from the client."
+      },
+      "aud5343-b3-040": {
+        "choiceIndex": 1,
+        "text": "A normal vestibulo-ocular reflex accompanied by reduced visual acuity during rapid horizontal head movements in either direction."
+      },
+      "aud5343-b3-041": {
+        "choiceIndex": 1,
+        "text": "It directly estimates the amount of cochlear outer-hair-cell gain still available at each individual audiometric frequency."
+      },
+      "aud5343-b3-042": {
+        "choiceIndex": 0,
+        "text": "The absent emissions prove a complete loss of auditory-nerve function occurring alongside entirely normal cochlear and middle-ear mechanics."
+      },
+      "aud5343-b3-043": {
+        "choiceIndex": 0,
+        "text": "A cortical response fixed at f1 plus twice f2, regardless of the recording conditions or the measured noise floor."
+      },
+      "aud5343-b3-044": {
+        "choiceIndex": 0,
+        "text": "They directly measure everyday conversational participation without requiring any later behavioral confirmation."
+      },
+      "aud5343-b3-045": {
+        "choiceIndex": 1,
+        "text": "The ratio establishes one specific disease with certainty and makes the case history and symptom review unnecessary."
+      },
+      "aud5343-b3-046": {
+        "choiceIndex": 0,
+        "text": "The reversing component is a cortical P300 response that requires an active oddball task and an awake, cooperative listener."
+      },
+      "aud5343-b3-047": {
+        "choiceIndex": 1,
+        "text": "Interpret the delayed absolute latency as a central auditory conduction disorder despite the normal interpeak intervals recorded."
+      },
+      "aud5343-b3-048": {
+        "choiceIndex": 2,
+        "text": "Increase probe pressure until the ear canal is fully occluded and then retain the original drifting trace as clinically valid."
+      },
+      "aud5343-b3-049": {
+        "choiceIndex": 2,
+        "text": "Speech-recognition testing in quiet, which is assumed to identify bilateral vestibular weakness."
+      },
+      "aud5343-b3-050": {
+        "choiceIndex": 0,
+        "text": "Middle-ear pressure equalization through the Eustachian tube during repeated swallowing, yawning, and jaw movement."
+      },
+      "aud5343-b3-051": {
+        "choiceIndex": 0,
+        "text": "The exact anatomical vestibular lesion site without requiring any other examination or imaging."
+      },
+      "aud5343-b3-052": {
+        "choiceIndex": 1,
+        "text": "A tympanometric pressure sweep performed while the patient remains seated fully upright and completely motionless."
+      },
+      "aud5343-b3-053": {
+        "choiceIndex": 2,
+        "text": "Use acoustic-reflex decay testing and assign the stronger response side to the poorer-functioning vestibular nerve on that side."
+      },
+      "aud5343-b3-054": {
+        "choiceIndex": 0,
+        "text": "Begin sound enrichment immediately and defer any medical consideration, because tinnitus of this kind is almost always entirely benign."
+      },
+      "aud5343-b3-055": {
+        "choiceIndex": 0,
+        "text": "To calculate an exact tinnitus pitch and loudness match directly from the total questionnaire score alone."
+      },
+      "aud5343-b3-056": {
+        "choiceIndex": 2,
+        "text": "A single low score on this battery identifies the exact auditory pathway site that is responsible for the adolescent’s reported classroom difficulty."
+      },
+      "aud5343-b3-057": {
+        "choiceIndex": 3,
+        "text": "Begin high-level testing immediately so that any cerumen blockage can be detected from the child’s reaction."
+      },
+      "aud5343-b3-058": {
+        "choiceIndex": 2,
+        "text": "Diagnose a specific retrocochlear tumor directly from the audiogram shape without any further medical evaluation or imaging."
+      },
+      "aud5343-b3-059": {
+        "choiceIndex": 1,
+        "text": "Assign a permanent sensorineural hearing loss on the basis of the reported history alone, without any current audiometric evidence supporting it."
+      },
+      "aud5343-b3-061": {
+        "choiceIndex": 3,
+        "text": "Diagnose a language disorder from a passed OAE screen alone without assessing ear-specific auditory status any further."
+      },
+      "aud5343-b3-062": {
+        "choiceIndex": 2,
+        "text": "Translate the standardized recording in real time during the test and retain its published reliability and validity data unchanged."
+      },
+      "aud5343-b3-063": {
+        "choiceIndex": 1,
+        "text": "Use the sound-field speech-response level as the best available estimate for each unmeasured frequency in both of the ears."
+      },
+      "aud5343-b3-064": {
+        "choiceIndex": 0,
+        "text": "Have the audiologist select and administer a sedative independently, using routine physiologic observation rather than an authorized medical sedation protocol or qualified medical supervision."
+      },
+      "aud5343-b3-065": {
+        "choiceIndex": 3,
+        "text": "Record 30 dB HL as a conventional adult behavioral threshold without labeling it a minimum response level."
+      },
+      "aud5343-b3-066": {
+        "choiceIndex": 2,
+        "text": "The tympanometric peak pressure, substituted for every frequency used in the prescriptive fitting formula."
+      },
+      "aud5343-b3-067": {
+        "choiceIndex": 3,
+        "text": "Assume that a target match for average speech guarantees an acceptable output level for the most intense speech inputs."
+      },
+      "aud5343-b3-068": {
+        "choiceIndex": 1,
+        "text": "Accept the all-day self-report as the more representative measure and omit the data-logging discrepancy from any follow-up discussion."
+      },
+      "aud5343-b3-069": {
+        "choiceIndex": 3,
+        "text": "Replace both of the devices solely on the basis of the client’s verbal description, without any electroacoustic or physical assessment of the fit."
+      },
+      "aud5343-b3-071": {
+        "choiceIndex": 0,
+        "text": "State that two devices are always required for every client with bilateral loss, regardless of contraindications, cost, dexterity, or the client’s own stated preference."
+      },
+      "aud5343-b3-072": {
+        "choiceIndex": 0,
+        "text": "A feedback canceller configured to receive magnetic audio signals broadcast directly from the stage."
+      }
+    },
+    "educational_leadership_5412_batch3.json": {
+      "lead5412-b3-001": {
+        "choiceIndex": 1,
+        "text": "Ask department chairs to select the most appealing mission statement from three neighboring schools, then announce the choice at the next faculty meeting alongside the updated enrollment figures."
+      },
+      "lead5412-b3-002": {
+        "choiceIndex": 0,
+        "text": "Keep the aspirational vision unchanged but allow each budget owner to interpret its instructional implications independently, so that departments retain the maximum possible spending flexibility."
+      },
+      "lead5412-b3-003": {
+        "choiceIndex": 0,
+        "text": "Set one schoolwide completion percentage and postpone all subgroup analysis until the overall target has been reached for two consecutive years and confirmed by the state accountability report."
+      },
+      "lead5412-b3-004": {
+        "choiceIndex": 2,
+        "text": "Remove after-school tutoring from the strategic plan entirely, on the grounds that any program creating transportation complications should not be formally linked to the district’s stated core values."
+      },
+      "lead5412-b3-005": {
+        "choiceIndex": 1,
+        "text": "Adopt the mission of the higher-performing school outright, because its achievement data establish that its existing culture and practices should govern every aspect of the consolidation from the first day."
+      },
+      "lead5412-b3-006": {
+        "choiceIndex": 3,
+        "text": "Ask the student representatives to identify the accused students publicly at the next planning meeting, so that the full committee can decide for itself whether the reported concern is credible enough to act on."
+      },
+      "lead5412-b3-007": {
+        "choiceIndex": 0,
+        "text": "Choose the single concern with the largest raw count of affected students, because frequency is the only genuinely objective basis available for allocating limited strategic attention and funding."
+      },
+      "lead5412-b3-008": {
+        "choiceIndex": 0,
+        "text": "Send every employee the complete technical plan and require a signed statement confirming that each person has received and read exactly the same information."
+      },
+      "lead5412-b3-009": {
+        "choiceIndex": 1,
+        "text": "Lower the published learning target to match the current result, because the improvement in participation proves that the original outcome expectation was simply unrealistic for this population."
+      },
+      "lead5412-b3-010": {
+        "choiceIndex": 0,
+        "text": "Launch a schoolwide incentive contest immediately, because the original motivation explanation came from experienced teachers who know these students and their families well."
+      },
+      "lead5412-b3-011": {
+        "choiceIndex": 1,
+        "text": "Reject the advisory model permanently, because uneven facilitator readiness proves that the existing school culture cannot support any form of advisory programming."
+      },
+      "lead5412-b3-012": {
+        "choiceIndex": 1,
+        "text": "Change the late-work conference routine, the grading scale, and the attendance policy together, so that the two-week test has enough combined intensity to affect measurable results."
+      },
+      "lead5412-b3-013": {
+        "choiceIndex": 2,
+        "text": "The number of mentors who attended the original program orientation session, regardless of whether they ever went on to contact their assigned students."
+      },
+      "lead5412-b3-014": {
+        "choiceIndex": 2,
+        "text": "Suspend whichever initiative carries the lowest staff approval rating, because perceived acceptability is the most reliable available measure of an initiative’s strategic value to the school."
+      },
+      "lead5412-b3-015": {
+        "choiceIndex": 0,
+        "text": "Require every classroom in the school to copy all of the pilot routines exactly, including incidental scheduling features that are entirely unrelated to the reading mechanism itself."
+      },
+      "lead5412-b3-016": {
+        "choiceIndex": 1,
+        "text": "Replace the student-learning aim entirely with a purchase-completion target, because the delivery of materials is far easier for school leaders to monitor and report on each month."
+      },
+      "lead5412-b3-017": {
+        "choiceIndex": 1,
+        "text": "Continue funding every original program feature through short-term donations, because altering any part of the original grant design would invalidate the promising outcome evidence already collected."
+      },
+      "lead5412-b3-018": {
+        "choiceIndex": 2,
+        "text": "Let each observer retain a personal interpretation of the rubric, because instructional quality is far too contextual for any shared set of scoring expectations to be meaningful across classrooms."
+      },
+      "lead5412-b3-019": {
+        "choiceIndex": 0,
+        "text": "Require one additional general orientation presentation for all new hires and assume that individual employees will request more targeted support themselves if they still find they need it during the year."
+      },
+      "lead5412-b3-020": {
+        "choiceIndex": 0,
+        "text": "Repeat the original training presentation with additional slides explaining in more detail why academic discussion matters for student achievement outcomes on state assessments."
+      },
+      "lead5412-b3-021": {
+        "choiceIndex": 2,
+        "text": "Recommend simply asking fewer questions overall, then wait until the annual summative evaluation to determine whether the quality of student thinking has improved in any observable way."
+      },
+      "lead5412-b3-022": {
+        "choiceIndex": 0,
+        "text": "Refer the multilingual students for individual remediation before examining whether the tasks, the available language supports, or the assigned group roles restrict their opportunities to explain."
+      },
+      "lead5412-b3-023": {
+        "choiceIndex": 0,
+        "text": "Promise teachers that every coaching communication will remain strictly confidential under all circumstances, including any disclosures that involve student safety or mandated reporting."
+      },
+      "lead5412-b3-024": {
+        "choiceIndex": 1,
+        "text": "Transfer full supervisory authority over grade-level colleagues to the teacher leader immediately, without any training, policy clarification, or continuing principal oversight of the new role."
+      },
+      "lead5412-b3-025": {
+        "choiceIndex": 3,
+        "text": "Remove all consideration of student behavior from classroom observations, so that evaluators can focus exclusively on each teacher’s personality, delivery, and presentation style during the observed lesson."
+      },
+      "lead5412-b3-026": {
+        "choiceIndex": 0,
+        "text": "Excuse the experienced science teachers from all professional learning and safety verification, because their years of classroom service are sufficient evidence of competence with the new laboratory curriculum."
+      },
+      "lead5412-b3-027": {
+        "choiceIndex": 0,
+        "text": "Ask the departing assistant principal to select one favored teacher privately, because their close day-to-day collaboration makes that individual the safest and most obvious successor to the instructional leadership role."
+      },
+      "lead5412-b3-028": {
+        "choiceIndex": 1,
+        "text": "Cancel all of the weekly coaching meetings, because staff well-being should always take precedence over any additional accountability requirement or professional learning activity."
+      },
+      "lead5412-b3-029": {
+        "choiceIndex": 1,
+        "text": "Use the favorable exit survey ratings as the outcome measure, because participant perceptions immediately after the institute are the most direct available indicator of eventual impact in the classroom."
+      },
+      "lead5412-b3-030": {
+        "choiceIndex": 3,
+        "text": "Give students in the general courses the same honors assignment without first examining prerequisite instruction, available materials, instructional time, or the accessibility supports they may require."
+      },
+      "lead5412-b3-031": {
+        "choiceIndex": 3,
+        "text": "Use the benchmark result as the sole basis for intervention placement, because a common assessment is inherently more objective than any classroom evidence a teacher could gather."
+      },
+      "lead5412-b3-032": {
+        "choiceIndex": 0,
+        "text": "Enter the exit-ticket grade and proceed directly to the next unit, because accuracy in calculating slope demonstrates that the required mathematics standard has already been fully mastered."
+      },
+      "lead5412-b3-033": {
+        "choiceIndex": 3,
+        "text": "Discard the state score entirely, because classroom evidence is closer to daily instruction and therefore cannot be affected by any form of local scoring bias or expectation effects."
+      },
+      "lead5412-b3-034": {
+        "choiceIndex": 0,
+        "text": "Reduce the science standard itself for any students who struggle with the required written format, so that their assignments can be completed independently and submitted on time without additional support."
+      },
+      "lead5412-b3-035": {
+        "choiceIndex": 0,
+        "text": "Approve the extension because a quarterly benchmark is more formal and therefore inherently more accurate than the repeated weekly progress monitoring measures."
+      },
+      "lead5412-b3-036": {
+        "choiceIndex": 1,
+        "text": "Translate every scientific term into everyday conversational language, even when the precise technical terminology is itself a central part of the standard being assessed on the test."
+      },
+      "lead5412-b3-037": {
+        "choiceIndex": 3,
+        "text": "Require every assignment to carry identical point values across all classes, regardless of its instructional purpose, complexity, or the quality of the evidence it produces."
+      },
+      "lead5412-b3-038": {
+        "choiceIndex": 0,
+        "text": "Delete data-display instruction from the earliest grade entirely, because the repetition across three grades proves that the initial teaching has no lasting instructional value for students."
+      },
+      "lead5412-b3-039": {
+        "choiceIndex": 0,
+        "text": "Attribute the full achievement gain to the new curriculum, because it was the most visible change of the year and was formally adopted shortly before the scores increased across the grade."
+      },
+      "lead5412-b3-040": {
+        "choiceIndex": 0,
+        "text": "Ban every scheduled pullout during core instruction, even in cases where an individualized education plan or an essential related service requires a different scheduling arrangement."
+      },
+      "lead5412-b3-041": {
+        "choiceIndex": 1,
+        "text": "Report only the overall belonging percentage, because a single schoolwide measure avoids stigmatizing students in smaller alternative programs through separate subgroup analysis and public reporting of results."
+      },
+      "lead5412-b3-042": {
+        "choiceIndex": 3,
+        "text": "Ask the staff members who wrote the most referrals to explain the pattern themselves and accept their shared professional judgment as sufficient evidence of what is causing the disparity."
+      },
+      "lead5412-b3-043": {
+        "choiceIndex": 0,
+        "text": "Offer separate virtual club meetings to the students who use mobility devices, while keeping all of the existing physical room assignments unchanged for the other participating club members."
+      },
+      "lead5412-b3-044": {
+        "choiceIndex": 0,
+        "text": "Arrange an immediate face-to-face meeting between the reporting student and the alleged harassers, so that both sides can talk through and resolve the matter informally without further escalation."
+      },
+      "lead5412-b3-045": {
+        "choiceIndex": 2,
+        "text": "Make the capstone celebration optional and stop tracking family participation altogether, so that unequal attendance no longer affects the school’s reported accountability data in any way at all."
+      },
+      "lead5412-b3-046": {
+        "choiceIndex": 3,
+        "text": "Postpone every individualized planning meeting until a staff member who happens to speak the family’s language becomes available during the course of their normal assigned duties at the school."
+      },
+      "lead5412-b3-047": {
+        "choiceIndex": 0,
+        "text": "Increase the total number of restorative conferences, because a higher overall volume will naturally average out any differences among individual facilitators over the course of the year."
+      },
+      "lead5412-b3-048": {
+        "choiceIndex": 0,
+        "text": "Designate the academic plan as the primary plan and pause all of the other supports until course grades improve enough to make ongoing coordination simpler for all of the staff involved."
+      },
+      "lead5412-b3-049": {
+        "choiceIndex": 1,
+        "text": "Continue with the current committee structure, because the students who are willing to sacrifice their own class time in this way demonstrate the strongest personal commitment to school leadership roles and service."
+      },
+      "lead5412-b3-050": {
+        "choiceIndex": 0,
+        "text": "Use anonymous electronic voting at the start of every leadership meeting and then adopt whichever majority preference emerges without any further discussion of the dissenting views."
+      },
+      "lead5412-b3-051": {
+        "choiceIndex": 0,
+        "text": "Assign all of the work to the attendance team, because the team’s title gives it automatic ownership of every absence-related communication with students and families."
+      },
+      "lead5412-b3-052": {
+        "choiceIndex": 2,
+        "text": "Ask supervisors to reassure staff members privately that the principal meant well and that future scheduling decisions of this kind may be handled far more collaboratively in the future."
+      },
+      "lead5412-b3-053": {
+        "choiceIndex": 1,
+        "text": "Remind all custodians that reporting safety hazards is part of their job description, and discipline the staff member assigned to that area before reviewing how the blockage actually occurred."
+      },
+      "lead5412-b3-054": {
+        "choiceIndex": 0,
+        "text": "Offer an optional after-school wellness webinar on stress management while maintaining every existing deadline, meeting obligation, and duplicate reporting requirement exactly as originally scheduled."
+      },
+      "lead5412-b3-055": {
+        "choiceIndex": 3,
+        "text": "Replace the shared team meetings with individual written data reports, because independent personal accountability is a more reliable driver of improvement than any form of collective analysis."
+      },
+      "lead5412-b3-056": {
+        "choiceIndex": 2,
+        "text": "Ask administrators to nominate a greater number of staff members privately, but keep the underlying selection criteria entirely confidential so that no one is able to lobby for recognition or question the eventual outcome."
+      },
+      "lead5412-b3-057": {
+        "choiceIndex": 2,
+        "text": "Release all of the preliminary personnel scenarios along with the affected employee names, so that the community can see for itself that the district is being completely transparent about the process."
+      },
+      "lead5412-b3-058": {
+        "choiceIndex": 0,
+        "text": "Require the principal to attend every single meeting, because a consistent source of authority in the room is the most efficient way to preserve the quality of team decisions."
+      },
+      "lead5412-b3-059": {
+        "choiceIndex": 0,
+        "text": "Grant the request, because personal familiarity gives the principal far better evidence of that colleague’s instructional strengths than any formal assignment process could realistically provide."
+      },
+      "lead5412-b3-060": {
+        "choiceIndex": 1,
+        "text": "Ask the vendor to extend the same paid invitation to every member of the selection committee, so that all of the evaluators receive an equivalent professional learning opportunity."
+      },
+      "lead5412-b3-061": {
+        "choiceIndex": 2,
+        "text": "Send all of the available devices to whichever school records the lowest score, without examining curriculum use, building infrastructure, home connectivity, or student-level barriers to access at that site."
+      },
+      "lead5412-b3-062": {
+        "choiceIndex": 2,
+        "text": "State only that the school cannot discuss anything at all related to personnel matters, and provide the families with no information about continuity of services or decision making."
+      },
+      "lead5412-b3-063": {
+        "choiceIndex": 0,
+        "text": "Publish the subgroup gain by itself, because positive communications are intended to build public support for the program rather than to provide a complete evaluation of it."
+      },
+      "lead5412-b3-064": {
+        "choiceIndex": 2,
+        "text": "Post the supervisor’s directive publicly on social media before seeking any internal guidance or legal advice, so that immediate outside attention makes any later concealment of the request impossible."
+      },
+      "lead5412-b3-065": {
+        "choiceIndex": 2,
+        "text": "Apply the predictions only to students who already have prior discipline records, because the existing historical data make any resulting restrictions objective and defensible for that group."
+      },
+      "lead5412-b3-066": {
+        "choiceIndex": 2,
+        "text": "Change the schedule quietly without comment, because revisiting the earlier public assurance would only create unnecessary controversy and delay the program’s full implementation this year."
+      },
+      "lead5412-b3-067": {
+        "choiceIndex": 0,
+        "text": "Share the individual histories, because all school employees qualify as school officials and therefore may view any student record that the school maintains for any legitimate purpose."
+      },
+      "lead5412-b3-068": {
+        "choiceIndex": 2,
+        "text": "Use coded student names while still transmitting the real student work, device identifiers, and usage patterns, because the names themselves are the primary protected element of the student record."
+      },
+      "lead5412-b3-069": {
+        "choiceIndex": 2,
+        "text": "Delay the entire evaluation until the student reaches grade-level English proficiency, so that language differences no longer complicate the interpretation of any screening result that is obtained."
+      },
+      "lead5412-b3-070": {
+        "choiceIndex": 0,
+        "text": "Require documented completion of every intervention tier first, because an evaluation is valid only after the school has proven that general education alone cannot help this particular student."
+      },
+      "lead5412-b3-071": {
+        "choiceIndex": 0,
+        "text": "Announce the likely sanction publicly before interviewing the employee or reviewing the conflicting witness statements, so that the school demonstrates a firm institutional commitment to accountability and consistency."
+      },
+      "lead5412-b3-072": {
+        "choiceIndex": 1,
+        "text": "Approve the family’s preferred adjustment immediately and exactly as requested, without examining safety implications, likely effectiveness, or the terms of the student’s applicable individualized plan."
+      },
+      "lead5412-b3-073": {
+        "choiceIndex": 1,
+        "text": "Wait until the discrimination investigation has concluded, because the committee removal only matters if the original national-origin allegation is ultimately found to be substantiated by the investigator."
+      },
+      "lead5412-b3-074": {
+        "choiceIndex": 2,
+        "text": "Implement the new state directive exactly as personally interpreted, because state-issued documents automatically answer every local application question without any further legal or policy review at all."
+      },
+      "lead5412-b3-075": {
+        "choiceIndex": 3,
+        "text": "Freeze all remaining instructional spending while preserving every prior purchase commitment, because reversing established allocations midyear would signal poor planning to the staff and to families."
+      },
+      "lead5412-b3-076": {
+        "choiceIndex": 0,
+        "text": "Accept the grant and reassign the existing teachers’ contractual planning time to cover the ongoing coaching requirement, because the external funds already cover all of the program’s most visible material costs up front."
+      },
+      "lead5412-b3-077": {
+        "choiceIndex": 2,
+        "text": "Choose whichever platform advertises more features, because a longer feature list always provides greater value to the district regardless of how much of it is actually used in classroom instruction."
+      },
+      "lead5412-b3-078": {
+        "choiceIndex": 0,
+        "text": "Revise the published rubric after the bids are opened if every committee member agrees, because unanimous professional judgment is itself sufficient to protect the fairness of the revised process."
+      }
+    },
+    "early_childhood_5025_batch3.json": {
+      "ec5025-b3-001": {
+        "choiceIndex": 3,
+        "text": "Correct each grammatical difference the child produces immediately, without responding to the meaning the child was trying to express."
+      },
+      "ec5025-b3-002": {
+        "choiceIndex": 0,
+        "text": "Expressive vocabulary is fully mastered, because pointing and speaking are entirely interchangeable responses."
+      },
+      "ec5025-b3-003": {
+        "choiceIndex": 0,
+        "text": "Erase the letterlike forms and require the child to copy the conventional sentence correctly before any discussion of the intended message."
+      },
+      "ec5025-b3-004": {
+        "choiceIndex": 2,
+        "text": "The English sample alone is sufficient evidence, because language knowledge can transfer only after the child has attained complete English fluency."
+      },
+      "ec5025-b3-005": {
+        "choiceIndex": 2,
+        "text": "“Enormous is an adjective with four syllables and a Latin root, so its precise meaning is not important for children yet.”"
+      },
+      "ec5025-b3-006": {
+        "choiceIndex": 2,
+        "text": "Have children memorize the page number on which each favorite illustration happens to appear in the book."
+      },
+      "ec5025-b3-007": {
+        "choiceIndex": 3,
+        "text": "Ask whether the child liked the story overall and then end the retell assessment after a single yes-or-no answer is given."
+      },
+      "ec5025-b3-008": {
+        "choiceIndex": 1,
+        "text": "Place the child behind the other peers during group discussion so that signing movement does not distract the rest of the children in the class."
+      },
+      "ec5025-b3-013": {
+        "choiceIndex": 3,
+        "text": "The child needs to identify the number of printed letters in the word before hearing any sounds."
+      },
+      "ec5025-b3-018": {
+        "choiceIndex": 2,
+        "text": "Whether the child can use the illustration to replace the printed word with any plausible noun instead."
+      },
+      "ec5025-b3-019": {
+        "choiceIndex": 0,
+        "text": "Ask children to memorize said as an unanalyzed whole picture, without attending to any of its individual letters or sounds at all."
+      },
+      "ec5025-b3-020": {
+        "choiceIndex": 1,
+        "text": "“Add any letter before the p, because four-letter words must always contain four different sounds.”"
+      },
+      "ec5025-b3-022": {
+        "choiceIndex": 2,
+        "text": "Treat the substitution as evidence of weak comprehension, because using any semantically related word shows that the sentence itself was misunderstood by the reader."
+      },
+      "ec5025-b3-025": {
+        "choiceIndex": 3,
+        "text": "The story happens to contain more individual sentences about the child’s boots than it does about the water."
+      },
+      "ec5025-b3-027": {
+        "choiceIndex": 1,
+        "text": "A caption describing the butterfly’s wing color"
+      },
+      "ec5025-b3-028": {
+        "choiceIndex": 2,
+        "text": "“Check the handwriting first; meaning cannot be revised until every single letter is perfect.”"
+      },
+      "ec5025-b3-029": {
+        "choiceIndex": 3,
+        "text": "A single folktale collection presented as representative of all cultures and all of the historical time periods"
+      },
+      "ec5025-b3-030": {
+        "choiceIndex": 3,
+        "text": "“I will wait to discuss punctuation marks until children can spell every word conventionally.”"
+      },
+      "ec5025-b3-044": {
+        "choiceIndex": 2,
+        "text": "The child used rounding here, so 24 is only a close estimate rather than the exact difference required."
+      },
+      "ec5025-b3-098": {
+        "choiceIndex": 2,
+        "text": "Remove the name of the originating community so that the song can be presented to the whole class as a universal, culture-free classroom tune."
+      },
+      "ec5025-b3-074": {
+        "choiceIndex": 0,
+        "text": "Roll the large ball down a steep wooden ramp and roll the small ball across a level section of the classroom carpet instead."
+      },
+      "ec5025-b3-061": {
+        "choiceIndex": 1,
+        "text": "A classroom rule and a state law are both formally passed by the United States Congress before they can take effect anywhere in the country."
+      },
+      "ec5025-b3-064": {
+        "choiceIndex": 1,
+        "text": "Record the interview secretly, so that the cafeteria worker cannot change any responses after noticing that a recording device is present."
+      },
+      "ec5025-b3-062": {
+        "choiceIndex": 2,
+        "text": "Assign children to cultural groups based on their family names and then require each of them to explain that group’s traditions."
+      },
+      "ec5025-b3-099": {
+        "choiceIndex": 0,
+        "text": "Children color a preprinted leaf worksheet after the science goal has been completed, with no separate art objective of any kind attached."
+      },
+      "ec5025-b3-059": {
+        "choiceIndex": 3,
+        "text": "Choose whichever option costs the least without considering safety, accessibility, or the need the council originally stated."
+      },
+      "ec5025-b3-084": {
+        "choiceIndex": 1,
+        "text": "Share one damp cloth towel throughout the entire day so that all of the children use the same shared cleaning surface."
+      },
+      "ec5025-b3-057": {
+        "choiceIndex": 2,
+        "text": "Count the letters in each photograph caption and then rank all of the captions in order from the longest to the shortest."
+      },
+      "ec5025-b3-100": {
+        "choiceIndex": 0,
+        "text": "Exclude the child from all music activities, because meaningful participation requires an identical tolerance for sound."
+      },
+      "ec5025-b3-049": {
+        "choiceIndex": 2,
+        "text": "Tell the child the correct answer directly without allowing any further comparison of the two sets."
+      },
+      "ec5025-b3-083": {
+        "choiceIndex": 1,
+        "text": "Change several design features and the test method simultaneously, so that the new result cannot be compared with the first one."
+      },
+      "ec5025-b3-067": {
+        "choiceIndex": 3,
+        "text": "Adaptation and modification are entirely identical terms and therefore cannot describe two different kinds of human action."
+      },
+      "ec5025-b3-055": {
+        "choiceIndex": 0,
+        "text": "“Which of the children finished first, regardless of whether the strategy each used was actually accurate?”"
+      },
+      "ec5025-b3-071": {
+        "choiceIndex": 3,
+        "text": "Record only the single trial in which the car travels farthest and discard all of the remaining measurements."
+      },
+      "ec5025-b3-077": {
+        "choiceIndex": 3,
+        "text": "The unusually cold measurements should be removed, because climate data cannot include any events that are unusual."
+      },
+      "ec5025-b3-089": {
+        "choiceIndex": 2,
+        "text": "Leave the attendance information behind, because counting the children after an evacuation is entirely unnecessary."
+      },
+      "ec5025-b3-060": {
+        "choiceIndex": 0,
+        "text": "Children may speak at any time they wish and are responsible for preventing their classmates from disagreeing with them."
+      },
+      "ec5025-b3-085": {
+        "choiceIndex": 2,
+        "text": "Remove the child from every classroom snack activity, even when a safe and inclusive arrangement is readily available."
+      },
+      "ec5025-b3-095": {
+        "choiceIndex": 3,
+        "text": "“Artists do not test their materials, because an authentic idea must always remain completely unchanged.”"
+      }
+    },
+    "parapro_batch3_reading_34.json": {
+      "parapro-b3-reading-030": {
+        "choiceIndex": 0,
+        "text": "Skip over the word permanently, because a single long word is unlikely to affect the overall meaning of the paragraph for the reader in any noticeable way."
+      },
+      "parapro-b3-reading-025": {
+        "choiceIndex": 3,
+        "text": "Shift immediately to an unrelated spelling exercise so that the unsupported prediction never has to be discussed with the student at all during the lesson."
+      },
+      "parapro-b3-reading-031": {
+        "choiceIndex": 0,
+        "text": "Cover the diagram entirely so that the student can focus exclusively on reading and memorizing the surrounding prose section of the science chapter."
+      },
+      "parapro-b3-reading-032": {
+        "choiceIndex": 2,
+        "text": "Combine all three of the dictionary definitions and treat the sentence as carrying all three of those meanings at the very same time as one another."
+      },
+      "parapro-b3-reading-029": {
+        "choiceIndex": 1,
+        "text": "Ask the student to copy every single date from the article into a much longer timeline and then ignore all of the surrounding explanatory sentences."
+      },
+      "parapro-b3-reading-024": {
+        "choiceIndex": 0,
+        "text": "Tell the student that opening sentences are never important to a passage and should therefore always be crossed out before reading begins."
+      },
+      "parapro-b3-reading-034": {
+        "choiceIndex": 0,
+        "text": "Continue giving every prompt indefinitely, because the student’s accurate performance proves that the prompts themselves are still necessary."
+      },
+      "parapro-b3-reading-010": {
+        "choiceIndex": 2,
+        "text": "Club members carefully painted the nesting platform before placing it beside the river last spring."
+      },
+      "parapro-b3-reading-019": {
+        "choiceIndex": 3,
+        "text": "The neighborhood replaced all of its shops with a single new museum devoted only to local transportation history."
+      },
+      "parapro-b3-reading-027": {
+        "choiceIndex": 0,
+        "text": "Replace the assigned text with a completely unrelated book that contains much shorter and much simpler sentences."
+      },
+      "parapro-b3-reading-013": {
+        "choiceIndex": 1,
+        "text": "All of the museum’s visitors prefer low lighting and small groups at every hour of every single day of the week."
+      },
+      "parapro-b3-reading-028": {
+        "choiceIndex": 1,
+        "text": "Tell the student to summarize only the final sentence of the passage, regardless of what any of the earlier paragraphs explain."
+      },
+      "parapro-b3-reading-006": {
+        "choiceIndex": 3,
+        "text": "To entertain students in the studio with a story about a memorable pottery mistake"
+      },
+      "parapro-b3-reading-008": {
+        "choiceIndex": 0,
+        "text": "The cafeteria manager expects every single visitor to the fair to speak three languages."
+      },
+      "parapro-b3-reading-017": {
+        "choiceIndex": 1,
+        "text": "Lila had traveled for at least one full mile before finally reaching the station gate outside."
+      },
+      "parapro-b3-reading-018": {
+        "choiceIndex": 2,
+        "text": "To describe in detail how woodwind and string instruments are manufactured and sold"
+      },
+      "parapro-b3-reading-003": {
+        "choiceIndex": 1,
+        "text": "The ecology mentor had asked Amir to repair the broken greenhouse clock outside."
+      },
+      "parapro-b3-reading-001": {
+        "choiceIndex": 2,
+        "text": "Sorting the fabric scraps by color was the only reason that students repaired all forty-three costumes."
+      },
+      "parapro-b3-reading-023": {
+        "choiceIndex": 1,
+        "text": "It includes a telescope demonstration and a guided star-map activity for families."
+      },
+      "parapro-b3-reading-002": {
+        "choiceIndex": 2,
+        "text": "The books used during the second test all came from a nearby classroom shelf."
+      }
+    },
+    "parapro_batch3_writing_33.json": {
+      "parapro-b3-writing-028": {
+        "choiceIndex": 0,
+        "text": "Delete every sentence that begins with the word \"because\" from the draft before returning the draft to the student for later revision."
+      },
+      "parapro-b3-writing-029": {
+        "choiceIndex": 3,
+        "text": "Copy an entire paragraph directly from a college geology textbook without adapting the vocabulary or citing the original source at all."
+      },
+      "parapro-b3-writing-032": {
+        "choiceIndex": 2,
+        "text": "Ask the three quieter students to decorate the page borders while the first student simply continues writing all of the group’s remaining ideas."
+      },
+      "parapro-b3-writing-031": {
+        "choiceIndex": 3,
+        "text": "Require the student to draft the paragraph alone without any discussion, written models, or first-language resources available for support."
+      },
+      "parapro-b3-writing-030": {
+        "choiceIndex": 0,
+        "text": "Add still more events in strict chronological order without ever stating a clear position on the proposed crosswalk project."
+      },
+      "parapro-b3-writing-025": {
+        "choiceIndex": 3,
+        "text": "Correct all of the capitalization errors first, before discussing any relationship between the claims and the supporting evidence."
+      },
+      "parapro-b3-writing-003": {
+        "choiceIndex": 0,
+        "text": "Place a single comma only after the word \"contest\" in the sentence."
+      },
+      "parapro-b3-writing-023": {
+        "choiceIndex": 3,
+        "text": "Ask the student to replace the narrative topic entirely with a different one that requires far fewer events overall."
+      },
+      "parapro-b3-writing-022": {
+        "choiceIndex": 2,
+        "text": "Some students enjoy waiting with their friends, while many other students simply have quite different morning routines at home."
+      },
+      "parapro-b3-writing-026": {
+        "choiceIndex": 3,
+        "text": "Write a complete introduction for the student and then require the student to copy it out word for word before continuing."
+      },
+      "parapro-b3-writing-020": {
+        "choiceIndex": 2,
+        "text": "The source says, native plants generally need less irrigation after they are established, which proves the entire irrigation plan is absolutely perfect."
+      },
+      "parapro-b3-writing-019": {
+        "choiceIndex": 3,
+        "text": "A teacher log confirms that daily partner reading occurred for six full weeks but includes no measurements at all of fluency, accuracy, or reading rate."
+      },
+      "parapro-b3-writing-027": {
+        "choiceIndex": 3,
+        "text": "Use a recent social-media post that gives population figures but does not identify where any of them originally came from at all."
+      },
+      "parapro-b3-writing-008": {
+        "choiceIndex": 2,
+        "text": "Although the alarm rang. Before sunrise the tired volunteers had all already arrived."
+      },
+      "parapro-b3-writing-024": {
+        "choiceIndex": 2,
+        "text": "Ask the student to submit only an oral response and skip the entire writing process altogether this time."
+      }
+    },
+    "parapro_batch3_mathematics_33.json": {
+      "parapro-b3-mathematics-028": {
+        "choiceIndex": 3,
+        "text": "Begin counting at the ruler’s 1-centimeter mark each time and then add one extra centimeter for every separate placement of the ruler along the doorway."
+      },
+      "parapro-b3-mathematics-030": {
+        "choiceIndex": 0,
+        "text": "Accept the visual comparison exactly as it stands, because taller bars on a graph always represent proportional differences between the values accurately."
+      },
+      "parapro-b3-mathematics-026": {
+        "choiceIndex": 0,
+        "text": "Confirm that 23 is correct, because a reasonable estimate is close enough when continuing almost any number sequence."
+      },
+      "parapro-b3-mathematics-025": {
+        "choiceIndex": 1,
+        "text": "Replace n with 7 only, note that the two expressions give different values, and then simply stop the discussion at that point."
+      },
+      "parapro-b3-mathematics-029": {
+        "choiceIndex": 3,
+        "text": "Ask the student to multiply all three of the given measurements together, because using more dimensions makes any area result far more accurate."
+      },
+      "parapro-b3-mathematics-027": {
+        "choiceIndex": 1,
+        "text": "Compare a 3-by-4 rectangle with another identical 3-by-4 rectangle and note that both the perimeter and the area are exactly equal."
+      },
+      "parapro-b3-mathematics-033": {
+        "choiceIndex": 3,
+        "text": "Ignore the different trial totals entirely and confirm that any group with more successes must also have the better overall rate."
+      },
+      "parapro-b3-mathematics-021": {
+        "choiceIndex": 3,
+        "text": "Visits increased by exactly the same amount during each of the four weeks."
+      },
+      "parapro-b3-mathematics-024": {
+        "choiceIndex": 1,
+        "text": "State the invert-and-multiply rule, write down the answer 6, and ask the student to memorize all of the steps involved."
+      },
+      "parapro-b3-mathematics-032": {
+        "choiceIndex": 1,
+        "text": "Tell the student to count all six of the X marks and report 6 inches, because every single mark represents one inch."
+      },
+      "parapro-b3-mathematics-031": {
+        "choiceIndex": 3,
+        "text": "Add a bicycle bar with exactly the same height as the walking bar so that the two active-travel categories appear consistent."
+      },
+      "parapro-b3-mathematics-009": {
+        "choiceIndex": 3,
+        "text": "The expansion should be 4 x 3, because an exponent simply means to multiply the base by the exponent."
+      },
+      "parapro-b3-mathematics-023": {
+        "choiceIndex": 2,
+        "text": "Ask the student to round both of the addends to whole numbers and then use that estimate as the exact answer."
+      }
+    },
+    "parapro_batch4_reading_34.json": {
+      "parapro-b4-reading-031": {
+        "choiceIndex": 1,
+        "text": "Ask the student to choose the homophone sale instead, because that spelling appears far more often in everyday advertisements and printed store signs than the nautical meaning does in ordinary classroom reading."
+      },
+      "parapro-b4-reading-034": {
+        "choiceIndex": 0,
+        "text": "Ignore the accompanying graph entirely, because prose explanations always provide stronger and more reliable evidence than any visual display of the same information can offer to a reader."
+      },
+      "parapro-b4-reading-032": {
+        "choiceIndex": 1,
+        "text": "Tell the student that any words sharing their first three letters will always appear together on the same dictionary page, so the search can safely stop at the entry for concert instead."
+      },
+      "parapro-b4-reading-033": {
+        "choiceIndex": 3,
+        "text": "Have the student copy the written instruction five times after the laboratory period has ended, without ever practicing the step in the actual laboratory activity itself."
+      },
+      "parapro-b4-reading-024": {
+        "choiceIndex": 2,
+        "text": "Have the student identify only the final sound in each of the words and then guess at the whole word from the accompanying picture printed on the page."
+      },
+      "parapro-b4-reading-029": {
+        "choiceIndex": 1,
+        "text": "Tell the student that any sentence containing a specific number must always be accepted as wholly factual regardless of the rest of its actual wording."
+      },
+      "parapro-b4-reading-025": {
+        "choiceIndex": 3,
+        "text": "Tell students that predictions are entirely unnecessary here, because the heading itself already gives away every important detail contained in the whole article."
+      },
+      "parapro-b4-reading-026": {
+        "choiceIndex": 3,
+        "text": "Can you repeat the final sentence of the biography exactly, without referring back to any of the earlier events described in the text?"
+      },
+      "parapro-b4-reading-011": {
+        "choiceIndex": 3,
+        "text": "The word unquestionably turns every sentence in the newsletter excerpt into a fully verified statement of established fact."
+      },
+      "parapro-b4-reading-028": {
+        "choiceIndex": 2,
+        "text": "Use the page containing harvest, because harness must always come after every single word that begins with the letters h-a-r-m in order."
+      },
+      "parapro-b4-reading-027": {
+        "choiceIndex": 3,
+        "text": "The student should be described simply as a poor reader, without any specific examples drawn from the new passage."
+      },
+      "parapro-b4-reading-002": {
+        "choiceIndex": 3,
+        "text": "The custodian used two thermometers that happened to be exactly the same size, the same shape, and the same color."
+      },
+      "parapro-b4-reading-007": {
+        "choiceIndex": 0,
+        "text": "Visitors were required to complete a written survey form before they were allowed to enter the main campus."
+      },
+      "parapro-b4-reading-003": {
+        "choiceIndex": 3,
+        "text": "Elena is preparing a photography project about the clothing labels she collected at home."
+      },
+      "parapro-b4-reading-030": {
+        "choiceIndex": 3,
+        "text": "Have the student copy out the sentence and circle all of the words associated with the alarm, without ever restating the order of events."
+      },
+      "parapro-b4-reading-008": {
+        "choiceIndex": 0,
+        "text": "Darius is carefully measuring the stage area so that new curtains can eventually be ordered."
+      },
+      "parapro-b4-reading-001": {
+        "choiceIndex": 3,
+        "text": "Students clearly preferred writing the planting cards to checking out any materials from the library."
+      },
+      "parapro-b4-reading-013": {
+        "choiceIndex": 3,
+        "text": "Luis reserved a kit and presented both of the documents but declined the joint inspection and the required condition form."
+      },
+      "parapro-b4-reading-016": {
+        "choiceIndex": 2,
+        "text": "a continuous movement of electrical charge through a conductor"
+      }
+    },
+    "parapro_batch4_writing_33.json": {
+      "parapro-b4-writing-033": {
+        "choiceIndex": 2,
+        "text": "Have the paraeducator silently rewrite the entire calibration procedure and simply replace the student’s original draft with that corrected version before it is ever submitted."
+      },
+      "parapro-b4-writing-032": {
+        "choiceIndex": 0,
+        "text": "Dictate a complete replacement paragraph sentence by sentence and have the student type it out exactly as it is being spoken aloud to them in class."
+      },
+      "parapro-b4-writing-030": {
+        "choiceIndex": 3,
+        "text": "Use longer and more technical terms wherever possible throughout the announcement, so that the finished morning broadcast sounds considerably more official to listeners."
+      },
+      "parapro-b4-writing-028": {
+        "choiceIndex": 1,
+        "text": "Write out a fully corrected copy of the entire draft and then ask the student to copy it over without any discussion of the original punctuation errors that were made."
+      },
+      "parapro-b4-writing-029": {
+        "choiceIndex": 2,
+        "text": "Tell the student to trust that first silent rereading completely, because writers always see exactly what is actually on the page rather than what they had intended to write there."
+      },
+      "parapro-b4-writing-023": {
+        "choiceIndex": 1,
+        "text": "Tell the student to keep every collected fact and simply reduce the font size until all of them fit within the assigned three report pages."
+      },
+      "parapro-b4-writing-021": {
+        "choiceIndex": 1,
+        "text": "Desert plants are a very interesting topic that a great many different people have studied quite carefully over the years."
+      },
+      "parapro-b4-writing-027": {
+        "choiceIndex": 0,
+        "text": "Keep the new statistic in the conclusion, because all of the most important new information should always appear in the very final paragraph of any report."
+      },
+      "parapro-b4-writing-024": {
+        "choiceIndex": 0,
+        "text": "Tell the student to simply choose whichever spelling already appears more often elsewhere in the surrounding paragraphs of the draft."
+      },
+      "parapro-b4-writing-026": {
+        "choiceIndex": 0,
+        "text": "Ask the student to add several more descriptive details about astronaut meals and their daily training routines throughout the paragraph."
+      },
+      "parapro-b4-writing-025": {
+        "choiceIndex": 2,
+        "text": "Can you add three more interesting facts about indoor houseplants, even if they do not relate at all to the neighborhood shade and temperature data set?"
+      },
+      "parapro-b4-writing-031": {
+        "choiceIndex": 0,
+        "text": "Have the student write out all of the salt-marsh facts first and all of the wetland facts second, without ever identifying any shared comparison criteria."
+      },
+      "parapro-b4-writing-019": {
+        "choiceIndex": 1,
+        "text": "A historical novel that is set in the same community during the 1990s"
+      }
+    },
+    "parapro_batch4_mathematics_33.json": {
+      "parapro-b4-mathematics-024": {
+        "choiceIndex": 0,
+        "text": "Draw five separate wholes, divide each one of those wholes into sixths, and then count all thirty of the resulting equal pieces."
+      },
+      "parapro-b4-mathematics-023": {
+        "choiceIndex": 1,
+        "text": "Confirm that 42 is correct, because both subtraction and division will always make the starting number smaller than it was."
+      },
+      "parapro-b4-mathematics-031": {
+        "choiceIndex": 3,
+        "text": "List only Friday’s recorded height, because the final measurement by itself is enough to show the entire growth trend over the week."
+      },
+      "parapro-b4-mathematics-032": {
+        "choiceIndex": 0,
+        "text": "Keep the existing labels, because the intervals on a graph may change size without any visual indication given to the reader at all."
+      },
+      "parapro-b4-mathematics-029": {
+        "choiceIndex": 1,
+        "text": "Tell the student that the order of the two coordinates does not matter at all, as long as both of the numbers appear somewhere on the graph."
+      },
+      "parapro-b4-mathematics-033": {
+        "choiceIndex": 3,
+        "text": "Confirm that 9.1 is correct, because division always turns a three-digit number into a smaller one-digit decimal number."
+      },
+      "parapro-b4-mathematics-028": {
+        "choiceIndex": 2,
+        "text": "Add all of the dimensions together in a different order to show that 2 + 3 + 5 is still exactly equal to 10."
+      },
+      "parapro-b4-mathematics-027": {
+        "choiceIndex": 0,
+        "text": "Confirm that 74 is correct, because hours and minutes use exactly the same base-ten grouping as whole numbers do."
+      }
+    },
+    "parapro_batch5_writing_33.json": {
+      "parapro-b5-writing-030": {
+        "choiceIndex": 3,
+        "text": "Reject both of the peer comments outright and replace the student’s entire draft with a fully corrected paragraph written by the paraeducator rather than by the student who originally produced it."
+      },
+      "parapro-b5-writing-025": {
+        "choiceIndex": 3,
+        "text": "Ask the student to add still more museum facts to the existing bullet list, without ever addressing the letter’s intended audience, its overall purpose, or the form the finished writing should take."
+      },
+      "parapro-b5-writing-026": {
+        "choiceIndex": 0,
+        "text": "Tell the student to change every single verb in the paragraph to the future tense, regardless of the time frame that the surrounding sentences clearly establish for the reader of the passage."
+      },
+      "parapro-b5-writing-031": {
+        "choiceIndex": 3,
+        "text": "Encourage the student to copy an even longer passage from the source, on the theory that the additional surrounding context will make the borrowed wording acceptable without any citation at all."
+      },
+      "parapro-b5-writing-032": {
+        "choiceIndex": 1,
+        "text": "Tell the student to keep working straight through until the whole essay is finished, without ever stopping to check the assignment directions or the posted scoring guide again at any point."
+      },
+      "parapro-b5-writing-029": {
+        "choiceIndex": 1,
+        "text": "Have the student read the entire report aloud word for word, including every citation, footnote, and table entry, before making any revision at all to the full draft."
+      },
+      "parapro-b5-writing-028": {
+        "choiceIndex": 1,
+        "text": "Require the student to use the standard small-print worksheet first, before being allowed to try any of the approved accessibility supports listed in the student plan."
+      },
+      "parapro-b5-writing-033": {
+        "choiceIndex": 1,
+        "text": "Count the total number of words in one heavily prompted paragraph and assume that a greater number of words always means much better control of the sentence boundaries."
+      },
+      "parapro-b5-writing-027": {
+        "choiceIndex": 3,
+        "text": "Insert all of the apostrophes for the student without ever discussing how the intended meaning determines where each one of them should actually belong."
+      },
+      "parapro-b5-writing-024": {
+        "choiceIndex": 2,
+        "text": "Choose a replacement word for the student and then rewrite the entire sentence without ever explaining the reasoning behind that particular decision."
+      },
+      "parapro-b5-writing-023": {
+        "choiceIndex": 3,
+        "text": "Write both the introduction and the conclusion for the student so that all of the remaining notes will simply fit in between the two of them."
+      }
+    },
+    "parapro_batch5_reading_34.json": {
+      "parapro-b5-reading-023": {
+        "choiceIndex": 2,
+        "text": "Reliability had already been improving steadily for at least three full months before January, which fully explains the entire change on its own without any other factor."
+      },
+      "parapro-b5-reading-030": {
+        "choiceIndex": 0,
+        "text": "Read only the word station over and over several times until the surrounding sentence begins to seem clearer to the student who is reading it."
+      },
+      "parapro-b5-reading-010": {
+        "choiceIndex": 0,
+        "text": "The installer used up three separate rolls of film during a single weekend work period at the school site over the two full days."
+      },
+      "parapro-b5-reading-024": {
+        "choiceIndex": 1,
+        "text": "Ask the student to memorize all three of the complete words from the flash cards, without ever examining the letter patterns that the three words happen to share here."
+      },
+      "parapro-b5-reading-025": {
+        "choiceIndex": 2,
+        "text": "Skip the title entirely and have students define every unfamiliar word taken from the final paragraph of the article before reading any of it."
+      },
+      "parapro-b5-reading-034": {
+        "choiceIndex": 0,
+        "text": "Which of the two sources uses the brighter colors on its charts, and why does that make its conclusion the correct one to rely on here?"
+      },
+      "parapro-b5-reading-002": {
+        "choiceIndex": 0,
+        "text": "The flowers were purchased from a commercial nursery located about twelve miles away from the school building itself last spring."
+      },
+      "parapro-b5-reading-026": {
+        "choiceIndex": 2,
+        "text": "Can you copy out the very first sentence exactly as it appears in the passage that you have only just finished reading?"
+      },
+      "parapro-b5-reading-028": {
+        "choiceIndex": 2,
+        "text": "Wait until the very end of the unit and then simply ask another student in the class for the correct answer instead."
+      },
+      "parapro-b5-reading-031": {
+        "choiceIndex": 0,
+        "text": "Tell the student to use the very first dictionary meaning listed every single time that a word happens to have multiple possible meanings."
+      },
+      "parapro-b5-reading-029": {
+        "choiceIndex": 2,
+        "text": "Have students accept both of the pages, because any information that has been posted online anywhere has already been carefully verified."
+      },
+      "parapro-b5-reading-012": {
+        "choiceIndex": 2,
+        "text": "September and December both recorded exactly the same can-collection weights during the drive."
+      },
+      "parapro-b5-reading-033": {
+        "choiceIndex": 3,
+        "text": "Add several unrelated cleanup rules to the spoken directions and then repeat all of them again much more quickly than you did before."
+      },
+      "parapro-b5-reading-032": {
+        "choiceIndex": 1,
+        "text": "Choose whichever chapter happens to have the shortest title and then search only within that one chapter."
+      },
+      "parapro-b5-reading-027": {
+        "choiceIndex": 3,
+        "text": "The student clearly understands every idea in the passage, because most of the individual words were pronounced correctly aloud."
+      },
+      "parapro-b5-reading-021": {
+        "choiceIndex": 3,
+        "text": "As a direct comparison of freshwater and saltwater habitats and their species"
+      },
+      "parapro-b5-reading-020": {
+        "choiceIndex": 1,
+        "text": "Leila is hiding the library book so that another borrower will manage to avoid a fine."
+      },
+      "parapro-b5-reading-013": {
+        "choiceIndex": 1,
+        "text": "To argue that all hermit crabs ought to live far away from the open ocean"
+      },
+      "parapro-b5-reading-003": {
+        "choiceIndex": 0,
+        "text": "Priya has already decided to stop participating in the school music classes."
+      },
+      "parapro-b5-reading-008": {
+        "choiceIndex": 2,
+        "text": "Mateo is deliberately hiding the cones from everyone attending the evening performance."
+      },
+      "parapro-b5-reading-007": {
+        "choiceIndex": 0,
+        "text": "Residents asked the students to measure the exact height of every mature tree in the whole neighborhood."
+      },
+      "parapro-b5-reading-001": {
+        "choiceIndex": 3,
+        "text": "Staff members had stopped using printed index cards entirely to advertise volunteer tasks."
+      },
+      "parapro-b5-reading-018": {
+        "choiceIndex": 2,
+        "text": "Midday sunlight can noticeably raise the internal temperature of the nest."
+      },
+      "parapro-b5-reading-005": {
+        "choiceIndex": 2,
+        "text": "As a problem about irrigation followed by several completely unrelated solutions to it"
+      },
+      "parapro-b5-reading-017": {
+        "choiceIndex": 1,
+        "text": "All desert insects must travel to the distant rivers each morning to find water."
+      },
+      "parapro-b5-reading-006": {
+        "choiceIndex": 3,
+        "text": "To announce the final results of a recently canceled sporting event"
+      },
+      "parapro-b5-reading-019": {
+        "choiceIndex": 3,
+        "text": "East Ridge had more total visits than North Loop in both of the months."
+      },
+      "parapro-b5-reading-011": {
+        "choiceIndex": 3,
+        "text": "The match count is only an opinion, while the claim about the excitement is a measurable fact."
+      }
+    },
+    "parapro_batch5_mathematics_33.json": {
+      "parapro-b5-mathematics-028": {
+        "choiceIndex": 2,
+        "text": "Place the protractor’s center point anywhere along one of the rays, as long as some number on the scale remains visible to the student."
+      },
+      "parapro-b5-mathematics-029": {
+        "choiceIndex": 1,
+        "text": "Accept 8.9 centimeters, because an object’s measured length will always equal the number that is printed at its ending mark on the ruler."
+      },
+      "parapro-b5-mathematics-027": {
+        "choiceIndex": 3,
+        "text": "Explain that no square can ever be a rhombus, because the two shapes are simply given entirely different names in geometry textbooks."
+      },
+      "parapro-b5-mathematics-026": {
+        "choiceIndex": 0,
+        "text": "Delete the zero from every decimal and then tell the student that matching nonzero digits will always make any two decimal numbers exactly equal to each other."
+      },
+      "parapro-b5-mathematics-032": {
+        "choiceIndex": 0,
+        "text": "Count each full symbol as 1 and simply ignore the half symbol, because partial symbols carry no value at all on a pictograph."
+      },
+      "parapro-b5-mathematics-030": {
+        "choiceIndex": 0,
+        "text": "Keep 11, because the order in which the data values happen to be recorded is what determines the median."
+      },
+      "parapro-b5-mathematics-023": {
+        "choiceIndex": 1,
+        "text": "Replace 7/6 with 6/7, because proper fractions are the only kind of fractions that can ever be modeled visually."
+      },
+      "parapro-b5-mathematics-025": {
+        "choiceIndex": 1,
+        "text": "Accept 27 bins, because equivalent ratios are always formed by adding the same number to both of the quantities."
+      },
+      "parapro-b5-mathematics-031": {
+        "choiceIndex": 0,
+        "text": "Agree, because visual steepness can always be compared directly across two graphs that happen to have different scales."
+      },
+      "parapro-b5-mathematics-033": {
+        "choiceIndex": 3,
+        "text": "Subtract 37 from 28, because the word ‘removed’ means that the first number stated must always be the one subtracted."
+      },
+      "parapro-b5-mathematics-024": {
+        "choiceIndex": 1,
+        "text": "Move the decimal one place to the right, because multiplication must always make numbers larger."
+      }
+    }
+  }
+}

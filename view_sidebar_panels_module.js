@@ -754,7 +754,7 @@ function UniversalSettingsPanel(props) {
     },
     isResolvingLocal ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin motion-reduce:animate-none" }) : /* @__PURE__ */ React.createElement(Search, { size: 12 }),
     " Resolve from local snapshot"
-  ), localStandardsManifest && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-cyan-900", title: localStandardsManifest.attribution || localStandardsManifest.provider }, localStandardsManifest.datasetVersion || localStandardsManifest.provider)), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] leading-snug text-cyan-900/80" }, localStandardsManifest && localStandardsManifest.attribution || "Standards data: Learning Commons Knowledge Graph (CC BY 4.0).", " ", "Matches are alignment evidence to support educator judgment \u2014 not official certification, and not for grading, placement, or evaluation."), localResolution && localResolution.status === "resolved" && localResolution.match && /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded border border-emerald-200 bg-white p-2 text-[11px] text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-emerald-800" }, "Exact local match: ", localResolution.match.code), /* @__PURE__ */ React.createElement("div", { className: "mt-0.5" }, localResolution.match.label || localResolution.match.text), /* @__PURE__ */ React.createElement(
+  ), localStandardsManifest && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-cyan-900", title: localStandardsManifest.attribution || localStandardsManifest.provider }, localStandardsManifest.datasetVersion || localStandardsManifest.provider)), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] leading-snug text-cyan-900/80" }, localStandardsManifest && localStandardsManifest.attribution || "Standards data: Learning Commons Knowledge Graph (CC BY 4.0).", " ", t("standards_finder.evidence_disclaimer") || "Matches are alignment evidence to support educator judgment, not official certification, and not for grading, placement, or evaluation."), localResolution && localResolution.status === "resolved" && localResolution.match && /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded border border-emerald-200 bg-white p-2 text-[11px] text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-emerald-800" }, t("standards_finder.exact_match", { code: localResolution.match.code }) || "Exact local match: " + localResolution.match.code), /* @__PURE__ */ React.createElement("div", { className: "mt-0.5" }, localResolution.match.label || localResolution.match.text), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -762,8 +762,8 @@ function UniversalSettingsPanel(props) {
       disabled: targetStandards.length > 0 || typeof handleUseResolvedStandard !== "function",
       className: "mt-2 rounded bg-emerald-700 px-2 py-1 font-bold text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50"
     },
-    "Use resolved standard"
-  ), targetStandards.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-amber-800" }, "Remove the current target standard before using a resolved local record.")), localResolution && localResolution.status === "resolved" && localResolution.match && surpriseAi && /* @__PURE__ */ React.createElement("div", { className: "rounded border border-violet-200 bg-violet-50/70 p-2 text-[11px] text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-violet-900" }, "Surprise me: lessons in this learning space"), /* @__PURE__ */ React.createElement(
+    t("standards_finder.use_resolved") || "Use resolved standard"
+  ), targetStandards.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-amber-800" }, t("standards_finder.remove_target_first") || "Remove the current target standard before using a resolved local record.")), localResolution && localResolution.status === "resolved" && localResolution.match && surpriseAi && /* @__PURE__ */ React.createElement("div", { className: "rounded border border-violet-200 bg-violet-50/70 p-2 text-[11px] text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-violet-900" }, t("standards_finder.surprise_heading") || "Surprise me: lessons in this learning space"), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -771,8 +771,8 @@ function UniversalSettingsPanel(props) {
       disabled: surpriseState === "loading",
       className: "rounded bg-violet-700 px-2 py-1 font-bold text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50"
     },
-    surpriseState === "loading" ? "Proposing\u2026" : surpriseState === "ready" ? "Propose again" : "\u2728 Propose 3 directions"
-  )), surpriseState === "ready" && surpriseHood && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-violet-900" }, "Graph context: ", surpriseHood.prerequisites.length, " prerequisite(s), ", surpriseHood.leadsTo.length, " next, ", surpriseHood.related.length, " related", surpriseHood.dataset && surpriseHood.dataset.provider ? " \u2014 " + surpriseHood.dataset.provider : "", ". Directions are AI proposals grounded in these source edges, for educator judgment \u2014 not certification."), surpriseState === "ready" && surpriseDirections.length > 0 && /* @__PURE__ */ React.createElement(SurpriseMeCompare, { directions: surpriseDirections, hood: surpriseHood, onUse: useSurpriseDirection })), localResolution && localResolution.status === "ambiguous" && /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded border border-amber-200 bg-white p-2 text-[11px] text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-amber-800" }, "Multiple exact matches. Choose the intended framework."), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex flex-wrap gap-1" }, (localResolution.candidates || []).map((candidate) => /* @__PURE__ */ React.createElement(
+    surpriseState === "loading" ? t("standards_finder.proposing") || "Proposing\u2026" : surpriseState === "ready" ? t("standards_finder.propose_again") || "Propose again" : t("standards_finder.propose_3_sparkle") || "\u2728 Propose 3 directions"
+  )), surpriseState === "ready" && surpriseHood && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-violet-900" }, t("standards_finder.graph_context", { prereq: surpriseHood.prerequisites.length, next: surpriseHood.leadsTo.length, related: surpriseHood.related.length, provider: surpriseHood.dataset && surpriseHood.dataset.provider ? t("standards_finder.provider_suffix", { provider: surpriseHood.dataset.provider }) || " \u2014 " + surpriseHood.dataset.provider : "" }) || "Graph context: " + surpriseHood.prerequisites.length + " prerequisite(s), " + surpriseHood.leadsTo.length + " next, " + surpriseHood.related.length + " related. Directions are AI proposals grounded in these source edges, for educator judgment \u2014 not certification."), surpriseState === "ready" && surpriseDirections.length > 0 && /* @__PURE__ */ React.createElement(SurpriseMeCompare, { directions: surpriseDirections, hood: surpriseHood, onUse: useSurpriseDirection })), localResolution && localResolution.status === "ambiguous" && /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded border border-amber-200 bg-white p-2 text-[11px] text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-amber-800" }, t("standards_finder.ambiguous_framework") || "Multiple exact matches. Choose the intended framework."), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex flex-wrap gap-1" }, (localResolution.candidates || []).map((candidate) => /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -783,7 +783,7 @@ function UniversalSettingsPanel(props) {
     /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, candidate.code),
     " \xB7 ",
     candidate.framework || candidate.jurisdiction || candidate.id
-  )))), localResolution && localResolution.status === "not-found" && /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded border border-slate-300 bg-white p-2 text-[11px] text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold" }, "No exact local match."), (localResolution.candidates || []).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1" }, "Possible codes to review: ", (localResolution.candidates || []).slice(0, 3).map((candidate) => candidate.code).join(", "), ". They were not selected automatically.")), localResolution && localResolution.status === "error" && /* @__PURE__ */ React.createElement("div", { role: "alert", className: "rounded border border-red-200 bg-white p-2 text-[11px] text-red-700" }, "The local snapshot could not resolve this entry."))), /* @__PURE__ */ React.createElement(UniversalApplicability, { settingKey: "standards", t })), targetStandards.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mt-2 mb-2" }, targetStandards.map((std, idx) => /* @__PURE__ */ React.createElement("span", { key: idx, className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 animate-in motion-reduce:animate-none slide-in-from-left-1 max-w-full" }, /* @__PURE__ */ React.createElement("span", { className: "truncate", title: std }, std), /* @__PURE__ */ React.createElement(
+  )))), localResolution && localResolution.status === "not-found" && /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded border border-slate-300 bg-white p-2 text-[11px] text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold" }, t("standards_finder.no_exact_match") || "No exact local match."), (localResolution.candidates || []).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1" }, t("standards_finder.possible_codes") || "Possible codes to review:", " ", (localResolution.candidates || []).slice(0, 3).map((candidate) => candidate.code).join(", "), ". They were not selected automatically.")), localResolution && localResolution.status === "error" && /* @__PURE__ */ React.createElement("div", { role: "alert", className: "rounded border border-red-200 bg-white p-2 text-[11px] text-red-700" }, t("standards_finder.resolve_error") || "The local snapshot could not resolve this entry."))), /* @__PURE__ */ React.createElement(UniversalApplicability, { settingKey: "standards", t })), targetStandards.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mt-2 mb-2" }, targetStandards.map((std, idx) => /* @__PURE__ */ React.createElement("span", { key: idx, className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 animate-in motion-reduce:animate-none slide-in-from-left-1 max-w-full" }, /* @__PURE__ */ React.createElement("span", { className: "truncate", title: std }, std), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1479,7 +1479,12 @@ function MathPanel(props) {
     useMathSourceContext,
     // Primary door to Math Studio, the former STEM Lab Create tab
     // (docs/math_create_migration_plan.md).
-    openMathCreate
+    openMathCreate,
+    // Writes a completed standardized math probe into the learner's probe
+    // history, the store Assessment Center reads for RTI tier, trend series and
+    // the IEP export. Before this, no math path called it and the Math DCPM
+    // trend could never be populated.
+    saveProbeResult
   } = props;
   if (!expandedTools || !expandedTools.includes("math")) return null;
   return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsSurface }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("math.subject")), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 12, className: "text-slate-600" })), /* @__PURE__ */ React.createElement(
@@ -1538,7 +1543,43 @@ function MathPanel(props) {
         addToast,
         storageDB,
         handleScoreUpdate,
-        onProbeComplete: (entry) => setHistory((prev) => [...prev, entry])
+        onProbeComplete: (entry) => {
+          setHistory((prev) => [...prev, entry]);
+          const r = entry && entry.data;
+          if (!r || r.mode !== "benchmark" || !r.student) return;
+          if (typeof saveProbeResult !== "function") return;
+          const rawDcpm = r.dcpm;
+          const dcpm = Number(rawDcpm);
+          const hasScore = rawDcpm !== null && rawDcpm !== void 0 && rawDcpm !== "" && Number.isFinite(dcpm);
+          if (r.validForComparison === false || !hasScore) {
+            if (typeof addToast === "function") addToast(
+              t("math_fluency.probe_not_recorded") || "Probe not recorded: the run was interrupted or ended early. Re-administer for a comparable score.",
+              "warning"
+            );
+            return;
+          }
+          saveProbeResult(r.student, {
+            activity: "math_dcpm",
+            grade: r.grade,
+            form: r.form,
+            // Assessment Center reads itemsPerMin through
+            // _probeTypeAndScore and dcpm through the AlloSheet score
+            // walker. Both must see the same number, or two surfaces
+            // would report different scores for one probe.
+            dcpm,
+            itemsPerMin: dcpm,
+            correct: r.totalCorrect,
+            total: r.totalAttempted,
+            accuracy: r.accuracy,
+            date: r.date || (/* @__PURE__ */ new Date()).toISOString(),
+            timestamp: entry.timestamp || Date.now(),
+            source: "math_fluency_probe"
+          });
+          if (typeof addToast === "function") addToast(
+            t("math_fluency.probe_recorded_for", { student: r.student }) || `Probe recorded for ${r.student}.`,
+            "success"
+          );
+        }
       }
     );
   })(), mathMode === "Fluency Maze" && (() => {

@@ -6194,15 +6194,15 @@
       "type": "single-choice",
       "domainId": "writing",
       "difficulty": "foundation",
-      "prompt": "Which sentence has correct subject-verb agreement?",
+      "prompt": "Which sentence correctly matches the verb to its subject when the subjects are joined by a conjunction?",
       "choices": [
-        "The box of donated books are beside the office door.",
-        "The students in the reading group meets every Tuesday.",
-        "The list of new volunteers include three family members.",
-        "The box of donated books is beside the office door."
+        "Neither the coaches nor the captain plan to attend the assembly.",
+        "The teacher and the aide prepares the materials each morning.",
+        "Either the students or the teacher are leading the discussion.",
+        "Neither the posters nor the banner was ready before the assembly."
       ],
       "answerIndex": 3,
-      "rationale": "The phrase of donated books does not change the number of the subject box. Because box is singular, the correct verb is is; the other sentences mismatch their subjects and verbs.",
+      "rationale": "When subjects are joined by the correlative conjunctions neither/nor or either/or, the verb agrees with whichever subject is nearer to it. In the correct sentence the nearer subject \"banner\" is singular, so the singular verb \"was\" is required. A compound subject joined by \"and\" is a separate rule and takes a plural verb.",
       "references": [
         "https://www.ets.org/pdfs/parapro/1755.pdf",
         "https://openstax.org/books/writing-guide/pages/handbook"
@@ -6214,10 +6214,10 @@
       "qaStatus": "qa-passed",
       "qaReviewedAt": "2026-07-13",
       "choiceRationales": [
-        "This option does not fit because the singular subject box requires is rather than are. The stated information or governing rule points to a different result.",
-        "This option does not fit because the plural subject students requires meet rather than meets. The stated information or governing rule points to a different result.",
-        "This option does not fit because the singular subject list requires includes rather than include. The stated information or governing rule points to a different result.",
-        "The subject is the singular noun box, so the singular verb is agrees with it. It is the only option that satisfies every part of the prompt."
+        "Not the best answer. With neither/nor the verb agrees with the nearer subject, and \"captain\" is singular, so \"plans\" is required. When subjects are joined by the correlative conjunctions neither/nor or either/or, the verb agrees with whichever subject is nearer to it. In the correct sentence the nearer subject \"banner\" is singular, so the singular verb \"was\" is required. A compound subject joined by \"and\" is a separate rule and takes a plural verb.",
+        "Not the best answer. Two subjects joined by \"and\" form a plural compound subject, so \"prepare\" is required rather than \"prepares\". When subjects are joined by the correlative conjunctions neither/nor or either/or, the verb agrees with whichever subject is nearer to it. In the correct sentence the nearer subject \"banner\" is singular, so the singular verb \"was\" is required. A compound subject joined by \"and\" is a separate rule and takes a plural verb.",
+        "Not the best answer. With either/or the verb agrees with the nearer subject, and \"teacher\" is singular, so \"is leading\" is required. When subjects are joined by the correlative conjunctions neither/nor or either/or, the verb agrees with whichever subject is nearer to it. In the correct sentence the nearer subject \"banner\" is singular, so the singular verb \"was\" is required. A compound subject joined by \"and\" is a separate rule and takes a plural verb.",
+        "Correct. When subjects are joined by the correlative conjunctions neither/nor or either/or, the verb agrees with whichever subject is nearer to it. In the correct sentence the nearer subject \"banner\" is singular, so the singular verb \"was\" is required. A compound subject joined by \"and\" is a separate rule and takes a plural verb."
       ],
       "skillIds": [
         "writing-revision-clarity"
@@ -7420,7 +7420,7 @@
       "choices": [
         "Teaching repair skills helped the theater department reuse costumes and reduce replacement purchases.",
         "The theater department performs its largest production during the spring semester.",
-        "Sorting fabric scraps by color was the only reason students repaired forty-three costumes.",
+        "Sorting the fabric scraps by color was the only reason that students repaired all forty-three costumes.",
         "Volunteers decided that students should stop wearing costumes with buttons."
       ],
       "answerIndex": 0,
@@ -7463,7 +7463,7 @@
       "choices": [
         "The bridge was made from paper rather than from wood.",
         "She placed braces at the same locations where the first bridge had bent.",
-        "The books used in the second test came from a classroom shelf.",
+        "The books used during the second test all came from a nearby classroom shelf.",
         "She completed both tests before the end of the school day."
       ],
       "answerIndex": 1,
@@ -7505,7 +7505,7 @@
       "prompt": "Read the passage. During lunch, Amir usually played soccer. On Thursday, however, he carried a field map, a magnifying lens, and a specimen notebook to the greenhouse door. He checked the clock twice while waiting for the ecology mentor to arrive. Which inference is best supported?",
       "choices": [
         "Amir has permanently lost interest in playing soccer.",
-        "The ecology mentor asked Amir to repair the greenhouse clock.",
+        "The ecology mentor had asked Amir to repair the broken greenhouse clock outside.",
         "Amir plans to participate in a scheduled observation activity during lunch.",
         "Amir intends to lend his field equipment to the soccer team."
       ],
@@ -7636,7 +7636,7 @@
         "To advertise a sale of finished ceramic pieces",
         "To warn students about damage and explain how to handle unfinished work safely",
         "To compare clay sculpture with other forms of art",
-        "To entertain students with a story about a pottery mistake"
+        "To entertain students in the studio with a story about a memorable pottery mistake"
       ],
       "answerIndex": 1,
       "rationale": "The notice identifies ways wet clay can be damaged and gives direct handling rules, so its purpose is to warn and instruct rather than advertise, compare, or entertain.",
@@ -7719,7 +7719,7 @@
       "difficulty": "developing",
       "prompt": "Read the passage. Before the international food fair, the cafeteria manager placed photographs beside each dish, printed ingredient labels in three languages, and moved the allergy-information binder to the entrance. She also asked servers to practice pointing visitors to the binder. Which inference is best supported?",
       "choices": [
-        "The cafeteria manager expects every visitor to speak three languages.",
+        "The cafeteria manager expects every single visitor to the fair to speak three languages.",
         "The fair will serve only foods that contain common allergens.",
         "Servers have been asked to memorize every ingredient in every dish.",
         "The manager is trying to make food and allergy information accessible to more visitors."
@@ -7807,7 +7807,7 @@
       "choices": [
         "The platform is visible from a walking path across the river.",
         "A motion camera recorded adult peregrines bringing food to three chicks in a nest on the platform.",
-        "Club members painted the platform before placing it beside the river.",
+        "Club members carefully painted the nesting platform before placing it beside the river last spring.",
         "Several kinds of birds migrate through the region each autumn."
       ],
       "answerIndex": 1,
@@ -7935,7 +7935,7 @@
       "prompt": "Read the passage. The local museum began offering a quiet hour before regular opening. During that hour, lights remain low, attendance is limited, and visitors receive maps marking calm spaces. Families who had previously avoided crowded exhibits now report visiting more often. Which statement best expresses the main idea?",
       "choices": [
         "The museum's quiet hour reduced barriers for some families who had previously avoided crowded exhibits.",
-        "All museum visitors prefer low lighting and small groups at every time of day.",
+        "All of the museum’s visitors prefer low lighting and small groups at every hour of every single day of the week.",
         "Museum maps are useful only when they identify rooms without exhibits.",
         "The museum shortened its regular hours because families stopped attending."
       ],
@@ -8107,7 +8107,7 @@
       "prompt": "Read the excerpt. During the first mile of the trip, Lila gripped her ticket so tightly that its edges folded. When she spotted her aunt's red scarf beyond the station gate, her shoulders loosened and she carefully smoothed the ticket on her knee. Which detail most strongly supports the inference that Lila became less anxious?",
       "choices": [
         "After seeing her aunt, Lila's shoulders loosened and she smoothed the crumpled ticket.",
-        "Lila traveled for at least one mile before reaching the station gate.",
+        "Lila had traveled for at least one full mile before finally reaching the station gate outside.",
         "Her aunt wore a red scarf while waiting beyond the gate.",
         "The ticket's edges had folded while Lila held it."
       ],
@@ -8151,7 +8151,7 @@
       "choices": [
         "To argue that every student should learn the violin",
         "To inform families about eligibility and procedures for borrowing an instrument",
-        "To describe how woodwind and string instruments are manufactured",
+        "To describe in detail how woodwind and string instruments are manufactured and sold",
         "To tell a story about a student's first music lesson"
       ],
       "answerIndex": 1,
@@ -8195,7 +8195,7 @@
         "Longtime residents agree about every change that occurred in the neighborhood.",
         "Digital maps are more accurate than all photographs and spoken memories.",
         "Students combined interviews and historical materials to create a multilayered record of neighborhood change.",
-        "The neighborhood replaced its shops with a museum devoted only to transportation."
+        "The neighborhood replaced all of its shops with a single new museum devoted only to local transportation history."
       ],
       "answerIndex": 2,
       "rationale": "The passage emphasizes students integrating interviews, images, and mapped locations to represent multiple perspectives on change, which the third choice captures at the right level of generality.",
@@ -8365,7 +8365,7 @@
       "prompt": "Read the astronomy-night announcement. Friday's program begins at 8:00 p.m. in the east field. It includes a telescope demonstration and a star-map activity. The telescope demonstration will be the evening's most fascinating event. Portable restrooms will be available near the field. Which sentence is presented as an opinion rather than a verifiable fact?",
       "choices": [
         "Friday's program begins at 8:00 p.m. in the east field.",
-        "It includes a telescope demonstration and a star-map activity.",
+        "It includes a telescope demonstration and a guided star-map activity for families.",
         "The telescope demonstration will be the evening's most fascinating event.",
         "Portable restrooms will be available near the field."
       ],
@@ -8407,7 +8407,7 @@
       "difficulty": "advanced",
       "prompt": "A student repeatedly chooses the catchy opening sentence as a passage's main idea even when later paragraphs develop a different central point. Which paraprofessional response would best preserve the student's reasoning role while building main-idea skill?",
       "choices": [
-        "Tell the student that opening sentences are never important and should always be crossed out.",
+        "Tell the student that opening sentences are never important to a passage and should therefore always be crossed out before reading begins.",
         "Provide the correct main idea before the student rereads so the student can copy it.",
         "Ask the student to count the words in each sentence and select the longest sentence.",
         "Have the student group recurring ideas across paragraphs, propose a statement that covers them, and cite details that support it."
@@ -8454,7 +8454,7 @@
         "Ask the student to record a specific clue, explain how it connects to the prediction, and revise the prediction if the evidence does not support it.",
         "Accept the prediction because any possible ending is an equally valid inference.",
         "Reveal the story's ending and ask the student to copy the final event into a notebook.",
-        "Shift to a spelling exercise so the unsupported prediction does not need to be discussed."
+        "Shift immediately to an unrelated spelling exercise so that the unsupported prediction never has to be discussed with the student at all during the lesson."
       ],
       "answerIndex": 0,
       "rationale": "An evidence-and-reasoning prompt makes the inference process observable and invites revision based on the text, teaching the student to distinguish a supported inference from a guess.",
@@ -8539,7 +8539,7 @@
       "difficulty": "developing",
       "prompt": "A student understands grade-level text when it is read aloud but frequently loses the correct line when reading a densely printed page independently. Under the teacher's plan, which support should the paraprofessional try first?",
       "choices": [
-        "Replace the assigned text with an unrelated book containing much shorter sentences.",
+        "Replace the assigned text with a completely unrelated book that contains much shorter and much simpler sentences.",
         "Read every page aloud while the student listens without following the print.",
         "Offer a line guide, teach the student to move it after each line, and fade it as tracking becomes consistent.",
         "Ask the student to memorize the page before attempting to read it from print."
@@ -8584,7 +8584,7 @@
       "prompt": "A student writes summaries by copying nearly every detail, including examples and repeated explanations. Which instructional response would best help the student produce a concise, accurate summary?",
       "choices": [
         "Set a faster copying deadline so the student has less time to include details.",
-        "Tell the student to summarize only the final sentence, regardless of what earlier paragraphs explain.",
+        "Tell the student to summarize only the final sentence of the passage, regardless of what any of the earlier paragraphs explain.",
         "Delete half of the copied sentences for the student without discussing why they are unnecessary.",
         "Have the student state each paragraph's gist, combine the essential ideas, and justify why specific examples can be omitted."
       ],
@@ -8628,7 +8628,7 @@
       "prompt": "A science article alternates between threats facing sea turtles and conservation responses to each threat. A student incorrectly arranges the information only by the dates mentioned in examples. Which support would best highlight the article's actual structure?",
       "choices": [
         "Guide the student to place each threat beside its corresponding response in a problem-solution chart and cite signal language from the article.",
-        "Ask the student to copy every date into a longer timeline and ignore the surrounding sentences.",
+        "Ask the student to copy every single date from the article into a much longer timeline and then ignore all of the surrounding explanatory sentences.",
         "Provide a list of sea turtle species and ask the student to alphabetize it.",
         "Tell the student the structure is chronological and praise the first organizer."
       ],
@@ -8671,7 +8671,7 @@
       "difficulty": "developing",
       "prompt": "While reading a geography paragraph, a student stalls at the word transportation and begins guessing from its first letter. Which teacher-directed paraprofessional prompt would most appropriately support accurate word reading?",
       "choices": [
-        "Skip the word permanently because a long word is unlikely to affect paragraph meaning.",
+        "Skip over the word permanently, because a single long word is unlikely to affect the overall meaning of the paragraph for the reader in any noticeable way.",
         "Mark the prefix trans-, root port, and suffix -ation; blend the parts into the whole word; then reread the sentence to check pronunciation and meaning.",
         "Supply an unrelated short word beginning with t so the student can finish quickly.",
         "Ask the student to guess again without looking beyond the first letter."
@@ -8715,7 +8715,7 @@
       "difficulty": "developing",
       "prompt": "A student reads the prose in a science section but skips the diagram caption and cannot explain what the arrows in the diagram represent. Which support would best help the student integrate the two sources of information?",
       "choices": [
-        "Cover the diagram so the student can focus exclusively on memorizing the prose.",
+        "Cover the diagram entirely so that the student can focus exclusively on reading and memorizing the surrounding prose section of the science chapter.",
         "Explain the complete diagram while the student waits for the answer.",
         "Prompt the student to read the caption, trace each labeled arrow, and explain how the diagram adds to a specific sentence in the prose.",
         "Have the student copy the caption three times without viewing the diagram."
@@ -8761,7 +8761,7 @@
       "choices": [
         "Select definition 1 because the first dictionary meaning must fit every sentence.",
         "Select definition 2 because channel is commonly associated with television.",
-        "Combine all three definitions and treat the sentence as having all three meanings at once.",
+        "Combine all three of the dictionary definitions and treat the sentence as carrying all three of those meanings at the very same time as one another.",
         "Notice that channel follows will and is followed by funds toward repairs, then test definition 3 by substituting it and rereading the sentence."
       ],
       "answerIndex": 3,
@@ -8847,7 +8847,7 @@
       "difficulty": "advanced",
       "prompt": "A student can use headings to predict a section's content, but only after the paraprofessional points to each heading and asks what it means. Recent work shows the predictions are usually accurate. What is the best next instructional move?",
       "choices": [
-        "Continue giving every prompt indefinitely because accurate performance proves the prompts are necessary.",
+        "Continue giving every prompt indefinitely, because the student’s accurate performance proves that the prompts themselves are still necessary.",
         "Fade the support by asking the student to preview headings independently, then review the prediction and provide a prompt only when needed.",
         "Stop allowing the student to use headings and require predictions from page numbers alone.",
         "Advance immediately to a much harder text and remove all opportunities for feedback."
@@ -9246,7 +9246,7 @@
         "The expansion is correct because the exponent 3 means add three copies of 4.",
         "The expansion should be 3 x 3 x 3 because the exponent supplies the factor.",
         "The expansion should be 4 x 4 x 4 because the exponent tells how many times 4 is used as a factor.",
-        "The expansion should be 4 x 3 because an exponent means multiply the base by the exponent."
+        "The expansion should be 4 x 3, because an exponent simply means to multiply the base by the exponent."
       ],
       "answerIndex": 2,
       "rationale": "In 4^3, 4 is the base and 3 is the exponent. The exponent tells how many times the base is used as a factor, so 4^3 = 4 x 4 x 4 = 64. The proposed repeated addition equals 12 and does not represent the power.",
@@ -9774,7 +9774,7 @@
         "Visits decreased every week.",
         "Visits stayed at 23 for all four weeks.",
         "Visits increased overall, with no change from Week 2 to Week 3.",
-        "Visits increased by the same amount each week."
+        "Visits increased by exactly the same amount during each of the four weeks."
       ],
       "answerIndex": 2,
       "rationale": "The number of visits rises from 18 to 23, remains at 23, and then rises to 29. Thus, visits increase overall but do not change from Week 2 to Week 3.",
@@ -9861,7 +9861,7 @@
       "choices": [
         "Tell the student to place 3.6 above 0.48 so the final digits always line up, then try again.",
         "Have the student add 36 and 48 and place the decimal point two places from the right.",
-        "Ask the student to round both addends to whole numbers and use the estimate as the exact answer.",
+        "Ask the student to round both of the addends to whole numbers and then use that estimate as the exact answer.",
         "Use a place-value chart to rewrite 3.6 as 3.60, align equal place values, and show that the sum is 4.08."
       ],
       "answerIndex": 3,
@@ -9904,7 +9904,7 @@
       "prompt": "A student answers 3/4 divided by 1/8 by multiplying the fractions and obtaining 3/32. Which model would best help the student understand the quotient?",
       "choices": [
         "Partition a whole strip into eighths, shade 3/4, and count the six 1/8-size pieces contained in the shaded length.",
-        "State the invert-and-multiply rule, write the answer 6, and ask the student to memorize the steps.",
+        "State the invert-and-multiply rule, write down the answer 6, and ask the student to memorize all of the steps involved.",
         "Draw three groups of 1/32 and label the drawing as the product of the two fractions.",
         "Use two fraction circles to add 3/4 and 1/8, then describe the sum as the quotient."
       ],
@@ -9948,7 +9948,7 @@
       "prompt": "A student translates the phrase 'twice a number, decreased by 7' as 2(n - 7). Which response would best clarify why the intended expression is 2n - 7?",
       "choices": [
         "Tell the student that 2(n - 7) and 2n - 7 are equivalent because both contain 2, n, and 7.",
-        "Replace n with 7 only, note that the expressions give different values, and stop the discussion.",
+        "Replace n with 7 only, note that the two expressions give different values, and then simply stop the discussion at that point.",
         "Use n = 10 to act out twice the number and then subtract 7, compare 13 with 2(10 - 7) = 6, and connect the actions to 2n - 7.",
         "Ask the student to copy the expression 2n - 7 several times until the wording is memorized."
       ],
@@ -9991,7 +9991,7 @@
       "difficulty": "application",
       "prompt": "A student sees the sequence 4, 9, 14, 19 and says the next term is 23 because the numbers 'go up by about 4.' Which response best advances the student's reasoning?",
       "choices": [
-        "Confirm 23 because an estimate is close enough when continuing a number sequence.",
+        "Confirm that 23 is correct, because a reasonable estimate is close enough when continuing almost any number sequence.",
         "Tell the student that the answer is 24 and move immediately to the next problem.",
         "Ask the student to add all four terms and divide by 4 to find the next term.",
         "Have the student find each consecutive difference, identify the repeated increase of 5, and use it to obtain 24."
@@ -10036,7 +10036,7 @@
       "prompt": "A student says that any two rectangles with the same perimeter must also have the same area. Which paraprofessional response provides the clearest counterexample?",
       "choices": [
         "Compare a 1-by-11 rectangle with a 5-by-7 rectangle: both have perimeter 24 units, but their areas are 11 and 35 square units.",
-        "Compare a 3-by-4 rectangle with another 3-by-4 rectangle and note that both perimeter and area are equal.",
+        "Compare a 3-by-4 rectangle with another identical 3-by-4 rectangle and note that both the perimeter and the area are exactly equal.",
         "Draw one rectangle, calculate its perimeter twice, and explain that repeated calculations should agree.",
         "State that perimeter and area always change together because both are measurements of the same figure."
       ],
@@ -10082,7 +10082,7 @@
         "Have the student estimate the doorway's height without using a measurement tool.",
         "Provide a measuring tape long enough for the doorway, align zero with the floor, keep the tape straight, and read the height at the top once.",
         "Ask the student to round each 15-centimeter placement before adding the partial lengths.",
-        "Begin counting at the ruler's 1-centimeter mark and add one centimeter for every placement."
+        "Begin counting at the ruler’s 1-centimeter mark each time and then add one extra centimeter for every separate placement of the ruler along the doorway."
       ],
       "answerIndex": 1,
       "rationale": "A measuring tape long enough for the doorway eliminates repeated placements, while aligning zero, keeping the tape straight, and reading the top endpoint address the errors that made the measurements inconsistent.",
@@ -10126,7 +10126,7 @@
         "Have the student add all four side lengths and label the result square centimeters.",
         "Tell the student that the area is 40 square centimeters without discussing which measurements determine it.",
         "Cut a triangular piece from one side and shift it to form an 8-by-5 rectangle, connecting the rearrangement to base times perpendicular height.",
-        "Ask the student to multiply all three given measurements because more dimensions make an area result more accurate."
+        "Ask the student to multiply all three of the given measurements together, because using more dimensions makes any area result far more accurate."
       ],
       "answerIndex": 2,
       "rationale": "Rearranging the parallelogram into a rectangle preserves area and makes the perpendicular height visible. The resulting 8-by-5 rectangle has area 40 square centimeters, not 8 times the slanted side.",
@@ -10167,7 +10167,7 @@
       "difficulty": "application",
       "prompt": "A bar graph compares attendance rates of 92% and 96%, but its vertical axis begins at 90%, making the second bar appear three times as tall. Which response best helps students evaluate the display?",
       "choices": [
-        "Accept the visual comparison because taller bars always represent proportional differences accurately.",
+        "Accept the visual comparison exactly as it stands, because taller bars on a graph always represent proportional differences between the values accurately.",
         "Remove the axis labels so students focus on the relative heights instead of the numerical values.",
         "Subtract each rate from 100 and compare the absence percentages without discussing the graph's scale.",
         "Identify the truncated axis, calculate the actual 4-percentage-point difference, and redraw the graph with a scale suited to an honest comparison."
@@ -10214,7 +10214,7 @@
         "Combine the 3 bicycle riders with the 5 walkers, draw one bar of height 8, and keep the survey total at 24.",
         "Make a frequency table, confirm that the four counts total 24, and add a bicycle bar of height 3 using the graph’s scale.",
         "Keep the three existing bars, change the reported sample size from 24 to 21, and label the graph as complete.",
-        "Add a bicycle bar with the same height as the walking bar so the two active-travel categories appear consistent."
+        "Add a bicycle bar with exactly the same height as the walking bar so that the two active-travel categories appear consistent."
       ],
       "answerIndex": 1,
       "rationale": "A complete display must preserve all four survey categories and their recorded frequencies. The table verifies that the counts account for all 24 students, and the added bar represents the bicycle frequency of 3 on the existing scale.",
@@ -10256,7 +10256,7 @@
       "prompt": "A line plot shows two X marks at 1/2 inch, three X marks at 3/4 inch, and one X mark at 1 inch. A student adds each labeled value once and reports a total of 2 1/4 inches. Which response best addresses the error?",
       "choices": [
         "Have the student write one addend for every X mark and calculate 1/2 + 1/2 + 3/4 + 3/4 + 3/4 + 1 = 4 1/4 inches.",
-        "Tell the student to count the six X marks and report 6 inches because every mark represents one inch.",
+        "Tell the student to count all six of the X marks and report 6 inches, because every single mark represents one inch.",
         "Ask the student to add only the most frequent value, 3/4, to the greatest value, 1.",
         "Replace the line plot with an unlabeled picture so repeated measurements are less distracting."
       ],
@@ -10302,7 +10302,7 @@
         "Compare the unsuccessful counts, 8 and 9, and declare Group A better because 8 is smaller.",
         "Rewrite both rates with denominator 60 as 12/60 and 21/60, then compare those fractions.",
         "Convert each success rate to a common form: 12/20 = 60% and 21/30 = 70%, so Group B has the higher proportional success rate.",
-        "Ignore the different trial totals and confirm that any group with more successes must have the better rate."
+        "Ignore the different trial totals entirely and confirm that any group with more successes must also have the better overall rate."
       ],
       "answerIndex": 2,
       "rationale": "Raw success counts are not directly comparable when the groups complete different numbers of trials. Converting to rates shows 60% for Group A and 70% for Group B, which justifies the conclusion proportionally.",
@@ -10431,7 +10431,7 @@
       "difficulty": "developing",
       "prompt": "The clause \"which won the recycling contest\" is nonessential in the sentence \"Ms. Patel's class which won the recycling contest will lead the assembly.\" Which punctuation change is correct?",
       "choices": [
-        "Place a comma only after \"contest.\"",
+        "Place a single comma only after the word \"contest\" in the sentence.",
         "Place a comma only after \"class.\"",
         "Place a comma only after \"lead.\"",
         "Place one comma after \"class\" and a second comma after \"contest.\""
@@ -10653,7 +10653,7 @@
       "choices": [
         "The alarm although ringing before sunrise.",
         "Although the alarm rang before sunrise, the volunteers reached the site by seven.",
-        "Although the alarm rang. Before sunrise the volunteers arrived.",
+        "Although the alarm rang. Before sunrise the tired volunteers had all already arrived.",
         "The volunteers reaching the site, although before sunrise."
       ],
       "answerIndex": 1,
@@ -11144,7 +11144,7 @@
         "A student survey reports that partner reading is the most enjoyable part of the literacy block for most classmates.",
         "A library inventory shows that the classroom offers six shelves containing both fiction and nonfiction titles.",
         "Comparable one-minute checks increased from 104 to 118 correct words per minute after six weeks while the fluency routine otherwise remained unchanged.",
-        "A teacher log confirms that daily partner reading occurred for six weeks but includes no measurements of fluency or reading rate."
+        "A teacher log confirms that daily partner reading occurred for six full weeks but includes no measurements at all of fluency, accuracy, or reading rate."
       ],
       "answerIndex": 2,
       "rationale": "The comparable checks document a class-level increase in the stated fluency measure, and the unchanged remainder of the routine makes the partner-reading explanation more plausible. The evidence supports the claim without proving that no other influence contributed.",
@@ -11188,7 +11188,7 @@
       "choices": [
         "Nguyen's 2024 report explains that established native plants generally require less irrigation, a benefit that could lower the garden's water use.",
         "Native plants need less water, and everyone already knows this important fact about gardens.",
-        "The source says, native plants generally need less irrigation after they are established, which proves the plan is perfect.",
+        "The source says, native plants generally need less irrigation after they are established, which proves the entire irrigation plan is absolutely perfect.",
         "In 2024 there was a report, and gardens have plants that can be native and established."
       ],
       "answerIndex": 0,
@@ -11278,7 +11278,7 @@
       "choices": [
         "School buses come in several sizes and are usually painted yellow.",
         "Together, the survey and route analysis support piloting the adjustment to reduce long waits without increasing the fleet.",
-        "Some students enjoy waiting with friends, while other students have different morning routines.",
+        "Some students enjoy waiting with their friends, while many other students simply have quite different morning routines at home.",
         "The transportation office should immediately change every route in the district."
       ],
       "answerIndex": 1,
@@ -11324,7 +11324,7 @@
         "Correct the spelling in the event list before the student plans the narrative.",
         "Choose the most dramatic event and write the opening paragraph for the student.",
         "Have the student arrange each event on a separate card, orally retell the sequence, and then choose an opening.",
-        "Ask the student to replace the narrative topic with one that requires fewer events."
+        "Ask the student to replace the narrative topic entirely with a different one that requires far fewer events overall."
       ],
       "answerIndex": 2,
       "rationale": "Sequencing movable event cards and rehearsing the story aloud directly address the student's planning difficulty. The student still makes the organizational and wording decisions, preserving ownership.",
@@ -11368,7 +11368,7 @@
       "choices": [
         "Reduce every writing assignment to a single copied sentence.",
         "Have a classmate decide which of the student's ideas should appear in the draft.",
-        "Ask the student to submit only an oral response and skip the writing process entirely.",
+        "Ask the student to submit only an oral response and skip the entire writing process altogether this time.",
         "Provide speech-to-text for drafting, then have the student review and revise the generated text."
       ],
       "answerIndex": 3,
@@ -11414,7 +11414,7 @@
         "Color-code each claim and its evidence, then add a sentence answering, \"Why does this evidence make the claim more likely?\"",
         "Replace each data value with a general word so the explanation sounds less technical.",
         "Copy the strongest claim three times at the end of the explanation for emphasis.",
-        "Correct all capitalization before discussing the relationship between claims and evidence."
+        "Correct all of the capitalization errors first, before discussing any relationship between the claims and the supporting evidence."
       ],
       "answerIndex": 0,
       "rationale": "The color coding makes existing claim-evidence pairs visible, and the focused question prompts the student to supply the missing logical connection. It targets reasoning without replacing the student's explanation.",
@@ -11459,7 +11459,7 @@
         "Assign the student the same topic and thesis used by the nearest classmate.",
         "Invite the student to list familiar processes, identify a likely audience for each, and choose one process to explain.",
         "Begin correcting sentence mechanics even though the student has not produced a draft.",
-        "Write an introduction for the student and require the student to copy it before continuing."
+        "Write a complete introduction for the student and then require the student to copy it out word for word before continuing."
       ],
       "answerIndex": 1,
       "rationale": "Connecting familiar knowledge to a real audience narrows the broad task and gives the student meaningful choices. This scaffolds idea generation while leaving topic selection and composition with the learner.",
@@ -11504,7 +11504,7 @@
         "Keep the blog figures because the page appeared first in the search results.",
         "Replace the figures with estimates so no source information is needed.",
         "Locate official census tables for both years, verify that the categories are comparable, and record the source information.",
-        "Use a recent social-media post that gives population figures but does not identify where they came from."
+        "Use a recent social-media post that gives population figures but does not identify where any of them originally came from at all."
       ],
       "answerIndex": 2,
       "rationale": "Official census tables are authoritative sources for population data. Checking that the years use comparable categories prevents a misleading comparison, and recording source information supports accurate attribution.",
@@ -11547,7 +11547,7 @@
       "difficulty": "applied",
       "prompt": "A student repeatedly writes fragments such as \"Because the temperature dropped overnight.\" Which support is most likely to build the student's ability to correct this pattern independently?",
       "choices": [
-        "Delete every sentence that begins with \"because\" from the student's draft.",
+        "Delete every sentence that begins with the word \"because\" from the draft before returning the draft to the student for later revision.",
         "Tell the student that fragments are wrong without examining an example.",
         "Supply a fully corrected draft and ask the student to copy it neatly.",
         "Compare an example and nonexample, then have the student attach each \"because\" clause to a complete thought and explain the change."
@@ -11595,7 +11595,7 @@
         "Ask the student to define or replace the technical terms, add a familiar example, and keep the explanation scientifically accurate.",
         "Add several more technical terms so the label sounds more advanced.",
         "Remove the explanation of erosion and replace it with an unrelated joke.",
-        "Copy a paragraph from a college geology text without adapting or citing it."
+        "Copy an entire paragraph directly from a college geology textbook without adapting the vocabulary or citing the original source at all."
       ],
       "answerIndex": 0,
       "rationale": "Young visitors need accessible language and concrete examples, but audience adaptation should preserve accurate content. The first guidance helps the student make deliberate language choices rather than removing the science or substituting someone else's writing.",
@@ -11637,7 +11637,7 @@
       "difficulty": "applied",
       "prompt": "A student is asked to write a persuasive letter to the city council supporting or opposing a proposed crosswalk. The draft only narrates one walk to school. Which guidance best helps the student match the required form and purpose?",
       "choices": [
-        "Add more events in chronological order without stating a position on the crosswalk.",
+        "Add still more events in strict chronological order without ever stating a clear position on the proposed crosswalk project.",
         "Turn the account into a dialogue-only scene and omit any request to the council.",
         "State a position, organize relevant reasons and evidence, and close the letter with a specific request to the council.",
         "Replace each sentence with a list of words that rhyme with \"street.\""
@@ -11685,7 +11685,7 @@
         "Replace the comparison task with copying vocabulary words alphabetically.",
         "Let the student rehearse with a comparison frame and a relevant word bank, then select and adapt the language for the paragraph.",
         "Write the complete English paragraph while the student watches silently.",
-        "Require the student to draft without discussion, models, or language resources."
+        "Require the student to draft the paragraph alone without any discussion, written models, or first-language resources available for support."
       ],
       "answerIndex": 1,
       "rationale": "Oral rehearsal, a flexible frame, and a focused word bank reduce the language-production barrier while requiring the learner to choose and adapt the final wording. The scaffold supports rather than replaces composition.",
@@ -11729,7 +11729,7 @@
       "choices": [
         "Allow the fastest student to finish alone so the group can submit early.",
         "Dictate a complete argument and assign each student one sentence to copy.",
-        "Ask the quiet students to decorate the page while the first student continues writing.",
+        "Ask the three quieter students to decorate the page borders while the first student simply continues writing all of the group’s remaining ideas.",
         "Use a turn-taking structure in which each student proposes evidence and explains its relevance before the group selects and organizes ideas."
       ],
       "answerIndex": 3,
@@ -11820,7 +11820,7 @@
         "Making the seed collection visible and easier to use increased student participation in the program.",
         "Herbs are the only plants that students can successfully grow from borrowed seeds.",
         "The librarian removed books from the checkout desk to make room for a seed cabinet.",
-        "Students preferred writing planting cards to checking out materials from the library."
+        "Students clearly preferred writing the planting cards to checking out any materials from the library."
       ],
       "answerIndex": 0,
       "rationale": "The passage links clearer labeling, practical directions, and a visible example with a large increase in seed borrowing, so the first choice captures both the change and its result without adding unsupported details.",
@@ -11863,7 +11863,7 @@
         "The measurements were taken at noon rather than before school.",
         "The thermometer under the shade recorded a temperature 13 degrees lower than the thermometer in the sun.",
         "Students often sit on the playground benches during recess.",
-        "The custodian used thermometers that were the same size and color."
+        "The custodian used two thermometers that happened to be exactly the same size, the same shape, and the same color."
       ],
       "answerIndex": 1,
       "rationale": "The 13-degree difference between otherwise comparable locations directly measures the effect relevant to heat exposure. The other facts concern timing, use, or appearance without demonstrating a reduction under the shade.",
@@ -11906,7 +11906,7 @@
         "Elena plans to donate both coats to the school office.",
         "Elena has decided to take a different bus home.",
         "Elena is trying to recover her own coat and return one that was mistakenly left for her.",
-        "Elena is preparing a photography project about clothing labels."
+        "Elena is preparing a photography project about the clothing labels she collected at home."
       ],
       "answerIndex": 2,
       "rationale": "Recording identifying information about her raincoat and bringing a different coat to the office are complementary actions consistent with a coat mix-up. The other choices require intentions or events that the passage does not suggest.",
@@ -12075,7 +12075,7 @@
       "difficulty": "developing",
       "prompt": "Read the passage. Students noticed that visitors often walked past the small campus history display. They interviewed longtime staff members, recorded short audio stories, and attached a scannable code to each photograph in the display. A survey later showed that visitors stayed longer and recalled more details. Which is the best summary?",
       "choices": [
-        "Visitors were required to complete a survey before entering the campus.",
+        "Visitors were required to complete a written survey form before they were allowed to enter the main campus.",
         "Longtime staff members replaced all photographs in the history display.",
         "Students added oral-history recordings to an overlooked display, increasing visitor engagement and recall.",
         "Scannable codes are too difficult for most campus visitors to use."
@@ -12118,7 +12118,7 @@
       "difficulty": "developing",
       "prompt": "Read the passage. On the morning of the assembly, Darius arrived early with a roll of colored tape. He marked an X at the front of the stage, then walked to the back row and asked a classmate whether the mark could be seen. After moving it twice, he placed the microphone directly above it. Which inference is best supported?",
       "choices": [
-        "Darius is measuring the stage so that new curtains can be ordered.",
+        "Darius is carefully measuring the stage area so that new curtains can eventually be ordered.",
         "Darius wants the back row to choose the assembly's music.",
         "Darius is hiding a damaged section of the stage with colored tape.",
         "Darius is selecting a visible position for a speaker to stand during the assembly."
@@ -12250,7 +12250,7 @@
         "All three sentences express judgments that cannot be checked.",
         "Only the sentence about fourteen species is an opinion.",
         "The planting date and camera count are verifiable, while the claim about the finest lunch spot expresses an opinion.",
-        "The word unquestionably turns every sentence in the excerpt into a fact."
+        "The word unquestionably turns every sentence in the newsletter excerpt into a fully verified statement of established fact."
       ],
       "answerIndex": 2,
       "rationale": "Records and camera data can verify when six shrubs were planted and how many species were observed. Calling the habitat the finest lunch spot is an evaluative judgment whose truth depends on preference, even when phrased confidently.",
@@ -12336,7 +12336,7 @@
         "Nia reserved a kit, presented both documents, inspected the contents with staff, and signed after the inspection.",
         "Owen reserved a kit and signed the form but took the unopened case without presenting identification.",
         "Priya presented identification and inspected a kit alone but had not made a reservation.",
-        "Luis reserved a kit and presented both documents but declined the joint inspection and condition form."
+        "Luis reserved a kit and presented both of the documents but declined the joint inspection and the required condition form."
       ],
       "answerIndex": 0,
       "rationale": "Nia completes every required action in a workable sequence: reservation, document presentation, joint inspection, and signature. Each other student omits at least one explicit requirement, so only Nia fully follows the text.",
@@ -12464,7 +12464,7 @@
       "choices": [
         "a topic that is fashionable",
         "an event happening at the present time",
-        "a continuous movement of electrical charge",
+        "a continuous movement of electrical charge through a conductor",
         "a steady movement of water in a particular direction"
       ],
       "answerIndex": 3,
@@ -12808,7 +12808,7 @@
       "choices": [
         "Ask the student to memorize both sentences without examining the target words.",
         "Replace the words with easier ones that begin with different letters.",
-        "Have the student identify only the final sound in each word and then guess the whole word.",
+        "Have the student identify only the final sound in each of the words and then guess at the whole word from the accompanying picture printed on the page.",
         "Model how s and h combine to represent /sh/ and c and h combine to represent /ch/, then guide the student to blend each word and reread it in context."
       ],
       "answerIndex": 3,
@@ -12853,7 +12853,7 @@
         "Invite students to examine the title and photograph, share what they know about roofs, plants, and heat, and record questions they expect the article to answer.",
         "Read the entire article aloud and state its main idea before students open their copies.",
         "Ask students to copy every unfamiliar word from the article before looking at its title.",
-        "Tell students that predictions are unnecessary because the heading already gives every important detail."
+        "Tell students that predictions are entirely unnecessary here, because the heading itself already gives away every important detail contained in the whole article."
       ],
       "answerIndex": 0,
       "rationale": "Previewing text features, connecting them with relevant knowledge, and generating questions prepares students to read purposefully while leaving the article's explanations and central ideas for students to determine.",
@@ -12897,7 +12897,7 @@
         "How many paragraphs and commas are on this page?",
         "How did the failed first expedition affect the subject's planning for the second expedition, and which details support your answer?",
         "What is the longest word in the account of the second expedition?",
-        "Can you repeat the final sentence exactly without referring to earlier events?"
+        "Can you repeat the final sentence of the biography exactly, without referring back to any of the earlier events described in the text?"
       ],
       "answerIndex": 1,
       "rationale": "The second question directs the student to connect events across the text and support a causal interpretation with evidence, moving beyond isolated recall while keeping the reasoning with the student.",
@@ -12941,7 +12941,7 @@
         "The student seemed to like the passage's illustration.",
         "The passage contained more than one paragraph.",
         "Across several words, the student omitted or altered inflectional endings while usually preserving the base word.",
-        "The student should be described simply as a poor reader without examples."
+        "The student should be described simply as a poor reader, without any specific examples drawn from the new passage."
       ],
       "answerIndex": 2,
       "rationale": "The three examples reveal a consistent, instructionally relevant pattern involving endings such as -ed and -ing. Recording the pattern and examples gives the teacher actionable evidence without assigning a broad label.",
@@ -12984,7 +12984,7 @@
       "choices": [
         "Choose the first page because every word beginning har appears there.",
         "Search under n because harness contains two n's.",
-        "Use the page containing harvest because harness comes after every word beginning harm.",
+        "Use the page containing harvest, because harness must always come after every single word that begins with the letters h-a-r-m in order.",
         "Compare harness with the guide words letter by letter; because it falls after harmony but before harvest, search the second page."
       ],
       "answerIndex": 3,
@@ -13027,7 +13027,7 @@
       "prompt": "A student labels the sentence \"The fundraiser collected $2,400, proving it was the school's best event\" entirely as fact because it contains a number. Which teacher-directed response would best correct the misconception?",
       "choices": [
         "Have the student verify the dollar amount in a record, then discuss why best remains a judgment unless a measurable criterion is defined and compared.",
-        "Tell the student that any sentence containing a number must be accepted as wholly factual.",
+        "Tell the student that any sentence containing a specific number must always be accepted as wholly factual regardless of the rest of its actual wording.",
         "Ask the student to replace $2,400 with the word many and keep the same label.",
         "Explain that fundraising records are opinions because people write them."
       ],
@@ -13073,7 +13073,7 @@
         "Ask the student to label custodian as the subject and unlocked as the verb without analyzing the order of events.",
         "Ask the student to rewrite the sentence as “The custodian unlocked the west doors after the alarm ended” and identify the first event.",
         "Ask whether the west doors were open after the alarm without deciding whether that was before or after it ended.",
-        "Have the student copy the sentence and circle the words associated with the alarm without restating the event order."
+        "Have the student copy out the sentence and circle all of the words associated with the alarm, without ever restating the order of events."
       ],
       "answerIndex": 1,
       "rationale": "Recasting the inverted construction into ordinary subject-verb order while preserving the temporal phrase makes the relationship explicit. Naming the first event then verifies that the student understands the doors were unlocked after the alarm ended.",
@@ -13115,7 +13115,7 @@
       "prompt": "A student reads, \"The crew raised the sail before leaving the harbor,\" and says sail means a special sale at a store because the words sound alike. Which response would best help the student use context to distinguish the homophones?",
       "choices": [
         "Tell the student that sale and sail are interchangeable because they sound alike.",
-        "Ask the student to choose sale because it appears more often in everyday advertisements.",
+        "Ask the student to choose the homophone sale instead, because that spelling appears far more often in everyday advertisements and printed store signs than the nautical meaning does in ordinary classroom reading.",
         "Compare the meaning of sale in a sentence about selling goods with the meaning of sail as material that catches wind to move a boat, then use crew, raised, and harbor to confirm the intended meaning.",
         "Replace the entire sentence so the student does not need to examine the target word."
       ],
@@ -13159,7 +13159,7 @@
       "prompt": "A student is using a print dictionary to find the word conserve but repeatedly stops at concert. Which support should the paraprofessional provide first?",
       "choices": [
         "Turn directly to conserve, point to its definition, and close the dictionary.",
-        "Tell the student that words sharing the first three letters appear on the same page.",
+        "Tell the student that any words sharing their first three letters will always appear together on the same dictionary page, so the search can safely stop at the entry for concert instead.",
         "Ask the student to search under the final letter e rather than the initial letter c.",
         "Have the student compare the words letter by letter through con, notice that c in concert comes before s in conserve at the first differing letter, and continue forward from concert."
       ],
@@ -13205,7 +13205,7 @@
         "Ask the student to number the four actions, point to each one while performing it, and pause after press tare to verify the display reads zero before adding the sample.",
         "Remove the directions and complete all measurements while the student watches silently.",
         "Tell the student to perform the steps in any order because each verb is equally important.",
-        "Have the student copy the instruction five times after the laboratory period ends without practicing it."
+        "Have the student copy the written instruction five times after the laboratory period has ended, without ever practicing the step in the actual laboratory activity itself."
       ],
       "answerIndex": 0,
       "rationale": "Chunking and numbering the procedural sentence, pairing each clause with its action, and checking the critical intermediate result directly support accurate reading and execution of the ordered directions.",
@@ -13246,7 +13246,7 @@
       "difficulty": "advanced",
       "prompt": "A student reads a passage stating that cafeteria food waste decreased after a share table opened, but the accompanying bar graph shows that the decrease began one month earlier. Which teacher-directed prompt would best help the student integrate the sources critically?",
       "choices": [
-        "Ignore the graph because prose always provides stronger evidence than a visual.",
+        "Ignore the accompanying graph entirely, because prose explanations always provide stronger and more reliable evidence than any visual display of the same information can offer to a reader.",
         "Ask when the graph shows the decline began, compare that date with the table's opening date in the passage, and revise any claim that the share table alone caused the entire decline.",
         "Have the student copy the graph title without examining its dates or bars.",
         "Tell the student that two sources included on the same page cannot disagree."
@@ -14259,7 +14259,7 @@
       "prompt": "A student interprets 48 divided by 6 as 48 - 6 and reports 42. Which support would best develop the meaning of the quotient?",
       "choices": [
         "Ask the student to copy the division fact until the answer is memorized.",
-        "Confirm 42 because both subtraction and division make a starting number smaller.",
+        "Confirm that 42 is correct, because both subtraction and division will always make the starting number smaller than it was.",
         "Have the student arrange 48 counters into groups of 6, count the 8 groups, and connect the model to 48 divided by 6 = 8.",
         "Have the student add 6 to 48 and label the resulting 54 as the quotient."
       ],
@@ -14302,7 +14302,7 @@
       "difficulty": "application",
       "prompt": "A student calculates 5/6 divided by 5 as 25/6. Which model would best clarify the correct quotient?",
       "choices": [
-        "Draw five wholes, divide each whole into sixths, and count all 30 pieces.",
+        "Draw five separate wholes, divide each one of those wholes into sixths, and then count all thirty of the resulting equal pieces.",
         "Join five strips of length 5/6 end to end to model multiplication by 5.",
         "Shade 5/6 of a strip and then shade five more sixths on the same strip.",
         "Show 5/6 as five pieces of size 1/6, share those pieces equally among five groups, and note that each group receives 1/6."
@@ -14434,7 +14434,7 @@
       "difficulty": "application",
       "prompt": "A student says that the time from 10:52 a.m. to 11:26 a.m. is 74 minutes after subtracting 1052 from 1126 as ordinary whole numbers. Which support is most appropriate?",
       "choices": [
-        "Confirm 74 because hours and minutes use the same base-ten grouping as whole numbers.",
+        "Confirm that 74 is correct, because hours and minutes use exactly the same base-ten grouping as whole numbers do.",
         "Subtract only the minute values, 52 - 26, and report 26 minutes.",
         "Use an open number line to count 8 minutes to 11:00 and 26 more minutes to 11:26, for a total of 34 minutes.",
         "Add the clock readings 1052 and 1126, then remove the final zero."
@@ -14480,7 +14480,7 @@
       "choices": [
         "Measure one outside edge again and use its length as the volume.",
         "Draw the prism's outline and count its four corners as cubic units.",
-        "Add the dimensions in a different order to show that 2 + 3 + 5 is still 10.",
+        "Add all of the dimensions together in a different order to show that 2 + 3 + 5 is still exactly equal to 10.",
         "Build two layers of 15 unit cubes each, count 30 cubes, and connect the layers to 5 times 3 times 2."
       ],
       "answerIndex": 3,
@@ -14523,7 +14523,7 @@
       "prompt": "Asked to plot (-3, 2), a student plots (2, -3). Which direction would best correct the coordinate-order error?",
       "choices": [
         "Explain that the first coordinate controls horizontal movement, so move 3 units left, then use the second coordinate to move 2 units up.",
-        "Tell the student that coordinate order does not matter as long as both numbers appear on the graph.",
+        "Tell the student that the order of the two coordinates does not matter at all, as long as both of the numbers appear somewhere on the graph.",
         "Move 3 units right and 2 units down because negative signs reverse both coordinate positions.",
         "Plot both points and label them equivalent because their coordinates use the same two numbers."
       ],
@@ -14613,7 +14613,7 @@
         "Use a circle graph because each date must represent a part of one fixed whole.",
         "Use an unlabeled pictograph because the order of dates is not important.",
         "Place the ordered dates on the horizontal axis and heights on the vertical axis of a line graph, then connect the measured points.",
-        "List only Friday's height because the last measurement is enough to show the entire trend."
+        "List only Friday’s recorded height, because the final measurement by itself is enough to show the entire growth trend over the week."
       ],
       "answerIndex": 2,
       "rationale": "A line graph preserves the chronological order and makes changes between successive measurements visible. A circle graph is intended for parts of a whole, not a time sequence.",
@@ -14654,7 +14654,7 @@
       "difficulty": "application",
       "prompt": "A student draws equally spaced marks on a graph's vertical axis but labels them 0, 5, 15, and 20. Which feedback best addresses the scale?",
       "choices": [
-        "Keep the labels because graph intervals may change size without any visual indication.",
+        "Keep the existing labels, because the intervals on a graph may change size without any visual indication given to the reader at all.",
         "Move 15 closer to 5 while leaving the tick marks equally spaced.",
         "Remove all numerical labels and judge values from bar heights alone.",
         "Redraw the axis with equally spaced ticks labeled in equal increments, such as 0, 5, 10, 15, and 20, before plotting the data."
@@ -14701,7 +14701,7 @@
         "Estimate 728 as 80, divide by 8, and accept any answer near 10.",
         "Multiply 728 by 8 and use 5,824 as the estimated quotient.",
         "Use the compatible number 720: since 720 divided by 8 is 90, the quotient should be near 90; the exact quotient is 91.",
-        "Confirm 9.1 because division always makes a three-digit number into a one-digit number."
+        "Confirm that 9.1 is correct, because division always turns a three-digit number into a smaller one-digit decimal number."
       ],
       "answerIndex": 2,
       "rationale": "The nearby compatible number 720 divides evenly by 8 to give 90, establishing the quotient's reasonable magnitude. Exact division gives 91, so 9.1 is ten times too small.",
@@ -15536,7 +15536,7 @@
       "prompt": "A writer needs to verify the exact wording and adoption date of a school board resolution from 1998. Which source would be most appropriate?",
       "choices": [
         "A current thesaurus entry for the word \"resolution\"",
-        "A historical novel set in the community during the 1990s",
+        "A historical novel that is set in the same community during the 1990s",
         "The official archived minutes from the 1998 school board meeting",
         "An anonymous online comment recalling the meeting"
       ],
@@ -15626,7 +15626,7 @@
       "prompt": "Which thesis statement gives the clearest focus for a report about desert-plant adaptations?",
       "choices": [
         "Waxy surfaces, shallow spreading roots, and water-storing stems help many desert plants conserve or obtain scarce water.",
-        "Desert plants are an interesting topic that many people have studied.",
+        "Desert plants are a very interesting topic that a great many different people have studied quite carefully over the years.",
         "What are some things that plants in deserts might do?",
         "This report contains several paragraphs and photographs about plants."
       ],
@@ -15716,7 +15716,7 @@
       "prompt": "A student chooses \"animals\" as the topic for a three-page informational report and then gathers unrelated facts about dozens of species. Which paraeducator support would best help during prewriting?",
       "choices": [
         "Select one animal and write the report's thesis for the student.",
-        "Tell the student to keep every fact and reduce the font size so all of them fit.",
+        "Tell the student to keep every collected fact and simply reduce the font size until all of them fit within the assigned three report pages.",
         "Help the student list possible audiences and subtopics, choose one focused question, and sort only relevant notes under that question.",
         "Begin correcting commas in the notes before the student narrows the topic."
       ],
@@ -15760,7 +15760,7 @@
       "difficulty": "applied",
       "prompt": "A student means that a new schedule may influence the number of students present but is unsure whether to write \"The new schedule may affect attendance\" or \"The new schedule may effect attendance.\" Which support best builds the student's independent use of reference materials?",
       "choices": [
-        "Tell the student to choose the spelling that appears more often in the draft.",
+        "Tell the student to simply choose whichever spelling already appears more often elsewhere in the surrounding paragraphs of the draft.",
         "Replace the sentence yourself without explaining the distinction.",
         "Have the student ask several classmates to vote on which word looks correct.",
         "Use a learner's dictionary to compare each word's part of speech, meaning, and examples, then test the choices in the sentence."
@@ -15807,7 +15807,7 @@
       "choices": [
         "What relationship do your data show between tree cover, shade, and neighborhood temperature, and how can you state that relationship in one sentence?",
         "Can you replace \"interesting\" with the longest synonym in a thesaurus?",
-        "Can you add three facts about indoor houseplants even if they do not relate to neighborhood temperature?",
+        "Can you add three more interesting facts about indoor houseplants, even if they do not relate at all to the neighborhood shade and temperature data set?",
         "Can you copy the title of the first source and use it as your thesis?"
       ],
       "answerIndex": 0,
@@ -15850,7 +15850,7 @@
       "difficulty": "applied",
       "prompt": "A student's paragraph explains how lunar phases result from the Moon's changing position relative to Earth and the Sun. One sentence describes the food astronauts eat in orbit. Which support best helps the student improve paragraph unity?",
       "choices": [
-        "Ask the student to add more details about astronaut meals throughout the paragraph.",
+        "Ask the student to add several more descriptive details about astronaut meals and their daily training routines throughout the paragraph.",
         "Have the student state the paragraph's main idea, test each sentence against it, and remove or relocate the astronaut-food sentence.",
         "Correct the spelling in the unrelated sentence and leave it in place.",
         "Replace the paragraph with a diagram created entirely by the paraeducator."
@@ -15895,7 +15895,7 @@
       "difficulty": "applied",
       "prompt": "A student ends a report about three local water-conservation methods by introducing a brand-new statistic that the report never explains. Which feedback would best support revision of the conclusion?",
       "choices": [
-        "Keep the statistic in the conclusion because all new information should appear in the last paragraph.",
+        "Keep the new statistic in the conclusion, because all of the most important new information should always appear in the very final paragraph of any report.",
         "Delete the entire conclusion and end the report immediately after the final body paragraph.",
         "If the statistic is relevant, develop it in the body; then revise the conclusion to synthesize the three methods and explain their overall significance.",
         "Replace the statistic with an unrelated quotation so the ending sounds more formal."
@@ -15941,7 +15941,7 @@
       "prompt": "A student repeatedly joins two complete sentences with only a comma. Which instructional support is most likely to help the student correct this pattern independently?",
       "choices": [
         "Erase every comma in the draft, including commas used correctly in lists.",
-        "Write a corrected copy of the draft and ask the student to copy it without discussion.",
+        "Write out a fully corrected copy of the entire draft and then ask the student to copy it over without any discussion of the original punctuation errors that were made.",
         "Tell the student to make every sentence shorter than five words.",
         "Color-code the subject and predicate in each clause, model valid joining options, and have the student choose and explain a correction for each comma splice."
       ],
@@ -15987,7 +15987,7 @@
       "choices": [
         "Have the student use text-to-speech while tracking each printed word, pause where the spoken sentence sounds incomplete, and compare that location with the intended sentence.",
         "Insert every missing word for the student before the student rereads the draft.",
-        "Tell the student to trust the first silent rereading because writers always see exactly what is on the page.",
+        "Tell the student to trust that first silent rereading completely, because writers always see exactly what is actually on the page rather than what they had intended to write there.",
         "Ask the student to correct punctuation first and skip any sentence that sounds incomplete."
       ],
       "answerIndex": 0,
@@ -16033,7 +16033,7 @@
         "Read the entire handbook page rapidly so every sentence is included.",
         "Select the few actions students must take, state them in concise spoken language and logical order, and repeat only the most critical time or location detail.",
         "Replace the safety directions with a personal story about an unrelated school day.",
-        "Use longer technical terms wherever possible so the announcement sounds more official."
+        "Use longer and more technical terms wherever possible throughout the announcement, so that the finished morning broadcast sounds considerably more official to listeners."
       ],
       "answerIndex": 1,
       "rationale": "A brief spoken announcement must prioritize essential actions, use language listeners can process once, and make crucial logistical information memorable. The keyed guidance adapts content without sacrificing the safety purpose.",
@@ -16075,7 +16075,7 @@
       "difficulty": "applied",
       "prompt": "A compare-and-contrast assignment asks students to explain how a salt marsh and a freshwater wetland are alike and different. One student has a list of unrelated facts about each ecosystem. Which support best helps organize the draft?",
       "choices": [
-        "Have the student write all salt-marsh facts first and all wetland facts second without identifying shared criteria.",
+        "Have the student write out all of the salt-marsh facts first and all of the wetland facts second, without ever identifying any shared comparison criteria.",
         "Remove every difference so the report discusses only similarities.",
         "Use a comparison matrix for shared criteria such as water, plants, and animals, then organize paragraphs by those criteria with comparison transitions.",
         "Write the finished comparison for the student and ask the student to add a title."
@@ -16120,7 +16120,7 @@
       "difficulty": "applied",
       "prompt": "During revision, a student asks a paraeducator, \"Just tell me the exact sentences I should write.\" Which response best preserves student authorship while providing useful support?",
       "choices": [
-        "Dictate a complete replacement paragraph and have the student type it.",
+        "Dictate a complete replacement paragraph sentence by sentence and have the student type it out exactly as it is being spoken aloud to them in class.",
         "Take the draft home and revise it without the student present.",
         "Tell the student that no help is allowed during revision.",
         "Use the assignment rubric to ask focused questions, offer two possible revision strategies, and have the student choose and compose the changes."
@@ -16167,7 +16167,7 @@
       "choices": [
         "Add decorative adjectives to every step without changing the directions.",
         "Alphabetize all words in the draft to make them easier to locate.",
-        "Have the paraeducator silently rewrite the procedure and replace the student's draft.",
+        "Have the paraeducator silently rewrite the entire calibration procedure and simply replace the student’s original draft with that corrected version before it is ever submitted.",
         "Ask a peer to follow the directions literally while the writer notes breakdowns, then have the writer add needed quantities and separate actions into an accurate sequence."
       ],
       "answerIndex": 3,
@@ -16213,7 +16213,7 @@
         "Making volunteer information easier to find and understand increased participation.",
         "Most community-center volunteers prefer tasks that take an entire day.",
         "The main entrance was moved to a hallway near the bulletin board.",
-        "Staff members stopped using printed cards to advertise volunteer tasks."
+        "Staff members had stopped using printed index cards entirely to advertise volunteer tasks."
       ],
       "answerIndex": 0,
       "rationale": "The passage connects two access improvements (greater visibility and clearer time information) with increased sign-ups. The first choice states that central relationship without adding an unsupported preference or reversing what staff did.",
@@ -16253,7 +16253,7 @@
       "difficulty": "developing",
       "prompt": "A science club claims that planting native flowers beside the athletic field attracted more pollinators. Which evidence most directly supports the claim?",
       "choices": [
-        "The flowers were purchased from a nursery located twelve miles from the school.",
+        "The flowers were purchased from a commercial nursery located about twelve miles away from the school building itself last spring.",
         "Weekly observations recorded an average of 6 bee and butterfly visits before planting and 19 visits after the flowers bloomed.",
         "Club members selected flowers with yellow, purple, and white blossoms.",
         "The athletic field is used for practices during three seasons of the year."
@@ -16296,7 +16296,7 @@
       "difficulty": "developing",
       "prompt": "Read the passage. After rehearsal, Priya noticed a padded instrument case beneath a row of empty seats. She checked the name on its tag, carried the unopened case to the music office, and showed the tag to the secretary. Which inference is best supported?",
       "choices": [
-        "Priya has decided to stop participating in music classes.",
+        "Priya has already decided to stop participating in the school music classes.",
         "Priya is purchasing a new instrument from the secretary.",
         "Priya is reporting found music equipment that may belong to someone else.",
         "Priya is decorating a case for an upcoming concert."
@@ -16384,7 +16384,7 @@
       "choices": [
         "As a comparison showing a similarity and a difference between two growing spaces",
         "As a sequence of steps for constructing a greenhouse",
-        "As a problem about irrigation followed by several unrelated solutions",
+        "As a problem about irrigation followed by several completely unrelated solutions to it",
         "As an argument that all school gardens should be moved indoors"
       ],
       "answerIndex": 0,
@@ -16428,7 +16428,7 @@
         "To explain how thunderstorms form over the school grounds",
         "To give safety directions for responding to lightning and thunder",
         "To compare several kinds of outdoor athletic equipment",
-        "To announce the final results of a canceled sporting event"
+        "To announce the final results of a recently canceled sporting event"
       ],
       "answerIndex": 1,
       "rationale": "The notice uses commands to state what people should do, where they should shelter, what they should avoid, and when they may return. Its purpose is therefore to provide emergency safety procedures.",
@@ -16468,7 +16468,7 @@
       "difficulty": "developing",
       "prompt": "Read the passage. Students studying neighborhood temperatures first mapped places with little tree cover. They presented the map to a local association, helped plant twelve young trees at approved sites, and created a watering schedule. A year later, all twelve trees were growing and residents had volunteered to care for additional plantings. Which is the best summary?",
       "choices": [
-        "Residents asked students to measure the height of every mature tree in the neighborhood.",
+        "Residents asked the students to measure the exact height of every mature tree in the whole neighborhood.",
         "A local association replaced the students' map with a watering schedule.",
         "Students used their research to begin a tree-planting effort that gained continuing community support.",
         "The twelve young trees failed because none of the approved sites received water."
@@ -16513,7 +16513,7 @@
       "choices": [
         "Mateo is timing a race through the hallway.",
         "Mateo is measuring the hallway for permanent walls.",
-        "Mateo is hiding the cones from people attending the performance.",
+        "Mateo is deliberately hiding the cones from everyone attending the evening performance.",
         "Mateo is organizing accessible waiting or entry locations for audience members."
       ],
       "answerIndex": 3,
@@ -16597,7 +16597,7 @@
       "difficulty": "developing",
       "prompt": "A facilities report claims that applying reflective film to west-facing classroom windows reduced afternoon glare. Which evidence most directly supports the claim?",
       "choices": [
-        "The installer used three rolls of film during a weekend work period.",
+        "The installer used up three separate rolls of film during a single weekend work period at the school site over the two full days.",
         "Teacher glare reports fell from 18 in the month before installation to 3 in the month after installation in the treated rooms.",
         "The classrooms contain desks of several different sizes.",
         "West-facing windows receive light during part of the school day."
@@ -16643,7 +16643,7 @@
         "Every sentence is an opinion because the announcement describes a club.",
         "Every sentence is a fact because numbers appear in the announcement.",
         "The match and participant counts are factual claims, while \"most exciting\" is an opinion.",
-        "The match count is an opinion, while the claim about excitement is a measurable fact."
+        "The match count is only an opinion, while the claim about the excitement is a measurable fact."
       ],
       "answerIndex": 2,
       "rationale": "The counts can be checked against schedules or participation records, making them verifiable factual claims. Calling the club the most exciting expresses a value judgment that depends on personal preference.",
@@ -16685,7 +16685,7 @@
       "choices": [
         "October had the greatest combined collection weight.",
         "Paper collection increased during every month shown.",
-        "September and December had equal can-collection weights.",
+        "September and December both recorded exactly the same can-collection weights during the drive.",
         "November had the greatest paper collection, while December had the greatest can collection."
       ],
       "answerIndex": 3,
@@ -16727,7 +16727,7 @@
       "prompt": "Read the passage. At low tide, water left in a tide pool can warm quickly and become saltier as it evaporates. Some snails close their shells to conserve moisture, while small crabs move beneath cool rocks until the tide returns. What is the passage's primary purpose?",
       "choices": [
         "To explain how several tide-pool animals respond to changing conditions",
-        "To argue that all crabs should live far from the ocean",
+        "To argue that all hermit crabs ought to live far away from the open ocean",
         "To give step-by-step directions for collecting snails",
         "To compare the sizes of every animal found on a beach"
       ],
@@ -16899,7 +16899,7 @@
       "prompt": "Read the passage. On foggy mornings, tiny bumps on the backs of some desert beetles catch water droplets. The droplets run along narrow channels toward the beetles' mouths. This adaptation allows the beetles to drink in places where rain is rare. Which statement best expresses the main idea?",
       "choices": [
         "Some desert beetles use specialized body surfaces to collect water from fog.",
-        "All desert insects must travel to rivers each morning to find water.",
+        "All desert insects must travel to the distant rivers each morning to find water.",
         "Fog causes deserts to receive more annual rain than forests receive.",
         "Desert beetles dig channels in the ground to carry water to plants."
       ],
@@ -16943,7 +16943,7 @@
       "choices": [
         "The eggs rest in shallow scrapes on the beach.",
         "The adults take turns shading the eggs while the other bird feeds.",
-        "Midday sunlight can raise the temperature of the nest.",
+        "Midday sunlight can noticeably raise the internal temperature of the nest.",
         "The nesting area consists of open sand."
       ],
       "answerIndex": 1,
@@ -16987,7 +16987,7 @@
         "Visits increased on all three trails from May to June.",
         "Lake Path had the greatest increase in visits.",
         "Visits rose on North Loop and East Ridge but fell on Lake Path.",
-        "East Ridge had more visits than North Loop in both months."
+        "East Ridge had more total visits than North Loop in both of the months."
       ],
       "answerIndex": 2,
       "rationale": "North Loop rises from 140 to 185 visits and East Ridge rises from 90 to 120, while Lake Path falls from 160 to 150. The keyed statement accurately describes all three changes.",
@@ -17028,7 +17028,7 @@
       "prompt": "Read the passage. At closing time, Leila found a library book on the return cart with a damp cover. She photographed its condition, slipped absorbent sheets between the wet pages, placed it flat in a tray marked \"Do not shelve,\" and notified the librarian. Which inference is best supported?",
       "choices": [
         "Leila is preparing the book for a decorative display.",
-        "Leila is hiding the book so that a borrower will avoid a fine.",
+        "Leila is hiding the library book so that another borrower will manage to avoid a fine.",
         "Leila plans to discard every book on the return cart.",
         "Leila is protecting a damaged book until library staff can decide the next steps."
       ],
@@ -17073,7 +17073,7 @@
         "As a sequence showing how to construct a coral reef",
         "As a problem followed by one proposed solution",
         "As a general statement followed by several examples of reefs' importance",
-        "As a comparison of freshwater and saltwater habitats"
+        "As a direct comparison of freshwater and saltwater habitats and their species"
       ],
       "answerIndex": 2,
       "rationale": "The first sentence states the general point that reefs have broad importance despite their limited area. The next sentence supports that point with ecological and human examples, rather than presenting a sequence, a single solution, or a habitat comparison.",
@@ -17158,7 +17158,7 @@
       "choices": [
         "Every month before the route revision had the same on-time percentage.",
         "The route revision caused every rider to arrive home earlier than before.",
-        "Reliability was already improving steadily for three months before January.",
+        "Reliability had already been improving steadily for at least three full months before January, which fully explains the entire change on its own without any other factor.",
         "On-time performance was higher in the two months after January than in the months shown before the revision, though the sources alone do not prove causation."
       ],
       "answerIndex": 3,
@@ -17200,7 +17200,7 @@
       "prompt": "During a teacher-planned decoding lesson, a student reads stop as sop, plan as pan, and frog as fog. Which paraprofessional response would most directly address the pattern in the student's errors?",
       "choices": [
         "Model saying both consonant sounds in each initial blend and blending them into the whole word, then have the student reread while pointing to both opening letters.",
-        "Ask the student to memorize the three complete words from flash cards without examining their letter patterns.",
+        "Ask the student to memorize all three of the complete words from the flash cards, without ever examining the letter patterns that the three words happen to share here.",
         "Explain the meanings of stop, plan, and frog and then read the remainder of the passage aloud for the student.",
         "Practice identifying only the final consonant sound in each word before moving to an unrelated list."
       ],
@@ -17245,7 +17245,7 @@
       "choices": [
         "Tell students the article's conclusion and ask them to copy it before reading.",
         "Show the title and a bridge photograph, then invite students to share what they have noticed about movement in bridges or other structures.",
-        "Skip the title and have students define every unfamiliar word from the final paragraph.",
+        "Skip the title entirely and have students define every unfamiliar word taken from the final paragraph of the article before reading any of it.",
         "Read the entire article aloud and summarize each section before students see the text."
       ],
       "answerIndex": 1,
@@ -17289,7 +17289,7 @@
       "choices": [
         "Which sentence has the greatest number of words?",
         "What do the details about floodwater, animal habitat, and water filtration together show about why wetlands matter?",
-        "Can you copy the first sentence exactly as it appears in the passage?",
+        "Can you copy out the very first sentence exactly as it appears in the passage that you have only just finished reading?",
         "Which wetland animal would make the most interesting classroom pet?"
       ],
       "answerIndex": 1,
@@ -17335,7 +17335,7 @@
         "The student needs to memorize more dictionary definitions before reading aloud.",
         "The passage should be replaced because any pause proves the text is too difficult.",
         "Word recognition is largely accurate, while phrasing at meaningful boundaries and attention to punctuation need support.",
-        "The student understands every idea because most individual words were pronounced correctly."
+        "The student clearly understands every idea in the passage, because most of the individual words were pronounced correctly aloud."
       ],
       "answerIndex": 2,
       "rationale": "The observation distinguishes accurate word reading from difficulties with prosody, phrase boundaries, and question punctuation. That specific, evidence-based record is more useful than an unsupported conclusion about vocabulary, text difficulty, or comprehension.",
@@ -17379,7 +17379,7 @@
       "choices": [
         "Guess from the word's length and continue without checking.",
         "Copy the entire page so the definition will be easier to remember.",
-        "Wait until the end of the unit and ask another student for the answer.",
+        "Wait until the very end of the unit and then simply ask another student in the class for the correct answer instead.",
         "Use the bold print to match sediment to its entry in the glossary box, then reread the sentence with that meaning."
       ],
       "answerIndex": 3,
@@ -17423,7 +17423,7 @@
       "choices": [
         "Ask students to compare authorship, purpose, evidence, date, and transparency, then explain which source better supports each claim.",
         "Tell students that the page with more photographs must be the more accurate source.",
-        "Have students accept both pages because any information posted online has already been verified.",
+        "Have students accept both of the pages, because any information that has been posted online anywhere has already been carefully verified.",
         "Direct students to choose the shorter page so they can finish the assignment more quickly."
       ],
       "answerIndex": 0,
@@ -17464,7 +17464,7 @@
       "difficulty": "advanced",
       "prompt": "A student misreads the sentence \"When Tessa called June after she reached the station, June was already on the bus\" and assumes that she clearly refers to June. Which paraprofessional prompt best addresses the problem?",
       "choices": [
-        "Read only the word station several times until the sentence seems clearer.",
+        "Read only the word station over and over several times until the surrounding sentence begins to seem clearer to the student who is reading it.",
         "Identify both possible people the pronoun she could name and look for additional context before deciding whether the reference is clear.",
         "Replace every name in the sentence with the same pronoun.",
         "Ignore the pronoun because pronouns never affect a sentence's meaning."
@@ -17508,7 +17508,7 @@
       "difficulty": "developing",
       "prompt": "A student reads, \"The hikers rested on the bank before crossing the stream,\" and says bank must mean a place that keeps money. Which response would best help the student determine the intended meaning?",
       "choices": [
-        "Tell the student to use the first dictionary meaning every time a word has multiple meanings.",
+        "Tell the student to use the very first dictionary meaning listed every single time that a word happens to have multiple possible meanings.",
         "Ask the student to skip the sentence because unfamiliar meanings cannot be inferred.",
         "Have the student reread the clues hikers and stream, substitute \"land beside the water,\" and check whether the sentence makes sense.",
         "Explain that bank is a spelling error and should always be replaced with bench."
@@ -17553,7 +17553,7 @@
       "prompt": "A student needs to find every page in a social-studies textbook that discusses the Erie Canal, but the table of contents lists only broad chapter titles. Which support should the paraprofessional provide first?",
       "choices": [
         "Read every chapter aloud until the phrase Erie Canal appears.",
-        "Choose the chapter with the shortest title and search only that chapter.",
+        "Choose whichever chapter happens to have the shortest title and then search only within that one chapter.",
         "Look at the copyright page for the name of the printing company.",
         "Model locating Erie Canal alphabetically in the index and using the listed page numbers and subentries."
       ],
@@ -17598,7 +17598,7 @@
         "Provide a short numbered checklist with matching picture cues and ask the student to point to each completed step before continuing.",
         "Complete the preparation steps for the student each time so the activity moves faster.",
         "Remove the student's painting materials without discussing the directions.",
-        "Add several unrelated cleanup rules to the spoken directions and repeat all of them more quickly."
+        "Add several unrelated cleanup rules to the spoken directions and then repeat all of them again much more quickly than you did before."
       ],
       "answerIndex": 0,
       "rationale": "A concise visual sequence reduces memory demands, preserves the order in the written directions, and gives the student a way to self-monitor. It supports independent completion rather than taking over the task or increasing language load.",
@@ -17638,7 +17638,7 @@
       "difficulty": "advanced",
       "prompt": "A school article says participation in breakfast increased because serving began fifteen minutes earlier in March. A graph shows participation rose in January, stayed level in February and March, and rose again in April. Which teacher-directed prompt would best help a student integrate the sources critically?",
       "choices": [
-        "Which source has the brighter colors, and why does that make its conclusion correct?",
+        "Which of the two sources uses the brighter colors on its charts, and why does that make its conclusion the correct one to rely on here?",
         "What trend does the graph show before, during, and after March, and how much of the article's causal claim does that timeline support?",
         "Can you copy the article's explanation without examining the graph?",
         "Which breakfast food do you personally prefer?"
@@ -18650,7 +18650,7 @@
       "prompt": "A student says 7/6 cannot be greater than 1 because a fraction represents only part of one whole. Which support best addresses the misconception?",
       "choices": [
         "Tell the student that every fraction with a denominator greater than 1 is less than 1.",
-        "Replace 7/6 with 6/7 because proper fractions are the only fractions that can be modeled.",
+        "Replace 7/6 with 6/7, because proper fractions are the only kind of fractions that can ever be modeled visually.",
         "Build one whole with six sixth-size pieces, then add a seventh piece to show 7/6 = 1 1/6 on a number line.",
         "Round both 7 and 6 to 10 and conclude that the fraction equals exactly 1."
       ],
@@ -18694,7 +18694,7 @@
       "prompt": "A student calculates 2.4 times 0.3 as 7.2. Which response best helps the student correct the decimal placement?",
       "choices": [
         "Accept 7.2 because 24 times 3 equals 72.",
-        "Move the decimal one place right because multiplication must make numbers larger.",
+        "Move the decimal one place to the right, because multiplication must always make numbers larger.",
         "Add 2.4 and 0.3 to find 2.7 before multiplying.",
         "Connect 24 times 3 = 72 to hundredths: 24 tenths times 3 tenths is 72 hundredths, or 0.72."
       ],
@@ -18738,7 +18738,7 @@
       "prompt": "Three supply bins hold enough markers for 18 students. A student says 42 students need 27 bins because both numbers increased by 24. Which response best develops proportional reasoning?",
       "choices": [
         "Find that each bin serves 6 students, then divide 42 by 6 to obtain 7 bins and verify that 7/42 equals 3/18.",
-        "Accept 27 bins because equivalent ratios are formed by adding the same number to both quantities.",
+        "Accept 27 bins, because equivalent ratios are always formed by adding the same number to both of the quantities.",
         "Subtract 3 from 18 and 27 from 42 to check whether both differences are 15.",
         "Multiply 42 by 18 and divide by 3 to obtain 252 bins."
       ],
@@ -18781,7 +18781,7 @@
       "difficulty": "application",
       "prompt": "A student says 4.07 and 4.7 are equal because zeros do not affect a number's value. Which support best addresses the place-value misconception?",
       "choices": [
-        "Delete the zero from every decimal and tell the student that matching nonzero digits always make equal numbers.",
+        "Delete the zero from every decimal and then tell the student that matching nonzero digits will always make any two decimal numbers exactly equal to each other.",
         "Place both numbers in a place-value chart and model them on hundred grids, showing 4.07 as 4 ones and 7 hundredths and 4.7 as 4 ones and 7 tenths.",
         "Multiply both numbers by zero and use the equal products as proof that the original numbers are equal.",
         "Round both numbers to 4 and conclude that numbers with the same rounded value are exactly equal."
@@ -18828,7 +18828,7 @@
         "Agree because side lengths are the only properties used to classify quadrilaterals.",
         "Show a rectangle with unequal adjacent sides and call it a rhombus.",
         "Draw a rhombus with four equal sides but two acute and two obtuse angles, and compare its angles with a square's four right angles.",
-        "Explain that no square can be a rhombus because the names of the shapes are different."
+        "Explain that no square can ever be a rhombus, because the two shapes are simply given entirely different names in geometry textbooks."
       ],
       "answerIndex": 2,
       "rationale": "A counterexample with equal sides but nonright angles satisfies the definition of a rhombus while failing the additional square requirement. It identifies precisely which property the student's classification omitted.",
@@ -18871,7 +18871,7 @@
       "choices": [
         "Tell the student to add the inner-scale and outer-scale readings together.",
         "Accept 135 degrees because every protractor reading names the larger angle.",
-        "Place the protractor's center anywhere along one ray as long as a number is visible.",
+        "Place the protractor’s center point anywhere along one of the rays, as long as some number on the scale remains visible to the student.",
         "Align the center with the vertex and one ray with zero, then follow that zero scale to 45 degrees and check that the drawing is acute."
       ],
       "answerIndex": 3,
@@ -18914,7 +18914,7 @@
       "prompt": "A pencil begins at the 2.3-centimeter mark on a ruler and ends at the 8.9-centimeter mark. A student reports that it is 8.9 centimeters long. Which feedback is best?",
       "choices": [
         "Explain that length is the difference between the endpoint readings, so 8.9 - 2.3 = 6.6 centimeters, and verify by counting intervals.",
-        "Accept 8.9 centimeters because an object's length always equals its ending ruler mark.",
+        "Accept 8.9 centimeters, because an object’s measured length will always equal the number that is printed at its ending mark on the ruler.",
         "Add the two ruler readings to obtain 11.2 centimeters.",
         "Subtract the ending mark from the starting mark and report -6.6 centimeters."
       ],
@@ -18957,7 +18957,7 @@
       "difficulty": "application",
       "prompt": "For the scores 14, 7, 11, 9, 20, and 10, a student selects 11 as the median because it is the third listed value. Which response best supports accurate reasoning?",
       "choices": [
-        "Keep 11 because the order in which data are recorded determines the median.",
+        "Keep 11, because the order in which the data values happen to be recorded is what determines the median.",
         "Order the scores as 7, 9, 10, 11, 14, 20 and average the two middle values, 10 and 11, to obtain 10.5.",
         "Add all six scores and report the sum as the median.",
         "Choose 20 because the greatest value is always the median."
@@ -19001,7 +19001,7 @@
       "difficulty": "application",
       "prompt": "A student compares two line graphs of reading-fluency scores. Class A's vertical scale runs from 0 to 20, while Class B's runs from 0 to 100. The student says Class A improved more because its line looks steeper. Which response is best?",
       "choices": [
-        "Agree because visual steepness can always be compared directly across graphs with different scales.",
+        "Agree, because visual steepness can always be compared directly across two graphs that happen to have different scales.",
         "Ignore the numerical labels and compare only the angles formed by the lines.",
         "Compute each class's numerical change or redraw both data sets on the same scale before comparing improvement.",
         "Multiply every Class A score by 5 and treat the changed scores as the original data."
@@ -19045,7 +19045,7 @@
       "difficulty": "application",
       "prompt": "A pictograph uses one book symbol to represent 4 books read. One row shows 3 full symbols and a half symbol, but a student reports 3.5 books. Which feedback best addresses the error?",
       "choices": [
-        "Count each full symbol as 1 and ignore the half symbol because partial symbols have no value.",
+        "Count each full symbol as 1 and simply ignore the half symbol, because partial symbols carry no value at all on a pictograph.",
         "Add 4 to 3.5 because the key is used only once for the entire pictograph.",
         "Multiply only the half symbol by 4 and leave the full symbols unscaled.",
         "Apply the key to every symbol: 3 full symbols represent 12 books and the half symbol represents 2, for a total of 14 books."
@@ -19092,7 +19092,7 @@
         "Divide 37 by 10 first and disregard the number of classes and damaged cans.",
         "Add all three numbers because every number in a word problem represents an amount to combine.",
         "Find 4 times 37 = 148 total cans, subtract 28 to get 120 usable cans, and then divide by 10 to get 12 full boxes.",
-        "Subtract 37 from 28 because the word 'removed' means the first number stated must always be subtracted."
+        "Subtract 37 from 28, because the word ‘removed’ means that the first number stated must always be the one subtracted."
       ],
       "answerIndex": 2,
       "rationale": "The quantities' meanings determine the operations. Four equal class collections are combined by multiplication, damaged cans reduce that total by subtraction, and equal boxes are found by division: (4 times 37 - 28) / 10 = 12.",
@@ -20106,7 +20106,7 @@
         "Have the student correct the spelling on every note card before considering the paragraph plan.",
         "Shuffle the notes randomly and draft them in whatever order they appear.",
         "Have the student group notes by distinct reason, label evidence and explanation within each group, and turn the groups into an outline.",
-        "Write the introduction and conclusion for the student so the remaining notes will fit between them."
+        "Write both the introduction and the conclusion for the student so that all of the remaining notes will simply fit in between the two of them."
       ],
       "answerIndex": 2,
       "rationale": "Grouping notes by reason reveals repetition and relevance before drafting. Labeling evidence and explanation and then building an outline gives the student a usable structure while preserving responsibility for the writing.",
@@ -20150,7 +20150,7 @@
       "choices": [
         "Tell the student to select the longest word because longer words are always more precise.",
         "Have the student use the first thesaurus entry without checking whether it fits the sentence.",
-        "Choose a replacement word for the student and rewrite the sentence without explaining the decision.",
+        "Choose a replacement word for the student and then rewrite the entire sentence without ever explaining the reasoning behind that particular decision.",
         "Have the student list several thesaurus candidates, compare their definitions and usage in a dictionary, and reread each substitution in context."
       ],
       "answerIndex": 3,
@@ -20196,7 +20196,7 @@
         "Examine a brief model with the student, identify its greeting, specific expression of thanks, relevant visit detail, and closing, and have the student plan an original letter with those elements.",
         "Convert the bullet list into a finished letter for the student to copy word for word.",
         "Have the student copy a thank-you letter from the Internet and change only the guide's name.",
-        "Ask the student to add more museum facts to the bullet list without addressing the letter's audience or purpose."
+        "Ask the student to add still more museum facts to the existing bullet list, without ever addressing the letter’s intended audience, its overall purpose, or the form the finished writing should take."
       ],
       "answerIndex": 0,
       "rationale": "Analyzing a model makes the form's purpose and structural features visible. Planning an original response from those features supports transfer while keeping the student's ideas and language central.",
@@ -20238,7 +20238,7 @@
       "difficulty": "applied",
       "prompt": "A student's paragraph about an event in 1963 shifts repeatedly between present and past tense. Which teacher-directed support is most likely to help the student edit the paragraph independently?",
       "choices": [
-        "Tell the student to change every verb to future tense, regardless of the paragraph's time frame.",
+        "Tell the student to change every single verb in the paragraph to the future tense, regardless of the time frame that the surrounding sentences clearly establish for the reader of the passage.",
         "Have the student mark the time-setting words and verbs, model revising one shift to the appropriate past tense, and then have the student explain and revise the remaining shifts.",
         "Rewrite every verb for the student and ask the student to copy the corrected paragraph.",
         "Have the student replace all verbs with nouns so tense will no longer be an issue."
@@ -20286,7 +20286,7 @@
         "Tell the student to place an apostrophe before every final s in the draft.",
         "Erase every plural noun so the student will not need to make possession decisions.",
         "Sort examples by one owner and multiple owners, use the question \"Who owns it?\" to place apostrophes, and have the student apply the test to the draft.",
-        "Insert all apostrophes for the student without discussing how meaning determines their placement."
+        "Insert all of the apostrophes for the student without ever discussing how the intended meaning determines where each one of them should actually belong."
       ],
       "answerIndex": 2,
       "rationale": "Apostrophe placement depends on both possession and whether the owner is singular or plural. Sorting examples by meaning and applying a consistent ownership question teaches the decision the student has been skipping.",
@@ -20329,7 +20329,7 @@
       "prompt": "A student's instructional plan specifies screen magnification and an accessible digital template for written assignments because of low vision. Which paraeducator action best supports access and student authorship?",
       "choices": [
         "Replace the assignment with an adult-written response because visual access may take extra time.",
-        "Require the student to use the standard small-print worksheet before trying any approved support.",
+        "Require the student to use the standard small-print worksheet first, before being allowed to try any of the approved accessibility supports listed in the student plan.",
         "Read the prompt aloud and then decide what the student should write in each section.",
         "Open the accessible template, confirm that magnification and navigation work, let the student compose and revise, and report any access barrier to the teacher."
       ],
@@ -20374,7 +20374,7 @@
       "prompt": "A student has completed a factual report on cafeteria waste and must turn it into a persuasive speech asking classmates to reduce waste. Which guidance best addresses the change in mode, audience, and purpose?",
       "choices": [
         "Have the student state a clear position, select two strong findings from the report, explain why they matter to classmates, and end with a feasible call to action.",
-        "Have the student read the entire report word for word, including every citation and table entry.",
+        "Have the student read the entire report aloud word for word, including every citation, footnote, and table entry, before making any revision at all to the full draft.",
         "Remove all evidence so the speech consists only of the statement \"Waste is bad.\"",
         "Write the persuasive speech for the student and ask the student only to deliver it."
       ],
@@ -20421,7 +20421,7 @@
         "Tell the student to accept both suggestions because all peer comments must be used.",
         "Have the student compare each suggestion with the assignment's purpose and rubric, identify what the draft currently lacks, and choose the revision that best addresses that need.",
         "Choose one suggestion at random so the student can finish quickly.",
-        "Reject both comments and replace the draft with a paragraph written by the paraeducator."
+        "Reject both of the peer comments outright and replace the student’s entire draft with a fully corrected paragraph written by the paraeducator rather than by the student who originally produced it."
       ],
       "answerIndex": 1,
       "rationale": "Peer feedback is advice rather than a command. Evaluating each suggestion against the writing goal, rubric, and current draft teaches the student to make evidence-based revision choices and retain ownership.",
@@ -20466,7 +20466,7 @@
         "Have the student replace every source word with the first synonym listed in a thesaurus.",
         "Tell the student to omit the citation because several words have changed.",
         "Have the student close the source, explain the idea from brief notes in a new sentence structure, compare the result with the original for accuracy and independence, and cite the source.",
-        "Encourage the student to copy a longer passage so the context will make the borrowed wording acceptable."
+        "Encourage the student to copy an even longer passage from the source, on the theory that the additional surrounding context will make the borrowed wording acceptable without any citation at all."
       ],
       "answerIndex": 2,
       "rationale": "A genuine paraphrase restates the source's meaning through the writer's own wording and structure while still crediting the source. Drafting from notes before comparing reduces dependence on the original syntax.",
@@ -20509,7 +20509,7 @@
       "prompt": "A student understands the essay prompt but becomes overwhelmed by planning, drafting, revising, and editing the entire assignment at once. Which support best promotes completion and increasing independence?",
       "choices": [
         "Complete every stage for the student and ask only for a signature on the final copy.",
-        "Tell the student to work until the whole essay is finished without checking the assignment directions again.",
+        "Tell the student to keep working straight through until the whole essay is finished, without ever stopping to check the assignment directions or the posted scoring guide again at any point.",
         "Remove revising and editing from the assignment without consulting the teacher.",
         "Use the teacher's rubric to divide the task into visible, dated checkpoints, have the student select the next step and mark progress, and gradually reduce reminders as routines develop."
       ],
@@ -20554,7 +20554,7 @@
       "prompt": "A teacher asks a paraeducator to monitor whether a student is independently reducing run-on sentences in weekly writing. Which data-collection method would provide the most useful evidence?",
       "choices": [
         "Record whether each weekly topic seems interesting to the paraeducator.",
-        "Count the total words in one heavily prompted paragraph and assume more words mean better sentence boundaries.",
+        "Count the total number of words in one heavily prompted paragraph and assume that a greater number of words always means much better control of the sentence boundaries.",
         "Save only the student's neatest final copy and omit information about the support provided.",
         "Use comparable unprompted writing samples to record correct sentence boundaries out of total opportunities and separately note the type and amount of prompting needed."
       ],
@@ -20633,19 +20633,19 @@
             "file": "parapro_batch3_reading_34.json",
             "reviewReport": "parapro_batch3_reading_34.review.json",
             "itemCount": 34,
-            "sha256": "01df88a565c874763b8ff3511e7008425819c6eeaa9d718f4c8623cb41ac4db1"
+            "sha256": "f43bae25010eeab3e5a68a40fd84cbe88868e63ff73458a19913d1be929e25de"
           },
           {
             "file": "parapro_batch3_mathematics_33.json",
             "reviewReport": "parapro_batch3_mathematics_33.review.json",
             "itemCount": 33,
-            "sha256": "bf3d1afb4abad174e6e737761f08d16586901aa735918babb6f4c6ec4bfb5d1f"
+            "sha256": "3a6cde07a1d4e092afea011947823bc6a8d8b2c45b5a5f1fe968d42feb428765"
           },
           {
             "file": "parapro_batch3_writing_33.json",
             "reviewReport": "parapro_batch3_writing_33.review.json",
             "itemCount": 33,
-            "sha256": "ff57a65a8f3bb76a5c9cb353204b1f87c962ab0d2a01a20efb2c38ecdab4ff37"
+            "sha256": "16117a7dcc4fef83552239e3be1e015bce562ee047ab01edff0d6c291878a116"
           }
         ]
       },
@@ -20658,19 +20658,19 @@
             "file": "parapro_batch4_reading_34.json",
             "reviewReport": "parapro_batch4_reading_34.review.json",
             "itemCount": 34,
-            "sha256": "e0aeaef484b8cc1de51b52f04d375147ed95d54d661ba0ce27b620d7fab0f60e"
+            "sha256": "ffc77dbd80d254cfab225387c9b9917b3031e4f581fa9bbba64948502fd295bc"
           },
           {
             "file": "parapro_batch4_mathematics_33.json",
             "reviewReport": "parapro_batch4_mathematics_33.review.json",
             "itemCount": 33,
-            "sha256": "78c167b2ac07c2557ddf064a877b69d48f9ef0177ba2d9dcf6b70735ed1bbc3b"
+            "sha256": "0e44d4ec0cb8bbd83125bd4c2f2cff152b374f2c2154d8b0716ffe6f0aa26efc"
           },
           {
             "file": "parapro_batch4_writing_33.json",
             "reviewReport": "parapro_batch4_writing_33.review.json",
             "itemCount": 33,
-            "sha256": "a91588bb16984989518b06cbed2c3d1ebb7d0a82d18d30ba406011428a4df0d5"
+            "sha256": "48198d65b5f9429ea6d1154a10d6144ddf5d50cd962fe4a39665e3695daf5f71"
           }
         ]
       },
@@ -20683,19 +20683,19 @@
             "file": "parapro_batch5_reading_34.json",
             "reviewReport": "parapro_batch5_reading_34.review.json",
             "itemCount": 34,
-            "sha256": "f206ccb8d822229910d6cbf6008d46b8cb0b1d87f5a82556638cc885ab844888"
+            "sha256": "1795f7795b76be25bf1ee2e31a0cf9c842917fc3cbaed7d1151c233a35909ef4"
           },
           {
             "file": "parapro_batch5_mathematics_33.json",
             "reviewReport": "parapro_batch5_mathematics_33.review.json",
             "itemCount": 33,
-            "sha256": "83350346e1ec4d869c78f184f4a4d06480207b465b6b402bd35dc2b6960f939e"
+            "sha256": "4e5424c713b0530c709ef7e77d7d9e4d67103525e7962bb803797b18c072f6fb"
           },
           {
             "file": "parapro_batch5_writing_33.json",
             "reviewReport": "parapro_batch5_writing_33.review.json",
             "itemCount": 33,
-            "sha256": "19c2121705ec2ac32f64e95b0063d33b6147ee302208e23ab888e2479b2a681f"
+            "sha256": "c65d9b456ff4d55d34ae9eaf9f051a07f9cbed6383b91082bc11267291ce674c"
           }
         ]
       }
@@ -20713,6 +20713,7 @@
   "parallelSourceVariants": 0,
   "newIndependentItemsNeeded": 0,
   "expansionVersion": "source-kernel-audit-plus-independent-batches-and-guided-review-v2",
+  "assistantAuditUrl": "./test_prep/test_prep_assistant_review_2026-07-16.json",
   "assistantReview": {
     "reviewer": "OpenAI Codex",
     "lastReviewedAt": "2026-07-18",
@@ -20762,19 +20763,19 @@
           {
             "file": "parapro_batch3_reading_34.json",
             "algorithm": "sha256",
-            "sha256": "01df88a565c874763b8ff3511e7008425819c6eeaa9d718f4c8623cb41ac4db1",
+            "sha256": "f43bae25010eeab3e5a68a40fd84cbe88868e63ff73458a19913d1be929e25de",
             "itemCount": 34
           },
           {
             "file": "parapro_batch3_mathematics_33.json",
             "algorithm": "sha256",
-            "sha256": "bf3d1afb4abad174e6e737761f08d16586901aa735918babb6f4c6ec4bfb5d1f",
+            "sha256": "3a6cde07a1d4e092afea011947823bc6a8d8b2c45b5a5f1fe968d42feb428765",
             "itemCount": 33
           },
           {
             "file": "parapro_batch3_writing_33.json",
             "algorithm": "sha256",
-            "sha256": "ff57a65a8f3bb76a5c9cb353204b1f87c962ab0d2a01a20efb2c38ecdab4ff37",
+            "sha256": "16117a7dcc4fef83552239e3be1e015bce562ee047ab01edff0d6c291878a116",
             "itemCount": 33
           }
         ]
@@ -20797,19 +20798,19 @@
           {
             "file": "parapro_batch4_reading_34.json",
             "algorithm": "sha256",
-            "sha256": "e0aeaef484b8cc1de51b52f04d375147ed95d54d661ba0ce27b620d7fab0f60e",
+            "sha256": "ffc77dbd80d254cfab225387c9b9917b3031e4f581fa9bbba64948502fd295bc",
             "itemCount": 34
           },
           {
             "file": "parapro_batch4_mathematics_33.json",
             "algorithm": "sha256",
-            "sha256": "78c167b2ac07c2557ddf064a877b69d48f9ef0177ba2d9dcf6b70735ed1bbc3b",
+            "sha256": "0e44d4ec0cb8bbd83125bd4c2f2cff152b374f2c2154d8b0716ffe6f0aa26efc",
             "itemCount": 33
           },
           {
             "file": "parapro_batch4_writing_33.json",
             "algorithm": "sha256",
-            "sha256": "a91588bb16984989518b06cbed2c3d1ebb7d0a82d18d30ba406011428a4df0d5",
+            "sha256": "48198d65b5f9429ea6d1154a10d6144ddf5d50cd962fe4a39665e3695daf5f71",
             "itemCount": 33
           }
         ]
@@ -20832,19 +20833,19 @@
           {
             "file": "parapro_batch5_reading_34.json",
             "algorithm": "sha256",
-            "sha256": "f206ccb8d822229910d6cbf6008d46b8cb0b1d87f5a82556638cc885ab844888",
+            "sha256": "1795f7795b76be25bf1ee2e31a0cf9c842917fc3cbaed7d1151c233a35909ef4",
             "itemCount": 34
           },
           {
             "file": "parapro_batch5_mathematics_33.json",
             "algorithm": "sha256",
-            "sha256": "83350346e1ec4d869c78f184f4a4d06480207b465b6b402bd35dc2b6960f939e",
+            "sha256": "4e5424c713b0530c709ef7e77d7d9e4d67103525e7962bb803797b18c072f6fb",
             "itemCount": 33
           },
           {
             "file": "parapro_batch5_writing_33.json",
             "algorithm": "sha256",
-            "sha256": "19c2121705ec2ac32f64e95b0063d33b6147ee302208e23ab888e2479b2a681f",
+            "sha256": "c65d9b456ff4d55d34ae9eaf9f051a07f9cbed6383b91082bc11267291ce674c",
             "itemCount": 33
           }
         ]
@@ -20852,6 +20853,5 @@
     ],
     "limitation": "Assistant-authored independent practice items are reviewed learning materials, not official ETS questions, field-tested items, psychometrically calibrated items, or licensed-professional endorsement. Guided transformations remain guided practice only."
   },
-  "bankDisclosure": "This pack has 500 learning activities: 200 original source questions, 300 assistant-authored independent practice questions, and 0 source-derived guided-review activities. It currently contains 500 distinct independent content kernels; 0 newly authored independent questions remain to reach 500.",
-  "assistantAuditUrl": "./test_prep/test_prep_assistant_review_2026-07-16.json"
+  "bankDisclosure": "This pack has 500 learning activities: 200 original source questions, 300 assistant-authored independent practice questions, and 0 source-derived guided-review activities. It currently contains 500 distinct independent content kernels; 0 newly authored independent questions remain to reach 500."
 }

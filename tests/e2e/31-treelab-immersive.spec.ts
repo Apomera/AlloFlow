@@ -364,4 +364,194 @@ test.describe('Tree Life Lab immersive stage', () => {
     expect(share).toBeLessThan(0.5);
     expect(share, 'but not so small it is a speck in a field').toBeGreaterThan(0.15);
   });
+
+  test('the investigation shows the prediction it asks you to compare, and keeps your words', async ({ page }) => {
+    // Two defects of the same kind: the Explain step said "compare predicted and
+    // observed" while displaying only observed (the prediction was shown in the
+    // PREVIOUS phase and vanished exactly when it was needed), and the explanation
+    // the student wrote was stored on the trial record and never displayed again.
+    await page.setViewportSize({ width: 1400, height: 820 });
+    await page.goto(`${(harness as any).base}/__harness`);
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.treeLab, null, { timeout: 30000 });
+    await page.evaluate(() => {
+      const E = (window as any).__alloTreeLabEngine;
+      const sp = E.speciesById('oak');
+      let t = E.newTree('oak');
+      // A YOUNG tree on purpose. Every phase change in this flow rebuilds the whole
+      // WebGL scene synchronously, and this file runs its tests three-up against a
+      // software rasteriser; a mature crown made those rebuilds slow enough that the
+      // click handler itself blocked past the default 30s action timeout. The
+      // investigation logic under test does not care how big the tree is.
+      for (let i = 0; i < 18 && t.alive; i++) {
+        t = E.simulateYear(t, sp, { tempC: 22, light: 0.85, co2ppm: 420, soilWater: 0.75 },
+          { leaf: 0.3, root: 0.2, wood: 0.35, repro: 0.05, store: 0.1 });
+      }
+      // Dry soil: water dominates. Predicting water + thrive is half right, which is
+      // the state a single matched/not-matched flag could not express.
+      (window as any).__mount({ treeLab: { view: 'grow', speciesId: 'oak', tree: t, soilWater: 0.15, light: 0.9 } });
+    });
+    await page.waitForSelector('canvas', { timeout: 30000 });
+
+    // Each click below drives a phase change; wait for the NEXT phase's own control
+    // rather than a fixed delay, and allow for a slow rebuild while doing it.
+    const SLOW = { timeout: 90_000 };
+    await page.selectOption('#treelab-experiment-years', '10', SLOW);
+    await page.getByRole('button', { name: /Start investigation/ }).click(SLOW);
+    await expect(page.locator('#treelab-predict-limit')).toBeVisible(SLOW);
+    await page.selectOption('#treelab-predict-limit', 'water', SLOW);
+    await page.selectOption('#treelab-predict-outcome', 'thrive', SLOW);
+    await page.fill('#treelab-predict-reason', 'Oaks are tough so it should cope.', SLOW);
+    await page.getByRole('button', { name: /Lock prediction/ }).click(SLOW);
+    const runBtn = page.getByRole('button', { name: /Run trial/ });
+    await expect(runBtn).toBeVisible(SLOW);
+    await runBtn.click(SLOW);
+    await expect(page.locator('#treelab-explanation')).toBeVisible(SLOW);
+
+    // Both sides of the comparison are on screen at the same time.
+    await expect(page.getByText(/You said/)).toBeVisible();
+    await expect(page.getByText(/The trial showed/)).toBeVisible();
+    await expect(page.getByText(/You had one of the two right/)).toBeVisible();
+    // The pre-run reasoning comes back to be argued with.
+    await expect(page.getByText(/Oaks are tough so it should cope/)).toBeVisible();
+
+    const words = 'Water set the limit every year and net carbon went negative.';
+    await page.fill('#treelab-explanation', words, SLOW);
+    await page.getByRole('button', { name: /A · Save trial/ }).click(SLOW);
+
+    // The notebook keeps the reasoning next to the evidence. Scoped to slot A: the
+    // same sentence is legitimately on screen twice, in the live textarea and in the
+    // saved slot, and an unscoped match cannot tell which one it found.
+    const keptA = page.locator('[data-trial-explanation="A"]');
+    await expect(keptA).toBeVisible(SLOW);
+    await expect(keptA).toContainText(words);
+    await expect(page.getByText(/You predicted:/)).toBeVisible();
+
+    // ...and the year-by-year limiter strip added earlier is still in the slot,
+    // which inserting two blocks around it could have quietly displaced.
+    const stripCount = await page.evaluate(() =>
+      document.querySelectorAll('[aria-label^="Limiting factor, year by year"]').length);
+    expect(stripCount, 'saved slot keeps its limiter strip').toBeGreaterThan(0);
+  });
+
+  test('the A/B notebook names the changed variable, and refuses to pick one of two', async ({ page }) => {
+    // A controlled experiment is same start AND one changed variable. The panel
+    // used to check only the starting tree; now it diffs the stored treatments.
+    // Both verdicts are pinned: the single-cause claim, and the refusal to make it.
+    await page.setViewportSize({ width: 1400, height: 820 });
+    await page.goto(`${(harness as any).base}/__harness`);
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.treeLab, null, { timeout: 30000 });
+    await page.evaluate(() => {
+      const E = (window as any).__alloTreeLabEngine;
+      const sp = E.speciesById('oak');
+      let t = E.newTree('oak');
+      // Young on purpose — see the note in the prediction test: every phase change
+      // rebuilds the WebGL scene synchronously, and a mature crown can block the
+      // click handler past the default action timeout when this file runs three-up.
+      for (let i = 0; i < 18 && t.alive; i++) {
+        t = E.simulateYear(t, sp, { tempC: 22, light: 0.85, co2ppm: 420, soilWater: 0.75 },
+          { leaf: 0.3, root: 0.2, wood: 0.35, repro: 0.05, store: 0.1 });
+      }
+      (window as any).__mount({ treeLab: { view: 'grow', speciesId: 'oak', tree: t, soilWater: 0.15, light: 0.9 } });
+    });
+    await page.waitForSelector('canvas', { timeout: 30000 });
+
+    const SLOW = { timeout: 90_000 };
+    async function runTrial(limiter: string) {
+      await expect(page.locator('#treelab-predict-limit')).toBeVisible(SLOW);
+      await page.selectOption('#treelab-predict-limit', limiter, SLOW);
+      await page.selectOption('#treelab-predict-outcome', 'struggle', SLOW);
+      await page.getByRole('button', { name: /Lock prediction/ }).click(SLOW);
+      const run = page.getByRole('button', { name: /Run trial/ });
+      await expect(run).toBeVisible(SLOW);
+      await run.click(SLOW);
+      await expect(page.locator('#treelab-explanation')).toBeVisible(SLOW);
+    }
+
+    await page.selectOption('#treelab-experiment-years', '10', SLOW);
+    await page.getByRole('button', { name: /Start investigation/ }).click(SLOW);
+    await runTrial('water');
+    await page.getByRole('button', { name: /A · Save trial/ }).click(SLOW);
+
+    // B differs from A by exactly one variable.
+    const prepBtn = page.getByRole('button', { name: /Prepare Trial B from A/ });
+    await expect(prepBtn).toBeVisible(SLOW);
+    await prepBtn.click(SLOW);
+    // Prepare drops straight into the predict phase (freshExperiment), so there is no
+    // Start button here — the predict controls are the signal that it landed. The
+    // conditions are deliberately editable during prediction; that is how B is set.
+    await expect(page.locator('#treelab-predict-limit')).toBeVisible(SLOW);
+    await page.evaluate(() => {
+      (window as any).__ctx.updateMulti('treeLab', { soilWater: 0.7 });
+      (window as any).__rerender();
+    });
+    await runTrial('light');
+    await page.getByRole('button', { name: /B · Save trial/ }).click(SLOW);
+
+    const one = page.getByText(/One variable changed/);
+    await expect(one).toBeVisible();
+    await expect(page.getByText(/Soil water 15% → 70%/)).toBeVisible();
+    await expect(page.getByText(/this change caused it/)).toBeVisible();
+
+    // Redo B with TWO changes: the panel must refuse to attribute.
+    await page.getByRole('button', { name: /Clear trial/ }).last().click(SLOW);
+    const prep2 = page.getByRole('button', { name: /Prepare Trial B from A/ });
+    await expect(prep2).toBeVisible(SLOW);
+    await prep2.click(SLOW);
+    await expect(page.locator('#treelab-predict-limit')).toBeVisible(SLOW);
+    await page.evaluate(() => {
+      (window as any).__ctx.updateMulti('treeLab', { soilWater: 0.7, light: 0.4 });
+      (window as any).__rerender();
+    });
+    await runTrial('light');
+    await page.getByRole('button', { name: /B · Save trial/ }).click(SLOW);
+
+    await expect(page.getByText(/2 things changed/)).toBeVisible();
+    await expect(page.getByText(/cannot be pinned on any one of them/)).toBeVisible();
+    await expect(page.getByText(/One variable changed/)).toHaveCount(0);
+  });
+
+  test('the tool root neither shrink-wraps nor stretch-clips in a flex mount', async ({ page }) => {
+    // The harness wrap is display:flex with a fixed height — exactly the two flex
+    // behaviours that bit: a block child shrink-wraps to fit-content (the tool was a
+    // different width on every tab, as wide as its widest fixed element) and a fixed
+    // cross-axis STRETCHES the item to it (content past 820px overflowed the painted
+    // background). The quiz view is the probe because it has no wide fixed element to
+    // mask the width bug, and the spread view because it is taller than the wrap.
+    await page.setViewportSize({ width: 1400, height: 820 });
+    await page.goto(`${(harness as any).base}/__harness`);
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.treeLab, null, { timeout: 30000 });
+    await page.evaluate(() => {
+      const E = (window as any).__alloTreeLabEngine;
+      const sp = E.speciesById('oak');
+      let t = E.newTree('oak');
+      for (let i = 0; i < 40 && t.alive; i++) {
+        t = E.simulateYear(t, sp, { tempC: 22, light: 0.85, co2ppm: 420, soilWater: 0.75 },
+          { leaf: 0.3, root: 0.2, wood: 0.35, repro: 0.05, store: 0.1 });
+      }
+      (window as any).__mount({ treeLab: { view: 'quiz', speciesId: 'oak', tree: t } });
+    });
+    await page.waitForSelector('.allo-tree-lab', { timeout: 30000 });
+
+    const quiz = await page.evaluate(() => {
+      const wrap = document.getElementById('wrap')!.getBoundingClientRect();
+      const tool = document.querySelector('.allo-tree-lab')!.getBoundingClientRect();
+      return { wrapW: wrap.width, toolW: tool.width };
+    });
+    expect(Math.abs(quiz.toolW - quiz.wrapW), 'full width on a narrow-content tab').toBeLessThan(2);
+
+    await page.evaluate(() => {
+      (window as any).__ctx.updateMulti('treeLab', { view: 'compare' });
+      (window as any).__rerender();
+    });
+    await page.waitForTimeout(400);
+    const cmp = await page.evaluate(() => {
+      const el = document.querySelector('.allo-tree-lab') as HTMLElement;
+      const r = el.getBoundingClientRect();
+      return { boxH: r.height, contentH: el.scrollHeight, w: r.width };
+    });
+    // The painted box must contain the content: a stretched 820px box under a
+    // 2000px column of cards is the background falling off mid-page.
+    expect(cmp.boxH, 'painted box covers the content').toBeGreaterThanOrEqual(cmp.contentH - 2);
+    expect(Math.abs(cmp.w - quiz.wrapW)).toBeLessThan(2);
+  });
 });

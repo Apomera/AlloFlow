@@ -52,7 +52,10 @@ describe('runtime strings are translatable', () => {
     // nothing — so the aliases themselves are part of the contract.
     expect(src).toMatch(/var __alloT = function \(k, fb\)/);
     expect(src).toMatch(/var blT = function \(k, fb, vars\)/);
-    expect((src.match(/__alloT\(/g) || []).length).toBeGreaterThan(400);
+    // A floor, not a census. It was 400 until three panels moved to the School
+    // Behavior Toolkit and the count legitimately dropped — a threshold set just
+    // under today's number turns every honest shrinkage into a red test.
+    expect((src.match(/__alloT\(/g) || []).length).toBeGreaterThan(250);
   });
 
   for (const fn of ['addToast', 'announceToSR']) {
@@ -101,6 +104,70 @@ describe('runtime strings are translatable', () => {
     expect(hits, `${hits.length} untranslated JSX text child(ren):\n${show(hits)}`).toEqual([]);
   });
 
+  it('literals hiding in ternaries and concatenations', () => {
+    // The shapes the first version of this gate could not see. It matched a literal
+    // that was the WHOLE value of a prop or a child, so all of these walked past it:
+    //     "aria-label": "Quiz answer: " + opt        (double-quoted, concatenated)
+    //     }, ok ? '✅ Correct!' : '❌ Incorrect'      (literal inside a ternary)
+    //     blQuizAnswered ? 'Paused' : 'Live'
+    // Between them they held 41 strings a student reads — including two this file's
+    // own author added, because the gate was written against the shapes being fixed
+    // at the time. A gate that only knows its author's habits certifies its author's
+    // habits.
+    const S1 = "'((?:[^'\\\\]|\\\\.)*)'";
+    const S2 = '"((?:[^"\\\\]|\\\\.)*)"';
+
+    // Most ternary literals in this file are class names, colours and CSS values,
+    // which are not translatable and must not be flagged.
+    const CSS = /(^|\s)(bg|text|border|ring|from|to|hover|active|scale|animate|motion|opacity|grayscale|shadow)[-:]|rgba?\(|#[0-9a-fA-F]{3,8}\b|linear-gradient|\dpx|drop-shadow|rotate\(|scale\(|@keyframes|translate/;
+    const VALUES = new Set(['true', 'false', 'none', 'block', 'flex', 'pointer', 'default',
+      'success', 'info', 'warning', 'error', 'red', 'green', 'step', 'img', 'polite',
+      'status', 'group', 'button', 'radio', 'dialog']);
+
+    const isProse = (t) => {
+      const bare = t.replace(/\\u[0-9A-Fa-f]{4}/g, '').trim();
+      if (bare.length < 3 || !/[A-Za-z]{3}/.test(bare)) return false;
+      if (VALUES.has(bare.toLowerCase())) return false;
+      if (CSS.test(bare)) return false;
+      return true;
+    };
+
+    // A string can be prose-shaped and still not be display text. `state` in the
+    // inquiry widget is a ternary of English words that INDEXES a lookup object two
+    // lines later; translating it made the lookup undefined and the next line threw
+    // — a crash the English fallback hid until a language pack existed. The gate
+    // cannot tell a key from a label, so the exemption is declared in the source,
+    // on the line, with its reason next to it.
+    const lineText = (idx) => {
+      const start = src.lastIndexOf('\n', idx) + 1;
+      const end = src.indexOf('\n', idx);
+      return src.slice(start, end < 0 ? undefined : end);
+    };
+
+    const hits = [];
+    const scan = (re, label) => {
+      let m;
+      while ((m = re.exec(src))) {
+        if (lineText(m.index).includes('i18n-exempt')) continue;
+        for (const g of [m[1], m[2]]) {
+          if (g !== undefined && isProse(g)) {
+            hits.push({ line: src.slice(0, m.index).split('\n').length, text: `${label}: ${g}` });
+          }
+        }
+      }
+    };
+
+    for (const prop of ['aria-label', 'title', 'placeholder']) {
+      scan(new RegExp('["\']' + prop + '["\']\\s*:\\s*' + S2, 'g'), prop);
+    }
+    scan(new RegExp('\\?\\s*' + S1 + '\\s*:\\s*' + S1, 'g'), 'ternary');
+    scan(new RegExp('\\?\\s*' + S2 + '\\s*:\\s*' + S2, 'g'), 'ternary');
+    scan(new RegExp('\\}\\s*,\\s*' + S2 + '\\s*\\+', 'g'), 'concat child');
+    scan(new RegExp('\\}\\s*,\\s*' + S1 + '\\s*\\+', 'g'), 'concat child');
+
+    expect(hits, `${hits.length} untranslated literal(s) in a ternary or concatenation:\n${show(hits)}`).toEqual([]);
+  });
+
   it('interpolated messages use named slots, not glued fragments', () => {
     // `'Level ' + n + ' Complete! '` hands a translator two fragments and no way
     // to reorder them; `'Level {n} complete!'` hands them a sentence.
@@ -129,7 +196,7 @@ describe('runtime strings are translatable', () => {
 
   it('keys are namespaced to this tool', () => {
     const keys = [...src.matchAll(/(?:__alloT|blT)\(\s*'([^']+)'/g)].map((m) => m[1]);
-    expect(keys.length).toBeGreaterThan(400);
+    expect(keys.length).toBeGreaterThan(250);
     const stray = [...new Set(keys.filter((k) => !k.startsWith('stem.behaviorlab.')))];
     expect(stray, `keys outside the stem.behaviorlab namespace: ${stray.join(', ')}`).toEqual([]);
   });

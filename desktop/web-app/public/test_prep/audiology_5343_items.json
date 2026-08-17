@@ -7900,7 +7900,7 @@
       "Its reciprocal displacement permits pressure release within the nearly incompressible cochlear fluids.",
       "Its motion directly contracts the stapedius muscle during every acoustic stimulus.",
       "Its vibration converts neural impulses from the auditory nerve back into acoustic energy.",
-      "Its movement equalizes air pressure between the middle ear and the nasopharynx."
+      "Its movement equalizes air pressure between the middle ear and the nasopharynx during swallowing and yawning."
     ],
     "answerIndex": 0,
     "rationale": "Because cochlear fluid is effectively incompressible, inward stapes motion at the oval window requires an accommodating pressure outlet. Reciprocal round-window movement allows the traveling wave to develop without implying neural or Eustachian-tube action.",
@@ -7948,7 +7948,7 @@
     "choices": [
       "Loss of the ossicular lever ratio while cochlear electrical conditions remain unchanged.",
       "Reduced maintenance of the potassium-rich endolymph and endocochlear potential needed for hair-cell transduction.",
-      "Failure of the semicircular canals to encode angular acceleration despite normal cochlear function.",
+      "Failure of the semicircular canals to encode angular head acceleration during rotation despite otherwise normal cochlear function.",
       "Closure of the Eustachian tube whenever sound pressure rises above behavioral threshold."
     ],
     "answerIndex": 1,
@@ -7995,7 +7995,7 @@
     "cognitiveLevel": "knowledge-and-understanding",
     "prompt": "An audiologist examines firing patterns across auditory-nerve fibers as pure-tone frequency increases. Which organization should be evident?",
     "choices": [
-      "Random ordering in which every fiber has the same best frequency but a different loudness limit.",
+      "Random ordering in which every fiber shares the same best frequency and differs only in the intensity at which it saturates.",
       "Somatotopic ordering in which fibers are arranged according to facial-muscle movement.",
       "Systematic tonotopic ordering in which fibers differ in the frequencies to which they are most sensitive.",
       "Retinotopic ordering in which fibers preserve the spatial coordinates of a visual image."
@@ -8144,7 +8144,7 @@
     "choices": [
       "The sound pressure equals 20 dB SPL for every calibrated earphone and test frequency.",
       "The level is expressed relative to the standardized reference-equivalent threshold for that frequency and transducer.",
-      "The listener detects a pressure that is twenty times the atmospheric reference pressure.",
+      "The listener detects a sound pressure twenty times greater than the standard atmospheric reference pressure of 20 micropascals.",
       "The level is twenty decibels above the listener’s uncomfortable loudness level."
     ],
     "answerIndex": 1,
@@ -8191,7 +8191,7 @@
     "cognitiveLevel": "application",
     "prompt": "Two equal-amplitude pure tones of the same frequency arrive 180 degrees out of phase at one location. What idealized result is expected there?",
     "choices": [
-      "Constructive interference doubles the instantaneous pressure throughout every cycle.",
+      "Constructive interference doubles the instantaneous pressure at every point in the combined waveform’s cycle.",
       "The frequencies combine to create a new tone exactly one octave above the originals.",
       "Destructive interference produces substantial cancellation of the combined pressure waveform.",
       "The phase difference changes both tones into broadband random noise."
@@ -8241,7 +8241,7 @@
     "prompt": "A measurement microphone underreports output above 6000 Hz but is accurate at lower frequencies. Which instrument property is deficient?",
     "choices": [
       "Its temporal integration is excessive because the room contains no reverberation.",
-      "Its interaural timing sensitivity is reduced because the microphone has one input port.",
+      "Its interaural timing sensitivity is reduced because a single input port cannot resolve arrival-time differences.",
       "Its bone-conduction oscillator force level is too high at all test frequencies.",
       "Its frequency response is not sufficiently flat across the required high-frequency measurement range."
     ],
@@ -8292,7 +8292,7 @@
       "Delayed reflections smear temporal and spectral speech cues and reduce the effective direct-sound contrast.",
       "Reflections remove all low-frequency energy before it reaches a listener.",
       "Reflections convert airborne speech into bone-conducted vibration at the listener.",
-      "Reflections increase visual access to the talker while leaving auditory cues unchanged."
+      "Reflections increase visual access to the talker’s face and articulators while leaving auditory cues unchanged."
     ],
     "answerIndex": 0,
     "rationale": "Late-arriving copies of earlier speech segments overlap newer segments, degrading envelope transitions and consonant contrasts. Adequate level alone therefore does not guarantee intelligibility when the direct-to-reverberant relationship is poor.",
@@ -8338,7 +8338,7 @@
     "cognitiveLevel": "analysis",
     "prompt": "A coupler measurement is repeated after an earphone is reseated, and the response changes markedly. What is the best interpretation?",
     "choices": [
-      "The listener’s auditory threshold changed even though no listener participated in the coupler test.",
+      "The listener’s auditory threshold shifted between the two runs even though no listener participated in the coupler measurement.",
       "The acoustic coupling or seal is affecting the measured response and must be standardized before comparison.",
       "The cochlear traveling wave adapted to the repeated stimulus presentation.",
       "The decibel scale became linear because the earphone was removed once."
@@ -8390,7 +8390,7 @@
       "An absolute hearing threshold expressed as the softest detectable pressure level.",
       "A critical ratio calculated from the bandwidth of a masking-noise spectrum.",
       "A frequency difference limen, or just-noticeable difference, for that listener and condition.",
-      "A speech-recognition score derived from the percentage of words repeated correctly."
+      "A speech-recognition score derived from the percentage of monosyllabic words repeated correctly."
     ],
     "answerIndex": 2,
     "rationale": "A difference limen is the smallest change in a stimulus dimension that is detected according to a defined criterion. Here the relevant dimension is frequency, and the estimate applies to the particular baseline, level, procedure, and listener.",
@@ -8438,7 +8438,7 @@
     "cognitiveLevel": "analysis",
     "prompt": "Equal-loudness contours show that a low-frequency tone and a midfrequency tone may require different sound-pressure levels to sound equally loud. What does this demonstrate?",
     "choices": [
-      "Perceived loudness is determined by frequency and is unaffected by presentation level.",
+      "Perceived loudness is determined by frequency alone and is unaffected by the presentation level.",
       "All audible frequencies have identical thresholds when expressed in dB SPL.",
       "A listener can compare loudness only when the two tones share the same frequency.",
       "Auditory sensitivity and perceived loudness vary with frequency as well as physical level."
@@ -8490,7 +8490,7 @@
     "prompt": "A narrowband masker centered below a test tone interferes with the higher-frequency tone more than a comparable masker centered above it. Which pattern is illustrated?",
     "choices": [
       "The upward spread of masking associated with asymmetric cochlear excitation at higher masker levels.",
-      "The precedence effect caused by a delayed copy arriving from a reflecting surface.",
+      "The precedence effect, caused by a delayed copy of the signal arriving from a nearby reflecting surface.",
       "Binaural release from masking produced by different signals at the two ears.",
       "Loudness adaptation measured after a prolonged tone in the absence of a masker."
     ],
@@ -8543,7 +8543,7 @@
       "The occlusion effect, in which bone-conducted low frequencies increase with a blocked ear canal.",
       "The precedence effect, in which the leading wavefront dominates perceived location under short delays.",
       "Loudness recruitment, in which perceived loudness grows rapidly above a cochlear threshold.",
-      "The Stenger effect, in which a louder same-frequency signal controls perception in a nonorganic test."
+      "The Stenger effect, in which the louder of two same-frequency signals controls perception during nonorganic testing."
     ],
     "answerIndex": 1,
     "rationale": "For sufficiently short delays, the auditory system fuses direct and reflected copies while weighting location toward the first-arriving sound. This precedence effect helps stabilize localization in ordinary reverberant environments.",
@@ -8594,7 +8594,7 @@
       "Monaural spectral smoothing removes consonant information from both ears equally.",
       "Auditory fatigue raises both-ear thresholds after every brief speech presentation.",
       "Binaural unmasking uses interaural timing and level relationships to improve separation of target and masker.",
-      "Middle-ear muscle contraction selectively amplifies the target talker in one ear."
+      "Middle-ear muscle contraction selectively amplifies the target talker in one ear while attenuating the masker."
     ],
     "answerIndex": 2,
     "rationale": "The central auditory system compares interaural timing, phase, and level information. When a target and masker produce different binaural patterns, these comparisons can yield a release from masking beyond either ear’s monaural information.",
@@ -8643,7 +8643,7 @@
     "prompt": "A listener identifies a partly obscured familiar sentence more accurately than an equally audible string of unrelated syllables. Which factor best explains the advantage?",
     "choices": [
       "The sentence necessarily has a higher calibrated sound-pressure level than the syllables.",
-      "The cochlear amplifier becomes stronger whenever words form a grammatical sentence.",
+      "The cochlear amplifier becomes measurably stronger whenever the words form a grammatical sentence.",
       "The middle ear transmits familiar vocabulary while attenuating unfamiliar syllables.",
       "Top-down linguistic context supplies redundant constraints that support auditory closure."
     ],
@@ -8694,7 +8694,7 @@
     "prompt": "Which task most directly evaluates spectral resolution rather than audibility alone?",
     "choices": [
       "Detecting a tone in notched noise while the spectral gap around the tone is systematically varied.",
-      "Reporting whether a 1000 Hz tone is heard in quiet at progressively lower levels.",
+      "Reporting whether a 1000 Hz tone remains audible in quiet as its level is lowered in fixed five-decibel steps.",
       "Repeating a list of familiar words presented well above threshold in a quiet booth.",
       "Judging whether a visual light flashes before or after an audible click."
     ],
@@ -8744,7 +8744,7 @@
     "cognitiveLevel": "analysis",
     "prompt": "A child hears two simultaneous talkers as separate streams when their fundamental frequencies and locations differ. Which perceptual process is involved?",
     "choices": [
-      "Tympanometric peak-pressure estimation separates the voices at the middle ear.",
+      "Tympanometric peak-pressure estimation separates the two voices at the level of the middle ear.",
       "Auditory scene analysis groups and segregates sound using coherent acoustic cues.",
       "Acoustic-reflex decay labels each talker according to semantic content.",
       "Pure-tone averaging combines both voices into one behavioral threshold."
@@ -8796,7 +8796,7 @@
     "prompt": "An older adult’s thresholds remain stable, but performance declines when speech is rapidly time-compressed. Which interpretation is most appropriate?",
     "choices": [
       "Stable thresholds prove that suprathreshold speech processing cannot have changed.",
-      "Time compression increases the listener’s cochlear frequency range and should improve recognition.",
+      "Time compression increases the listener’s usable cochlear frequency range and should therefore improve recognition.",
       "Reduced temporal and cognitive processing efficiency may affect performance beyond peripheral audibility.",
       "The result by itself establishes a new conductive disorder in both middle ears."
     ],
@@ -8898,7 +8898,7 @@
     "prompt": "A worker moves among several noisy areas during a shift. Which instrument is best suited to estimating the worker’s accumulated personal noise dose?",
     "choices": [
       "A properly configured personal noise dosimeter worn throughout the representative work period.",
-      "A tympanometer used before and after the shift to measure middle-ear pressure.",
+      "A tympanometer used before and after every shift to document changes in middle-ear peak pressure.",
       "A clinical audiometer set to present a single 1000 Hz tone in a sound booth.",
       "A stationary sound-level reading taken once in the quietest work area."
     ],
@@ -9103,7 +9103,7 @@
     "choices": [
       "Evaluate measured exposure, communication and alarm demands, device fit and attenuation, and compatible safety accommodations together.",
       "Maximize attenuation without assessing whether critical alarms remain detectable.",
-      "Avoid hearing protection because amplification restores normal resistance to hazardous noise.",
+      "Avoid hearing protection altogether because amplification is assumed to restore the ear’s normal resistance to hazardous workplace noise levels.",
       "Rely on coworkers to shout warnings while leaving machinery and procedures unchanged."
     ],
     "answerIndex": 0,
@@ -9206,7 +9206,7 @@
       "The previously passing ear is assumed to have permanent loss until it fails a second time.",
       "Rescreening both ears transforms the screening procedure into an etiologic diagnosis.",
       "Hearing status or test conditions can change, and a complete bilateral result is needed for current follow-up decisions.",
-      "Testing the referred ear would be invalid unless the other ear receives masking noise."
+      "Testing the referred ear alone would be invalid unless the opposite ear simultaneously receives continuous contralateral masking noise."
     ],
     "answerIndex": 2,
     "rationale": "A rescreen is a new bilateral screening event, and transient conditions, delayed changes, or measurement issues may affect either ear. Documenting both ears supports accurate EHDI tracking and appropriate diagnostic referral without treating screening as diagnosis.",
@@ -9255,7 +9255,7 @@
     "prompt": "A school screening program’s referral rate doubles after testing moves beside a loud ventilation system. What is the best first quality-improvement step?",
     "choices": [
       "Conclude that community hearing loss prevalence doubled on the day the room changed.",
-      "Lower every child’s recorded threshold until the referral rate returns to its prior value.",
+      "Adjust every child’s recorded threshold by a fixed correction factor until the referral rate returns to its previously reported value.",
       "Discontinue follow-up referrals while continuing to screen in the same conditions.",
       "Measure ambient noise and review equipment, procedure, and frequency-specific pass criteria before interpreting the increase."
     ],
@@ -9308,7 +9308,7 @@
       "Apply the program’s follow-up criteria and avoid diagnosing a hearing-loss type from screening alone.",
       "Diagnose permanent conductive hearing loss solely from the screening tympanogram.",
       "Ignore the result because passing pure tones rules out every middle-ear concern.",
-      "Assign a hearing aid immediately without diagnostic evaluation or medical context."
+      "Assign a hearing aid immediately without any diagnostic evaluation, medical clearance, or family consultation."
     ],
     "answerIndex": 0,
     "rationale": "Screening tympanometry can flag possible middle-ear dysfunction, but its meaning depends on otoscopy, history, symptoms, criteria, and follow-up evaluation. The program should communicate the result and next step without overstating diagnostic certainty.",
@@ -9356,7 +9356,7 @@
     "cognitiveLevel": "analysis",
     "prompt": "An EHDI database shows that many infants received diagnostic evaluations, but the results were not reported back to the program. Which problem is this?",
     "choices": [
-      "Loss to follow-up because none of the infants received the recommended diagnostic service.",
+      "Loss to follow-up, because none of the infants in this database actually received the recommended diagnostic service.",
       "Loss to documentation, which requires closing the reporting gap while protecting data privacy and integrity.",
       "A false-negative screening pattern because every diagnostic result must be normal.",
       "A calibration failure that can be corrected by changing the screening stimulus level."
@@ -9408,7 +9408,7 @@
     "prompt": "During a threshold search, a listener responds at 20 dB HL, misses at 15 dB HL, and responds again at 20 dB HL on repeated ascending trials. Which value best represents the behavioral threshold under a 50-percent response criterion?",
     "choices": [
       "15 dB HL because every missed presentation is counted as a positive response.",
-      "25 dB HL because threshold must be placed one full step above every reliable response.",
+      "25 dB HL, because threshold must always be placed one full five-decibel step above the softest reliable response.",
       "20 dB HL, provided the required responses occur on ascending presentations under the clinic protocol.",
       "The arithmetic average of 15, 20, and 20 dB HL regardless of presentation direction."
     ],
@@ -9460,7 +9460,7 @@
     "choices": [
       "A forehead bone oscillator can replace ear-specific air-conduction measures without masking.",
       "A sound-field loudspeaker can establish separate thresholds for the right and left ears.",
-      "A supra-aural earphone pressed more firmly against the pinna prevents canal-collapse artifact.",
+      "A supra-aural earphone pressed more firmly against the pinna prevents canal collapse and preserves the validity of the recorded thresholds.",
       "Insert earphones can reduce canal collapse and provide greater interaural attenuation when appropriately fitted and calibrated."
     ],
     "answerIndex": 3,
@@ -9512,7 +9512,7 @@
       "As a sound-field minimum response level that is not independently assignable to either ear.",
       "As a confirmed 25 dB HL threshold for each ear separately.",
       "As an exact bone-conduction threshold for the poorer cochlea.",
-      "As proof that tympanometry and otoacoustic emissions will be normal bilaterally."
+      "As proof that follow-up tympanometry and otoacoustic emissions will also be normal in both ears."
     ],
     "answerIndex": 0,
     "rationale": "Sound-field testing stimulates both ears and generally reflects whichever pathway detects the signal more effectively. With a young child, responses may also be minimum response levels rather than adult-like thresholds, so ear-specific cross-checks remain necessary.",
@@ -9563,7 +9563,7 @@
       "A bilateral caloric test comparing low-frequency horizontal-canal responses.",
       "A properly administered Stenger test using simultaneous same-frequency tones at controlled interaural levels.",
       "A tympanometric width measure used as the sole indicator of behavioral honesty.",
-      "An aided speech-in-noise test performed without verifying the asymmetric thresholds."
+      "An aided speech-in-noise test performed before the asymmetric unmasked thresholds have been independently verified."
     ],
     "answerIndex": 1,
     "rationale": "The Stenger principle can help evaluate certain unilateral or markedly asymmetric nonorganic response patterns by presenting identical-frequency stimuli to both ears at different levels. It is one cross-check and must be interpreted with the complete behavioral and physiologic record.",
@@ -9614,7 +9614,7 @@
       "Report the lowest score as the client’s speech-recognition threshold.",
       "Average all percentages and diagnose a conductive disorder from that number.",
       "Verify the finding and interpret possible rollover with the complete audiologic and medical-referral context.",
-      "Increase level without output limits until the score returns to one hundred percent."
+      "Increase the presentation level without output limits until the recognition score returns to one hundred percent."
     ],
     "answerIndex": 2,
     "rationale": "A marked decline from the maximum word-recognition score at higher levels can be described as rollover, but it requires confirmation of presentation, scoring, audibility, distortion, and reliability. The pattern contributes to, rather than replaces, broader diagnostic and referral reasoning.",
@@ -9663,7 +9663,7 @@
     "prompt": "A bilingual child is unfamiliar with the vocabulary in an open-set English speech test. Which modification best protects interpretation?",
     "choices": [
       "Interpret every missed English word as evidence of reduced cochlear sensitivity.",
-      "Translate individual test words spontaneously and apply the original monolingual norms unchanged.",
+      "Translate individual test words spontaneously during administration and continue to apply the original monolingual norms without any adjustment.",
       "Skip case history and rely on the English percentage as a language-neutral measure.",
       "Select linguistically appropriate materials or response formats and document how language familiarity limits comparison with norms."
     ],
@@ -9714,7 +9714,7 @@
     "prompt": "Pure-tone thresholds obtained today are 15 dB poorer than last week at several frequencies, but the client reports no change. What is the best first response?",
     "choices": [
       "Recheck instructions, transducer placement, equipment status, test environment, and threshold reliability before concluding a true shift.",
-      "Diagnose permanent progression from the numerical difference without repeating a measure.",
+      "Diagnose permanent progression directly from the numerical difference between the two audiograms without repeating any part of the measurement.",
       "Replace both audiograms with their arithmetic average and omit the discrepancy.",
       "Assume the earlier thresholds are correct because the first test in a series has priority."
     ],
@@ -9818,7 +9818,7 @@
       "Present tones at a predictable rhythm so button presses can be anticipated.",
       "Score every press as a detected tone because the client controls the test criterion.",
       "Use reinstruction, variable timing, and planned no-signal trials while observing whether false-positive responses decrease.",
-      "Raise all final thresholds by a fixed amount without collecting additional evidence."
+      "Raise all of the final thresholds by a fixed correction amount without collecting any additional response evidence from the client."
     ],
     "answerIndex": 2,
     "rationale": "False-positive behavior calls for clear task instruction, unpredictable presentation timing, and catch trials that contain no signal. Improved response control and agreement with cross-checks support reliability more directly than arbitrary threshold adjustment.",
@@ -9867,7 +9867,7 @@
     "prompt": "A tympanogram has normal peak pressure but markedly low peak-compensated static admittance. Which mechanical pattern is most consistent?",
     "choices": [
       "A highly mobile middle-ear system with excessive peak admittance.",
-      "A normal vestibulo-ocular reflex with reduced visual acuity during head movement.",
+      "A normal vestibulo-ocular reflex accompanied by reduced visual acuity during rapid horizontal head movements in either direction.",
       "An isolated auditory-language difficulty with proven normal middle-ear mechanics.",
       "A stiff middle-ear system, interpreted with ear-canal volume, otoscopy, history, and the rest of the battery."
     ],
@@ -9918,7 +9918,7 @@
     "prompt": "Why can tympanometric width or gradient add information beyond peak pressure alone?",
     "choices": [
       "It describes the breadth or sharpness of the admittance peak and can help characterize middle-ear mobility patterns.",
-      "It directly estimates cochlear outer-hair-cell gain at each audiometric frequency.",
+      "It directly estimates the amount of cochlear outer-hair-cell gain still available at each individual audiometric frequency.",
       "It provides an ear-specific cortical speech score without behavioral participation.",
       "It identifies the exact pathogen causing every episode of middle-ear effusion."
     ],
@@ -9968,7 +9968,7 @@
     "cognitiveLevel": "analysis",
     "prompt": "Transient-evoked OAEs are absent, and tympanometry shows a flat trace with typical ear-canal volume. What is the best immediate interpretation?",
     "choices": [
-      "The absent emissions prove complete loss of auditory-nerve function with normal cochlear mechanics.",
+      "The absent emissions prove a complete loss of auditory-nerve function occurring alongside entirely normal cochlear and middle-ear mechanics.",
       "Middle-ear dysfunction may block stimulus and emission transmission, so cochlear status cannot be inferred from the absent OAEs alone.",
       "The emissions establish normal outer-hair-cell function despite the recording being absent.",
       "The flat tympanogram confirms a language disorder unrelated to auditory status."
@@ -10019,7 +10019,7 @@
     "cognitiveLevel": "knowledge-and-understanding",
     "prompt": "In a standard distortion-product OAE paradigm using primary tones f1 and f2, which response is commonly analyzed?",
     "choices": [
-      "A cortical response fixed at f1 plus twice f2 regardless of recording conditions.",
+      "A cortical response fixed at f1 plus twice f2, regardless of the recording conditions or the measured noise floor.",
       "A tympanometric peak calculated by dividing f2 by the ear-canal volume.",
       "The distortion product at 2f1 minus f2, compared with the local noise floor across test frequencies.",
       "A behavioral threshold equal to the arithmetic average of f1 and f2."
@@ -10070,7 +10070,7 @@
     "cognitiveLevel": "analysis",
     "prompt": "Why can auditory steady-state responses be useful when estimating severe hearing loss across several frequencies?",
     "choices": [
-      "They directly measure conversational participation without later behavioral confirmation.",
+      "They directly measure everyday conversational participation without requiring any later behavioral confirmation.",
       "They determine the cause of hearing loss from one response amplitude in every patient.",
       "They replace otoscopy, immittance, OAEs, and ABR waveform review in an infant battery.",
       "Objectively estimate several frequency-specific responses, including at high levels permitted by the protocol."
@@ -10122,7 +10122,7 @@
     "prompt": "Electrocochleography shows an elevated summating-potential to action-potential ratio in a patient with episodic vertigo. What is the most appropriate conclusion?",
     "choices": [
       "The result may contribute to a suspected inner-ear disorder evaluation but is not independently diagnostic.",
-      "The ratio establishes a specific disease with certainty and makes the history unnecessary.",
+      "The ratio establishes one specific disease with certainty and makes the case history and symptom review unnecessary.",
       "The finding proves that both middle ears contain effusion despite normal immittance.",
       "The ratio measures cortical language comprehension during connected speech."
     ],
@@ -10172,7 +10172,7 @@
     "cognitiveLevel": "analysis",
     "prompt": "An infant ABR waveform reverses polarity when insert-earphone tubing polarity is reversed, while the neural wave does not. What does this support?",
     "choices": [
-      "The reversing component is a cortical P300 response requiring an active oddball task.",
+      "The reversing component is a cortical P300 response that requires an active oddball task and an awake, cooperative listener.",
       "The reversing component is consistent with a cochlear microphonic and should still be checked against stimulus artifact.",
       "The reversing component proves normal speech recognition in both ears.",
       "The reversing component is a tympanometric peak created by a probe-pressure sweep."
@@ -10224,7 +10224,7 @@
     "prompt": "Absolute ABR wave-V latency is delayed, but waves I through V have normal interpeak intervals after accounting for hearing level. Which interpretation is most cautious?",
     "choices": [
       "Normal interpeak intervals prove that the entire auditory system has normal sensitivity.",
-      "Interpret the delayed absolute latency as a central auditory conduction disorder despite the normal interpeak intervals.",
+      "Interpret the delayed absolute latency as a central auditory conduction disorder despite the normal interpeak intervals recorded.",
       "Consider peripheral or stimulus-related delay; normal interpeak timing does not indicate a clear central conduction delay.",
       "Every absolute latency delay requires an emergency vestibular procedure before retesting."
     ],
@@ -10276,7 +10276,7 @@
     "choices": [
       "Label the trace retrocochlear pathology because any falling line has that meaning.",
       "Average the drifting trace with a normal tympanogram to create a valid response.",
-      "Increase probe pressure until the ear canal is occluded and retain the original trace.",
+      "Increase probe pressure until the ear canal is fully occluded and then retain the original drifting trace as clinically valid.",
       "Repeat the measure with a stable seal and artifact control, then integrate any reproducible decay with the full battery."
     ],
     "answerIndex": 3,
@@ -10327,7 +10327,7 @@
     "choices": [
       "Rotary-chair testing, interpreted with caloric, head-impulse, visual, and clinical findings.",
       "Pure-tone bone conduction, which directly measures horizontal-canal gain.",
-      "Speech-recognition testing in quiet, which identifies bilateral vestibular loss.",
+      "Speech-recognition testing in quiet, which is assumed to identify bilateral vestibular weakness.",
       "Tympanometry, which determines semicircular-canal symmetry during rotation."
     ],
     "answerIndex": 0,
@@ -10376,7 +10376,7 @@
     "cognitiveLevel": "analysis",
     "prompt": "A patient reads an eye chart clearly while still, but visual acuity drops several lines during active head movement. What mechanism may be impaired?",
     "choices": [
-      "Middle-ear pressure equalization through the Eustachian tube during swallowing.",
+      "Middle-ear pressure equalization through the Eustachian tube during repeated swallowing, yawning, and jaw movement.",
       "Possible impairment of vestibulo-ocular-reflex gaze stabilization, considered with visual and task factors.",
       "Cochlear frequency selectivity measured by distortion-product emissions.",
       "Speech-language comprehension measured with an open-set word list."
@@ -10427,7 +10427,7 @@
     "cognitiveLevel": "analysis",
     "prompt": "Computerized dynamic posturography shows instability when visual and surface cues are unreliable. What can this test most directly characterize?",
     "choices": [
-      "The exact anatomical vestibular lesion site without any other examination.",
+      "The exact anatomical vestibular lesion site without requiring any other examination or imaging.",
       "The degree of sensorineural hearing loss at each octave frequency.",
       "Sensory organization for postural stability under the tested visual and surface conditions.",
       "The specific cause of tinnitus based solely on center-of-pressure movement."
@@ -10479,7 +10479,7 @@
     "prompt": "A patient reports brief vertigo when lying back with the head turned right. Which bedside maneuver is most appropriate to evaluate suspected right posterior-canal BPPV?",
     "choices": [
       "A left-ear word-recognition test at a comfortable listening level.",
-      "A tympanometric pressure sweep performed while the patient remains seated upright.",
+      "A tympanometric pressure sweep performed while the patient remains seated fully upright and completely motionless.",
       "A sustained pure tone presented through a forehead bone oscillator.",
       "A right Dix-Hallpike maneuver with observation of latency, direction, duration, and symptom reproduction."
     ],
@@ -10531,7 +10531,7 @@
     "choices": [
       "Use the supine roll test and compare geotropic or apogeotropic direction and side intensity to evaluate horizontal-canal BPPV.",
       "Use a Stenger test and compare which ear receives the louder pure tone.",
-      "Use acoustic-reflex decay and assign the stronger side to the poorer vestibular nerve.",
+      "Use acoustic-reflex decay testing and assign the stronger response side to the poorer-functioning vestibular nerve on that side.",
       "Use an OAE suppression task and diagnose a middle-ear disorder from nystagmus."
     ],
     "answerIndex": 0,
@@ -10580,7 +10580,7 @@
     "cognitiveLevel": "analysis",
     "prompt": "A client reports new pulse-synchronous unilateral tinnitus. Which response is most appropriate?",
     "choices": [
-      "Begin sound enrichment and defer medical consideration because tinnitus is usually benign.",
+      "Begin sound enrichment immediately and defer any medical consideration, because tinnitus of this kind is almost always entirely benign.",
       "Arrange timely medical evaluation while documenting laterality, pulse synchrony, associated symptoms, and audiologic findings.",
       "Diagnose a specific vascular condition from the client’s description without examination.",
       "Mask the tinnitus at maximum device output before obtaining case history."
@@ -10631,7 +10631,7 @@
     "cognitiveLevel": "analysis",
     "prompt": "A tinnitus program uses a validated self-report questionnaire before treatment and again three months later. What is the main purpose of this repeated measure?",
     "choices": [
-      "To calculate an exact tinnitus pitch from the total questionnaire score.",
+      "To calculate an exact tinnitus pitch and loudness match directly from the total questionnaire score alone.",
       "To replace hearing assessment and red-flag review for every participant.",
       "To quantify perceived impact and evaluate meaningful change alongside goals and clinical findings.",
       "To prove that identical scores represent identical tinnitus causes."
@@ -10684,7 +10684,7 @@
     "choices": [
       "Vocabulary difficulty proves a peripheral cochlear loss even when audiometry is normal.",
       "Using more unfamiliar words removes cultural and linguistic bias from the battery.",
-      "A single low score identifies the exact auditory pathway site responsible for classroom difficulty.",
+      "A single low score on this battery identifies the exact auditory pathway site that is responsible for the adolescent’s reported classroom difficulty.",
       "Language demands may confound the auditory construct, so linguistically appropriate assessment and multidisciplinary interpretation are needed."
     ],
     "answerIndex": 3,
@@ -10736,7 +10736,7 @@
       "Use visual inspection or otoscopy to identify canal status, contraindications, and safe placement.",
       "Select a final hearing-aid prescription before examining either ear canal.",
       "Assume the canal is clear whenever the caregiver reports no recent ear pain.",
-      "Begin high-level testing so cerumen can be detected from the child’s reaction."
+      "Begin high-level testing immediately so that any cerumen blockage can be detected from the child’s reaction."
     ],
     "answerIndex": 0,
     "rationale": "Otoscopy or an appropriate visual inspection identifies occluding debris, drainage, foreign bodies, canal anatomy, and other conditions affecting safety and validity. Findings guide probe placement, testing choices, infection control, and referral before instrumentation proceeds.",
@@ -10788,7 +10788,7 @@
     "choices": [
       "Fit bilateral devices and omit the asymmetry because amplification resolves etiology.",
       "Document the asymmetry and arrange appropriate medical referral while communicating uncertainty and follow-up needs.",
-      "Diagnose a specific retrocochlear tumor from the audiogram without medical evaluation.",
+      "Diagnose a specific retrocochlear tumor directly from the audiogram shape without any further medical evaluation or imaging.",
       "Repeat the better ear and discharge the client if that ear remains stable."
     ],
     "answerIndex": 1,
@@ -10840,7 +10840,7 @@
     "prompt": "A student with fluctuating middle-ear dysfunction has normal thresholds today but a history of intermittent classroom listening problems. Which plan is strongest?",
     "choices": [
       "Close the case because one normal audiogram excludes future fluctuation.",
-      "Assign permanent sensorineural hearing loss from the history without current evidence.",
+      "Assign a permanent sensorineural hearing loss on the basis of the reported history alone, without any current audiometric evidence supporting it.",
       "Combine medical follow-up, periodic audiologic monitoring, classroom-access supports, and communication with the educational team.",
       "Delay classroom support until the student fails every frequency in both ears."
     ],
@@ -10948,7 +10948,7 @@
       "Use age-appropriate ear-specific behavioral and physiologic measures, supported by communication and medical history.",
       "Assume the delay is unrelated to hearing because the child startles to loud sounds.",
       "Postpone evaluation until the child can complete conventional adult audiometry.",
-      "Diagnose a language disorder from an OAE screen without assessing auditory status further."
+      "Diagnose a language disorder from a passed OAE screen alone without assessing ear-specific auditory status any further."
     ],
     "answerIndex": 0,
     "rationale": "Speech-language delay and inconsistent listening warrant timely hearing assessment using VRA or play methods as developmentally appropriate, plus immittance, OAEs, and electrophysiology when indicated. History and multidisciplinary coordination help interpret incomplete or discordant findings.",
@@ -11000,7 +11000,7 @@
     "choices": [
       "Present the unfamiliar list and compare the score directly with monolingual norms.",
       "Use linguistically appropriate or nonverbal measures with qualified language support and document interpretive limits.",
-      "Translate the standardized recording in real time and retain its reliability data unchanged.",
+      "Translate the standardized recording in real time during the test and retain its published reliability and validity data unchanged.",
       "Omit all hearing testing because language difference prevents audiologic measurement."
     ],
     "answerIndex": 1,
@@ -11052,7 +11052,7 @@
     "prompt": "An infant consistently responds to speech in the sound field but provides sparse frequency-specific responses. How should the audiologist characterize the evidence?",
     "choices": [
       "The response proves normal sensitivity from 250 through 8000 Hz in both ears.",
-      "Use the speech-response level as the best estimate for every unmeasured frequency in both ears.",
+      "Use the sound-field speech-response level as the best available estimate for each unmeasured frequency in both of the ears.",
       "Speech awareness supports access to some broad-band energy but does not establish ear-specific frequency thresholds.",
       "The response identifies middle-ear status without tympanometry or otoscopy."
     ],
@@ -11104,7 +11104,7 @@
     "cognitiveLevel": "analysis",
     "prompt": "A sedated ABR is being considered because repeated natural-sleep evaluations have not resolved hearing status. What must occur before proceeding?",
     "choices": [
-      "Have the audiologist select and administer a sedative independently, using routine physiologic observation rather than an authorized medical sedation protocol.",
+      "Have the audiologist select and administer a sedative independently, using routine physiologic observation rather than an authorized medical sedation protocol or qualified medical supervision.",
       "Proceed on the basis of implied consent because electrophysiologic responses are objective, while completing risk review only if an adverse effect occurs.",
       "Use sedation whenever it would make an already adequate screening result appear more precise, without documenting an unresolved diagnostic need.",
       "Use an authorized medical sedation process with informed consent, risk review, monitoring, and a plan showing that the expected diagnostic benefit justifies exposure."
@@ -11160,7 +11160,7 @@
       "The lowest repeatable valid minimum response level, documented with developmental and procedural limits.",
       "The first 45 dB HL response because early trials take precedence over later evidence.",
       "The average of every stimulus level presented, including levels with no response.",
-      "Record 30 dB HL as a conventional adult threshold without labeling it a minimum response level."
+      "Record 30 dB HL as a conventional adult behavioral threshold without labeling it a minimum response level."
     ],
     "answerIndex": 0,
     "rationale": "Young-child behavioral results are often described as minimum response levels because conditioning, state, attention, and localization maturity affect responses. The lowest repeatable valid level should be documented along with test configuration and cross-check needs.",
@@ -11212,7 +11212,7 @@
     "choices": [
       "The unaided word-recognition percentage averaged across both ears.",
       "The child’s measured real-ear-to-coupler difference, obtained with safe age-appropriate procedures.",
-      "The tympanometric peak pressure substituted for every frequency in the fitting formula.",
+      "The tympanometric peak pressure, substituted for every frequency used in the prescriptive fitting formula.",
       "The parent’s estimate of daily device use entered as a decibel correction."
     ],
     "answerIndex": 1,
@@ -11264,7 +11264,7 @@
       "Increase gain until every high-level response reaches the equipment ceiling.",
       "Use a quiet speech questionnaire as the sole measure of maximum electroacoustic output.",
       "Verify high-level output with an appropriate signal and keep it below individualized safety and comfort limits.",
-      "Assume target match for average speech guarantees acceptable output for intense inputs."
+      "Assume that a target match for average speech guarantees an acceptable output level for the most intense speech inputs."
     ],
     "answerIndex": 2,
     "rationale": "Verification must address audibility across input levels and control of high-level output. Appropriate swept or speech-like high-level measures, individual loudness data, device limits, and clinical caution help confirm that maximum output is not excessive.",
@@ -11313,7 +11313,7 @@
     "prompt": "Hearing-aid data logging shows two hours of average daily use, while the client reports wearing the devices all day. How should the discrepancy be used?",
     "choices": [
       "Accuse the client of deception because device logs measure every aspect of behavior perfectly.",
-      "Accept the all-day self-report as the more representative measure and omit the logging discrepancy from follow-up.",
+      "Accept the all-day self-report as the more representative measure and omit the data-logging discrepancy from any follow-up discussion.",
       "Increase output based on hours of use even though gain and comfort were not evaluated.",
       "Explore wear schedules, handling, logging definitions, comfort, needs, and access barriers without privileging either source."
     ],
@@ -11366,7 +11366,7 @@
       "Check insertion and fit, then evaluate venting or coupling and low-frequency gain while preserving feedback control and required audibility.",
       "Raise low-frequency gain substantially before inspecting the coupling.",
       "Disable the microphones so the wearer hears no environmental sound.",
-      "Replace both devices solely from the description without electroacoustic or physical assessment."
+      "Replace both of the devices solely on the basis of the client’s verbal description, without any electroacoustic or physical assessment of the fit."
     ],
     "answerIndex": 0,
     "rationale": "The occlusion effect often reflects trapped low-frequency bone-conducted energy in a closed canal. Physical fit, insertion depth, venting, dome or earmold choice, feedback margin, and low-frequency targets should be evaluated together rather than sacrificing needed audibility reflexively.",
@@ -11465,7 +11465,7 @@
     "cognitiveLevel": "analysis",
     "prompt": "A client has aidable bilateral hearing loss but is using one hearing aid because of cost and dexterity concerns. What is the best counseling approach?",
     "choices": [
-      "State that two devices are required for every client regardless of contraindications or preference.",
+      "State that two devices are always required for every client with bilateral loss, regardless of contraindications, cost, dexterity, or the client’s own stated preference.",
       "Withhold communication strategies until the client purchases a second device.",
       "Discuss expected bilateral and unilateral tradeoffs, trial feasible options, and make a shared decision based on access, goals, ability, and resources.",
       "Program the single device for both ears by doubling its measured output."
@@ -11516,7 +11516,7 @@
     "cognitiveLevel": "application",
     "prompt": "A hearing-aid user wants access to a theater’s induction loop. Which device feature should be activated and verified?",
     "choices": [
-      "A feedback canceller configured to receive magnetic audio from the stage.",
+      "A feedback canceller configured to receive magnetic audio signals broadcast directly from the stage.",
       "A bone-conduction oscillator attached to the theater seat.",
       "A tympanometric probe programmed as a wireless streaming accessory.",
       "A telecoil program, with orientation and a listening check in the loop environment when feasible."

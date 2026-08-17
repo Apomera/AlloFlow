@@ -198,7 +198,11 @@
       var node = nodeById[id];
       var nodeType = alignmentViewText(node.type).toLowerCase();
       var structural = nodeType === 'audit' || nodeType === 'standard';
-      var typeMatch = !type || nodeType === type || structural;
+      // Mirror the engine's virtual 'learningComponent' type (standardsContext nodes whose
+      // record kind is 'component') so the filter dropdown behaves the same when this
+      // fallback runs without the engine.
+      var isComponent = nodeType === 'standardscontext' && alignmentViewText(node.kind).toLowerCase() === 'component';
+      var typeMatch = !type || nodeType === type || (isComponent && type === 'learningcomponent') || structural;
       var nodeSource = alignmentViewText(node.attributionSource).toLowerCase();
       var sourceMatch = !source || nodeSource === source || (incidentSources[id] && incidentSources[id][source]) || structural;
       var searchMatch = !query || alignmentViewSearchText(node).indexOf(query) >= 0;
@@ -249,6 +253,9 @@
     'word-sounds': 1, 'manipulative-resource': 1
   };
 
+  // NOTE (i18n): the `label` fields below are NOT rendered anywhere today — only stroke/dash
+  // are read (see the line renderer). If a legend ever surfaces them, add labelKey and
+  // translate at the render site; do not wire t() into this module-level constant.
   var EDGE_STYLES = {
     sequence:     { stroke: '#475569', dash: null,   label: 'teach next' },
     prerequisite: { stroke: '#d97706', dash: '6 4',  label: 'prerequisite gate' }
@@ -1265,7 +1272,7 @@
         }
       } else {
         var message = (t('throughline.confirm_seed_replace') || 'Replace your current canvas with the unit') + ' "' + unitName(seedUnitId) + '"?';
-        askThroughlineConfirmation(message, { title: 'Replace current canvas', confirmText: 'Replace canvas' }).then(function(ok) {
+        askThroughlineConfirmation(message, { title: t('throughline.confirm_title_replace_canvas') || 'Replace current canvas', confirmText: 'Replace canvas' }).then(function(ok) {
           if (!cancelled && ok) seedFromUnit(seedUnitId);
         });
       }
@@ -1285,7 +1292,7 @@
       }
       if (inLiveSession) {
         var ok = await askThroughlineConfirmation(t('throughline.live_open_confirm') ||
-          'You are in a live class session. Opening this lesson will show it to connected students. Continue?', { title: 'Open lesson in live session', confirmText: 'Open lesson' });
+          'You are in a live class session. Opening this lesson will show it to connected students. Continue?', { title: t('throughline.confirm_title_open_live') || 'Open lesson in live session', confirmText: 'Open lesson' });
         if (!ok) return;
       }
       onOpenLesson(item);
@@ -1357,7 +1364,7 @@
           if (parsed && parsed.unitLayout) {
             var nu = normalizeUnit(parsed.unitLayout);
             if (unit.nodes.length > 0) {
-              var ok = await askThroughlineConfirmation(t('throughline.confirm_replace') || 'Replace your current unit with the imported one? This cannot be undone.', { title: 'Replace current unit', confirmText: 'Replace unit' });
+              var ok = await askThroughlineConfirmation(t('throughline.confirm_replace') || 'Replace your current unit with the imported one? This cannot be undone.', { title: t('throughline.confirm_title_replace_unit') || 'Replace current unit', confirmText: 'Replace unit' });
               if (!ok) return;
             }
             carryUnitPathRetirements(unitRef.current, nu);
@@ -1372,7 +1379,7 @@
             throw new Error(t('throughline.no_history') || 'No lessons found in this file');
           }
           if (unit.nodes.length > 0) {
-            var ok2 = await askThroughlineConfirmation(t('throughline.confirm_replace') || 'Replace your current unit with the imported one? This cannot be undone.', { title: 'Replace current unit', confirmText: 'Replace unit' });
+            var ok2 = await askThroughlineConfirmation(t('throughline.confirm_replace') || 'Replace your current unit with the imported one? This cannot be undone.', { title: t('throughline.confirm_title_replace_unit') || 'Replace current unit', confirmText: 'Replace unit' });
             if (!ok2) return;
           }
           // sort: group by unitId (tagged units cluster), preserve order within
@@ -1404,7 +1411,7 @@
     }
 
     async function clearUnit() {
-      var ok = await askThroughlineConfirmation(t('throughline.confirm_clear') || 'Clear the entire unit? This cannot be undone.', { title: 'Clear entire unit', confirmText: 'Clear unit' });
+      var ok = await askThroughlineConfirmation(t('throughline.confirm_clear') || 'Clear the entire unit? This cannot be undone.', { title: t('throughline.confirm_title_clear_unit') || 'Clear entire unit', confirmText: 'Clear unit' });
       if (!ok) return;
       var retirement = noteSupersededUnitPath(canonicalUnitPathPublicationId(unit.unitId), 'cleared');
       var cleared = emptyUnit();
@@ -1587,7 +1594,7 @@
         if (ev.key === 'Escape') {
           ev.preventDefault();
           var g = genRef.current;
-          if (g && g.phase === 'generating') { if (!await askThroughlineConfirmation(t('throughline.gen_stop_confirm') || 'Stop generating this unit? Lessons already built will stay in your canvas.', { title: 'Stop unit generation', confirmText: 'Stop generation' })) return; stopGeneration(); }
+          if (g && g.phase === 'generating') { if (!await askThroughlineConfirmation(t('throughline.gen_stop_confirm') || 'Stop generating this unit? Lessons already built will stay in your canvas.', { title: t('throughline.confirm_title_stop_gen') || 'Stop unit generation', confirmText: 'Stop generation' })) return; stopGeneration(); }
           closeGenerate(); return;
         }
         if (ev.key === 'Tab') {
@@ -2277,6 +2284,7 @@
               h('option', { value: 'all' }, t('alignment_graph.node_all') || 'All graph items'),
               h('option', { value: 'standard' }, t('alignment_graph.node_standard') || 'Standards'),
               h('option', { value: 'standardsContext' }, t('alignment_graph.node_standards_context') || 'Standards context'),
+              h('option', { value: 'learningComponent' }, t('alignment_graph.node_learning_component') || 'Learning components'),
               h('option', { value: 'auditArtifact' }, t('alignment_graph.node_audit_artifact') || 'Audited artifacts'),
               h('option', { value: 'auditEvidence' }, t('alignment_graph.node_audit_evidence') || 'Evidence'),
               h('option', { value: 'auditFinding' }, t('alignment_graph.node_audit_finding') || 'Findings'),
@@ -2667,7 +2675,7 @@
 
       async function onOverlayClose() {
         if (phase === 'generating') {
-          var ok = await askThroughlineConfirmation(t('throughline.gen_stop_confirm') || 'Stop generating this unit? Lessons already built will stay in your canvas.', { title: 'Stop unit generation', confirmText: 'Stop generation' });
+          var ok = await askThroughlineConfirmation(t('throughline.gen_stop_confirm') || 'Stop generating this unit? Lessons already built will stay in your canvas.', { title: t('throughline.confirm_title_stop_gen') || 'Stop unit generation', confirmText: 'Stop generation' });
           if (!ok) return;
           stopGeneration();
         }

@@ -87,6 +87,10 @@
       "itemId": "parapro-b3-writing-033",
       "issue": "The EPPP-guided warning docket identified avoidable answer-length, lexical-cue, distractor-extremity, or incorrect-option-feedback risk.",
       "change": "Rebalanced the options and rewrote item-specific feedback while preserving the tested concept and keyed answer position."
+    },
+    {
+      "issue": "The keyed option was the longest of the four choices in 22 of 33 items, against 25% by chance, leaving the bank partly answerable without reading the stem. An earlier review of this file recorded that answer-length cues had been removed; that claim did not hold when measured.",
+      "change": "Rewrote 15 distractors by hand to carry the same false claim at parallel specificity and length. No keyed option, rationale, reference or answer position was changed. Key-is-longest now 7/33 (21%)."
     }
   ],
   "checks": {
@@ -239,15 +243,27 @@
   },
   "reviewedFile": "dev-tools/authored/parapro_batch3_writing_33.json",
   "blockers": [],
-  "sourceSha256": "ff57a65a8f3bb76a5c9cb353204b1f87c962ab0d2a01a20efb2c38ecdab4ff37",
+  "sourceSha256": "16117a7dcc4fef83552239e3be1e015bce562ee047ab01edff0d6c291878a116",
   "artifactBinding": {
     "algorithm": "sha256",
-    "sha256": "ff57a65a8f3bb76a5c9cb353204b1f87c962ab0d2a01a20efb2c38ecdab4ff37"
+    "sha256": "16117a7dcc4fef83552239e3be1e015bce562ee047ab01edff0d6c291878a116"
   },
   "integration": {
     "packId": "parapro-1755-practice-1",
     "batchNumber": 3,
     "expectedInsertionTier": "assistant-authored-independent",
     "expectedDiagnosticBankSize": 100
-  }
+  },
+  "remediation": [
+    {
+      "at": "2026-08-17",
+      "by": "Claude Opus 5 — AlloFlow fleet lane W4",
+      "scope": "answer-length tell only; distractor text",
+      "itemsChanged": 15,
+      "ledger": "dev-tools/authored/length_remediation_2026-08-17.json",
+      "priorSha256": "ff57a65a8f3bb76a5c9cb353204b1f87c962ab0d2a01a20efb2c38ecdab4ff37",
+      "sha256": "16117a7dcc4fef83552239e3be1e015bce562ee047ab01edff0d6c291878a116",
+      "note": "Distractor text edited after the independent cross-review. The binding was renewed so the artifact stays self-consistent; the original reviewer did not review these replacements."
+    }
+  ]
 }

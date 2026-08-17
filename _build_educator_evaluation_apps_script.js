@@ -62,8 +62,12 @@ const entry = path.join(tempDir, 'portal-entry.jsx');
 const bundle = path.join(tempDir, 'portal-bundle.js');
 const asImport = (file) => file.replace(/\\/g, '/');
 
+const qrSource = fs.readFileSync(path.join(ROOT, 'qrcode.js'), 'utf8');
 const entrySource = `import React from ${JSON.stringify(asImport(REACT))};
 import { createRoot } from ${JSON.stringify(asImport(REACT_DOM))};
+
+${qrSource}
+if (typeof window !== 'undefined') window.qrcode = window.qrcode || qrcode;
 
 ${source}
 

@@ -7135,7 +7135,7 @@
       "Pause after an open question, invite a child to explain, and recast the response in a slightly more complex sentence.",
       "Ask only yes-or-no questions so every response can be scored quickly.",
       "Supply the complete answer before children have time to formulate language.",
-      "Correct each grammatical difference without responding to the child’s meaning."
+      "Correct each grammatical difference the child produces immediately, without responding to the meaning the child was trying to express."
     ],
     "answerIndex": 0,
     "rationale": "Open prompts, wait time, elaboration, and responsive recasts give children meaningful opportunities to produce and hear language just beyond their current forms.",
@@ -7182,7 +7182,7 @@
     "cognitiveLevel": "understand",
     "prompt": "A child points to a picture of a dog after the teacher says, “Show me dog,” but does not yet say the word. What does this performance demonstrate?",
     "choices": [
-      "Expressive vocabulary is fully mastered because pointing and speaking are interchangeable responses.",
+      "Expressive vocabulary is fully mastered, because pointing and speaking are entirely interchangeable responses.",
       "Receptive understanding of the word is evident even though expressive production is not yet demonstrated.",
       "Print decoding is established because the child located an object after hearing its spoken name.",
       "Phoneme segmentation is established because the child connected one spoken word with one referent."
@@ -7232,7 +7232,7 @@
     "cognitiveLevel": "apply",
     "prompt": "A preschooler writes a row of letterlike forms and says, “This says my dog runs.” What is the most appropriate teacher response?",
     "choices": [
-      "Erase the forms and require the child to copy the conventional sentence before discussing the message.",
+      "Erase the letterlike forms and require the child to copy the conventional sentence correctly before any discussion of the intended message.",
       "Label the work as drawing because letterlike forms cannot communicate until spelling is conventional.",
       "Ask the child to read the message, add a conventional transcription nearby, and invite more details without replacing the child’s marks.",
       "Delay writing experiences until the child can name and form every uppercase and lowercase letter."
@@ -7284,7 +7284,7 @@
     "choices": [
       "The brief English responses prove that the child lacks narrative structure in every language.",
       "Use of the home language is interfering with literacy and should be excluded during assessment.",
-      "The English sample alone is sufficient because language knowledge transfers only after complete English fluency.",
+      "The English sample alone is sufficient evidence, because language knowledge can transfer only after the child has attained complete English fluency.",
       "The child’s narrative knowledge may exceed current English expression, so assessment should include both languages and multiple response modes."
     ],
     "answerIndex": 3,
@@ -7334,7 +7334,7 @@
     "choices": [
       "“Enormous means very, very large; this elephant is enormous compared with the mouse. Show me something else enormous.”",
       "“Enormous means enormous; remember it when the word appears again.”",
-      "“Enormous is an adjective with four syllables, so its meaning is not important yet.”",
+      "“Enormous is an adjective with four syllables and a Latin root, so its precise meaning is not important for children yet.”",
       "“Look at the first letter and guess a word that would fit the page.”"
     ],
     "answerIndex": 0,
@@ -7384,7 +7384,7 @@
     "choices": [
       "Display an alphabet chart and ask children to name colors around its border.",
       "Write a child’s dictated sentence while rereading each word and tracking the print from left to right.",
-      "Have children memorize the page number on which a favorite illustration appears.",
+      "Have children memorize the page number on which each favorite illustration happens to appear in the book.",
       "Ask children to sort books by cover size without opening or discussing them."
     ],
     "answerIndex": 1,
@@ -7435,7 +7435,7 @@
       "Ask the child to recite the author’s biography and the book’s publication date.",
       "Ask the child to list every color used in the illustrations in alphabetical order.",
       "Ask what the character wanted, what got in the way, what the character tried, and how the situation was resolved.",
-      "Ask whether the child liked the story and end the retell assessment after a yes-or-no answer."
+      "Ask whether the child liked the story overall and then end the retell assessment after a single yes-or-no answer is given."
     ],
     "answerIndex": 2,
     "rationale": "Targeted prompts about goal, problem, and attempts reveal understanding of causal story structure and support a more coherent retell without supplying the events.",
@@ -7483,7 +7483,7 @@
     "prompt": "A family uses American Sign Language at home. Which classroom practice best treats the family’s language as an instructional asset?",
     "choices": [
       "Ask the family to stop signing so spoken English becomes the child’s only communication model.",
-      "Place the child behind peers during group discussion so movement does not distract other children.",
+      "Place the child behind the other peers during group discussion so that signing movement does not distract the rest of the children in the class.",
       "Count signed ideas as motor imitation rather than language when documenting progress.",
       "Learn and use key signs with family guidance, provide visual access to communication, and include signed responses in language evidence."
     ],
@@ -7735,7 +7735,7 @@
       "The child needs practice blending a four-phoneme sequence into the complete spoken form.",
       "The child necessarily lacks the vocabulary meaning of smile.",
       "The child has demonstrated mastery of phoneme deletion.",
-      "The child needs to identify the number of printed letters before hearing sounds."
+      "The child needs to identify the number of printed letters in the word before hearing any sounds."
     ],
     "answerIndex": 0,
     "rationale": "Producing the known word but failing to synthesize its separately presented phonemes points to phoneme blending, not necessarily vocabulary or print knowledge.",
@@ -7984,7 +7984,7 @@
     "choices": [
       "Whether the child knows that every final consonant changes the preceding vowel to long.",
       "Whether the child distinguishes the medial short-e and short-i sounds and connects them to e and i.",
-      "Whether the child can use the illustration to replace the printed word with a plausible noun.",
+      "Whether the child can use the illustration to replace the printed word with any plausible noun instead.",
       "Whether the child has memorized the sentence in which pet appeared."
     ],
     "answerIndex": 1,
@@ -8032,7 +8032,7 @@
     "cognitiveLevel": "apply",
     "prompt": "Which routine best teaches the irregular high-frequency word said while preserving phonics knowledge?",
     "choices": [
-      "Ask children to memorize said as an unanalyzed picture without attending to any letters or sounds.",
+      "Ask children to memorize said as an unanalyzed whole picture, without attending to any of its individual letters or sounds at all.",
       "Teach that ai always represents /e/ so children can apply the rule to every unfamiliar word.",
       "Map /s/ to s and /d/ to d, identify ai as the unexpected spelling for /e/, and practice reading and writing the whole word.",
       "Have children guess said from a picture and the first letter whenever it appears."
@@ -8083,7 +8083,7 @@
     "prompt": "The teacher dictates the word jump. A child writes JUP. Which feedback most directly addresses the encoding evidence?",
     "choices": [
       "“The whole word is wrong, so copy jump five times without examining its sounds.”",
-      "“Add any letter before p because four-letter words must contain four different sounds.”",
+      "“Add any letter before the p, because four-letter words must always contain four different sounds.”",
       "“Use the picture to decide which consonant belongs in the middle.”",
       "“You heard /j/, /u/, and /p/. Stretch jump and listen for the sound between /u/ and /p/: /m/.”"
     ],
@@ -8184,7 +8184,7 @@
     "choices": [
       "Score the substitution as acceptable because preserving sentence meaning matters more than matching the specific printed word.",
       "Compare the response with the printed letters; preserved meaning plus a visual mismatch suggests context was favored over full orthographic processing.",
-      "Treat the substitution as weak comprehension because using a semantically related word shows that the sentence was misunderstood.",
+      "Treat the substitution as evidence of weak comprehension, because using any semantically related word shows that the sentence itself was misunderstood by the reader.",
       "Measure volume and rate on the substituted word to decide whether fluency, rather than word identification, caused the response."
     ],
     "answerIndex": 1,
@@ -8335,7 +8335,7 @@
       "The text describes warmer conditions and less standing water even though no one poured or drained it.",
       "The illustration uses blue for both the puddle and the sky.",
       "The page number is larger after the puddle disappears.",
-      "The story contains more sentences about boots than about water."
+      "The story happens to contain more individual sentences about the child’s boots than it does about the water."
     ],
     "answerIndex": 0,
     "rationale": "The changing puddle size under warm conditions supports evaporation as an explanation, while the absence of pouring or drainage helps rule out simpler alternatives.",
@@ -8433,7 +8433,7 @@
     "prompt": "Which text feature would most directly help a child locate where monarch butterflies migrate?",
     "choices": [
       "A glossary defining chrysalis",
-      "A caption describing wing color",
+      "A caption describing the butterfly’s wing color",
       "A labeled map showing the migration route",
       "An index entry for nectar"
     ],
@@ -8484,7 +8484,7 @@
     "choices": [
       "“Replace every spoken line with a longer narration so dialogue is removed.”",
       "“Copy the teacher’s story because published writing should use identical sentences.”",
-      "“Check the handwriting first; meaning cannot be revised until every letter is perfect.”",
+      "“Check the handwriting first; meaning cannot be revised until every single letter is perfect.”",
       "“Where could you add a speaker tag or punctuation so the conversation is easy to follow?”"
     ],
     "answerIndex": 3,
@@ -8535,7 +8535,7 @@
       "Informational texts, traditional tales, poetry, and realistic fiction from varied cultures and perspectives",
       "More copies of the same animal story with different cover colors",
       "Books selected only because every title contains the same number of words",
-      "A single folktale presented as representative of all cultures and time periods"
+      "A single folktale collection presented as representative of all cultures and all of the historical time periods"
     ],
     "answerIndex": 0,
     "rationale": "A varied collection expands genre knowledge, background knowledge, language forms, and representation. Breadth requires meaningful differences in content and perspective, not cosmetic variation.",
@@ -8585,7 +8585,7 @@
       "“Every line needs a comma, so I will place one after each word.”",
       "“Our idea is complete, so I will add a period; the next idea begins with a capital letter.”",
       "“Punctuation is decoration, so any mark will communicate the same relationship.”",
-      "“I will wait to discuss marks until children can spell every word conventionally.”"
+      "“I will wait to discuss punctuation marks until children can spell every word conventionally.”"
     ],
     "answerIndex": 1,
     "rationale": "The think-aloud connects sentence boundaries with meaning and visibly models a period and initial capitalization while children compose an authentic message.",
@@ -9284,7 +9284,7 @@
     "choices": [
       "The child changed subtraction into multiplication and found four groups of six.",
       "The child subtracted 10 twice because 18 contains two tens.",
-      "The child used rounding, so 24 is only an estimate rather than the exact difference.",
+      "The child used rounding here, so 24 is only a close estimate rather than the exact difference required.",
       "The child decomposed 18 into 10 and 8 and subtracted both parts while preserving the difference."
     ],
     "answerIndex": 3,
@@ -9534,7 +9534,7 @@
     "choices": [
       "Have the child pair each counter in one row with one counter in the other and recount if needed.",
       "Add a counter to the compact row so both rows look the same length.",
-      "Tell the child the answer without allowing any comparison of the sets.",
+      "Tell the child the correct answer directly without allowing any further comparison of the two sets.",
       "Sort each row by counter color and compare only the darkest counters."
     ],
     "answerIndex": 0,
@@ -9832,7 +9832,7 @@
     "cognitiveLevel": "apply",
     "prompt": "Children propose two ways to solve 9 + 6. Which teacher question best promotes mathematical reasoning?",
     "choices": [
-      "“Which child finished first, regardless of whether the strategy is accurate?”",
+      "“Which of the children finished first, regardless of whether the strategy each used was actually accurate?”",
       "“Can everyone erase their method and copy the teacher’s steps exactly?”",
       "“How does each strategy keep the total unchanged, and where can we see 15 in both representations?”",
       "“Which representation uses the most colors, even if the quantities differ?”"
@@ -9936,7 +9936,7 @@
     "choices": [
       "Arrange photographs of planting, sprouting, flowering, and harvesting in temporal order and justify the sequence.",
       "Sort the photographs by border color without discussing events.",
-      "Count the letters in each photograph caption and rank them from longest to shortest.",
+      "Count the letters in each photograph caption and then rank all of the captions in order from the longest to the shortest.",
       "Choose the most attractive photograph and label it the earliest event."
     ],
     "answerIndex": 0,
@@ -10041,7 +10041,7 @@
       "Let the loudest speaker choose before anyone explains the problem.",
       "Vote repeatedly until every child selects the teacher’s preferred option.",
       "Identify the shared need, hear perspectives, compare options with agreed criteria, decide, and review the result.",
-      "Choose the cheapest option without considering safety, access, or the stated need."
+      "Choose whichever option costs the least without considering safety, accessibility, or the need the council originally stated."
     ],
     "answerIndex": 2,
     "rationale": "Civic decision making combines a defined public problem, participation, evidence-based comparison, an agreed decision process, and evaluation of consequences.",
@@ -10090,7 +10090,7 @@
     "cognitiveLevel": "analyze",
     "prompt": "Which statement accurately connects a classroom right with a responsibility?",
     "choices": [
-      "Children may speak at any time and are responsible for preventing classmates from disagreeing.",
+      "Children may speak at any time they wish and are responsible for preventing their classmates from disagreeing with them.",
       "Children have a right to preferred materials and may exclude others from shared supplies.",
       "Children are responsible for following directions but have no right to ask for clarification.",
       "Children may express ideas respectfully and are responsible for allowing classmates an opportunity to be heard."
@@ -10143,7 +10143,7 @@
     "prompt": "Which statement best distinguishes a classroom rule from a state law?",
     "choices": [
       "A classroom rule guides conduct in one learning community; a state law is enacted through state government and has legal force.",
-      "A classroom rule and a state law are both passed by the United States Congress.",
+      "A classroom rule and a state law are both formally passed by the United States Congress before they can take effect anywhere in the country.",
       "A state law applies only while a student is physically inside a classroom.",
       "A classroom rule carries criminal penalties whenever a teacher writes it down."
     ],
@@ -10196,7 +10196,7 @@
     "choices": [
       "Use one holiday image to represent every family associated with a broad cultural label.",
       "Use several first-person and community-based sources, identify each source’s context, and invite families to share voluntarily.",
-      "Assign children to cultural groups based on names and require them to explain those groups.",
+      "Assign children to cultural groups based on their family names and then require each of them to explain that group’s traditions.",
       "Rank family practices by how closely they match the teacher’s own experience."
     ],
     "answerIndex": 1,
@@ -10299,7 +10299,7 @@
     "prompt": "Children interview a longtime cafeteria worker about changes at school. Which preparation most supports responsible oral history?",
     "choices": [
       "Rewrite the speaker’s answers to match what the class expected to hear.",
-      "Record secretly so the speaker cannot change responses after seeing the device.",
+      "Record the interview secretly, so that the cafeteria worker cannot change any responses after noticing that a recording device is present.",
       "Treat one person’s memory as a complete account of every school experience.",
       "Develop open questions, obtain permission to record, preserve the speaker’s wording, and compare memories with other sources."
     ],
@@ -10457,7 +10457,7 @@
       "The river completely determined every town decision, so people made no environmental changes.",
       "Human choices cannot affect water movement or habitat under any conditions.",
       "People modified the river area for flood protection while also designing space that can support recreation and habitat.",
-      "Adaptation and modification are identical terms and therefore cannot describe different actions."
+      "Adaptation and modification are entirely identical terms and therefore cannot describe two different kinds of human action."
     ],
     "answerIndex": 2,
     "rationale": "The levee is a deliberate environmental modification, and the wetland park reflects additional choices with possible social and ecological benefits and tradeoffs.",
@@ -10665,7 +10665,7 @@
       "Change the car, ramp height, and floor surface for every trial.",
       "Push one car by hand but release the other car without a push.",
       "Use the same car and surface, change only ramp height, and measure distance from the same starting point.",
-      "Record only the trial that travels farthest and discard the remaining measurements."
+      "Record only the single trial in which the car travels farthest and discard all of the remaining measurements."
     ],
     "answerIndex": 2,
     "rationale": "A fair comparison varies the factor of interest while holding relevant conditions consistent and measuring the outcome in the same way.",
@@ -10818,7 +10818,7 @@
     "cognitiveLevel": "analyze",
     "prompt": "A child says a larger ball must roll faster down every ramp. What investigation would best test the claim?",
     "choices": [
-      "Roll the large ball down a steep ramp and the small ball across carpet.",
+      "Roll the large ball down a steep wooden ramp and roll the small ball across a level section of the classroom carpet instead.",
       "Release different-size balls from the same point on the same ramp and measure their travel times across repeated trials.",
       "Ask classmates which ball looks fastest without moving either ball.",
       "Test only one large ball once and compare it with no other object."
@@ -10977,7 +10977,7 @@
       "The cold week is weather; climate is described from longer-term regional patterns that can include unusual weeks.",
       "The cold week permanently changes the region’s climate classification by itself.",
       "Climate means today’s temperature, while weather means a thirty-year pattern.",
-      "The cold measurements should be removed because climate data cannot include unusual events."
+      "The unusually cold measurements should be removed, because climate data cannot include any events that are unusual."
     ],
     "answerIndex": 0,
     "rationale": "Weather refers to short-term atmospheric conditions, whereas climate summarizes distributions and patterns over longer periods. One event is evidence within, not a replacement for, that record.",
@@ -11287,7 +11287,7 @@
     "prompt": "A paper bridge holds six blocks and then bends. What is the most evidence-based next design step?",
     "choices": [
       "Declare the first design successful because it held at least one block.",
-      "Change several features and the test method simultaneously so the new result cannot be compared.",
+      "Change several design features and the test method simultaneously, so that the new result cannot be compared with the first one.",
       "Identify where bending began, revise one feature such as support placement, and retest under the same loading procedure.",
       "Hide the bending result and report only the strongest trial."
     ],
@@ -11339,7 +11339,7 @@
     "prompt": "Which handwashing routine most effectively reduces transmission in an early-childhood classroom?",
     "choices": [
       "Rinse fingertips briefly with water only whenever dirt is visible.",
-      "Share one damp towel throughout the day so children use the same cleaning surface.",
+      "Share one damp cloth towel throughout the entire day so that all of the children use the same shared cleaning surface.",
       "Apply soap after drying because friction is unnecessary during washing.",
       "Use soap and running water, scrub all hand surfaces for an adequate interval, rinse, and dry with a clean method."
     ],
@@ -11392,7 +11392,7 @@
     "choices": [
       "Follow the current care plan, verify ingredients and cross-contact risks, and provide an equivalent safe option.",
       "Offer a small amount of the allergen so the classroom can test whether the allergy remains.",
-      "Remove the child from every snack activity even when a safe inclusive arrangement is available.",
+      "Remove the child from every classroom snack activity, even when a safe and inclusive arrangement is readily available.",
       "Assume foods with different brand names cannot contain the same allergen."
     ],
     "answerIndex": 0,
@@ -11600,7 +11600,7 @@
     "choices": [
       "Use the practiced route, bring required attendance information, account for every child, and follow the site plan.",
       "Create a new route during each drill so children cannot anticipate any procedure.",
-      "Leave attendance information behind because counting children after evacuation is unnecessary.",
+      "Leave the attendance information behind, because counting the children after an evacuation is entirely unnecessary.",
       "Return a child to the room alone to retrieve a preferred object."
     ],
     "answerIndex": 0,
@@ -11913,7 +11913,7 @@
       "“Revision means the first idea failed, so begin an unrelated project.”",
       "“I will reshape it for you so the work matches my model exactly.”",
       "“You noticed a stability problem. What could you change in the base and test before deciding?”",
-      "“Artists do not test materials because authentic ideas must remain unchanged.”"
+      "“Artists do not test their materials, because an authentic idea must always remain completely unchanged.”"
     ],
     "answerIndex": 2,
     "rationale": "The comment treats observation, revision, and testing as normal artistic problem solving while preserving the child’s intention and decision-making role.",
@@ -12068,7 +12068,7 @@
     "choices": [
       "Assume every publicly audible song is unrestricted for any classroom imitation.",
       "Consult credible community-connected sources about context and permissions, and choose material appropriate for classroom participation.",
-      "Remove the community name so the song can be presented as a universal classroom tune.",
+      "Remove the name of the originating community so that the song can be presented to the whole class as a universal, culture-free classroom tune.",
       "Invent a translation and describe it as the community’s traditional wording."
     ],
     "answerIndex": 1,
@@ -12118,7 +12118,7 @@
     "cognitiveLevel": "apply",
     "prompt": "Which lesson is an authentic integration of science and visual art?",
     "choices": [
-      "Children color a preprinted leaf worksheet after the science goal is complete, with no art objective.",
+      "Children color a preprinted leaf worksheet after the science goal has been completed, with no separate art objective of any kind attached.",
       "Children memorize plant terms while the teacher creates all visual work.",
       "Children observe leaf structures, make detailed prints emphasizing line and texture, and explain both scientific and artistic choices.",
       "Children receive a grade only for using green, regardless of observation or composition."
@@ -12170,7 +12170,7 @@
     "cognitiveLevel": "apply",
     "prompt": "A child is sensitive to loud sound during a rhythm activity. Which adaptation preserves meaningful participation?",
     "choices": [
-      "Exclude the child from all music because participation requires identical sound tolerance.",
+      "Exclude the child from all music activities, because meaningful participation requires an identical tolerance for sound.",
       "Require the loudest instrument so the child adapts more quickly through surprise exposure.",
       "Replace rhythm work with an unrelated worksheet completed outside the group.",
       "Offer quieter instruments or vibration-based beat keeping, preview volume changes, and retain the shared rhythm goal."

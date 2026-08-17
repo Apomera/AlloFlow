@@ -13,4 +13,5 @@ Generated: 2026-08-16T22:55:45.498Z
 
 > This is not ETS or ASHA approval, independent licensed-audiologist validation, field testing, psychometric calibration, a scaled-score model, clinical evaluation, diagnosis, vestibular or medical decision, device fitting, treatment, supervision, or legal advice.
 
+
 - Independent-batch audit: 200 original source questions plus 100 assistant-authored independent practice questions produce 204 distinct independent content kernels. 200 additional activities remain guided review only. 296 new independent questions remain to reach 500.

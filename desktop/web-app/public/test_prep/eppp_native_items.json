@@ -32228,29 +32228,31 @@
     "type": "single-choice",
     "domainId": "social-cultural",
     "difficulty": "intermediate",
-    "prompt": "Complete the statement: Social identity theory (Tajfel) proposes that intergroup discrimination occurs because:",
+    "prompt": "Participants are sorted into two groups by a coin toss, are told nothing else about the groups, and never meet the other members. They then allocate points in a way that favours their own group even though the allocation brings them no personal gain. Which account best explains this result?",
     "choices": [
-      "Groups compete for scarce resources",
-      "Stereotypes are always accurate",
-      "Outgroups are genuinely inferior",
-      "People derive self-esteem from group memberships"
+      "Competition over a scarce resource drove the allocation, since points had value that each group needed to secure",
+      "Repeated contact between the groups had built a history of grievance that shaped how participants allocated points",
+      "Participants inferred real differences in ability between the groups from the way the sorting procedure was conducted",
+      "Categorization by itself supports a favourable comparison for the in-group, so bias appears where the grouping is arbitrary and no material interest is at stake"
     ],
     "answerIndex": 3,
-    "rationale": "Tajfel's social identity theory: people categorize into in-groups/out-groups, derive self-esteem from group identity, and engage in in-group favoritism to enhance self-concept — even with minimal groups.",
+    "rationale": "The minimal-group finding is that mere categorization is sufficient to produce in-group favouring allocation. Because participants gained nothing, the groups were arbitrary, and there was no contact or history, accounts based on competition, grievance, or inferred ability cannot explain the result; the comparison itself is what supports a positive social identity.",
     "choiceRationales": [
-      "Competition for scarce resources = realistic conflict theory (Sherif), a different explanation The rationale sharpens that contrast by noting: Tajfel's social identity theory: people categorize into in-groups/out-groups, derive self-esteem from group identity, and engage in in-group favoritism to enhance self-concept — even with minimal groups.",
-      "Stereotypes being accurate isn't the mechanism — SIT focuses on self-esteem maintenance through group identity The rationale sharpens that contrast by noting: Tajfel's social identity theory: people categorize into in-groups/out-groups, derive self-esteem from group identity, and engage in in-group favoritism to enhance self-concept — even with minimal groups.",
-      "SIT doesn't claim outgroups are genuinely inferior — it's about psychological processes, not objective differences The rationale sharpens that contrast by noting: Tajfel's social identity theory: people categorize into in-groups/out-groups, derive self-esteem from group identity, and engage in in-group favoritism to enhance self-concept — even with minimal groups.",
-      "Tajfel's social identity theory: people categorize into in-groups/out-groups, derive self-esteem from group identity, and engage in in-group favoritism to enhance self-concept — even with minimal groups."
+      "The design removes personal gain and gives the points no external value, so a resource-competition account cannot explain allocation behaviour that persists when there is nothing material for either group to secure.",
+      "Participants never met the other group and the categories were created moments earlier by a coin toss, so no history of contact or grievance existed that could have shaped the allocations observed here.",
+      "The sorting was explicitly arbitrary and participants were told nothing about ability, so an inference about genuine group differences has no basis in the information the procedure actually supplied to them.",
+      "The minimal-group finding is that mere categorization is sufficient to produce in-group favouring allocation. Because participants gained nothing, the groups were arbitrary, and there was no contact or history, accounts based on competition, grievance, or inferred ability cannot explain the result; the comparison itself is what supports a positive social identity."
     ],
     "references": [
-      "https://openstax.org/books/psychology-2e/pages/12-5-prejudice-and-discrimination"
+      "https://doi.org/10.1002/ejsp.2420010202"
     ],
     "sourceDetails": [
       {
-        "url": "https://openstax.org/books/psychology-2e/pages/12-5-prejudice-and-discrimination",
-        "title": "12.5 Prejudice and Discrimination - Psychology 2e, OpenStax, Rice University",
-        "credibility": "OpenStax is a Rice University nonprofit publisher. Psychology 2e is openly peer reviewed, cites its evidence base, and is maintained through an editorial revision process; this section directly covers the tested foundational concept."
+        "url": "https://doi.org/10.1002/ejsp.2420010202",
+        "title": "Social Categorization and Intergroup Behaviour",
+        "organization": "European Journal of Social Psychology",
+        "summary": "Tajfel and colleagues found that assignment to arbitrary, meaningless categories was sufficient to produce allocation favouring the in-group, even where participants gained nothing personally and the groups had no history, contact, or competing interest.",
+        "credibility": "This peer-reviewed study is the primary minimal-group experiment underlying social identity theory and is indexed through a DOI. It is the evidence that separates a categorization account of intergroup bias from a resource-competition account."
       }
     ],
     "reviewStatus": "source-reviewed",
@@ -32259,9 +32261,9 @@
     "authoredSourceId": null,
     "migrationStatus": "re-authored-source-reviewed",
     "qaStatus": "qa-passed",
-    "qaReviewedAt": "2026-07-15",
+    "qaReviewedAt": "2026-08-17",
     "expansionBatch": "native-501-1000",
-    "sourceReviewBasis": "authoritative-topic-reference",
+    "sourceReviewBasis": "item-specific-authoritative-source-review",
     "domainAlignmentStatus": "editorial-pass",
     "clueReviewStatus": "editorial-pass-after-manual-option-review",
     "biasAccessibilityStatus": "editorial-pass",
@@ -32271,7 +32273,18 @@
       "0": "source-reviewed-legacy-reason-expanded",
       "1": "source-reviewed-legacy-reason-expanded",
       "2": "source-reviewed-legacy-reason-expanded"
-    }
+    },
+    "learningObjectiveId": "social-cultural-distinguish-categorization-from-competition-accounts-of-bias",
+    "cognitiveProcess": "analysis",
+    "distractorDesign": [
+      "substitute-realistic-conflict-for-categorization",
+      "invoke-contact-history-that-the-design-excludes",
+      "attribute-bias-to-inferred-real-group-differences"
+    ],
+    "wordingReviewStatus": "editorial-deep-rewrite-pass",
+    "wordingReviewWave": "eppp-native-quality-wave-24",
+    "optionFeedbackRefinementWave": "eppp-native-quality-wave-24",
+    "optionFeedbackRefinedAt": "2026-08-17"
   },
   {
     "id": "eppp-v2-social-cultural-038",
@@ -36478,30 +36491,32 @@
     "templateVersion": 2,
     "type": "single-choice",
     "domainId": "assessment",
-    "difficulty": "foundation",
-    "prompt": "Complete the statement: The Thematic Apperception Test (TAT) asks examinees to:",
+    "difficulty": "intermediate",
+    "prompt": "During a personality evaluation, a client responds to several Thematic Apperception Test cards with brief, literal descriptions of what is pictured and rarely attributes motives or feelings to the figures. What is the most defensible next interpretive step?",
     "choices": [
-      "Create comprehensive narrative stories about ambiguous pictures showing complex interpersonal scenes",
-      "Interpret completely ambiguous, symmetrical inkblots mapping latent, deeply unconscious impulses",
-      "Rapidly complete a standardized series of unfinished thematic sentences revealing immediate anxieties",
-      "Draw a detailed person, house, and tree specifically highlighting unconscious projective relational needs"
+      "Treat the sparse narrative material as one source of hypotheses and weigh it against history, behavioural observation, and better-standardized measures",
+      "Convert the narratives into a normative score profile and report the resulting personality description as the finding of the evaluation",
+      "Repeat the administration using prompts that direct the client toward interpersonal conflict themes until richer stories are produced",
+      "Interpret the literal descriptions as evidence of an unrecognized thought disorder that the referral question failed to anticipate"
     ],
     "answerIndex": 0,
-    "rationale": "TAT (Murray): examinees create stories (beginning, middle, end, feelings of characters) about ambiguous pictures showing people in various situations. Themes reveal needs, motives, conflicts, and interpersonal patterns through projection.",
+    "rationale": "Thematic narrative material is weakly standardized, so it generates hypotheses rather than conclusions. A sparse, literal response style is itself useful data about how the client approaches an ambiguous task, but a defensible interpretation triangulates it with history, observation, and instruments that carry stronger psychometric support.",
     "choiceRationales": [
-      "TAT (Murray): examinees create stories (beginning, middle, end, feelings of characters) about ambiguous pictures showing people in various situations. Themes reveal needs, motives, conflicts, and interpersonal patterns through projection.",
-      "Ambiguous Inkblots comprise the Rorschach technique.",
-      "Completing designated sentences comprises the Sentence Completion Test (Rotter).",
-      "Drawing comprises the structured Draw-A-Person, or House-Tree-Person tasks."
+      "Thematic narrative material is weakly standardized, so it generates hypotheses rather than conclusions. A sparse, literal response style is itself useful data about how the client approaches an ambiguous task, but a defensible interpretation triangulates it with history, observation, and instruments that carry stronger psychometric support.",
+      "Reporting a normative profile overstates the psychometric support available for thematic narrative data, which lacks the standardized administration and normative base that structured inventories rely on for score-level interpretation of this kind.",
+      "Directing the client toward conflict themes changes the stimulus conditions and contaminates the sample of spontaneous narrative, so the resulting protocol could no longer be compared with the reference material the technique depends on.",
+      "A concrete, literal response style has many plausible origins, including language background, guardedness, fatigue, and unfamiliarity with an open-ended task, so a diagnostic inference drawn from this feature alone would outrun the available evidence."
     ],
     "references": [
-      "https://openstax.org/books/psychology-2e/pages/15-introduction"
+      "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf"
     ],
     "sourceDetails": [
       {
-        "url": "https://openstax.org/books/psychology-2e/pages/15-introduction",
-        "title": "Chapter 15: Psychological Disorders - Psychology 2e, OpenStax, Rice University",
-        "credibility": "OpenStax is a Rice University nonprofit publisher. Psychology 2e is openly peer reviewed, cites its evidence base, and is maintained through an editorial revision process; this section directly covers the tested foundational concept."
+        "url": "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf",
+        "title": "Standards for Educational and Psychological Testing",
+        "organization": "American Educational Research Association, American Psychological Association, and National Council on Measurement in Education",
+        "summary": "The Standards define validity as the degree to which evidence and theory support the interpretations of test scores for proposed uses, and require that interpretation rest on convergent evidence rather than on a single instrument or protocol considered in isolation.",
+        "credibility": "This is the joint professional standard for testing practice in the United States, published by the three organizations that govern educational and psychological measurement. It directly governs how much interpretive weight a single projective protocol may carry in an evaluation."
       }
     ],
     "reviewStatus": "source-reviewed",
@@ -36510,12 +36525,23 @@
     "authoredSourceId": null,
     "migrationStatus": "re-authored-source-reviewed",
     "qaStatus": "qa-passed",
-    "qaReviewedAt": "2026-07-15",
+    "qaReviewedAt": "2026-08-17",
     "expansionBatch": "native-501-1000",
-    "sourceReviewBasis": "authoritative-topic-reference",
+    "sourceReviewBasis": "item-specific-authoritative-source-review",
     "domainAlignmentStatus": "editorial-pass",
-    "clueReviewStatus": "automated-pass",
-    "biasAccessibilityStatus": "editorial-pass"
+    "clueReviewStatus": "editorial-pass-after-manual-option-review",
+    "biasAccessibilityStatus": "editorial-pass",
+    "learningObjectiveId": "assessment-interpret-projective-narrative-with-convergent-evidence",
+    "cognitiveProcess": "application",
+    "distractorDesign": [
+      "treat-weakly-standardized-protocol-as-normed-score-profile",
+      "alter-stimulus-conditions-to-manufacture-thematic-content",
+      "infer-diagnosis-from-response-style-in-isolation"
+    ],
+    "wordingReviewStatus": "editorial-deep-rewrite-pass",
+    "wordingReviewWave": "eppp-native-quality-wave-24",
+    "optionFeedbackRefinementWave": "eppp-native-quality-wave-24",
+    "optionFeedbackRefinedAt": "2026-08-17"
   },
   {
     "id": "eppp-v2-assessment-013",
@@ -55555,20 +55581,20 @@
     "type": "single-choice",
     "domainId": "cognitive-affective",
     "difficulty": "intermediate",
-    "prompt": "Deci and Ryan's self-determination theory identifies three basic psychological needs:",
+    "prompt": "Students in a programme currently choose their own project topics and report high interest. An administrator proposes replacing that choice with assigned topics and a cash prize for the highest score. From the standpoint of self-determination theory, what is the most likely consequence for intrinsic motivation?",
     "choices": [
-      "Id, ego, and superego",
-      "Food, shelter, and safety",
-      "Autonomy, competence, and relatedness",
-      "Power, achievement, and affiliation"
+      "Interest should rise, because a tangible reward adds motivational force to the existing interest in the work",
+      "Interest should be unaffected, because intrinsic and extrinsic motivation operate through separate systems that do not interact",
+      "Interest tends to decline, because withdrawing the students own topic selection undermines autonomy and a salient reward shifts the perceived reason for working",
+      "Interest should rise, because assigned topics reduce the effort of deciding and thereby support the need for competence"
     ],
     "answerIndex": 2,
-    "rationale": "SDT's three innate psychological needs: Autonomy (sense of choice/volition), Competence (feeling effective), and Relatedness (social connection/belonging). Satisfying these needs promotes intrinsic motivation and well-being.",
+    "rationale": "Self-determination theory holds that intrinsic motivation depends on satisfaction of autonomy, competence, and relatedness. Replacing self-chosen topics with assigned ones withdraws autonomy support, and introducing a salient contingent reward can shift the perceived reason for the activity toward the external consequence, a pattern described as overjustification.",
     "choiceRationales": [
-      "\"Id, ego, and superego\" is not best because Id/ego/superego = Freud's structural model of personality, not SDT",
-      "\"Food, shelter, and safety\" is not best because Food/shelter/safety = basic physiological and safety needs (Maslow), not SDT's psychological needs",
-      "SDT's three innate psychological needs: Autonomy (sense of choice/volition), Competence (feeling effective), and Relatedness (social connection/belonging). Satisfying these needs promotes intrinsic motivation and well-being.",
-      "\"Power, achievement, and affiliation\" is not best because Power/achievement/affiliation = McClelland's three needs theory, a different motivation framework"
+      "Adding a tangible contingent reward to an activity that is already intrinsically motivating tends to shift the perceived reason for engagement toward the reward, so the expected result is a reduction rather than a summed increase in interest.",
+      "The theory describes interaction rather than independence between these motivational sources, since external contingencies change how a person interprets the reason for an activity they previously pursued for its own sake.",
+      "Self-determination theory holds that intrinsic motivation depends on satisfaction of autonomy, competence, and relatedness. Replacing self-chosen topics with assigned ones withdraws autonomy support, and introducing a salient contingent reward can shift the perceived reason for the activity toward the external consequence, a pattern described as overjustification.",
+      "Reducing decision effort does not build competence, which concerns effective mastery of a challenge; assigning topics constrains the autonomy that supported interest rather than strengthening the sense of capability."
     ],
     "references": [
       "https://openstax.org/books/psychology-2e/pages/10-introduction"
@@ -55576,8 +55602,10 @@
     "sourceDetails": [
       {
         "url": "https://openstax.org/books/psychology-2e/pages/10-introduction",
-        "title": "Chapter 10: Emotion and Motivation - Psychology 2e, OpenStax, Rice University",
-        "credibility": "OpenStax Psychology 2e is published by Rice University, openly peer reviewed, evidence-cited, and maintained through an editorial revision process; this named chapter covers the tested foundational concept."
+        "title": "Emotion and Motivation — Psychology 2e",
+        "organization": "OpenStax, Rice University",
+        "summary": "This chapter distinguishes intrinsic motivation, sustained by interest and satisfaction inherent in an activity, from extrinsic motivation driven by separable consequences, and describes the overjustification pattern in which salient external reward reduces later interest in an activity that was already intrinsically motivating.",
+        "credibility": "OpenStax is a peer-reviewed, openly licensed textbook programme based at Rice University. This chapter is the reference used elsewhere in this bank for motivation content and supports the applied distinction between supporting and undermining a psychological need."
       }
     ],
     "reviewStatus": "source-reviewed",
@@ -55586,14 +55614,23 @@
     "authoredSourceId": null,
     "migrationStatus": "re-authored-source-reviewed",
     "qaStatus": "qa-passed",
-    "qaReviewedAt": "2026-07-15",
+    "qaReviewedAt": "2026-08-17",
     "expansionBatch": "native-1001-1500",
-    "sourceReviewBasis": "domain-topic-authoritative-source",
-    "sourceAnchorItemId": "eppp-v2-cognitive-affective-027",
-    "sourceMatchScore": 0.189,
+    "sourceReviewBasis": "item-specific-authoritative-source-review",
     "domainAlignmentStatus": "editorial-pass",
-    "clueReviewStatus": "automated-pass",
-    "biasAccessibilityStatus": "editorial-pass"
+    "clueReviewStatus": "editorial-pass-after-manual-option-review",
+    "biasAccessibilityStatus": "editorial-pass",
+    "learningObjectiveId": "cognitive-affective-apply-self-determination-theory-to-a-motivational-change",
+    "cognitiveProcess": "application",
+    "distractorDesign": [
+      "treat-reward-and-interest-as-simply-additive",
+      "assert-independence-between-intrinsic-and-extrinsic-motivation",
+      "misattribute-reduced-decision-effort-to-competence-support"
+    ],
+    "wordingReviewStatus": "editorial-deep-rewrite-pass",
+    "wordingReviewWave": "eppp-native-quality-wave-24",
+    "optionFeedbackRefinementWave": "eppp-native-quality-wave-24",
+    "optionFeedbackRefinedAt": "2026-08-17"
   },
   {
     "id": "eppp-v3-cognitive-affective-040",
@@ -56219,20 +56256,20 @@
     "type": "single-choice",
     "domainId": "cognitive-affective",
     "difficulty": "intermediate",
-    "prompt": "The misinformation effect (Loftus) demonstrates that:",
+    "prompt": "A witness gave a clear account on the night of a collision. Two weeks later, after reading a news summary describing a stop sign that the witness had not mentioned, the witness now recalls a stop sign and reports high confidence. Which conclusion about this report is best supported?",
     "choices": [
-      "Children, but not adults, incorporating suggestions into memory",
-      "Eyewitness accounts remaining unchanged after misleading questions",
-      "Post-event suggestions altering memory for the original experience",
-      "Memory resisting distortion whenever an event is emotionally important"
+      "The confident report establishes that a stop sign was present, because confidence tracks accuracy in recall of a witnessed event",
+      "The news summary retrieved a detail the witness had encoded on the night of the collision but had been unable to access earlier",
+      "Post-event information can be incorporated into the remembered event, so subsequent confidence does not establish that the detail was witnessed",
+      "The two-week delay accounts for the change, since forgetting adds plausible detail to a memory as the retention interval lengthens"
     ],
     "answerIndex": 2,
-    "rationale": "Loftus & Palmer: leading questions and post-event information can modify, distort, or create entirely new false memories. 'How fast were the cars going when they SMASHED?' produced higher speed estimates and false memories of broken glass.",
+    "rationale": "Misinformation research shows that information encountered after an event can be integrated into a witness account of the event itself, and that the resulting reports may be held with high confidence. Confidence expressed well after exposure to post-event input is therefore weak evidence that a detail was actually witnessed.",
     "choiceRationales": [
-      "Adults are also susceptible to misinformation, though children may be more vulnerable.",
-      "Eyewitness memory is highly susceptible to distortion — it's not always accurate.",
-      "Loftus & Palmer: leading questions and post-event information can modify, distort, or create entirely new false memories. 'How fast were the cars going when they SMASHED?' produced higher speed estimates and false memories of broken glass.",
-      "Memory is demonstrably affected by suggestion, leading questions, and post-event information."
+      "Confidence and accuracy can diverge sharply once a witness has been exposed to post-event information, so a confident report of a detail that first appeared after the news summary cannot settle whether the detail was present at the scene.",
+      "Retrieval support would surface a detail the witness had encoded, but the stop sign entered the account after exposure to an external description, which fits integration of new input rather than recovery of an existing trace.",
+      "Misinformation research shows that information encountered after an event can be integrated into a witness account of the event itself, and that the resulting reports may be held with high confidence. Confidence expressed well after exposure to post-event input is therefore weak evidence that a detail was actually witnessed.",
+      "Ordinary forgetting removes or blurs detail across a retention interval rather than adding a specific new object, so delay by itself does not explain the appearance of a stop sign that matches the wording of the news summary."
     ],
     "references": [
       "https://doi.org/10.1016/S0022-5371(74)80011-3"
@@ -56240,8 +56277,10 @@
     "sourceDetails": [
       {
         "url": "https://doi.org/10.1016/S0022-5371(74)80011-3",
-        "title": "Loftus, E. F., & Palmer, J. C. (1974). Reconstruction of automobile destruction: An example of the interaction between language and memory. Journal of Verbal Learning and Verbal Behavior, 13(5), 585-589.",
-        "credibility": "This peer-reviewed experimental article is the primary study demonstrating that post-event question wording can alter later eyewitness reports."
+        "title": "Reconstruction of Automobile Destruction: An Example of the Interaction Between Language and Memory",
+        "organization": "Journal of Verbal Learning and Verbal Behavior",
+        "summary": "Loftus and Palmer showed that the verb used in a post-event question changed both speed estimates and later reports of broken glass that had never been present, demonstrating that information supplied after an event can be integrated into a witness memory of it.",
+        "credibility": "This peer-reviewed experiment is the primary published source for the misinformation effect and is indexed through a DOI. It supports the distinction between memory altered by post-event input and memory that is merely reported with low confidence."
       }
     ],
     "reviewStatus": "source-reviewed",
@@ -56250,16 +56289,23 @@
     "authoredSourceId": null,
     "migrationStatus": "re-authored-source-reviewed",
     "qaStatus": "qa-passed",
-    "qaReviewedAt": "2026-07-15",
+    "qaReviewedAt": "2026-08-17",
     "expansionBatch": "native-1001-1500",
-    "sourceReviewBasis": "legacy-citation-url-reviewed",
-    "sourceAnchorItemId": null,
-    "sourceMatchScore": 1,
+    "sourceReviewBasis": "item-specific-authoritative-source-review",
     "domainAlignmentStatus": "editorial-pass",
     "clueReviewStatus": "editorial-pass-after-manual-option-review",
     "biasAccessibilityStatus": "editorial-pass",
     "wordingReviewStatus": "editorial-deep-rewrite-pass",
-    "wordingReviewWave": "eppp-native-quality-wave-02"
+    "wordingReviewWave": "eppp-native-quality-wave-24",
+    "learningObjectiveId": "cognitive-affective-evaluate-eyewitness-report-after-post-event-information",
+    "cognitiveProcess": "analysis",
+    "distractorDesign": [
+      "treat-confidence-as-a-proxy-for-accuracy",
+      "reframe-integration-as-cued-retrieval-of-an-encoded-detail",
+      "attribute-added-detail-to-ordinary-forgetting"
+    ],
+    "optionFeedbackRefinementWave": "eppp-native-quality-wave-24",
+    "optionFeedbackRefinedAt": "2026-08-17"
   },
   {
     "id": "eppp-v3-cognitive-affective-053",
@@ -59889,29 +59935,31 @@
     "type": "single-choice",
     "domainId": "lifespan",
     "difficulty": "intermediate",
-    "prompt": "Object permanence typically develops during which Piagetian stage?",
+    "prompt": "A ten-month-old repeatedly retrieves a toy hidden under a cloth on the left. The caregiver then hides the toy under a cloth on the right while the infant watches, and the infant searches on the left again. Which interpretation of this search error is best supported?",
     "choices": [
-      "Concrete operational",
-      "Formal operational",
-      "Preoperational",
-      "Sensorimotor"
+      "The infant has yet to form any representation of the hidden toy and treats it as ceasing to exist once covered",
+      "The infant has entered preoperational thought, where centration on one feature governs the search",
+      "The infant lacks the visual acuity needed to track which cloth the caregiver moved during hiding",
+      "Search is still governed by the previously successful action rather than by the toy current location, a pattern seen as object representation consolidates"
     ],
     "answerIndex": 3,
-    "rationale": "Object permanence — understanding that objects continue to exist when out of sight — develops during the sensorimotor stage (0-2 years), emerging around 8-12 months and fully achieved by 18-24 months.",
+    "rationale": "The A-not-B error appears once an infant will search for a hidden object but still returns to the location where searching previously succeeded. It indicates that representation of the hidden object is developing while action control remains tied to the earlier successful reach, rather than a total absence of representation or a later-stage limitation.",
     "choiceRationales": [
-      "\"Concrete operational\" does not match the controlling distinction. Object permanence — understanding that objects continue to exist when out of sight — develops during the sensorimotor stage (0-2 years), emerging around 8-12 months and fully achieved by 18-24 months. The supported response is \"Sensorimotor.\"",
-      "\"Formal operational\" does not match the controlling distinction. Object permanence — understanding that objects continue to exist when out of sight — develops during the sensorimotor stage (0-2 years), emerging around 8-12 months and fully achieved by 18-24 months. The supported response is \"Sensorimotor.\"",
-      "\"Preoperational\" does not match the controlling distinction. Object permanence — understanding that objects continue to exist when out of sight — develops during the sensorimotor stage (0-2 years), emerging around 8-12 months and fully achieved by 18-24 months. The supported response is \"Sensorimotor.\"",
-      "Object permanence — understanding that objects continue to exist when out of sight — develops during the sensorimotor stage (0-2 years), emerging around 8-12 months and fully achieved by 18-24 months."
+      "An infant who searches at all has some representation of the hidden toy, so the error cannot be read as treating the object as gone; the difficulty lies in which location the search is directed toward.",
+      "Centration belongs to preoperational thought in the years after infancy, and invoking it here misplaces a ten-month-old into a later stage than the described searching behaviour supports.",
+      "The infant watched the hiding and reaches accurately for the cloth, so the error is not explained by an inability to see which cloth the caregiver moved during the demonstration.",
+      "The A-not-B error appears once an infant will search for a hidden object but still returns to the location where searching previously succeeded. It indicates that representation of the hidden object is developing while action control remains tied to the earlier successful reach, rather than a total absence of representation or a later-stage limitation."
     ],
     "references": [
-      "https://openstax.org/books/psychology-2e/pages/9-introduction"
+      "https://openstax.org/books/psychology-2e/pages/9-3-stages-of-development"
     ],
     "sourceDetails": [
       {
-        "url": "https://openstax.org/books/psychology-2e/pages/9-introduction",
-        "title": "Chapter 9: Lifespan Development - Psychology 2e, OpenStax, Rice University",
-        "credibility": "OpenStax Psychology 2e is published by Rice University, openly peer reviewed, evidence-cited, and maintained through an editorial revision process; this named chapter covers the tested foundational concept."
+        "url": "https://openstax.org/books/psychology-2e/pages/9-3-stages-of-development",
+        "title": "Stages of Development — Psychology 2e",
+        "organization": "OpenStax, Rice University",
+        "summary": "This chapter describes Piagetian stages in developmental sequence, including sensorimotor coordination of action with perception, the emergence of symbolic thought together with egocentrism and centration in the preoperational period, and the later arrival of conservation and reversible operations.",
+        "credibility": "OpenStax is a peer-reviewed, openly licensed textbook programme based at Rice University and used in accredited introductory psychology courses. The chapter supports both the stage sequence and the specific errors that mark each period."
       }
     ],
     "reviewStatus": "source-reviewed",
@@ -59920,14 +59968,23 @@
     "authoredSourceId": null,
     "migrationStatus": "re-authored-source-reviewed",
     "qaStatus": "qa-passed",
-    "qaReviewedAt": "2026-07-15",
+    "qaReviewedAt": "2026-08-17",
     "expansionBatch": "native-1001-1500",
-    "sourceReviewBasis": "domain-topic-authoritative-source",
-    "sourceAnchorItemId": "eppp-v2-lifespan-011",
-    "sourceMatchScore": 0.813,
+    "sourceReviewBasis": "item-specific-authoritative-source-review",
     "domainAlignmentStatus": "editorial-pass",
-    "clueReviewStatus": "automated-pass",
-    "biasAccessibilityStatus": "editorial-pass"
+    "clueReviewStatus": "editorial-pass-after-manual-option-review",
+    "biasAccessibilityStatus": "editorial-pass",
+    "learningObjectiveId": "lifespan-interpret-a-not-b-search-error-in-sensorimotor-development",
+    "cognitiveProcess": "analysis",
+    "distractorDesign": [
+      "treat-search-error-as-total-absence-of-representation",
+      "misassign-an-infant-behaviour-to-preoperational-centration",
+      "substitute-a-sensory-limitation-for-a-representational-one"
+    ],
+    "wordingReviewStatus": "editorial-deep-rewrite-pass",
+    "wordingReviewWave": "eppp-native-quality-wave-24",
+    "optionFeedbackRefinementWave": "eppp-native-quality-wave-24",
+    "optionFeedbackRefinedAt": "2026-08-17"
   },
   {
     "id": "eppp-v3-lifespan-003",
@@ -60620,29 +60677,31 @@
     "type": "single-choice",
     "domainId": "lifespan",
     "difficulty": "intermediate",
-    "prompt": "According to Erikson, the primary psychosocial crisis of adolescence is:",
+    "prompt": "A 34-year-old client reports a stable career and a long partnership but says that life feels static and that they contribute nothing that will outlast them. Which Eriksonian conflict best matches this presentation?",
     "choices": [
-      "Trust vs. mistrust",
-      "Industry vs. inferiority",
-      "Identity vs. role confusion",
-      "Intimacy vs. isolation"
+      "Identity versus role confusion, since the client is questioning who they have become",
+      "Intimacy versus isolation, since the concern involves the quality of a long partnership",
+      "Generativity versus stagnation, since the concern centres on contributing something that extends beyond the self",
+      "Integrity versus despair, since the client is reviewing whether life has had value"
     ],
     "answerIndex": 2,
-    "rationale": "Identity vs. role confusion (ages 12-18) involves exploring and establishing a sense of self, including values, beliefs, and goals. Failure to resolve this crisis results in role confusion and weak sense of identity.",
+    "rationale": "Erikson places generativity versus stagnation in middle adulthood, where the developmental task is establishing and guiding what will outlast the self through work, care, or contribution. The described sense of a static life lacking lasting contribution matches that conflict rather than the adjacent identity, intimacy, or integrity crises.",
     "choiceRationales": [
-      "\"Trust vs. mistrust\" does not match the controlling distinction. Identity vs. role confusion (ages 12-18) involves exploring and establishing a sense of self, including values, beliefs, and goals. Failure to resolve this crisis results in role confusion and weak sense of identity. The supported response is \"Identity vs. role confusion.\"",
-      "\"Industry vs. inferiority\" does not match the controlling distinction. Identity vs. role confusion (ages 12-18) involves exploring and establishing a sense of self, including values, beliefs, and goals. Failure to resolve this crisis results in role confusion and weak sense of identity. The supported response is \"Identity vs. role confusion.\"",
-      "Identity vs. role confusion (ages 12-18) involves exploring and establishing a sense of self, including values, beliefs, and goals. Failure to resolve this crisis results in role confusion and weak sense of identity.",
-      "\"Intimacy vs. isolation\" does not match the controlling distinction. Identity vs. role confusion (ages 12-18) involves exploring and establishing a sense of self, including values, beliefs, and goals. Failure to resolve this crisis results in role confusion and weak sense of identity. The supported response is \"Identity vs. role confusion.\""
+      "Identity versus role confusion is the adolescent conflict concerning the consolidation of a coherent self, and this client reports a settled career and partnership rather than an unresolved question about who they are.",
+      "Intimacy versus isolation concerns forming committed close bonds in early adulthood, and the client describes a long stable partnership rather than difficulty establishing or sustaining closeness with another person.",
+      "Erikson places generativity versus stagnation in middle adulthood, where the developmental task is establishing and guiding what will outlast the self through work, care, or contribution. The described sense of a static life lacking lasting contribution matches that conflict rather than the adjacent identity, intimacy, or integrity crises.",
+      "Integrity versus despair belongs to later life and involves reviewing a life largely lived, whereas this client at 34 is describing an absence of ongoing contribution rather than appraising a completed life course."
     ],
     "references": [
-      "https://openstax.org/books/psychology-2e/pages/9-introduction"
+      "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories"
     ],
     "sourceDetails": [
       {
-        "url": "https://openstax.org/books/psychology-2e/pages/9-introduction",
-        "title": "Chapter 9: Lifespan Development - Psychology 2e, OpenStax, Rice University",
-        "credibility": "OpenStax Psychology 2e is published by Rice University, openly peer reviewed, evidence-cited, and maintained through an editorial revision process; this named chapter covers the tested foundational concept."
+        "url": "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories",
+        "title": "Lifespan Theories — Psychology 2e",
+        "organization": "OpenStax, Rice University",
+        "summary": "This section sets out Erikson psychosocial theory as a sequence of stage-specific conflicts across the lifespan, describing the developmental task of each period and the way resolution of an earlier conflict shapes the resources a person brings to later ones.",
+        "credibility": "OpenStax is a peer-reviewed, openly licensed textbook programme based at Rice University. This section is the reference used elsewhere in this bank for Erikson stage content and supports discrimination among adjacent psychosocial crises."
       }
     ],
     "reviewStatus": "source-reviewed",
@@ -60651,14 +60710,23 @@
     "authoredSourceId": null,
     "migrationStatus": "re-authored-source-reviewed",
     "qaStatus": "qa-passed",
-    "qaReviewedAt": "2026-07-15",
+    "qaReviewedAt": "2026-08-17",
     "expansionBatch": "native-1001-1500",
-    "sourceReviewBasis": "domain-topic-authoritative-source",
-    "sourceAnchorItemId": "eppp-v2-lifespan-001",
-    "sourceMatchScore": 0.473,
+    "sourceReviewBasis": "item-specific-authoritative-source-review",
     "domainAlignmentStatus": "editorial-pass",
-    "clueReviewStatus": "automated-pass",
-    "biasAccessibilityStatus": "editorial-pass"
+    "clueReviewStatus": "editorial-pass-after-manual-option-review",
+    "biasAccessibilityStatus": "editorial-pass",
+    "learningObjectiveId": "lifespan-match-presentation-to-eriksonian-stage-conflict",
+    "cognitiveProcess": "application",
+    "distractorDesign": [
+      "select-the-adolescent-conflict-for-an-adult-presentation",
+      "anchor-on-the-partnership-detail-rather-than-the-stated-concern",
+      "advance-to-the-late-life-review-conflict-prematurely"
+    ],
+    "wordingReviewStatus": "editorial-deep-rewrite-pass",
+    "wordingReviewWave": "eppp-native-quality-wave-24",
+    "optionFeedbackRefinementWave": "eppp-native-quality-wave-24",
+    "optionFeedbackRefinedAt": "2026-08-17"
   },
   {
     "id": "eppp-v3-lifespan-018",
@@ -62135,30 +62203,32 @@
     "templateVersion": 3,
     "type": "single-choice",
     "domainId": "lifespan",
-    "difficulty": "foundation",
-    "prompt": "Object permanence is a hallmark achievement of which Piagetian stage?",
+    "difficulty": "intermediate",
+    "prompt": "A five-year-old watches water poured from a short, wide glass into a tall, narrow glass and says the tall glass now holds more water. Which description of the reasoning behind this judgement is best supported?",
     "choices": [
-      "Formal operational",
-      "Preoperational",
-      "Sensorimotor",
-      "Concrete operational"
+      "The child has not yet acquired object permanence and treats the water as a new quantity once it leaves the first glass",
+      "The child is applying reversibility and has concluded that the transformation added to the quantity of water",
+      "The child is centring on the height of the column and does not yet coordinate it with the change in width",
+      "The child is reasoning hypothetically about the properties of the glasses rather than about the water itself"
     ],
     "answerIndex": 2,
-    "rationale": "Object permanence (understanding objects exist when out of sight) develops during the sensorimotor stage (0-2 years).",
+    "rationale": "Failure to conserve liquid quantity is characteristic of preoperational thought. The child attends to a single salient dimension, here the height of the column, and does not yet coordinate it with the compensating change in width or mentally reverse the pouring, both of which arrive with concrete operational reasoning.",
     "choiceRationales": [
-      "\"Formal operational\" does not match the controlling distinction. Object permanence (understanding objects exist when out of sight) develops during the sensorimotor stage (0-2 years). The supported response is \"Sensorimotor.\"",
-      "\"Preoperational\" does not match the controlling distinction. Object permanence (understanding objects exist when out of sight) develops during the sensorimotor stage (0-2 years). The supported response is \"Sensorimotor.\"",
-      "Object permanence (understanding objects exist when out of sight) develops during the sensorimotor stage (0-2 years).",
-      "\"Concrete operational\" does not match the controlling distinction. Object permanence (understanding objects exist when out of sight) develops during the sensorimotor stage (0-2 years). The supported response is \"Sensorimotor.\""
+      "Object permanence is established well before the preschool years and concerns whether a hidden object continues to exist, which is a different question from whether a visible quantity is unchanged by a change in its container.",
+      "Reversibility is precisely what the child has yet to acquire; a child who could mentally pour the water back would recognize the quantity as unchanged rather than judging that it increased.",
+      "Failure to conserve liquid quantity is characteristic of preoperational thought. The child attends to a single salient dimension, here the height of the column, and does not yet coordinate it with the compensating change in width or mentally reverse the pouring, both of which arrive with concrete operational reasoning.",
+      "Hypothetical reasoning about properties belongs to formal operational thought in adolescence, and attributing it to a five-year-old misplaces the child several stages beyond the described judgement."
     ],
     "references": [
-      "https://openstax.org/books/psychology-2e/pages/9-introduction"
+      "https://openstax.org/books/psychology-2e/pages/9-3-stages-of-development"
     ],
     "sourceDetails": [
       {
-        "url": "https://openstax.org/books/psychology-2e/pages/9-introduction",
-        "title": "Chapter 9: Lifespan Development - Psychology 2e, OpenStax, Rice University",
-        "credibility": "OpenStax Psychology 2e is published by Rice University, openly peer reviewed, evidence-cited, and maintained through an editorial revision process; this named chapter covers the tested foundational concept."
+        "url": "https://openstax.org/books/psychology-2e/pages/9-3-stages-of-development",
+        "title": "Stages of Development — Psychology 2e",
+        "organization": "OpenStax, Rice University",
+        "summary": "This chapter describes Piagetian stages in developmental sequence, including sensorimotor coordination of action with perception, the emergence of symbolic thought together with egocentrism and centration in the preoperational period, and the later arrival of conservation and reversible operations.",
+        "credibility": "OpenStax is a peer-reviewed, openly licensed textbook programme based at Rice University and used in accredited introductory psychology courses. The chapter supports both the stage sequence and the specific errors that mark each period."
       }
     ],
     "reviewStatus": "source-reviewed",
@@ -62167,14 +62237,23 @@
     "authoredSourceId": null,
     "migrationStatus": "re-authored-source-reviewed",
     "qaStatus": "qa-passed",
-    "qaReviewedAt": "2026-07-15",
+    "qaReviewedAt": "2026-08-17",
     "expansionBatch": "native-1001-1500",
-    "sourceReviewBasis": "domain-topic-authoritative-source",
-    "sourceAnchorItemId": "eppp-v2-lifespan-011",
-    "sourceMatchScore": 0.689,
+    "sourceReviewBasis": "item-specific-authoritative-source-review",
     "domainAlignmentStatus": "editorial-pass",
-    "clueReviewStatus": "automated-pass",
-    "biasAccessibilityStatus": "editorial-pass"
+    "clueReviewStatus": "editorial-pass-after-manual-option-review",
+    "biasAccessibilityStatus": "editorial-pass",
+    "learningObjectiveId": "lifespan-diagnose-preoperational-centration-in-a-conservation-task",
+    "cognitiveProcess": "analysis",
+    "distractorDesign": [
+      "substitute-object-permanence-for-conservation",
+      "credit-the-child-with-the-reversibility-that-is-missing",
+      "misassign-preschool-reasoning-to-formal-operations"
+    ],
+    "wordingReviewStatus": "editorial-deep-rewrite-pass",
+    "wordingReviewWave": "eppp-native-quality-wave-24",
+    "optionFeedbackRefinementWave": "eppp-native-quality-wave-24",
+    "optionFeedbackRefinedAt": "2026-08-17"
   },
   {
     "id": "eppp-v3-lifespan-050",
@@ -71981,29 +72060,31 @@
     "type": "single-choice",
     "domainId": "research",
     "difficulty": "intermediate",
-    "prompt": "Cohen's d of 0.80 is generally considered:",
+    "prompt": "Two trials test the same intervention. Trial A enrolls 40 participants and reports Cohen d of 0.80 with p = 0.06. Trial B enrolls 4,000 participants and reports Cohen d of 0.05 with p < 0.001. Which interpretation is best supported?",
     "choices": [
-      "Small effect",
-      "Medium effect",
-      "Large effect",
-      "Negligible effect"
+      "Trial B provides evidence of the larger treatment benefit, because its result reached a more stringent significance threshold",
+      "Trial A should be set aside, because a result above the conventional alpha carries no information about the intervention",
+      "Trial A shows the larger effect while Trial B shows a small effect estimated precisely, so significance here reflects sample size rather than magnitude",
+      "The two trials are in direct conflict, so no interpretation is available until a third trial breaks the tie between them"
     ],
     "answerIndex": 2,
-    "rationale": "Cohen's conventions for d: 0.20 = small, 0.50 = medium, 0.80 = large. A d of 0.80 means the two group means differ by 0.80 standard deviations, considered a large and practically significant effect.",
+    "rationale": "Effect size and statistical significance answer different questions. Cohen d describes the magnitude of the difference, whereas the p value reflects how compatible the data are with the null hypothesis and is strongly influenced by sample size. A large effect can fall short of a significance threshold in a small sample, and a negligible effect can clear it in a very large one.",
     "choiceRationales": [
-      "\"Small effect\" does not match the controlling distinction. Cohen's conventions for d: 0.20 = small, 0.50 = medium, 0.80 = large. A d of 0.80 means the two group means differ by 0.80 standard deviations, considered a large and practically significant effect. The supported response is \"Large effect.\"",
-      "\"Medium effect\" does not match the controlling distinction. Cohen's conventions for d: 0.20 = small, 0.50 = medium, 0.80 = large. A d of 0.80 means the two group means differ by 0.80 standard deviations, considered a large and practically significant effect. The supported response is \"Large effect.\"",
-      "Cohen's conventions for d: 0.20 = small, 0.50 = medium, 0.80 = large. A d of 0.80 means the two group means differ by 0.80 standard deviations, considered a large and practically significant effect.",
-      "\"Negligible effect\" does not match the controlling distinction. Cohen's conventions for d: 0.20 = small, 0.50 = medium, 0.80 = large. A d of 0.80 means the two group means differ by 0.80 standard deviations, considered a large and practically significant effect. The supported response is \"Large effect.\""
+      "A smaller p value indicates stronger evidence against the null hypothesis rather than a larger benefit, so reading Trial B as showing the greater treatment effect confuses the precision of an estimate with its magnitude.",
+      "A result near the conventional threshold in a small sample remains informative about magnitude and precision, and discarding it would waste an effect estimate that is considerably larger than the one Trial B reports.",
+      "Effect size and statistical significance answer different questions. Cohen d describes the magnitude of the difference, whereas the p value reflects how compatible the data are with the null hypothesis and is strongly influenced by sample size. A large effect can fall short of a significance threshold in a small sample, and a negligible effect can clear it in a very large one.",
+      "The trials are not in conflict once magnitude and significance are distinguished, since a large imprecise estimate and a small precise one can both be accurate descriptions of what each study observed."
     ],
     "references": [
-      "https://www.itl.nist.gov/div898/handbook/dtoc.htm"
+      "https://www.itl.nist.gov/div898/handbook/glossary.htm"
     ],
     "sourceDetails": [
       {
-        "url": "https://www.itl.nist.gov/div898/handbook/dtoc.htm",
-        "title": "NIST/SEMATECH e-Handbook of Statistical Methods - National Institute of Standards and Technology",
-        "credibility": "NIST is the U.S. federal measurement-science agency; its technically reviewed statistical handbook directly documents the research and statistical methods used here."
+        "url": "https://www.itl.nist.gov/div898/handbook/glossary.htm",
+        "title": "NIST/SEMATECH e-Handbook of Statistical Methods Glossary",
+        "organization": "National Institute of Standards and Technology",
+        "summary": "The handbook glossary defines statistical significance in terms of the probability of the observed data under a null hypothesis, and separates that probability from the magnitude of an observed effect and from the sample size that influences whether a small effect reaches significance.",
+        "credibility": "NIST is a United States federal scientific standards agency and its statistical handbook is an authoritative methodological reference. It supports the separation of effect magnitude from statistical significance that this item now tests."
       }
     ],
     "reviewStatus": "source-reviewed",
@@ -72012,14 +72093,23 @@
     "authoredSourceId": null,
     "migrationStatus": "re-authored-source-reviewed",
     "qaStatus": "qa-passed",
-    "qaReviewedAt": "2026-07-15",
+    "qaReviewedAt": "2026-08-17",
     "expansionBatch": "native-1001-1500",
-    "sourceReviewBasis": "domain-topic-authoritative-source",
-    "sourceAnchorItemId": "eppp-v2-research-015",
-    "sourceMatchScore": 0.401,
+    "sourceReviewBasis": "item-specific-authoritative-source-review",
     "domainAlignmentStatus": "editorial-pass",
-    "clueReviewStatus": "automated-pass",
-    "biasAccessibilityStatus": "editorial-pass"
+    "clueReviewStatus": "editorial-pass-after-manual-option-review",
+    "biasAccessibilityStatus": "editorial-pass",
+    "learningObjectiveId": "research-separate-effect-magnitude-from-statistical-significance",
+    "cognitiveProcess": "analysis",
+    "distractorDesign": [
+      "read-a-smaller-p-value-as-a-larger-effect",
+      "discard-a-nonsignificant-result-as-uninformative",
+      "treat-magnitude-and-significance-as-contradictory"
+    ],
+    "wordingReviewStatus": "editorial-deep-rewrite-pass",
+    "wordingReviewWave": "eppp-native-quality-wave-24",
+    "optionFeedbackRefinementWave": "eppp-native-quality-wave-24",
+    "optionFeedbackRefinedAt": "2026-08-17"
   },
   {
     "id": "eppp-v3-research-017",

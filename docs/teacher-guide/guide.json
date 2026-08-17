@@ -28,6 +28,7 @@
             "description": "Start from a worked recipe and adapt it to your students and source.",
             "chapterSlugs": [
                 "classroom-workflows",
+                "steam-lab",
                 "prepare-a-lesson"
             ]
         },
@@ -46,6 +47,7 @@
             "description": "Set shared guardrails, coach teachers, and measure useful implementation signals.",
             "chapterSlugs": [
                 "school-rollout-and-coaching",
+                "for-school-leaders",
                 "privacy-and-responsible-ai",
                 "for-your-it-department",
                 "family-mode"
@@ -158,9 +160,9 @@
         {
             "source": "chapters/19-make-a-document-accessible.md",
             "slug": "make-a-document-accessible",
-            "summary": "Turning an inherited PDF into an accessible version: the audit, Make Accessible, the human review, the evidence report, and the no-egress option.",
+            "summary": "Turning an inherited document into an accessible version: what you can upload, the audit, Make Accessible, the human review, the evidence report, the local connector, and the no-egress option.",
             "audience": "Teachers, specialists, and accessibility staff",
-            "time": "8 minutes"
+            "time": "10 minutes"
         },
         {
             "source": "chapters/08-troubleshooting.md",
@@ -196,6 +198,20 @@
             "summary": "The technical brief: static app, no accounts, on-device data, the three AI backend options, and what to verify.",
             "audience": "IT and technology directors",
             "time": "5 minutes"
+        },
+        {
+            "source": "chapters/20-for-school-leaders.md",
+            "slug": "for-school-leaders",
+            "summary": "The nine Leadership Hub tools: visits and coaching, equity and student-services analytics, meeting documentation, multilingual family communication, and backing the whole suite up.",
+            "audience": "Principals, coaches, and student-services leaders",
+            "time": "20 minutes"
+        },
+        {
+            "source": "chapters/21-steam-lab.md",
+            "slug": "steam-lab",
+            "summary": "The 142-tool STEAM Lab: how to find a tool, how to put one in front of students with its own link, what to expect from any of them, and three ways teachers actually use them.",
+            "audience": "Any teacher",
+            "time": "8 minutes"
         }
     ]
 }

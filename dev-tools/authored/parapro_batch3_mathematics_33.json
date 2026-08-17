@@ -330,7 +330,7 @@
       "The expansion is correct because the exponent 3 means add three copies of 4.",
       "The expansion should be 3 x 3 x 3 because the exponent supplies the factor.",
       "The expansion should be 4 x 4 x 4 because the exponent tells how many times 4 is used as a factor.",
-      "The expansion should be 4 x 3 because an exponent means multiply the base by the exponent."
+      "The expansion should be 4 x 3, because an exponent simply means to multiply the base by the exponent."
     ],
     "answerIndex": 2,
     "rationale": "In 4^3, 4 is the base and 3 is the exponent. The exponent tells how many times the base is used as a factor, so 4^3 = 4 x 4 x 4 = 64. The proposed repeated addition equals 12 and does not represent the power.",
@@ -810,7 +810,7 @@
       "Visits decreased every week.",
       "Visits stayed at 23 for all four weeks.",
       "Visits increased overall, with no change from Week 2 to Week 3.",
-      "Visits increased by the same amount each week."
+      "Visits increased by exactly the same amount during each of the four weeks."
     ],
     "answerIndex": 2,
     "rationale": "The number of visits rises from 18 to 23, remains at 23, and then rises to 29. Thus, visits increase overall but do not change from Week 2 to Week 3.",
@@ -889,7 +889,7 @@
     "choices": [
       "Tell the student to place 3.6 above 0.48 so the final digits always line up, then try again.",
       "Have the student add 36 and 48 and place the decimal point two places from the right.",
-      "Ask the student to round both addends to whole numbers and use the estimate as the exact answer.",
+      "Ask the student to round both of the addends to whole numbers and then use that estimate as the exact answer.",
       "Use a place-value chart to rewrite 3.6 as 3.60, align equal place values, and show that the sum is 4.08."
     ],
     "answerIndex": 3,
@@ -928,7 +928,7 @@
     "prompt": "A student answers 3/4 divided by 1/8 by multiplying the fractions and obtaining 3/32. Which model would best help the student understand the quotient?",
     "choices": [
       "Partition a whole strip into eighths, shade 3/4, and count the six 1/8-size pieces contained in the shaded length.",
-      "State the invert-and-multiply rule, write the answer 6, and ask the student to memorize the steps.",
+      "State the invert-and-multiply rule, write down the answer 6, and ask the student to memorize all of the steps involved.",
       "Draw three groups of 1/32 and label the drawing as the product of the two fractions.",
       "Use two fraction circles to add 3/4 and 1/8, then describe the sum as the quotient."
     ],
@@ -968,7 +968,7 @@
     "prompt": "A student translates the phrase 'twice a number, decreased by 7' as 2(n - 7). Which response would best clarify why the intended expression is 2n - 7?",
     "choices": [
       "Tell the student that 2(n - 7) and 2n - 7 are equivalent because both contain 2, n, and 7.",
-      "Replace n with 7 only, note that the expressions give different values, and stop the discussion.",
+      "Replace n with 7 only, note that the two expressions give different values, and then simply stop the discussion at that point.",
       "Use n = 10 to act out twice the number and then subtract 7, compare 13 with 2(10 - 7) = 6, and connect the actions to 2n - 7.",
       "Ask the student to copy the expression 2n - 7 several times until the wording is memorized."
     ],
@@ -1007,7 +1007,7 @@
     "difficulty": "application",
     "prompt": "A student sees the sequence 4, 9, 14, 19 and says the next term is 23 because the numbers 'go up by about 4.' Which response best advances the student's reasoning?",
     "choices": [
-      "Confirm 23 because an estimate is close enough when continuing a number sequence.",
+      "Confirm that 23 is correct, because a reasonable estimate is close enough when continuing almost any number sequence.",
       "Tell the student that the answer is 24 and move immediately to the next problem.",
       "Ask the student to add all four terms and divide by 4 to find the next term.",
       "Have the student find each consecutive difference, identify the repeated increase of 5, and use it to obtain 24."
@@ -1048,7 +1048,7 @@
     "prompt": "A student says that any two rectangles with the same perimeter must also have the same area. Which paraprofessional response provides the clearest counterexample?",
     "choices": [
       "Compare a 1-by-11 rectangle with a 5-by-7 rectangle: both have perimeter 24 units, but their areas are 11 and 35 square units.",
-      "Compare a 3-by-4 rectangle with another 3-by-4 rectangle and note that both perimeter and area are equal.",
+      "Compare a 3-by-4 rectangle with another identical 3-by-4 rectangle and note that both the perimeter and the area are exactly equal.",
       "Draw one rectangle, calculate its perimeter twice, and explain that repeated calculations should agree.",
       "State that perimeter and area always change together because both are measurements of the same figure."
     ],
@@ -1090,7 +1090,7 @@
       "Have the student estimate the doorway's height without using a measurement tool.",
       "Provide a measuring tape long enough for the doorway, align zero with the floor, keep the tape straight, and read the height at the top once.",
       "Ask the student to round each 15-centimeter placement before adding the partial lengths.",
-      "Begin counting at the ruler's 1-centimeter mark and add one centimeter for every placement."
+      "Begin counting at the ruler’s 1-centimeter mark each time and then add one extra centimeter for every separate placement of the ruler along the doorway."
     ],
     "answerIndex": 1,
     "rationale": "A measuring tape long enough for the doorway eliminates repeated placements, while aligning zero, keeping the tape straight, and reading the top endpoint address the errors that made the measurements inconsistent.",
@@ -1130,7 +1130,7 @@
       "Have the student add all four side lengths and label the result square centimeters.",
       "Tell the student that the area is 40 square centimeters without discussing which measurements determine it.",
       "Cut a triangular piece from one side and shift it to form an 8-by-5 rectangle, connecting the rearrangement to base times perpendicular height.",
-      "Ask the student to multiply all three given measurements because more dimensions make an area result more accurate."
+      "Ask the student to multiply all three of the given measurements together, because using more dimensions makes any area result far more accurate."
     ],
     "answerIndex": 2,
     "rationale": "Rearranging the parallelogram into a rectangle preserves area and makes the perpendicular height visible. The resulting 8-by-5 rectangle has area 40 square centimeters, not 8 times the slanted side.",
@@ -1167,7 +1167,7 @@
     "difficulty": "application",
     "prompt": "A bar graph compares attendance rates of 92% and 96%, but its vertical axis begins at 90%, making the second bar appear three times as tall. Which response best helps students evaluate the display?",
     "choices": [
-      "Accept the visual comparison because taller bars always represent proportional differences accurately.",
+      "Accept the visual comparison exactly as it stands, because taller bars on a graph always represent proportional differences between the values accurately.",
       "Remove the axis labels so students focus on the relative heights instead of the numerical values.",
       "Subtract each rate from 100 and compare the absence percentages without discussing the graph's scale.",
       "Identify the truncated axis, calculate the actual 4-percentage-point difference, and redraw the graph with a scale suited to an honest comparison."
@@ -1210,7 +1210,7 @@
       "Combine the 3 bicycle riders with the 5 walkers, draw one bar of height 8, and keep the survey total at 24.",
       "Make a frequency table, confirm that the four counts total 24, and add a bicycle bar of height 3 using the graph’s scale.",
       "Keep the three existing bars, change the reported sample size from 24 to 21, and label the graph as complete.",
-      "Add a bicycle bar with the same height as the walking bar so the two active-travel categories appear consistent."
+      "Add a bicycle bar with exactly the same height as the walking bar so that the two active-travel categories appear consistent."
     ],
     "answerIndex": 1,
     "rationale": "A complete display must preserve all four survey categories and their recorded frequencies. The table verifies that the counts account for all 24 students, and the added bar represents the bicycle frequency of 3 on the existing scale.",
@@ -1248,7 +1248,7 @@
     "prompt": "A line plot shows two X marks at 1/2 inch, three X marks at 3/4 inch, and one X mark at 1 inch. A student adds each labeled value once and reports a total of 2 1/4 inches. Which response best addresses the error?",
     "choices": [
       "Have the student write one addend for every X mark and calculate 1/2 + 1/2 + 3/4 + 3/4 + 3/4 + 1 = 4 1/4 inches.",
-      "Tell the student to count the six X marks and report 6 inches because every mark represents one inch.",
+      "Tell the student to count all six of the X marks and report 6 inches, because every single mark represents one inch.",
       "Ask the student to add only the most frequent value, 3/4, to the greatest value, 1.",
       "Replace the line plot with an unlabeled picture so repeated measurements are less distracting."
     ],
@@ -1290,7 +1290,7 @@
       "Compare the unsuccessful counts, 8 and 9, and declare Group A better because 8 is smaller.",
       "Rewrite both rates with denominator 60 as 12/60 and 21/60, then compare those fractions.",
       "Convert each success rate to a common form: 12/20 = 60% and 21/30 = 70%, so Group B has the higher proportional success rate.",
-      "Ignore the different trial totals and confirm that any group with more successes must have the better rate."
+      "Ignore the different trial totals entirely and confirm that any group with more successes must also have the better overall rate."
     ],
     "answerIndex": 2,
     "rationale": "Raw success counts are not directly comparable when the groups complete different numbers of trials. Converting to rates shows 60% for Group A and 70% for Group B, which justifies the conclusion proportionally.",

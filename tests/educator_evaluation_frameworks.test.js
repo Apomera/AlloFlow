@@ -110,7 +110,7 @@ describe('Portland ME profile (verified from the district guidebook)', () => {
 
 describe('Article 16 refinements', () => {
   it('16.B: complaint-provenance guidance appears at both evidence entry points', () => {
-    expect(src.match(/originates from a complaint by a parent, student, or other party/g)).toHaveLength(2);
+    expect(src.match(/stems from a parent, student, or other complaint/g)).toHaveLength(2);
   });
 
   it('16.C: the server bars new records for archived educators (creation only)', () => {

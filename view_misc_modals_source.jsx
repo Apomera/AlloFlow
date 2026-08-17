@@ -1778,7 +1778,15 @@ function AIBackendModalBody(props) {
     try { console.warn('[Storage] Storage and recovery manager bridge unavailable on this host build.'); } catch (_) {}
   };
   return (
-        <div className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAIBackendModal(false)}>
+        <div
+          /* z raise while the STEAM Lab is open (lab overlay = INLINE zIndex 10020,
+             stem_lab_module.js — its class says 9999 but the style wins). Without
+             this, the keyless deep-link visitor clicks the "AI extras: off" pill
+             and the doorway opens UNDERNEATH the lab: visible to no one, pointer
+             events intercepted (caught by 43-keyless-ai-honesty.spec.ts,
+             2026-08-17). Same pattern as the AlloBot chat containers above. */
+          style={{ zIndex: props.showStemLab ? 10490 : undefined }}
+          className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAIBackendModal(false)}>
           <div data-help-key="ai_backend_modal_panel" data-student-ai-setup={isStudentAiSetup ? 'true' : 'false'} className="bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="ai-backend-title" tabIndex={-1} onKeyDown={(e) => { if (e.key === 'Escape') setShowAIBackendModal(false); }} onClick={e => e.stopPropagation()}>
             {isStudentAiSetup && <style>{`
               [data-student-ai-setup="true"] #ai-backend-engine-strip,

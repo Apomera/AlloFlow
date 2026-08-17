@@ -4440,19 +4440,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   // ── EGGS — visual egg specifications for the Egg Gallery
   // Each entry drives an SVG egg drawing with shape + pattern + size
   var EGGS_DATA = [
-    { species: 'Bald Eagle', dimensions: '73 × 55 mm', clutch: '1–3', color: '#fef3c7', pattern: 'plain',
+    { species: 'Bald Eagle',
+      dimensions: '73 × 55 mm', clutch: '1–3', color: '#fef3c7', pattern: 'plain',
       notes: 'Large, white, slightly elliptical. Often two eggs hatch days apart — first chick may dominate the second.' },
     { species: 'Osprey', dimensions: '62 × 46 mm', clutch: '2–4', color: '#fdba74', pattern: 'blotched',
       notes: 'Cream with reddish-brown blotches concentrated at larger end. Variable per egg.' },
-    { species: 'Common Loon', dimensions: '88 × 56 mm', clutch: '1–2', color: '#8a784e', pattern: 'spotted',
+    { species: 'Common Loon',
+      dimensions: '88 × 56 mm', clutch: '1–2', color: '#8a784e', pattern: 'spotted',
       notes: 'Olive-brown ground with dark spots. Camouflaged on shoreline. Among the largest eggs of any Maine breeder.' },
     { species: 'Great Blue Heron', dimensions: '64 × 45 mm', clutch: '3–5', color: '#bae6fd', pattern: 'plain',
       notes: 'Pale blue, oval. Fragile-looking but tough.' },
-    { species: 'Wood Duck', dimensions: '52 × 39 mm', clutch: '10–15', color: '#fef3c7', pattern: 'plain',
+    { species: 'Wood Duck',
+      dimensions: '52 × 39 mm', clutch: '10–15', color: '#fef3c7', pattern: 'plain',
       notes: 'Cream-white. Wood ducks parasitize each other\'s nests — multiple females may lay in one cavity.' },
     { species: 'Mallard', dimensions: '57 × 41 mm', clutch: '8–13', color: '#e0e7ff', pattern: 'plain',
       notes: 'Pale greenish-buff. Female covers with down when leaving nest.' },
-    { species: 'Common Eider', dimensions: '75 × 50 mm', clutch: '3–5', color: '#bef264', pattern: 'plain',
+    { species: 'Common Eider',
+      dimensions: '75 × 50 mm', clutch: '3–5', color: '#bef264', pattern: 'plain',
       notes: 'Olive-green. Famously insulated with eider down — the warmest natural insulation known.' },
     { species: 'Spruce Grouse', dimensions: '43 × 31 mm', clutch: '5–8', color: '#fcd34d', pattern: 'spotted',
       notes: 'Pale buff with dark spots. Camouflaged on forest floor.' },
@@ -4474,7 +4478,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       notes: 'Pure white. Cavity nesters don\'t need camouflaged eggs.' },
     { species: 'Pileated Woodpecker', dimensions: '33 × 25 mm', clutch: '3–5', color: 'var(--allo-stem-text, #ffffff)', pattern: 'plain',
       notes: 'Pure white. All cavity-nester eggs are typically white or pale.' },
-    { species: 'Black-capped Chickadee', dimensions: '15 × 12 mm', clutch: '6–8', color: '#fef3c7', pattern: 'speckled',
+    { species: 'Black-capped Chickadee',
+      dimensions: '15 × 12 mm', clutch: '6–8', color: '#fef3c7', pattern: 'speckled',
       notes: 'Cream with reddish spots. Tiny vs nest cavity.' },
     { species: 'Red-breasted Nuthatch', dimensions: '16 × 12 mm', clutch: '5–7', color: '#fef3c7', pattern: 'speckled',
       notes: 'Cream with reddish spots. Similar to chickadee.' },
@@ -4486,25 +4491,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       notes: 'The iconic "robin\'s-egg blue." Cup nest in tree fork.' },
     { species: 'Hermit Thrush', dimensions: '23 × 18 mm', clutch: '3–4', color: '#bae6fd', pattern: 'plain',
       notes: 'Pale blue, sometimes faintly spotted. Maine\'s most common breeding thrush.' },
-    { species: 'Cedar Waxwing', dimensions: '23 × 17 mm', clutch: '3–5', color: '#bae6fd', pattern: 'spotted',
+    { species: 'Cedar Waxwing',
+      dimensions: '23 × 17 mm', clutch: '3–5', color: '#bae6fd', pattern: 'spotted',
       notes: 'Pale blue-gray with dark spots. Late-summer breeders.' },
     { species: 'Yellow Warbler', dimensions: '18 × 13 mm', clutch: '4–5', color: '#fef3c7', pattern: 'spotted',
       notes: 'Pale greenish-white with brown spots. Cup nest in shrub.' },
     { species: 'Common Yellowthroat', dimensions: '17 × 13 mm', clutch: '3–5', color: '#fef3c7', pattern: 'speckled',
       notes: 'Cream with brown spots. Marsh-thicket nester.' },
-    { species: 'Red-winged Blackbird', dimensions: '25 × 18 mm', clutch: '3–4', color: '#7dd3fc', pattern: 'scrawled',
+    { species: 'Red-winged Blackbird',
+      dimensions: '25 × 18 mm', clutch: '3–4', color: '#7dd3fc', pattern: 'scrawled',
       notes: 'Pale blue with characteristic dark scribbles. One of nature\'s most distinctive eggs.' },
     { species: 'Common Grackle', dimensions: '29 × 21 mm', clutch: '4–5', color: '#bae6fd', pattern: 'blotched',
       notes: 'Pale blue with dark blotches.' },
-    { species: 'Baltimore Oriole', dimensions: '22 × 16 mm', clutch: '4–5', color: 'var(--allo-stem-text, #cbd5e1)', pattern: 'scrawled',
+    { species: 'Baltimore Oriole',
+      dimensions: '22 × 16 mm', clutch: '4–5', color: 'var(--allo-stem-text, #cbd5e1)', pattern: 'scrawled',
       notes: 'Pale gray-blue with dark squiggles. Built into the hanging pouch nest.' },
-    { species: 'Ruby-throated Hummingbird', dimensions: '13 × 9 mm', clutch: '2', color: 'var(--allo-stem-text, #ffffff)', pattern: 'plain',
+    { species: 'Ruby-throated Hummingbird',
+      dimensions: '13 × 9 mm', clutch: '2', color: 'var(--allo-stem-text, #ffffff)', pattern: 'plain',
       notes: 'Pure white, pea-sized. Smallest Maine bird egg.' },
-    { species: 'White-throated Sparrow', dimensions: '20 × 16 mm', clutch: '4–5', color: '#7dd3fc', pattern: 'spotted',
+    { species: 'White-throated Sparrow',
+      dimensions: '20 × 16 mm', clutch: '4–5', color: '#7dd3fc', pattern: 'spotted',
       notes: 'Pale blue with brown spots. Northern conifer breeder.' },
     { species: 'Song Sparrow', dimensions: '21 × 16 mm', clutch: '3–5', color: '#bae6fd', pattern: 'spotted',
       notes: 'Pale greenish-white with brown spots. Heavily streaked vs eggs of similar size.' },
-    { species: 'Northern Cardinal', dimensions: '25 × 18 mm', clutch: '2–5', color: '#bae6fd', pattern: 'spotted',
+    { species: 'Northern Cardinal',
+      dimensions: '25 × 18 mm', clutch: '2–5', color: '#bae6fd', pattern: 'spotted',
       notes: 'Pale gray-blue with brown spots.' },
     { species: 'Tree Swallow', dimensions: '19 × 13 mm', clutch: '4–7', color: 'var(--allo-stem-text, #ffffff)', pattern: 'plain',
       notes: 'Pure white. Cavity nester or nest box. Bluebird-nest-box program also benefits tree swallows.' },
@@ -4567,71 +4578,85 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   // ── SEASONAL PLUMAGE — molt + breeding/non-breeding
   var PLUMAGE_CYCLES = [
     { species: 'American Goldfinch',
+      art: { kind: 'plumage', items: [{ name: 'Breeding', note: 'lemon-yellow, black cap', body: '#f0cf2c', wing: '#22252b', head: '#f0cf2c', tail: '#22252b', patch: '#22252b', bill: '#e8909e' }, { name: 'Non-breeding', note: 'drab olive-buff', body: '#b3ab84', wing: '#4a4a45', head: '#b3ab84', tail: '#4a4a45', bill: '#6b665c' }] },
       breeding: 'Bright lemon-yellow body with black cap, black wings + tail with white markings. Bill is pink in summer.',
       nonbreeding: 'Drab olive-buff overall. Wings + tail still blackish but body fades to muted olive-tan. Bill darker.',
       molt: 'Two complete molts per year — most North American songbirds molt only once. Breeding plumage emerges in early spring.',
       maine_timing: 'Breeding plumage visible mid-April; non-breeding by mid-October.' },
     { species: 'Common Loon',
+      art: { kind: 'plumage', items: [{ name: 'Breeding', note: 'black head, checkered back', body: '#1b1e24', wing: '#2a2e35', head: '#12271f', tail: '#1b1e24', streaks: '#f8fafc' }, { name: 'Non-breeding', note: 'grey above, white below', body: '#7a8490', wing: '#6b7280', head: '#8a939e', tail: '#6b7280' }] },
       breeding: 'Striking black head with green-purple iridescence, white-checkered black back, white belly, red eyes.',
       nonbreeding: 'Gray above, white below, no eye-stripe — looks like a different species. White throat with smudgy gray.',
       molt: 'Body plumage molts late summer + late winter. Wing primaries molt all-at-once in late winter, making loons flightless for several weeks.',
       maine_timing: 'Breeding plumage May–August on Maine lakes; non-breeding October+ when loons move to coast.' },
     { species: 'Snow Bunting',
+      art: { kind: 'plumage', items: [{ name: 'Breeding', note: 'white with black back', body: '#f8fafc', wing: '#22252b', head: '#f8fafc', tail: '#22252b' }, { name: 'Non-breeding', note: 'warm buff', body: '#d6c199', wing: '#ad9770', head: '#d6c199', tail: '#ad9770', patch: '#f8fafc' }] },
       breeding: 'Males nearly pure white with black back + black wing-tips. Females buff-and-white.',
       nonbreeding: 'Warm buff overall with white wing patches. The "winter ghosts" of Maine fields + beaches.',
       molt: 'Single annual molt — feathers WEAR from buff to white as the breeding season approaches. Tip abrasion reveals the white. No additional molt is needed!',
       maine_timing: 'Maine sees only nonbreeding plumage Nov–Mar.' },
     { species: 'Northern Cardinal',
+      art: { kind: 'plumage', items: [{ name: 'Male, all year', note: 'no seasonal change', body: '#c0392b', wing: '#a5302a', head: '#c0392b', tail: '#a5302a', bill: '#e8873c' }] },
       breeding: 'Male brilliant red year-round; female warm buff with red wash on crest + tail.',
       nonbreeding: 'Same plumage — cardinals don\'t change with season. Bright year-round.',
       molt: 'Single annual molt in late summer.',
       maine_timing: 'Brilliant year-round in Maine — moves north as range expands.' },
     { species: 'Ruby-throated Hummingbird',
+      art: { kind: 'plumage', items: [{ name: 'Male, all year', note: 'no seasonal change', body: '#3f8a5a', wing: '#2f6b45', head: '#8a2233', tail: '#2a4a38' }] },
       breeding: 'Male iridescent ruby throat, emerald green back. Female: white throat, green back.',
       nonbreeding: 'Same plumage — hummingbirds don\'t change seasonally in Maine.',
       molt: 'Annual molt happens on tropical wintering grounds, not in Maine.',
       maine_timing: 'May–September only.' },
     { species: 'Baltimore Oriole',
+      art: { kind: 'plumage', items: [{ name: 'Adult male, all year', note: 'orange + black retained', body: '#e8752a', wing: '#22252b', head: '#22252b', tail: '#22252b' }] },
       breeding: 'Male bright orange + black; female yellow-olive with white wing bars.',
       nonbreeding: 'Adult males retain orange + black year-round. First-fall males look like females.',
       molt: 'Adults molt in late summer before fall migration. Juveniles delay full adult plumage to second year.',
       maine_timing: 'In Maine May–August, breeding plumage throughout. Returns from Central America winter.' },
     { species: 'Common Eider',
+      art: { kind: 'plumage', items: [{ name: 'Adult male, all year', note: 'breeding plumage retained', body: '#f8fafc', wing: '#22252b', head: '#f8fafc', tail: '#22252b', patch: '#b8d4c0' }] },
       breeding: 'Male strikingly black-and-white with subtle pale green nape. Female warm brown vermiculated.',
       nonbreeding: 'Adult males retain breeding plumage year-round. Subadult males progress through "eclipse" patchy plumage.',
       molt: 'Like loons, eiders molt wing primaries all-at-once + can be flightless briefly.',
       maine_timing: 'Year-round on Maine coast.' },
     { species: 'Red-winged Blackbird',
+      art: { kind: 'plumage', items: [{ name: 'Male, all year', note: 'epaulets concealed, then flashed', body: '#16181d', wing: '#16181d', head: '#16181d', tail: '#16181d', patch: '#d4342a' }] },
       breeding: 'Male jet black with red-and-yellow shoulder epaulets (\"red wings\").',
       nonbreeding: 'Male plumage same — but the red epaulets are concealed under black feathers, only flashed during territorial display.',
       molt: 'Single annual molt late summer.',
       maine_timing: 'Year-round in southern Maine, migratory in northern.' },
     { species: 'Cedar Waxwing',
+      art: { kind: 'plumage', items: [{ name: 'All year', note: 'no seasonal change', body: '#b59a7a', wing: '#a08a6c', head: '#b59a7a', tail: '#d8c23c', patch: '#22252b' }] },
       breeding: 'Sleek soft brown with yellow tail-tip, black face mask, red waxy wing tips. Both sexes similar.',
       nonbreeding: 'Same plumage year-round.',
       molt: 'Annual molt.',
       maine_timing: 'Year-round but more abundant fall + winter when fruit ripens.' },
     { species: 'Wood Duck',
+      art: { kind: 'plumage', items: [{ name: 'Breeding', note: 'green crest, chestnut breast', body: '#8a5a3c', wing: '#2f6b52', head: '#1f6b57', tail: '#2a3a44', patch: '#f8fafc' }, { name: 'Eclipse (mid-summer)', note: 'drab, female-like', body: '#8a7a66', wing: '#6f6353', head: '#7a6f60', tail: '#5f5548', patch: '#f8fafc' }] },
       breeding: 'Male iridescent kaleidoscope: green crest, red eye, white throat, chestnut breast.',
       nonbreeding: 'Male enters \"eclipse plumage\" mid-summer — drab female-like for ~2 months — then molts back to breeding plumage.',
       molt: 'Eclipse molt allows feather replacement during flightless period — males camouflage themselves while vulnerable.',
       maine_timing: 'Breeding plumage Oct–July in Maine.' },
     { species: 'Bald Eagle',
+      art: { kind: 'plumage', items: [{ name: 'Adult, all year', note: 'white head + tail', body: '#4a3527', wing: '#3f2d21', head: '#f8fafc', tail: '#f8fafc', bill: '#e8b23c' }] },
       breeding: 'White head + tail + dark chocolate body. Achieved at age 4–5.',
       nonbreeding: 'Same plumage as adult. Juveniles wear mottled brown for 4 years before adult plumage.',
       molt: 'Adult feather replacement annual; juvenile staged molts over 4 years.',
       maine_timing: 'Resident year-round. Watch for juveniles — often mistaken for golden eagles.' },
     { species: 'Snowy Owl',
+      art: { kind: 'plumage', items: [{ name: 'Male', note: 'nearly pure white', body: '#f6f8fa', wing: '#e6eaee', head: '#f8fafc' }, { name: 'Female', note: 'heavily barred', body: '#e2e6ea', wing: '#c8ced5', head: '#eef1f4', streaks: '#6b7280' }] },
       breeding: 'Female heavily barred dark, male nearly pure white. Both more barred when young, whiter with age.',
       nonbreeding: 'Same — but Maine only sees winter visitors, so we see arctic breeders out of breeding cycle.',
       molt: 'Annual molt on Arctic breeding grounds.',
       maine_timing: 'Irruptive winter visitor in Maine — irregular years see many; other years few.' },
     { species: 'Black-capped Chickadee',
+      art: { kind: 'plumage', items: [{ name: 'All year', note: 'no seasonal change', body: '#b8bcc2', wing: '#9aa0a8', head: '#22252b', tail: '#9aa0a8', patch: '#f8fafc' }] },
       breeding: 'Black cap + black bib, white cheeks, gray back, buff sides. Year-round.',
       nonbreeding: 'Same plumage.',
       molt: 'Annual molt late summer.',
       maine_timing: 'Year-round resident.' },
     { species: 'White-throated Sparrow',
+      art: { kind: 'plumage', items: [{ name: 'White-striped morph', note: 'bold black + white crown', body: '#9a8a72', wing: '#8a7a62', head: '#22252b', tail: '#8a7a62', patch: '#f8fafc' }, { name: 'Tan-striped morph', note: 'tan + brown crown', body: '#9a8a72', wing: '#8a7a62', head: '#7a6248', tail: '#8a7a62', patch: '#c9b48e' }] },
       breeding: 'Two morphs: White-striped (bold black + white crown) + Tan-striped (tan + brown crown). Both occur in same population.',
       nonbreeding: 'Same morphs but slightly duller. Yellow lores fade.',
       molt: 'Annual molt late summer.',
@@ -4691,71 +4716,150 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   ];
 
   // ── FLIGHT PATTERNS — wing shape + flight style + identification
+  // ── Flight-path diagrams ────────────────────────────────────────────────
+  // This view is entirely about shape and motion and had NO illustrations at
+  // all: it told the learner to "note wing posture — V = vulture, flat =
+  // eagle" and to look for a "distinctive wave-pattern flight path", then
+  // showed neither. That is the same defect as the marsh vireo's hint
+  // promising reeds that were never drawn — copy describing art that does not
+  // exist, and invisible to every test in the repo.
+  //
+  // Each pattern now gets the one thing a flight style actually IS: the shape
+  // it traces through the air, drawn to a common baseline so the ten can be
+  // compared. 220x62 box, path in ink, a bird glyph riding it where that
+  // helps, and a dashed reference where the pattern is defined against
+  // something (the ground, the water, a fixed point).
+  var FLIGHT_TRACE_INK = '#0f2b46';
+  function flightTrace(h, kind) {
+    var ref = function(d) { return h('path', { key: 'ref', d: d, fill: 'none', stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '4 4', opacity: 0.85 }); };
+    var line = function(d, w) { return h('path', { key: 'ln', d: d, fill: 'none', stroke: FLIGHT_TRACE_INK, strokeWidth: w || 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' }); };
+    // A tiny bird glyph: wings only, so it reads at 10px and never competes
+    // with the trace it sits on.
+    var bird = function(x, y, form) {
+      var d = form === 'v' ? 'M' + (x - 9) + ' ' + (y + 4) + ' L' + x + ' ' + (y - 3) + ' L' + (x + 9) + ' ' + (y + 4)
+        : form === 'fold' ? 'M' + (x - 6) + ' ' + (y - 3) + ' L' + x + ' ' + (y + 3) + ' L' + (x + 6) + ' ' + (y - 3)
+          : 'M' + (x - 10) + ' ' + y + ' Q' + (x - 4) + ' ' + (y - 3) + ' ' + x + ' ' + y + ' Q' + (x + 4) + ' ' + (y - 3) + ' ' + (x + 10) + ' ' + y;
+      return h('path', { key: 'bd' + x, d: d, fill: 'none', stroke: FLIGHT_TRACE_INK, strokeWidth: 2.4, strokeLinecap: 'round', strokeLinejoin: 'round' });
+    };
+    var kids;
+    if (kind === 'soar') {
+      // Rising circles in a thermal, and the V-versus-flat posture the text names.
+      kids = [ref('M26 58 L26 8 M96 58 L96 8'),
+        line('M34 52 C88 52 88 40 40 40 C88 40 88 28 44 28 C86 28 86 17 50 17', 2),
+        h('g', { key: 'lbl' }, bird(138, 24, 'v'), bird(196, 24, 'flat'),
+          h('text', { key: 't1', x: 138, y: 46, textAnchor: 'middle', fontSize: 7.5, fill: '#475569' }, 'V = vulture'),
+          h('text', { key: 't2', x: 196, y: 46, textAnchor: 'middle', fontSize: 7.5, fill: '#475569' }, 'flat = eagle'))];
+    } else if (kind === 'direct') {
+      kids = [line('M12 31 L208 31'),
+        h('path', { key: 'bt', d: 'M30 24 L30 38 M54 24 L54 38 M78 24 L78 38 M102 24 L102 38 M126 24 L126 38 M150 24 L150 38 M174 24 L174 38',
+          stroke: '#3f6d97', strokeWidth: 1.4, opacity: 0.8 }), bird(196, 31)];
+    } else if (kind === 'bound') {
+      kids = [ref('M12 31 L208 31'),
+        line('M12 40 Q30 8 48 22 Q60 34 72 40 Q90 8 108 22 Q120 34 132 40 Q150 8 168 22 Q180 34 192 40'),
+        bird(30, 15), bird(90, 15), bird(150, 15),
+        h('g', { key: 'f' }, bird(72, 42, 'fold'), bird(132, 42, 'fold'))];
+    } else if (kind === 'hover') {
+      kids = [ref('M12 50 L208 50'),
+        h('circle', { key: 'pt', cx: 110, cy: 26, r: 3, fill: FLIGHT_TRACE_INK }),
+        h('path', { key: 'arc', d: 'M110 26 C92 12 92 40 110 26 C128 12 128 40 110 26', fill: 'none', stroke: '#3f6d97', strokeWidth: 1.6, opacity: 0.9 }),
+        h('path', { key: 'blur', d: 'M78 20 L70 16 M78 32 L70 36 M142 20 L150 16 M142 32 L150 36', stroke: '#3f6d97', strokeWidth: 1.3, opacity: 0.7 }),
+        h('path', { key: 'drop', d: 'M110 30 L110 48', stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '3 3' })];
+    } else if (kind === 'glide') {
+      kids = [line('M12 16 C70 20 150 34 208 44'), bird(60, 19), bird(150, 35)];
+    } else if (kind === 'dive') {
+      kids = [line('M20 10 C40 14 56 22 70 44 L78 56', 2.4), bird(34, 13),
+        h('g', { key: 'fold' }, bird(72, 46, 'fold')),
+        ref('M12 56 L208 56'),
+        h('path', { key: 'sp', d: 'M70 56 L62 46 M78 56 L78 44 M86 56 L94 46', stroke: '#3f6d97', strokeWidth: 1.5 }),
+        h('text', { key: 'tx', x: 150, y: 34, textAnchor: 'middle', fontSize: 9, fill: '#475569' }, 'wings folded, steep')];
+    } else if (kind === 'erratic') {
+      kids = [ref('M12 31 L208 31'), line('M12 34 L34 18 L50 40 L74 14 L92 36 L114 16 L134 40 L158 20 L178 38 L200 24'), bird(200, 24)];
+    } else if (kind === 'plow') {
+      kids = [h('path', { key: 'w', d: 'M12 52 Q40 48 68 52 T124 52 T180 52 T212 52', fill: 'none', stroke: '#6f9fc4', strokeWidth: 2 }),
+        line('M12 34 L208 34'),
+        h('path', { key: 'bt', d: 'M26 27 L26 41 M42 27 L42 41 M58 27 L58 41 M74 27 L74 41 M90 27 L90 41 M106 27 L106 41 M122 27 L122 41 M138 27 L138 41 M154 27 L154 41 M170 27 L170 41',
+          stroke: '#3f6d97', strokeWidth: 1.4, opacity: 0.85 }), bird(192, 34)];
+    } else if (kind === 'dart') {
+      kids = [line('M12 46 Q38 10 60 34 Q74 50 96 20 Q112 0 124 30 Q136 54 158 26 Q176 6 196 40'),
+        bird(196, 40),
+        h('g', { key: 'bug', fill: '#3f6d97' },
+          h('circle', { key: 'b1', cx: 60, cy: 12, r: 2 }), h('circle', { key: 'b2', cx: 128, cy: 10, r: 2 }), h('circle', { key: 'b3', cx: 170, cy: 16, r: 2 }))];
+    } else if (kind === 'slowflap') {
+      kids = [line('M12 34 L208 34'),
+        h('path', { key: 'bt', d: 'M40 16 Q40 34 40 52 M96 16 Q96 34 96 52 M152 16 Q152 34 152 52',
+          stroke: '#3f6d97', strokeWidth: 1.8, opacity: 0.85 }),
+        bird(40, 26), bird(96, 26), bird(152, 26),
+        h('text', { key: 'tx', x: 212, y: 12, textAnchor: 'end', fontSize: 8, fill: '#475569' }, 'few, deep beats')];
+    } else { return null; }
+    return h('svg', { viewBox: '0 0 220 62', className: 'w-full', style: { maxWidth: '340px', height: 'auto' },
+      role: 'img', 'aria-hidden': 'true' }, kids);
+  }
+
   var FLIGHT_PATTERNS = [
-    { name: 'Soaring (Hawks, Eagles, Vultures)',
+    { name: 'Soaring (Hawks, Eagles, Vultures)', trace: 'soar',
       pattern: 'Wide spread wings, circling on rising thermals (warm air currents). Minimal flapping. Look for wing dihedral (V-shape).',
       species: 'Bald Eagle, Red-tailed Hawk, Turkey Vulture, Broad-winged Hawk',
       energy: 'Extremely energy-efficient. Uses sun-heated rising air. Migration depends on thermal availability.',
       timing: 'Mid-morning through afternoon. Thermals don\'t form at dawn or dusk.',
       identify: 'Look for circling without flapping over open ground. Note wing posture — V = vulture, flat = eagle.' },
 
-    { name: 'Direct Powered Flight (Crows, Most Songbirds)',
+    { name: 'Direct Powered Flight (Crows, Most Songbirds)', trace: 'direct',
       pattern: 'Continuous regular wingbeats in straight line. Some altitude adjustment.',
       species: 'American Crow, American Robin, Mourning Dove, most songbirds',
       energy: 'Energy cost moderate; depends on body size + wingbeat rate.',
       timing: 'Day-long, especially morning + evening.',
       identify: 'Steady flight without much glide. Crows give 2-3 strong beats then brief glide.' },
 
-    { name: 'Bounding / Undulating Flight (Woodpeckers, Goldfinches)',
+    { name: 'Bounding / Undulating Flight (Woodpeckers, Goldfinches)', trace: 'bound',
       pattern: 'Series of strong beats followed by brief folded-wing closure, creating a wave pattern. Saves energy by reducing wing surface during downstroke phase.',
       species: 'Pileated Woodpecker, Northern Flicker, American Goldfinch, House Finch',
       energy: 'Energy-efficient for small + medium birds. Wave amplitude varies by species.',
       timing: 'Day-long.',
       identify: 'Distinctive wave-pattern flight path. Woodpeckers bound between trees.' },
 
-    { name: 'Hovering (Hummingbirds, Kingfishers, Kestrels)',
+    { name: 'Hovering (Hummingbirds, Kingfishers, Kestrels)', trace: 'hover',
       pattern: 'Wing rotation at the shoulder allows true hovering. Hummingbirds use figure-8 wing path generating lift on both up + downstroke. Kestrels + kingfishers \"wind-hover\" — using flight muscles to remain still against the wind.',
       species: 'Ruby-throated Hummingbird, Belted Kingfisher, American Kestrel',
       energy: 'Hummingbird hovering is energy-intensive (often 50+ wingbeats/sec). Wind-hovering by kestrels easier with strong wind.',
       timing: 'Various.',
       identify: 'Body stays put while wings work. Hummingbird hover is silent (or distinct hum); kestrel + kingfisher hover with visible wingbeats.' },
 
-    { name: 'Gliding (Gulls, Albatrosses, Frigatebirds)',
+    { name: 'Gliding (Gulls, Albatrosses, Frigatebirds)', trace: 'glide',
       pattern: 'Long narrow wings held outstretched. Almost no flapping over long distances. Gulls use updraft from cliffs + waves.',
       species: 'Herring Gull, Great Black-backed Gull, Northern Gannet',
       energy: 'Extremely efficient. Gulls can fly hundreds of miles per day with minimal energy.',
       timing: 'Day-long. Particularly along cliffs + waves.',
       identify: 'Wings outstretched, minimal wingbeats. Long pointed wings.' },
 
-    { name: 'Diving (Falcons, Gannets, Kingfishers)',
+    { name: 'Diving (Falcons, Gannets, Kingfishers)', trace: 'dive',
       pattern: 'Folded wings + tucked body. Falcons (Peregrines) stoop from height — reach 240+ mph (~390 km/h). Gannets dive straight into water from 50+ ft. Kingfishers dive from perches.',
       species: 'Peregrine Falcon, Northern Gannet, Belted Kingfisher, Osprey',
       energy: 'Brief peak-energy effort. Body adapted (eyes, ears protected).',
       timing: 'Hunting.',
       identify: 'Sudden steep dive. Wings folded back. Peregrine "stoop" is the fastest animal motion on Earth.' },
 
-    { name: 'Erratic / Bouncy Flight (Cedar Waxwings, Buntings)',
+    { name: 'Erratic / Bouncy Flight (Cedar Waxwings, Buntings)', trace: 'erratic',
       pattern: 'Direct flight that lurches or bounces in air currents. Light-bodied birds catch each gust.',
       species: 'Cedar Waxwing, Indigo Bunting, Snow Bunting',
       energy: 'Moderate.',
       timing: 'Day-long.',
       identify: 'Birds that seem to "tumble" through air. Tail-flicks visible.' },
 
-    { name: 'Heavy Plowing (Cormorants, Loons, Ducks)',
+    { name: 'Heavy Plowing (Cormorants, Loons, Ducks)', trace: 'plow',
       pattern: 'Heavy bodies + small wings = lots of flapping with little gliding. Direct point-A-to-point-B flight close to water.',
       species: 'Double-crested Cormorant, Common Loon, Mallard, Common Eider',
       energy: 'High-energy; ducks burn fat reserves on long migration legs.',
       timing: 'Migration + commuting.',
       identify: 'Low-flying lines or wedges. Cormorants in single-file. Loons fly with head-stretched-forward posture.' },
 
-    { name: 'Aerial Insect-Catching (Swallows, Swifts, Nighthawks)',
+    { name: 'Aerial Insect-Catching (Swallows, Swifts, Nighthawks)', trace: 'dart',
       pattern: 'Rapid darting + sudden turns while catching insects in flight. Mouth open as net.',
       species: 'Tree Swallow, Barn Swallow, Cliff Swallow, Common Nighthawk',
       energy: 'High but efficient — feeding while flying combines tasks.',
       timing: 'Dawn + dusk; many species active when insects swarm.',
       identify: 'Erratic + rapid course changes. Wings long + narrow.' },
 
-    { name: 'Slow Flapping (Herons, Bitterns, Cranes)',
+    { name: 'Slow Flapping (Herons, Bitterns, Cranes)', trace: 'slowflap',
       pattern: 'Slow heavy wingbeats. Neck folded back in herons + bitterns; extended in cranes + ibises.',
       species: 'Great Blue Heron, American Bittern, Sandhill Crane',
       energy: 'Surprisingly efficient — slow rhythm matches body size.',
@@ -5546,7 +5650,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { type: 'Raptor foot (with talons)',
       shape: '4 strong toes ending in sharp curved talons.',
       birds: 'Eagles, hawks, falcons, owls',
-      function: 'Striking + grasping prey. Talons drive into prey on impact. Hawks + owls have reversible outer toe (zygodactyl) for stronger grip.',
+      // Corrected: a reversible outer toe is an OWL trait (plus the Osprey and
+      // two Asian fish eagles), not a hawk one. Most diurnal raptors cannot do
+      // it. See Londei 2020, Ibis 162(3).
+      function: 'Striking + grasping prey. Talons drive into prey on impact. Owls can swivel the outer toe backward for a stronger grip; most hawks and falcons cannot.',
       examples: 'Bald Eagle, Great Horned Owl, Peregrine Falcon' },
     { type: 'Climbing foot (zygodactyl)',
       shape: '2 toes forward + 2 toes back.',
@@ -5568,11 +5675,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       birds: 'Phalaropes, coots, grebes',
       function: 'Swimming propulsion without full webs. Walking on land possible.',
       examples: 'Red-necked Phalarope, American Coot, Pied-billed Grebe' },
-    { type: 'Grasping foot (large toes)',
-      shape: 'Very large toes with strong grasp.',
-      birds: 'Cranes, herons (modified)',
-      function: 'Grasps fish + amphibian prey. Some piscivorous birds developed this.',
-      examples: 'Osprey (specialized for grasping fish)' },
+    // Corrected. This entry used to read "Grasping foot (large toes) / Cranes,
+    // herons (modified) / grasps fish + amphibian prey" while giving Osprey as
+    // its example — three claims that do not belong together. Herons and cranes
+    // take prey with the BILL; their claws are small, blunt and straight, and
+    // their foot is the wading foot already listed above. The genuine
+    // fish-grasping foot is the Osprey's, and it is built quite differently.
+    { type: 'Fish-grasping foot (Osprey)',
+      shape: 'Outer toe swivels backward to give 2 toes forward + 2 back, and the underside of every toe is covered in short spiny scales called spicules.',
+      birds: 'Osprey; also the Grey-headed + Lesser Fish Eagles',
+      function: 'Clamps a slippery fish from both sides at once instead of only from above. The spicules bite into wet scales the way a rubber grip holds wet glass. Most hawks and falcons cannot rotate the toe at all.',
+      examples: 'Osprey — Maine coast, lakes + river mouths, often on nest platforms' },
     { type: 'Walking foot (heavy + flat)',
       shape: 'Strong forward toes with short claws.',
       birds: 'Turkeys, grouse, pheasants, kiwis',
@@ -5860,7 +5973,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { species: 'Bohemian Waxwing', irrupt_when: 'When Cedar Waxwings have eaten the local fruit + Bohemian moves south',
       pattern: 'Spectacular flocks of 100+.',
       where_to_look: 'Maine fruit-bearing trees + shrubs in winter.',
-      story: 'Larger than Cedar Waxwing; gray rump distinguishes them.' },
+      // Corrected: "gray rump distinguishes them" is a mark both birds roughly
+      // share, so it separates nothing. The reliable marks are the undertail
+      // coverts, the wing pattern and the belly.
+      story: 'Larger and chunkier than Cedar Waxwing. The giveaway is the undertail — rusty on Bohemian, white on Cedar. Bohemian is greyer with white + yellow wing marks; Cedar is warmer brown with a yellow belly and a plain wing.' },
     { species: 'White-winged Crossbill', irrupt_when: 'Conifer cone crop variation in north',
       pattern: 'Irregular Maine appearance.',
       where_to_look: 'Spruce-fir stands with cones.',
@@ -6574,14 +6690,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     { id: 'crown', x: 150, y: 60, label: 'Crown', what: 'The top of the head. Often distinctive (red crown of Pileated, yellow crown of Yellow-rumped Warbler).' },
     { id: 'nape', x: 130, y: 90, label: 'Nape', what: 'The back of the neck. Useful in distinguishing flickers (red nape), hummingbirds, others.' },
     { id: 'forehead', x: 175, y: 75, label: 'Forehead', what: 'Front of head above bill. Can show distinctive color (Yellow-rumped Warbler, flicker).' },
-    { id: 'eyebrow', x: 165, y: 100, label: 'Supercilium (eyebrow)', what: 'Stripe above the eye. Common field mark — present, absent, or color matters. (Bold in sparrows + many warblers.)' },
-    { id: 'eyeline', x: 165, y: 115, label: 'Eyeline', what: 'Dark line through the eye. Strong in red-eyed vireos + some warblers.' },
-    { id: 'eyering', x: 175, y: 110, label: 'Eye ring', what: 'Ring of pale feathers around the eye. Distinguishes Connecticut from Mourning Warbler, identifies many flycatchers.' },
+    { id: 'eyebrow', x: 165, y: 100, bx: 244, by: 74, label: 'Supercilium (eyebrow)', what: 'Stripe above the eye. Common field mark — present, absent, or color matters. (Bold in sparrows + many warblers.)' },
+    { id: 'eyeline', x: 165, y: 115, bx: 244, by: 134, label: 'Eyeline', what: 'Dark line through the eye. Strong in red-eyed vireos + some warblers.' },
+    { id: 'eyering', x: 175, y: 110, bx: 258, by: 104, label: 'Eye ring', what: 'Ring of pale feathers around the eye. Distinguishes Connecticut from Mourning Warbler, identifies many flycatchers.' },
     { id: 'cheek', x: 145, y: 130, label: 'Cheek (auriculars)', what: 'Side of the face below the eye. Can be plain or patterned (chickadee\'s white cheek, junco\'s plain gray).' },
     { id: 'lores', x: 195, y: 125, label: 'Lores', what: 'Area between bill base and eye. Yellow lores diagnostic for White-throated Sparrow.' },
-    { id: 'bill', x: 215, y: 130, label: 'Bill (beak)', what: 'Shape + color critical. Cone (seedeaters), hooked (raptors), needle (warblers), spear (herons).' },
+    { id: 'bill', x: 215, y: 130, bx: 240, by: 166, label: 'Bill (beak)', what: 'Shape + color critical. Cone (seedeaters), hooked (raptors), needle (warblers), spear (herons).' },
     { id: 'throat', x: 180, y: 160, label: 'Throat', what: 'Below the bill. Often most colorful (Ruby-throated Hummingbird, warblers).' },
-    { id: 'malar', x: 165, y: 155, label: 'Malar (mustache)', what: 'Stripe below cheek. White-throated Sparrow has black malar.' },
+    { id: 'malar', x: 165, y: 155, bx: 118, by: 146, label: 'Malar (mustache)', what: 'Stripe below cheek. White-throated Sparrow has black malar.' },
     { id: 'breast', x: 165, y: 200, label: 'Breast', what: 'Front of chest. Plain or streaked or with central spot (Song Sparrow has central spot).' },
     { id: 'belly', x: 165, y: 250, label: 'Belly', what: 'Lower underside. Color matters (yellow in many warblers + Eastern Wood-Pewee).' },
     { id: 'flank', x: 200, y: 230, label: 'Flank', what: 'Sides between breast and belly. Often distinctively colored (rufous flanks of Eastern Towhee).' },
@@ -7057,15 +7173,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   // PHASE 6 EXPANSION
   // ═════════════════════════════════════════════════════════════
 
+  // A perched-bird glyph drawn TO SCALE from a body length in inches, so the
+  // five size bands in the dichotomous key can be compared by eye instead of
+  // by reading "robin-sized" and hoping the learner knows a robin. Scaled
+  // against the largest band (30 in) and floored so the tiny bird stays
+  // visible; the box is a fixed 46x34 and the glyph sits on its baseline, so
+  // the five buttons line up and only the bird changes size.
+  function birdlabSizeGlyph(h, sizeIn) {
+    var f = Math.max(0.30, Math.sqrt(Math.min(sizeIn, 30) / 30));
+    var w = 34 * f, hh = 26 * f;
+    var bodyRx = w * 0.34, bodyRy = hh * 0.30;
+    var cx = 23, baseY = 32;
+    var cy = baseY - hh * 0.34;
+    return h('svg', { viewBox: '0 0 46 34', width: 46, height: 34 },
+      h('g', { fill: '#4c4a57' },
+        // tail, body, head, bill, one leg — the minimum that reads as a bird
+        h('path', { d: 'M' + (cx - bodyRx * 0.7) + ' ' + cy + ' L' + (cx - bodyRx - w * 0.30) + ' ' + (cy + hh * 0.22)
+          + ' L' + (cx - bodyRx * 0.6) + ' ' + (cy + bodyRy * 0.7) + ' Z' }),
+        h('ellipse', { cx: cx, cy: cy, rx: bodyRx, ry: bodyRy }),
+        h('circle', { cx: cx + bodyRx * 0.85, cy: cy - bodyRy * 0.85, r: Math.max(1.4, hh * 0.15) }),
+        h('path', { d: 'M' + (cx + bodyRx * 0.85 + hh * 0.13) + ' ' + (cy - bodyRy * 0.85)
+          + ' L' + (cx + bodyRx * 0.85 + hh * 0.42) + ' ' + (cy - bodyRy * 0.7)
+          + ' L' + (cx + bodyRx * 0.85 + hh * 0.13) + ' ' + (cy - bodyRy * 0.55) + ' Z' }),
+        h('path', { d: 'M' + cx + ' ' + (cy + bodyRy * 0.8) + ' L' + cx + ' ' + baseY,
+          stroke: '#4c4a57', strokeWidth: Math.max(0.8, f * 1.4) })
+      ));
+  }
+
   // ── DICHOTOMOUS KEY DATA — simple key for common Maine birds
   var DICHOTOMOUS_KEY = [
     { id: 'start', question: 'Roughly what size is the bird?',
       choices: [
-        { label: 'Tiny (sparrow + smaller, 4-6 in)', next: 'tiny' },
-        { label: 'Small (7-10 in, robin-sized)', next: 'small' },
-        { label: 'Medium (10-15 in, crow-sized)', next: 'medium' },
-        { label: 'Large (15-25 in, hawk-sized)', next: 'large' },
-        { label: 'Very large (25+ in, eagle/goose)', next: 'huge' }] },
+        // sizeIn drives a to-scale silhouette on each button. The very
+        // first question of the key asks about SIZE and answered it with five
+        // lines of text: "robin-sized" and "crow-sized" only help someone who
+        // already knows those birds, which is not who opens a dichotomous key.
+        { label: 'Tiny (sparrow + smaller, 4-6 in)', next: 'tiny', sizeIn: 5 },
+        { label: 'Small (7-10 in, robin-sized)', next: 'small', sizeIn: 9 },
+        { label: 'Medium (10-15 in, crow-sized)', next: 'medium', sizeIn: 13 },
+        { label: 'Large (15-25 in, hawk-sized)', next: 'large', sizeIn: 20 },
+        { label: 'Very large (25+ in, eagle/goose)', next: 'huge', sizeIn: 30 }] },
     { id: 'tiny', question: 'What color is most of the body?',
       choices: [
         { label: 'Mostly black + white', next: 'tiny-bw' },
@@ -7203,26 +7350,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   // ── BIRD AGE + SEX ID
   var AGE_SEX_ID = [
     { topic: 'Aging Songbirds',
+      art: { kind: 'plumage', items: [
+        { name: 'First-fall', note: 'brown + tan crown', body: '#9a8a72', wing: '#8a7a62', head: '#7a6248', patch: '#c9b48e' },
+        { name: 'Adult', note: 'black + white crown', body: '#9a8a72', wing: '#8a7a62', head: '#2a2d34', patch: '#f8fafc' }] },
       detail: 'Many songbirds: juvenile plumage → first basic (winter) → adult after first molt. Some species (warblers, sparrows) show subtle differences. Bill color, wing shape, feather wear all clues.',
       example: 'First-fall White-crowned Sparrow has brown + tan crown (not adult black + white). Young goldfinches lack adult bright yellow until first complete molt.' },
 
     { topic: 'Aging Raptors',
+      art: { kind: 'plumage', items: [
+        { name: 'Juvenile eagle', note: 'mottled brown all over', body: '#6b5540', wing: '#5a4634', head: '#6b5540', tail: '#7d6750', streaks: '#c8b79c' },
+        { name: 'Adult (4-5 yr)', note: 'white head + tail', body: '#4a3527', wing: '#3f2d21', head: '#f8fafc', tail: '#f8fafc', bill: '#e8b23c' }] },
       detail: 'Most raptors mature over 2-5 years. Multiple sub-adult plumages. Hawk + eagle ID often hinges on age.',
       example: 'Bald Eagle requires 4-5 years to develop adult white head + tail. Juveniles mottled brown. Cooper\'s Hawk juveniles brown-streaked vs adult slate gray.' },
 
     { topic: 'Aging Gulls',
+      art: { kind: 'stages', items: [
+        { name: '1st winter', note: 'mottled', body: '#8a7a66', wing: '#7a6a58', head: '#93836f', tail: '#6f6053', streaks: '#cbbda6' },
+        { name: '2nd winter', note: 'cleaner', body: '#9e8f79', wing: '#8a7d6c', head: '#b3a894', tail: '#7d7062', streaks: '#d8cdb8' },
+        { name: '3rd winter', note: 'near-adult', body: '#d8dde3', wing: '#9aa7b4', head: '#e6eaee', tail: '#c3ccd4' },
+        { name: '4th winter', note: 'adult', body: '#f8fafc', wing: '#9fb0bd', head: '#f8fafc', tail: '#f0f4f7', bill: '#e8c440' }] },
       detail: 'Gulls take 2-4 years to reach adult plumage with multiple intermediate stages. Hardest ID group.',
       example: 'Herring Gull: First-winter mottled brown; second-winter still brown but cleaner; third-winter approaches adult; fourth-winter full adult. Each stage has subtle plumage variations.' },
 
     { topic: 'Sexing Songbirds',
+      art: { kind: 'plumage', items: [
+        { name: 'Cardinal male', note: 'bright red', body: '#c0392b', wing: '#a5302a', head: '#c0392b', tail: '#a5302a', bill: '#e8873c' },
+        { name: 'Cardinal female', note: 'buff with red wash', body: '#b5a289', wing: '#a8907a', head: '#b09070', tail: '#b5745a', bill: '#e8873c' }] },
       detail: 'Many species show sexual dimorphism (different plumages). Males typically brighter to attract mates. Some species look identical between sexes.',
       example: 'Northern Cardinal: male bright red, female buff with red wash. Mallard: male iridescent green head + brown breast, female mottled brown. Black-capped Chickadee: sexes look identical.' },
 
     { topic: 'Sexing Raptors',
+      art: { kind: 'plumage', items: [
+        { name: 'Kestrel male', note: 'blue-gray wings', body: '#c9a877', wing: '#6b7f9e', head: '#8a9ab5', tail: '#b5623c' },
+        { name: 'Kestrel female', note: 'brown wings, streaked', body: '#c2a67c', wing: '#9a7248', head: '#a88a63', tail: '#9a7248', streaks: '#6b5334' }] },
       detail: 'Most raptors: females larger than males (reversed size dimorphism). Some show plumage differences (kestrels).',
       example: 'American Kestrel: male blue-gray wings + buff breast; female brown wings + streaked breast. Most other hawks + eagles: sexes look similar but females larger.' },
 
     { topic: 'Sexing Waterfowl',
+      art: { kind: 'plumage', items: [
+        { name: 'Wood Duck male', note: 'brilliantly coloured', body: '#8a5a3c', wing: '#2f6b52', head: '#1f6b57', tail: '#2a3a44', patch: '#f8fafc' },
+        { name: 'Wood Duck female', note: 'brown, white eye-patch', body: '#8a7a66', wing: '#6f6353', head: '#7a6f60', tail: '#5f5548', patch: '#f8fafc' }] },
       detail: 'Most ducks: strong sexual dimorphism. Males with bright nuptial plumage, females cryptic brown. Geese + swans: sexes similar.',
       example: 'Wood Duck: male brilliantly colored, female brown with white teardrop eye-patch. Mallard: well-known dimorphism.' },
 
@@ -7235,37 +7402,890 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       example: 'Reporting a banded eagle\'s number helps researchers track individual\'s migration + survival.' }
   ];
 
+  // ── Shape-reference glyph strips ────────────────────────────────────────
+  // "Bird Shape + Size Quick Reference" is the single most diagram-shaped
+  // content in the tool — eight morphological features, every one of them a
+  // shape — and it was eight paragraphs of prose. A measured audit of all 123
+  // views put it top of the list at 104 visual claims per thousand words with
+  // zero illustrations.
+  //
+  // Each feature now gets a strip of small labelled glyphs, one per named
+  // variant, so "forked / notched / square / pointed / round" is something you
+  // can see rather than five words. Reuses the primitives the rest of this
+  // file already has, so the reference matches the art it is a reference FOR.
+  function shapeStripGlyph(h, kind, variant) {
+    var W = 62, H = 54, ink = '#3b3a44';
+    var kid = null;
+    if (kind === 'billLen') {
+      var bl = variant === 'short' ? 7 : variant === 'medium' ? 15 : 27;
+      kid = h('g', null, h('circle', { key: 'h', cx: 22, cy: 24, r: 12, fill: ink }),
+        h('circle', { key: 'e', cx: 27, cy: 21, r: 1.5, fill: '#fff' }),
+        h('path', { key: 'b', d: 'M32 20 L' + (32 + bl) + ' 24 L32 28 Z', fill: '#20242c' }));
+    } else if (kind === 'billShape') {
+      // needle vs spear and spoon vs pelican were each too close to tell apart
+      // at 62px, which defeats a reference strip. Needle is now SHORT and hair
+      // fine; spear is long and heavier. Pelican-like carries the throat pouch
+      // that is its actual mark, rather than being a second rounded spoon.
+      var d = variant === 'cone' ? 'M32 16 L50 24 L32 32 Z'
+        : variant === 'needle' ? 'M32 23.2 L47 24 L32 24.8 Z'
+          : variant === 'hook' ? 'M32 17 L46 19 Q53 22 52 29 Q48 33 46 28 Q43 22 32 31 Z'
+            : variant === 'spear' ? 'M32 20.4 L59 24 L32 27.6 Z'
+              : variant === 'spoon' ? 'M32 19 L44 19 Q56 19 56 24 Q56 29 44 29 L32 29 Z'
+                : 'M32 18 L52 21 L52 26 L32 29 Z';
+      kid = h('g', null, h('circle', { key: 'h', cx: 22, cy: 24, r: 12, fill: ink }),
+        h('circle', { key: 'e', cx: 27, cy: 21, r: 1.5, fill: '#fff' }),
+        h('path', { key: 'b', d: d, fill: '#20242c' }),
+        variant === 'pelican' ? h('path', { key: 'pouch', d: 'M34 27 Q40 42 51 26 Z', fill: '#20242c', opacity: 0.85 }) : null);
+    } else if (kind === 'wing') {
+      // 'stiff' had no branch and fell through to the generic tapered fallback,
+      // so the strip labelled a wing "aquatic stiff" and then drew the same
+      // shape as everything else. A puffin/auk wing is SHORT, narrow and blunt
+      // — it barely clears the body — which is why those birds fly like that.
+      var wd = variant === 'pointed' ? 'M8 30 C20 16 34 8 54 6 C48 20 34 30 12 34 Z'
+        : variant === 'rounded' ? 'M10 30 C20 14 40 12 52 22 C46 32 26 36 12 34 Z'
+          : variant === 'slotted' ? 'M8 26 C22 16 38 12 54 12 L48 17 L56 18 L48 22 L56 24 L46 27 C34 30 18 31 10 31 Z'
+            : variant === 'stiff' ? 'M10 28 C16 21 26 19 34 21 C33 28 24 33 12 33 Z'
+              : 'M10 28 C24 20 40 18 54 20 C44 28 26 32 12 32 Z';
+      kid = h('path', { d: wd, fill: ink });
+    } else if (kind === 'tailShape') {
+      var td = variant === 'forked' ? 'M22 8 L14 46 L31 26 L48 46 L40 8 Z'
+        : variant === 'notched' ? 'M22 8 L19 42 L31 32 L43 42 L40 8 Z'
+          : variant === 'square' ? 'M22 8 L22 44 L40 44 L40 8 Z'
+            : variant === 'pointed' ? 'M22 8 L31 48 L40 8 Z'
+              : 'M22 8 L22 36 Q31 50 40 36 L40 8 Z';
+      kid = h('path', { d: td, fill: ink });
+    } else if (kind === 'tailLen') {
+      var tl = variant === 'short' ? 16 : 38;
+      kid = h('g', null, h('ellipse', { key: 'b', cx: 31, cy: 14, rx: 12, ry: 9, fill: ink }),
+        h('path', { key: 't', d: 'M24 18 L24 ' + (18 + tl) + ' L38 ' + (18 + tl) + ' L38 18 Z', fill: ink }));
+    } else if (kind === 'size') {
+      kid = h('g', { transform: 'translate(8,0)' }, birdlabSizeGlyph(h, variant));
+    } else if (kind === 'leg') {
+      var lg = variant === 'short' ? 8 : 24;
+      kid = h('g', null, h('ellipse', { key: 'b', cx: 31, cy: 44 - lg - 9, rx: 13, ry: 9, fill: ink }),
+        h('path', { key: 'l', d: 'M27 ' + (44 - lg) + ' L27 44 M35 ' + (44 - lg) + ' L35 44', stroke: ink, strokeWidth: 2.6 }));
+    } else if (kind === 'bodyShape') {
+      kid = variant === 'round' ? h('ellipse', { cx: 31, cy: 27, rx: 17, ry: 15, fill: ink })
+        : variant === 'slim' ? h('ellipse', { cx: 31, cy: 27, rx: 9, ry: 20, fill: ink })
+          : h('ellipse', { cx: 31, cy: 27, rx: 15, ry: 11, fill: ink });
+    }
+    if (!kid) return null;
+    return h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: W, height: H, 'aria-hidden': 'true' }, kid);
+  }
+  function shapeStrip(h, strip) {
+    if (!strip || !strip.items) return null;
+    return h('div', { className: 'flex flex-wrap gap-2 mb-2' },
+      strip.items.map(function(it, i) {
+        return h('div', { key: i, className: 'flex flex-col items-center rounded-lg bg-white border border-sky-100 px-2 py-1' },
+          shapeStripGlyph(h, strip.kind, it.v),
+          h('span', { className: 'text-[11px] font-bold text-slate-600 leading-none pb-1' }, it.label));
+      }));
+  }
+
+  // ── 3D WING VIEWER ───────────────────────────────────────────
+  // Wing shape is the one subject in this tool where a flat silhouette is
+  // genuinely not enough. Three things only show up in 3D:
+  //   • DROOP — how far the wings fall away from the shoulder, obvious front-on
+  //     and invisible in a silhouette. (CAMBER is deliberately NOT here: looking
+  //     along the span foreshortens the wing to nothing and the section hides
+  //     behind the leading edge, so it gets a 2D cross-section instead.)
+  //   • SLOTTED PRIMARIES — separate upswept finger feathers on a soaring wing,
+  //     which a 2D outline can only imply with notches.
+  //   • ASPECT RATIO as a real proportion you can look along, rather than a
+  //     ratio quoted in a sentence.
+  // The 2D strip stays underneath and every wing is still a button, so nothing
+  // here needs the picture — same contract the First Response body viewer uses.
+  var WING3D_SPECS = {
+    elliptical: { span: 2.5, chord: 1.15, sweep: 0.10, taper: 0.72, camber: 0.16, droop: 0.22, slots: 0, color: 0x475569 },
+    highaspect: { span: 5.2, chord: 0.60, sweep: 0.34, taper: 0.34, camber: 0.13, droop: 0.30, slots: 0, color: 0x2b5f9e },
+    soaring: { span: 4.8, chord: 1.45, sweep: 0.06, taper: 0.80, camber: 0.22, droop: 0.16, slots: 5, color: 0x7c4a1e },
+    highspeed: { span: 3.6, chord: 0.80, sweep: 0.62, taper: 0.26, camber: 0.10, droop: 0.20, slots: 0, color: 0x364259 },
+    aquatic: { span: 1.9, chord: 0.66, sweep: 0.20, taper: 0.60, camber: 0.07, droop: 0.10, slots: 0, color: 0x24384a }
+  };
+  var WING3D_PARTS = [
+    { id: 'secondaries', label: 'Inner wing (secondaries)', color: '#94a3b8' },
+    { id: 'primaries', label: 'Outer wing (primaries)', color: '#cbd5e1' },
+    { id: 'body', label: 'Body', color: '#64748b' }
+  ];
+  // One half-wing as a ribbon of segments. Each segment is a thin box rotated to
+  // follow a cambered arc, so the aerofoil curve is real geometry rather than a
+  // painted-on gradient — that is the whole reason this is 3D.
+  // Each span station is built from CHORD-WISE slats whose height follows an
+  // aerofoil arc — curved on top, flat underneath. An earlier version varied
+  // height only along the span, which is droop (dihedral), not camber; calling
+  // that "the curve that makes lift" would have been wrong, and the edge-on
+  // view is the whole reason this is 3D.
+  var WING3D_SLATS = 7;
+  function wing3dPanel(THREE, spec, mat, fromT, toT, segs) {
+    var g = new THREE.Group();
+    for (var i = 0; i < segs; i++) {
+      var t0 = fromT + (toT - fromT) * (i / segs);
+      var t1 = fromT + (toT - fromT) * ((i + 1) / segs);
+      var tm = (t0 + t1) / 2;
+      var chord = spec.chord * (1 - (1 - spec.taper) * tm);
+      var segSpan = (t1 - t0) * spec.span;
+      // Span-wise droop: the wing falls away from the shoulder.
+      var droop = -spec.droop * tm * tm;
+      for (var j = 0; j < WING3D_SLATS; j++) {
+        var zc = (j + 0.5) / WING3D_SLATS - 0.5;          // -0.5 (leading) .. +0.5
+        // Peak of the arc sits forward of centre, as on a real aerofoil.
+        var arc = Math.max(0, 1 - Math.pow((zc + 0.16) * 2.35, 2));
+        var geo = new THREE.BoxGeometry(segSpan * 1.04, 0.035 + spec.camber * chord * arc, chord / WING3D_SLATS * 1.06);
+        var slat = new THREE.Mesh(geo, mat);
+        slat.position.x = tm * spec.span;
+        slat.position.y = droop + spec.camber * chord * arc * 0.5;
+        slat.position.z = -spec.sweep * tm * spec.span * 0.5 + zc * chord;
+        g.add(slat);
+      }
+    }
+    return g;
+  }
+  function wing3dSlots(THREE, spec, mat) {
+    var g = new THREE.Group();
+    if (!spec.slots) return g;
+    for (var i = 0; i < spec.slots; i++) {
+      var f = i / Math.max(spec.slots - 1, 1);
+      var len = spec.chord * (0.85 - 0.30 * f);
+      var geo = new THREE.BoxGeometry(len, 0.035, 0.10);
+      var fin = new THREE.Mesh(geo, mat);
+      var t = 0.80 + 0.18 * f;
+      fin.position.x = t * spec.span + len * 0.42;
+      fin.position.y = -spec.droop * t * t + 0.06 * f;
+      fin.position.z = -spec.sweep * t * spec.span * 0.5 + (f - 0.5) * spec.chord * 0.62;
+      // Fingers splay outward and lift — the mark that says "soaring wing"
+      // from below, which is how a hawk is actually seen.
+      fin.rotation.y = -0.30 + 0.55 * f;
+      fin.rotation.z = 0.20 + 0.22 * f;
+      g.add(fin);
+    }
+    return g;
+  }
+  function buildWingScene(THREE, api) {
+    var sp = (api.sceneProps || {});
+    var spec = WING3D_SPECS[sp.wing] || WING3D_SPECS.soaring;
+    var secMat = api.trim(spec.color, 12);
+    var priMat = api.trim(api.contrast ? 0xffffff : 0x8b97a8, 8);
+    var bodyMat = api.trim(api.contrast ? 0xffffff : 0x2f3947, 18);
+    var meshes = {}, picks = [];
+    var root = new THREE.Group();
+
+    var body = new THREE.Mesh(new THREE.SphereGeometry(0.42, 20, 14), bodyMat);
+    body.scale.set(1, 0.85, 2.5);
+    var head = new THREE.Mesh(new THREE.SphereGeometry(0.26, 16, 12), bodyMat);
+    head.position.z = 1.12;
+    var bodyG = new THREE.Group();
+    bodyG.add(body); bodyG.add(head);
+    root.add(bodyG);
+    meshes.body = bodyG; picks.push(body);
+
+    var secG = new THREE.Group(), priG = new THREE.Group();
+    [1, -1].forEach(function(side) {
+      var inner = wing3dPanel(THREE, spec, secMat, 0.10, 0.62, 7);
+      var outer = wing3dPanel(THREE, spec, priMat, 0.62, spec.slots ? 0.82 : 1.0, 6);
+      var slots = wing3dSlots(THREE, spec, priMat);
+      [inner, outer, slots].forEach(function(g) { g.scale.x = side; });
+      secG.add(inner); priG.add(outer); priG.add(slots);
+    });
+    root.add(secG); root.add(priG);
+    meshes.secondaries = secG; meshes.primaries = priG;
+    secG.traverse(function(o) { if (o.isMesh) picks.push(o); });
+    priG.traverse(function(o) { if (o.isMesh) picks.push(o); });
+
+    api.scene.add(root);
+    return {
+      meshes: meshes, picks: picks, anchor: body,
+      // A slow yaw so the camber and the slots reveal themselves without the
+      // student having to discover the drag control first. The shell owns
+      // reduced-motion, so this simply stops when the user asks for that.
+      // No auto-spin. A continuously turning model keeps sweeping past the
+      // angle the student is trying to look at, and it made every screenshot a
+      // different arbitrary pose. The two preset buttons go straight to the
+      // views that matter instead.
+      frame: null
+    };
+  }
+  var WING3D = (function() {
+    var mk = (typeof window !== 'undefined') && window.StemLab && window.StemLab.makeBayViewer;
+    if (!mk) {
+      return { attach: function() {}, sync: function() {}, nudge: function() {},
+        zoom: function() {}, reset: function() {}, status: function() { return 'failed'; } };
+    }
+    return mk({ parts: WING3D_PARTS, buildScene: buildWingScene, home: { yaw: 0, pitch: 0.78, dist: 8.6 } });
+  })();
+  var WING3D_IDS = ['elliptical', 'highaspect', 'soaring', 'highspeed', 'aquatic'];
+  // Camber belongs in a cross-section, not in the 3D view. Looking along the
+  // span foreshortens the wing to nothing and the section hides behind the
+  // leading edge — so the aerofoil gets its own drawing, cut through the chord,
+  // with the air split over and under it.
+  function aerofoilPlate(h, camber, L) {
+    var c = Math.max(0.05, Math.min(0.30, camber));
+    var rise = 46 * c * 2.6;               // visual exaggeration, stated in the caption
+    var top = 'M18 60 Q52 ' + (60 - rise) + ' 96 56 Q150 54 176 60';
+    var bot = 'M18 60 Q60 ' + (62 + rise * 0.22) + ' 176 60';
+    return h('div', { className: 'rounded-lg bg-white border border-amber-200 p-2 mt-2' },
+      h('div', { className: 'text-[11px] font-black text-amber-900 mb-1' }, L.foilTitle),
+      h('svg', { viewBox: '0 0 190 96', width: '100%', style: { maxWidth: '250px' }, role: 'img', 'aria-label': L.foilAlt },
+        h('path', { key: 'fill', d: top + ' L18 60 Z', fill: '#fcd34d', opacity: 0.55 }),
+        h('path', { key: 'top', d: top, fill: 'none', stroke: '#92400e', strokeWidth: 2.2 }),
+        h('path', { key: 'bot', d: bot, fill: 'none', stroke: '#92400e', strokeWidth: 2.2 }),
+        // Air splits at the leading edge: the upper path is longer.
+        h('path', { key: 'a1', d: 'M2 44 Q40 ' + (56 - rise) + ' 96 ' + (50 - rise * 0.5) + ' Q150 48 188 50', fill: 'none', stroke: '#0284c7', strokeWidth: 1.6, strokeDasharray: '5 3' }),
+        h('path', { key: 'a2', d: 'M2 76 Q60 78 188 74', fill: 'none', stroke: '#0284c7', strokeWidth: 1.6, strokeDasharray: '5 3' }),
+        h('path', { key: 'ah1', d: 'M182 46 L188 50 L182 54', fill: 'none', stroke: '#0284c7', strokeWidth: 1.6 }),
+        h('path', { key: 'ah2', d: 'M182 70 L188 74 L182 78', fill: 'none', stroke: '#0284c7', strokeWidth: 1.6 }),
+        h('text', { key: 't1', x: 96, y: 18, textAnchor: 'middle', fontSize: 10, fontWeight: 900, fill: '#0369a1' }, L.foilFast),
+        h('text', { key: 't2', x: 96, y: 92, textAnchor: 'middle', fontSize: 10, fontWeight: 900, fill: '#0369a1' }, L.foilSlow),
+        h('path', { key: 'lift', d: 'M96 52 L96 28 M90 34 L96 28 L102 34', fill: 'none', stroke: '#b91c1c', strokeWidth: 2.2, strokeLinecap: 'round' }),
+        h('text', { key: 't3', x: 106, y: 36, fontSize: 10, fontWeight: 900, fill: '#b91c1c' }, L.foilLift)),
+      h('p', { className: 'text-[10px] text-slate-600 leading-snug mt-1' }, L.foilNote));
+  }
+
+  // ── BEHAVIOUR GLYPHS ─────────────────────────────────────────
+  // The behaviour glossary is 25 terms defined in one line each. Many of those
+  // definitions ARE a body shape — "spread-wing posture", "feigning injury",
+  // "up-and-down tail motion" — so they are drawn here rather than described.
+  var BG_INK = '#3f3f46', BG_SOFT = '#a1a1aa', BG_ACCENT = '#7c3aed', BG_GHOST = '#ddd6fe';
+  // One perched bird, facing right, reused so every glyph reads as the same
+  // species doing different things rather than twelve unrelated drawings.
+  function bgBase(h, opt) {
+    var o = opt || {};
+    var k = [];
+    if (o.tail !== false) k.push(h('path', { key: 'tail', d: o.tailFan ? 'M17 30 L1 24 L0 42 L19 36 Z' : 'M16 30 L2 36 L4 42 L20 36 Z', fill: BG_INK }));
+    k.push(h('ellipse', { key: 'body', cx: 30, cy: 30, rx: 15, ry: 11, fill: BG_INK }));
+    k.push(h('circle', { key: 'head', cx: 45, cy: 20, r: 8, fill: BG_INK }));
+    k.push(h('circle', { key: 'eye', cx: 47, cy: 18, r: 1.4, fill: '#fafafa' }));
+    k.push(h('path', { key: 'bill', d: 'M52 19 L61 21 L52 23 Z', fill: BG_SOFT }));
+    if (o.legs !== false) k.push(h('path', { key: 'legs', d: 'M27 40 L25 50 M36 39 L35 50', stroke: BG_INK, strokeWidth: 2, strokeLinecap: 'round' }));
+    return h('g', { transform: o.t || null }, k);
+  }
+  function bgGround(h, y) {
+    return h('path', { key: 'gr', d: 'M2 ' + y + ' L78 ' + y, stroke: BG_SOFT, strokeWidth: 2, strokeLinecap: 'round' });
+  }
+  function behaviorGlyph(h, kind) {
+    var kids = null;
+    if (kind === 'sunbathe') {
+      // Wings held OPEN and FLAT, turned to the sun, body low, tail fanned.
+      // Nothing is underneath the bird — that is what separates it from
+      // mantling, which the glossary's wording does not.
+      // Drawn from above rather than in profile: spread wings only read as
+      // spread when you can see both of them. In profile they were two small
+      // blobs either side of the body.
+      kids = [
+        h('g', { key: 'sun' },
+          h('circle', { cx: 70, cy: 9, r: 5.5, fill: '#fbbf24' }),
+          h('path', { d: 'M70 1.5 L70 0 M77.5 9 L79 9 M76 3 L77 2 M76 15 L77 16', stroke: '#f59e0b', strokeWidth: 1.6, strokeLinecap: 'round' })),
+        h('path', { key: 'wl', d: 'M32 28 C20 22 8 26 2 34 C11 41 25 39 33 35 Z', fill: BG_ACCENT, opacity: 0.9 }),
+        h('path', { key: 'wr', d: 'M46 28 C58 22 70 26 76 34 C67 41 53 39 45 35 Z', fill: BG_ACCENT, opacity: 0.9 }),
+        h('path', { key: 'tail', d: 'M32 42 L26 56 L52 56 L46 42 Z', fill: BG_INK }),
+        h('ellipse', { key: 'body', cx: 39, cy: 32, rx: 9, ry: 14, fill: BG_INK }),
+        h('circle', { key: 'head', cx: 39, cy: 15, r: 7, fill: BG_INK }),
+        h('circle', { key: 'e1', cx: 35.5, cy: 13, r: 1.3, fill: '#fafafa' }),
+        h('circle', { key: 'e2', cx: 42.5, cy: 13, r: 1.3, fill: '#fafafa' }),
+        h('path', { key: 'bill', d: 'M37 9 L39 4 L41 9 Z', fill: BG_SOFT })
+      ];
+    } else if (kind === 'mantle') {
+      // Wings arched FORWARD and DOWN into a tent, head down, body hunched
+      // OVER prey. The prey is the whole point and is drawn underneath.
+      // The prey has to stay VISIBLE. Drawn under the cloak it vanished
+      // completely, which loses the only thing separating mantling from
+      // sun-bathing — so it now protrudes at the front and back, the way a
+      // half-covered kill actually looks.
+      kids = [
+        bgGround(h, 52),
+        h('path', { key: 'cloak', d: 'M14 24 C4 34 6 48 12 51 L56 51 C62 47 62 32 52 24 C40 17 24 17 14 24 Z', fill: BG_ACCENT, opacity: 0.92 }),
+        h('ellipse', { key: 'body', cx: 33, cy: 25, rx: 15, ry: 10, fill: BG_INK }),
+        h('circle', { key: 'head', cx: 49, cy: 31, r: 7.5, fill: BG_INK }),
+        h('circle', { key: 'eye', cx: 52, cy: 29, r: 1.3, fill: '#fafafa' }),
+        h('path', { key: 'bill', d: 'M55 32 L63 35 L55 36 Z', fill: BG_SOFT }),
+        h('path', { key: 'prey', d: 'M8 47 L20 47 L20 52 L8 52 Z', fill: '#b91c1c' }),
+        h('path', { key: 'preyT', d: 'M8 47 L1 43 L1 55 L8 52 Z', fill: '#b91c1c' }),
+        h('path', { key: 'foot', d: 'M30 51 L28 55 M40 51 L39 55', stroke: '#facc15', strokeWidth: 2, strokeLinecap: 'round' })
+      ];
+    } else if (kind === 'distraction') {
+      // ONE wing splayed and dragging, the bird moving AWAY from the nest.
+      kids = [
+        bgGround(h, 50),
+        h('g', { key: 'nest' },
+          h('path', { d: 'M60 46 Q68 40 76 46 Q68 50 60 46 Z', fill: '#a16207' }),
+          h('circle', { cx: 66, cy: 44, r: 2, fill: '#fef3c7' }),
+          h('circle', { cx: 70, cy: 44.5, r: 2, fill: '#fef3c7' })),
+        h('path', { key: 'drag', d: 'M28 30 C18 34 10 44 8 50 C18 50 28 42 32 34 Z', fill: BG_ACCENT, opacity: 0.9 }),
+        bgBase(h, { t: 'translate(0,6) scale(0.8)', legs: false, tailFan: true }),
+        h('path', { key: 'arrow', d: 'M40 12 L22 12 M26 8 L22 12 L26 16', stroke: BG_ACCENT, strokeWidth: 1.8, fill: 'none', strokeLinecap: 'round' })
+      ];
+    } else if (kind === 'tailbob') {
+      kids = [
+        h('path', { key: 'perch', d: 'M2 48 L78 48', stroke: BG_SOFT, strokeWidth: 2.5, strokeLinecap: 'round' }),
+        h('path', { key: 'ghost', d: 'M16 30 L2 20 L4 26 L20 34 Z', fill: BG_GHOST }),
+        bgBase(h, { t: 'translate(2,6) scale(0.86)' }),
+        h('path', { key: 'arc', d: 'M8 40 Q2 32 8 24', stroke: BG_ACCENT, strokeWidth: 1.8, fill: 'none', strokeLinecap: 'round' }),
+        h('path', { key: 'ah', d: 'M5 25 L8 23 L10 27 M5 39 L8 41 L10 37', stroke: BG_ACCENT, strokeWidth: 1.6, fill: 'none', strokeLinecap: 'round' })
+      ];
+    } else if (kind === 'wingflick') {
+      kids = [
+        h('path', { key: 'perch', d: 'M2 48 L78 48', stroke: BG_SOFT, strokeWidth: 2.5, strokeLinecap: 'round' }),
+        h('path', { key: 'ghost', d: 'M28 26 C20 16 12 14 6 16 C14 24 22 28 30 30 Z', fill: BG_GHOST }),
+        bgBase(h, { t: 'translate(2,6) scale(0.86)' }),
+        h('path', { key: 'wing', d: 'M26 30 C20 26 14 26 10 28 C16 32 22 34 28 34 Z', fill: BG_ACCENT, opacity: 0.9 }),
+        h('path', { key: 'arc', d: 'M12 22 Q8 26 12 30', stroke: BG_ACCENT, strokeWidth: 1.6, fill: 'none', strokeLinecap: 'round' })
+      ];
+    } else if (kind === 'mobbing') {
+      // Small birds converging on a much larger perched predator.
+      // Predator pulled smaller and centred so the mobbers have room. Drawn
+      // first as corner specks, this read as a single bird — the harassment,
+      // which is the actual definition, was invisible.
+      kids = [
+        h('ellipse', { key: 'pb', cx: 38, cy: 36, rx: 13, ry: 11, fill: BG_INK }),
+        h('circle', { key: 'ph', cx: 48, cy: 27, r: 7.5, fill: BG_INK }),
+        h('path', { key: 'pk', d: 'M55 25 Q60 26 57 31 Q55 28 54 28 Z', fill: '#facc15' }),
+        h('circle', { key: 'pe', cx: 50, cy: 25, r: 1.5, fill: '#facc15' }),
+        h('path', { key: 'pt', d: 'M26 38 L12 46 L16 51 L30 43 Z', fill: BG_INK }),
+        // Gull-wing strokes read as birds in flight at this size where a
+        // filled body does not.
+        [[6, 12, 1], [58, 10, -1], [62, 48, -1], [8, 48, 1]].map(function(p, i) {
+          return h('g', { key: 'm' + i, transform: 'translate(' + p[0] + ',' + p[1] + ')' },
+            h('path', {
+              d: 'M0 4 Q6 -4 11 3 Q16 -4 22 4',
+              fill: 'none', stroke: BG_ACCENT, strokeWidth: 2.6, strokeLinecap: 'round'
+            }),
+            h('path', {
+              d: p[2] > 0 ? 'M14 9 L20 13' : 'M8 9 L2 13',
+              stroke: BG_ACCENT, strokeWidth: 1.6, strokeLinecap: 'round', opacity: 0.7
+            }));
+        })
+      ];
+    } else if (kind === 'caching') {
+      kids = [
+        h('rect', { key: 'bark', x: 2, y: 2, width: 18, height: 54, fill: '#a16207', opacity: 0.5 }),
+        h('path', { key: 'cr', d: 'M8 16 L16 18 M8 30 L16 32 M8 44 L16 46', stroke: '#78350f', strokeWidth: 1.6 }),
+        h('circle', { key: 's1', cx: 12, cy: 17, r: 2.4, fill: '#ca8a04' }),
+        h('circle', { key: 's2', cx: 12, cy: 45, r: 2.4, fill: '#ca8a04' }),
+        h('g', { key: 'bird', transform: 'translate(78,4) scale(-0.82,0.82)' }, bgBase(h, { legs: false })),
+        h('circle', { key: 'seed', cx: 20, cy: 31, r: 3, fill: '#eab308', stroke: '#78350f', strokeWidth: 0.8 })
+      ];
+    } else if (kind === 'sentinel') {
+      // One bird up and looking out while the others have heads down.
+      // The contrast IS the definition: one bird up high with its head UP,
+      // the others down with their bills in the ground. Drawn explicitly —
+      // rotating the shared body by 28 degrees just made it look like debris.
+      kids = [
+        bgGround(h, 54),
+        h('path', { key: 'post', d: 'M58 54 L58 26', stroke: BG_SOFT, strokeWidth: 3, strokeLinecap: 'round' }),
+        // Sentinel: upright, head raised, scanning
+        h('g', { key: 'watch' },
+          h('path', { d: 'M52 24 L44 30 L47 33 L55 28 Z', fill: BG_ACCENT }),
+          h('ellipse', { cx: 58, cy: 20, rx: 8, ry: 7, fill: BG_ACCENT }),
+          h('circle', { cx: 62, cy: 12, r: 5, fill: BG_ACCENT }),
+          h('circle', { cx: 64, cy: 11, r: 1.1, fill: '#fafafa' }),
+          h('path', { d: 'M66 11 L73 13 L66 14 Z', fill: BG_SOFT }),
+          h('path', { d: 'M72 8 L78 6', stroke: BG_ACCENT, strokeWidth: 1.6, strokeLinecap: 'round', opacity: 0.8 })),
+        // Two feeders, heads down, bills at the ground
+        [4, 26].map(function(x, i) {
+          return h('g', { key: 'f' + i, transform: 'translate(' + x + ',0)' },
+            h('path', { d: 'M2 38 L-2 34 L-1 42 Z', fill: BG_INK }),
+            h('ellipse', { cx: 11, cy: 40, rx: 10, ry: 7.5, fill: BG_INK }),
+            h('circle', { cx: 19, cy: 47, r: 5, fill: BG_INK }),
+            h('circle', { cx: 20, cy: 45, r: 1.1, fill: '#fafafa' }),
+            h('path', { d: 'M21 50 L24 54 L18 52 Z', fill: BG_SOFT }));
+        })
+      ];
+    } else if (kind === 'brood') {
+      // The size mismatch is the whole story: an oversized nestling being fed
+      // by a much smaller host parent.
+      kids = [
+        h('path', { key: 'nest', d: 'M10 54 Q8 38 30 36 Q52 38 50 54 Z', fill: '#a16207', opacity: 0.55, stroke: '#78350f', strokeWidth: 1 }),
+        h('ellipse', { key: 'chick', cx: 30, cy: 30, rx: 15, ry: 14, fill: BG_ACCENT }),
+        h('path', { key: 'gape', d: 'M30 18 L44 12 L44 24 Z', fill: '#f97316' }),
+        h('circle', { key: 'ce', cx: 26, cy: 24, r: 1.8, fill: '#fafafa' }),
+        h('g', { key: 'parent', transform: 'translate(46,4) scale(0.45)' }, bgBase(h, { legs: false }))
+      ];
+    } else if (kind === 'lekking') {
+      kids = [
+        bgGround(h, 52),
+        // Three males in display posture — chest puffed, tail cocked UP and
+        // fanned — with a female watching. Small identical blobs in a row read
+        // as nothing at all.
+        [2, 22, 42].map(function(x, i) {
+          return h('g', { key: 'm' + i, transform: 'translate(' + x + ',0)' },
+            h('path', { d: 'M4 34 L1 16 L15 22 L12 36 Z', fill: BG_ACCENT }),
+            h('ellipse', { cx: 15, cy: 38, rx: 10, ry: 9, fill: BG_ACCENT }),
+            h('circle', { cx: 23, cy: 29, r: 5.5, fill: BG_ACCENT }),
+            h('circle', { cx: 25, cy: 28, r: 1.1, fill: '#fafafa' }),
+            h('path', { d: 'M28 28 L34 30 L28 31 Z', fill: BG_SOFT }),
+            h('path', { d: 'M13 47 L12 52 M18 47 L18 52', stroke: BG_ACCENT, strokeWidth: 1.6, strokeLinecap: 'round' }));
+        }),
+        h('g', { key: 'fem', transform: 'translate(62,24) scale(0.38)' }, bgBase(h, { legs: false }))
+      ];
+    } else if (kind === 'anting') {
+      kids = [
+        bgGround(h, 52),
+        h('path', { key: 'hill', d: 'M18 52 Q34 36 50 52 Z', fill: '#a16207', opacity: 0.5 }),
+        h('path', { key: 'wl', d: 'M24 32 C14 30 8 36 6 44 C14 44 22 40 26 36 Z', fill: BG_ACCENT, opacity: 0.85 }),
+        h('path', { key: 'wr', d: 'M36 32 C46 30 52 36 54 44 C46 44 38 40 34 36 Z', fill: BG_ACCENT, opacity: 0.85 }),
+        bgBase(h, { t: 'translate(2,12) scale(0.78)', legs: false, tailFan: true }),
+        [[12, 40], [52, 38], [30, 52], [60, 46]].map(function(p, i) {
+          return h('circle', { key: 'a' + i, cx: p[0], cy: p[1], r: 1.6, fill: '#7f1d1d' });
+        })
+      ];
+    } else if (kind === 'preen') {
+      // Head turned right back, bill working into the wing feathers.
+      kids = [
+        h('path', { key: 'perch', d: 'M2 50 L78 50', stroke: BG_SOFT, strokeWidth: 2.5, strokeLinecap: 'round' }),
+        h('path', { key: 'tail', d: 'M18 28 L4 34 L6 40 L22 34 Z', fill: BG_INK }),
+        h('ellipse', { key: 'body', cx: 34, cy: 28, rx: 16, ry: 12, fill: BG_INK }),
+        h('circle', { key: 'head', cx: 44, cy: 16, r: 7.5, fill: BG_INK }),
+        h('circle', { key: 'eye', cx: 47, cy: 14, r: 1.3, fill: '#fafafa' }),
+        h('path', { key: 'bill', d: 'M40 21 L32 30 L38 24 Z', fill: BG_SOFT }),
+        h('path', { key: 'wing', d: 'M24 26 C32 24 42 28 44 34 C34 36 26 32 22 30 Z', fill: BG_ACCENT, opacity: 0.85 }),
+        h('path', { key: 'legs', d: 'M30 40 L28 50 M40 39 L39 50', stroke: BG_INK, strokeWidth: 2, strokeLinecap: 'round' })
+      ];
+    }
+    if (!kids) return null;
+    return h('svg', { viewBox: '0 0 80 58', width: 80, height: 58, 'aria-hidden': 'true', style: { flexShrink: 0 } }, kids);
+  }
+  var BEHAVIOR_GLYPH_FOR = {
+    'Mobbing': 'mobbing', 'Caching': 'caching', 'Distraction display': 'distraction',
+    'Sentinel behavior': 'sentinel', 'Sun-bathing': 'sunbathe', 'Anting': 'anting',
+    'Mantling': 'mantle', 'Tail-bobbing': 'tailbob', 'Wing-flicking': 'wingflick',
+    'Brood parasitism': 'brood', 'Lekking': 'lekking', 'Post-flight preening': 'preen'
+  };
+  // Sun-bathing, mantling and the distraction display are all "wings out" and
+  // the glossary gives the first two the SAME three words — "Spread-wing
+  // posture" — with nothing to tell them apart in the field. This plate exists
+  // to answer that, so it leads the view.
+  function spreadWingPlate(h, L) {
+    return h('div', { className: 'rounded-xl bg-white border-2 border-violet-200 p-3 mb-4' },
+      h('h3', { className: 'text-sm font-black text-violet-900 mb-1' }, L.spreadTitle),
+      h('p', { className: 'text-[11px] text-slate-600 mb-2' }, L.spreadIntro),
+      h('div', { className: 'flex flex-wrap gap-3' },
+        [
+          { k: 'sunbathe', n: L.sunName, d: L.sunNote },
+          { k: 'mantle', n: L.mantleName, d: L.mantleNote },
+          { k: 'distraction', n: L.distName, d: L.distNote }
+        ].map(function(c, i) {
+          return h('div', { key: i, className: 'flex-1 min-w-[150px] rounded-lg bg-violet-50 border border-violet-200 p-2 text-center' },
+            h('div', { className: 'flex justify-center' }, behaviorGlyph(h, c.k)),
+            h('div', { className: 'text-[11px] font-black text-violet-900 mt-1' }, c.n),
+            h('div', { className: 'text-[10px] text-slate-700 leading-snug' }, c.d));
+        })));
+  }
+
+  // ── IRRUPTION ART ────────────────────────────────────────────
+  // "Some winters bring spectacular numbers; other winters very few" is the
+  // whole concept the Irruptive Visitors view is named for, and it was a
+  // sentence where a chart belongs. This diagram is deliberately SCHEMATIC and
+  // says so on its face: inventing per-species counts per winter would be
+  // fabricating survey data, and the pattern is the teachable part anyway.
+  var IRRUPT_REGULAR = [58, 62, 55, 64, 57, 60, 54, 63, 59, 61];
+  var IRRUPT_SPIKY = [8, 6, 92, 10, 5, 78, 7, 9, 88, 6];
+  // Poor northern seed crop in exactly the winters the birds move south, which
+  // is the causal link the prose states but never shows.
+  var IRRUPT_CROP = [1, 1, 0, 1, 1, 0, 1, 1, 0, 1];
+  function irruptRow(h, values, color, label, y0) {
+    var bw = 26, gap = 8, h0 = 54;
+    return values.map(function(v, i) {
+      var bh = Math.max(2, Math.round(h0 * v / 100));
+      return h('rect', {
+        key: label + i, x: 40 + i * (bw + gap), y: y0 + (h0 - bh),
+        width: bw, height: bh, rx: 2, fill: color
+      });
+    });
+  }
+  function irruptionChart(h, L) {
+    var bw = 26, gap = 8, W = 40 + 10 * (bw + gap) + 6;
+    return h('div', { className: 'rounded-xl bg-white border-2 border-indigo-200 p-3 mb-4' },
+      h('h3', { className: 'text-sm font-black text-indigo-900 mb-1' }, L.chartTitle),
+      h('div', { style: { overflowX: 'auto' } },
+        h('svg', { viewBox: '0 0 ' + W + ' 208', width: '100%', style: { minWidth: '360px', maxWidth: '520px' }, role: 'img', 'aria-label': L.chartAlt },
+          // Regular visitor — steady every winter
+          h('text', { key: 'l1', x: 0, y: 14, fontSize: 11, fontWeight: 700, fill: '#334155' }, L.rowRegular),
+          irruptRow(h, IRRUPT_REGULAR, '#94a3b8', 'reg', 20),
+          h('line', { key: 'b1', x1: 38, y1: 74, x2: W - 4, y2: 74, stroke: '#cbd5e1', strokeWidth: 1 }),
+          // Irruptive visitor — nothing, then flood
+          h('text', { key: 'l2', x: 0, y: 100, fontSize: 11, fontWeight: 700, fill: '#3730a3' }, L.rowIrruptive),
+          irruptRow(h, IRRUPT_SPIKY, '#6366f1', 'irr', 106),
+          h('line', { key: 'b2', x1: 38, y1: 160, x2: W - 4, y2: 160, stroke: '#cbd5e1', strokeWidth: 1 }),
+          // The driver, aligned under the spikes
+          h('text', { key: 'l3', x: 0, y: 180, fontSize: 11, fontWeight: 700, fill: '#166534' }, L.rowCrop),
+          IRRUPT_CROP.map(function(good, i) {
+            return h('g', { key: 'c' + i },
+              h('rect', {
+                x: 40 + i * (bw + gap), y: 186, width: bw, height: 14, rx: 2,
+                fill: good ? '#86efac' : '#fca5a5', stroke: good ? '#15803d' : '#b91c1c', strokeWidth: 0.8
+              }),
+              h('text', { x: 40 + i * (bw + gap) + bw / 2, y: 197, textAnchor: 'middle', fontSize: 9, fontWeight: 900, fill: good ? '#14532d' : '#7f1d1d' }, good ? '✓' : '✗'));
+          }))),
+      h('p', { className: 'text-[11px] text-slate-600 leading-snug mt-2' }, L.chartNote));
+  }
+  // The crossed bill is the clearest case in this view of something words
+  // cannot convey: "crossed-mandible bill for prying open cone scales" is
+  // accurate and still unpicturable. Two panels — the bill itself, and what it
+  // does — because the crossing only makes sense once you see it lever.
+  function crossbillArt(h, L) {
+    // Zoomed to the bill, because the bill IS the subject. At head scale the
+    // two mandibles were thin slivers that overlapped into a single grey wedge,
+    // which hid the one thing the diagram exists to show.
+    function billPanel(open) {
+      // Upper mandible tip curves DOWN and past the lower; lower tip curves UP
+      // and past the upper. Where they overlap is the cross. Opening drives
+      // the tips further apart in opposite directions — that is the lever.
+      var s = open ? 8 : 0;
+      var upTip = 55 + s, loTip = 17 - s;
+      return h('g', null,
+        // Cone scales, well clear of the tips so the crossing is not hidden
+        h('path', {
+          key: 'cone',
+          d: 'M132 12 L166 6 L166 26 L132 30 Z M132 34 L166 30 L166 50 L132 46 Z M132 52 L166 54 L166 74 L132 64 Z',
+          fill: '#a16207', opacity: 0.4, stroke: '#78350f', strokeWidth: 0.8
+        }),
+        open ? h('path', { key: 'lift', d: 'M128 26 L164 14 L166 26 L130 40 Z', fill: '#ca8a04', stroke: '#78350f', strokeWidth: 1 }) : null,
+        h('circle', { key: 'head', cx: 22, cy: 40, r: 18, fill: '#d97706' }),
+        h('circle', { key: 'eye', cx: 30, cy: 33, r: 2.3, fill: '#1c1917' }),
+        // Third attempt, and the one that works. Two shafts running parallel
+        // and then diverging read as a hooked bill however they are drawn,
+        // because the crossing has no angle. Instead the shared base ENDS at
+        // x=88 and two short blades leave it at opposing angles, crossing at
+        // roughly x=94. A crossing needs an angle, not just an overlap.
+        h('path', { key: 'base', d: 'M40 28 L88 34 L88 50 L40 52 Z', fill: '#44403c' }),
+        h('path', {
+          key: 'upper',
+          d: 'M88 31 L120 ' + upTip + ' L115 ' + (upTip + 5) + ' L86 38 Z',
+          fill: '#44403c'
+        }),
+        h('path', {
+          key: 'lower',
+          d: 'M86 44 L122 ' + loTip + ' L127 ' + (loTip + 6) + ' L88 51 Z',
+          fill: '#e7e5e4', stroke: '#292524', strokeWidth: 1.4, strokeLinejoin: 'round'
+        }),
+        open ? h('g', { key: 'arr' },
+          h('path', { d: 'M118 80 L118 70 L114 74 M118 70 L122 74', stroke: '#b91c1c', strokeWidth: 1.8, fill: 'none', strokeLinecap: 'round' }),
+          h('path', { d: 'M118 4 L118 14 L114 10 M118 14 L122 10', stroke: '#b91c1c', strokeWidth: 1.8, fill: 'none', strokeLinecap: 'round' })) : null);
+    }
+    return h('div', { className: 'rounded-lg bg-white border border-indigo-200 p-3 mb-3' },
+      h('div', { className: 'flex flex-wrap gap-3 items-start' },
+        h('div', { className: 'flex-1 text-center', style: { minWidth: '160px' } },
+          h('svg', { viewBox: '0 0 172 88', width: '100%', style: { maxWidth: '220px' }, 'aria-hidden': 'true' }, billPanel(false)),
+          h('div', { className: 'text-[11px] font-black text-indigo-900' }, L.crossClosed),
+          h('div', { className: 'text-[10px] text-slate-600 leading-snug' }, L.crossClosedNote)),
+        h('div', { className: 'flex-1 text-center', style: { minWidth: '160px' } },
+          h('svg', { viewBox: '0 0 172 88', width: '100%', style: { maxWidth: '220px' }, 'aria-hidden': 'true' }, billPanel(true)),
+          h('div', { className: 'text-[11px] font-black text-indigo-900' }, L.crossOpen),
+          h('div', { className: 'text-[10px] text-slate-600 leading-snug' }, L.crossOpenNote))),
+      // The two crossbills sit next to each other in this list and the prose
+      // never gives the mark that separates them.
+      h('div', { className: 'flex flex-wrap gap-2 mt-2 pt-2 border-t border-indigo-100' },
+        [
+          { wing: true, label: L.crossWhiteWinged, fill: '#f1f5f9' },
+          { wing: false, label: L.crossRed, fill: '#fca5a5' }
+        ].map(function(w, i) {
+          return h('div', { key: i, className: 'flex items-center gap-2 rounded bg-slate-50 border border-slate-200 px-2 py-1' },
+            h('svg', { viewBox: '0 0 66 38', width: 66, height: 38, 'aria-hidden': 'true', style: { flexShrink: 0 } },
+              h('path', { d: 'M6 26 C14 10 40 6 60 14 C46 30 20 34 6 26 Z', fill: '#3f3f46' }),
+              w.wing ? h('g', null,
+                h('path', { d: 'M13 22 C23 14 38 12 52 16', stroke: '#f8fafc', strokeWidth: 3.2, fill: 'none', strokeLinecap: 'round' }),
+                h('path', { d: 'M12 27 C22 21 38 19 51 22', stroke: '#f8fafc', strokeWidth: 3.2, fill: 'none', strokeLinecap: 'round' })) : null),
+            h('span', { className: 'text-[11px] font-bold text-slate-700' }, w.label));
+        })));
+  }
+  // Bohemian vs Cedar Waxwing. The prose offered "gray rump", which both birds
+  // roughly share; the reliable marks are the undertail coverts (rusty vs
+  // white), the wing markings, and the belly colour. Drawn side by side with
+  // the undertail called out, since that is the one birders actually use.
+  function waxwingPlate(h, L) {
+    function bird(rusty, label) {
+      // Bohemian is greyer; Cedar is warmer brown with a yellow belly wash.
+      var bodyFill = rusty ? '#9ca3af' : '#b08d57';
+      var headFill = rusty ? '#a8a29e' : '#c9a06b';
+      return h('g', null,
+        // Tail first so the body overlaps it, with the yellow tip band every
+        // waxwing carries.
+        h('path', { key: 'tail', d: 'M30 52 L5 62 L8 70 L34 60 Z', fill: rusty ? '#71717a' : '#8a6f45' }),
+        h('path', { key: 'tip', d: 'M5 62 L8 70 L14 67.5 L11 59.5 Z', fill: '#facc15' }),
+        h('ellipse', { key: 'body', cx: 52, cy: 46, rx: 27, ry: 17, transform: 'rotate(-8 52 46)', fill: bodyFill }),
+        // Belly wash — pale yellow on the Cedar only, kept low on the body so
+        // it reads as a belly rather than recolouring the whole bird.
+        rusty ? null : h('path', { key: 'belly', d: 'M34 52 Q52 62 72 50 Q52 58 34 52 Z', fill: '#fde047', opacity: 0.95 }),
+        // Folded wing
+        h('path', { key: 'wing', d: 'M34 40 Q54 43 64 53 Q46 57 32 49 Z', fill: rusty ? '#71717a' : '#8a6f45', opacity: 0.9 }),
+        // Bohemian's bold white + yellow wing marks; Cedar's wing is plain.
+        rusty ? h('g', { key: 'wm' },
+          h('path', { d: 'M40 45 L57 50', stroke: '#f8fafc', strokeWidth: 3, strokeLinecap: 'round' }),
+          h('path', { d: 'M38 50 L52 54', stroke: '#fde047', strokeWidth: 2.4, strokeLinecap: 'round' })) : null,
+        h('circle', { key: 'head', cx: 78, cy: 34, r: 13, fill: headFill }),
+        // Swept-back crest, the waxwing silhouette mark
+        h('path', { key: 'crest', d: 'M72 23 Q78 10 90 12 Q82 20 76 28 Z', fill: headFill }),
+        // Black mask through the eye, angled down to the bill
+        h('path', { key: 'mask', d: 'M74 29 L92 33 L92 38 L74 35 Z', fill: '#1c1917' }),
+        h('circle', { key: 'eye', cx: 82, cy: 33.5, r: 1.7, fill: '#f8fafc' }),
+        h('path', { key: 'bill', d: 'M90 33 L99 35.5 L90 38 Z', fill: '#3f3f46' }),
+        // THE mark: undertail coverts, at the vent where the tail meets the
+        // body. Drawn as a wedge rather than a free-floating oval — an isolated
+        // white ellipse on a bird reads as an eye.
+        h('path', { key: 'utc', d: 'M30 54 Q40 52 44 59 Q36 64 28 61 Z', fill: rusty ? '#c2410c' : '#f8fafc', stroke: '#44403c', strokeWidth: 0.9 }),
+        h('line', { key: 'ldr', x1: 36, y1: 63, x2: 44, y2: 76, stroke: '#44403c', strokeWidth: 1 }),
+        h('text', { key: 'lbl', x: 46, y: 79, fontSize: 8.5, fontWeight: 900, fill: '#44403c' }, label));
+    }
+    return h('div', { className: 'rounded-lg bg-white border border-indigo-200 p-3 mb-3' },
+      h('div', { className: 'flex flex-wrap gap-3' },
+        [{ r: true, n: L.waxBohemian, d: L.waxBohemianNote, t: L.waxTagRusty },
+          { r: false, n: L.waxCedar, d: L.waxCedarNote, t: L.waxTagWhite }].map(function(b, i) {
+          return h('div', { key: i, className: 'flex-1 min-w-[160px] text-center' },
+            h('svg', { viewBox: '0 0 110 86', width: '100%', style: { maxWidth: '190px' }, 'aria-hidden': 'true' }, bird(b.r, b.t)),
+            h('div', { className: 'text-[11px] font-black text-indigo-900' }, b.n),
+            h('div', { className: 'text-[10px] text-slate-600 leading-snug' }, b.d));
+        })),
+      h('p', { className: 'text-[11px] text-slate-700 font-bold mt-1 pt-2 border-t border-indigo-100' }, L.waxKey));
+  }
+
+  // ── FIELD-SKETCHING ART ──────────────────────────────────────
+  // The drawing view taught sketching entirely in prose: "capture posture and
+  // proportions first", "after basic shape add bill, eye, wing pattern, tail
+  // shape, feet" — a lesson about drawing, with nothing drawn. These helpers
+  // show the steps instead of asserting them.
+  //
+  // PENCIL, NOT INK: stroke-only in graphite grey, no fills, so it reads as a
+  // field sketch a learner could plausibly match rather than finished artwork
+  // they cannot. Construction ovals stay visible and lighter, the way they do
+  // on real paper before erasing.
+  var SKETCH_INK = '#57534e', SKETCH_GUIDE = '#a8a29e', SKETCH_MARK = '#b45309';
+  // One perched bird, shared by the step strip and the detail-order plate, so
+  // the "finished" sketch in step 4 IS the sketch the callouts point at.
+  function sketchParts(h) {
+    var st = { fill: 'none', stroke: SKETCH_INK, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' };
+    function ln(k, d, o) { var p = { key: k, d: d, fill: 'none', stroke: st.stroke, strokeWidth: st.strokeWidth, strokeLinecap: 'round', strokeLinejoin: 'round' }; if (o) { for (var q in o) p[q] = o[q]; } return h('path', p); }
+    return {
+      // Step 1 — the two construction ovals. Head radius 16 against a body of
+      // rx 32 is the ~1:2 ratio the caption claims, so the drawing and the
+      // words agree.
+      bodyOval: h('ellipse', { key: 'bo', cx: 62, cy: 90, rx: 32, ry: 24, transform: 'rotate(-20 62 90)', fill: 'none', stroke: SKETCH_GUIDE, strokeWidth: 1.8, strokeDasharray: '4 3' }),
+      headOval: h('ellipse', { key: 'ho', cx: 104, cy: 52, rx: 16, ry: 16, fill: 'none', stroke: SKETCH_GUIDE, strokeWidth: 1.8, strokeDasharray: '4 3' }),
+      // Step 2 — posture axis through the body's long axis, extended past both
+      // ends. This is the line the caption calls a field mark.
+      axis: h('path', { key: 'ax', d: 'M8 110 L118 70', fill: 'none', stroke: SKETCH_MARK, strokeWidth: 1.8, strokeDasharray: '7 4', opacity: 0.85 }),
+      neck: h('g', { key: 'nk' }, ln('n1', 'M92 40 Q80 54 66 66'), ln('n2', 'M97 66 Q95 73 88 78')),
+      outline: h('g', { key: 'ol' },
+        h('ellipse', { key: 'b', cx: 62, cy: 90, rx: 32, ry: 24, transform: 'rotate(-20 62 90)', fill: 'none', stroke: SKETCH_INK, strokeWidth: 2 }),
+        h('circle', { key: 'h', cx: 104, cy: 52, r: 16, fill: 'none', stroke: SKETCH_INK, strokeWidth: 2 })),
+      // Step 3 — the five details, in the order the text lists them.
+      bill: ln('bl', 'M118 46 L140 52 L118 57'),
+      eye: h('circle', { key: 'ey', cx: 110, cy: 47, r: 2.4, fill: SKETCH_INK }),
+      tail: ln('tl', 'M34 98 L6 116 L12 126 L44 108'),
+      legs: h('g', { key: 'lg' }, ln('l1', 'M60 113 L57 133'), ln('l2', 'M74 110 L72 133'),
+        ln('f1', 'M50 134 L57 133 L64 137', { strokeWidth: 1.6 }), ln('f2', 'M65 134 L72 133 L79 137', { strokeWidth: 1.6 })),
+      // Step 4 — wing line, then the plumage marks that go on last.
+      wing: ln('wg', 'M50 76 Q78 82 86 100 Q64 106 44 94'),
+      marks: h('g', { key: 'mk' }, ln('m1', 'M55 88 L76 93', { stroke: SKETCH_MARK, strokeWidth: 2.4 }),
+        ln('m2', 'M99 44 L120 47', { stroke: SKETCH_MARK, strokeWidth: 2.4 })),
+      // Graphite version of the same marks, for the journal page: that page
+      // argues colour belongs in written notes rather than on the drawing, so
+      // its own sketch had better not be the one coloured-in exception.
+      marksPencil: h('g', { key: 'mkp' }, ln('m1', 'M55 88 L76 93', { strokeWidth: 1.6 }),
+        ln('m2', 'M99 44 L120 47', { strokeWidth: 1.6 }))
+    };
+  }
+  // Cumulative build: every panel redraws the panels before it, so the strip
+  // reads as one drawing growing rather than four unrelated pictures.
+  function sketchStepPanel(h, step) {
+    var p = sketchParts(h), kids = [];
+    if (step === 1) { kids.push(p.bodyOval, p.headOval); }
+    if (step >= 2) {
+      kids.push(h('g', { key: 'faint', opacity: step === 2 ? 0.9 : 0.35 }, p.bodyOval, p.headOval));
+      // The axis is scaffolding and is dropped by step 4, where amber means a
+      // plumage mark instead. Leaving both on at once put a construction guide
+      // and a field mark in the same colour, saying two different things.
+      if (step < 4) kids.push(p.axis);
+      kids.push(p.outline, p.neck);
+    }
+    if (step >= 3) { kids.push(p.bill, p.eye, p.tail, p.legs); }
+    if (step >= 4) { kids.push(p.wing, p.marks); }
+    return h('svg', { viewBox: '0 0 150 148', width: '100%', 'aria-hidden': 'true', style: { maxWidth: '150px' } }, kids);
+  }
+  function sketchStepStrip(h, L) {
+    var steps = [1, 2, 3, 4];
+    return h('div', { className: 'flex flex-wrap gap-2 mb-3' },
+      steps.map(function(n) {
+        return h('div', { key: n, className: 'flex-1 min-w-[130px] rounded-lg bg-white border border-amber-200 p-2' },
+          h('div', { className: 'flex items-center gap-1.5 mb-1' },
+            h('span', { className: 'inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-600 text-white text-[11px] font-black' }, n),
+            h('span', { className: 'text-[11px] font-black text-amber-900 leading-tight' }, L.stepTitles[n - 1])),
+          sketchStepPanel(h, n),
+          h('div', { className: 'text-[10px] text-slate-600 leading-snug mt-1' }, L.stepNotes[n - 1]));
+      }));
+  }
+  // Detail order — same bird, numbered in the exact sequence the prose gives
+  // (bill, eye, wing pattern, tail shape, feet). Badges sit clear of the art
+  // with leader lines back to the part, for the same reason the topography
+  // hotspots do: a number sitting on top of the mark hides the mark.
+  var SKETCH_CALLOUTS = [
+    { ax: 130, ay: 51, bx: 141, by: 26 },
+    { ax: 110, ay: 47, bx: 113, by: 16 },
+    { ax: 70, ay: 92, bx: 106, by: 92 },
+    { ax: 16, ay: 118, bx: 13, by: 84 },
+    { ax: 64, ay: 136, bx: 100, by: 136 }
+  ];
+  function sketchDetailPlate(h, labels) {
+    var p = sketchParts(h);
+    return h('svg', { viewBox: '0 0 156 152', width: '100%', 'aria-hidden': 'true', style: { maxWidth: '260px' } },
+      // Marks are graphite here, never amber: on this plate amber means "a
+      // callout is pointing at this". With both in amber, callout 3's leader
+      // line ran collinear into the wingbar and read as one long stroke
+      // crossing the bird, and the eye callout's anchor dot disappeared into
+      // the eyeline.
+      h('g', { key: 'art', opacity: 0.9 }, p.outline, p.neck, p.bill, p.eye, p.tail, p.legs, p.wing, p.marksPencil),
+      SKETCH_CALLOUTS.map(function(c, i) {
+        return h('g', { key: i },
+          h('line', { x1: c.bx, y1: c.by, x2: c.ax, y2: c.ay, stroke: SKETCH_MARK, strokeWidth: 1.3, opacity: 0.7 }),
+          h('circle', { cx: c.ax, cy: c.ay, r: 2.4, fill: SKETCH_MARK }),
+          h('circle', { cx: c.bx, cy: c.by, r: 9.5, fill: '#fef3c7', stroke: SKETCH_MARK, strokeWidth: 1.8 }),
+          h('text', { x: c.bx, y: c.by + 3.5, textAnchor: 'middle', fontSize: 10, fontWeight: 900, fill: '#7c2d12' }, (i + 1).toString()));
+      }),
+      h('title', { key: 't' }, labels));
+  }
+  // The three postures the prose names by name. The dashed line is the body
+  // axis — that angle is the thing being taught, so it is drawn, not implied.
+  function posturePanel(h, kind) {
+    var st = { fill: 'none', stroke: SKETCH_INK, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' };
+    function ln(k, d) { return h('path', { key: k, d: d, fill: 'none', stroke: st.stroke, strokeWidth: st.strokeWidth, strokeLinecap: 'round', strokeLinejoin: 'round' }); }
+    function axis(d) { return h('path', { key: 'ax', d: d, fill: 'none', stroke: SKETCH_MARK, strokeWidth: 2, strokeDasharray: '7 4' }); }
+    var kids;
+    if (kind === 'woodpecker') {
+      kids = [
+        h('rect', { key: 'tr', x: 6, y: 2, width: 24, height: 106, fill: 'none', stroke: SKETCH_GUIDE, strokeWidth: 1.8 }),
+        h('path', { key: 'bk', d: 'M14 16 L14 96 M23 24 L23 88', fill: 'none', stroke: SKETCH_GUIDE, strokeWidth: 1.2 }),
+        h('ellipse', { key: 'b', cx: 48, cy: 60, rx: 13, ry: 28, fill: 'none', stroke: SKETCH_INK, strokeWidth: 2 }),
+        h('circle', { key: 'h', cx: 46, cy: 28, r: 10, fill: 'none', stroke: SKETCH_INK, strokeWidth: 2 }),
+        // Chisel bill, short and blunt, driven into the trunk — the reason the
+        // whole posture exists.
+        ln('bill', 'M37 25 L18 29 L37 31'),
+        h('circle', { key: 'e', cx: 49, cy: 24, r: 1.9, fill: SKETCH_INK }),
+        // Stiff tail as a wedge propped on the bark, not a thin tick: it is the
+        // third leg of the tripod the caption describes.
+        ln('tail', 'M42 84 L28 106 L40 108 L54 88'),
+        ln('feet', 'M35 50 L28 47 M35 68 L28 66'),
+        axis('M50 104 L44 14')
+      ];
+    } else if (kind === 'sandpiper') {
+      kids = [
+        h('path', { key: 'gr', d: 'M4 96 L106 96', fill: 'none', stroke: SKETCH_GUIDE, strokeWidth: 1.8 }),
+        h('ellipse', { key: 'b', cx: 48, cy: 50, rx: 24, ry: 12, transform: 'rotate(-6 48 50)', fill: 'none', stroke: SKETCH_INK, strokeWidth: 2 }),
+        h('circle', { key: 'h', cx: 78, cy: 38, r: 9, fill: 'none', stroke: SKETCH_INK, strokeWidth: 2 }),
+        ln('bill', 'M87 36 L106 40 L87 42'),
+        h('circle', { key: 'e', cx: 81, cy: 35, r: 1.8, fill: SKETCH_INK }),
+        ln('tail', 'M25 53 L6 59 L24 62'),
+        // Bent at the joint and splayed, with toes. Two straight parallel lines
+        // read as a single pedestal at this size, which is not a bird.
+        ln('legs', 'M44 60 L39 77 L33 94 M58 59 L57 77 L55 94'),
+        ln('toes', 'M27 94 L33 94 L39 97 M49 94 L55 94 L61 97'),
+        axis('M18 58 L94 40')
+      ];
+    } else {
+      kids = [
+        h('ellipse', { key: 'b', cx: 55, cy: 55, rx: 7, ry: 16, fill: 'none', stroke: SKETCH_INK, strokeWidth: 2 }),
+        // Head is a short projection, not a ball on a stick — a soaring raptor
+        // barely shows one from below.
+        ln('h', 'M48 43 Q55 31 62 43'),
+        // Wings swept back with finger slots at the tip, and a broad fanned
+        // tail. Straight wings on a narrow body read as a paper aeroplane.
+        ln('wl', 'M49 45 C37 40 22 41 10 46 L15 49 L8 51 L15 55 L9 58 C21 64 39 64 49 61'),
+        ln('wr', 'M61 45 C73 40 88 41 100 46 L95 49 L102 51 L95 55 L101 58 C89 64 71 64 61 61'),
+        ln('tail', 'M48 68 L45 88 Q55 92 65 88 L62 68'),
+        axis('M6 51 L104 51')
+      ];
+    }
+    return h('svg', { viewBox: '0 0 110 110', width: '100%', 'aria-hidden': 'true', style: { maxWidth: '150px' } }, kids);
+  }
+  function posturePlate(h, L) {
+    var kinds = ['woodpecker', 'sandpiper', 'soaring'];
+    return h('div', { className: 'flex flex-wrap gap-2 mb-3' },
+      kinds.map(function(k, i) {
+        return h('div', { key: k, className: 'flex-1 min-w-[130px] rounded-lg bg-white border border-amber-200 p-2 text-center' },
+          posturePanel(h, k),
+          h('div', { className: 'text-[11px] font-black text-amber-900 leading-tight mt-1' }, L.postureTitles[i]),
+          h('div', { className: 'text-[10px] text-slate-600 leading-snug' }, L.postureNotes[i]));
+      }));
+  }
+  // Journal page. The lesson in the prose is that the annotation often matters
+  // more than the drawing, and that colour is WRITTEN in the field rather than
+  // painted — so the sketch here stays pencil-grey and the colour lives in
+  // named notes with swatches beside them.
+  var SKETCH_SWATCHES = [
+    { c: '#171717' }, { c: '#eab308' }, { c: '#b45309' }
+  ];
+  function journalPlate(h, L) {
+    var p = sketchParts(h);
+    return h('div', { className: 'rounded-lg bg-white border border-amber-200 p-3 mb-3' },
+      h('div', { className: 'flex flex-wrap gap-3 items-start' },
+        h('div', { className: 'shrink-0', style: { width: '132px' } },
+          h('svg', { viewBox: '0 0 150 148', width: '100%', 'aria-hidden': 'true' },
+            p.outline, p.neck, p.bill, p.eye, p.tail, p.legs, p.wing, p.marksPencil)),
+        h('div', { className: 'flex-1 min-w-[180px] space-y-1' },
+          L.journalFields.map(function(f, i) {
+            return h('div', { key: i, className: 'flex items-baseline gap-2 border-b border-dashed border-stone-300 pb-0.5' },
+              h('span', { className: 'text-[11px] font-black text-stone-500 w-16 shrink-0' }, f.label),
+              h('span', { className: 'text-[11px] text-slate-700 italic' }, f.value));
+          }))),
+      h('div', { className: 'text-[10px] text-stone-500 italic mt-2 pt-2 border-t border-stone-200' }, L.journalNote));
+  }
+  // Colour is a separate lesson from layout: the prose's own example ("bill
+  // black, leg yellow, breast warm rust") is specific where "brown bird" is
+  // not, so the contrast is what gets drawn. Swatches sit beside the words
+  // because a named colour a learner cannot picture teaches nothing.
+  function colorNotePlate(h, L) {
+    return h('div', { className: 'rounded-lg bg-white border border-amber-200 p-3 mb-3' },
+      h('div', { className: 'flex items-center gap-2 mb-2 pb-2 border-b border-stone-200' },
+        h('span', { className: 'text-rose-700 font-black text-sm' }, '✗'),
+        h('span', { className: 'text-[12px] text-slate-500 italic line-through' }, L.colorVague)),
+      h('div', { className: 'flex items-start gap-2 flex-wrap' },
+        h('span', { className: 'text-emerald-700 font-black text-sm' }, '✓'),
+        L.colorNotes.map(function(n, i) {
+          // Size is inline, not a utility class. The swatch IS the lesson on
+          // this card, and a zero-size span would delete it silently if the
+          // width/height utilities ever failed to resolve.
+          return h('div', { key: i, className: 'inline-flex items-center gap-1.5 rounded bg-stone-50 border border-stone-200 px-2 py-1' },
+            h('span', { className: 'inline-block rounded-sm border border-stone-400', style: { background: SKETCH_SWATCHES[i] ? SKETCH_SWATCHES[i].c : '#999', width: '14px', height: '14px', display: 'inline-block', flexShrink: 0 } }),
+            h('span', { className: 'text-[11px] font-bold text-slate-700' }, n));
+        })));
+  }
+
   // ── BIRD MORPHOLOGICAL DIFFERENCES (size + shape ID quick reference)
   var SHAPE_DIFF = [
     { feature: 'Bill Length',
+      strip: { kind: 'billLen', items: [{ v: 'short', label: 'short' }, { v: 'medium', label: 'medium' }, { v: 'long', label: 'long' }] },
       what: 'Long bills (herons, shorebirds, hummingbirds) for probing or specialized feeding. Short bills (finches, sparrows) for cracking seeds. Medium bills (warblers, flycatchers) for catching insects.',
       diagnostic: 'Bill-length-to-head ratio is a reliable family-level field mark.' },
 
     { feature: 'Bill Shape',
+      strip: { kind: 'billShape', items: [{ v: 'cone', label: 'cone' }, { v: 'needle', label: 'needle' }, { v: 'hook', label: 'hook' }, { v: 'spear', label: 'spear' }, { v: 'spoon', label: 'spoon' }, { v: 'pelican', label: 'pelican-like' }] },
       what: 'Cone (seedeaters), needle (warblers + nectar-feeders), hook (raptors + parrots), spear (herons + kingfishers), spoon (shovelers), pelican-like (skimmers).',
       diagnostic: 'Bill shape predicts diet + family in most cases.' },
 
     { feature: 'Wing Shape',
+      strip: { kind: 'wing', items: [{ v: 'pointed', label: 'long pointed' }, { v: 'rounded', label: 'short rounded' }, { v: 'slotted', label: 'broad, slotted' }, { v: 'stiff', label: 'aquatic stiff' }] },
       what: 'Long pointed (terns, swifts, swallows, gulls, falcons). Short rounded (forest birds like woodpeckers, songbirds). Broad with slots (eagles, vultures, broad-winged hawks). Aquatic stiff (auks, penguins).',
       diagnostic: 'Wing shape predicts flight style + speed + maneuverability.' },
 
     { feature: 'Tail Length',
+      strip: { kind: 'tailLen', items: [{ v: 'short', label: 'short' }, { v: 'long', label: 'long' }] },
       what: 'Long tails (cuckoos, magpies, accipiters) for maneuvering. Short tails (auks, ducks, falcons) for speed.',
       diagnostic: 'Long tail = forest maneuvering; short tail = speed or aquatic.' },
 
     { feature: 'Tail Shape',
+      strip: { kind: 'tailShape', items: [{ v: 'forked', label: 'forked' }, { v: 'notched', label: 'notched' }, { v: 'square', label: 'square' }, { v: 'pointed', label: 'pointed' }, { v: 'round', label: 'round' }] },
       what: 'Forked (terns, swallows, frigatebirds). Notched (some flycatchers). Square (crows, magpies). Pointed (jaegers, some swifts). Round (most songbirds).',
       diagnostic: 'Tail shape is diagnostic for family + sometimes species.' },
 
     { feature: 'Body Size',
+      strip: { kind: 'size', items: [{ v: 4, label: 'tiny 3-4"' }, { v: 6, label: 'small 5-6"' }, { v: 10, label: 'medium 9-11"' }, { v: 21, label: 'large 17-25"' }, { v: 32, label: 'v. large 25-40"' }] },
       what: 'Tiny (hummingbirds + kinglets, 3-4 in). Small (chickadees + warblers, 5-6 in). Medium (robins + jays + woodpeckers, 9-11 in). Large (hawks + crows, 17-25 in). Very large (eagles + vultures + geese, 25-40 in).',
       diagnostic: 'Size category narrows possible species dramatically.' },
 
     { feature: 'Leg Length',
+      strip: { kind: 'leg', items: [{ v: 'short', label: 'short' }, { v: 'long', label: 'long' }] },
       what: 'Long legs (waders + shorebirds + cranes). Short legs (ducks + many songbirds + raptors).',
       diagnostic: 'Leg length predicts habitat + foraging style.' },
 
     { feature: 'Body Shape',
+      strip: { kind: 'bodyShape', items: [{ v: 'round', label: 'round' }, { v: 'slim', label: 'slim' }, { v: 'compact', label: 'compact' }] },
       what: 'Round (passerines + chickadees). Slim (cormorants + herons + grebes). Compact (woodpeckers + shorebirds).',
       diagnostic: 'Body shape distinguishes family + behavior.' }
   ];
@@ -7478,36 +8498,205 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       lesson: 'Tropical-wintering migrant vulnerable to combined breeding + wintering ground loss.' }
   ];
 
+  // ── Confusing-pair comparison plates ────────────────────────────────────
+  // "These two birds look alike, here is how to tell them apart" is the most
+  // inherently visual content in this tool, and it was ten entries of pure
+  // prose. Each plate shows the ONE decisive mark the entry's own text names,
+  // side by side at the same scale — not two full portraits, because the
+  // learner does not need the whole bird, they need the difference.
+  //
+  // Deliberately NOT drawn where the real answer is not visual: Black-capped
+  // vs Carolina Chickadee separates on RANGE in Maine, and inventing a plate
+  // for a mark that does not reliably separate them would teach a false
+  // confidence. That entry keeps its text and says so.
+  var CMP_INK = '#3b3a44';
+  function cmpText(h, key, x, y, text, size, fill, weight) {
+    return h('text', { key: key, x: x, y: y, textAnchor: 'middle', fontSize: size || 10,
+      fill: fill || '#475569', fontWeight: weight || 600 }, text);
+  }
+  // A head facing right, with an optional bill, crest and face marks.
+  function cmpHead(h, key, cx, cy, o) {
+    var r = o.r || 17, kids = [];
+    if (o.crest) {
+      // A hooded merganser's hood is a fan about as big as the head. Drawn as
+      // a thin wisp it contradicted its own caption ("big raised white hood"),
+      // which is the exact defect these plates exist to remove. Behind the
+      // head circle, so the head overlaps it the way a raised crest sits.
+      kids.push(h('path', { key: 'cr', d: 'M' + (cx - r * 0.95) + ' ' + (cy + r * 0.15)
+        + ' Q' + (cx - r * 1.35) + ' ' + (cy - r * 1.55) + ' ' + (cx + r * 0.25) + ' ' + (cy - r * 1.5)
+        + ' Q' + (cx + r * 1.0) + ' ' + (cy - r * 1.2) + ' ' + (cx + r * 0.55) + ' ' + (cy - r * 0.15) + ' Z',
+        fill: o.crestFill || o.fill || CMP_INK, stroke: '#94a3b8', strokeWidth: 0.8 }));
+    }
+    kids.push(h('circle', { key: 'hd', cx: cx, cy: cy, r: r, fill: o.fill || CMP_INK }));
+    if (o.cap) kids.push(h('path', { key: 'cp', d: 'M' + (cx - r) + ' ' + (cy - r * 0.28)
+      + ' A' + r + ' ' + r + ' 0 0 1 ' + (cx + r) + ' ' + (cy - r * 0.28) + ' Z', fill: o.cap }));
+    if (o.mask) kids.push(h('path', { key: 'mk', d: 'M' + (cx - r * 0.15) + ' ' + (cy - r * 0.30)
+      + ' L' + (cx + r) + ' ' + (cy - r * 0.18) + ' L' + (cx + r) + ' ' + (cy + r * 0.28)
+      + ' L' + (cx - r * 0.15) + ' ' + (cy + r * 0.16) + ' Z', fill: o.mask, opacity: 0.95 }));
+    if (o.lores) kids.push(h('rect', { key: 'lr', x: cx + r * 0.25, y: cy - r * 0.42, width: r * 0.5, height: r * 0.3, fill: o.lores, rx: 1 }));
+    if (o.throat) kids.push(h('path', { key: 'th', d: 'M' + (cx + r * 0.1) + ' ' + (cy + r * 0.45)
+      + ' Q' + (cx + r * 0.7) + ' ' + (cy + r * 0.95) + ' ' + (cx + r * 0.05) + ' ' + (cy + r * 1.0)
+      + ' Q' + (cx - r * 0.45) + ' ' + (cy + r * 0.8) + ' ' + (cx + r * 0.1) + ' ' + (cy + r * 0.45) + ' Z', fill: o.throat }));
+    kids.push(h('circle', { key: 'ey', cx: cx + r * 0.42, cy: cy - r * 0.22, r: Math.max(1.6, r * 0.13), fill: '#101319' }));
+    if (o.bill) {
+      var bl = o.bill;
+      kids.push(h('path', { key: 'bl', d: 'M' + (cx + r * 0.85) + ' ' + (cy - r * 0.22)
+        + ' L' + (cx + r * 0.85 + bl) + ' ' + (cy + (o.upturn ? -r * 0.30 : 0))
+        + ' L' + (cx + r * 0.85) + ' ' + (cy + r * 0.26) + ' Z', fill: o.billFill || '#20242c' }));
+    }
+    return h('g', { key: key }, kids);
+  }
+  // A tail: square, rounded or graduated tip, optionally barred.
+  function cmpTail(h, key, cx, topY, o) {
+    var w = o.w || 20, len = o.len || 46, kids = [];
+    var bot = topY + len;
+    var d = 'M' + (cx - w) + ' ' + topY;
+    if (o.tip === 'round') d += ' L' + (cx - w) + ' ' + (bot - w * 0.5) + ' Q' + cx + ' ' + (bot + w * 0.35) + ' ' + (cx + w) + ' ' + (bot - w * 0.5) + ' L' + (cx + w) + ' ' + topY;
+    else if (o.tip === 'graduated') d += ' L' + (cx - w * 0.75) + ' ' + (bot - w * 0.7) + ' L' + cx + ' ' + (bot + w * 0.3) + ' L' + (cx + w * 0.75) + ' ' + (bot - w * 0.7) + ' L' + (cx + w) + ' ' + topY;
+    else d += ' L' + (cx - w) + ' ' + bot + ' L' + (cx + w) + ' ' + bot + ' L' + (cx + w) + ' ' + topY;
+    kids.push(h('path', { key: 'tl', d: d + ' Z', fill: o.fill || CMP_INK }));
+    if (o.bars) {
+      var bd = '';
+      for (var i = 1; i <= 3; i++) { var y = topY + (len * i) / 4; bd += ' M' + (cx - w * 0.9) + ' ' + y + ' L' + (cx + w * 0.9) + ' ' + y; }
+      kids.push(h('path', { key: 'br', d: bd.trim(), stroke: o.barFill || '#e8e6e1', strokeWidth: 3.4, opacity: 0.92 }));
+    }
+    return h('g', { key: key }, kids);
+  }
+  function cmpSizeBird(h, key, cx, baseY, f) {
+    var w = 40 * f, hh = 30 * f, rx = w * 0.34, ry = hh * 0.30, cy = baseY - hh * 0.36;
+    return h('g', { key: key, fill: CMP_INK },
+      h('path', { key: 't', d: 'M' + (cx - rx * 0.7) + ' ' + cy + ' L' + (cx - rx - w * 0.32) + ' ' + (cy + hh * 0.24) + ' L' + (cx - rx * 0.6) + ' ' + (cy + ry * 0.7) + ' Z' }),
+      h('ellipse', { key: 'b', cx: cx, cy: cy, rx: rx, ry: ry }),
+      h('circle', { key: 'h', cx: cx + rx * 0.85, cy: cy - ry * 0.9, r: Math.max(1.8, hh * 0.16) }),
+      h('path', { key: 'l', d: 'M' + cx + ' ' + (cy + ry * 0.8) + ' L' + cx + ' ' + baseY, stroke: CMP_INK, strokeWidth: Math.max(1, f * 1.6) }));
+  }
+  // A small perched bird in a given plumage: body, head, wing panel and
+  // optional streaking. Used for male-vs-female and juvenile-vs-adult, where
+  // the difference IS the colour and pattern, so the silhouette stays constant
+  // and only the paint changes — which is the comparison the reader needs.
+  function cmpPlumageBird(h, key, cx, baseY, o) {
+    var w = 34, hh = 26, rx = w * 0.40, ry = hh * 0.34, cy = baseY - hh * 0.42;
+    var kids = [
+      h('path', { key: 't', d: 'M' + (cx - rx * 0.6) + ' ' + cy + ' L' + (cx - rx - w * 0.42) + ' ' + (cy + hh * 0.30)
+        + ' L' + (cx - rx * 0.5) + ' ' + (cy + ry * 0.75) + ' Z', fill: o.tail || o.body }),
+      h('ellipse', { key: 'b', cx: cx, cy: cy, rx: rx, ry: ry, fill: o.body }),
+      h('path', { key: 'w', d: 'M' + (cx - rx * 0.75) + ' ' + (cy - ry * 0.15)
+        + ' Q' + cx + ' ' + (cy - ry * 0.9) + ' ' + (cx + rx * 0.55) + ' ' + (cy - ry * 0.1)
+        + ' Q' + cx + ' ' + (cy + ry * 0.65) + ' ' + (cx - rx * 0.75) + ' ' + (cy - ry * 0.15) + ' Z', fill: o.wing || o.body })
+    ];
+    if (o.streaks) kids.push(h('path', { key: 's', d: 'M' + (cx - rx * 0.5) + ' ' + (cy + ry * 0.15) + ' L' + (cx + rx * 0.45) + ' ' + (cy + ry * 0.15)
+      + ' M' + (cx - rx * 0.4) + ' ' + (cy + ry * 0.5) + ' L' + (cx + rx * 0.35) + ' ' + (cy + ry * 0.5),
+      stroke: o.streaks, strokeWidth: 1.6, opacity: 0.9 }));
+    // Spots go on the BREAST. Using the head `patch` for "spotted breast" made
+    // it identical to "plain brown" — a caption contradicting its own picture.
+    if (o.spots) kids.push(h('g', { key: 'sp', fill: o.spots },
+      h('circle', { key: 's1', cx: cx - rx * 0.38, cy: cy + ry * 0.10, r: 1.5 }),
+      h('circle', { key: 's2', cx: cx + rx * 0.02, cy: cy + ry * 0.34, r: 1.5 }),
+      h('circle', { key: 's3', cx: cx + rx * 0.42, cy: cy + ry * 0.06, r: 1.5 }),
+      h('circle', { key: 's4', cx: cx - rx * 0.02, cy: cy - ry * 0.22, r: 1.5 })));
+    kids.push(h('circle', { key: 'h', cx: cx + rx * 0.82, cy: cy - ry * 1.0, r: hh * 0.20, fill: o.head || o.body }));
+    if (o.patch) kids.push(h('circle', { key: 'p', cx: cx + rx * 0.62, cy: cy - ry * 1.05, r: hh * 0.075, fill: o.patch }));
+    kids.push(h('path', { key: 'bl', d: 'M' + (cx + rx * 0.82 + hh * 0.16) + ' ' + (cy - ry * 1.05)
+      + ' L' + (cx + rx * 0.82 + hh * 0.42) + ' ' + (cy - ry * 0.95)
+      + ' L' + (cx + rx * 0.82 + hh * 0.16) + ' ' + (cy - ry * 0.82) + ' Z', fill: o.bill || '#3a3a42' }));
+    kids.push(h('path', { key: 'lg', d: 'M' + cx + ' ' + (cy + ry * 0.85) + ' L' + cx + ' ' + baseY, stroke: '#4c4a57', strokeWidth: 1.5 }));
+    return h('g', { key: key }, kids);
+  }
+  function confusePlate(h, art) {
+    if (!art) return null;
+    var kids = [], L = 78, R = 226;
+    if (art.kind === 'plumage' || art.kind === 'stages') {
+      // Two states, or a four-stage progression (gull ageing). Same silhouette
+      // throughout so the eye compares plumage and nothing else.
+      var list = art.items, n = list.length;
+      var step = 304 / (n + 1);
+      list.forEach(function(o, i) {
+        var x = step * (i + 1);
+        kids.push(cmpPlumageBird(h, 'pb' + i, x, 52, o));
+        kids.push(cmpText(h, 'pl' + i, x, 70, o.name, n > 2 ? 9 : 10, '#334155', 700));
+        if (o.note) kids.push(cmpText(h, 'pn' + i, x, 84, o.note, n > 2 ? 8 : 9, '#64748b', 500));
+      });
+      return h('svg', { viewBox: '0 0 304 94', className: 'w-full', style: { maxWidth: '460px', height: 'auto' }, role: 'img', 'aria-hidden': 'true' }, kids);
+    }
+    if (art.kind === 'bill') {
+      // Dashed brackets make "bill shorter / longer than the head" measurable
+      // rather than a phrase, which is the entire Downy-Hairy problem.
+      [[L, art.a], [R, art.b]].forEach(function(p, i) {
+        var cx = p[0], o = p[1];
+        kids.push(cmpHead(h, 'h' + i, cx, 34, { r: 16, bill: o.bill, upturn: o.upturn }));
+        kids.push(h('path', { key: 'rf' + i, d: 'M' + (cx - 16) + ' 58 L' + (cx + 16) + ' 58', stroke: '#94a3b8', strokeWidth: 1.4, strokeDasharray: '3 3' }));
+        kids.push(h('path', { key: 'rb' + i, d: 'M' + (cx + 17.6) + ' 58 L' + (cx + 17.6 + o.bill) + ' 58', stroke: '#b45309', strokeWidth: 2.2 }));
+        kids.push(cmpText(h, 'lb' + i, cx, 74, o.name, 10, '#334155', 700));
+        kids.push(cmpText(h, 'ln' + i, cx, 86, o.note, 9, '#64748b', 500));
+      });
+    } else if (art.kind === 'tail') {
+      [[L, art.a], [R, art.b]].forEach(function(p, i) {
+        var cx = p[0], o = p[1];
+        kids.push(h('ellipse', { key: 'bd' + i, cx: cx, cy: 16, rx: 15, ry: 11, fill: o.bodyFill || CMP_INK }));
+        kids.push(cmpTail(h, 'tl' + i, cx, 22, { tip: o.tip, fill: o.fill, bars: o.bars, len: 38, w: 15 }));
+        kids.push(cmpText(h, 'lb' + i, cx, 76, o.name, 10, '#334155', 700));
+        kids.push(cmpText(h, 'ln' + i, cx, 88, o.note, 9, '#64748b', 500));
+      });
+    } else if (art.kind === 'head') {
+      [[L, art.a], [R, art.b]].forEach(function(p, i) {
+        var cx = p[0], o = p[1];
+        kids.push(cmpHead(h, 'h' + i, cx, 32, { r: 18, bill: o.bill || 11, fill: o.fill, cap: o.cap, mask: o.mask, lores: o.lores, throat: o.throat, crest: o.crest, crestFill: o.crestFill }));
+        kids.push(cmpText(h, 'lb' + i, cx, 76, o.name, 10, '#334155', 700));
+        kids.push(cmpText(h, 'ln' + i, cx, 88, o.note, 9, '#64748b', 500));
+      });
+    } else if (art.kind === 'size3') {
+      var xs = [56, 152, 248];
+      art.birds.forEach(function(o, i) {
+        kids.push(cmpSizeBird(h, 'sb' + i, xs[i], 58, o.f));
+        kids.push(cmpText(h, 'lb' + i, xs[i], 74, o.name, 10, '#334155', 700));
+        kids.push(cmpText(h, 'ln' + i, xs[i], 86, o.note, 9, '#64748b', 500));
+      });
+    } else { return null; }
+    return h('svg', { viewBox: '0 0 304 94', className: 'w-full', style: { maxWidth: '420px', height: 'auto' }, role: 'img', 'aria-hidden': 'true' }, kids);
+  }
+
   // ── COMMON CONFUSING PAIRS — Maine birds easily mistaken
   var CONFUSING_PAIRS = [
     { pair: 'Downy vs Hairy Woodpecker',
+      art: { kind: 'bill', a: { name: 'Downy', note: 'bill SHORTER than head', bill: 9 }, b: { name: 'Hairy', note: 'bill LONGER than head', bill: 22 } },
       similarity: 'Both black + white, same pattern, both Maine residents',
       key_diff: 'Size (Downy 6-7 in, Hairy 9-10 in). Bill length: Downy bill shorter than head; Hairy bill longer than head. Tail spots: Downy tail outer feathers spotted, Hairy plain.' },
     { pair: 'Cooper\'s vs Sharp-shinned Hawk',
+      art: { kind: 'tail', a: { name: 'Sharp-shinned', note: 'square tail tip', tip: 'square', bars: true }, b: { name: 'Cooper\'s', note: 'rounded tail tip', tip: 'round', bars: true } },
       similarity: 'Both medium accipiters, similar shape + plumage. Both forest hawks.',
       key_diff: 'Size (Sharp-shinned 10-14 in, Cooper\'s 14-20 in). Tail: Sharp-shinned has square tail tip, Cooper\'s rounded. Crown: Sharp-shinned smaller "capped" head; Cooper\'s larger head with more pronounced cap.' },
     { pair: 'Greater vs Lesser Yellowlegs',
+      art: { kind: 'bill', a: { name: 'Lesser', note: 'shorter, straight', bill: 15 }, b: { name: 'Greater', note: 'longer, slightly upturned', bill: 26, upturn: true } },
       similarity: 'Both yellowleg shorebirds. Same color + pattern.',
       key_diff: 'Size (Lesser 11 in, Greater 14 in). Bill: Greater slightly upturned + longer; Lesser straighter + shorter. Call: Greater 3-5 note "tew-tew-tew"; Lesser 1-2 note "tew-tew".' },
     { pair: 'White-throated vs White-crowned Sparrow',
+      art: { kind: 'head', a: { name: 'White-throated', note: 'yellow lores + white throat', fill: '#7c6a58', cap: '#2f3540', lores: '#f2c231', throat: '#f8fafc' }, b: { name: 'White-crowned', note: 'no yellow, no white throat', fill: '#7c6a58', cap: '#2f3540' } },
       similarity: 'Both medium sparrows with bold head pattern, both fall migrants in Maine.',
       key_diff: 'Yellow lores: White-throated has yellow patch between bill + eye; White-crowned has no yellow. Throat: White-throated has clean white throat patch; White-crowned has no white throat.' },
     { pair: 'Magnolia vs Yellow Warbler',
+      art: { kind: 'head', a: { name: 'Magnolia', note: 'black mask', fill: '#e6c53f', mask: '#23262d' }, b: { name: 'Yellow Warbler', note: 'plain face', fill: '#e6c53f' } },
       similarity: 'Both yellow warblers in Maine.',
       key_diff: 'Magnolia: black mask + tail with white tail markings; bright yellow throat. Yellow Warbler: no mask + plain face; yellow throat with rust streaks on male.' },
     { pair: 'Hermit vs Swainson\'s Thrush',
+      art: { kind: 'tail', a: { name: 'Hermit', note: 'RUSTY tail vs brown body', bodyFill: '#7a6a5a', fill: '#a8542a', tip: 'square' }, b: { name: 'Swainson\'s', note: 'tail same brown as body', bodyFill: '#7a6a5a', fill: '#7a6a5a', tip: 'square' } },
       similarity: 'Both spotted thrushes, similar size + habitat.',
       key_diff: 'Tail: Hermit has rusty-red tail (key mark) vs uniform brown body; Swainson\'s tail same color as body. Face: Swainson\'s has buff eyering + face. Voice: very different songs.' },
     { pair: 'Red-shouldered vs Red-tailed Hawk',
+      art: { kind: 'tail', a: { name: 'Red-shouldered', note: 'boldly BARRED tail', fill: '#2f3138', tip: 'square', bars: true }, b: { name: 'Red-tailed', note: 'plain brick-red tail', fill: '#a8482a', tip: 'round' } },
       similarity: 'Both buteo hawks, similar size + posture.',
       key_diff: 'Red-shouldered: barred tail (no red), rufous shoulders. Red-tailed: brick-red tail in adults, plain belly.' },
     { pair: 'Common vs Hooded Merganser',
+      art: { kind: 'head', a: { name: 'Hooded (male)', note: 'big raised white hood', fill: '#23262d', crest: true, crestFill: '#f8fafc', bill: 13 }, b: { name: 'Common (male)', note: 'green head, no crest', fill: '#1f4a3a', bill: 17 } },
       similarity: 'Both diving mergansers in Maine.',
       key_diff: 'Size: Common merganser larger. Crest: Hooded male has dramatic large white hood (can be raised/lowered); Common male has no crest, green head. Female Hooded: cinnamon crest; Common female: rusty unstreaked head.' },
     { pair: 'Black-capped vs Carolina Chickadee',
       similarity: 'Both chickadees, similar size + pattern.',
       key_diff: 'In Maine: only Black-capped present (Carolina south of NJ). Where both: Black-capped has whiter wing feathers + larger bib + more buff flanks.' },
     { pair: 'Sharp-shinned vs Cooper\'s vs Goshawk (3-way)',
+      art: { kind: 'size3', birds: [
+        { name: 'Sharp-shinned', note: '4-8 oz', f: 0.52 },
+        { name: 'Cooper\'s', note: '10-22 oz', f: 0.74 },
+        { name: 'Goshawk', note: '24-40 oz', f: 1 }] },
       similarity: 'All three are accipiters in Maine.',
       key_diff: 'Size + body weight: Sharp-shinned smallest (4-8 oz), Cooper\'s medium (10-22 oz), Goshawk largest (24-40 oz). Tail tip: Sharp square, Cooper rounded, Goshawk graduated. Color: Sharp + Cooper similar adult plumage; Goshawk plain gray with white eyebrow + barred breast.' }
   ];
@@ -8726,30 +9915,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   // ── BIRDS BY COLOR
   var BIRDS_BY_COLOR = [
     { color: 'Red',
+      art: { kind: 'plumage', items: [{ name: 'Cardinal', note: 'brilliant red', body: '#c0392b', wing: '#a5302a', head: '#c0392b', tail: '#a5302a', bill: '#e8873c' }, { name: 'House Finch', note: 'red wash on head', body: '#9a8a72', wing: '#8a7a62', head: '#c2452f', tail: '#8a7a62' }, { name: 'Scarlet Tanager', note: 'scarlet + black', body: '#d8321e', wing: '#16181d', head: '#d8321e', tail: '#16181d' }] },
       birds: 'Northern Cardinal (male brilliant red), House Finch (red wash on head + breast), Purple Finch (raspberry red), Red-winged Blackbird (red shoulder patches), Scarlet Tanager (scarlet + black), Pileated Woodpecker (red crest)',
       tip: 'Brilliant red usually means male in breeding plumage. Females + young often duller.' },
 
     { color: 'Yellow',
+      art: { kind: 'plumage', items: [{ name: 'Goldfinch', note: 'lemon + black cap', body: '#f0cf2c', wing: '#22252b', head: '#f0cf2c', tail: '#22252b', patch: '#22252b' }, { name: 'Yellow Warbler', note: 'all yellow', body: '#e8d24a', wing: '#d4bc3c', head: '#e8d24a', tail: '#d4bc3c' }, { name: 'Yellowthroat', note: 'yellow, black mask', body: '#e0c93f', wing: '#8a8a4a', head: '#22252b', tail: '#8a8a4a', patch: '#e0c93f' }] },
       birds: 'American Goldfinch (lemon yellow male), Yellow Warbler (all yellow), Common Yellowthroat (yellow with black mask), Yellow-rumped Warbler (yellow rump + flank), American Redstart (orange-yellow wing flash), Baltimore Oriole (yellow-orange)',
       tip: 'Yellow + black combinations frequent in warblers + finches.' },
 
     { color: 'Blue',
+      art: { kind: 'plumage', items: [{ name: 'Bluebird', note: 'blue back, rust breast', body: '#b5623c', wing: '#3f6ea8', head: '#3f6ea8', tail: '#3f6ea8' }, { name: 'Indigo Bunting', note: 'deep blue', body: '#2f4f9e', wing: '#26407f', head: '#2f4f9e', tail: '#26407f' }, { name: 'Blue Jay', note: 'blue + black necklace', body: '#4a86c8', wing: '#3a6ea8', head: '#4a86c8', tail: '#3a6ea8', patch: '#22252b' }] },
       birds: 'Eastern Bluebird (blue back, rust breast), Indigo Bunting (deep blue male), Blue Jay (vivid blue with black necklace), Tree Swallow (steel blue back)',
       tip: 'Iridescent blue requires special angles to see. Sometimes looks black.' },
 
     { color: 'Black + White',
+      art: { kind: 'plumage', items: [{ name: 'Chickadee', note: 'black cap + bib', body: '#b8bcc2', wing: '#9aa0a8', head: '#22252b', tail: '#9aa0a8', patch: '#f8fafc' }, { name: 'Downy Woodpecker', note: 'black + white', body: '#f2f4f6', wing: '#22252b', head: '#22252b', tail: '#22252b', patch: '#f8fafc' }, { name: 'Common Loon', note: 'checkered back', body: '#1b1e24', wing: '#2a2e35', head: '#12271f', tail: '#1b1e24', streaks: '#f8fafc' }] },
       birds: 'Black-capped Chickadee, Downy + Hairy Woodpecker, Black-and-white Warbler, Bobolink, Common Loon, Common Merganser, Pileated Woodpecker',
       tip: 'Most-common color pattern. Look at relative amounts + bill shape + size.' },
 
     { color: 'Brown + Streaked',
+      art: { kind: 'plumage', items: [{ name: 'Streaked breast', note: 'lines down the front', body: '#b3a68c', wing: '#8a7a62', head: '#9a8a72', tail: '#8a7a62', streaks: '#4a3f2f' }, { name: 'Spotted breast', note: 'round marks', body: '#b3a68c', wing: '#8a7a62', head: '#9a8a72', tail: '#8a7a62', spots: '#4a3f2f' }, { name: 'Plain brown', note: 'no breast pattern', body: '#b3a68c', wing: '#8a7a62', head: '#9a8a72', tail: '#8a7a62' }] },
       birds: 'Most sparrows + thrushes + warblers + flycatchers. Many female + young birds.',
       tip: 'The hardest ID — look for: breast pattern (streaked vs spotted), eye ring, eyebrow, malar, throat, tail shape.' },
 
     { color: 'Gray',
+      art: { kind: 'plumage', items: [{ name: 'Junco', note: 'slate gray, white belly', body: '#6b7280', wing: '#5a616e', head: '#6b7280', tail: '#5a616e', patch: '#f8fafc' }, { name: 'Titmouse', note: 'gray with crest', body: '#9aa0a8', wing: '#8a9098', head: '#9aa0a8', tail: '#8a9098' }, { name: 'Raven', note: 'all dark', body: '#1b1e24', wing: '#22252b', head: '#1b1e24', tail: '#22252b' }] },
       birds: 'Tufted Titmouse, Dark-eyed Junco (slate gray), Eastern Phoebe, American Crow, Common Raven',
       tip: 'Gray often combines with white belly. Check tail shape + behavior.' },
 
     { color: 'Iridescent',
+      art: { kind: 'plumage', items: [{ name: 'Mallard', note: 'green head', body: '#8a7a66', wing: '#5a6a7a', head: '#1f6b3f', tail: '#5f5548', patch: '#f8fafc' }, { name: 'Grackle', note: 'purple-bronze', body: '#3a2f4a', wing: '#2f2a3f', head: '#4a2f5a', tail: '#2f2a3f' }, { name: 'Same bird, bad angle', note: 'looks plain black', body: '#22252b', wing: '#1b1e24', head: '#22252b', tail: '#1b1e24' }] },
       birds: 'Mallard (iridescent green head), Common Grackle (purple-bronze), European Starling, Tree Swallow (steel blue), Wood Duck (multicolored)',
       tip: 'Iridescent colors come from feather microstructure + may look black at wrong angle.' }
   ];
@@ -15748,7 +16944,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         }
       ];
 
-      var FOOT_TYPES = [
+      // RENAMED from FOOT_TYPES. This array is declared in the component scope,
+      // OUTSIDE BeakFeetLab, so as FOOT_TYPES it shadowed the module-level
+      // FOOT_TYPES prose array for every view in the component. The Foot Types
+      // view read these objects instead of its own and rendered "undefined" as
+      // every heading with blank Shape/Birds/Function, because the drawn
+      // entries carry label/lifestyle, not type/shape/birds/function. Keep the
+      // two names distinct: diagrams here, prose at the module level.
+      var FOOT_DIAGRAMS = [
         {
           id: 'perching', label: __alloT('stem.birdlab.perching_anisodactyl', 'Perching (anisodactyl)'),
           lifestyle: 'Songbirds — 3 toes forward + 1 back; tendons LOCK around branch when bird relaxes',
@@ -15907,6 +17110,104 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               h('circle', { cx: 32, cy: 32, r: 0.5, fill: '#1c1917' })
             );
           }
+        },
+        // The Foot Types view describes eight feet in prose but only six were
+        // ever drawn. Lobed and gamebird feet are added here so the reference
+        // actually covers what that view sends readers looking for. Lobed is
+        // NOT the same foot as the semipalmate "shorebird" above — separate
+        // lobes on each toe versus a small web between them — so it could not
+        // simply be pointed at the existing entry.
+        {
+          id: 'lobed', label: __alloT('stem.birdlab.lobed_swimmer', 'Lobed (swimming)'),
+          lifestyle: 'Swims by paddling with flaps of skin on each toe, then walks off onto land — full webs cannot do both',
+          examples: 'American Coot, Pied-billed Grebe, Red-necked Phalarope',
+          svg: function(h) {
+            return h('g', null,
+              // Water line
+              h('path', { d: 'M 2 10 Q 8 8 14 10 Q 20 12 26 10 Q 32 8 38 10', fill: 'none', stroke: '#7dd3fc', strokeWidth: 1.2, opacity: 0.9 }),
+              h('rect', { x: 2, y: 10, width: 36, height: 28, fill: '#bae6fd', opacity: 0.35 }),
+              // Leg
+              h('rect', { x: 18.5, y: 6, width: 3, height: 13, fill: '#a3a3a3', stroke: '#525252', strokeWidth: 0.4 }),
+              // 3 forward toes, each carrying its own separate lobes
+              h('line', { x1: 20, y1: 19, x2: 8, y2: 33, stroke: '#525252', strokeWidth: 1.5, strokeLinecap: 'round' }),
+              h('line', { x1: 20, y1: 19, x2: 20, y2: 35, stroke: '#525252', strokeWidth: 1.5, strokeLinecap: 'round' }),
+              h('line', { x1: 20, y1: 19, x2: 32, y2: 33, stroke: '#525252', strokeWidth: 1.5, strokeLinecap: 'round' }),
+              h('ellipse', { cx: 14.5, cy: 25, rx: 3.4, ry: 2, transform: 'rotate(49 14.5 25)', fill: '#94a3b8', stroke: '#475569', strokeWidth: 0.4 }),
+              h('ellipse', { cx: 10.5, cy: 30, rx: 3.4, ry: 2, transform: 'rotate(49 10.5 30)', fill: '#94a3b8', stroke: '#475569', strokeWidth: 0.4 }),
+              h('ellipse', { cx: 20, cy: 25, rx: 2, ry: 3.4, fill: '#94a3b8', stroke: '#475569', strokeWidth: 0.4 }),
+              h('ellipse', { cx: 20, cy: 31, rx: 2, ry: 3.4, fill: '#94a3b8', stroke: '#475569', strokeWidth: 0.4 }),
+              h('ellipse', { cx: 25.5, cy: 25, rx: 3.4, ry: 2, transform: 'rotate(-49 25.5 25)', fill: '#94a3b8', stroke: '#475569', strokeWidth: 0.4 }),
+              h('ellipse', { cx: 29.5, cy: 30, rx: 3.4, ry: 2, transform: 'rotate(-49 29.5 30)', fill: '#94a3b8', stroke: '#475569', strokeWidth: 0.4 }),
+              // Small back toe
+              h('line', { x1: 20, y1: 19, x2: 23, y2: 23, stroke: '#737373', strokeWidth: 1.1, strokeLinecap: 'round' }),
+              h('circle', { cx: 8, cy: 33, r: 0.5, fill: '#1c1917' }),
+              h('circle', { cx: 20, cy: 35, r: 0.5, fill: '#1c1917' }),
+              h('circle', { cx: 32, cy: 33, r: 0.5, fill: '#1c1917' })
+            );
+          }
+        },
+        {
+          id: 'gamebird', label: __alloT('stem.birdlab.gamebird_walking', 'Gamebird (walking)'),
+          lifestyle: 'Heavy ground bird — stout toes and short blunt claws for scratching leaf litter, hind toe raised clear of the ground',
+          examples: 'Wild Turkey, Ruffed Grouse, Ring-necked Pheasant',
+          svg: function(h) {
+            return h('g', null,
+              // Leaf litter
+              h('ellipse', { cx: 20, cy: 35, rx: 18, ry: 2.5, fill: '#d6d3d1', opacity: 0.8 }),
+              h('path', { d: 'M 5 34 Q 9 31 13 34 Z', fill: '#a16207', opacity: 0.55 }),
+              h('path', { d: 'M 28 34 Q 32 31 36 34 Z', fill: '#a16207', opacity: 0.55 }),
+              // Thick leg
+              h('rect', { x: 17.5, y: 5, width: 5, height: 14, rx: 1, fill: '#a8a29e', stroke: '#44403c', strokeWidth: 0.5 }),
+              h('path', { d: 'M 17.5 8 L 22.5 8 M 17.5 11 L 22.5 11 M 17.5 14 L 22.5 14', stroke: '#78716c', strokeWidth: 0.5 }),
+              // 3 stout forward toes, blunt not hooked
+              h('path', { d: 'M 20 19 L 7 32 L 10 34 L 21 22 Z', fill: '#a8a29e', stroke: '#44403c', strokeWidth: 0.8 }),
+              h('path', { d: 'M 18.6 19 L 18.6 34 L 21.4 34 L 21.4 19 Z', fill: '#a8a29e', stroke: '#44403c', strokeWidth: 0.8 }),
+              h('path', { d: 'M 20 19 L 33 32 L 30 34 L 19 22 Z', fill: '#a8a29e', stroke: '#44403c', strokeWidth: 0.8 }),
+              // Hind toe held ABOVE the ground — the mark that separates a
+              // walking foot from a perching one
+              h('line', { x1: 20, y1: 19, x2: 25, y2: 25, stroke: '#78716c', strokeWidth: 1.6, strokeLinecap: 'round' }),
+              // Short blunt claws
+              h('path', { d: 'M 8.5 33 L 6 35', stroke: '#1c1917', strokeWidth: 1.2, strokeLinecap: 'round' }),
+              h('path', { d: 'M 20 34 L 20 36.5', stroke: '#1c1917', strokeWidth: 1.2, strokeLinecap: 'round' }),
+              h('path', { d: 'M 31.5 33 L 34 35', stroke: '#1c1917', strokeWidth: 1.2, strokeLinecap: 'round' })
+            );
+          }
+        },
+        {
+          // Drawn only after checking the literature, because the Foot Types
+          // prose this pairs with was self-contradictory (see the corrected
+          // entry there). Two distinguishing marks are both shown: the outer
+          // toe swung BACK to make 2-and-2, and the spicules on the toe pads.
+          id: 'osprey', label: __alloT('stem.birdlab.fish_grasping_osprey', 'Fish-grasping (Osprey)'),
+          lifestyle: 'Clamps a slippery fish from both sides — outer toe rotates back, and spiny toe pads stop the fish sliding free',
+          examples: 'Osprey — Maine coast, lakes + river mouths; also Grey-headed + Lesser Fish Eagles',
+          svg: function(h) {
+            return h('g', null,
+              // Fish held crosswise, the reason the foot is shaped this way
+              h('ellipse', { cx: 20, cy: 28, rx: 15, ry: 5, fill: '#93c5fd', stroke: '#1d4ed8', strokeWidth: 0.5 }),
+              h('path', { d: 'M 35 28 L 39 24 L 39 32 Z', fill: '#93c5fd', stroke: '#1d4ed8', strokeWidth: 0.5 }),
+              h('circle', { cx: 8, cy: 27, r: 0.8, fill: '#1e3a8a' }),
+              // Leg
+              h('rect', { x: 18.5, y: 3, width: 3, height: 11, fill: '#cbd5e1', stroke: '#4b5563', strokeWidth: 0.4 }),
+              // TWO toes forward
+              h('path', { d: 'M 20 14 Q 12 18 9 26', fill: 'none', stroke: '#b4b4bb', strokeWidth: 2.6, strokeLinecap: 'round' }),
+              h('path', { d: 'M 20 14 Q 16 19 15 27', fill: 'none', stroke: '#b4b4bb', strokeWidth: 2.6, strokeLinecap: 'round' }),
+              // TWO toes back — the outer toe has swung round to join the hallux
+              h('path', { d: 'M 20 14 Q 24 19 25 27', fill: 'none', stroke: '#71717a', strokeWidth: 2.6, strokeLinecap: 'round' }),
+              h('path', { d: 'M 20 14 Q 28 18 31 26', fill: 'none', stroke: '#71717a', strokeWidth: 2.6, strokeLinecap: 'round' }),
+              // Spicules — the spiny scales that stop a wet fish sliding out
+              h('path', {
+                d: 'M 11 22 l -1.6 1 M 13 25 l -1.6 1 M 16.5 22 l -1.6 1 M 17.5 25 l -1.6 1 '
+                  + 'M 23.5 22 l 1.6 1 M 22.5 25 l 1.6 1 M 29 22 l 1.6 1 M 27 25 l 1.6 1',
+                stroke: '#52525b', strokeWidth: 0.7, strokeLinecap: 'round'
+              }),
+              // Talons closing under the fish from both sides
+              h('path', { d: 'M 9 26 Q 8 30 11 32', fill: 'none', stroke: '#18181b', strokeWidth: 1.3, strokeLinecap: 'round' }),
+              h('path', { d: 'M 15 27 Q 15 31 18 33', fill: 'none', stroke: '#18181b', strokeWidth: 1.3, strokeLinecap: 'round' }),
+              h('path', { d: 'M 25 27 Q 25 31 22 33', fill: 'none', stroke: '#18181b', strokeWidth: 1.3, strokeLinecap: 'round' }),
+              h('path', { d: 'M 31 26 Q 32 30 29 32', fill: 'none', stroke: '#18181b', strokeWidth: 1.3, strokeLinecap: 'round' })
+            );
+          }
         }
       ];
 
@@ -15922,7 +17223,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-2xl p-5' },
               h('h2', { className: 'text-lg font-black text-amber-900 mb-2 tracking-tight' }, __alloT('stem.birdlab.bills_and_feet_are_evolution_s_tool_ki', 'Bills and feet are evolution\'s tool kit')),
               h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                __alloT('stem.birdlab.a_bird_s_bill_tells_you_what_it_eats_i', 'A bird\'s bill tells you what it eats. Its feet tell you where it lives. Look at any bird and you can read its lifestyle from those two parts alone — without ever seeing it eat or move. This module shows the eight common bill shapes and six common foot patterns, and which species in BirdLab\'s habitats use each.'))
+                __alloT('stem.birdlab.a_bird_s_bill_tells_you_what_it_eats_i', 'A bird\'s bill tells you what it eats. Its feet tell you where it lives. Look at any bird and you can read its lifestyle from those two parts alone — without ever seeing it eat or move. This module shows the common bill shapes and foot patterns, and which species in BirdLab\'s habitats use each.'))
             ),
             // ── Cross-link to EvoLab Galápagos Beak Lab ──
             h('div', {
@@ -16009,9 +17310,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             ),
             // Feet Reference grid
             h('div', { className: 'bg-white rounded-2xl border-2 border-slate-300 shadow p-5' },
-              h('h2', { className: 'text-base font-black text-slate-800 mb-3' }, __alloT('stem.birdlab.6_foot_types_click_to_learn_how_each_o', '6 foot types — click to learn how each one moves')),
+              // Counted from the array, not written into the string: this said
+              // "6 foot types" and would have been wrong the moment the array
+              // grew.
+              h('h2', { className: 'text-base font-black text-slate-800 mb-3' },
+                FOOT_DIAGRAMS.length + ' ' + __alloT('stem.birdlab.foot_types_click_to_learn_how_each_one', 'foot types — click to learn how each one moves')),
               h('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-3' },
-                FOOT_TYPES.map(function(f) {
+                FOOT_DIAGRAMS.map(function(f) {
                   var sel = pickedFoot && pickedFoot.id === f.id;
                   return h('button', {
                     key: f.id,
@@ -22673,6 +23978,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             })),
           h('div', { className: 'bg-white rounded-xl shadow border-2 border-amber-200 p-5' },
             h('h2', { className: 'text-xl font-black text-amber-900 mb-3 tracking-tight' }, cur.species),
+            cur.art ? h('div', { className: 'mb-3 rounded-lg bg-amber-50/60 border border-amber-100 px-2 py-1' }, confusePlate(h, cur.art)) : null,
             h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4 mb-3' },
               h('div', { className: 'p-4 bg-gradient-to-br from-rose-100 to-amber-100 rounded-xl' },
                 h('div', { className: 'font-bold text-rose-800 mb-2 uppercase text-xs tracking-wider' }, __alloT('stem.birdlab.breeding_plumage', '☀️ Breeding plumage')),
@@ -22739,6 +24045,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             FLIGHT_PATTERNS.map(function(fp, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-sky-500 p-4' },
                 h('h2', { className: 'text-lg font-black text-sky-900 mb-2 tracking-tight' }, '✈️ ' + fp.name),
+                // The shape this style traces through the air. Decorative:
+                // every claim it makes is also in the prose below it, so a
+                // screen-reader user loses nothing (the svg is aria-hidden).
+                fp.trace ? h('div', { className: 'mb-2 rounded-lg bg-sky-50/70 border border-sky-100 px-2 py-1' }, flightTrace(h, fp.trace)) : null,
                 h('p', { className: 'text-sm text-slate-700 mb-2' }, h('b', null, 'Pattern: '), fp.pattern),
                 h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-slate-700' },
                   h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, 'Species: '), fp.species),
@@ -23021,12 +24331,123 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
       // ── WING TYPES VIEW ─────────────────────────────────────────
       function WingTypesView() {
+        var wsel_state = useState(d.wingSel || 'soaring');
+        var wsel = wsel_state[0], setWsel = wsel_state[1];
+        var w3dStatus = WING3D.status();
+        // Order matches WING_TYPES so card i and wing id i are the same wing.
+        var selIdx = WING3D_IDS.indexOf(wsel);
+        var selSpec = WING3D_SPECS[wsel] || WING3D_SPECS.soaring;
+        // Aspect ratio from the drawn geometry, so the number and the model can
+        // never disagree — full span is two half-spans plus the body.
+        var aspect = ((selSpec.span * 2) / (selSpec.chord * (1 + selSpec.taper) / 2)).toFixed(1);
+        WING3D.sync({ selected: null, sceneKey: wsel, sceneProps: { wing: wsel } });
+        function wingBtnRow() {
+          return h('div', { className: 'flex flex-wrap gap-1.5 mb-2' },
+            WING3D_IDS.map(function(id, i) {
+              var on = id === wsel;
+              return h('button', {
+                key: id,
+                onClick: function() { setWsel(id); upd('wingSel', id); },
+                'aria-pressed': on ? 'true' : 'false',
+                className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold border-2 transition-colors ' +
+                  (on ? 'bg-sky-600 border-sky-700 text-white' : 'bg-white border-slate-300 text-slate-700 hover:border-sky-500')
+              }, WING_TYPES[i] ? WING_TYPES[i].type.replace(/ \(.*$/, '') : id);
+            }));
+        }
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
             h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, __alloT('stem.birdlab.wing_types_shape_predicts_flight', '🪶 Wing Types — Shape Predicts Flight')),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
               className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, __alloT('stem.birdlab.menu_19', '← Menu'))),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, __alloT('stem.birdlab.5_main_wing_shapes_the_birds_that_use_', '5 main wing shapes + the birds that use them. Wing shape is one of the strongest predictors of how a bird flies + what it eats + where it lives.')),
+          h('div', { className: 'rounded-xl bg-white border-2 border-sky-200 p-3 mb-4' },
+            h('h3', { className: 'text-sm font-black text-sky-900 mb-1' }, __alloT('stem.birdlab.wing3d_title', 'Turn the wing over — planform, sweep and slots in 3D')),
+            wingBtnRow(),
+            h('div', { className: 'grid gap-3', style: { gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', alignItems: 'start' } },
+              h('div', null,
+                h('div', {
+                  ref: WING3D.attach, tabIndex: 0, role: 'group',
+                  'aria-label': __alloT('stem.birdlab.wing3d_label', 'Wing shape, 3D. Interactive. Arrow keys rotate, plus and minus zoom, zero resets. Every wing here is also a button, and every fact about it is in the card below.'),
+                  onKeyDown: function(e) {
+                    var k = e.key, handled = true;
+                    if (k === 'ArrowLeft') WING3D.nudge(-0.16, 0);
+                    else if (k === 'ArrowRight') WING3D.nudge(0.16, 0);
+                    else if (k === 'ArrowUp') WING3D.nudge(0, 0.10);
+                    else if (k === 'ArrowDown') WING3D.nudge(0, -0.10);
+                    else if (k === '+' || k === '=') WING3D.zoom(-0.4);
+                    else if (k === '-' || k === '_') WING3D.zoom(0.4);
+                    else if (k === '0') WING3D.reset();
+                    else handled = false;
+                    if (handled) { e.preventDefault(); e.stopPropagation(); }
+                  },
+                  style: { position: 'relative', width: '100%', height: 260, borderRadius: 10, overflow: 'hidden', background: '#0b1220', border: '1px solid #cbd5e1' }
+                },
+                  w3dStatus !== 'ready' && h('div', { style: { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 18, fontSize: 12.5, color: '#94a3b8', lineHeight: 1.55 } },
+                    w3dStatus === 'failed'
+                      ? __alloT('stem.birdlab.wing3d_failed', '3D view unavailable on this device or network. Every wing is a button above and every fact about it is in the cards below — nothing here needs the picture.')
+                      : __alloT('stem.birdlab.wing3d_loading', 'Loading the wing model…'))),
+                // Keyboard is not enough on a touch device with no keyboard, so
+                // the same camera moves are buttons too.
+                // Two presets straight to the views this model exists for.
+                // reset() goes to the fixed home pose, so a preset is exactly
+                // reproducible rather than "wherever you happen to have spun to".
+                // Pitch clamps at [0.12, 1.35] and home is 0.78, so both land
+                // inside the range.
+                h('div', { className: 'flex flex-wrap gap-1.5 mt-2' },
+                  // Pitch is measured from the HORIZON, not from vertical: the
+                  // clamp maximum 1.35 is straight down, 0.12 is level with the
+                  // wing. The first version had these two swapped.
+                  h('button', {
+                    key: 'above', disabled: w3dStatus !== 'ready',
+                    onClick: function() { WING3D.reset(); WING3D.nudge(0, 0.55); },
+                    className: 'px-2.5 py-1 rounded-lg border-2 border-sky-300 bg-sky-50 text-[11px] font-bold text-sky-900 hover:bg-sky-100 disabled:opacity-40'
+                  }, __alloT('stem.birdlab.wing3d_preset_above', '⬒ From above — see the planform')),
+                  // Originally this tried to show CAMBER by looking along the
+                  // span. It does not work: the wing foreshortens to almost
+                  // nothing and the section hides behind the leading edge. The
+                  // cross-section diagram below teaches camber properly, and
+                  // this preset now shows what a front view genuinely does show
+                  // — how far the wings droop away from the shoulder.
+                  h('button', {
+                    key: 'front', disabled: w3dStatus !== 'ready',
+                    onClick: function() { WING3D.reset(); WING3D.nudge(0, -0.55); },
+                    className: 'px-2.5 py-1 rounded-lg border-2 border-amber-300 bg-amber-50 text-[11px] font-bold text-amber-900 hover:bg-amber-100 disabled:opacity-40'
+                  }, __alloT('stem.birdlab.wing3d_preset_front', '◡ Front on — see the droop'))),
+                h('div', { className: 'flex flex-wrap gap-1 mt-2' },
+                  [['Rotate wing left', '⟲', function() { WING3D.nudge(-0.28, 0); }],
+                    ['Rotate wing right', '⟳', function() { WING3D.nudge(0.28, 0); }],
+                    ['Tilt view up', '▲', function() { WING3D.nudge(0, 0.16); }],
+                    ['Tilt view down', '▼', function() { WING3D.nudge(0, -0.16); }],
+                    ['Zoom in', '＋', function() { WING3D.zoom(-0.5); }],
+                    ['Zoom out', '－', function() { WING3D.zoom(0.5); }],
+                    ['Reset the view', '⌂', function() { WING3D.reset(); }]].map(function(c) {
+                    return h('button', {
+                      key: c[0], 'aria-label': c[0], disabled: w3dStatus !== 'ready', onClick: c[2],
+                      className: 'px-2 py-1 rounded border border-slate-300 bg-white text-xs font-bold text-slate-700 hover:border-sky-500 disabled:opacity-40'
+                    }, c[1]);
+                  }))),
+              h('div', { className: 'text-xs text-slate-700 space-y-2' },
+                h('div', { className: 'p-2 bg-sky-50 rounded' },
+                  h('b', null, __alloT('stem.birdlab.wing3d_aspect', 'Aspect ratio: ')), aspect,
+                  h('div', { className: 'text-[11px] text-slate-600 mt-0.5' }, __alloT('stem.birdlab.wing3d_aspect_note', 'Span divided by average width. High means long and thin — cheap to fly far, useless in dense cover. Low means short and broad — costly over distance, but it turns.'))),
+                h('div', { className: 'p-2 bg-amber-50 rounded' },
+                  h('b', null, __alloT('stem.birdlab.wing3d_look', 'Look for: ')),
+                  h('ul', { className: 'list-disc ml-4 mt-1 space-y-0.5' },
+                    h('li', { key: 'c' }, __alloT('stem.birdlab.wing3d_look_droop', 'Front on: the wings are not a flat plank. They fall away from the shoulder, and how much they do that differs by wing.')),
+                    h('li', { key: 's' }, selSpec.slots
+                      ? __alloT('stem.birdlab.wing3d_look_slots_yes', 'Look from below: the outer feathers separate into upswept fingers. Those slots are what let a soaring bird stay up at low speed.')
+                      : __alloT('stem.birdlab.wing3d_look_slots_no', 'This wing has no slotted fingers — the outer edge stays one clean surface. Switch to the soaring wing to compare.')),
+                    h('li', { key: 'a' }, __alloT('stem.birdlab.wing3d_look_span', 'Look along the span from the wingtip to see how much of the wing is length and how much is width.')))),
+                selIdx >= 0 && WING_TYPES[selIdx] ? h('div', { className: 'p-2 bg-emerald-50 rounded' },
+                  h('b', null, WING_TYPES[selIdx].type), ' — ', WING_TYPES[selIdx].examples) : null,
+                aerofoilPlate(h, selSpec.camber, {
+                  foilTitle: __alloT('stem.birdlab.foil_title', 'Cut through the wing — this curve is the lift'),
+                  foilAlt: __alloT('stem.birdlab.foil_alt', 'Cross-section of a wing. The upper surface is curved and the lower is nearly flat. Air splitting at the front travels further over the top than underneath, and an arrow marks lift pointing upward.'),
+                  foilFast: __alloT('stem.birdlab.foil_fast', 'longer path over the top'),
+                  foilSlow: __alloT('stem.birdlab.foil_slow', 'shorter path underneath'),
+                  foilLift: __alloT('stem.birdlab.foil_lift', 'lift'),
+                  foilNote: __alloT('stem.birdlab.foil_note', 'Curvature is drawn larger than life so it is visible — a real wing is far subtler. Flatter sections (falcons, auks) trade lift for speed; deeper ones (hawks, vultures) lift more at low speed.')
+                })))),
           h('div', { className: 'space-y-3' },
             WING_TYPES.map(function(w, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-sky-500 p-4' },
@@ -23047,6 +24468,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
               className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, __alloT('stem.birdlab.menu_20', '← Menu'))),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, __alloT('stem.birdlab.8_foot_types_from_perching_to_swimming', '8 foot types from perching to swimming to climbing to wading. Foot shape adapts to habitat + diet.')),
+          // These feet are already drawn in the Beak & Feet Lab, so this view
+          // points at them rather than growing a second, worse set of the same
+          // diagrams beside the prose.
+          h('button', {
+            onClick: function() { setView('beakFeet'); upd('view', 'beakFeet'); },
+            className: 'mb-3 inline-flex items-center gap-2 rounded-lg border border-sky-300 bg-sky-50 px-3 py-1.5 text-sm font-bold text-sky-900 hover:bg-sky-100 transition-colors'
+          }, '🦴 ' + __alloT('stem.birdlab.foot_see_drawn', 'Every foot below is drawn in the Beak & Feet Lab — open it to see the toes, webs, spines and claws described here')),
           h('div', { className: 'space-y-3' },
             FOOT_TYPES.map(function(f, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
@@ -23173,16 +24601,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
       // ── IRRUPTIONS VIEW ─────────────────────────────────────────
       function IrruptionsView() {
+        var IRR_L = {
+          chartTitle: __alloT('stem.birdlab.irrupt_chart_title', 'What "irruptive" means — ten winters, same feeder'),
+          chartAlt: __alloT('stem.birdlab.irrupt_chart_alt', 'Schematic chart. A regular winter visitor shows bars of similar height every winter. An irruptive visitor shows near-zero bars most winters and three very tall bars. A row below marks the northern seed crop as good or failed, and the failed crops line up with the tall bars.'),
+          rowRegular: __alloT('stem.birdlab.irrupt_row_regular', 'Regular'),
+          rowIrruptive: __alloT('stem.birdlab.irrupt_row_irruptive', 'Irruptive'),
+          rowCrop: __alloT('stem.birdlab.irrupt_row_crop', 'N. crop'),
+          chartNote: __alloT('stem.birdlab.irrupt_chart_note', 'A regular visitor turns up in similar numbers every winter. An irruptive one is absent, absent, absent — then floods south in one winter. The bottom row is why: when the northern seed or cone crop fails (✗), the birds have to leave. Schematic, to show the shape of the pattern — not counts for any one species.')
+        };
+        var IRR_ART = {
+          crossClosed: __alloT('stem.birdlab.cross_closed', 'Bill closed'),
+          crossClosedNote: __alloT('stem.birdlab.cross_closed_note', 'The tips cross past each other. The bird slides the closed bill under a cone scale.'),
+          crossOpen: __alloT('stem.birdlab.cross_open', 'Bill opening'),
+          crossOpenNote: __alloT('stem.birdlab.cross_open_note', 'Opening drives the tips sideways in opposite directions, levering the scale up. Then the tongue takes the seed.'),
+          crossWhiteWinged: __alloT('stem.birdlab.cross_ww', 'White-winged: two white wing bars'),
+          crossRed: __alloT('stem.birdlab.cross_red', 'Red: plain dark wing, no bars'),
+          waxBohemian: __alloT('stem.birdlab.wax_bohemian', 'Bohemian Waxwing'),
+          waxBohemianNote: __alloT('stem.birdlab.wax_bohemian_note', 'Rusty undertail. Greyer body, white + yellow wing marks.'),
+          waxCedar: __alloT('stem.birdlab.wax_cedar', 'Cedar Waxwing'),
+          waxCedarNote: __alloT('stem.birdlab.wax_cedar_note', 'White undertail. Warmer brown, yellow belly, plain wing.'),
+          waxTagRusty: __alloT('stem.birdlab.wax_tag_rusty', 'rusty undertail'),
+          waxTagWhite: __alloT('stem.birdlab.wax_tag_white', 'white undertail'),
+          waxKey: __alloT('stem.birdlab.wax_key', 'Check the undertail first — rusty means Bohemian, white means Cedar. It is the one mark that holds up at distance and in poor winter light.')
+        };
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
             h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, __alloT('stem.birdlab.irruptive_winter_visitors', '❄️ Irruptive Winter Visitors')),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
               className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, __alloT('stem.birdlab.menu_26', '← Menu'))),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, __alloT('stem.birdlab.birds_that_arrive_in_unpredictable_yea', 'Birds that arrive in unpredictable years — driven by food crop variations in northern + boreal habitats. Some winters bring spectacular numbers; other winters very few.')),
+          irruptionChart(h, IRR_L),
           h('div', { className: 'space-y-3' },
             IRRUPTIONS.map(function(ir, i) {
+              // Art only where the prose names a mark words cannot carry: the
+              // crossed mandible, and the waxwing pair that this list puts one
+              // above the other without ever separating them.
+              var art = (ir.species === 'White-winged Crossbill' || ir.species === 'Red Crossbill') ? crossbillArt(h, IRR_ART)
+                : ir.species === 'Bohemian Waxwing' ? waxwingPlate(h, IRR_ART) : null;
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-indigo-500 p-4' },
                 h('h2', { className: 'text-lg font-black text-indigo-900 mb-2 tracking-tight' }, '❄️ ' + ir.species),
+                art,
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-indigo-50 rounded' }, h('b', null, __alloT('stem.birdlab.irrupts_when', 'Irrupts when: ')), ir.irrupt_when),
                   h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, 'Pattern: '), ir.pattern),
@@ -23328,6 +24786,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       if (view === 'waterfowl') return h(stableType('WaterfowlView', WaterfowlView));
       if (view === 'shorebirds') return h(stableType('ShorebirdsView', ShorebirdsView));
       if (view === 'seabirds') return h(stableType('SeabirdsView', SeabirdsView));
+      // Bare h() is correct here: WingTypesView is ALREADY rebound to a stable
+      // wrapper in the stableType block above, so its identity is fixed and its
+      // useState and WebGL canvas survive host re-renders. Wrapping it a second
+      // time sets slot.impl = slot.Type and recurses until the stack blows.
       if (view === 'wingTypes') return h(WingTypesView);
       if (view === 'footTypes') return h(FootTypesView);
       if (view === 'behaviors') return h(stableType('BehaviorsView', BehaviorsView));
@@ -23414,8 +24876,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       setPick(tid);
                     }; }(t.id),
                     onClick: function() { setPick(t.id); }, style: { cursor: 'pointer' } },
-                    h('circle', { cx: t.x, cy: t.y, r: 12, fill: active ? '#fde047' : 'rgba(254,243,199,0.9)', stroke: active ? '#ca8a04' : '#92400e', strokeWidth: 2 }),
-                    h('text', { x: t.x, y: t.y+4, textAnchor: 'middle', fontSize: 11, fontWeight: 900, fill: '#7c2d12' }, (i+1).toString()));
+                    // Badges sit at (bx,by) when the anatomy is too crowded to
+                    // hold them: supercilium, eyeline and eye ring are only ~15
+                    // units apart on a 12-unit-radius badge, so three of the
+                    // finest facial marks overlapped by up to 46% and a click
+                    // could land on the wrong one. Anchors are unmoved; a leader
+                    // line keeps each badge tied to its real position.
+                    (t.bx != null && t.by != null) ? h('line', { x1: t.bx, y1: t.by, x2: t.x, y2: t.y, stroke: '#92400e', strokeWidth: 1.4, opacity: 0.75 }) : null,
+                    (t.bx != null && t.by != null) ? h('circle', { cx: t.x, cy: t.y, r: 2.6, fill: active ? '#ca8a04' : '#92400e' }) : null,
+                    h('circle', { cx: t.bx != null ? t.bx : t.x, cy: t.by != null ? t.by : t.y, r: 12, fill: active ? '#fde047' : 'rgba(254,243,199,0.9)', stroke: active ? '#ca8a04' : '#92400e', strokeWidth: 2 }),
+                    h('text', { x: t.bx != null ? t.bx : t.x, y: (t.by != null ? t.by : t.y)+4, textAnchor: 'middle', fontSize: 11, fontWeight: 900, fill: '#7c2d12' }, (i+1).toString()));
                 }))),
             h('div', { className: 'space-y-3' },
               picked
@@ -23610,6 +25080,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
               className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, __alloT('stem.birdlab.menu_40', '← Menu'))),
           h('p', { className: 'text-sm text-slate-700 italic mb-3' }, COMPLETE_GLOSSARY.length + ' birding terms — the vocabulary you need.'),
+          // About two dozen of these terms are places ON a bird — lore, malar,
+          // auriculars, nape, rump, speculum. The Topography Lab already draws
+          // all 22 of them on a labelled bird, so this points there instead of
+          // growing a second, worse set of diagrams inside the glossary.
+          h('button', {
+            onClick: function() { setView('topology'); upd('view', 'topology'); },
+            className: 'mb-3 inline-flex items-center gap-2 rounded-lg border border-sky-300 bg-sky-50 px-3 py-1.5 text-sm font-bold text-sky-900 hover:bg-sky-100 transition-colors'
+          }, '🦴 ' + __alloT('stem.birdlab.glossary_see_topography', 'Body-part terms (lore, malar, nape, rump...) are drawn on a labelled bird in the Bird Topography Lab')),
           h('input', { 'aria-label': __alloT('stem.birdlab.glossary_search_label', 'Search birding glossary'), type: 'text', value: q, onInput: function(e) { setQ(e.target.value); },
             placeholder: __alloT('stem.birdlab.search_terms_or_definitions', 'Search terms or definitions...'),
             className: 'w-full px-4 py-2 rounded-lg border-2 border-stone-300 mb-3 text-sm' }),
@@ -23663,7 +25141,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   return h('button', { key: i, onClick: function() {
                     setHistory(history.concat([step]));
                     setStep(c.next);
-                  }, className: 'transition-colors w-full p-3 rounded-lg bg-white hover:bg-violet-100 border-2 border-violet-300 text-left text-sm text-slate-800 font-bold active:scale-[0.97]' }, c.label);
+                  }, className: 'transition-colors w-full p-3 rounded-lg bg-white hover:bg-violet-100 border-2 border-violet-300 text-left text-sm text-slate-800 font-bold active:scale-[0.97] flex items-center gap-3' },
+                    c.sizeIn ? h('span', { className: 'shrink-0 inline-flex items-end justify-center', style: { width: '46px', height: '34px' }, 'aria-hidden': 'true' },
+                      birdlabSizeGlyph(h, c.sizeIn)) : null,
+                    h('span', null, c.label));
                 }))) : null,
             node.result ? h('div', null,
               h('h2', { className: 'text-lg font-black text-emerald-900 mb-3 tracking-tight' }, __alloT('stem.birdlab.likely_identification', '✓ Likely Identification')),
@@ -23744,6 +25225,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             AGE_SEX_ID.map(function(a, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
                 h('h2', { className: 'text-lg font-black text-amber-900 mb-2 tracking-tight' }, '🎂 ' + a.topic),
+                a.art ? h('div', { className: 'mb-2 rounded-lg bg-amber-50/60 border border-amber-100 px-2 py-1' }, confusePlate(h, a.art)) : null,
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Detail: '), a.detail),
                   h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, 'Example: '), a.example)));
@@ -23762,6 +25244,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             SHAPE_DIFF.map(function(s, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-sky-500 p-4' },
                 h('h2', { className: 'text-lg font-black text-sky-900 mb-2 tracking-tight' }, '📐 ' + s.feature),
+                s.strip ? shapeStrip(h, s.strip) : null,
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-sky-50 rounded' }, h('b', null, 'What: '), s.what),
                   h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, __alloT('stem.birdlab.diagnostic', '💡 Diagnostic: ')), s.diagnostic)));
@@ -23863,6 +25346,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             CONFUSING_PAIRS.map(function(p, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
                 h('h2', { className: 'text-lg font-black text-amber-900 mb-2 tracking-tight' }, '🔀 ' + p.pair),
+                // The one decisive mark, side by side. aria-hidden: everything
+                // it shows is stated in the key-difference text below it.
+                p.art ? h('div', { className: 'mb-2 rounded-lg bg-amber-50/60 border border-amber-100 px-2 py-1' }, confusePlate(h, p.art)) : null,
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Similarity: '), p.similarity),
                   h('div', { className: 'p-2 bg-emerald-50 rounded' }, h('b', null, __alloT('stem.birdlab.key_difference', '✓ Key difference: ')), p.key_diff)));
@@ -24378,6 +25864,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       }
 
       // ── DRAWING VIEW ─────────────────────────────────────────
+      // Captions live here rather than inside the art helpers so every string
+      // still goes through __alloT in the form the localization scanner reads.
+      var DRAW_L = {
+        stepTitles: [
+          __alloT('stem.birdlab.sketch_step1', 'Two ovals'),
+          __alloT('stem.birdlab.sketch_step2', 'Join + posture line'),
+          __alloT('stem.birdlab.sketch_step3', 'Bill, eye, tail, legs'),
+          __alloT('stem.birdlab.sketch_step4', 'Wing + marks')
+        ],
+        stepNotes: [
+          __alloT('stem.birdlab.sketch_note1', 'Head about half the body. Set the gap between them before anything else.'),
+          __alloT('stem.birdlab.sketch_note2', 'Connect the ovals. The dashed line is the body angle — that angle is a field mark.'),
+          __alloT('stem.birdlab.sketch_note3', 'Now the details, in order. Stop here and you already have a usable sketch.'),
+          __alloT('stem.birdlab.sketch_note4', 'Wing line, then plumage marks last. About 1-2 minutes total.')
+        ],
+        detailAlt: __alloT('stem.birdlab.sketch_detail_alt', 'A pencil sketch of a perched bird with five numbered callouts: bill, eye, wing pattern, tail shape, feet.'),
+        detailOrder: [
+          __alloT('stem.birdlab.sketch_d1', 'Bill'),
+          __alloT('stem.birdlab.sketch_d2', 'Eye'),
+          __alloT('stem.birdlab.sketch_d3', 'Wing pattern'),
+          __alloT('stem.birdlab.sketch_d4', 'Tail shape'),
+          __alloT('stem.birdlab.sketch_d5', 'Feet')
+        ],
+        postureTitles: [
+          __alloT('stem.birdlab.posture_wp', 'Woodpecker'),
+          __alloT('stem.birdlab.posture_sp', 'Sandpiper'),
+          __alloT('stem.birdlab.posture_sr', 'Soaring hawk')
+        ],
+        postureNotes: [
+          __alloT('stem.birdlab.posture_wp_n', 'Upright against the trunk, braced on a stiff tail.'),
+          __alloT('stem.birdlab.posture_sp_n', 'Body near level, carried high on long legs.'),
+          __alloT('stem.birdlab.posture_sr_n', 'Draw the wing line first — the body is a short stroke.')
+        ],
+        journalFields: [
+          { label: __alloT('stem.birdlab.journal_date', 'Date'), value: __alloT('stem.birdlab.journal_date_v', '14 May, 7:20 am') },
+          { label: __alloT('stem.birdlab.journal_place', 'Place'), value: __alloT('stem.birdlab.journal_place_v', 'Alder edge, back field') },
+          { label: __alloT('stem.birdlab.journal_weather', 'Weather'), value: __alloT('stem.birdlab.journal_weather_v', 'Overcast, still, 11C') },
+          { label: __alloT('stem.birdlab.journal_species', 'Species'), value: __alloT('stem.birdlab.journal_species_v', 'Sparrow? streaked breast, central spot') },
+          { label: __alloT('stem.birdlab.journal_behavior', 'Behavior'), value: __alloT('stem.birdlab.journal_behavior_v', 'Double-scratching in leaf litter, tail pumped') }
+        ],
+        journalNote: __alloT('stem.birdlab.journal_note', 'The species line ends in a question mark on purpose — an honest "sparrow?" plus what you actually saw is worth more than a confident wrong name.'),
+        colorVague: __alloT('stem.birdlab.color_vague', '"brown bird"'),
+        colorNotes: [
+          __alloT('stem.birdlab.color_bill', 'bill black'),
+          __alloT('stem.birdlab.color_legs', 'legs yellow'),
+          __alloT('stem.birdlab.color_breast', 'breast warm rust')
+        ]
+      };
       function DrawingView() {
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
@@ -24387,8 +25921,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, __alloT('stem.birdlab.field_sketching_builds_observation_id_', 'Field sketching builds observation + ID skills better than photo alone. How to start a bird journal.')),
           h('div', { className: 'space-y-3' },
             DRAWING_TIPS.map(function(d, i) {
+              // A drawing lesson should not be all words. Four of these eight
+              // topics describe something with a shape, so each one now shows
+              // it: the build sequence, the order details go on, the three
+              // postures the text names, and what a journal page looks like.
+              var art = d.topic === 'Quick sketches' ? sketchStepStrip(h, DRAW_L)
+                : d.topic === 'Adding details' ? h('div', { className: 'rounded-lg bg-white border border-amber-200 p-2 mb-3 flex flex-wrap gap-3 items-center' },
+                  sketchDetailPlate(h, DRAW_L.detailAlt),
+                  // listStyle is inline: the badges already carry the numbers,
+                  // and a default <ol> marker renders them twice ("1. 1 Bill").
+                  h('ol', { className: 'flex-1 min-w-[150px] space-y-0.5 list-none', style: { listStyle: 'none', margin: 0, padding: 0 } },
+                    DRAW_L.detailOrder.map(function(s, j) {
+                      return h('li', { key: j, className: 'flex items-center gap-1.5 text-[11px] text-slate-700' },
+                        h('span', { className: 'inline-flex items-center justify-center w-4 h-4 rounded-full bg-amber-100 border border-amber-600 text-[9px] font-black text-amber-900 shrink-0' }, (j + 1).toString()),
+                        h('span', { className: 'font-bold' }, s));
+                    })))
+                  : d.topic === 'Drawing posture + behavior' ? posturePlate(h, DRAW_L)
+                    : d.topic === 'Note-taking' ? journalPlate(h, DRAW_L)
+                      : d.topic === 'Color' ? colorNotePlate(h, DRAW_L) : null;
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-amber-500 p-4' },
                 h('h2', { className: 'text-lg font-black text-amber-900 mb-2 tracking-tight' }, '✏ ' + d.topic),
+                art,
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-amber-50 rounded' }, h('b', null, 'Details: '), d.details),
                   h('div', { className: 'p-2 bg-emerald-50 italic rounded' }, h('b', null, __alloT('stem.birdlab.benefit', '✓ Benefit: ')), d.benefit)));
@@ -24554,6 +26107,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             BIRDS_BY_COLOR.map(function(c, i) {
               return h('div', { key: i, className: 'bg-white rounded-xl shadow border-l-4 border-orange-500 p-4' },
                 h('h2', { className: 'text-lg font-black text-orange-900 mb-2 tracking-tight' }, '🎨 ' + c.color),
+                c.art ? h('div', { className: 'mb-2 rounded-lg bg-orange-50/60 border border-orange-100 px-2 py-1' }, confusePlate(h, c.art)) : null,
                 h('div', { className: 'space-y-2 text-sm text-slate-700' },
                   h('div', { className: 'p-2 bg-orange-50 rounded' }, h('b', null, __alloT('stem.birdlab.birds_3', '🐦 Birds: ')), c.birds),
                   h('div', { className: 'p-2 bg-amber-50 italic rounded' }, h('b', null, __alloT('stem.birdlab.tip_12', '💡 Tip: ')), c.tip)));
@@ -24562,17 +26116,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
       // ── BEHAVIOR GLOSSARY VIEW ─────────────────────────────────────────
       function BehaviorGlossView() {
+        var BEH_L = {
+          spreadTitle: __alloT('stem.birdlab.spread_wing_title', 'Three "wings out" postures — how to tell them apart'),
+          spreadIntro: __alloT('stem.birdlab.spread_wing_intro', 'Sun-bathing and mantling are both defined below as a "spread-wing posture", which is not enough to separate them in the field. What actually differs is where the wings go and what is underneath the bird.'),
+          sunName: __alloT('stem.birdlab.spread_sun', 'Sun-bathing'),
+          sunNote: __alloT('stem.birdlab.spread_sun_note', 'Wings open FLAT and turned to the sun, tail fanned, feathers raised. Nothing underneath the bird.'),
+          mantleName: __alloT('stem.birdlab.spread_mantle', 'Mantling'),
+          mantleNote: __alloT('stem.birdlab.spread_mantle_note', 'Wings arched FORWARD and down like a tent, head low. There is prey underneath, being hidden from thieves.'),
+          distName: __alloT('stem.birdlab.spread_dist', 'Distraction display'),
+          distNote: __alloT('stem.birdlab.spread_dist_note', 'ONE wing splayed and dragging, the bird stumbling AWAY from the nest. The other wing stays folded.')
+        };
         return h('div', { className: 'p-4 max-w-5xl mx-auto' },
           h('div', { className: 'flex items-center justify-between mb-4 flex-wrap gap-2' },
             h('h1', { className: 'text-2xl font-black text-stone-800 tracking-tight' }, __alloT('stem.birdlab.bird_behavior_glossary', '🧠 Bird Behavior Glossary')),
             h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); },
               className: 'transition-colors px-3 py-1.5 rounded-lg bg-stone-700 hover:bg-stone-800 text-white text-sm font-bold active:scale-[0.97]' }, __alloT('stem.birdlab.menu_83', '← Menu'))),
           h('p', { className: 'text-sm text-slate-700 italic mb-4' }, __alloT('stem.birdlab.25_behavior_terms_birders_use_mobbing_', '25 behavior terms birders use — mobbing, caching, lekking, philopatry, anting, mantling + more.')),
+          spreadWingPlate(h, BEH_L),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
             BEHAVIOR_GLOSSARY.map(function(g, i) {
-              return h('div', { key: i, className: 'bg-white rounded-lg shadow border-l-4 border-violet-500 p-3' },
-                h('div', { className: 'text-sm font-black text-violet-900 mb-1' }, '🧠 ' + g.term),
-                h('div', { className: 'text-xs text-slate-700' }, g.def));
+              // Twelve of these twenty-five terms define a body shape or an
+              // arrangement of birds. Those get drawn; the abstract ones
+              // (philopatry, habituation, niche differentiation) do not,
+              // because a picture of them would be decoration.
+              var glyph = behaviorGlyph(h, BEHAVIOR_GLYPH_FOR[g.term]);
+              return h('div', { key: i, className: 'bg-white rounded-lg shadow border-l-4 border-violet-500 p-3 flex gap-2 items-start' },
+                glyph,
+                h('div', { className: 'min-w-0' },
+                  h('div', { className: 'text-sm font-black text-violet-900 mb-1' }, '🧠 ' + g.term),
+                  h('div', { className: 'text-xs text-slate-700' }, g.def)));
             })));
       }
 

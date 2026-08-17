@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
-  <meta name="description" content="Turning an inherited PDF into an accessible version: the audit, Make Accessible, the human review, the evidence report, and the no-egress option.">
+  <meta name="description" content="Turning an inherited document into an accessible version: what you can upload, the audit, Make Accessible, the human review, the evidence report, the local connector, and the no-egress option.">
   <title>Make a document accessible: the remediation workflow · AlloFlow Teacher Guide</title>
   <link rel="stylesheet" href="guide.css">
 </head>
@@ -48,6 +48,8 @@
           <li><a href="specialist-reference.html">Specialist and product reference</a></li>
           <li><a href="school-rollout-and-coaching.html">School rollout and coaching</a></li>
           <li><a href="for-your-it-department.html">For your IT department: the one-page technical brief</a></li>
+          <li><a href="for-school-leaders.html">For school leaders: the Leadership Hub</a></li>
+          <li><a href="steam-lab.html">The STEAM Lab: 142 tools, and how to find the one you need</a></li>
         </ol>
       </nav>
     </aside>
@@ -60,7 +62,7 @@
       </nav>
       <article class="guide-article">
 <h1 id="make-a-document-accessible-the-remediation-workflow">Make a document accessible: the remediation workflow</h1>
-        <p class="chapter-summary">Turning an inherited PDF into an accessible version: the audit, Make Accessible, the human review, the evidence report, and the no-egress option.</p>
+        <p class="chapter-summary">Turning an inherited document into an accessible version: what you can upload, the audit, Make Accessible, the human review, the evidence report, the local connector, and the no-egress option.</p>
         <dl class="chapter-cues" aria-label="Chapter at a glance">
           <div>
             <dt>Best for</dt>
@@ -68,14 +70,16 @@
           </div>
           <div>
             <dt>Typical use</dt>
-            <dd>8 minutes</dd>
+            <dd>10 minutes</dd>
           </div>
         </dl>
-        <p class="chapter-meta">Chapter 14 of 19 · Verified <time datetime="2026-08-16">2026-08-16</time></p>
+        <p class="chapter-meta">Chapter 14 of 21 · Verified <time datetime="2026-08-16">2026-08-16</time></p>
         <nav class="section-nav" aria-labelledby="section-nav-title">
           <p id="section-nav-title" class="section-nav__title">On this page</p>
           <ol>
             <li><a href="#the-shape-of-the-workflow">The shape of the workflow</a></li>
+            <li><a href="#while-a-run-is-going">While a run is going</a></li>
+            <li><a href="#doing-this-without-the-app">Doing this without the app</a></li>
             <li><a href="#what-the-evidence-report-is-for">What the evidence report is for</a></li>
             <li><a href="#honest-expectations">Honest expectations</a></li>
             <li><a href="#confidential-documents">Confidential documents</a></li>
@@ -116,6 +120,8 @@
               <li><a href="specialist-reference.html">Specialist and product reference</a></li>
               <li><a href="school-rollout-and-coaching.html">School rollout and coaching</a></li>
               <li><a href="for-your-it-department.html">For your IT department: the one-page technical brief</a></li>
+              <li><a href="for-school-leaders.html">For school leaders: the Leadership Hub</a></li>
+              <li><a href="steam-lab.html">The STEAM Lab: 142 tools, and how to find the one you need</a></li>
               </ul>
             </div>
           </noscript>
@@ -123,12 +129,22 @@
 <p>Schools run on inherited documents: the scanned packet, the district PDF, the worksheet someone made in 2009. AlloFlow's remediation workflow turns a document like that into an accessible version, shows its evidence, and keeps you, the human, as the last step. This chapter is the teacher's view; the <a href="https://alloflow-cdn.pages.dev/whitepaper.html">white paper</a> covers the same pipeline for a district evaluation.</p>
 <h2 id="the-shape-of-the-workflow">The shape of the workflow</h2>
 <ol>
-<li><strong>Upload the document</strong> (PDF, including scanned/image-based ones, which are routed through text recognition).</li>
+<li><strong>Upload the document.</strong> PDFs, including scanned or image-based ones, which are routed through text recognition. Word and PowerPoint files, photos and screenshots of a page, and text-family files (markdown, plain text, CSV or TSV, and spreadsheets) also work. Anything that is not already a PDF is rebuilt as accessible HTML plus the alternate formats, rather than being forced back into a page layout it never had.</li>
 <li><strong>Read the audit.</strong> The tool checks the document against accessibility rules and shows what it found, before anything is changed.</li>
 <li><strong>Run Make Accessible.</strong> The pipeline rebuilds the document as structured, accessible content, applying safe deterministic fixes first and AI-assisted repairs only where diagnosis is needed. Improvement is bounded: each change is kept only if fresh checks show it helped, rolled back if it made things worse, and the process stops when results stop improving.</li>
 <li><strong>Review the result against the source.</strong> This step is yours and it is not optional. The comparison view exists so you can confirm nothing was dropped or distorted; a document can pass every automated check and still misrepresent the original.</li>
 <li><strong>Export what you need</strong>: accessible HTML, a tagged PDF, and alternate formats including DOCX, ODT, EPUB 3, DAISY 3, and Grade-1 braille (BRF), each with its own stated validation boundary.</li>
 </ol>
+<h2 id="while-a-run-is-going">While a run is going</h2>
+<p>A thorough run on a long document takes a while, and there are three things worth knowing.</p>
+<ul>
+<li><strong>Leave the tab visible.</strong> Browsers slow down background tabs on purpose, so a minimized or hidden window makes the same run take noticeably longer. The tool tells you when this is happening and welcomes you back, but the fastest run is the one you leave on screen.</li>
+<li><strong>Use &quot;Run fresh&quot; when you want a true re-test.</strong> Finished runs are cached so you can reopen them instantly. That is usually what you want, but if you are checking whether a change helped, tick the fresh-run option so the document is genuinely processed again instead of replayed from cache.</li>
+<li><strong>If something looks wrong, export the diagnostic bundle</strong> before you close the run. It captures what actually happened during processing, which is the difference between &quot;it seemed slow&quot; and a report someone can act on.</li>
+</ul>
+<h2 id="doing-this-without-the-app">Doing this without the app</h2>
+<p>If you already use Claude Desktop, there is a local connector that runs the same pipeline on your own computer. You install it once, and then you can ask in plain language: audit this document, remediate it, export it as EPUB. It reads the file from your disk, so nothing is uploaded to AlloFlow.</p>
+<p>Two things make it worth knowing about. The deterministic tools (validation, text extraction, redaction, structure checks, exports) work with no AI key at all, and the AI-assisted repair runs on a key you supply yourself. Your IT department may prefer this path for exactly that reason: see <a href="for-your-it-department.html">For your IT department</a>.</p>
 <h2 id="what-the-evidence-report-is-for">What the evidence report is for</h2>
 <p>Every run produces a report bound to the exact files it describes: what was found, what was fixed, what remains, and which checkers said so at which versions. Keep it with the document. If anyone ever asks &quot;how do you know this version is accessible,&quot; the answer is a report, not a recollection.</p>
 <h2 id="honest-expectations">Honest expectations</h2>

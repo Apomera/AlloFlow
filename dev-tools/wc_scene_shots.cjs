@@ -1,11 +1,22 @@
-// Screenshot the Water Cycle explorer scene and steward setup, light + dark.
+// Screenshot every Water Cycle surface -- 2D canvas, Precipitation Lab, the
+// steward phases, the 3D journey -- in light and dark, plus a phone viewport.
 //
-//   node dev-tools/wc_scene_shots.cjs <out-dir> [--wait=9000]
+//   node dev-tools/build_sweep_tailwind_css.cjs      # once, if .cache is empty
+//   node dev-tools/wc_scene_shots.cjs <out-dir> [--only=<substr>] [--wait=9000]
+//   npm run shots:watercycle -- <out-dir>
 //
-// WHY. The 2026-08-16 visual pass added volumetric gradient clouds, a leaping
-// fish, shore cattails, a night shooting star, and CSS depth polish. The SSR
-// suites prove the source shapes; they cannot see a cloud rendered as a grey
-// slab or a reed drawn into the ocean. Shots are the only check that looks.
+// WHY. Almost every real defect found in the 2026-08-16/17 audit was found by
+// LOOKING, and by nothing else: 2D lightning that was dead code, a night sky
+// with a blazing sun over summer-green land, cloud lobes shaded as glossy
+// spheres, a rainbow that resolved to muddy tan, an orphaned card beside a
+// card-sized hole, and a debrief reading "undefined / 6". The SSR suites prove
+// source shapes and the contrast gates measure colour; neither can see any of
+// that. Shots are the only check that looks.
+//
+// WHAT EACH SHOT PROVES, so a green run is not over-read: 3D shots assert a
+// LIVE, non-lost WebGL context and fail rather than photograph a parked canvas;
+// mobile shots report horizontal overflow; the storm shot reports the gate flag
+// that was once permanently false. Everything else is for human eyes.
 //
 // The wait is deliberately >8.7s: the fish cycle is 520 ticks (~8.7s at 60fps),
 // so a full wait guarantees the fish/splash code path EXECUTED at least once
@@ -20,10 +31,21 @@ const OUT = process.argv[2] || '.';
 const WAIT = Number((process.argv.find((a) => a.startsWith('--wait=')) || '--wait=9000').split('=')[1]);
 
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
-// Tailwind is INLINED (pass --tailwind=<file> of the Play CDN script): the
-// sandboxed harness browser has no network, and without Tailwind `relative`
-// wrappers compute to position:static and every overlay escapes the canvas.
-const twPath = (process.argv.find((a) => a.startsWith('--tailwind=')) || '').split('=')[1];
+// Tailwind is INLINED from the precompiled stylesheet, not fetched: the harness
+// browser has no network, and without Tailwind a `relative` wrapper computes to
+// position:static so every absolutely-positioned overlay escapes the canvas and
+// lands somewhere else entirely -- which looks exactly like a real layout bug.
+// Shared with dev-tools/theme_contrast_sweep.cjs so both render identical CSS.
+const TW_CSS_PATH = path.join(ROOT, 'dev-tools', '.cache', 'sweep-tailwind.css');
+if (!fs.existsSync(TW_CSS_PATH)) {
+  console.error('Missing ' + path.relative(ROOT, TW_CSS_PATH));
+  console.error('Build it first:  node dev-tools/build_sweep_tailwind_css.cjs');
+  process.exit(2);
+}
+const tailwindCss = fs.readFileSync(TW_CSS_PATH, 'utf8');
+// --only=<substring> runs a subset; a full pass is ~5 minutes, which is too slow
+// to iterate against when working on one surface.
+const ONLY = (process.argv.find((a) => a.startsWith('--only=')) || '').split('=')[1] || '';
 const react = read('desktop/web-app/node_modules/react/umd/react.production.min.js');
 const reactDom = read('desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js');
 const host = read('stem_lab/stem_lab_module.js');
@@ -111,6 +133,30 @@ const wsReview = Object.assign({}, wsYear, {
   }]),
 });
 
+// A myth the student got WRONG, which is the state that renders the most: the
+// verdict badge, the explanation, and the "Try it" pointer into the tool.
+const WC_MYTH = {
+  idx: 0,
+  s: 'Clouds are containers that hold water until they get too heavy.',
+  t: false,
+  why: 'A cloud is not a bag. It is billions of droplets small enough that rising air keeps them aloft; rain starts when droplets collide and merge until gravity beats the updraft.',
+  tryIt: 'Open Journey Mode and ride a droplet from condensation to precipitation.',
+  answered: true,
+  chosen: true,
+};
+
+const WC_QUIZ_BASE = {
+  q: 'What makes puddles disappear on sunny days?',
+  a: 'The sun heats the water',
+  opts: ['The ground drinks it', 'The sun heats the water', 'Wind blows it away', 'It goes to sleep'],
+  answered: false, score: 0, concept: 'evaporation',
+  wrongFeedback: {
+    'The ground drinks it': 'While some water soaks into the ground, puddles on sidewalks and streets mostly disappear because the sun heats them up into vapor.',
+    'Wind blows it away': 'Wind can help water evaporate faster by moving air, but the sun\'s heat is the main reason liquid water changes into gas.',
+    'It goes to sleep': 'Water molecules never sleep! The sun\'s energy makes them move faster and float up into the sky.',
+  },
+};
+
 const SHOTS = [
   ['01-explorer-light', {}, false],
   ['02-explorer-dark', {}, true],
@@ -128,6 +174,27 @@ const SHOTS = [
   ['11-journey3d-evaporating', { journeyView: '3d', journeyActive: true, journeyState: 'evaporating', journeyPaused: false, activeStage: 'evaporation' }, false],
   ['12-journey3d-precipitating', { journeyView: '3d', journeyActive: true, journeyState: 'precipitating', journeyPaused: false, activeStage: 'precipitation' }, false],
   ['13-journey3d-aquifer-dark', { journeyView: '3d', journeyActive: true, journeyState: 'aquifer_flow', journeyPaused: false, activeStage: 'infiltration' }, true],
+  // Quiz states. 'concept' must be a real waterCycleVocab() key or the study
+  // card silently does not render; wrongFeedback is keyed by option TEXT.
+  ['24-focus-panel', {}, false],
+  ['27-explorer-fullpage-light', {}, false],
+  ['28-explorer-fullpage-dark', {}, true],
+  ['29-canvas-forest', { landCover: 'forest', landAdjusted: true, infiltrationIndex: 78 }, false],
+  // Myth panel ANSWERED: the verdict, the "why", and the Try-it pointer only
+  // render after a choice, so an unanswered shot would miss the whole payload.
+  ['30-myth-answered-light', { wcMyth: WC_MYTH }, false],
+  ['31-myth-answered-dark', { wcMyth: WC_MYTH }, true],
+  // The hydro quest renders ONLY in the 3D journey view (`journeyView === '3d'`),
+  // so a default-state shot silently produces no panel at all.
+  ['32-hydro-quest-light', { journeyView: '3d', journeyActive: true, journeyState: 'evaporating', journeyLoops: 1, stagesViewed: { evaporation: true, condensation: true, precipitation: true } }, false],
+  ['33-hydro-quest-dark', { journeyView: '3d', journeyActive: true, journeyState: 'evaporating', journeyLoops: 1, stagesViewed: { evaporation: true, condensation: true, precipitation: true } }, true],
+  // Deep-dive overlays on top of whatever phase is active (setup here).
+  ['25-steward-deepdive-light', { wcMode: 'steward', steward: Object.assign({}, wsYear, { phase: 'setup', deepDiveComponent: 'riverMainstem' }) }, false],
+  ['26-steward-deepdive-dark', { wcMode: 'steward', steward: Object.assign({}, wsYear, { phase: 'setup', deepDiveComponent: 'riverMainstem' }) }, true],
+  ['20-quiz-open', { wcQuiz: WC_QUIZ_BASE }, false],
+  ['21-quiz-correct', { wcQuiz: Object.assign({}, WC_QUIZ_BASE, { answered: true, chosen: 'The sun heats the water', score: 4 }), wcAttempts: 5, wcStreak: 4 }, false],
+  ['22-quiz-wrong', { wcQuiz: Object.assign({}, WC_QUIZ_BASE, { answered: true, chosen: 'The ground drinks it', score: 2 }), wcAttempts: 6, wcStreak: 0 }, false],
+  ['23-quiz-wrong-dark', { wcQuiz: Object.assign({}, WC_QUIZ_BASE, { answered: true, chosen: 'The ground drinks it', score: 2 }), wcAttempts: 6, wcStreak: 0 }, true],
   // Canvas scenes that only exist under particular climate/land settings.
   ['17-canvas-urban', { landCover: 'urban', landAdjusted: true, runoffIndex: 82 }, false],
   ['18-canvas-freezing', { climTemp: -12, climateAdjusted: true }, false],
@@ -158,9 +225,25 @@ const MOBILE_SHOTS = [
     + '<style>body{margin:0;background:#f1f5f9;font-family:system-ui}.dark body{background:#0f172a}</style></head>'
     + '<body><div id="slot" style="padding:12px"></div></body></html>',
   );
-  if (twPath) await pg.addScriptTag({ content: fs.readFileSync(twPath, 'utf8') });
-  const tw = await pg.evaluate(() => typeof window.tailwind !== 'undefined');
-  if (!tw) { console.error('FAIL: Tailwind did not load - pass --tailwind=<play-cdn-file>'); await b.close(); process.exit(2); }
+  await pg.addStyleTag({ content: tailwindCss });
+  // Assert the CSS actually APPLIES, rather than that a script global exists.
+  // The old check tested `window.tailwind`, which the Play CDN defines the
+  // instant its script runs -- true well before any rule is compiled. Measuring
+  // a computed style proves the rules are live.
+  const tw = await pg.evaluate(() => {
+    const probe = document.createElement('div');
+    probe.className = 'relative bg-slate-800';
+    document.body.appendChild(probe);
+    const cs = getComputedStyle(probe);
+    const ok = cs.position === 'relative' && cs.backgroundColor === 'rgb(30, 41, 59)';
+    probe.remove();
+    return ok;
+  });
+  if (!tw) {
+    console.error('FAIL: Tailwind stylesheet did not apply - rebuild dev-tools/.cache/sweep-tailwind.css');
+    await b.close();
+    process.exit(2);
+  }
   for (const code of [react, reactDom, three, orbit, host, tool, SHELL]) {
     await pg.addScriptTag({ content: code });
   }
@@ -168,11 +251,13 @@ const MOBILE_SHOTS = [
     console.error('FAIL: waterCycle never registered'); await b.close(); process.exit(2);
   }
 
-  for (const [label, state, dark] of SHOTS) {
+  for (const [label, state, dark] of SHOTS.filter((s) => !ONLY || s[0].indexOf(ONLY) !== -1)) {
     await pg.evaluate(({ s, d }) => window.__mount(s, d), { s: state, d: dark });
     await pg.waitForTimeout(label.startsWith('01') ? WAIT : 3500);
     const file = path.join(OUT, label + '.png');
-    await pg.screenshot({ path: file, fullPage: false });
+    // fullPage for the sweep-style shots: the explorer stacks ~15 panels below
+    // the canvas that a viewport shot never reaches.
+    await pg.screenshot({ path: file, fullPage: label.indexOf('fullpage') !== -1 });
     // A 3D shot must prove it photographed a LIVE GL scene, never a parked
     // canvas: engineState stays 'loading' if THREE is missing, and a lost
     // context photographs as a plausible-looking blank.
@@ -191,7 +276,17 @@ const MOBILE_SHOTS = [
       }
       glNote = '  [GL live, engineState=' + gl.state + ']';
     }
-    const shell = await pg.$('canvas.wc-journey-3d') || await pg.$('.wc-canvas-shell') || await pg.$('.wc-precip-chamber');
+    // Quiz/focus panels live below the fold, so the viewport shot misses them;
+    // element screenshots auto-scroll.
+    const shell = label.indexOf('quiz') !== -1
+      ? await pg.$('[aria-label="Water Cycle quiz"]')
+      : label.indexOf('myth') !== -1
+        ? await pg.$('[aria-labelledby="wcMythTitle"]')
+      : label.indexOf('hydro') !== -1
+        ? await pg.$('.wc-hydro-quest')
+      : label.indexOf('focus') !== -1
+        ? await pg.$('.wc-stage-focus')
+        : await pg.$('canvas.wc-journey-3d') || await pg.$('.wc-canvas-shell') || await pg.$('.wc-precip-chamber');
     if (shell) await shell.screenshot({ path: path.join(OUT, label + '-canvas.png') });
     // The lightning flash is random (~0.3%/frame) and lasts only a few frames,
     // so one screenshot usually misses it. Report the gate flag - which is the
@@ -219,11 +314,11 @@ const MOBILE_SHOTS = [
     + '<style>body{margin:0;background:#f1f5f9;font-family:system-ui}.dark body{background:#0f172a}</style></head>'
     + '<body><div id="slot" style="padding:8px"></div></body></html>',
   );
-  if (twPath) await mob.addScriptTag({ content: fs.readFileSync(twPath, 'utf8') });
+  await mob.addStyleTag({ content: tailwindCss });
   for (const code of [react, reactDom, three, orbit, host, tool, SHELL]) {
     await mob.addScriptTag({ content: code });
   }
-  for (const [label, state, dark] of MOBILE_SHOTS) {
+  for (const [label, state, dark] of MOBILE_SHOTS.filter((s) => !ONLY || s[0].indexOf(ONLY) !== -1)) {
     await mob.evaluate(({ s, d }) => window.__mount(s, d), { s: state, d: dark });
     await mob.waitForTimeout(3500);
     await mob.screenshot({ path: path.join(OUT, label + '.png'), fullPage: true });

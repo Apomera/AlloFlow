@@ -730,3 +730,37 @@ describe('Educator Evaluation Apps Script server-derived lifecycle records', () 
     expect(snapshots[0].weightSnapshot).toEqual(released.weightSnapshot);
   });
 });
+
+describe('district package documentation', () => {
+  const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
+  const README = fs.readFileSync(path.join(ROOT, 'apps_script', 'educator_evaluation', 'README.md'), 'utf8');
+
+  it('documents every public server entry point IT is expected to deploy', () => {
+    // Trailing-underscore names are private helpers; everything else is callable
+    // from the portal or the Apps Script editor and belongs in the README.
+    const publicFns = [...GS_SOURCE.matchAll(/^function ([a-zA-Z][a-zA-Z0-9]*)\s*\(/gm)]
+      .map((match) => match[1])
+      .filter((name) => !name.endsWith('_'));
+    expect(publicFns.length).toBeGreaterThan(8);
+    // Whole-word only: a plain substring check would accept a renamed mention
+    // such as getPortalSetupHealthXX and quietly pass while the docs are wrong.
+    const documented = (name) => {
+      for (let at = README.indexOf(name); at !== -1; at = README.indexOf(name, at + 1)) {
+        const after = README.charAt(at + name.length) || ' ';
+        const before = at === 0 ? ' ' : README.charAt(at - 1);
+        if (!/[A-Za-z0-9_]/.test(after) && !/[A-Za-z0-9_]/.test(before)) return true;
+      }
+      return false;
+    };
+    const undocumented = publicFns.filter((name) => !documented(name));
+    expect(undocumented).toEqual([]);
+  });
+
+  it('tells administrators how released summaries are shared and receipted', () => {
+    expect(README).toContain('sharePortalReleasedEvaluation');
+    expect(README).toContain('VIEWER');
+    expect(README).toContain('idempotent');
+    expect(README).toContain('recordReleasedSummaryOpened');
+    expect(README).toContain('deployment.portalUrl');
+  });
+});

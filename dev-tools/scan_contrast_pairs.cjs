@@ -1,6 +1,12 @@
 // Find provably-unreadable Tailwind class pairings, without a browser.
 //
-//   node dev-tools/static_contrast_pairs.cjs [--verbose]
+//   node dev-tools/scan_contrast_pairs.cjs [--verbose]
+//   npm run verify:contrast-pairs
+//
+// RENAMED 2026-08-17 from static_contrast_pairs.cjs. The old name did not match
+// the `check_*|scan_*` convention that tests/dev_tools_orphan_gates.test.js
+// audits, so this scanner was invisible to the very check built to find gates
+// nobody runs — it had zero callers in deploy.sh, package.json, tests/ and CI.
 //
 // WHY STATIC. The live axe sweep is at the mercy of the Tailwind CDN's
 // on-demand compilation: the same tool measured four times gave light-theme

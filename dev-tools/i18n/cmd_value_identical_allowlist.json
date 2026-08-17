@@ -1,0 +1,14 @@
+{
+  "note": "REVIEWED cases where a pack value identical to English is correct. keys = exact dotted keys; values = English strings that are brand/surface names kept untranslated by house convention (verified against how existing packs treat cmd.open_stem_lab). palette.ctx.* is allowed in code, not here.",
+  "keys": [],
+  "values": [
+    "AlloFlow",
+    "AlloBot",
+    "AlloHaven",
+    "AlloSheet",
+    "Lumen",
+    "STEAM Lab",
+    "Gemini Canvas",
+    "OK"
+  ]
+}

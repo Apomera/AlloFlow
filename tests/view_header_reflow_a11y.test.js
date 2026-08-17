@@ -13,23 +13,30 @@ describe('header narrow-viewport reflow', () => {
     expect(source).toContain('id="tour-header-settings" className={`relative z-[60] w-full sm:w-auto flex flex-wrap');
     expect(source).toContain('id="tour-header-utils" className={`relative z-[100] w-full sm:w-auto flex flex-wrap');
     expect(source).toContain('justify-start sm:justify-end relative min-w-0');
-    expect(source).toContain('id="tour-header-actions" className={`w-full flex flex-wrap');
+    // Re-anchored 2026-08-17 (X8): the box gained sm:w-auto sm:ml-auto; the wrap
+    // behavior (w-full + flex-wrap) is unchanged.
+    expect(source).toContain('id="tour-header-actions" className={`w-full sm:w-auto sm:ml-auto flex flex-wrap');
     expect(source).toContain('max-w-full scale-90 origin-left');
   });
   it('keeps teacher utilities together without hiding them in an overflow menu', () => {
     const start = source.indexOf('data-header-utility-cluster="teacher"');
-    // Bound the slice on the nav row that follows the cluster. The old anchor
+    // Bound the slice on the nav row that follows the cluster (re-anchored
+    // 2026-08-17, X8: the row gained justify-end; the old anchor matched
+    // nothing and both tests below went red while the BEHAVIOR they guard
+    // still shipped — verified against current source before re-anchoring). The old anchor
     // ({!isTeacherMode) sits at the very END of #tour-header-actions, so once
     // the cluster moved above the nav buttons that slice swallowed every button
     // in the box and the assertions below stopped saying anything about it.
-    const end = source.indexOf('<div className="flex flex-wrap items-center gap-2">', start);
+    const end = source.indexOf('<div className="flex flex-wrap items-center justify-end gap-2">', start);
     const cluster = source.slice(start, end);
 
     expect(start).toBeGreaterThan(0);
     expect(end).toBeGreaterThan(start);
     // Hugs its content and sits at the right edge of the column it now shares
     // with the nav buttons; full width (so it wraps) only on narrow screens.
-    expect(cluster).toContain('w-full sm:w-auto sm:self-end flex flex-wrap items-center');
+    // Re-anchored 2026-08-17 (X8): self-end became justify-end inside the shared
+    // column; still content-hugging (sm:w-auto) and wrapping.
+    expect(cluster).toContain('w-full sm:w-auto flex flex-wrap items-center justify-end');
     expect(cluster).toContain('className="relative shrink-0"');
     for (const key of ['header_translate', 'header_export', 'header_analytics']) {
       expect(cluster).toContain(`data-help-key="${key}"`);
@@ -43,7 +50,7 @@ describe('header narrow-viewport reflow', () => {
     // the markup instead of reaching for a CSS `order` class (WCAG 2.4.3).
     const langBlock = source.indexOf('data-help-key="header_language"');
     const cluster = source.indexOf('data-header-utility-cluster="teacher"');
-    const navRow = source.indexOf('<div className="flex flex-wrap items-center gap-2">', cluster);
+    const navRow = source.indexOf('<div className="flex flex-wrap items-center justify-end gap-2">', cluster);
     const aiButton = source.indexOf('data-help-key="header_ai_backend"');
     expect(langBlock).toBeGreaterThan(0);
     expect(cluster).toBeGreaterThan(langBlock);

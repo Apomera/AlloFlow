@@ -838,11 +838,10 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1002/ejsp.2420010202": {
-    "url": "https://doi.org/10.1002/ejsp.2420010202",
     "title": "Social Categorization and Intergroup Behaviour",
     "organization": "European Journal of Social Psychology",
-    "summary": "Tajfel, Billig, Bundy, and Flament report minimal-group experiments in which arbitrary classification influenced allocation of real rewards, including choices favoring one's assigned category over another category.",
-    "credibility": "This DOI identifies the peer-reviewed foundational minimal-group experiment published by Wiley in the European Journal of Social Psychology, making it a primary empirical source for the allocation effect tested.",
+    "summary": "Tajfel and colleagues found that assignment to arbitrary, meaningless categories was sufficient to produce allocation favouring the in-group, even where participants gained nothing personally and the groups had no history, contact, or competing interest.",
+    "credibility": "This peer-reviewed study is the primary minimal-group experiment underlying social identity theory and is indexed through a DOI. It is the evidence that separates a categorization account of intergroup bias from a resource-competition account.",
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1002/j.1556-6676.1992.tb01642.x": {
@@ -1212,10 +1211,10 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1016/S0022-5371(74)80011-3": {
-    "title": "Loftus, E. F., & Palmer, J. C. (1974). Reconstruction of automobile destruction: An example of the interaction between language and memory. Journal of Verbal Learning and Verbal Behavior, 13(5), 585-589.",
-    "organization": "",
-    "summary": "This peer-reviewed experimental article is the primary study demonstrating that post-event question wording can alter later eyewitness reports.",
-    "credibility": "This peer-reviewed experimental article is the primary study demonstrating that post-event question wording can alter later eyewitness reports.",
+    "title": "Reconstruction of Automobile Destruction: An Example of the Interaction Between Language and Memory",
+    "organization": "Journal of Verbal Learning and Verbal Behavior",
+    "summary": "Loftus and Palmer showed that the verb used in a post-event question changed both speed estimates and later reports of broken glass that had never been present, demonstrating that information supplied after an event can be integrated into a witness memory of it.",
+    "credibility": "This peer-reviewed experiment is the primary published source for the misinformation effect and is indexed through a DOI. It supports the distinction between memory altered by post-event input and memory that is merely reported with low confidence.",
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1016/S0022-5371(77)80016-9": {
@@ -3837,10 +3836,10 @@
     "metadataSource": "pack-authored"
   },
   "https://openstax.org/books/psychology-2e/pages/10-introduction": {
-    "title": "Chapter 10: Emotion and Motivation - Psychology 2e, OpenStax, Rice University",
+    "title": "Emotion and Motivation — Psychology 2e",
     "organization": "OpenStax, Rice University",
-    "summary": "OpenStax is a Rice University nonprofit publisher. Psychology 2e is openly peer reviewed, cites its evidence base, and is maintained through an editorial revision process; this section directly covers the tested foundational concept.",
-    "credibility": "OpenStax is a nonprofit educational initiative at Rice University whose openly licensed textbooks use expert authorship, faculty review, and a documented errata process. Textbook guidance should still be distinguished from an official assessment blueprint or primary empirical evidence.",
+    "summary": "This chapter distinguishes intrinsic motivation, sustained by interest and satisfaction inherent in an activity, from extrinsic motivation driven by separable consequences, and describes the overjustification pattern in which salient external reward reduces later interest in an activity that was already intrinsically motivating.",
+    "credibility": "OpenStax is a peer-reviewed, openly licensed textbook programme based at Rice University. This chapter is the reference used elsewhere in this bank for motivation content and supports the applied distinction between supporting and undermining a psychological need.",
     "metadataSource": "pack-authored"
   },
   "https://openstax.org/books/psychology-2e/pages/11-2-freud-and-the-psychodynamic-perspective": {
@@ -4079,17 +4078,17 @@
     "metadataSource": "pack-authored"
   },
   "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories": {
-    "title": "9.2 Lifespan Theories - Psychology 2e, OpenStax, Rice University",
+    "title": "Lifespan Theories — Psychology 2e",
     "organization": "OpenStax, Rice University",
-    "summary": "OpenStax is a Rice University nonprofit publisher. Psychology 2e is openly peer reviewed, cites its evidence base, and is maintained through an editorial revision process; this section directly covers the tested foundational concept.",
-    "credibility": "OpenStax is a nonprofit educational initiative at Rice University whose openly licensed textbooks use expert authorship, faculty review, and a documented errata process. Textbook guidance should still be distinguished from an official assessment blueprint or primary empirical evidence.",
+    "summary": "This section sets out Erikson psychosocial theory as a sequence of stage-specific conflicts across the lifespan, describing the developmental task of each period and the way resolution of an earlier conflict shapes the resources a person brings to later ones.",
+    "credibility": "OpenStax is a peer-reviewed, openly licensed textbook programme based at Rice University. This section is the reference used elsewhere in this bank for Erikson stage content and supports discrimination among adjacent psychosocial crises.",
     "metadataSource": "pack-authored"
   },
   "https://openstax.org/books/psychology-2e/pages/9-3-stages-of-development": {
-    "title": "9.3 Stages of Development - Psychology 2e, OpenStax, Rice University",
+    "title": "Stages of Development — Psychology 2e",
     "organization": "OpenStax, Rice University",
-    "summary": "OpenStax is a Rice University nonprofit publisher. Psychology 2e is openly peer reviewed, cites its evidence base, and is maintained through an editorial revision process; this section directly covers the tested foundational concept.",
-    "credibility": "OpenStax is a nonprofit educational initiative at Rice University whose openly licensed textbooks use expert authorship, faculty review, and a documented errata process. Textbook guidance should still be distinguished from an official assessment blueprint or primary empirical evidence.",
+    "summary": "This chapter describes Piagetian stages in developmental sequence, including sensorimotor coordination of action with perception, the emergence of symbolic thought together with egocentrism and centration in the preoperational period, and the later arrival of conservation and reversible operations.",
+    "credibility": "OpenStax is a peer-reviewed, openly licensed textbook programme based at Rice University and used in accredited introductory psychology courses. The chapter supports both the stage sequence and the specific errors that mark each period.",
     "metadataSource": "pack-authored"
   },
   "https://openstax.org/books/psychology-2e/pages/9-4-death-and-dying": {
@@ -7909,10 +7908,10 @@
     "metadataSource": "pack-authored"
   },
   "https://www.itl.nist.gov/div898/handbook/glossary.htm": {
-    "title": "NIST/SEMATECH e-Handbook of Statistical Methods - Statistical Glossary",
-    "organization": "itl.nist.gov",
-    "summary": "This itl.nist.gov resource addresses Itl.Nist.Gov Resource. Open the source to review its complete scope, definitions, recommendations, examples, publication date, and stated limitations.",
-    "credibility": "itl.nist.gov is the responsible government publisher, making this a primary source for its own regulations, guidance, data, or program materials. Verify the publication date, jurisdiction, and any later updates before applying it.",
+    "title": "NIST/SEMATECH e-Handbook of Statistical Methods Glossary",
+    "organization": "National Institute of Standards and Technology",
+    "summary": "The handbook glossary defines statistical significance in terms of the probability of the observed data under a null hypothesis, and separates that probability from the magnitude of an observed effect and from the sample size that influences whether a small effect reaches significance.",
+    "credibility": "NIST is a United States federal scientific standards agency and its statistical handbook is an authoritative methodological reference. It supports the separation of effect magnitude from statistical significance that this item now tests.",
     "metadataSource": "pack-authored"
   },
   "https://www.itl.nist.gov/div898/handbook/pmc/section5/pmc51.htm": {
@@ -9648,11 +9647,10 @@
     "metadataSource": "pack-authored"
   },
   "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf": {
-    "url": "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf",
     "title": "Standards for Educational and Psychological Testing",
-    "organization": "AERA, American Psychological Association, and NCME",
-    "summary": "The joint professional Standards organize validity evidence around the intended interpretation and use of scores, including evidence from internal structure and relations with other variables such as convergent and discriminant patterns.",
-    "credibility": "AERA, APA, and NCME jointly publish the principal U.S. professional consensus standards for educational and psychological testing. This primary source is authoritative for the validity-evidence framework used in the item.",
+    "organization": "American Educational Research Association, American Psychological Association, and National Council on Measurement in Education",
+    "summary": "The Standards define validity as the degree to which evidence and theory support the interpretations of test scores for proposed uses, and require that interpretation rest on convergent evidence rather than on a single instrument or protocol considered in isolation.",
+    "credibility": "This is the joint professional standard for testing practice in the United States, published by the three organizations that govern educational and psychological measurement. It directly governs how much interpretive weight a single projective protocol may carry in an evaluation.",
     "metadataSource": "pack-authored"
   },
   "https://www.thebowencenter.org/differentiation-of-self": {

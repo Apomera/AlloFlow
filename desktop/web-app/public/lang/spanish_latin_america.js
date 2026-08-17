@@ -32216,7 +32216,10 @@
     "open_jigsaw_builder_hint": "Actividad de grupos de expertos jigsaw con un tamaño de grupo que tú decides",
     "use_gemini_canvas": "Usar AlloFlow dentro de Gemini Canvas",
     "use_gemini_canvas_done": "Configuración de IA abierta. La primera tarjeta explica cómo usar AlloFlow dentro de Gemini Canvas sin ninguna instalación.",
-    "use_gemini_canvas_hint": "Abre la configuración de IA, donde la opción de Canvas sin instalación va primero"
+    "use_gemini_canvas_hint": "Abre la configuración de IA, donde la opción de Canvas sin instalación va primero",
+    "open_leadership_hub": "Abrir el Centro de Liderazgo",
+    "open_leadership_hub_done": "Centro de Liderazgo abierto. Nueve herramientas para directores, coaches y líderes de servicios estudiantiles.",
+    "open_leadership_hub_hint": "Visitas a las aulas, triaje MTSS, análisis de equidad, plazos, actas de reuniones y anuncios a las familias"
   },
   "palette": {
     "aria": "Paleta de comandos de AlloFlow",

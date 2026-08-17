@@ -23,14 +23,35 @@
 //     tool that uses hooks, and those then look like crashes rather than
 //     unmeasured.
 //
-// Tailwind is loaded from its CDN and given 3.2s; without it every colour is
-// unstyled and the numbers are fiction.
+// Tailwind is PRECOMPILED and injected inline; without it every colour is
+// unstyled and the numbers are fiction, so a missing stylesheet aborts the run
+// rather than producing a confident zero. Build it once with
+//   node dev-tools/build_sweep_tailwind_css.cjs
+// (or `npm run verify:contrast-sweep`, which builds then sweeps).
 const fs = require('fs');
 const path = require('path');
 const OUT = process.argv[2];
 const ROOT = process.cwd();
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const axe = read('node_modules/axe-core/axe.min.js');
+
+// ── Tailwind: PRECOMPILED, not the browser JIT (changed 2026-08-17) ─────────
+// This used to load cdn.tailwindcss.com and wait a fixed 3.2s. That CDN
+// compiles classes on demand by watching the DOM, so the audit raced the
+// compiler: the note further down records `calculus` returning 5, 9, 11 and 11
+// light-theme violations across four runs of identical code. Those numbers
+// could not gate anything, which is why this sweep was never wired to a test.
+// It now injects one inert stylesheet built ahead of time by
+// dev-tools/build_sweep_tailwind_css.cjs from the app's OWN tailwind config, so
+// every run sees byte-identical CSS and no network.
+const TW_CSS_PATH = path.join(ROOT, 'dev-tools', '.cache', 'sweep-tailwind.css');
+if (!fs.existsSync(TW_CSS_PATH)) {
+  console.error('Missing ' + path.relative(ROOT, TW_CSS_PATH));
+  console.error('Build it first:  node dev-tools/build_sweep_tailwind_css.cjs');
+  console.error('Refusing to run: without Tailwind every colour is unstyled and the counts are fiction.');
+  process.exit(2);
+}
+const tailwindCss = fs.readFileSync(TW_CSS_PATH, 'utf8');
 
 // ── STEM palette variables (added 2026-08-05) ───────────────────────────────
 // WHY THIS EXISTS. This sweep used to render tools with the --allo-stem-*
@@ -50,10 +71,18 @@ const axe = read('node_modules/axe-core/axe.min.js');
 // NOTE: counts from this tool are NOT comparable to runs before this date — the
 // light theme in particular will report more, because it is finally being
 // measured with the palette the app actually applies.
+// SOURCE MOVED (fixed 2026-08-17). This read AlloFlowANTI.txt, where the
+// palette no longer exists -- `theme-default` does not appear in that file at
+// all now -- so the sweep aborted on its first line for anyone who ran it. That
+// is part of why it sat unrun: it was not merely flaky, it was broken.
+// The palette now lives in the app styles. Read the MODULE: app_styles is one
+// of build.js's FORWARD-compiled pairs (source .jsx -> module .js), so the
+// module is the build output and therefore what actually ships and runs. Edits
+// belong in app_styles_source.jsx; measurement belongs on the module.
 function extractStemPalette() {
-  const anti = read('AlloFlowANTI.txt');
+  const anti = read('app_styles_module.js');
   const start = anti.indexOf(':root, .theme-default {');
-  if (start === -1) throw new Error('STEM palette block not found in AlloFlowANTI.txt (looked for ":root, .theme-default {")');
+  if (start === -1) throw new Error('STEM palette block not found in app_styles_module.js (looked for ":root, .theme-default {")');
   const anchor = anti.indexOf('.theme-contrast {', start);
   if (anchor === -1) throw new Error('.theme-contrast block not found after :root/.theme-default');
   const end = anti.indexOf('}', anti.indexOf('--allo-stem-button-border', anchor));
@@ -126,7 +155,7 @@ window.__unmount = function () { ReactDOM.unmountComponentAtNode(document.getEle
     if (!fs.existsSync(path.join(ROOT, f))) { console.log(id.padEnd(14) + 'no file'); continue; }
     const page = OUT + '-' + id + '.html';
     fs.writeFileSync(page, `<!doctype html><html lang="en"><head><meta charset="utf-8">
-<script src="https://cdn.tailwindcss.com"><\/script>
+<style>${tailwindCss}</style>
 <style>${STEM_PALETTE}</style>
 <style>body{margin:0;padding:10px;background:#020617;font-family:system-ui}</style></head>
 <body><main id="slot"></main>
@@ -136,7 +165,10 @@ window.__unmount = function () { ReactDOM.unmountComponentAtNode(document.getEle
 
     const pg = await b.newPage({ viewport: { width: 1100, height: 900 } });
     await pg.goto('file://' + page.replace(/\\/g, '/'));
-    await pg.waitForTimeout(3200);
+    // The 3.2s sleep existed to give the Tailwind CDN time to compile. The
+    // stylesheet is now static and inline, so there is nothing to wait for
+    // beyond the tool's own scripts having evaluated.
+    await pg.waitForFunction(() => typeof window.__mount === 'function', null, { timeout: 20_000 });
     const row = { id, light: [], dark: [], lightIncomplete: [], darkIncomplete: [], note: '' };
     // REPEAT each theme. A single reading is not trustworthy: the Tailwind CDN
     // compiles classes on demand, so a run can be audited before every rule
@@ -148,7 +180,27 @@ window.__unmount = function () { ReactDOM.unmountComponentAtNode(document.getEle
       for (let attempt = 0; attempt < REPEATS; attempt++) {
         const status = await pg.evaluate((t) => window.__mount(t), theme);
         if (!status || /threw|mount|not-registered/.test(status)) { row.note = status; break; }
-        await pg.waitForTimeout(220);
+        // WAIT FOR THE DOM TO SETTLE, do not sleep a fixed 220ms. Removing the
+        // Tailwind CDN made the STYLES deterministic but the counts still moved
+        // (calculus light came back as a 0-6 spread): tools mount, then keep
+        // rendering in effects/timers, so a fixed sleep measures a different
+        // tree each run. 0 in particular means axe ran before anything painted.
+        // Poll node+text size until it stops changing, which is the condition
+        // the sleep was standing in for.
+        await pg.evaluate(async () => {
+          const slot = document.getElementById('slot');
+          const size = () => slot.querySelectorAll('*').length + ':' + (slot.innerText || '').length;
+          let last = size();
+          let stable = 0;
+          const deadline = Date.now() + 8000;
+          while (Date.now() < deadline) {
+            await new Promise((r) => setTimeout(r, 120));
+            const now = size();
+            if (now === last && now !== '0:0') stable += 1; else stable = 0;
+            last = now;
+            if (stable >= 3) return;
+          }
+        });
         // A tool that catches its own error and renders an error card still
         // "mounts". Measuring that card tells you nothing about the tool — and
         // its own styling is usually where the contrast failures then come

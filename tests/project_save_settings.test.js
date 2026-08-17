@@ -275,11 +275,11 @@ describe('Project Settings progressive disclosure', () => {
     });
     const launcher = find(
       tree,
-      (node) => node.type === 'button' && textOf(node).includes('Open the demonstration')
+      (node) => node.type === 'button' && textOf(node).includes('Open Educator Evaluation')
     );
 
     expect(textOf(tree)).toContain('Principal Evaluation');
-    expect(textOf(tree)).toContain('Demonstration only, not connected');
+    expect(textOf(tree)).toContain('On-device workspace · portal not connected');
     expect(launcher).toBeTruthy();
     launcher.props.onClick();
     expect(onOpenPrincipalEvaluation).toHaveBeenCalledOnce();
@@ -341,7 +341,7 @@ describe('Project Settings progressive disclosure', () => {
     expect(textOf(tree)).not.toContain('Principal Evaluation');
     expect(find(
       tree,
-      (node) => node.type === 'button' && (textOf(node).includes('Open the demonstration') || textOf(node).includes('Open district portal'))
+      (node) => node.type === 'button' && (textOf(node).includes('Open Educator Evaluation') || textOf(node).includes('Open district portal'))
     )).toBeNull();
   });
   it('lets teachers hide student AI tools with one project-level control', () => {
