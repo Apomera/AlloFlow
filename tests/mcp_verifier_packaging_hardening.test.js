@@ -156,8 +156,8 @@ describe('MCPB vendor and tool-registry release contracts', () => {
 
   it('uses unique manifest/server tool-name parity instead of a stale fixed count', () => {
     const tools = Builder.buildManifest().tools;
-    expect(tools).toHaveLength(29);
-    expect(Artifact.validatedToolNames(tools, 'manifest')).toHaveLength(29);
+    expect(tools).toHaveLength(31);
+    expect(Artifact.validatedToolNames(tools, 'manifest')).toHaveLength(31);
     expect(() => Artifact.validatedToolNames([...tools, tools[0]], 'manifest')).toThrow(/duplicate/i);
     expect(Artifact.DEFAULT_RPC_TIMEOUT_MS).toBe(60000);
   });
