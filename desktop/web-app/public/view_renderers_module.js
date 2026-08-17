@@ -3556,7 +3556,6 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   const recallResultsRef = React.useRef({});
   const attemptsTotalRef = React.useRef(0);
   const startedByArmRef = React.useRef(false);
-  const [recallBank, setRecallBank] = React.useState([]);
   const bankRef = React.useRef([]);
   const [answered, setAnswered] = React.useState(0);
   const [recallHint, setRecallHint] = React.useState(null);
@@ -3888,7 +3887,6 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const dir = (MP.RECALL_DIRECTIONS || ["forward"]).indexOf(direction) >= 0 ? direction : "forward";
     const order = MP.buildRecallOrder ? MP.buildRecallOrder(palace, { direction: dir, seed, only }) : targets;
     recallOrderRef.current = order.length ? order : targets;
-    setRecallBank([]);
     startedByArmRef.current = viaArm === true;
     setRecall({ mode: mode === "type" ? "type" : mode === "self" ? "self" : "bank", seed, direction: dir, focused: !!(only && only.length), startAt: recallOrderRef.current[0] });
     if (addToast) addToast(t("memory_palace.recall_start") || "\u{1F9E0} The labels are covered. Walk the palace and recall what lives at each locus!", "info");
@@ -3909,7 +3907,6 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     recallTimersRef.current = [];
     setRecall(null);
     _resetRecallRun();
-    setRecallBank([]);
     startedByArmRef.current = false;
     if (typeof onRecallClose === "function") {
       try {
@@ -3930,7 +3927,6 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const only = recall.focused ? recallOrderRef.current.slice() : null;
     const order = MP.buildRecallOrder ? MP.buildRecallOrder(palace, { direction: dir, seed, only }) : targets;
     recallOrderRef.current = order.length ? order : targets;
-    setRecallBank([]);
     setRecall({ mode, seed, direction: dir, focused: !!recall.focused, startAt: recallOrderRef.current[0] });
   };
   React.useEffect(() => {

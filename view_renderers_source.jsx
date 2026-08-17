@@ -4401,7 +4401,6 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const recallResultsRef = React.useRef({});                  // {locusId: {attempts, correct, revealed}}
     const attemptsTotalRef = React.useRef(0);
     const startedByArmRef = React.useRef(false);
-    const [recallBank, setRecallBank] = React.useState([]);
     const bankRef = React.useRef([]);                                 // live choices for the in-VR answer chips (stale-closure safe)
     const [answered, setAnswered] = React.useState(0);
     const [recallHint, setRecallHint] = React.useState(null);
@@ -4712,7 +4711,6 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         // re-scheduled the whole palace.
         const order = MP.buildRecallOrder ? MP.buildRecallOrder(palace, { direction: dir, seed, only }) : targets;
         recallOrderRef.current = order.length ? order : targets;
-        setRecallBank([]);
         startedByArmRef.current = viaArm === true;
         setRecall({ mode: mode === 'type' ? 'type' : (mode === 'self' ? 'self' : 'bank'), seed, direction: dir, focused: !!(only && only.length), startAt: recallOrderRef.current[0] });
         if (addToast) addToast(t('memory_palace.recall_start') || '🧠 The labels are covered. Walk the palace and recall what lives at each locus!', 'info');
@@ -4722,7 +4720,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const exitRecall = () => {
         recallTimersRef.current.forEach((id) => { try { clearTimeout(id); } catch (e) {} });   // no advance fires into study mode
         recallTimersRef.current = [];
-        setRecall(null); _resetRecallRun(); setRecallBank([]);
+        setRecall(null); _resetRecallRun();
         startedByArmRef.current = false;
         if (typeof onRecallClose === 'function') { try { onRecallClose(); } catch (e) {} }
     };
@@ -4742,7 +4740,6 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         const only = recall.focused ? recallOrderRef.current.slice() : null;   // a retry keeps the same scope
         const order = MP.buildRecallOrder ? MP.buildRecallOrder(palace, { direction: dir, seed, only }) : targets;
         recallOrderRef.current = order.length ? order : targets;   // a re-shuffle gets a fresh sequence
-        setRecallBank([]);
         setRecall({ mode, seed, direction: dir, focused: !!recall.focused, startAt: recallOrderRef.current[0] });   // new identity => scene remounts covered
     };
 

@@ -1,5 +1,5 @@
 {
-  "note": "Write-only useState hooks present when this gate was added (2026-08-16). The getter is never read, so nothing renders from the state. Baselined so the gate can go green and catch NEW ones; these are a cleanup backlog, not approvals. Removing an entry is always safe. Adding one needs a reason. Two shapes: setter-never-called is inert dead weight (bridgeSend*, rti*, showStationCreator, stationDraft, modulesReady, pendingFactionResources, wordSoundsOracleData, and the editingField/batchTypes/showImport/showSummary/showWizard/isMinimized/showCBMImport group). Setter-IS-called is the shape that hides a dead feature path, and is worth tracing first: view_renderers_module.js::recallBank 3x; word_sounds_module.js::blendingProgress 4x and preloadProgress 3x; visual_panel::dragOverPanel 3x; AlloFlowANTI.txt::wordSoundsCustomTerms 3x; AlloFlowANTI.txt::learningWebRegistryRevision 4x. mathFluencyActive/mathFluencyResults are the known dead host math-fluency path whose caller was recording fabricated 0-attempt CBM probe results (guarded at finishMathFluencyProbe, caller still a dead end at stem_lab_module.js:4899). Note *_source.jsx and its built *_module.js both appear: they are the same defect, fix the source.",
+  "note": "Write-only useState hooks present when this gate was added (2026-08-16). The getter is never read, so nothing renders from the state. Baselined so the gate can go green and catch NEW ones; these are a cleanup backlog, not approvals. Removing an entry is always safe. Adding one needs a reason. Two shapes: setter-never-called is inert dead weight (bridgeSend*, rti*, showStationCreator, stationDraft, modulesReady, pendingFactionResources, wordSoundsOracleData, and the editingField/batchTypes/showImport/showSummary/showWizard/isMinimized/showCBMImport group). Setter-IS-called is the shape that hides a dead feature path, and is worth tracing first: visual_panel::dragOverPanel 3x; AlloFlowANTI.txt::wordSoundsCustomTerms 3x; AlloFlowANTI.txt::learningWebRegistryRevision 4x. mathFluencyActive/mathFluencyResults are the known dead host math-fluency path whose caller was recording fabricated 0-attempt CBM probe results (guarded at finishMathFluencyProbe, caller still a dead end at stem_lab_module.js:4899). Note *_source.jsx and its built *_module.js both appear: they are the same defect, fix the source.",
   "allow": [
     "AlloFlowANTI.txt::bridgeChatTarget",
     "AlloFlowANTI.txt::bridgeSendMode",
@@ -38,13 +38,9 @@
     "teacher_source.jsx::batchTypes",
     "teacher_source.jsx::editingField",
     "teacher_source.jsx::showBatchConfig",
-    "view_renderers_module.js::recallBank",
-    "view_renderers_source.jsx::recallBank",
     "visual_panel_module.js::draggingLabel",
     "visual_panel_module.js::dragOverPanel",
     "visual_panel_source.jsx::draggingLabel",
-    "visual_panel_source.jsx::dragOverPanel",
-    "word_sounds_module.js::blendingProgress",
-    "word_sounds_module.js::preloadProgress"
+    "visual_panel_source.jsx::dragOverPanel"
   ]
 }

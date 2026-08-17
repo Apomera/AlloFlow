@@ -3781,7 +3781,6 @@
       const [syllableTapCount, setSyllableTapCount] = React.useState(0);
       const lastWordForSyllable = React.useRef(null);
       const syllableGenInFlightRef = React.useRef(null);
-      const [blendingProgress, setBlendingProgress] = React.useState(0);
       const [blendingOptions, setBlendingOptions] = React.useState([]);
       const blendingOptionsRef = React.useRef([]);
       React.useEffect(() => {
@@ -3950,7 +3949,6 @@
           );
         });
       const [currentWordIndex, setCurrentWordIndex] = React.useState(0);
-      const [preloadProgress, setPreloadProgress] = React.useState(0);
       const [isPreloading, setIsPreloading] = React.useState(false);
       const [firstWordReady, setFirstWordReady] = React.useState(false);
       // Set when startActivity gave up because no words had arrived yet. The
@@ -5201,15 +5199,12 @@
         const myRun = audioRunIdRef.current;
         try {
           setIsPlayingAudio(true);
-          setBlendingProgress(0);
           for (let i = 0; i < (wordSoundsPhonemes.phonemes?.length || 0); i++) {
             if (audioRunIdRef.current !== myRun || audioCancelledRef.current) return;
             const phoneme = wordSoundsPhonemes?.phonemes?.[i];
-            setBlendingProgress(i + 1);
             await handleAudio(phoneme);
             await new Promise((r) => setTimeout(r, 500));
           }
-          setBlendingProgress((wordSoundsPhonemes.phonemes?.length || 0) + 1);
           await new Promise((r) => setTimeout(r, 200));
           if (audioRunIdRef.current !== myRun || audioCancelledRef.current) return;
           // Guard the global (it can be undefined before audio_banks loads).
@@ -8761,7 +8756,6 @@
           return;
         }
         setIsPreloading(true);
-        setPreloadProgress(0);
         setFirstWordReady(false);
         const PRELOAD_COUNT = 10;
         const wordsToPreload = [];
@@ -9397,7 +9391,6 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             } else {
               setPreloadedWords(validResults);
             }
-            setPreloadProgress(100);
             validResults.forEach((w) => {
               const key = (w.targetWord || w.word || "").toLowerCase();
               if (key) preloadedWordCache.current.set(key, w);
@@ -9410,7 +9403,6 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           warnLog("Bulk preload failed:", err);
         } finally {
           setIsPreloading(false);
-          setPreloadProgress(100);
         }
       }, [
         isPreloading,
