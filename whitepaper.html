@@ -279,9 +279,11 @@ human source comparison and usability review</div>
                         public dependencies without intentionally sending document content; credential checking sends
                         only the key. Gemini-dependent operations may send the full selected document or derived
                         content using the user's configured key.</p>
-                    <p>A public MCPB binary is intentionally not linked at the time of this paper. The repository build
-                        on disk has release/checksum drift. A trustworthy release requires a fresh non-lean build,
-                        parity tests, artifact verification, an updated checksum, an SBOM, attestation, and a versioned release tag and checksum record.</p>
+                    <p>A public MCPB binary is now published as a versioned GitHub Release. Each release is built in
+                        CI from a tagged commit and must pass parity tests and artifact verification before
+                        publication; it ships with a SHA-256 checksum record, a CycloneDX SBOM, and a GitHub
+                        build-provenance attestation binding the downloadable bytes to the workflow that produced
+                        them.</p>
                     <h3>6.4 Institution-owned remote pilot architecture</h3>
                     <p>The repository also contains a fail-closed remote MCP design using institution-owned Cloudflare
                         infrastructure for OAuth, opaque identifiers, private storage, durable workflows, isolated
