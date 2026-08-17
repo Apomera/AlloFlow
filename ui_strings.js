@@ -60339,6 +60339,9 @@
       "total_stem_lab_xp_earned": "Total STEAM Lab XP earned across all activities",
       "generate_assess": "Math problems & assessments",
       "manipulatives": "Interactive tools & labs",
+      "content_source_attached": "📎 Your current lesson content is attached automatically. Describe what to focus on; no need to paste it.",
+      "content_source_off": "Source attachment is turned off in the Math panel settings, so only what you type here is used.",
+      "content_source_none": "No lesson content is loaded yet. Add source text first, or describe the content here.",
       "stepbystep": "Step-by-Step",
       "conceptual": "Conceptual",
       "realworld": "Real-World"

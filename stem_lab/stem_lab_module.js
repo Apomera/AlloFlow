@@ -1817,6 +1817,8 @@
         setShowAssessmentBuilder,
         setShowStemLab,
         setExpandedTools,
+        useMathSourceContext,
+        hasSourceOrAnalysis,
         setStemLabCreateMode,
         setStemLabTab,
         setStemLabTool,
@@ -4702,7 +4704,20 @@
           placeholder: stemLabCreateMode === 'solve' ? 'Enter a math problem to solve step-by-step...' : stemLabCreateMode === 'content' ? 'Paste or describe content to generate math problems from...' : 'Enter topic, standard, or description (e.g. "3rd grade multiplication word problems")...',
           className: "w-full h-28 px-4 py-3 text-sm border border-slate-500 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none resize-none bg-white",
           "aria-label": "Math problem input"
-        }), stemLabCreateMode !== 'solve' && /*#__PURE__*/React.createElement("div", {
+        }), stemLabCreateMode === 'content' && /*#__PURE__*/React.createElement("p", {
+          // "From My Content" never needed the teacher to re-paste the lesson:
+          // handleGenerateMath attaches the current source itself, gated on the
+          // useMathSourceContext flag (a MathPanel checkbox, default on). The
+          // placeholder said "Paste or describe content", so teachers pasted
+          // text the app already holds. Say what will actually happen instead.
+          className: "text-xs mt-2 font-semibold " + (useMathSourceContext !== false && hasSourceOrAnalysis ? "text-emerald-700" : "text-amber-700"),
+          role: "note"
+        }, useMathSourceContext !== false && hasSourceOrAnalysis
+          ? (t('stem.solver.content_source_attached') || '📎 Your current lesson content is attached automatically. Describe what to focus on; no need to paste it.')
+          : hasSourceOrAnalysis
+            ? (t('stem.solver.content_source_off') || 'Source attachment is turned off in the Math panel settings, so only what you type here is used.')
+            : (t('stem.solver.content_source_none') || 'No lesson content is loaded yet. Add source text first, or describe the content here.')
+        ), stemLabCreateMode !== 'solve' && /*#__PURE__*/React.createElement("div", {
           className: "flex items-center gap-4 mt-3"
         }, /*#__PURE__*/React.createElement("span", {
           className: "text-xs font-bold text-slate-500"
@@ -4720,15 +4735,35 @@
           className: "text-sm font-bold text-indigo-700 w-8 text-center"
         }, mathQuantity))), /*#__PURE__*/React.createElement("button", { "aria-label": "Generate math problems",
           onClick: () => {
+            // Resolve the mode ONCE and hand it to handleGenerateMath as
+            // modeOverride. This button used to stage the mode and navigate to
+            // the math view without ever generating — the teacher had to find
+            // the sidebar's Generate themselves. The staging-vs-state race that
+            // likely caused that (a freshly set mode is not yet readable) is
+            // exactly what the modeOverride parameter exists for.
+            let resolvedMode;
             if (stemLabCreateMode === 'content') {
-              setMathMode('Word Problems from Source');
+              resolvedMode = 'Word Problems from Source';
             } else if (stemLabCreateMode === 'solve') {
-              setMathMode('Freeform Builder');
+              resolvedMode = 'Freeform Builder';
             } else {
-              setMathMode(mathMode === 'Freeform Builder' || mathMode === 'Word Problems from Source' ? 'Problem Set Generator' : mathMode);
+              resolvedMode = (mathMode === 'Freeform Builder' || mathMode === 'Word Problems from Source') ? 'Problem Set Generator' : mathMode;
             }
-            setActiveView('math');
-            // setShowStemLab(false); // Removed so users can continue building assessment without the window abruptly closing
+            setMathMode(resolvedMode);
+            if (typeof handleGenerateMath === 'function') {
+              // switchView=true: handleGenerateMath clears stale content and
+              // sets activeView('math') itself.
+              handleGenerateMath(mathInput, true, resolvedMode);
+              // Close so the teacher sees the generation progress they just
+              // started. The old "stay open" comment here dated from when this
+              // button generated nothing, so closing WAS abrupt: it dumped you
+              // on an unchanged math view. Assessment building is unaffected —
+              // the Builder has its own generate path and stays open.
+              setShowStemLab(false);
+            } else {
+              // Older host without the handler in the bag: old behaviour.
+              setActiveView('math');
+            }
           },
           disabled: !mathInput.trim(),
           className: "w-full py-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-xl text-sm hover:from-indigo-700 hover:to-blue-700 disabled:opacity-40 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2"

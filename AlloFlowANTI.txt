@@ -53505,6 +53505,11 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   // the live Fluency Probes panel, which only renders inside the
                   // sidebar math accordion (expandedTools must include 'math').
                   setExpandedTools,
+                  // Read-only, so the Create tab's "From My Content" mode can say
+                  // truthfully whether the lesson source will be attached (the
+                  // attachment itself happens inside handleGenerateMath, gated on
+                  // this flag and the MathPanel checkbox that controls it).
+                  useMathSourceContext, hasSourceOrAnalysis,
                   setStemLabTab, setStemLabTool, setToolSnapshots,
                   showAssessmentBuilder, showStemLab, startMathFluencyProbe,
                   stemLabCreateMode, stemLabTab, stemLabTool, submitExploreScore,
