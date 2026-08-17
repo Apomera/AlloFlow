@@ -526,6 +526,10 @@ the downloadable MCPB bytes to the workflow that produced them; users can verify
 The release job processes no user documents and requires no Worker, AlloFlow account, institution
 account, or Gemini key.
 
+Before pushing a release tag, run `npm run verify:mcpb-ci` — the exact vitest selection the tag
+build runs in CI. The default local gates (`verify:mcp-parity`, the artifact boot-check) do not
+cover it, and versions 0.3.1–0.3.3 all failed in CI on a test only that selection executes.
+
 ## Official MCP Registry
 
 The same GitHub-hosted MCPB can be submitted directly to the official MCP Registry; a second npm

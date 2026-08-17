@@ -7,6 +7,7 @@
     "verify:portable-remediation": "node dev-tools/build_alloflow_portable_packages.cjs --check && vitest run tests/portable_skill_contract.test.js tests/portable_remediation_core.test.js tests/portable_benchmark.test.js --maxWorkers=1 --testTimeout=30000",
     "benchmark:portable-remediation": "node dev-tools/benchmark_alloflow_portable.cjs",
     "verify:mcp-parity": "node dev-tools/mcp_capability_inventory.cjs --assert-parity && vitest run tests/mcp_remediation_stdio_smoke.test.js --maxWorkers=1 --testTimeout=70000",
+    "verify:mcpb-ci": "vitest run tests/desktop_mcp_durable_jobs.test.js tests/desktop_mcp_residual_hardening.test.js tests/desktop_mcp_runtime_build_drift.test.js tests/desktop_mcp_completion_manifest_race.test.js tests/batch_checkpoint_boundary_commit.test.js tests/doc_pipeline_build_parity.test.js tests/mcp_verifier_packaging_hardening.test.js tests/mcp_call_cli.test.js tests/mcpb_release_workflow.test.js --maxWorkers=1 --testTimeout=70000",
     "verify:mcpb-artifact": "node desktop/mcp/verify_mcpb_artifact.cjs --require-playwright",
     "build:mcp-registry-metadata": "node desktop/mcp/build_registry_metadata.cjs",
     "qa:ap-psychology-pilot": "node dev-tools/qa_ap_psychology_pilot.cjs",
@@ -115,7 +116,7 @@
     "verify:iife-lazy": "node dev-tools/check_iife_lazy_lookup.cjs",
     "verify:dashes": "node dev-tools/check_em_en_dashes.cjs",
     "verify:security": "node dev-tools/check_secrets.cjs && node dev-tools/check_cors_strict.cjs --strict && node dev-tools/check_xss_surface.cjs && node dev-tools/check_eval.cjs && node dev-tools/check_npm_audit.cjs && node dev-tools/check_lti_surface.cjs && node dev-tools/check_firebase_security.cjs",
-    "verify:gate": "node dev-tools/sync_allosheet_assets.cjs --check && node _build_adventure_module.js --check && node dev-tools/check_render_refs.cjs && node dev-tools/check_keyless_map.cjs && node dev-tools/check_stem_render.cjs --quiet && node dev-tools/check_stem_reachability.cjs --quiet && node dev-tools/check_sel_render.cjs --quiet && node dev-tools/check_module_render.cjs --quiet && node dev-tools/check_aria_handler.cjs --quiet && node dev-tools/check_lang_json.cjs && node dev-tools/check_cmd_i18n.cjs --quiet && node dev-tools/i18n/check_safety_string_spanglish.cjs --quiet && node dev-tools/check_build_smoke.cjs --quiet && node dev-tools/verify_module_registry.cjs --quiet && node dev-tools/check_view_props.cjs && node dev-tools/check_window_icons.cjs && node dev-tools/check_iife_lazy_lookup.cjs && node dev-tools/i18n/check_lang_staleness.cjs --quiet --gate-guarded --ratchet && node dev-tools/scan_silent_announcer.cjs --quiet && node dev-tools/scan_mouse_only_controls.cjs && node dev-tools/scan_fn_in_tool_state.cjs && node dev-tools/scan_window_key_listeners.cjs && node dev-tools/scan_answer_position_bias.cjs && node dev-tools/scan_answer_length_bias.cjs --check && node dev-tools/scan_emoji_mojibake.cjs && node dev-tools/scan_shell_i18n.cjs --all --gate",
+    "verify:gate": "node dev-tools/sync_allosheet_assets.cjs --check && node _build_adventure_module.js --check && node dev-tools/check_render_refs.cjs && node dev-tools/check_keyless_map.cjs && node dev-tools/check_stem_render.cjs --quiet && node dev-tools/check_stem_reachability.cjs --quiet && node dev-tools/check_sel_render.cjs --quiet && node dev-tools/check_module_render.cjs --quiet && node dev-tools/check_aria_handler.cjs --quiet && node dev-tools/check_lang_json.cjs && node dev-tools/check_cmd_i18n.cjs --quiet && node dev-tools/i18n/check_safety_string_spanglish.cjs --quiet && node dev-tools/check_build_smoke.cjs --quiet && node dev-tools/verify_module_registry.cjs --quiet && node dev-tools/check_view_props.cjs && node dev-tools/check_window_icons.cjs && node dev-tools/check_iife_lazy_lookup.cjs && node dev-tools/i18n/check_lang_staleness.cjs --quiet --gate-guarded --ratchet && node dev-tools/scan_silent_announcer.cjs --quiet && node dev-tools/scan_mouse_only_controls.cjs && node dev-tools/scan_fn_in_tool_state.cjs && node dev-tools/scan_window_key_listeners.cjs && node dev-tools/scan_answer_position_bias.cjs && node dev-tools/scan_answer_length_bias.cjs --check && node dev-tools/scan_source_bank_duplication.cjs --check && node dev-tools/scan_emoji_mojibake.cjs && node dev-tools/scan_shell_i18n.cjs --all --gate",
     "audit:a11y": "cd a11y-audit && node static-audit.js",
     "audit:reading": "node dev-tools/audit_reading_catalog.cjs",
     "audit:a11y:runtime": "cd a11y-audit && node runtime-audit.js",
@@ -132,7 +133,8 @@
     "verify:research-integrations": "node dev-tools/check_tool_integration_contracts.cjs && npm run test:research-integrations",
     "test:quarantine": "node dev-tools/check_quarantine.cjs",
     "check:quarantine": "node dev-tools/check_quarantine.cjs --paths-only",
-    "verify:answer-length": "node dev-tools/scan_answer_length_bias.cjs --check"
+    "verify:answer-length": "node dev-tools/scan_answer_length_bias.cjs --check",
+    "verify:source-duplication": "node dev-tools/scan_source_bank_duplication.cjs --check"
   },
   "dependencies": {
     "@duckdb/duckdb-wasm": "^1.32.0",

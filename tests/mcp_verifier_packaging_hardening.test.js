@@ -155,9 +155,13 @@ describe('MCPB vendor and tool-registry release contracts', () => {
   });
 
   it('uses unique manifest/server tool-name parity instead of a stale fixed count', () => {
+    // Count-agnostic on purpose: the one deliberate tool-count tripwire lives in
+    // tests/mcp_remediation_stdio_smoke.test.js (run by verify:mcp-parity). A second
+    // hardcoded count here failed the 0.3.1-0.3.3 tag builds without any local gate
+    // noticing. This test hardens name validation, not the census.
     const tools = Builder.buildManifest().tools;
-    expect(tools).toHaveLength(31);
-    expect(Artifact.validatedToolNames(tools, 'manifest')).toHaveLength(31);
+    expect(tools.length).toBeGreaterThan(0);
+    expect(Artifact.validatedToolNames(tools, 'manifest')).toHaveLength(tools.length);
     expect(() => Artifact.validatedToolNames([...tools, tools[0]], 'manifest')).toThrow(/duplicate/i);
     expect(Artifact.DEFAULT_RPC_TIMEOUT_MS).toBe(60000);
   });
