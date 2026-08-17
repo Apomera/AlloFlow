@@ -92,12 +92,27 @@ describe('the doors', () => {
     expect(sidebar).toContain("t('math_create.open_button')");
   });
 
-  it('the Lab has the one-release pointer where the Create tab was', () => {
-    expect(stem).toContain("t('math_create.pointer')");
+  it('the Lab has the pointer in the topbar actionbar (tab row is gone entirely)', () => {
+    // 2026-08-17 mobile pass: the tab row was 72px of overhead carrying one
+    // tab plus the pointer, and a single-tab tablist is an ARIA anti-pattern.
+    // The pointer now lives in the actionbar as a compact labeled button.
+    expect(stem).not.toContain('stem-lab-tablist flex border-b'); // row removed
+    expect(stem).toContain('stem-lab-mathstudio-btn');
     expect(stem).toContain('openMathCreate,'); // destructured, not a free variable
-    const pointer = stem.slice(stem.indexOf("'_math-studio-pointer'"), stem.indexOf("'_math-studio-pointer'") + 600);
+    const pointer = stem.slice(stem.indexOf('stem-lab-mathstudio-btn') - 600, stem.indexOf('stem-lab-mathstudio-btn') + 600);
     expect(pointer).toContain('setShowStemLab(false);');
     expect(pointer).toContain('openMathCreate()');
+    expect(pointer).toContain("t('math_create.pointer_aria')");
+  });
+
+  it('the mobile header is condensed: one-line honest subtitle, no Alt+1/2, no dead subject select', () => {
+    // Measured on a 390x844 viewport against the live shell with this module
+    // route-injected: header stack 317px -> 118px.
+    expect(stem).toContain(`t('stem.solver.manipulatives') || "Interactive tools & labs"`);
+    expect(stem).not.toContain('Create problems, build assessments, explore with manipulatives');
+    expect(stem).not.toContain("setStemLabTab('explore'); announceToSR('Switched to Explore tab')");
+    expect(stem).not.toContain('"Alt+1"');
+    expect(stem).not.toContain('stem-lab-subject-select'); // guard was always false after the migration
   });
 });
 

@@ -2011,7 +2011,7 @@
           '.stem-active-tool-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }',
           '.stem-active-tool-back { display: inline-flex; align-items: center; gap: 7px; min-height: 34px; padding: 0 12px; border-radius: 10px; border: 1px solid rgba(99,102,241,0.35); font-size: 12px; font-weight: 900; }',
           '.stem-active-tool-hint { font-size: 11px; white-space: nowrap; }',
-          '@media (max-width: 640px) { .stem-lab-modal-shell { margin: 0 !important; border-radius: 0 !important; max-width: 100vw !important; max-height: 100% !important; } .stem-lab-topbar { padding: 14px 14px 16px 88px !important; align-items: flex-start !important; flex-wrap: wrap !important; } .stem-lab-brand-block { flex: 1 1 180px !important; gap: 8px !important; } .stem-lab-brand-icon, .stem-lab-keyboard-badge, .stem-lab-xp-badge { display: none !important; } .stem-lab-title-lockup h2 { font-size: 26px !important; line-height: 1.05 !important; max-width: 176px; } .stem-lab-title-lockup p { font-size: 12.5px !important; line-height: 1.35 !important; max-width: 178px; } .stem-lab-actionbar { flex: 0 0 auto !important; margin-left: 0 !important; margin-top: 4px !important; gap: 2px !important; max-width: 184px; flex-wrap: wrap; } .stem-lab-actionbar button { box-sizing: border-box; flex: 0 0 40px !important; width: 40px; min-width: 40px; max-width: 40px; height: 40px; min-height: 40px; padding: 0 !important; justify-content: center; background: rgba(255,255,255,0.14); } .stem-lab-actionbar button span, .stem-lab-subject-select { display: none !important; } .stem-lab-tablist { padding-left: 0 !important; padding-right: 0 !important; } .stem-lab-tablist > button { flex: 1 1 0; justify-content: center; padding: 12px 8px !important; } .stem-active-toolbar { padding: 10px 12px; gap: 10px; } .stem-active-tool-icon { width: 32px; height: 32px; } .stem-active-tool-title p, .stem-active-tool-hint { display: none; } .stem-active-tool-back { min-height: 36px; padding: 0 10px; } .stem-tool-catalog { width: 100%; } .stem-tool-searchbar { position: static; padding-top: 0; } .stem-catalog-context { align-items: flex-start; margin-top: 0; } .stem-catalog-status, .stem-catalog-clear { min-height: 32px; } .stem-catalog-chip { min-height: 38px; font-size: 12px; padding: 0 12px; } .stem-tool-matchmaker-form, .stem-tool-ai-suggestions { grid-template-columns: 1fr; } .stem-tool-matchmaker-button { width: 100%; } .stem-tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; } .stem-tool-card { min-height: 220px; padding: 22px !important; } .stem-tool-card h4 { font-size: 20px !important; line-height: 1.25; } .stem-tool-card p { font-size: 16px !important; line-height: 1.55; } }',
+          '@media (max-width: 640px) { .stem-lab-modal-shell { margin: 0 !important; border-radius: 0 !important; max-width: 100vw !important; max-height: 100% !important; } .stem-lab-topbar { padding: 10px 12px 10px 88px !important; align-items: center !important; flex-wrap: wrap !important; } .stem-lab-brand-block { flex: 1 1 160px !important; gap: 8px !important; } .stem-lab-brand-icon, .stem-lab-keyboard-badge, .stem-lab-xp-badge { display: none !important; } .stem-lab-title-lockup h2 { font-size: 19px !important; line-height: 1.1 !important; white-space: nowrap; } .stem-lab-title-lockup p { font-size: 11.5px !important; line-height: 1.3 !important; max-width: 190px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .stem-lab-actionbar { flex: 0 0 auto !important; margin-left: 0 !important; margin-top: 2px !important; gap: 2px !important; flex-wrap: nowrap; max-width: 240px; } .stem-lab-actionbar button { box-sizing: border-box; flex: 0 0 36px !important; width: 36px; min-width: 36px; max-width: 36px; height: 36px; min-height: 36px; padding: 0 !important; justify-content: center; background: rgba(255,255,255,0.14); } .stem-lab-actionbar button span { display: none !important; } .stem-active-toolbar { padding: 10px 12px; gap: 10px; } .stem-active-tool-icon { width: 32px; height: 32px; } .stem-active-tool-title p, .stem-active-tool-hint { display: none; } .stem-active-tool-back { min-height: 36px; padding: 0 10px; } .stem-tool-catalog { width: 100%; } .stem-tool-searchbar { position: static; padding-top: 0; } .stem-catalog-context { align-items: flex-start; margin-top: 0; } .stem-catalog-status, .stem-catalog-clear { min-height: 32px; } .stem-catalog-chip { min-height: 38px; font-size: 12px; padding: 0 12px; } .stem-tool-matchmaker-form, .stem-tool-ai-suggestions { grid-template-columns: 1fr; } .stem-tool-matchmaker-button { width: 100%; } .stem-tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; } .stem-tool-card { min-height: 220px; padding: 22px !important; } .stem-tool-card h4 { font-size: 20px !important; line-height: 1.25; } .stem-tool-card p { font-size: 16px !important; line-height: 1.55; } }',
           '@media (max-width: 640px) { .stem-lab-modal-shell { max-height: 100% !important; } .stem-lab-scroll-region { scrollbar-gutter: auto; } }',
           '@media (max-width: 430px) { .stem-lab-topbar { padding-left: 96px !important; } .stem-tool-grid { grid-template-columns: 1fr; } .stem-tool-card { min-height: auto; } }'
         ].join('\n');
@@ -2833,10 +2833,9 @@
           }
           // Keyboard shortcuts (with Alt key)
           if (e.altKey) {
-            if (e.key === '1') { e.preventDefault(); setStemLabTab('explore'); announceToSR('Switched to Explore tab'); }
-            // Alt+2 used to switch to the Create tab, which moved home to the
-            // math tool as Math Studio (docs/math_create_migration_plan.md).
-            else if (e.key === 'Backspace' || e.key === 'b') { e.preventDefault(); setStemLabTool(null); announceToSR('Returned to tool grid'); }
+            // Alt+1/Alt+2 used to switch tabs; the tab row is gone (Create
+            // moved home to the math tool, and Explore IS the Lab).
+            if (e.key === 'Backspace' || e.key === 'b') { e.preventDefault(); setStemLabTool(null); announceToSR('Returned to tool grid'); }
           }
         }
         document.addEventListener('keydown', handleKeyDown);
@@ -4268,35 +4267,16 @@
           className: "text-lg font-bold tracking-tight"
         }, "\uD83E\uDDEA STEAM Lab"), /*#__PURE__*/React.createElement("p", {
           className: "text-xs text-white/70"
-        }, "Create problems, build assessments, explore with manipulatives"))), /*#__PURE__*/React.createElement("div", {
+        }, t('stem.solver.manipulatives') || "Interactive tools & labs"))), /*#__PURE__*/React.createElement("div", {
           className: "stem-lab-actionbar flex items-center gap-3"
-        }, stemLabTab !== 'explore' && /*#__PURE__*/React.createElement("select", {
-          value: mathSubject,
-          onChange: e => setMathSubject(e.target.value),
-          className: "stem-lab-subject-select px-3 py-1.5 text-xs font-medium bg-white/15 border border-white/25 rounded-lg text-white outline-none focus:ring-2 focus:ring-indigo-400",
-          "aria-label": "Subject"
-        }, /*#__PURE__*/React.createElement("option", {
-          value: "General Math",
-          className: "text-slate-800"
-        }, "General Math"), /*#__PURE__*/React.createElement("option", {
-          value: "Algebra",
-          className: "text-slate-800"
-        }, "Algebra"), /*#__PURE__*/React.createElement("option", {
-          value: "Geometry",
-          className: "text-slate-800"
-        }, "Geometry"), /*#__PURE__*/React.createElement("option", {
-          value: "Calculus",
-          className: "text-slate-800"
-        }, "Calculus"), /*#__PURE__*/React.createElement("option", {
-          value: "Chemistry",
-          className: "text-slate-800"
-        }, "Chemistry"), /*#__PURE__*/React.createElement("option", {
-          value: "Physics",
-          className: "text-slate-800"
-        }, "Physics"), /*#__PURE__*/React.createElement("option", {
-          value: "Biology",
-          className: "text-slate-800"
-        }, "Biology")), /*#__PURE__*/React.createElement("button", {
+        }, /*#__PURE__*/React.createElement("button", {
+          // Math Studio pointer, relocated from the retired tab row. Compact:
+          // icon-only on phones (the label span is hidden by the 640px block).
+          onClick: () => { setShowStemLab(false); if (typeof openMathCreate === 'function') openMathCreate(); },
+          className: "stem-lab-mathstudio-btn p-1.5 hover:bg-white/20 rounded-lg transition-colors flex items-center gap-1 text-xs font-bold",
+          "aria-label": t('math_create.pointer_aria') || 'Create moved: open Math Studio',
+          title: t('math_create.pointer') || 'Create moved: Math Studio'
+        }, "\uD83E\uDDEE", /*#__PURE__*/React.createElement("span", { className: "hidden lg:inline" }, t('math_create.title') || 'Math Studio')), /*#__PURE__*/React.createElement("button", {
           onClick: () => { if (typeof window.AlloToggleTheme === 'function') window.AlloToggleTheme(); },
           className: "p-1.5 hover:bg-white/20 rounded-lg transition-colors flex items-center gap-1",
           "aria-label": "Toggle theme",
@@ -4377,36 +4357,12 @@
           "aria-label": "Close STEAM Lab"
         }, /*#__PURE__*/React.createElement(X, {
           size: 20
-        })))), /*#__PURE__*/React.createElement("div", {
-          className: "stem-lab-tablist flex border-b px-6", role: "tablist", "aria-label": "STEAM Lab navigation",
-          style: { backgroundColor: _pal.bgAlt, borderColor: _pal.border }
-        }, [{
-          id: 'explore',
-          label: '\uD83D\uDD27 Explore',
-          desc: t('stem.solver.manipulatives')
-        }].map(tab => /*#__PURE__*/React.createElement("button", { "aria-label": tab.desc ? (tab.label + " tab: " + tab.desc) : (tab.label + " tab"),
-          key: tab.id, role: "tab", "aria-selected": stemLabTab === tab.id,
-          onClick: () => {
-            setStemLabTab(tab.id);
-            setStemLabTool(null);
-          },
-          className: "flex items-center gap-2 px-5 py-3 text-sm font-bold border-b-2 transition-all",
-          style: stemLabTab === tab.id
-            ? { borderColor: isContrast ? '#fbbf24' : '#4f46e5', color: isContrast ? '#fbbf24' : (isDark ? '#a5b4fc' : '#4338ca'), backgroundColor: _pal.bg }
-            : { borderColor: 'transparent', color: _pal.textMuted }
-        }, /*#__PURE__*/React.createElement("span", null, tab.label), /*#__PURE__*/React.createElement("span", {
-          className: `text-[10px] font-normal ${stemLabTab === tab.id ? 'text-indigo-400' : 'text-slate-500'}`
-        }, tab.desc))).concat(/*#__PURE__*/React.createElement("button", {
-          // One-release courtesy pointer: the Create tab moved home to the math
-          // tool as Math Studio (docs/math_create_migration_plan.md). Closes the
-          // Lab and opens the modal so muscle memory still lands somewhere real.
-          key: '_math-studio-pointer',
-          "aria-label": t('math_create.pointer_aria') || 'Create moved: open Math Studio',
-          onClick: () => { setShowStemLab(false); if (typeof openMathCreate === 'function') openMathCreate(); },
-          className: "flex items-center gap-2 px-5 py-3 text-sm font-bold border-b-2 border-transparent transition-all text-slate-400 hover:text-indigo-600"
-        }, "\uD83E\uDDEE " + (t('math_create.pointer') || 'Create moved: Math Studio'), /*#__PURE__*/React.createElement("span", {
-          className: "text-[10px] font-normal text-slate-400"
-        }, "\u2197")))),
+        })))),
+        // The tab row is gone. With Create moved home to the math tool
+        // (docs/math_create_migration_plan.md), the tablist carried exactly one
+        // tab plus the pointer \u2014 72px of pure overhead on a phone, and a
+        // single-tab tablist is an ARIA anti-pattern besides. Explore IS the
+        // Lab now; the Math Studio pointer lives in the topbar actionbar.
         stemLabTab === 'explore' && stemLabTool && _activeStemToolMeta && /*#__PURE__*/React.createElement("div", {
           className: "stem-active-toolbar",
           role: "region",
@@ -4459,8 +4415,7 @@
           React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'auto 1fr auto 1fr', gap: '4px 16px', fontSize: 12 } },
             React.createElement("kbd", { style: { background: _pal.bgAlt, border: '1px solid ' + _pal.border, padding: '1px 6px', borderRadius: 3, fontFamily: 'monospace', fontSize: 11 } }, "Esc"),
             React.createElement("span", { style: { color: _pal.textMuted } }, stemLabTool ? "Close tool / Close lab" : "Close STEAM Lab"),
-            React.createElement("kbd", { style: { background: _pal.bgAlt, border: '1px solid ' + _pal.border, padding: '1px 6px', borderRadius: 3, fontFamily: 'monospace', fontSize: 11 } }, "Alt+1"),
-            React.createElement("span", { style: { color: _pal.textMuted } }, "Explore tab"),
+
             React.createElement("kbd", { style: { background: _pal.bgAlt, border: '1px solid ' + _pal.border, padding: '1px 6px', borderRadius: 3, fontFamily: 'monospace', fontSize: 11 } }, "Alt+B"),
             React.createElement("span", { style: { color: _pal.textMuted } }, "Back to tool grid"),
             React.createElement("kbd", { style: { background: _pal.bgAlt, border: '1px solid ' + _pal.border, padding: '1px 6px', borderRadius: 3, fontFamily: 'monospace', fontSize: 11 } }, "Tab"),
