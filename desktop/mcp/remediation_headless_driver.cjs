@@ -1259,7 +1259,7 @@ function createDriver(options) {
     const _isPdfInput = /\.pdf$/i.test(fileName);
     (opts.onLog || log)('remediate: ' + fileName + ' (' + Math.round(b64.length * 0.75 / 1024) + ' KB, target ' + (opts.targetScore || 95) + ')');
     return withRunPage(Object.assign({ fileName, base64ForRender: b64 }, opts), (page) =>
-      page.evaluate(async ({ b64, fileName, targetScore, fixPasses, polishPasses, wantTaggedPdf, wantAutoContinue, autoContinueRounds, pdfLibCdn, auditorCount, resumeCheckpoint }) => {
+      page.evaluate(async ({ b64, fileName, targetScore, fixPasses, polishPasses, wantTaggedPdf, wantAutoContinue, autoContinueRounds, pdfLibCdn, auditorCount, resumeCheckpoint, pageRange }) => {
         const pipeline = window.__mcpPipeline;
         const progress = (stage, msg) => { try { window.__mcpProgress(stage + ' — ' + msg); } catch (_) {} };
         const loopPolicy = window.AlloModules
@@ -1407,6 +1407,9 @@ function createDriver(options) {
         if (!cur) {
           const fixOptions = {
             base64: b64, fileName, auditResult: audit,
+            // (2026-08-17) Optional page-range remediation — fixAndVerifyPdf's own batchOverrides
+            // contract; the pipeline normalizes a full-document range back to null itself.
+            ...(Array.isArray(pageRange) && pageRange.length === 2 ? { pageRange } : {}),
             targetScore: targetScore, autoFixPasses: fixPasses, polishPasses: polishPasses, auditorCount,
             onProgress: (step, msg) => progress('fix', (typeof step === 'number' ? 'step ' + step + ': ' : '') + (msg || '')),
           };
@@ -1658,6 +1661,9 @@ function createDriver(options) {
         targetScore: Number(opts.targetScore) || 95,
         fixPasses: Number.isFinite(Number(opts.fixPasses)) ? Number(opts.fixPasses) : 2,
         polishPasses: Number.isFinite(Number(opts.polishPasses)) ? Number(opts.polishPasses) : 0,
+        pageRange: (Array.isArray(opts.pageRange) && opts.pageRange.length === 2)
+          ? [Math.max(1, Number(opts.pageRange[0]) || 1), Math.max(1, Number(opts.pageRange[1]) || 1)]
+          : null,
         // Tagged-PDF export is a PDF-in → PDF-out artifact; for DOCX/PPTX inputs the
         // accessible HTML is the deliverable (matches the app).
         wantTaggedPdf: opts.taggedPdf !== false && _isPdfInput,
@@ -2658,6 +2664,37 @@ function createDriver(options) {
     }, o.html), o);
   }
 
+  // (2026-08-17) audit_html: the pipeline's native two-engine audit on caller-supplied HTML.
+  // Title II is web-first, and this is the same evidence stack every internal reverify uses
+  // (AI rubric + axe). File/string input only — no URL fetching, so document egress stays
+  // exactly what the key configuration says.
+  async function auditHtml(opts) {
+    const o = opts || {};
+    (o.onLog || log)('audit_html: ' + (o.fileName || 'page.html') + ' (' + Math.round(String(o.html || '').length / 1024) + ' KB)');
+    return withRunPage(Object.assign({ fileName: o.fileName || 'page.html' }, o), (page) =>
+      page.evaluate(async ({ html, fileName }) => {
+        const p = window.__mcpPipeline;
+        const [ai, axe] = await Promise.all([
+          p.auditOutputAccessibility(html, { trigger: 'mcp-html-audit' }),
+          p.runAxeAudit(html).catch(() => null),
+        ]);
+        const issues = (ai && Array.isArray(ai.issues) ? ai.issues : []).slice(0, 60)
+          .map((i) => ({ issue: (i && (i.issue || i.description)) || '', wcag: (i && i.wcag) || '', severity: (i && i.severity) || '' }));
+        return {
+          fileName,
+          score: ai && typeof ai.score === 'number' ? ai.score : null,
+          sectionsAudited: (ai && Number.isFinite(ai.chunksAudited)) ? ai.chunksAudited : null,
+          sectionsRequested: (ai && Number.isFinite(ai.chunksRequested)) ? ai.chunksRequested : null,
+          issueCount: issues.length,
+          issues,
+          passCount: (ai && Array.isArray(ai.passes)) ? ai.passes.length : null,
+          axeViolations: axe && axe.totalViolations != null ? axe.totalViolations : null,
+          axeScore: axe && typeof axe.score === 'number' ? axe.score : null,
+        };
+      }, { html: String(o.html || ''), fileName: o.fileName || 'page.html' })
+    );
+  }
+
   async function close() {
     if (activeRun) await cancelActiveRun();
     if (verapdfServer) { try { verapdfServer.close(); } catch (_) {} verapdfServer = null; }
@@ -2668,7 +2705,7 @@ function createDriver(options) {
     audit, remediate, validatePdfUa, validatePdfUaCli, selfTest, renderPdfToPageImages, exportAccessibleOffice,
     fixContrast, buildConformanceReport, generateResourcePack, describeImages, transcribeMedia, translateHtml,
     redactDocumentHtml, extractDocumentText, inspectFormFields, applyFormFields, simplifyHtml,
-    auditWithBothEngines, htmlDerivatives, exportAltFormat,
+    auditWithBothEngines, htmlDerivatives, exportAltFormat, auditHtml,
     cancelActiveRun, close,
     takeLastRunDiagnostics: () => lastRunDiagnostics,
   };

@@ -224,6 +224,12 @@ The Canvas app never needs this — only this connector does.
 | `remediation_job_result` | The completed job's summary (per-file summaries for batches). | nothing | instant |
 | `remediation_job_cancel` | Cancels a queued job, or kills the running one (its browser context closes; in-flight AI calls die in seconds). Files already written stay. | nothing | instant |
 | `remediation_job_diagnostics` | Numbers-only diagnostic snapshot for a run: per-call ledger (outcomes, timings, byte counts, retries, models), throttle events, constants in force. Pass `job_id` for a background job; omit it for the most recent run this session. Never contains prompts, responses, or document text. | nothing | instant |
+| `audit_html` | Two-engine accessibility audit (AI content rubric + axe-core) of a local `.html` file — the same evidence stack the remediation pipeline uses internally, for web page exports and LMS content. Never fetches URLs. | audited HTML → Gemini under your key | 1-2 min |
+
+Since 0.3.2, `pdf_audit` and the remediation tools also accept **PNG/JPEG/WebP images** (photographed
+worksheets are first-class inputs; magic-byte detection protects against mislabeled files), and the
+single-file remediation tools take an optional **`page_range`** ("12-18" or "5") to remediate a span
+of a long PDF instead of the whole document.
 
 `generate_resource_pack` reads `{ "items": [...], "topic": "...", "isWorksheet": false,
 "responses": {}, "config": {} }` from `resource_pack_json` and writes `output_path`. Those are the

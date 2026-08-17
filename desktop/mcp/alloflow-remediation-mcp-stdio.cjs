@@ -333,7 +333,10 @@ function _requireFileOfType(args, extRe, extLabel) {
 function requirePdfPath(args) { return _requireFileOfType(args, /\.pdf$/i, '.pdf'); }
 // Remediation/audit also take Office inputs — the pipeline sniffs .docx/.pptx from the
 // fileName and routes them through its deterministic office branches (no Vision pass).
-function requireDocPath(args) { return _requireFileOfType(args, /\.(pdf|docx|pptx)$/i, '.pdf, .docx, or .pptx'); }
+// (2026-08-17) + first-class image inputs: the pipeline accepts PNG/JPEG/WebP scans natively
+// (magic-byte detection wins over extension, so a mislabeled photo never reaches the wrong
+// decoder). Teachers photograph worksheets; this is the doorway for those photos.
+function requireDocPath(args) { return _requireFileOfType(args, /\.(pdf|docx|pptx|png|jpe?g|webp)$/i, '.pdf, .docx, .pptx, or a .png/.jpg/.webp image'); }
 
 function requireGeminiKey() {
   if (!Driver.resolveGeminiApiKey().key) {
@@ -1330,7 +1333,19 @@ function validateRemediateOptions(args) {
   if (args.auto_continue !== undefined && typeof args.auto_continue !== 'boolean') throw invalidParams('arguments.auto_continue must be a boolean');
   if (args.validate_ua !== undefined && typeof args.validate_ua !== 'boolean') throw invalidParams('arguments.validate_ua must be a boolean');
   const autoContinueRounds = optionalBoundedNumber(args, 'auto_continue_rounds', 1, 5);
+  // (2026-08-17) Optional page range "N-M" or "N" (1-indexed, PDF inputs). Parsed here so every
+  // remediate entry point shares the validation; the pipeline clamps to real bounds and treats a
+  // full-document range as no range.
+  let pageRange = null;
+  if (args.page_range !== undefined) {
+    const m = typeof args.page_range === 'string' ? args.page_range.trim().match(/^(\d{1,4})(?:-(\d{1,4}))?$/) : null;
+    if (!m) throw invalidParams('arguments.page_range must look like "12-18" or "5"');
+    const a = Number(m[1]); const b = m[2] !== undefined ? Number(m[2]) : a;
+    if (a < 1 || b < a) throw invalidParams('arguments.page_range must be 1-indexed with start <= end');
+    pageRange = [a, b];
+  }
   return {
+    pageRange,
     targetScore: targetScore === undefined ? 95 : targetScore,
     fixPasses: fixPasses === undefined ? 2 : fixPasses,
     polishPasses: polishPasses === undefined ? 0 : polishPasses,
@@ -2490,17 +2505,29 @@ const TOOLS = [
   {
     name: 'pdf_audit',
     title: 'Audit a PDF for accessibility',
-    description: 'Run the AlloFlow accessibility audit on a local PDF, DOCX, or PPTX: overall score, per-severity issue list, scanned/searchable detection, page count, detected language. Sends document content to the Gemini API; core browser libraries are bundled locally. Writes no files. Office files are audited deterministically from extracted text (no Vision pass). Typically 1-3 minutes.',
+    description: 'Run the AlloFlow accessibility audit on a local PDF, DOCX, PPTX, or PNG/JPEG/WebP image scan: overall score, per-severity issue list, scanned/searchable detection, page count, detected language. Sends document content to the Gemini API; core browser libraries are bundled locally. Writes no files. Office files are audited deterministically from extracted text (no Vision pass). Typically 1-3 minutes.',
     inputSchema: {
       type: 'object',
       required: ['file_path'],
       properties: {
-        file_path: { type: 'string', description: 'Absolute path to a local .pdf, .docx, or .pptx file (max 200MB)' },
+        file_path: { type: 'string', description: 'Absolute path to a local .pdf, .docx, .pptx, or .png/.jpg/.webp file (max 200MB)' },
         ocr_language: OCR_LANGUAGE_INPUT_SCHEMA,
       },
       additionalProperties: false,
     },
     annotations: { title: 'Audit a PDF for accessibility', readOnlyHint: true, destructiveHint: false, openWorldHint: true },
+  },
+  {
+    name: 'audit_html',
+    title: 'Audit an HTML file for accessibility',
+    description: 'Run the same two-engine accessibility audit the remediation pipeline uses, on a local .html file: the AI content rubric (score, per-issue WCAG mapping) plus the axe-core automated engine. Title II is web-first — use this to evidence-check web page exports, LMS content, or any saved HTML without remediating it. Local FILE input only; this tool never fetches URLs, so nothing leaves the machine except the audited HTML going to the Gemini API under your key. Writes no files. Typically 1-2 minutes.',
+    inputSchema: {
+      type: 'object',
+      required: ['file_path'],
+      properties: { file_path: { type: 'string', description: 'Absolute path to a local .html or .htm file (max 5MB)' } },
+      additionalProperties: false,
+    },
+    annotations: { title: 'Audit an HTML file for accessibility', readOnlyHint: true, destructiveHint: false, openWorldHint: true },
   },
   {
     name: 'pdf_validate_ua',
@@ -2525,8 +2552,9 @@ const TOOLS = [
       auto_continue_rounds: { type: 'number', minimum: 1, maximum: 5, description: 'Max auto-continue rounds (default 3)' },
       validate_ua: { type: 'boolean', description: 'Also run the independent keyless PDF/UA-1 (ISO 14289-1) veraPDF check on the tagged output and include its verdict in the report (default false; ~1 min extra)' },
       ocr_language: OCR_LANGUAGE_INPUT_SCHEMA,
+      page_range: { type: 'string', pattern: '^[0-9]{1,4}(-[0-9]{1,4})?$', description: 'Remediate only these 1-indexed pages of a PDF, e.g. "12-18" or "5". Big quota/time saver on long documents; the pipeline treats a full-document range as no range. PDF inputs only.' },
     };
-    const JOB_ID_SCHEMA = { type: 'object', required: ['job_id'], properties: { job_id: { type: 'string', minLength: 1, maxLength: 200 } }, additionalProperties: false };
+    const JOB_ID_SCHEMA ={ type: 'object', required: ['job_id'], properties: { job_id: { type: 'string', minLength: 1, maxLength: 200 } }, additionalProperties: false };
     const RESULT_DOC = 'Accepts .pdf, .docx, or .pptx. Writes <name>-accessible.html, <name>-tagged.pdf, and <name>-remediation-report.json next to the input (or to output_dir), never overwriting existing files (Office inputs skip the tagged-PDF export — the accessible HTML is the deliverable). Returns the distribution verdict, before/after scores, and every fidelity/honesty disclosure. Sends document content to the Gemini API.';
     return [
       {
@@ -2535,7 +2563,7 @@ const TOOLS = [
         description: 'Run the full AlloFlow remediation pipeline on a local PDF: audit, rebuild as accessible HTML, iterative AI fix passes to the target score, honesty-checked verification, and a tagged PDF export. ' + RESULT_DOC + ' SYNCHRONOUS: blocks 5-30 minutes — if your client enforces a tool timeout, use pdf_remediate_start + remediation_job_status instead.',
         inputSchema: {
           type: 'object', required: ['file_path'],
-          properties: Object.assign({ file_path: { type: 'string', description: 'Absolute path to a local .pdf, .docx, or .pptx file (max 200MB)' } }, REMEDIATE_OPTION_PROPS),
+          properties: Object.assign({ file_path: { type: 'string', description: 'Absolute path to a local .pdf, .docx, .pptx, or .png/.jpg/.webp file (max 200MB)' } }, REMEDIATE_OPTION_PROPS),
           additionalProperties: false,
         },
         annotations: { title: 'Remediate a PDF (synchronous)', readOnlyHint: false, destructiveHint: false, openWorldHint: true },
@@ -2546,7 +2574,7 @@ const TOOLS = [
         description: 'Start the same remediation as pdf_remediate as a BACKGROUND JOB and return a job_id immediately. Jobs run one at a time in start order. Poll remediation_job_status (every 30-60s is plenty; runs take 5-30 minutes), then fetch remediation_job_result. ' + RESULT_DOC,
         inputSchema: {
           type: 'object', required: ['file_path'],
-          properties: Object.assign({ file_path: { type: 'string', description: 'Absolute path to a local .pdf, .docx, or .pptx file (max 200MB)' } }, REMEDIATE_OPTION_PROPS),
+          properties: Object.assign({ file_path: { type: 'string', description: 'Absolute path to a local .pdf, .docx, .pptx, or .png/.jpg/.webp file (max 200MB)' } }, REMEDIATE_OPTION_PROPS),
           additionalProperties: false,
         },
         annotations: { title: 'Start a remediation job', readOnlyHint: false, destructiveHint: false, openWorldHint: true },
@@ -2640,6 +2668,7 @@ const GEMINI_REQUIRED_TOOL_NAMES = Object.freeze([
   'transcribe_media',
   'translate_accessible_html',
   'simplify_accessible_html',
+  'audit_html',
   'pdf_audit',
   'pdf_remediate',
   'pdf_remediate_start',
@@ -2939,6 +2968,12 @@ const OUTPUT_SCHEMAS = {
   }, ['jobId', 'status']),
   remediation_job_status: S_JOB_VIEW,
   remediation_job_result: S_JOB_VIEW,
+  audit_html: obj({
+    fileName: S_STR, score: { type: ['number', 'null'] },
+    sectionsAudited: { type: ['number', 'null'] }, sectionsRequested: { type: ['number', 'null'] },
+    issueCount: S_NUM, issues: { type: 'array', items: obj({ issue: S_STR, wcag: S_STR, severity: S_STR }) },
+    passCount: { type: ['number', 'null'] }, axeViolations: { type: ['number', 'null'] }, axeScore: { type: ['number', 'null'] },
+  }),
   remediation_job_diagnostics: obj({ ok: S_BOOL, error: S_STR, jobId: S_STR, source: { type: 'string', enum: ['job', 'last-run'] }, capturedAt: S_STR, fileName: S_STR, diagnostics: {} }, ['ok']),
   remediation_job_cancel: obj({ ok: S_BOOL, error: S_STR, jobId: S_STR, status: S_STR, wasRunning: S_BOOL, killedRun: S_BOOL, durabilityWarning: S_STR }),
 };
@@ -3532,6 +3567,20 @@ const TOOL_HANDLERS = {
     });
   },
 
+  async audit_html(args, ctx) {
+    assertAllowedKeys(args, ['file_path'], 'arguments');
+    const htmlPath = _requireFileOfType(args, /\.html?$/i, '.html');
+    const stat = fs.statSync(htmlPath);
+    if (stat.size > 5 * 1024 * 1024) throw invalidParams('The HTML file is larger than 5MB — audit a page, not an archive.');
+    requireGeminiKey();
+    return withSingleFlight('audit_html', async () => {
+      const out = await getDriver().auditHtml({
+        html: fs.readFileSync(htmlPath, 'utf8'), fileName: path.basename(htmlPath), onLog: ctx && ctx.onProgress,
+      });
+      return out;
+    });
+  },
+
   async pdf_validate_ua(args, ctx) {
     assertAllowedKeys(args, ['file_path'], 'arguments');
     const filePath = requirePdfPath(args);
@@ -3551,7 +3600,7 @@ const TOOL_HANDLERS = {
   },
 
   async pdf_remediate(args, ctx) {
-    assertAllowedKeys(args, ['file_path', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'auto_continue', 'auto_continue_rounds', 'validate_ua', 'ocr_language'], 'arguments');
+    assertAllowedKeys(args, ['file_path', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'auto_continue', 'auto_continue_rounds', 'validate_ua', 'ocr_language', 'page_range'], 'arguments');
     const filePath = requireDocPath(args);
     const opts = validateRemediateOptions(args);
     const outDir = resolveOutputDir(args, filePath);
@@ -3566,7 +3615,7 @@ const TOOL_HANDLERS = {
   },
 
   pdf_remediate_start(args) {
-    assertAllowedKeys(args, ['file_path', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'auto_continue', 'auto_continue_rounds', 'validate_ua', 'ocr_language'], 'arguments');
+    assertAllowedKeys(args, ['file_path', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'auto_continue', 'auto_continue_rounds', 'validate_ua', 'ocr_language', 'page_range'], 'arguments');
     const filePath = requireDocPath(args);
     const opts = validateRemediateOptions(args);
     const outDir = resolveOutputDir(args, filePath);
