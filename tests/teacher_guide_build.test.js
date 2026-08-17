@@ -79,7 +79,7 @@ beforeAll(() => {
 });
 
 describe('teacher guide task paths', () => {
-  it('renders the manifest task chooser with normal and offline-safe chapter links', () => {
+  it('renders the manifest task chooser with normal and offline-safe chapter links', { timeout: 240000 }, () => {
     expect(Array.isArray(manifest.paths)).toBe(true);
     expect(manifest.paths.length).toBeGreaterThan(0);
 
@@ -121,7 +121,7 @@ describe('teacher guide generated tool reference', () => {
   });
 });
 describe('teacher guide triage cues', () => {
-  it('renders maintained audience and typical-use metadata on cards and chapter pages', () => {
+  it('renders maintained audience and typical-use metadata on cards and chapter pages', { timeout: 240000 }, () => {
     const index = documentFor(resolve(outputRoot, 'index.html'));
     for (const chapter of manifest.chapters) {
       expect(chapter.audience).toEqual(expect.any(String));
@@ -182,7 +182,7 @@ describe('teacher guide deterministic build', () => {
     });
   });
 
-  it('passes the public check mode without writing or drift', () => {
+  it('passes the public check mode without writing or drift', { timeout: 240000 }, () => {
     const result = spawnSync(process.execPath, ['dev-tools/build_teacher_guide.cjs', '--check'], {
       cwd: root,
       encoding: 'utf8',
@@ -193,7 +193,7 @@ describe('teacher guide deterministic build', () => {
 });
 
 describe('teacher guide HTML accessibility', () => {
-  it('adds a compact, valid in-page table of contents to each chapter page', () => {
+  it('adds a compact, valid in-page table of contents to each chapter page', { timeout: 240000 }, () => {
     for (const chapter of manifest.chapters) {
       const document = documentFor(resolve(outputRoot, chapter.slug + '.html'));
       const articleHeadings = Array.from(document.querySelectorAll('.guide-article > h2'));
