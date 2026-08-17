@@ -532,8 +532,11 @@ cover it, and versions 0.3.1–0.3.3 all failed in CI on a test only that select
 
 ## Official MCP Registry
 
-The same GitHub-hosted MCPB can be submitted directly to the official MCP Registry; a second npm
-package or hosted server is not required. The release build generates server.json from the exact
+The GitHub-hosted MCPB is published on the official MCP Registry as
+`io.github.Apomera/alloflow-remediation` (first published at 0.3.5); a second npm package or
+hosted server is not required. The namespace must keep the GitHub account's exact casing:
+registry publish grants are case-sensitive (a lowercase `apomera` 403s at the final publish
+step even though every earlier verification passes), while registry search is case-insensitive. The release build generates server.json from the exact
 MCPB bytes, including its SHA-256 and immutable GitHub Release URL. Registry publication is kept in
 the separate, manual mcp-registry-publish workflow because published versions are immutable and
 currently cannot be unpublished. The workflow requires an existing attested release, verifies its
