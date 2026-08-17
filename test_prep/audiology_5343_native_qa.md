@@ -1,6 +1,6 @@
 # Praxis Audiology (5343) QA report
 
-Generated: 2026-08-16T17:38:25.414Z
+Generated: 2026-08-16T22:55:45.498Z
 
 ## Result
 

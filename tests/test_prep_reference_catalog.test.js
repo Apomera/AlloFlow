@@ -36,8 +36,9 @@ describe('test prep reference catalog', () => {
   });
 
   it('embeds the offline catalog in both hub builds', () => {
-    expect(standardBuilder).toContain("const REFERENCE_CATALOG_SOURCE = path.join(ROOT, 'test_prep', 'reference_catalog.json');");
-    expect(standardBuilder).toContain("const TEST_PREP_REFERENCE_CATALOG = ");
+    // The standard entry point delegates to the release builder now, so the
+    // catalog is embedded once, there. Assert it still reaches the module.
+    expect(standardBuilder).toContain('build_test_prep_hub_release.cjs');
     expect(releaseBuilder).toContain("const referenceCatalogPath = path.join(root, 'test_prep', 'reference_catalog.json');");
     expect(releaseBuilder).toContain("const TEST_PREP_REFERENCE_CATALOG = ");
   });

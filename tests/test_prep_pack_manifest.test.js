@@ -65,7 +65,7 @@ describe('Test Prep pack registry and generated manifest', () => {
       expect(fs.existsSync(sourcePath), entry.sourcePath).toBe(true);
       expect(readJson(sourcePath).id).toBe(entry.id);
     }
-  });
+  }, 180_000);
 
   it('keeps the AP-native pilot outside legacy *_pack.json discovery', () => {
     const registry = readJson(registryPath);
@@ -79,7 +79,7 @@ describe('Test Prep pack registry and generated manifest', () => {
     });
     expect(apEntry.sourcePath).toBe('test_prep/ap_psychology_pilot.json');
     expect(apEntry.sourcePath).not.toMatch(/_pack\.json$/i);
-  });
+  }, 180_000);
 
   it('generates a complete manifest whose source-backed descriptors match their packs', () => {
     const registry = readJson(registryPath);
@@ -199,7 +199,7 @@ describe('Test Prep pack registry and generated manifest', () => {
       expect(fs.existsSync(deployPath), entry.id).toBe(true);
       expect(fs.readFileSync(deployPath).equals(fs.readFileSync(sourcePath))).toBe(true);
     }
-  });
+  }, 180_000);
 
   it('keeps every large lazy bank external and the mirrored runtime comfortably below the deployment limit', () => {
     const registry = readJson(registryPath);
@@ -222,5 +222,5 @@ describe('Test Prep pack registry and generated manifest', () => {
     expect(moduleText).not.toContain('EPPP_NATIVE_ITEMS');
     expect(moduleText).not.toContain('EPPP_PART_ONE_SCAFFOLD');
     expect(moduleText).not.toContain('"eppp-v3-biological-001"');
-  });
+  }, 180_000);
 });

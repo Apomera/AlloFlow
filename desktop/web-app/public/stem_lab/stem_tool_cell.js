@@ -17746,6 +17746,21 @@ var d = labToolData.cell || {};
           // so it must be rotated by the same offset or the explanation would be
           // attached to the wrong distractor. Correctness itself compares option
           // TEXT against `a`, so reordering cannot affect scoring.
+          // Accent colours are authored for borders and washes, where they read well.
+          // Used as TEXT on their own tint, or as a fill behind white, the mid-tone
+          // ones land at 3.6-4.4:1. One factor applied to every accent keeps the hue
+          // and the relationship between them, instead of hand-tuning five constants
+          // that the next added route would not inherit.
+          function cellDarkenAccent(hex) {
+            var m = /^#([0-9a-f]{6})$/i.exec(String(hex || ""));
+            if (!m) return hex;
+            var n = parseInt(m[1], 16);
+            var parts = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(function (v) {
+              return Math.max(0, Math.min(255, Math.round(v * 0.72)));
+            });
+            return "#" + parts.map(function (v) { return (v < 16 ? "0" : "") + v.toString(16); }).join("");
+          }
+
           function cellRotateQuizOptions(question, seedIdx) {
             if (!question || !Array.isArray(question.options) || question.options.length < 2) return question;
             var n = question.options.length;
@@ -20537,6 +20552,8 @@ var d = labToolData.cell || {};
             canvasEl._cellSimPaused = !!d.paused || (prefersReducedCellMotion && typeof d.paused === 'undefined');
 
             var hiddenAutoPaused = false;
+            var offscreenAutoPaused = false;
+            var cellViewObserver = null;
 
             function cancelScheduledLoop() {
               if (animId) cancelAnimationFrame(animId);
@@ -20582,7 +20599,36 @@ var d = labToolData.cell || {};
               }
             }
 
+            function onCellViewChange(visible) {
+              if (!visible) {
+                if (!canvasEl._cellSimPaused) {
+                  offscreenAutoPaused = true;
+                  canvasEl._cellSimPaused = true;
+                  cancelScheduledLoop();
+                }
+              } else if (offscreenAutoPaused) {
+                offscreenAutoPaused = false;
+                // Do not undo a hidden-tab pause on the way back in: that path owns
+                // its own resume and will fire when the tab returns.
+                if (typeof document === 'undefined' || !document.hidden) {
+                  canvasEl._cellSimPaused = false;
+                  scheduleLoop();
+                }
+              }
+            }
+
             if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onVisibilityChange);
+
+            // The petri canvas mounts BELOW the fold, so this is not an edge case: the
+            // simulation ran unseen from first paint until the student scrolled down.
+            if (typeof IntersectionObserver === 'function') {
+              cellViewObserver = new IntersectionObserver(function (entries) {
+                var entry = entries[entries.length - 1];
+                if (entry) onCellViewChange(entry.isIntersecting);
+              }, { rootMargin: '200px' });
+              cellViewObserver.observe(canvasEl);
+              canvasEl._cellViewObserver = cellViewObserver;
+            }
 
             function loop() {
               animId = null;
@@ -21046,6 +21092,8 @@ var d = labToolData.cell || {};
 
               if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onVisibilityChange);
 
+            if (cellViewObserver) { cellViewObserver.disconnect(); cellViewObserver = null; canvasEl._cellViewObserver = null; }
+
               // Disconnect the ResizeObserver here so EVERY unmount path frees it — the
               // canvas ref-null teardown calls _cellSimCleanup but never touched the RO,
               // orphaning an observer on the detached canvas.
@@ -21347,7 +21395,7 @@ var d = labToolData.cell || {};
                       },
                         React.createElement('div', { className: 'text-2xl mb-1' }, c.icon),
                         React.createElement('div', { className: 'text-sm font-black mb-1', style: { color: theme.text } }, c.label),
-                        React.createElement('div', { className: 'text-[10px] text-slate-500 italic mb-1' }, __alloT('stem.cell.' + (c.id) + '_desc', c.desc)),
+                        React.createElement('div', { className: 'text-[10px] text-slate-600 italic mb-1' }, __alloT('stem.cell.' + (c.id) + '_desc', c.desc)),
                         React.createElement('div', { className: 'text-[10px] font-mono', style: { color: theme.text } }, c.modes.length + ' modes')
                       );
                     })
@@ -21429,7 +21477,7 @@ var d = labToolData.cell || {};
                     },
                       React.createElement("div", { className: "mb-1 flex items-center justify-between gap-2" },
                         React.createElement("span", { className: "text-sm font-black text-slate-900" }, route.label),
-                        React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[11px] font-bold", style: { background: active ? route.accent : route.accent + '18', color: active ? '#fff' : route.accent } }, active ? 'Active' : 'Open')
+                        React.createElement("span", { className: "rounded-full px-2 py-0.5 text-[11px] font-bold", style: { background: active ? cellDarkenAccent(route.accent) : route.accent + '18', color: active ? '#fff' : cellDarkenAccent(route.accent) } }, active ? 'Active' : 'Open')
                       ),
                       React.createElement("p", { className: "text-[11px] leading-snug text-slate-500" }, route.desc)
                     );
@@ -22159,7 +22207,7 @@ var d = labToolData.cell || {};
 
                   React.createElement("div", { className: "flex items-center gap-2 text-xs" },
 
-                    React.createElement("span", { className: "font-bold text-green-600" }, "\u2714 " + (d.quizScore || 0)),
+                    React.createElement("span", { className: "font-bold text-green-700" }, "\u2714 " + (d.quizScore || 0)),
 
                     React.createElement("span", { className: "font-bold text-amber-700" }, "\uD83D\uDD25 " + (d.quizStreak || 0))
 
@@ -22709,7 +22757,7 @@ var d = labToolData.cell || {};
                   h('button', { 'data-cell-depth-toggle': true, 'aria-pressed': depthMode ? 'true' : 'false', onClick: function () { updateCellDataFunctional(function(cel) { cel.interiorDepthMode = !depthMode; return cel; }); }, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (depthMode ? 'border-amber-800 bg-amber-700 text-white' : 'border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100') }, depthMode ? 'Hide optical section' : 'Optical section'),
                   h('button', { 'data-cell-microdissection-link': true, onClick: moveToMicrodissection, className: 'px-3 py-1.5 rounded-lg text-xs font-black border border-violet-300 bg-violet-50 text-violet-900 hover:bg-violet-100 transition-colors active:scale-[0.97]' }, sel ? 'Prepare selected section →' : 'Prepare focal section →'),
                   h('button', { 'data-cell-adaptive-quiz': true, 'aria-pressed': adaptiveQuizActive ? 'true' : 'false', onClick: adaptiveQuizActive ? stopAdaptiveQuiz : startAdaptiveQuiz, className: 'px-3 py-1.5 rounded-lg text-xs font-black border transition-colors active:scale-[0.97] ' + (adaptiveQuizActive ? 'border-fuchsia-800 bg-fuchsia-700 text-white' : 'border-fuchsia-300 bg-fuchsia-50 text-fuchsia-900 hover:bg-fuchsia-100') }, adaptiveQuizActive ? 'Exit adaptive check' : 'Adaptive check'),
-                  h('span', { className: 'text-[11px] font-black uppercase tracking-wide text-slate-400' }, 'Guided pathways:'),
+                  h('span', { className: 'text-[11px] font-black uppercase tracking-wide text-slate-600' }, 'Guided pathways:'),
                   availableGuides.map(function (id) {
                     var g = INTERIOR_GUIDES[id], active = id === guideId;
                     return h('button', { key: id, 'aria-pressed': active ? 'true' : 'false', onClick: function () { startGuide(id); }, className: 'px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-colors active:scale-[0.97] ' + (active ? 'bg-amber-700 text-white border-amber-800' : 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100') }, g.label);
@@ -22883,7 +22931,7 @@ var d = labToolData.cell || {};
                   h('ul', { className: 'mt-2 grid gap-2 md:grid-cols-2', 'aria-label': 'Text descriptions of cell structures' }, orgKeys.map(function (key) {
                     var item = CELL_ORGANELLES[key], explored = seen.indexOf(key) >= 0;
                     return h('li', { key: 'transcript-' + key, className: 'rounded-md border bg-white p-2 text-[11px] leading-relaxed', style: { borderColor: item.color } },
-                      h('div', { className: 'flex items-center justify-between gap-2' }, h('strong', { className: 'text-slate-900' }, item.name), h('span', { className: 'text-[10px] font-bold ' + (explored ? 'text-emerald-700' : 'text-slate-400') }, explored ? 'Explored' : 'Not explored')),
+                      h('div', { className: 'flex items-center justify-between gap-2' }, h('strong', { className: 'text-slate-900' }, item.name), h('span', { className: 'text-[10px] font-bold ' + (explored ? 'text-emerald-700' : 'text-slate-600') }, explored ? 'Explored' : 'Not explored')),
                       h('p', { className: 'mt-1 text-slate-700' }, item.fn),
                       h('p', { className: 'mt-1 text-slate-600' }, 'Mechanism: ' + item.structure),
                       h('p', { className: 'mt-1 text-slate-500' }, 'Connections: ' + item.connections)
@@ -22921,7 +22969,7 @@ var d = labToolData.cell || {};
                       h('div', { className: 'mb-1 text-[10.5px] font-black uppercase tracking-wide text-slate-500' }, 'Connections in the cell'),
                       h('p', { className: 'text-[12.5px] leading-relaxed text-slate-700' }, selOrg.connections))),
                   h('div', { className: 'flex flex-wrap gap-1 items-center mb-1' },
-                    h('span', { className: 'text-[10.5px] font-bold text-slate-400 uppercase tracking-wide' }, __alloT('stem.cell.found_in', 'Found in') + ':'),
+                    h('span', { className: 'text-[10.5px] font-bold text-slate-600 uppercase tracking-wide' }, __alloT('stem.cell.found_in', 'Found in') + ':'),
                     ['animal', 'plant', 'bacterium'].map(function (tp) {
                       var has = selOrg.types.indexOf(tp) >= 0;
                       return h('span', { key: tp, className: 'text-[10.5px] font-bold px-1.5 py-0.5 rounded-full ' + (has ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-600 line-through') }, tp);

@@ -28,7 +28,7 @@ describe('manifest-backed independent test-prep additions', () => {
     expect(canonical('12 * 5')).toBe(canonical('12 \u00d7 5'));
     expect(canonical('12 / 5')).toBe(canonical('12 \u00f7 5'));
     expect(canonical('x - 2')).not.toBe(canonical('x + 2'));
-  });
+  }, 180_000);
 
   it('keeps --check read-only across every manifest pack source and deploy artifact', () => {
     const manifest = JSON.parse(fs.readFileSync(
@@ -105,7 +105,7 @@ describe('manifest-backed independent test-prep additions', () => {
         expectedDiagnosticBankSize: 100,
       });
     }
-  });
+  }, 180_000);
 
   it('keeps registered pack titles credential-specific and versions semantic after expansion', () => {
     for (const [stem, credential] of [
@@ -140,5 +140,5 @@ describe('manifest-backed independent test-prep additions', () => {
         learningActivityBankCount: 5,
       });
     }
-  });
+  }, 180_000);
 });

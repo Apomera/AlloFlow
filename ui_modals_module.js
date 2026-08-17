@@ -1333,7 +1333,7 @@ const TeacherGate = React.memo(({
     disabled: busy || retrySeconds > 0 || !passwordInput,
     className: "w-full bg-indigo-600 hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60 text-white font-bold py-3 rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2",
     "data-help-key": "teacher_gate_unlock"
-  }, busy ? 'Checkingâ€¦' : retrySeconds > 0 ? `Try again in ${retrySeconds}s` : t('modals.teacher_gate.unlock'))), /*#__PURE__*/React.createElement("button", {
+  }, busy ? 'Checking…' : retrySeconds > 0 ? `Try again in ${retrySeconds}s` : t('modals.teacher_gate.unlock'))), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: closeGate,
     className: "absolute top-4 right-4 min-h-6 min-w-6 text-slate-600 hover:text-slate-900 transition-colors p-1 rounded-full hover:bg-slate-100",

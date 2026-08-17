@@ -5,7 +5,7 @@
 // - loadAlloModule(filename) helper — each test file calls this in beforeAll
 //   to load its target IIFE module against the shared jsdom window.
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import * as Diff from 'diff';
 
@@ -55,6 +55,36 @@ export function registerEpppPartOne(hub = window.AlloModules.TestPrepHub) {
   const packPath = resolve(process.cwd(), 'test_prep/eppp_part_one_pack.json');
   const pack = JSON.parse(readFileSync(packPath, 'utf8'));
   return hub.registerPack(pack);
+}
+
+/**
+ * Register the credential practice packs as explicit test fixtures.
+ *
+ * These are LAZY in the shipped module by design: embedding all 22 pushed the
+ * bundle past Cloudflare's 25 MB per-file limit, which is what froze the CDN in
+ * July, so the release build ships a manifest (26 entries, 24 lazy) and the hub
+ * fetches each pack on demand. `hub.listPacks()` therefore returns only the two
+ * eagerly embedded packs, and any suite that reaches for a credential pack
+ * through it gets `undefined` — which reads exactly like a broken hub and is
+ * not one.
+ *
+ * Pass the stems a suite actually needs; omit for all of them.
+ */
+export function registerCredentialPacks(stems, hub = window.AlloModules.TestPrepHub) {
+  if (!hub || typeof hub.registerPack !== 'function') {
+    throw new Error('TestPrepHub must be loaded before registering credential pack fixtures');
+  }
+  const dir = resolve(process.cwd(), 'test_prep');
+  const wanted = Array.isArray(stems) && stems.length
+    ? stems
+    : readdirSync(dir).filter((n) => n.endsWith('_pack.json') && !n.startsWith('eppp_')).map((n) => n.slice(0, -'_pack.json'.length));
+  const registered = [];
+  for (const stem of wanted) {
+    const packPath = resolve(dir, stem + '_pack.json');
+    if (!existsSync(packPath)) continue;
+    registered.push(hub.registerPack(JSON.parse(readFileSync(packPath, 'utf8'))));
+  }
+  return registered;
 }
 // For backwards compat with the original pure_helpers.test.js that expected
 // pure_helpers to be auto-loaded by setup. New test files should NOT rely on

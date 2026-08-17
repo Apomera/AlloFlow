@@ -504,22 +504,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
   // ── Migration species data ──
   var SPECIES = [
-    { id: 'canada_goose', name: 'Canada Goose', emoji: '\uD83E\uDEBF', flyway: 'atlantic', distance: 3000, speed: 40, altitude: 3000, breedingRange: 'Northern Canada & Alaska', winterRange: 'Southern US & Mexico', funFact: 'Canada Geese can fly up to 1,500 miles in 24 hours during migration. They mate for life.', formation: 'V-formation' },
+    { id: 'canada_goose', name: 'Canada Goose', emoji: '\uD83E\uDEBF', flyway: 'atlantic', distance: 3000, speed: 40, altitude: 3000, breedingRange: 'Northern Canada & Alaska', winterRange: 'Southern US & Mexico', funFact: 'Canada Geese cruise at about 40 mph, but riding a strong tailwind they have been recorded covering 1,500 miles in 24 hours. They mate for life.', formation: 'V-formation' },
     { id: 'arctic_tern', name: 'Arctic Tern', emoji: '\uD83D\uDD4A\uFE0F', flyway: 'atlantic', distance: 44000, speed: 25, altitude: 1500, breedingRange: 'Arctic Circle', winterRange: 'Antarctic', funFact: 'Arctic Terns see two summers per year and more daylight than any other creature. Their migration is the longest of any animal.', formation: 'Loose flock' },
     { id: 'ruby_hummingbird', name: 'Ruby-throated Hummingbird', emoji: '\uD83D\uDC26', flyway: 'mississippi', distance: 3000, speed: 30, altitude: 500, breedingRange: 'Eastern North America', winterRange: 'Central America', funFact: 'This tiny bird weighing just 3g flies 500 miles non-stop across the Gulf of Mexico. It beats its wings 53 times per second.', formation: 'Solo' },
     { id: 'snow_goose', name: 'Snow Goose', emoji: '\uD83E\uDEBF', flyway: 'central', distance: 5000, speed: 50, altitude: 7500, breedingRange: 'Arctic tundra', winterRange: 'Southern US', funFact: 'Snow Geese have increased from 2 million to 15 million birds since the 1970s, actually damaging their Arctic breeding grounds.', formation: 'V-formation' },
     { id: 'peregrine', name: 'Peregrine Falcon', emoji: '\uD83E\uDD85', flyway: 'central', distance: 15500, speed: 60, altitude: 3500, breedingRange: 'Arctic tundra', winterRange: 'South America', funFact: 'The Peregrine Falcon is the fastest animal on Earth, reaching over 240 mph (386 km/h) in a hunting stoop (dive).', formation: 'Solo' },
     { id: 'sandhill_crane', name: 'Sandhill Crane', emoji: '\uD83E\uDDA9', flyway: 'central', distance: 6000, speed: 35, altitude: 6000, breedingRange: 'Northern US & Canada', winterRange: 'Southern US & Mexico', funFact: 'Sandhill Cranes are among the oldest living bird species, with fossils dating back 2.5 million years. They dance to bond with mates.', formation: 'V-formation' },
     { id: 'monarch', name: 'Monarch Butterfly', emoji: '\uD83E\uDD8B', flyway: 'central', distance: 3000, speed: 12, altitude: 1200, breedingRange: 'Eastern North America', winterRange: 'Central Mexico (oyamel fir forests)', funFact: 'No single Monarch makes the full round trip. It takes 4 generations to complete the cycle. Only the "super generation" migrates south.', formation: 'Swarm' },
-    { id: 'bartailed_godwit', name: 'Bar-tailed Godwit', emoji: '\uD83D\uDC26', flyway: 'pacific', distance: 7000, speed: 55, altitude: 6000, breedingRange: 'Alaska', winterRange: 'New Zealand', funFact: 'In 2007, a female Bar-tailed Godwit flew 7,145 miles non-stop from Alaska to New Zealand in 9 days without eating, drinking, or sleeping.', formation: 'V-formation' }
+    { id: 'bartailed_godwit', name: 'Bar-tailed Godwit', emoji: '\uD83D\uDC26', flyway: 'pacific', distance: 18000, speed: 55, altitude: 6000, breedingRange: 'Alaska', winterRange: 'New Zealand', funFact: 'In 2022 a five-month-old Bar-tailed Godwit flew 8,425 miles non-stop from Alaska to Tasmania in 11 days, without eating, drinking, or sleeping. It is the longest non-stop flight ever recorded, and the bird did it on its first migration, with no adult to follow.', formation: 'V-formation' }
   ];
 
   // ── Wing types for aerodynamics tab ──
   var WING_TYPES = [
-    { id: 'soaring', name: 'Soaring (Eagle)', emoji: '\uD83E\uDD85', aspectRatio: 'High (7:1)', shape: 'Long, narrow, slotted tips', liftCoeff: 1.6, dragCoeff: 0.02, bestAngle: 5, stallAngle: 16, desc: 'Long narrow wings maximize lift-to-drag ratio for effortless soaring. Slotted wingtip feathers reduce induced drag by spreading vortices. Eagles can soar for hours without a single flap, using thermals and ridge lift.' },
-    { id: 'flapping', name: 'Flapping (Goose)', emoji: '\uD83E\uDEBF', aspectRatio: 'Medium (5:1)', shape: 'Medium, broad, rounded', liftCoeff: 1.4, dragCoeff: 0.035, bestAngle: 6, stallAngle: 14, desc: 'Broad wings provide good lift at moderate speeds. Geese use powered flight with steady flapping for long-distance migration. A well-positioned trailing bird can cut its drag substantially via upwash exploitation (real flocks measure ~10–30% energy savings; ~65% is a theoretical per-position maximum).' },
-    { id: 'hovering', name: 'Hovering (Hummingbird)', emoji: '\uD83D\uDC26', aspectRatio: 'Low (3:1)', shape: 'Short, figure-8 stroke', liftCoeff: 1.8, dragCoeff: 0.08, bestAngle: 40, stallAngle: 90, desc: 'Hummingbird wings rotate at the shoulder, allowing a figure-8 stroke pattern that generates lift on both the downstroke AND upstroke. They can fly backwards, sideways, and hover in place. Wing beat: 50-80 times per second.' },
-    { id: 'speed', name: 'Speed (Falcon)', emoji: '\uD83E\uDD85', aspectRatio: 'Medium-High (6:1)', shape: 'Swept back, pointed', liftCoeff: 1.2, dragCoeff: 0.018, bestAngle: 4, stallAngle: 12, desc: 'Swept-back pointed wings minimize drag at high speeds. During a stoop (dive), Peregrines tuck their wings to form a teardrop shape, reaching 240+ mph. A small tubercle on the beak disrupts airflow to prevent suffocation at speed.' }
+    { id: 'soaring', name: 'Soaring (Eagle)', emoji: '\uD83E\uDD85', ar: 7, aspectRatio: 'High (7:1)', shape: 'Long, narrow, slotted tips', liftCoeff: 1.6, dragCoeff: 0.02, bestAngle: 5, stallAngle: 16, desc: 'Long narrow wings maximize lift-to-drag ratio for effortless soaring. Slotted wingtip feathers reduce induced drag by spreading vortices. Eagles can soar for hours without a single flap, using thermals and ridge lift.' },
+    { id: 'flapping', name: 'Flapping (Goose)', emoji: '\uD83E\uDEBF', ar: 5, aspectRatio: 'Medium (5:1)', shape: 'Medium, broad, rounded', liftCoeff: 1.4, dragCoeff: 0.035, bestAngle: 6, stallAngle: 14, desc: 'Broad wings provide good lift at moderate speeds. Geese use powered flight with steady flapping for long-distance migration. A well-positioned trailing bird can cut its drag substantially via upwash exploitation (real flocks measure ~10–30% energy savings; ~65% is a theoretical per-position maximum).' },
+    { id: 'hovering', name: 'Hovering (Hummingbird)', emoji: '\uD83D\uDC26', ar: 3, aspectRatio: 'Low (3:1)', shape: 'Short, figure-8 stroke', liftCoeff: 1.8, dragCoeff: 0.08, bestAngle: 40, stallAngle: 90, desc: 'Hummingbird wings rotate at the shoulder, allowing a figure-8 stroke pattern that generates lift on both the downstroke AND upstroke. They can fly backwards, sideways, and hover in place. Wing beat: 50-80 times per second.' },
+    { id: 'speed', name: 'Speed (Falcon)', emoji: '\uD83E\uDD85', ar: 6, aspectRatio: 'Medium-High (6:1)', shape: 'Swept back, pointed', liftCoeff: 1.2, dragCoeff: 0.018, bestAngle: 4, stallAngle: 12, desc: 'Swept-back pointed wings minimize drag at high speeds. During a stoop (dive), Peregrines tuck their wings to form a teardrop shape, reaching 240+ mph. A small tubercle on the beak disrupts airflow to prevent suffocation at speed.' }
   ];
 
   // ── Navigation methods data ──
@@ -561,7 +561,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
   // ── Migration records ──
   var MIGRATION_RECORDS = [
-    { species: 'Bar-tailed Godwit', record: 'Longest non-stop flight', value: '7,145 miles (Alaska to New Zealand, 9 days without rest)', year: 2007 },
+    { species: 'Bar-tailed Godwit', record: 'Longest non-stop flight', value: '8,425 miles (Alaska to Tasmania, 11 days without rest)', year: 2022 },
     { species: 'Arctic Tern', record: 'Longest annual migration', value: '44,000 miles pole-to-pole round trip', year: 'Annual' },
     { species: 'Great Snipe', record: 'Fastest migration', value: '4,200 miles at 60 mph average', year: 2011 },
     { species: 'Ruppell\'s Griffon Vulture', record: 'Highest flight altitude', value: '37,000 feet (hit by airplane)', year: 1973 },
@@ -954,6 +954,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
     });
     return out;
   })();
+
+  // Wind-speed colour ramp, shared by the particles and the key so the two
+  // cannot drift. t = 0 is dead calm, t = 0.45 is the ambient wind the student
+  // set, t = 1 is roughly twice ambient. Continuous throughout: the previous
+  // ramp was flat below 0.4, which hid exactly the slowed-down air the terrain
+  // objects exist to create.
+  function migrWindRamp(t, isDark) {
+    var stops = isDark
+      ? [[100, 116, 139], [125, 211, 252], [251, 191, 36]]
+      : [[100, 116, 139], [2, 132, 199], [234, 88, 12]];
+    var u = Math.max(0, Math.min(1, t));
+    var a, b, f;
+    if (u <= 0.45) { a = stops[0]; b = stops[1]; f = u / 0.45; }
+    else { a = stops[1]; b = stops[2]; f = (u - 0.45) / 0.55; }
+    return [
+      Math.round(a[0] + (b[0] - a[0]) * f),
+      Math.round(a[1] + (b[1] - a[1]) * f),
+      Math.round(a[2] + (b[2] - a[2]) * f)
+    ];
+  }
+  // Particle speed -> ramp position, measured against the ambient wind so the
+  // colour answers "faster or slower than the wind I set?".
+  function migrWindNorm(spd, ambient) {
+    var amb = Math.max(0.05, ambient || 0.9);
+    var ratio = spd / amb;
+    return ratio <= 1 ? 0.45 * ratio : 0.45 + 0.55 * Math.min(1, (ratio - 1) / 1.1);
+  }
 
   // Catmull-Rom through the given points, emitted as beziers so a 20-point
   // coastline reads as a coastline rather than a polygon.
@@ -1559,17 +1586,67 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           // A flat background colour gave the corridor no horizon and nothing to
           // read altitude against. A vertical gradient dome supplies both, and
           // is excluded from fog so it stays a sky rather than a fog wall.
+          // 2048 wide rather than 4: a 4px strip can only hold a vertical
+          // gradient, and the night sky needs stars, which have to be painted
+          // into the texture as points rather than bands.
+          //
+          // The width matters. The dome is radius 420, so its circumference is
+          // about 2640 world units. At 512px each texel is ~5 units across,
+          // which at that distance subtends most of a degree: the first pass
+          // drew stars as fat blurry SQUARES. At 2048 a texel is ~1.3 units and
+          // a one-pixel star reads as a point.
           var skyCanvas = document.createElement('canvas');
-          skyCanvas.width = 4;
-          skyCanvas.height = 256;
+          skyCanvas.width = 2048;
+          skyCanvas.height = 1024;
           var skyCtx = skyCanvas.getContext('2d');
-          var skyGrad3d = skyCtx.createLinearGradient(0, 0, 0, 256);
-          skyGrad3d.addColorStop(0, '#0c3f6b');
-          skyGrad3d.addColorStop(0.40, '#1f74a6');
-          skyGrad3d.addColorStop(0.72, '#79bcd8');
-          skyGrad3d.addColorStop(1, '#bcd9e6');
-          skyCtx.fillStyle = skyGrad3d;
-          skyCtx.fillRect(0, 0, 4, 256);
+          // Day and night palettes for everything the sky drives, kept
+          // together so a change to one cannot be forgotten in the others.
+          var SKY_THEME = {
+            day: {
+              stops: [[0, '#0c3f6b'], [0.40, '#1f74a6'], [0.72, '#79bcd8'], [1, '#bcd9e6']],
+              haze: 0xbcd9e6, fogD: 0.0042, stars: 0,
+              hemiSky: 0xcfe6f5, hemiGround: 0x2f4a2c, hemiI: 0.72,
+              sunColor: 0xfff2d0, sunI: 1.05, rimColor: 0x9fd0ec, rimI: 0.42,
+              discColor: 0xfff9e0, glowColor: 0xfff2c4, glowOpacity: 0.18, discScale: 1
+            },
+            night: {
+              stops: [[0, '#050b1d'], [0.42, '#0b1533'], [0.74, '#16244c'], [1, '#2b3a63']],
+              haze: 0x2b3a63, fogD: 0.0050, stars: 900,
+              // Moonlight is dim and blue, and it comes from a single direction,
+              // so the hemisphere fill drops well below the daytime value.
+              hemiSky: 0x415a86, hemiGround: 0x10161f, hemiI: 0.26,
+              sunColor: 0xcddcff, sunI: 0.42, rimColor: 0x6f8ec6, rimI: 0.20,
+              discColor: 0xeef3ff, glowColor: 0xbcd0ff, glowOpacity: 0.12, discScale: 0.72
+            }
+          };
+          function paintSky(mode) {
+            var cfg = SKY_THEME[mode];
+            var SH = skyCanvas.height;
+            var g = skyCtx.createLinearGradient(0, 0, 0, SH);
+            for (var si = 0; si < cfg.stops.length; si++) g.addColorStop(cfg.stops[si][0], cfg.stops[si][1]);
+            skyCtx.fillStyle = g;
+            skyCtx.fillRect(0, 0, skyCanvas.width, SH);
+            if (cfg.stars) {
+              // Deterministic scatter: a seeded LCG, so the same sky is painted
+              // every time and a theme toggle does not reshuffle the stars.
+              var seed = 20260816;
+              var rnd = function() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; };
+              for (var st = 0; st < cfg.stars; st++) {
+                var sx = rnd() * skyCanvas.width;
+                // Concentrated in the upper sky; none below the horizon haze.
+                var sy = Math.pow(rnd(), 1.7) * SH * 0.66;
+                var mag = rnd();
+                var r = mag > 0.94 ? 1.7 : mag > 0.72 ? 1.2 : 0.85;
+                skyCtx.globalAlpha = 0.30 + mag * 0.65 * (1 - sy / (SH * 0.86));
+                skyCtx.fillStyle = mag > 0.9 ? '#dbeafe' : '#ffffff';
+                skyCtx.beginPath();
+                skyCtx.arc(sx, sy, r, 0, Math.PI * 2);
+                skyCtx.fill();
+              }
+              skyCtx.globalAlpha = 1;
+            }
+          }
+          paintSky('day');
           var skyTex = new THREE.CanvasTexture(skyCanvas);
           skyTex.minFilter = THREE.LinearFilter;
           skyTex.magFilter = THREE.LinearFilter;
@@ -1612,6 +1689,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           );
           sunGlow.position.copy(sunDisc.position);
           scene.add(sunGlow);
+
+          // ── Day / night ──
+          // Called on CHANGE from the frame loop rather than read once here:
+          // an _xxInit closure freezes the first render's values, which is the
+          // bug class this file has already been bitten by three times.
+          engine._skyMode = null;
+          engine.applyTheme = function(isDarkNow) {
+            var mode = isDarkNow ? 'night' : 'day';
+            if (engine._skyMode === mode) return;
+            engine._skyMode = mode;
+            var cfg = SKY_THEME[mode];
+            paintSky(mode);
+            skyTex.needsUpdate = true;
+            scene.background = new THREE.Color(cfg.haze);
+            scene.fog = new THREE.FogExp2(cfg.haze, cfg.fogD);
+            renderer.setClearColor(cfg.haze, 1);
+            hemi.color.setHex(cfg.hemiSky);
+            hemi.groundColor.setHex(cfg.hemiGround);
+            hemi.intensity = cfg.hemiI;
+            sun.color.setHex(cfg.sunColor);
+            sun.intensity = cfg.sunI;
+            rim.color.setHex(cfg.rimColor);
+            rim.intensity = cfg.rimI;
+            sunDisc.material.color.setHex(cfg.discColor);
+            sunGlow.material.color.setHex(cfg.glowColor);
+            sunGlow.material.opacity = cfg.glowOpacity;
+            sunDisc.scale.setScalar(cfg.discScale);
+            sunGlow.scale.setScalar(cfg.discScale);
+          };
 
           // ── Ground ──
           // One flat quad read as a painted backdrop. Gentle relief plus
@@ -1910,6 +2016,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           if (engineNow.speciesId !== species.id || engineNow.formationMode !== live.flightFormation || engineNow.season !== live.flightSeason) {
             engineNow.rebuildFlock(species.id, live.flightFormation, live.flightSeason);
           }
+          // Day/night follows the app theme. Read from _liveVals every frame,
+          // not captured at build time; applyTheme is a no-op unless the mode
+          // actually changed, so this costs one string compare per frame.
+          if (engineNow.applyTheme) engineNow.applyTheme(!!live.isDark);
 
           var moving = !live.flightPaused && !reducedMotionRef.current;
           var visualSpeed = Math.max(4, species.speed + live.flightWind * 2.237) * 0.075;
@@ -2926,7 +3036,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 )
               ),
               h('div', { className: 'mt-2 text-[11px] leading-relaxed ' + textSecondary },
-                h('p', null, '\uD83D\uDD2C ', h('strong', null, t('stem.migration.the_science', 'The science: ')), t('stem.migration.bird_flight_costs_12x_their_resting_me', 'Bird flight costs ~12x their resting metabolic rate (Kleiber\'s Law). Fat provides 9 kcal/g \u2014 the most energy-dense fuel in biology. Before migration, birds enter '), h('strong', null, 'hyperphagia'), t('stem.migration.a_feeding_frenzy_where_they_may_double', ' \u2014 a feeding frenzy where they may double their body weight in fat. A Bar-tailed Godwit burns through '), h('strong', null, t('stem.migration.55_of_its_body_weight', '55% of its body weight')), t('stem.migration.during_its_7_145_mile_non_stop_flight_', ' during its 7,145-mile non-stop flight from Alaska to New Zealand.')),
+                h('p', null, '\uD83D\uDD2C ', h('strong', null, t('stem.migration.the_science', 'The science: ')), t('stem.migration.bird_flight_costs_12x_their_resting_me', 'Bird flight costs ~12x their resting metabolic rate (Kleiber\'s Law). Fat provides 9 kcal/g \u2014 the most energy-dense fuel in biology. Before migration, birds enter '), h('strong', null, 'hyperphagia'), t('stem.migration.a_feeding_frenzy_where_they_may_double', ' \u2014 a feeding frenzy where they may double their body weight in fat. A Bar-tailed Godwit burns through '), h('strong', null, t('stem.migration.55_of_its_body_weight', '55% of its body weight')), t('stem.migration.during_its_record_non_stop_flight_2026', ' during a record non-stop flight of 8,425 miles, Alaska to Tasmania.')),
                 percentBodyWeight > 100 && h('p', { className: 'mt-1 font-bold text-red-500' }, t('stem.migration.this_journey_requires_more_fat_than_th', '\u26A0\uFE0F This journey requires more fat than the bird weighs! It would need stopovers to refuel \u2014 or V-formation to cut costs.'))
               )
             );
@@ -3263,32 +3373,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               // Colour by speed. The ramp has to run against the sky it is
               // drawn on: the old light-blue/white/yellow ramp is legible on a
               // night sky and nearly invisible on the light theme's pale one.
+              // Colour by speed RELATIVE to the ambient wind, so terrain
+              // effects are what the colour shows.
               var spd = Math.sqrt(pp.vx * pp.vx + pp.vy * pp.vy);
-              var speedNorm = Math.min(1, spd / 3);
-              var r2, g2, b2;
-              if (isDark) {
-                if (speedNorm < 0.4) { r2 = 125; g2 = 211; b2 = 252; }
-                else if (speedNorm < 0.7) {
-                  r2 = lerp(125, 255, (speedNorm - 0.4) / 0.3);
-                  g2 = lerp(211, 255, (speedNorm - 0.4) / 0.3);
-                  b2 = 255;
-                } else {
-                  r2 = 255;
-                  g2 = lerp(255, 230, (speedNorm - 0.7) / 0.3);
-                  b2 = lerp(255, 50, (speedNorm - 0.7) / 0.3);
-                }
-              } else {
-                if (speedNorm < 0.4) { r2 = 2; g2 = 132; b2 = 199; }
-                else if (speedNorm < 0.7) {
-                  r2 = lerp(2, 13, (speedNorm - 0.4) / 0.3);
-                  g2 = lerp(132, 148, (speedNorm - 0.4) / 0.3);
-                  b2 = lerp(199, 136, (speedNorm - 0.4) / 0.3);
-                } else {
-                  r2 = lerp(13, 234, (speedNorm - 0.7) / 0.3);
-                  g2 = lerp(148, 88, (speedNorm - 0.7) / 0.3);
-                  b2 = lerp(136, 12, (speedNorm - 0.7) / 0.3);
-                }
-              }
+              var _amb = Math.abs(lv.windSpeed || 15) * 0.06;
+              var speedNorm = migrWindNorm(spd, _amb);
+              var _rgb = migrWindRamp(speedNorm, isDark);
+              var r2 = _rgb[0], g2 = _rgb[1], b2 = _rgb[2];
               var pCol = 'rgba(' + Math.round(r2) + ',' + Math.round(g2) + ',' + Math.round(b2) + ',';
 
               // Every particle carries a tail along its own velocity, so the
@@ -3360,30 +3451,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.font = '9px system-ui';
             c.fillText(getBeaufort(lv.windSpeed) + ' · ' + Math.round(lv.windDir || 0) + '°', W - 122, 114);
 
-            // Speed key for the particle colour ramp
+            // Speed key, drawn from the SAME ramp function as the particles.
+            // The tick marks the ambient wind, so the two halves read as
+            // "slower than the wind you set" and "faster".
             var keyW = 108;
             migrPanel(c, 8, 8, keyW + 16, 34, isDark, null);
             for (var kx = 0; kx < keyW; kx++) {
-              var kn = kx / keyW;
-              var kr, kg, kb;
-              if (isDark) {
-                if (kn < 0.4) { kr = 125; kg = 211; kb = 252; }
-                else if (kn < 0.7) { kr = lerp(125, 255, (kn - 0.4) / 0.3); kg = lerp(211, 255, (kn - 0.4) / 0.3); kb = 255; }
-                else { kr = 255; kg = lerp(255, 230, (kn - 0.7) / 0.3); kb = lerp(255, 50, (kn - 0.7) / 0.3); }
-              } else {
-                if (kn < 0.4) { kr = 2; kg = 132; kb = 199; }
-                else if (kn < 0.7) { kr = lerp(2, 13, (kn - 0.4) / 0.3); kg = lerp(132, 148, (kn - 0.4) / 0.3); kb = lerp(199, 136, (kn - 0.4) / 0.3); }
-                else { kr = lerp(13, 234, (kn - 0.7) / 0.3); kg = lerp(148, 88, (kn - 0.7) / 0.3); kb = lerp(136, 12, (kn - 0.7) / 0.3); }
-              }
-              c.fillStyle = 'rgb(' + Math.round(kr) + ',' + Math.round(kg) + ',' + Math.round(kb) + ')';
+              var kcol = migrWindRamp(kx / keyW, isDark);
+              c.fillStyle = 'rgb(' + kcol[0] + ',' + kcol[1] + ',' + kcol[2] + ')';
               c.fillRect(16 + kx, 16, 1.4, 7);
             }
+            c.strokeStyle = isDark ? 'rgba(226,232,240,0.85)' : 'rgba(15,23,42,0.7)';
+            c.lineWidth = 1;
+            c.beginPath();
+            c.moveTo(16 + keyW * 0.45, 14.5);
+            c.lineTo(16 + keyW * 0.45, 24.5);
+            c.stroke();
             c.font = '8px system-ui';
             c.textAlign = 'left';
             c.fillStyle = isDark ? '#94a3b8' : '#475569';
-            c.fillText(t('stem.migration.slow_air', 'slow'), 16, 34);
+            c.fillText(t('stem.migration.slow_air', 'slower'), 16, 34);
+            c.textAlign = 'center';
+            c.fillText(t('stem.migration.wind_set', 'wind set'), 16 + keyW * 0.45, 34);
             c.textAlign = 'right';
-            c.fillText(t('stem.migration.fast_air', 'fast'), 16 + keyW, 34);
+            c.fillText(t('stem.migration.fast_air', 'faster'), 16 + keyW, 34);
             c.textAlign = 'left';
 
             animRef.current = requestAnimationFrame(frame);
@@ -4521,7 +4612,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               h('p', null, t('stem.migration.our_understanding_of_migration_has_bee', 'Our understanding of migration has been revolutionized by technology:')),
               h('ul', { className: 'list-disc pl-4 space-y-1.5 mt-1' },
                 h('li', null, h('strong', null, t('stem.migration.bird_banding', 'Bird Banding: ')), t('stem.migration.since_1920_over_80_million_birds_have_', 'Since 1920, over 80 million birds have been banded in North America. Each band has a unique number. When a banded bird is recaptured, scientists learn about survival, routes, and timing. Recovery rates are low (1-5%) but the dataset is enormous.')),
-                h('li', null, h('strong', null, t('stem.migration.gps_trackers', 'GPS Trackers: ')), t('stem.migration.solar_powered_gps_tags_now_as_small_as', 'Solar-powered GPS tags (now as small as 1g) transmit location data via satellite. They reveal exact routes, stopover timing, and flight altitude. The 7,145-mile non-stop Godwit flight was tracked by GPS.')),
+                h('li', null, h('strong', null, t('stem.migration.gps_trackers', 'GPS Trackers: ')), t('stem.migration.solar_powered_gps_tags_2026', 'Solar-powered GPS tags (now as small as 1g) transmit location data via satellite. They reveal exact routes, stopover timing, and flight altitude. The record 8,425-mile non-stop Godwit flight, Alaska to Tasmania in 2022, was tracked this way.')),
                 h('li', null, h('strong', null, 'Geolocators: '), t('stem.migration.light_level_geolocators_0_5g_record_su', 'Light-level geolocators (0.5g) record sunrise/sunset times. When the bird is recaptured, scientists download the data and calculate latitude (from day length) and longitude (from solar noon timing). Accuracy: ~200 km.')),
                 h('li', null, h('strong', null, t('stem.migration.weather_radar', 'Weather Radar: ')), t('stem.migration.nexrad_weather_radar_stations_across_t', 'NEXRAD weather radar stations across the US detect massive flocks of migrating birds. BirdCast (Cornell Lab) uses machine learning to predict and visualize real-time migration from radar data. On peak nights, radar shows enormous green blobs of bird migration.')),
                 h('li', null, h('strong', null, 'eBird: '), t('stem.migration.citizen_scientists_submit_100_million_', 'Citizen scientists submit 100+ million bird observations per year through eBird, creating the largest biodiversity database in the world. These data reveal continent-scale patterns in migration timing and distribution that no research team could collect alone.')),
@@ -4552,12 +4643,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
         var wing = getWingType(selectedWing);
 
+        // ── Aerofoil coefficients ────────────────────────────────────────
+        // ONE implementation, because this used to be written out at four call
+        // sites and they had already drifted apart: the drag curve computed Cl
+        // without the stall branch, so past the stall angle the lift curve and
+        // the drag curve disagreed about what Cl was.
+        //
+        // The old model was cl = liftCoeff * sin(2a) with the aspect ratio
+        // HARD-CODED to 5. Two things were wrong with that:
+        //
+        //  1. It is the flat-plate formula, which peaks at 45 deg. Every wing
+        //     reached only about half its stated liftCoeff before stalling, and
+        //     the hovering wing (stall 90 deg) reached sin(180 deg) = ZERO lift
+        //     at its own stall angle, having peaked at 45 and fallen away.
+        //  2. Hard-coding the aspect ratio meant the four wing types were
+        //     aerodynamically IDENTICAL in the induced-drag term, even though
+        //     the whole panel is about how their shapes differ, and each card
+        //     advertises a different aspect ratio.
+        //
+        // Now: lift rises linearly to liftCoeff at stallAngle (so the number on
+        // the card is the number the wing actually reaches), drops away past
+        // the stall, and induced drag uses the wing's OWN aspect ratio. Drag
+        // also rises through the stall, which it did not before.
+        function migrAeroCoeffs(w, aoaDeg) {
+          var stalled = aoaDeg > w.stallAngle;
+          var cl;
+          if (!stalled) {
+            cl = w.liftCoeff * (aoaDeg / w.stallAngle);
+          } else {
+            // continuous at the stall angle, then a clear drop over a few degrees
+            cl = w.liftCoeff * (0.45 + 0.55 * Math.exp(-(aoaDeg - w.stallAngle) * 0.8));
+          }
+          var ar = w.ar || 5;
+          var cd = w.dragCoeff + (cl * cl) / (Math.PI * ar * 0.85);
+          // Past the stall the induced-drag formula no longer applies: it
+          // assumes attached flow. Adding a separation term on top of it made
+          // total drag FALL through the stall, because the collapsing lift took
+          // the induced term down faster than the penalty came up. So beyond
+          // the stall angle drag is anchored at its value AT the stall and
+          // separation drag is added to that, which can only rise.
+          if (stalled) {
+            var cdAtStall = w.dragCoeff + (w.liftCoeff * w.liftCoeff) / (Math.PI * ar * 0.85);
+            cd = cdAtStall + 0.05 * (1 - Math.exp(-(aoaDeg - w.stallAngle) * 0.35));
+          }
+          return { cl: cl, cd: cd, ld: cd > 0.001 ? cl / cd : 0, stalling: stalled };
+        }
+        // The angle of best lift-to-drag, derived from the model rather than
+        // stored beside it, so the label and the curve can never disagree.
+        function migrBestLD(w) {
+          var bestA = 0, bestV = -1;
+          for (var a = 0.25; a <= w.stallAngle; a += 0.25) {
+            var r = migrAeroCoeffs(w, a).ld;
+            if (r > bestV) { bestV = r; bestA = a; }
+          }
+          return { angle: bestA, ld: bestV };
+        }
+
         // Lift & drag calculations
         var aoaRad = aoa * Math.PI / 180;
-        var cl = aoa <= wing.stallAngle ? wing.liftCoeff * Math.sin(2 * aoaRad) : wing.liftCoeff * 0.5 * Math.sin(2 * aoaRad) * 0.4;
-        var cd = wing.dragCoeff + (cl * cl) / (Math.PI * 5 * 0.85); // induced drag
-        var isStalling = aoa > wing.stallAngle;
-        var ldRatio = cd > 0.001 ? cl / cd : 0;
+        var _coef = migrAeroCoeffs(wing, aoa);
+        var cl = _coef.cl;
+        var cd = _coef.cd;
+        var isStalling = _coef.stalling;
+        var ldRatio = _coef.ld;
 
         var _arInitCanvas = function(canvas) {
           if (!canvas) return;
@@ -4585,9 +4733,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             var _selWing = lv.selectedWing;
             var _wing = getWingType(_selWing);
             var _aoaRad = _aoa * Math.PI / 180;
-            var _cl = _aoa <= _wing.stallAngle ? _wing.liftCoeff * Math.sin(2 * _aoaRad) : _wing.liftCoeff * 0.5 * Math.sin(2 * _aoaRad) * 0.4;
-            var _cd = _wing.dragCoeff + (_cl * _cl) / (Math.PI * 5 * 0.85);
-            var _isStalling = _aoa > _wing.stallAngle;
+            var _c = migrAeroCoeffs(_wing, _aoa);
+            var _cl = _c.cl;
+            var _cd = _c.cd;
+            var _isStalling = _c.stalling;
             var aoaRad = _aoaRad;
             var isStalling = _isStalling;
 
@@ -4912,6 +5061,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             var graphY = 30;
             var graphW = W * 0.28;
             var graphH = H - 60;
+            // The coefficient axis top, in one place. It was written out as a
+            // bare 2 in five expressions; with the lift curve now reaching the
+            // wings' real Cl max (up to 1.8) and drag peaking through the
+            // stall, 2.0 clipped the curves.
+            var AXIS_MAX = 2.5;
 
             // Graph background
             c.fillStyle = isDark ? 'rgba(30,41,59,0.8)' : 'rgba(255,255,255,0.9)';
@@ -4936,10 +5090,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.beginPath();
             var firstPt = true;
             for (var plotAoa = 0; plotAoa <= 20; plotAoa += 0.5) {
-              var plotRad = plotAoa * Math.PI / 180;
-              var plotCl = plotAoa <= _wing.stallAngle ? _wing.liftCoeff * Math.sin(2 * plotRad) : _wing.liftCoeff * 0.5 * Math.sin(2 * plotRad) * (0.4 + 0.6 * Math.exp(-(plotAoa - _wing.stallAngle) * 0.3));
+              var plotCl = migrAeroCoeffs(_wing, plotAoa).cl;
               var plotX = graphX + (plotAoa / 20) * graphW;
-              var plotY = graphY + graphH - (plotCl / 2) * graphH;
+              var plotY = graphY + graphH - (plotCl / AXIS_MAX) * graphH;
               if (firstPt) { c.moveTo(plotX, plotY); firstPt = false; }
               else c.lineTo(plotX, plotY);
             }
@@ -4951,11 +5104,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.beginPath();
             firstPt = true;
             for (var plotAoa2 = 0; plotAoa2 <= 20; plotAoa2 += 0.5) {
-              var plotRad2 = plotAoa2 * Math.PI / 180;
-              var plotCl2 = _wing.liftCoeff * Math.sin(2 * plotRad2);
-              var plotCd2 = _wing.dragCoeff + (plotCl2 * plotCl2) / (Math.PI * 5 * 0.85);
+              var plotCd2 = migrAeroCoeffs(_wing, plotAoa2).cd;
               var plotX2 = graphX + (plotAoa2 / 20) * graphW;
-              var plotY2 = graphY + graphH - (plotCd2 * 5) * graphH;
+              var plotY2 = graphY + graphH - (plotCd2 * 10 / AXIS_MAX) * graphH;
               if (firstPt) { c.moveTo(plotX2, plotY2); firstPt = false; }
               else c.lineTo(plotX2, plotY2);
             }
@@ -4989,8 +5140,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               c.fillText(String(xt), xtp, graphY + graphH + 12);
             }
             c.textAlign = 'right';
-            for (var yt = 0; yt <= 2; yt += 0.5) {
-              var ytp = graphY + graphH - (yt / 2) * graphH;
+            for (var yt = 0; yt <= AXIS_MAX; yt += 0.5) {
+              var ytp = graphY + graphH - (yt / AXIS_MAX) * graphH;
               c.beginPath();
               c.moveTo(graphX - 3, ytp);
               c.lineTo(graphX, ytp);
@@ -5030,18 +5181,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             // \u2091 is subscript e: the legend read "C_e" for the drag
             // coefficient, which is C_d. Unicode has no subscript d.
             c.fillText('Drag (Cd \u00D7 10)', graphX + 16, graphY + 20);
-
-            // Best L/D marker
-            var bestAoa = _wing.bestAngle;
-            var bestX = graphX + (bestAoa / 20) * graphW;
+            c.strokeStyle = '#22c55e';
+            c.lineWidth = 1.6;
+            c.setLineDash([4, 3]);
             c.beginPath();
-            c.arc(bestX, graphY + graphH - 10, 3, 0, Math.PI * 2);
+            c.moveTo(graphX + 4, graphY + 27);
+            c.lineTo(graphX + 13, graphY + 27);
+            c.stroke();
+            c.setLineDash([]);
+            c.fillStyle = '#22c55e';
+            c.fillText('L/D \u00F7 10', graphX + 16, graphY + 30);
+
+            // ── Lift-to-drag curve, and its true maximum ────────────────
+            // The quantity the panel is named after is now actually drawn,
+            // divided by 10 so it shares the 0-2 coefficient axis.
+            c.beginPath();
+            firstPt = true;
+            for (var plotAoa3 = 0.25; plotAoa3 <= 20; plotAoa3 += 0.25) {
+              var plotLd = migrAeroCoeffs(_wing, plotAoa3).ld / 10;
+              var plotX3 = graphX + (plotAoa3 / 20) * graphW;
+              var plotY3 = graphY + graphH - (plotLd / AXIS_MAX) * graphH;
+              if (firstPt) { c.moveTo(plotX3, plotY3); firstPt = false; }
+              else c.lineTo(plotX3, plotY3);
+            }
+            c.strokeStyle = '#22c55e';
+            c.lineWidth = 1.6;
+            c.setLineDash([4, 3]);
+            c.stroke();
+            c.setLineDash([]);
+
+            // Best L/D marker, ON the L/D curve at the model's own maximum.
+            var _best = migrBestLD(_wing);
+            var bestX = graphX + (_best.angle / 20) * graphW;
+            var bestY = graphY + graphH - ((_best.ld / 10) / AXIS_MAX) * graphH;
+            c.strokeStyle = migrAlpha('#22c55e', 0.5);
+            c.lineWidth = 1;
+            c.setLineDash([2, 3]);
+            c.beginPath();
+            c.moveTo(bestX, bestY);
+            c.lineTo(bestX, graphY + graphH);
+            c.stroke();
+            c.setLineDash([]);
+            c.beginPath();
+            c.arc(bestX, bestY, 3.4, 0, Math.PI * 2);
             c.fillStyle = '#22c55e';
             c.fill();
+            c.strokeStyle = isDark ? '#0b1120' : '#ffffff';
+            c.lineWidth = 1.2;
+            c.stroke();
             c.fillStyle = '#22c55e';
-            c.font = '7px system-ui';
+            c.font = 'bold 7px system-ui';
             c.textAlign = 'center';
-            c.fillText('Best L/D', bestX, graphY + graphH - 16);
+            c.fillText('Best L/D ' + _best.ld.toFixed(1) + ' @ ' + _best.angle.toFixed(1) + '\u00B0',
+              Math.min(graphX + graphW - 34, bestX + 30), bestY - 6);
 
             animRef.current = requestAnimationFrame(frame);
           }
@@ -5362,9 +5554,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               c.fill();
             }
 
-            // The Big Dipper, with its pointer stars aimed at Polaris — the
-            // asterism that actually finds the pole.
-            var DIPPER = [[-96, 62], [-78, 54], [-60, 50], [-46, 56], [-34, 44], [-16, 38], [-2, 46]];
+            // The Big Dipper, with its pointer stars actually aimed at Polaris.
+            //
+            // The previous layout claimed this in a comment but the geometry
+            // said otherwise: the two stars drawn as pointers sat 117 degrees
+            // off the bearing to Polaris, at 2.9x their own separation instead
+            // of the real sky's ~5x, and the seven points did not form a dipper
+            // (no closed bowl, handle not attached to it). A student following
+            // the pointers -- the whole technique this tab teaches -- was aimed
+            // nowhere near the pole.
+            //
+            // Rebuilt so Merak -> Dubhe extended five times over lands on
+            // Polaris. Order traces the handle first, then round the bowl:
+            //   Alkaid, Mizar, Alioth, Megrez | Dubhe, Merak, Phecda
+            var DIPPER = [
+              [-136, 78],  // Alkaid, tip of the handle
+              [-117, 66],  // Mizar
+              [-99, 56],   // Alioth
+              [-79, 47],   // Megrez, where the handle meets the bowl
+              [-86, 28],   // Dubhe   <- pointer, nearer the pole
+              [-103, 33],  // Merak   <- pointer, further from the pole
+              [-97, 52]    // Phecda, closing the bowl back toward Megrez
+            ];
+            var DIPPER_POINTERS = [4, 5];   // Dubhe, Merak
+            var DIPPER_BOWL_CLOSE = [6, 3]; // Phecda -> Megrez
             c.strokeStyle = 'rgba(191,219,254,0.45)';
             c.lineWidth = 1;
             c.beginPath();
@@ -5374,9 +5587,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               if (dp === 0) c.moveTo(dpx, dpy); else c.lineTo(dpx, dpy);
             }
             c.stroke();
+            // The bowl is a quadrilateral; without this segment it read as a
+            // bent line rather than a dipper.
+            c.beginPath();
+            c.moveTo(polarisX + DIPPER[DIPPER_BOWL_CLOSE[0]][0], polarisY + DIPPER[DIPPER_BOWL_CLOSE[0]][1]);
+            c.lineTo(polarisX + DIPPER[DIPPER_BOWL_CLOSE[1]][0], polarisY + DIPPER[DIPPER_BOWL_CLOSE[1]][1]);
+            c.stroke();
             for (var dp2 = 0; dp2 < DIPPER.length; dp2++) {
               c.beginPath();
-              c.arc(polarisX + DIPPER[dp2][0], polarisY + DIPPER[dp2][1], dp2 === 5 || dp2 === 6 ? 2.2 : 1.6, 0, Math.PI * 2);
+              c.arc(polarisX + DIPPER[dp2][0], polarisY + DIPPER[dp2][1], (dp2 === DIPPER_POINTERS[0] || dp2 === DIPPER_POINTERS[1]) ? 2.2 : 1.6, 0, Math.PI * 2);
               c.fillStyle = '#e0f2fe';
               c.fill();
             }
@@ -5386,8 +5605,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             c.strokeStyle = 'rgba(253,230,138,0.45)';
             c.lineWidth = 1;
             c.beginPath();
-            c.moveTo(polarisX + DIPPER[6][0], polarisY + DIPPER[6][1]);
-            c.lineTo(polarisX - 3, polarisY + 5);
+            c.moveTo(polarisX + DIPPER[DIPPER_POINTERS[1]][0], polarisY + DIPPER[DIPPER_POINTERS[1]][1]);
+            c.lineTo(polarisX, polarisY);
             c.stroke();
             c.restore();
 
@@ -5971,19 +6190,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         function setIQ(patch) { upd('inquiry', Object.assign({}, iq, patch)); }
         function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
         // Approximate energy model. Drag ∝ mass^(2/3) / wingspan; V-formation saves ~22% drag.
-        var baseE = Math.pow(iq.mass, 0.67) / Math.max(0.1, iq.wingspan) * 8 + (iq.headwind * iq.headwind) * 0.04;
+        // Still-air cost per km: drag rises with mass and falls with span.
+        var baseE = Math.pow(iq.mass, 0.67) / Math.max(0.1, iq.wingspan) * 8;
+        // Wind, as the ground-speed ratio rather than a squared penalty.
+        // The old term was (headwind * headwind) * 0.04, which charged a 10 m/s
+        // TAILWIND exactly what it charged a 10 m/s headwind and made dead calm
+        // the cheapest condition in the model. Energy per km over the ground
+        // goes as airspeed / groundspeed, and groundspeed = airspeed - headwind,
+        // so a tailwind genuinely cheapens the crossing and a headwind bites
+        // hard. IQ_VAIR is a representative migrant cruising airspeed.
+        var IQ_VAIR = 14;
+        // Floor the groundspeed: past about 11 m/s of headwind the bird is
+        // barely making ground and the ratio would run away to infinity.
+        var iqGround = Math.max(IQ_VAIR * 0.2, IQ_VAIR - iq.headwind);
+        var windFactor = IQ_VAIR / iqGround;
         var fmtSave = iq.vMode === 'V' ? 0.78 : iq.vMode === 'echelon' ? 0.88 : 1.0;
-        var energyPerKm = baseE * fmtSave;
+        var energyPerKm = baseE * fmtSave * windFactor;
         var totalKJ = energyPerKm * iq.distance;
         var fatBurnKJ = iq.mass * 1000 * 0.30 * 39; // 30% fat × 39 kJ/g
         var feasibility = fatBurnKJ / Math.max(1, totalKJ);
-        var state = feasibility < 0.5 ? 'fatal' : feasibility < 0.9 ? 'borderline' : feasibility < 1.5 ? 'feasible' : feasibility < 3 ? 'comfortable' : 'easy';
+                // Band boundaries. 'fatal' stays at 0.5 because its own label states
+        // "< 50% of distance" and the two must agree. The borderline/feasible
+        // edge moves 0.9 -> 1.0: at 0.9 the bird needs 111% of its fat reserve
+        // and runs out short of the destination, which is not "single-leg
+        // flight realistic". Feasible now means it actually arrives.
+        var state = feasibility < 0.5 ? 'fatal' : feasibility < 1.0 ? 'borderline' : feasibility < 1.5 ? 'feasible' : feasibility < 3 ? 'comfortable' : 'easy';
+        // ── Panel skin ───────────────────────────────────────────────────
+        // Every colour in this tab used to be a dark-theme literal, so the
+        // whole card was a black slab on the light theme. The five states keep
+        // their hue and swap their surface, and the ratios are matched across
+        // themes rather than the luminance deltas: an equal delta on a dark
+        // surface reads far heavier than on a light one.
+        var IQ = isDark ? {
+          text: '#e8f0f5', textDim: '#94a3b8', textSoft: '#cbd5e1',
+          tile: '#0a0a1a', tileBorder: '#1e293b', track: '#0f172a', grid: '#1e293b',
+          tick: '#f8fafc', hatchBg: '#1b0a0a', hatchLine: '#7f1d1d',
+          onBar: '#0a0a1a', rangeInk: '#03212e', rangeInkOut: '#7dd3fc', needInkOut: '#cbd5e1'
+        } : {
+          text: '#0f172a', textDim: '#475569', textSoft: '#334155',
+          tile: '#ffffff', tileBorder: '#cbd5e1', track: '#f1f5f9', grid: '#cbd5e1',
+          tick: '#0f172a', hatchBg: '#fee2e2', hatchLine: '#fca5a5',
+          onBar: '#ffffff', rangeInk: '#053345', rangeInkOut: '#0369a1', needInkOut: '#334155'
+        };
         var sm = ({
-          fatal: { label: t('stem.migration.fatal', 'Fatal'), color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: t('stem.migration.energy_budget_50_of_distance_bird_woul', 'Energy budget < 50% of distance — bird would starve mid-flight. Stopover required.') },
-          borderline: { label: t('stem.migration.borderline', 'Borderline'), color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: t('stem.migration.energy_budget_near_distance_possible_w', 'Energy budget near distance — possible with perfect tailwind, otherwise stopovers mandatory.') },
-          feasible: { label: t('stem.migration.feasible', 'Feasible'), color: '#facc15', bg: '#2a2410', border: '#eab308', desc: t('stem.migration.single_leg_flight_realistic_but_tight_', 'Single-leg flight realistic but tight. Most species refuel midway anyway.') },
-          comfortable: { label: t('stem.migration.comfortable', 'Comfortable'), color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: t('stem.migration.distance_is_well_within_energy_budget_', 'Distance is well within energy budget. Bar-tailed godwit-class endurance.') },
-          easy: { label: t('stem.migration.easy', 'Easy'), color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: t('stem.migration.3_reserve_either_short_distance_or_ove', '3×+ reserve. Either short distance or oversized fat stores.') }
+          fatal: { label: t('stem.migration.fatal', 'Fatal'), color: isDark ? '#f87171' : '#b91c1c', bg: isDark ? '#2a0a0a' : '#fef2f2', border: '#dc2626', desc: t('stem.migration.energy_budget_50_of_distance_bird_woul', 'Energy budget < 50% of distance — bird would starve mid-flight. Stopover required.') },
+          borderline: { label: t('stem.migration.borderline', 'Borderline'), color: isDark ? '#fb923c' : '#c2410c', bg: isDark ? '#2a1a0a' : '#fff7ed', border: '#ea580c', desc: t('stem.migration.energy_budget_near_distance_possible_w', 'Energy budget near distance — possible with perfect tailwind, otherwise stopovers mandatory.') },
+          feasible: { label: t('stem.migration.feasible', 'Feasible'), color: isDark ? '#facc15' : '#a16207', bg: isDark ? '#2a2410' : '#fefce8', border: '#eab308', desc: t('stem.migration.single_leg_flight_realistic_but_tight_', 'Single-leg flight realistic but tight. Most species refuel midway anyway.') },
+          comfortable: { label: t('stem.migration.comfortable', 'Comfortable'), color: isDark ? '#4ade80' : '#15803d', bg: isDark ? '#0a2e1a' : '#f0fdf4', border: '#16a34a', desc: t('stem.migration.distance_is_well_within_energy_budget_', 'Distance is well within energy budget. Bar-tailed godwit-class endurance.') },
+          easy: { label: t('stem.migration.easy', 'Easy'), color: isDark ? '#22d3ee' : '#0e7490', bg: isDark ? '#0a1f2e' : '#ecfeff', border: '#0891b2', desc: t('stem.migration.3_reserve_either_short_distance_or_ove', '3×+ reserve. Either short distance or oversized fat stores.') }
         })[state];
         // Energy budget chart. The old bar clamped at 100%, so a bird needing
         // three times its fat reserve drew exactly the same picture as one that
@@ -6000,10 +6254,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         var rangeScale = Math.max(rangeKm, iq.distance, 1);
         var rangeBarW = Math.max(2, (rangeKm / rangeScale) * (BAR_MAX - BAR_X));
         var needBarW = Math.max(2, (iq.distance / rangeScale) * (BAR_MAX - BAR_X));
-        return h('div', { style: { padding: 14, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+        return h('div', { style: { padding: 14, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: IQ.text } },
           h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, t('stem.migration.energy_inquiry_can_the_bird_make_it', '🔬 Energy Inquiry — Can the bird make it?')),
           h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, t('stem.migration.pick_wingspan_mass_headwind_formation_', 'Pick wingspan, mass, headwind, formation, and distance. Predict the energy state. No score, no reveal.')),
-          h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: '999rem', background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · reserve ratio ' + feasibility.toFixed(2) + 'x'),
+          h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: '999rem', background: sm.color, color: isDark ? '#000' : '#fff', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · reserve ratio ' + feasibility.toFixed(2) + 'x'),
           h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 10 } },
             [
@@ -6011,7 +6265,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               { label: t('stem.migration.total_need', 'Total need'), val: totalKJ.toFixed(0) + ' kJ' },
               { label: t('stem.migration.fat_budget', 'Fat budget'), val: fatBurnKJ.toFixed(0) + ' kJ' }
             ].map(function(m) {
-              return h('div', { key: m.label, style: { padding: 6, borderRadius: 4, background: '#0a0a1a', border: '1px solid ' + sm.border, textAlign: 'center' } },
+              return h('div', { key: m.label, style: { padding: 6, borderRadius: 4, background: IQ.tile, border: '1px solid ' + sm.border, textAlign: 'center' } },
                 h('div', { style: { fontSize: 9, opacity: 0.6 } }, m.label),
                 h('div', { style: { fontSize: 11, fontWeight: 700, color: sm.color, fontFamily: 'monospace' } }, m.val)
               );
@@ -6022,46 +6276,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             'aria-label': t('stem.migration.fat_reserve_chart', 'Fat reserve chart showing the energy needed for the current flight.') +
               ' This flight needs ' + Math.round(demandPct * 100) + ' percent of the available fat reserve. ' +
               'Range on this fat is ' + Math.round(rangeKm) + ' kilometres against a required ' + iq.distance + ' kilometres.',
-            style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10, display: 'block', width: '100%', maxWidth: 560, height: 'auto' }
+            style: { background: IQ.tile, borderRadius: 6, marginBottom: 10, display: 'block', width: '100%', maxWidth: 560, height: 'auto' }
           },
             h('defs', null,
               h('pattern', { id: 'migrDeficitHatch', width: 6, height: 6, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' },
-                h('rect', { width: 6, height: 6, fill: '#1b0a0a' }),
-                h('rect', { width: 2, height: 6, fill: '#7f1d1d' })
+                h('rect', { width: 6, height: 6, fill: IQ.hatchBg }),
+                h('rect', { width: 2, height: 6, fill: IQ.hatchLine })
               )
             ),
             // ── Energy demand against the fat reserve ──
-            h('text', { x: BAR_X, y: 16, fill: '#94a3b8', fontSize: 10 }, t('stem.migration.energy_demand_vs_fat', 'Energy demand vs fat reserve')),
+            h('text', { x: BAR_X, y: 16, fill: IQ.textDim, fontSize: 10 }, t('stem.migration.energy_demand_vs_fat', 'Energy demand vs fat reserve')),
             // Overspend zone beyond the reserve line
             h('rect', { x: BAR_X + BAR_FULL, y: 24, width: BAR_MAX - BAR_X - BAR_FULL, height: 24, fill: 'url(#migrDeficitHatch)' }),
-            h('rect', { x: BAR_X, y: 24, width: BAR_FULL, height: 24, fill: '#0f172a', stroke: '#1e293b' }),
+            h('rect', { x: BAR_X, y: 24, width: BAR_FULL, height: 24, fill: IQ.track, stroke: IQ.grid }),
             // Quarter gridlines, so the bar can be read without a number
             [0.25, 0.5, 0.75].map(function(g) {
-              return h('line', { key: g, x1: BAR_X + BAR_FULL * g, y1: 24, x2: BAR_X + BAR_FULL * g, y2: 48, stroke: '#1e293b', strokeWidth: 1 });
+              return h('line', { key: g, x1: BAR_X + BAR_FULL * g, y1: 24, x2: BAR_X + BAR_FULL * g, y2: 48, stroke: IQ.grid, strokeWidth: 1 });
             }),
             h('rect', { x: BAR_X, y: 24, width: Math.min(BAR_FULL, demandW), height: 24, fill: sm.color, opacity: 0.85 }),
             // Whatever the flight needs beyond the reserve, drawn in the red
             overspends && h('rect', { x: BAR_X + BAR_FULL, y: 24, width: Math.max(2, demandW - BAR_FULL), height: 24, fill: '#dc2626', opacity: 0.9 }),
             // The line the bird cannot cross
-            h('line', { x1: BAR_X + BAR_FULL, y1: 20, x2: BAR_X + BAR_FULL, y2: 52, stroke: '#f8fafc', strokeWidth: 1.5 }),
-            h('text', { x: BAR_X + BAR_FULL - 3, y: 60, fill: '#cbd5e1', fontSize: 8, textAnchor: 'end' }, t('stem.migration.fat_exhausted', 'fat exhausted (100%)')),
-            h('text', { x: BAR_X + 5, y: 41, fill: '#0a0a1a', fontSize: 10, fontWeight: 700 }, Math.round(demandPct * 100) + '%'),
+            h('line', { x1: BAR_X + BAR_FULL, y1: 20, x2: BAR_X + BAR_FULL, y2: 52, stroke: IQ.tick, strokeWidth: 1.5 }),
+            h('text', { x: BAR_X + BAR_FULL - 3, y: 60, fill: IQ.textSoft, fontSize: 8, textAnchor: 'end' }, t('stem.migration.fat_exhausted', 'fat exhausted (100%)')),
+            h('text', { x: BAR_X + 5, y: 41, fill: IQ.onBar, fontSize: 10, fontWeight: 700 }, Math.round(demandPct * 100) + '%'),
             demandPct > 1.48 && h('text', { x: BAR_MAX + 2, y: 41, fill: '#f87171', fontSize: 11, fontWeight: 700 }, '»'),
 
             // ── Range achievable against the distance asked for ──
-            h('text', { x: BAR_X, y: 82, fill: '#94a3b8', fontSize: 10 }, t('stem.migration.range_vs_distance', 'Range on this fat vs distance asked')),
+            h('text', { x: BAR_X, y: 82, fill: IQ.textDim, fontSize: 10 }, t('stem.migration.range_vs_distance', 'Range on this fat vs distance asked')),
             h('rect', { x: BAR_X, y: 88, width: rangeBarW, height: 12, fill: '#38bdf8', opacity: 0.85 }),
             h('text', {
               x: rangeBarW > 90 ? BAR_X + 4 : BAR_X + rangeBarW + 5, y: 98,
-              fill: rangeBarW > 90 ? '#03212e' : '#7dd3fc', fontSize: 8, fontWeight: 700
+              fill: rangeBarW > 90 ? IQ.rangeInk : IQ.rangeInkOut, fontSize: 8, fontWeight: 700
             }, t('stem.migration.range_label', 'range') + ' ' + Math.round(rangeKm).toLocaleString() + ' km'),
             h('rect', { x: BAR_X, y: 104, width: needBarW, height: 12, fill: overspends ? '#dc2626' : '#4ade80', opacity: 0.85 }),
             h('text', {
               x: needBarW > 90 ? BAR_X + 4 : BAR_X + needBarW + 5, y: 114,
-              fill: needBarW > 90 ? '#0a0a1a' : '#cbd5e1', fontSize: 8, fontWeight: 700
+              fill: needBarW > 90 ? IQ.onBar : IQ.needInkOut, fontSize: 8, fontWeight: 700
             }, t('stem.migration.needed_label', 'needed') + ' ' + iq.distance.toLocaleString() + ' km'),
 
-            h('text', { x: BAR_X, y: 138, fill: '#94a3b8', fontSize: 9 },
+            h('text', { x: BAR_X, y: 138, fill: IQ.textDim, fontSize: 9 },
               'headwind ' + iq.headwind + ' m/s · ' + iq.vMode + ' (saves ' + Math.round((1 - fmtSave) * 100) + '%) · ' + energyPerKm.toFixed(2) + ' kJ/km')
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
@@ -6085,7 +6339,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           h('div', { style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
             ['solo', 'echelon', 'V'].map(function(f) {
               var active = iq.vMode === f;
-              return h('button', { key: f, onClick: function() { setKey('vMode', f); }, style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + (active ? sm.color : '#1e293b'), background: active ? sm.color : '#0a0a1a', color: active ? '#000' : '#94a3b8', cursor: 'pointer' } }, f);
+              return h('button', { key: f, onClick: function() { setKey('vMode', f); }, style: { padding: '4px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + (active ? sm.color : IQ.tileBorder), background: active ? sm.color : IQ.tile, color: active ? (isDark ? '#000' : '#fff') : IQ.textDim, cursor: 'pointer' } }, f);
             })
           ),
           h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
@@ -6093,15 +6347,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               var t = new Date().toISOString().slice(11, 19);
               setIQ({ log: iq.log.concat([{ t: t, w: iq.wingspan.toFixed(2), m: iq.mass.toFixed(2), hw: iq.headwind, fmt: iq.vMode, d: iq.distance, fr: feasibility.toFixed(2), state: sm.label }]) });
             }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, t('stem.migration.log_this_profile', '📋 Log this profile')),
-            h('button', { onClick: function() { setIQ({ wingspan: 1.2, mass: 0.8, headwind: 0, vMode: 'V', distance: 4000 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, t('stem.migration.reset', 'Reset'))
+            h('button', { onClick: function() { setIQ({ wingspan: 1.2, mass: 0.8, headwind: 0, vMode: 'V', distance: 4000 }); }, style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid ' + IQ.tileBorder, background: IQ.tile, color: IQ.textDim, cursor: 'pointer' } }, t('stem.migration.reset', 'Reset'))
           ),
-          iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
+          iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: IQ.tile, border: '1px solid ' + IQ.tileBorder, marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
             iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · w' + e.w + ' m' + e.m + ' hw' + e.hw + ' ' + e.fmt + ' d' + e.d + ' → ' + e.fr + 'x'); })
           ),
           h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, t('stem.migration.your_hypothesis_which_parameter_forces', 'Your hypothesis (which parameter forces the most stopovers?)')),
-          h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, 'aria-label': t('stem.migration.hypothesis_input', 'Migration energy hypothesis'), placeholder: t('stem.migration.e_g_v_formation_savings_only_pay_off_a', 'e.g., V-formation savings only pay off above 1500 km because takeoff cost dominates...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
-          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, t('stem.migration.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
-          iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
+          h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, 'aria-label': t('stem.migration.hypothesis_input', 'Migration energy hypothesis'), placeholder: t('stem.migration.e_g_v_formation_savings_only_pay_off_a', 'e.g., V-formation savings only pay off above 1500 km because takeoff cost dominates...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: IQ.tile, color: IQ.text, fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + IQ.tileBorder, background: IQ.tile, color: sm.color, cursor: 'pointer', marginBottom: 10 } }, t('stem.migration.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
+          iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: IQ.tile, border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
             h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, t('stem.migration.open_questions_no_answer_key', 'Open questions (no answer key)')),
             h('ul', { style: { margin: 0, paddingLeft: 16 } },
               h('li', null, t('stem.migration.why_would_a_heavier_bird_necessarily_n', 'Why would a heavier bird necessarily need MORE energy per km — what does that have to do with drag?')),
@@ -6114,7 +6368,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
             h('span', null, t('stem.migration.i_can_explain_why_this_profile_yields_', 'I can explain why this profile yields this energy state.'))
           ),
-          iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, 'aria-label': t('stem.migration.explanation_input', 'Migration energy explanation'), placeholder: t('stem.migration.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+          iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, 'aria-label': t('stem.migration.explanation_input', 'Migration energy explanation'), placeholder: t('stem.migration.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: IQ.tile, color: IQ.text, fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
           h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, t('stem.migration.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Energy model is illustrative (drag ∝ m^0.67 / wingspan). V-formation savings vary ~10–30% across species and positions (Lissaman & Shollenberger 1970 theoretical upper bound; in-flight measurements include Weimerskirch et al. 2001 on pelicans and Portugal et al. 2014 on ibises). Widget uses 22% as a midpoint estimate. For real-world stopover ecology consult primary literature.'))
         );
       }
@@ -6144,7 +6398,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
         h('div', { style: { flex: 1, minWidth: 220 } },
           h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-          h('p', { style: { margin: '3px 0 0', color: isDark ? '#cbd5e1' : '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+          h('p', { style: { margin: '3px 0 0', color: (isDark || isContrast) ? '#cbd5e1' : '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
         )
       );
 

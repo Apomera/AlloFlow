@@ -38,24 +38,17 @@ describe('Test Prep Hub release-builder API parity', () => {
     for (const entry of requiredExports) expect(builder, entry).toContain(entry);
   });
 
-  it('keeps hands-free helper exports in the legacy builder as well as the release builder', () => {
+  // _build_test_prep_hub_module.js used to be a second copy of the release
+  // pipeline, and this test string-matched its export list to keep the two in
+  // sync. That guard was necessary but weak: it drifted anyway, and two exports
+  // (parsePracticeVoiceCommand, practiceVoiceHelpText) ended up in one builder
+  // only. The entry point now DELEGATES, so parity is structural rather than
+  // asserted, and the invariant worth pinning is the delegation itself.
+  it('keeps the legacy entry point delegating rather than reimplementing the pipeline', () => {
     const legacyBuilder = fs.readFileSync(resolve(root, '_build_test_prep_hub_module.js'), 'utf8');
-    for (const entry of [
-      'questionSpeechText: testPrepQuestionSpeechText',
-      'feedbackSpeechText: testPrepFeedbackSpeechText',
-      'choicesSpeechText: testPrepChoicesSpeechText',
-      'handsFreeHelpText: testPrepHandsFreeHelpText',
-      'handsFreeStatusText: testPrepHandsFreeStatusText',
-      'parseHandsFreeCommand: testPrepParseHandsFreeCommand',
-      'preAnswerClarificationPolicy: testPrepPreAnswerClarificationPolicy',
-      'filterPreAnswerClarificationResponse: testPrepFilterPreAnswerClarificationResponse',
-      'buildClarificationPrompt: testPrepBuildClarificationPrompt',
-      'resolvePackContentIdentity: testPrepResolvePackContentIdentity',
-      'resolveLearnerDataIdentity: testPrepResolveLearnerDataIdentity',
-      'reviewItemsForPack: testPrepReviewItemsForPack',
-      'annotationsForPack: testPrepAnnotationsForPack',
-      'normalizeFlashcardStore: normalizeTestPrepFlashcardStore',
-      'normalizeChapterProgressStore: normalizeTestPrepNativeChapterProgressStore',
-    ]) expect(legacyBuilder, entry).toContain(entry);
+    expect(legacyBuilder).toContain("build_test_prep_hub_release.cjs");
+    // A second Object.assign export block here means the duplication is back.
+    expect(legacyBuilder).not.toContain('window.AlloModules.TestPrepHub = Object.assign(');
+    expect(legacyBuilder.split(/\r?\n/).length).toBeLessThan(150);
   });
 });

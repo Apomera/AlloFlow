@@ -144,6 +144,59 @@ function sendPortalNotification(request) {
   });
 }
 
+function sharePortalReleasedEvaluation(request) {
+  return new Promise((resolve, reject) => {
+    if (!request || typeof request !== 'object' || !request.teacherId) {
+      reject(new Error('An authorized educator record is required.'));
+      return;
+    }
+    let runner;
+    try { runner = requireAppsScriptRunner(); }
+    catch (error) { reject(error); return; }
+    runner
+      .withSuccessHandler((response) => {
+        if (!response || response.ok === false) { reject(portalError(response)); return; }
+        resolve(response);
+      })
+      .withFailureHandler((error) => reject(portalError(error)))
+      .sharePortalReleasedEvaluation(request);
+  });
+}
+
+function recordPortalReleasedSummaryOpened(request) {
+  return new Promise((resolve, reject) => {
+    if (!request || typeof request !== 'object' || !request.teacherId) {
+      reject(new Error('An authorized educator record is required.'));
+      return;
+    }
+    let runner;
+    try { runner = requireAppsScriptRunner(); }
+    catch (error) { reject(error); return; }
+    runner
+      .withSuccessHandler((response) => {
+        if (!response || response.ok === false) { reject(portalError(response)); return; }
+        resolve(response);
+      })
+      .withFailureHandler((error) => reject(portalError(error)))
+      .recordReleasedSummaryOpened(request);
+  });
+}
+
+function getPortalSetupHealthClient() {
+  return new Promise((resolve, reject) => {
+    let runner;
+    try { runner = requireAppsScriptRunner(); }
+    catch (error) { reject(error); return; }
+    runner
+      .withSuccessHandler((response) => {
+        if (!response || response.ok === false) { reject(portalError(response)); return; }
+        resolve(response);
+      })
+      .withFailureHandler((error) => reject(portalError(error)))
+      .getPortalSetupHealth();
+  });
+}
+
 function readPortalDeepLink(parameters) {
   const params = parameters && typeof parameters === 'object'
     ? { get: (name) => parameters[name] == null ? '' : String(parameters[name]) }
@@ -167,6 +220,9 @@ function mountPortal(initialRoute) {
     bootstrap: getPortalBootstrap,
     saveWorkspace: savePortalWorkspace,
     sendNotification: sendPortalNotification,
+    shareReleasedEvaluation: sharePortalReleasedEvaluation,
+    recordReleasedSummaryOpened: recordPortalReleasedSummaryOpened,
+    getSetupHealth: getPortalSetupHealthClient,
     getInitialRoute: () => initialRoute,
   });
   window.__alloEvaluationRepository = repository;

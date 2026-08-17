@@ -246,3 +246,68 @@ describe('cumulative-record generator', () => {
     }
   });
 });
+
+// ── Level 9: the Pavlov association model ───────────────────────────────────
+// Read out of the source rather than re-typed here: a constant copied into a test
+// stops being a check on the tool the moment either side moves.
+describe('classical conditioning curve', () => {
+  let RATE;
+
+  beforeAll(() => {
+    const src = fs.readFileSync(SOURCE, 'utf8');
+    const m = /var\s+BL_CS_RATE\s*=\s*([\d.]+)/.exec(src);
+    if (!m) throw new Error('BL_CS_RATE not found');
+    RATE = Number(m[1]);
+    // The acquisition and extinction steps must both be expressed against it, or
+    // the "same process, different asymptote" claim in the comments is a fiction.
+    expect(src).toContain('BL_CS_RATE * (100 - blAssocStrength)');
+    expect(src).toContain('blAssocStrength * (1 - BL_CS_RATE)');
+  });
+
+  const acquire = (n) => {
+    let v = 0;
+    const out = [];
+    for (let i = 0; i < n; i += 1) { v = Math.min(100, Math.round(v + RATE * (100 - v))); out.push(v); }
+    return out;
+  };
+  const extinguish = (from, n) => {
+    let v = from;
+    const out = [];
+    for (let i = 0; i < n; i += 1) { v = Math.max(0, Math.round(v * (1 - RATE))); out.push(v); }
+    return out;
+  };
+
+  it('acquisition is negatively accelerated, not a straight ramp', () => {
+    // The defect this replaces: a flat +18 per pairing, which draws a straight line
+    // and teaches that the fifth pairing is worth as much as the first.
+    const v = acquire(5);
+    const deltas = v.map((x, i) => x - (i === 0 ? 0 : v[i - 1]));
+    for (let i = 1; i < deltas.length; i += 1) {
+      expect(deltas[i], `pairing ${i + 1} added at least as much as pairing ${i}`)
+        .toBeLessThan(deltas[i - 1]);
+    }
+  });
+
+  it('five pairings still cross the CR threshold with room to spare', () => {
+    // The phase machine hands over to the Test phase after 5 pairings and fires the
+    // conditioned response above 30. Acquisition may be reshaped; it must not be
+    // reshaped into a level that cannot be completed.
+    const v = acquire(5);
+    expect(v[v.length - 1]).toBeGreaterThan(60);
+    expect(v[v.length - 1]).toBeLessThanOrEqual(100);
+    expect(v[0], 'a single pairing should not already produce a strong CR').toBeLessThan(60);
+  });
+
+  it('extinction decays proportionally and clears the CR threshold', () => {
+    const start = acquire(5).pop();
+    const e = extinguish(start, 8);
+    for (let i = 1; i < e.length; i += 1) {
+      expect(e[i]).toBeLessThanOrEqual(e[i - 1]);
+    }
+    const crossed = e.findIndex((x) => x <= 30);
+    expect(crossed, 'extinction never stopped the conditioned response').toBeGreaterThanOrEqual(0);
+    // Fast at first, slow at the end — the reason the last traces are hardest to
+    // remove, and the setup for spontaneous recovery.
+    expect(start - e[0]).toBeGreaterThan(e[e.length - 2] - e[e.length - 1]);
+  });
+});

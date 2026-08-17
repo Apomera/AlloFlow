@@ -1,0 +1,28 @@
+{
+  "note": "Answer-length-bias ratchet. Rates may fall, never rise. Chance is 0.25. Regenerate with dev-tools/scan_answer_length_bias.cjs --update after deliberate item work.",
+  "corpusRate": 0.4406,
+  "packs": {
+    "audiology_5343": 0.552,
+    "early_childhood_5025": 0.488,
+    "educational_leadership_5412": 0.624,
+    "esol_5362": 0.406,
+    "parapro": 0.672,
+    "plt_5_9_5623": 0.402,
+    "plt_7_12_5624": 0.404,
+    "plt_early_childhood_5621": 0.408,
+    "plt_k6_5622": 0.402,
+    "praxis_core_5752": 0.31,
+    "reading_specialist_5302": 0.406,
+    "school_counselor_5422": 0.464,
+    "school_librarian_5312": 0.464,
+    "school_psychologist_5403": 0.464,
+    "special_education_5355": 0.404,
+    "special_education_behavior_emotional_5372": 0.404,
+    "special_education_early_childhood_5692": 0.408,
+    "special_education_intellectual_disabilities_5322": 0.406,
+    "special_education_learning_disabilities_5383": 0.386,
+    "special_education_severe_profound_5547": 0.404,
+    "speech_language_pathology_5331": 0.404,
+    "teaching_reading_5205": 0.412
+  }
+}

@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { loadAlloModule, registerEpppPartOne } from './setup.js';
+import { loadAlloModule, registerEpppPartOne, registerCredentialPacks } from './setup.js';
 
 let Hub;
 
@@ -31,6 +31,9 @@ beforeAll(() => {
   };
   loadAlloModule('test_prep_hub_module.js');
   Hub = window.AlloModules.TestPrepHub;
+  // Credential packs are lazy in the shipped module; register them as
+  // fixtures so listPacks() can see them (see registerCredentialPacks).
+  registerCredentialPacks(['audiology_5343', 'educational_leadership_5412', 'reading_specialist_5302']);
   registerEpppPartOne(Hub);
 });
 

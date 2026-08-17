@@ -687,18 +687,18 @@
     scorpius: { patternName: 'Modern Western Scorpius figure', description: 'A hooked chain from Antares through the curved tail to Shaula sketches the Western scorpion figure.', lines: [[85927,86670,87073,86228,84143,82671,82514,82396,81266,80763,78401],[80763,78265],[80763,78820]], stars: [[85927,'Shaula',17.5,70.4,1.62],[86670,'',12,78.1,2.39],[87073,'',8.9,82.6,2.99],[86228,'Sargas',17.1,92,1.86],[84143,'',33.9,91.3,3.32],[82671,'',45.8,87.8,4.7],[82514,'Xamidimura',47.3,72.3,3],[82396,'Larawag',48.6,58.9,2.29],[81266,'Paikauhale',60,37.5,2.82],[80763,'Antares',65.5,31.3,1.06],[78401,'Dschubba',91.1,19,2.29],[78265,'Fang',90.7,32.1,2.89],[78820,'Acrab',88,8,2.56]] },
     cygnus: { patternName: 'Northern Cross asterism', description: 'Deneb, Sadr, Albireo, and the wing stars form the cross-shaped guide inside Cygnus.', lines: [[102098,100453,98110,95947],[102488,100453,97165]], stars: [[102098,'Deneb',19.8,8,1.25],[100453,'Sadr',35.5,33.6,2.23],[98110,'',60.4,58.6,3.89],[95947,'Albireo',89.7,92,3.05],[102488,'Aljanah',10.3,62.7,2.48],[97165,'Fawaris',68.3,9.2,2.86]] },
     leo: { patternName: 'Sickle and Lion', description: 'The curved Sickle rises from Regulus and connects to the triangle ending at Denebola.', lines: [[57632,54879,49669,49583,50583,54872,57632],[50583,50335,48455,47908]], stars: [[57632,'Denebola',8,60.6,2.14],[54879,'',33.3,59.8,3.33],[49669,'Regulus',78.4,70.1,1.36],[49583,'',78.6,56.5,3.48],[50583,'Algieba',70,48.1,2.01],[54872,'',34.3,45.4,2.56],[50335,'',71.9,38,3.43],[48455,'',87.1,29.9,3.88],[47908,'',92,35.9,2.97]] },
-    taurus: { patternName: 'Hyades V and horns', description: 'Aldebaran anchors the Hyades V while two long guide lines suggest the Bullâ€™s horns.', lines: [[21421,20894,20205,20455,20648,20889,21421],[21421,26451],[20205,18724,15900]], stars: [[21421,'Aldebaran',46.1,48,.87],[20894,'',50.6,49.7,3.4],[20205,'',56,50.3,3.65],[20455,'',54.1,45.4,3.77],[20648,'',52.5,44.4,4.3],[20889,'',50.6,41.2,3.53],[26451,'Tianguan',8,33.5,2.97],[18724,'',68.1,58.2,3.41],[15900,'',92,66.5,3.61]] },
+    taurus: { patternName: 'Hyades V and horns', description: 'Aldebaran anchors the Hyades V while two long guide lines suggest the Bull’s horns.', lines: [[21421,20894,20205,20455,20648,20889,21421],[21421,26451],[20205,18724,15900]], stars: [[21421,'Aldebaran',46.1,48,.87],[20894,'',50.6,49.7,3.4],[20205,'',56,50.3,3.65],[20455,'',54.1,45.4,3.77],[20648,'',52.5,44.4,4.3],[20889,'',50.6,41.2,3.53],[26451,'Tianguan',8,33.5,2.97],[18724,'',68.1,58.2,3.41],[15900,'',92,66.5,3.61]] },
     lyra: { patternName: 'Vega and parallelogram', description: 'Brilliant Vega sits beside the small four-star parallelogram that makes Lyra recognizable.', lines: [[91262,91971,92420,93194,92791,91971]], stars: [[91262,'Vega',80.6,8,.03],[91971,'',59.7,24.7,4.34],[92420,'',45.1,83.1,3.52],[93194,'',19.4,92,3.25],[92791,'',33.1,34.4,4.22]] },
     sagittarius: { patternName: 'Teapot asterism', description: 'Eight stars trace the Teapot, the easiest modern recognition guide within Sagittarius.', lines: [[93506,92041,89931,90185,93506,93864,92855,92041,90496,89931,88635,90185]], stars: [[93506,'',14.8,50.4,2.6],[92041,'',37.6,31.5,3.17],[89931,'',71.4,49.7,2.72],[90185,'Kaus Australis',66.2,78.3,1.79],[93864,'',8,36.8,3.32],[92855,'Nunki',24,27.5,2.05],[90496,'',62.6,21.7,2.82],[88635,'',92,54.6,2.98]] },
     andromeda: { patternName: 'Andromeda chain', description: 'A gently bent chain runs from Alpheratz through Mirach to Almach across the autumn sky.', lines: [[677,3092,5447,9640]], stars: [[677,'Alpheratz',92,74.7,2.07],[3092,'',67,70.2,3.27],[5447,'Mirach',44,53.5,2.07],[9640,'Almach',8,25.3,2.1]] },
     crux: { patternName: 'Southern Cross', description: 'Two crossing star pairs form the compact Southern Cross used as a southern navigation guide.', lines: [[61084,60718],[62434,59747]], stars: [[61084,'Gacrux',50,8,1.59],[60718,'Acrux',57.5,92,.77],[62434,'Mimosa',20.8,45.1,1.25],[59747,'Imai',79.2,31.7,2.79]] },
-    aquila: { patternName: 'Altair and companions', description: 'Altair lies between Tarazed and Alshain in Aquilaâ€™s compact central recognition line.', lines: [[98036,97649,97278]], stars: [[98036,'Alshain',27.7,92,3.71],[97649,'Altair',50.2,42.9,.76],[97278,'Tarazed',72.3,8,2.72]] },
+    aquila: { patternName: 'Altair and companions', description: 'Altair lies between Tarazed and Alshain in Aquila’s compact central recognition line.', lines: [[98036,97649,97278]], stars: [[98036,'Alshain',27.7,92,3.71],[97649,'Altair',50.2,42.9,.76],[97278,'Tarazed',72.3,8,2.72]] },
     bootes: { patternName: 'Kite asterism', description: 'A long kite-shaped loop narrows toward brilliant orange Arcturus at its southern point.', lines: [[69673,72105,74666,73555,71075,71053,69673]], stars: [[69673,'Arcturus',76.4,92,-.05],[72105,'',48.6,60.9,2.35],[74666,'',23.6,35.4,3.46],[73555,'',36,8,3.49],[71075,'',58.8,16.5,3.04],[71053,'',59.8,47.8,3.57]] },
     centaurus: { patternName: 'Centaurus pointer chain', description: 'Alpha Centauri and Hadar form the brilliant pointer chain beside the Southern Cross.', lines: [[71683,68702,66657]], stars: [[71683,'Alpha Centauri',8,88.7,-.01],[68702,'Hadar',53.7,81.4,.61],[66657,'',92,11.3,2.29]] },
     ursa_minor: { patternName: 'Little Dipper asterism', description: 'A faint curved handle begins at Polaris and joins the four-star bowl of the Little Dipper.', lines: [[11767,85822,82080,77055,79822,75097,72607,77055]], stars: [[11767,'Polaris',36.5,8,1.97],[85822,'',33.5,26.4,4.35],[82080,'',34.5,47.9,4.21],[77055,'',47.6,66.7,4.29],[79822,'',39.8,76.8,4.95],[75097,'Pherkad',60.5,92,3],[72607,'Kochab',66.5,78.5,2.07]] }
   };
 
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ──────────────────────────────────────────────────────────────────
   // DATA: Exoplanets
   // ──────────────────────────────────────────────────────────────────
   var EXOPLANETS = [
@@ -1129,7 +1129,7 @@
           side: THREE.DoubleSide, depthWrite: false
         })
       );
-      // ConeGeometry points its apex along +Y. Rotate -90Â° so the wide base
+      // ConeGeometry points its apex along +Y. Rotate -90° so the wide base
       // sits at Earth (x=0) and the umbra tapers anti-sunward toward -x.
       umbra.rotation.z = -Math.PI / 2;
       umbra.position.set(-umbraLen / 2, 0, 0);
@@ -2742,7 +2742,7 @@
                   targetFact(__alloT('stem.astronomy.altitude', 'Altitude'), selectedTarget.body.alt > 0
                     ? Math.round(selectedTarget.body.alt) + '\u00B0 ' + __alloT('stem.astronomy.above_horizon', 'above horizon')
                     : Math.abs(Math.round(selectedTarget.body.alt)) + '\u00B0 ' + __alloT('stem.astronomy.below_horizon', 'below horizon')),
-                  targetFact(__alloT('stem.astronomy.direction', 'Direction'), azCompass(selectedTarget.body.az) + ' Â· ' + Math.round(selectedTarget.body.az) + '\u00B0 ' + __alloT('stem.astronomy.azimuth', 'azimuth')),
+                  targetFact(__alloT('stem.astronomy.direction', 'Direction'), azCompass(selectedTarget.body.az) + ' · ' + Math.round(selectedTarget.body.az) + '\u00B0 ' + __alloT('stem.astronomy.azimuth', 'azimuth')),
                   targetFact(__alloT('stem.astronomy.brightness', 'Brightness'), targetForecast.brightness),
                   targetFact(__alloT('stem.astronomy.next_horizon_event', 'Next horizon event'), targetForecast.nextEvent),
                   targetFact(__alloT('stem.astronomy.highest_next_12h', 'Highest in next 12 hours'), targetForecast.best)
@@ -2758,7 +2758,7 @@
         var observingPanel = sectionCard('\uD83D\uDD2D ' + __alloT('stem.astronomy.what_can_i_see_now', 'What can I see now?'),          h('div', { id: 'astronomy-observing-mode', role: 'group', 'aria-label': __alloT('stem.astronomy.observing_targets', 'Visible observing targets') },
             h('div', { role: 'status', style: { color: '#cbd5e1', fontSize: 11.5, lineHeight: 1.5, marginBottom: 7 } },
               observingBest
-                ? __alloT('stem.astronomy.best_target_now', 'Best starting point: ') + observingBest.name + ' Â· ' + Math.round(observingBest.body.alt) + '\u00B0 ' + __alloT('stem.astronomy.above', 'above') + ' ' + azCompass(observingBest.body.az) + '. '
+                ? __alloT('stem.astronomy.best_target_now', 'Best starting point: ') + observingBest.name + ' · ' + Math.round(observingBest.body.alt) + '\u00B0 ' + __alloT('stem.astronomy.above', 'above') + ' ' + azCompass(observingBest.body.az) + '. '
                   + observingTargets.length + ' ' + __alloT('stem.astronomy.targets_above_horizon', 'targets are above your horizon.')
                 : __alloT('stem.astronomy.no_targets_above_horizon', 'No recommended targets are above the horizon right now.')),
             observingTargets.slice(0, 6).map(function (target) {
@@ -2772,7 +2772,7 @@
                 style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto', gap: 8, alignItems: 'center', width: '100%', minWidth: 0, marginTop: 5, padding: '6px 8px', borderRadius: 7, border: '1px solid ' + (selected ? '#fbbf24' : '#475569'), background: selected ? 'rgba(251,191,36,0.16)' : '#0f172a', color: '#e2e8f0', textAlign: 'left', cursor: 'pointer' }
               },
                 h('span', { style: { minWidth: 0, overflowWrap: 'anywhere', fontWeight: selected ? 850 : 700 } }, target.icon + ' ' + target.name),
-                h('span', { style: { color: selected ? '#fde68a' : '#94a3b8', fontSize: 10.5, textAlign: 'right', whiteSpace: 'nowrap' } }, altitudeText + ' Â· ' + target.difficulty)
+                h('span', { style: { color: selected ? '#fde68a' : '#94a3b8', fontSize: 10.5, textAlign: 'right', whiteSpace: 'nowrap' } }, altitudeText + ' · ' + target.difficulty)
               );
             })
           )
@@ -2802,10 +2802,10 @@
             : 'Preview: Bortle ' + bortleInfo.class + ' \u00B7 ' + bortleInfo.name + '. ' + bortleEffect + ' Guide overlays and observing-window timing stay unchanged.';
         bortleStatus += ' This curated bright reference-star preview is illustrative, not calibrated; it does not forecast visibility.';
         var BUSTS = [
-          ['Planets WANDER', 'The word planet means â€œwanderer.â€ Unlike the fixed star patterns, planets drift along the ecliptic night to night. Step the date forward and watch a planet move against the stars.'],
-          ['A phase is NOT Earthâ€™s shadow', 'The Moonâ€™s phase is just how much of its sunlit half faces us (Sunâ€“Moonâ€“Earth geometry). Earthâ€™s shadow only falls on the Moon during a lunar eclipse â€” thatâ€™s a different, rare event.'],
-          ['The sky turns because EARTH spins', 'Stars rise in the east and set in the west because Earth rotates west-to-east â€” the stars arenâ€™t moving. Drag the time slider to spin the sky.'],
-          ['Five planets, no telescope', 'Mercury, Venus, Mars, Jupiter and Saturn are all bright enough to see with just your eyes â€” Venus is often the brilliant â€œevening/morning star.â€']
+          ['Planets WANDER', 'The word planet means “wanderer.” Unlike the fixed star patterns, planets drift along the ecliptic night to night. Step the date forward and watch a planet move against the stars.'],
+          ['A phase is NOT Earth’s shadow', 'The Moon’s phase is just how much of its sunlit half faces us (Sun–Moon–Earth geometry). Earth’s shadow only falls on the Moon during a lunar eclipse — that’s a different, rare event.'],
+          ['The sky turns because EARTH spins', 'Stars rise in the east and set in the west because Earth rotates west-to-east — the stars aren’t moving. Drag the time slider to spin the sky.'],
+          ['Five planets, no telescope', 'Mercury, Venus, Mars, Jupiter and Saturn are all bright enough to see with just your eyes — Venus is often the brilliant “evening/morning star.”']
         ];
         function ctrlBtn(label, on, onClick, key, isToggle, disabled) { return h('button', { key: key, type: 'button', 'aria-label': label, 'aria-pressed': isToggle ? on : undefined, disabled: disabled || undefined, onClick: onClick, className: 'astr-focus astr-btn', style: { padding: '6px 10px', borderRadius: 7, border: '1px solid ' + (on ? '#818cf8' : '#64748b'), background: on ? 'rgba(99,102,241,0.30)' : '#0f172a', color: on ? '#ffffff' : '#cbd5e1', fontWeight: on ? 800 : 650, fontSize: 11.5, cursor: disabled ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap' } }, label); }
         function layerToggle(key, label) {
@@ -2817,7 +2817,7 @@
         }
 
         return h('div', { style: { padding: 16 } },
-          h('div', { style: { fontSize: 12.5, color: '#cbd5e1', marginBottom: 10, lineHeight: 1.6 } }, __alloT('stem.astronomy.skymap_intro', 'The real sky overhead, computed for your place and time â€” Sun, Moon (with its true phase), the five naked-eye planets, and bright reference stars. Hold it over your head facing North: this is an overhead view, so East is on your left.')),
+          h('div', { style: { fontSize: 12.5, color: '#cbd5e1', marginBottom: 10, lineHeight: 1.6 } }, __alloT('stem.astronomy.skymap_intro', 'The real sky overhead, computed for your place and time — Sun, Moon (with its true phase), the five naked-eye planets, and bright reference stars. Hold it over your head facing North: this is an overhead view, so East is on your left.')),
           h('div', { id: 'astronomy-sky-controls', style: { minWidth: 0, maxWidth: '100%' } },
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }, role: 'group', 'aria-label': 'Location' },
               SKY_LOCS.map(function (l) { return ctrlBtn(l.name, l.id === loc.id, function () { upd({ skyLoc: l.id }); }, l.id, true, false); })),
@@ -2902,8 +2902,8 @@
                 labelEls,
                 bortlePreview.mode === 'daylight' ? h('text', { x: cx, y: 399, fill: '#fbbf24', fontSize: 12, fontWeight: 800, textAnchor: 'middle' },
                   sky.sun.alt >= 0
-                    ? __alloT('stem.astronomy.daytime_note', '\u2600 Daytime Ã¢â‚¬â€ stars are up but the Sun outshines them')
-                    : __alloT('stem.astronomy.civil_twilight_note', 'Civil twilight Ã¢â‚¬â€ the bright sky masks most stars')) :
+                    ? __alloT('stem.astronomy.daytime_note', '\u2600 Daytime — stars are up but the Sun outshines them')
+                    : __alloT('stem.astronomy.civil_twilight_note', 'Civil twilight — the bright sky masks most stars')) :
                   h('text', { x: cx, y: 399, fill: '#e2e8f0', fontSize: 11.5, fontWeight: 650, textAnchor: 'middle' }, localShown.toLocaleString(undefined, { timeZone: loc.timeZone, weekday: 'short', hour: 'numeric', minute: '2-digit' }) + ' \u00B7 ' + loc.name)),
               h('div', { id: 'astronomy-sky-map-help', style: { width: '100%', maxWidth: '100%', marginTop: 7, padding: '8px 10px', borderRadius: 8, background: '#0f172a', border: '1px solid #64748b', color: '#cbd5e1', fontSize: 11.5, lineHeight: 1.55 } },
                 h('strong', { style: { color: '#f8fafc' } }, 'Diagram guide: '),
@@ -2918,10 +2918,10 @@
                   h('div', { style: { color: '#cbd5e1', fontSize: 11.5, marginTop: 2 } }, sky.moon.alt > 0 ? (__alloT('stem.astronomy.up_in_the', 'up in the ') + azCompass(sky.moon.az) + ', ' + Math.round(sky.moon.alt) + '\u00B0 ' + __alloT('stem.astronomy.high', 'high')) : __alloT('stem.astronomy.below_the_horizon', 'below the horizon right now')))),
               sectionCard('\uD83E\uDE90 ' + __alloT('stem.astronomy.planets_up_now', 'Planets up now'),
                 upPlanets.length ? h('div', { style: { display: 'grid', gap: 4 } }, upPlanets.map(function (p) {
-                  return h('div', { key: p.id, style: { fontSize: 12.5, color: '#e2e8f0' } }, h('span', { style: { color: readableAccent(p.color, '#1e293b'), fontWeight: 700 } }, p.icon + ' ' + p.name), h('span', { style: { color: '#cbd5e1' } }, ' â€” ' + azCompass(p.az) + ', ' + Math.round(p.alt) + '\u00B0 ' + __alloT('stem.astronomy.high', 'high')));
-                })) : h('div', { style: { fontSize: 12, color: '#cbd5e1' } }, __alloT('stem.astronomy.no_naked_eye_planets', 'No naked-eye planets above the horizon at this moment â€” try spinning time or stepping the date.'))),
+                  return h('div', { key: p.id, style: { fontSize: 12.5, color: '#e2e8f0' } }, h('span', { style: { color: readableAccent(p.color, '#1e293b'), fontWeight: 700 } }, p.icon + ' ' + p.name), h('span', { style: { color: '#cbd5e1' } }, ' — ' + azCompass(p.az) + ', ' + Math.round(p.alt) + '\u00B0 ' + __alloT('stem.astronomy.high', 'high')));
+                })) : h('div', { style: { fontSize: 12, color: '#cbd5e1' } }, __alloT('stem.astronomy.no_naked_eye_planets', 'No naked-eye planets above the horizon at this moment — try spinning time or stepping the date.'))),
               sectionCard('\u2600 ' + __alloT('stem.astronomy.the_sun', 'The Sun'),
-                h('div', { style: { fontSize: 12.5, color: '#cbd5e1' } }, sky.sun.alt > 0 ? (__alloT('stem.astronomy.up_in_the', 'up in the ') + azCompass(sky.sun.az) + ', ' + Math.round(sky.sun.alt) + '\u00B0 ' + __alloT('stem.astronomy.high', 'high')) : (__alloT('stem.astronomy.below_horizon_alt', 'below the horizon (') + Math.round(sky.sun.alt) + '\u00B0) â€” ' + (sky.sun.alt < -18 ? __alloT('stem.astronomy.full_dark', 'full dark') : __alloT('stem.astronomy.twilight', 'twilight')))))
+                h('div', { style: { fontSize: 12.5, color: '#cbd5e1' } }, sky.sun.alt > 0 ? (__alloT('stem.astronomy.up_in_the', 'up in the ') + azCompass(sky.sun.az) + ', ' + Math.round(sky.sun.alt) + '\u00B0 ' + __alloT('stem.astronomy.high', 'high')) : (__alloT('stem.astronomy.below_horizon_alt', 'below the horizon (') + Math.round(sky.sun.alt) + '\u00B0) — ' + (sky.sun.alt < -18 ? __alloT('stem.astronomy.full_dark', 'full dark') : __alloT('stem.astronomy.twilight', 'twilight')))))
             )),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: 8, marginTop: 12 } },
             BUSTS.map(function (b, i) { return h('div', { key: 'b' + i, style: { padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.07)', border: '1px solid rgba(251,191,36,0.3)' } }, h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fcd34d', marginBottom: 3 } }, '\u26A0 ' + b[0]), h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.5 } }, b[1])); })),
@@ -3147,7 +3147,7 @@
           allConstellations88Section()
         );
 
-        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€        // All 88 IAU Constellations — full reference database
+        // ──────────────────────────────────────────────────────────────        // All 88 IAU Constellations — full reference database
         // ──────────────────────────────────────────────────────────────
         function allConstellations88Section() {
           var ALL_88 = [
@@ -3566,8 +3566,8 @@
             })
           ),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px 12px', marginTop: 8, color: '#cbd5e1', fontSize: 10.5, lineHeight: 1.45 } },
-            h('span', null, h('strong', { style: { color: '#cbd5e1' } }, 'P Â· '), __alloT('stem.astronomy.penumbra_key', 'faint outer shadow')),
-            h('span', null, h('strong', { style: { color: '#f8fafc' } }, 'U Â· '), __alloT('stem.astronomy.umbra_key', 'dark central shadow')),
+            h('span', null, h('strong', { style: { color: '#cbd5e1' } }, 'P · '), __alloT('stem.astronomy.penumbra_key', 'faint outer shadow')),
+            h('span', null, h('strong', { style: { color: '#f8fafc' } }, 'U · '), __alloT('stem.astronomy.umbra_key', 'dark central shadow')),
             h('span', null, __alloT('stem.astronomy.eclipse_scale_note', 'Contacts use true mean proportions; display distances may be compressed.'))
           )
         ) : null;
@@ -3873,7 +3873,7 @@
                 h('strong', { style: { color: '#c7d2fe' } }, moonScaleMode === 'teaching'
                   ? __alloT('stem.astronomy.moon_teaching_scale', 'Teaching scale')
                   : __alloT('stem.astronomy.moon_true_scale', 'True scale')),
-                ' Â· ',
+                ' · ',
                 moonScaleMode === 'teaching'
                   ? __alloT('stem.astronomy.moon_teaching_scale_desc', 'Enlarges the Moon and compresses distance so the geometry stays readable.')
                   : __alloT('stem.astronomy.moon_true_scale_desc', 'Uses about 60 Earth radii of distance and the Moon\'s real diameter ratio.'))            ),

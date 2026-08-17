@@ -181,6 +181,160 @@ test.describe('Tree Life Lab immersive stage', () => {
     await expect(why.getByText(/Water is the limit/)).toBeVisible();
   });
 
+  test('full screen shows what the tree COSTS, not only what limits it', async ({ page }) => {
+    // "What limits a tree, what it costs to stay alive, and how it makes more of
+    // itself" is the tool's own subtitle. Full screen showed the first third.
+    await mount(page, 70, true);
+    const conds = page.locator('[data-tree-fullconds="true"]');
+    await expect(conds.getByText(/This year/)).toBeVisible();
+    await expect(conds.getByText(/Made/)).toBeVisible();
+    await expect(conds.getByText(/Spent staying alive/)).toBeVisible();
+    await expect(conds.getByText(/Left to grow with/)).toBeVisible();
+
+    // Every mass in this engine is CARBON. A bare "kg" reads as biomass and is about
+    // double; the tool has a guard for exactly this and it must hold here too.
+    const text = (await conds.innerText()) || '';
+    expect(text).toMatch(/kg C/);
+    expect(text, 'a bare kg in the budget reads as biomass').not.toMatch(/(\d)\s*kg(?!\s*C)/);
+  });
+
+  test('a tree spending more than it earns says so', async ({ page }) => {
+    // The fact behind every carbon-starvation death in this model, and it was invisible
+    // in the view a student actually watches. A MATURE tree is required: a small one's
+    // respiration is too low to be pushed negative.
+    await page.setViewportSize({ width: 1400, height: 820 });
+    await page.goto(`${(harness as any).base}/__harness`);
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.treeLab, null, { timeout: 30000 });
+    const net = await page.evaluate(() => {
+      const E = (window as any).__alloTreeLabEngine;
+      const sp = E.speciesById('oak');
+      let t = E.newTree('oak');
+      for (let i = 0; i < 80 && t.alive; i++) {
+        t = E.simulateYear(t, sp, { tempC: 22, light: 0.85, co2ppm: 420, soilWater: 0.75 },
+          { leaf: 0.3, root: 0.2, wood: 0.35, repro: 0.05, store: 0.1 });
+      }
+      (window as any).__mount({
+        treeLab: {
+          view: 'grow', speciesId: 'oak', tree: t, viewerFull: true,
+          bandOverride: 'g68', soilWater: 0.02, light: 0.03, co2ppm: 200, tempC: 4,
+        },
+      });
+      return null;
+    });
+    void net;
+    await page.waitForSelector('canvas', { timeout: 30000 });
+    await page.waitForTimeout(2600);
+    const conds = page.locator('[data-tree-fullconds="true"]');
+    await expect(conds.getByText(/living off its reserves/)).toBeVisible();
+  });
+
+  async function mountAt(page: import('@playwright/test').Page, env: Record<string, number>) {
+    await page.setViewportSize({ width: 1400, height: 820 });
+    await page.goto(`${(harness as any).base}/__harness`);
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.treeLab, null, { timeout: 30000 });
+    await page.evaluate((e) => {
+      const E = (window as any).__alloTreeLabEngine;
+      const sp = E.speciesById('oak');
+      let t = E.newTree('oak');
+      for (let i = 0; i < 70 && t.alive; i++) {
+        t = E.simulateYear(t, sp, { tempC: 22, light: 0.85, co2ppm: 420, soilWater: 0.75 },
+          { leaf: 0.3, root: 0.2, wood: 0.35, repro: 0.05, store: 0.1 });
+      }
+      (window as any).__mount({
+        treeLab: {
+          view: 'grow', speciesId: 'oak', tree: t, viewerFull: true, bandOverride: 'g68',
+          co2ppm: 420, ...e,
+        },
+      });
+    }, env);
+    await page.waitForSelector('canvas', { timeout: 30000 });
+    await page.waitForTimeout(2800);
+    return page.evaluate(() => (window as any).__alloTreeLabScene);
+  }
+
+  test('ground cover is drawn from the light, not decoration', async ({ page }) => {
+    // The empty foreground was a uniform scatter that ignored the tree entirely. Ground
+    // cover now thins under a canopy using the SAME Beer-Lambert extinction the engine
+    // uses to shade a tree's own leaves — so it illustrates a number the model already
+    // computes rather than inventing an ecosystem.
+    const bright = await mountAt(page, { light: 0.95, soilWater: 0.65, tempC: 22 });
+    expect(bright, 'scene probe missing').toBeTruthy();
+    // A canopy must actually intercept light, or there is nothing being illustrated.
+    expect(bright.floorLight).toBeLessThan(bright.lightLevel);
+    expect(bright.canopyLai).toBeGreaterThan(0);
+
+    const shade = await mountAt(page, { light: 0.18, soilWater: 0.75, tempC: 20 });
+    expect(shade.floorLight).toBeLessThan(bright.floorLight);
+    expect(shade.groundCover, 'deep shade must thin the understorey')
+      .toBeLessThan(bright.groundCover);
+    // …but never clear it entirely: bare earth under a dense canopy is the point,
+    // an empty frame is the defect this replaced.
+    expect(shade.groundCover).toBeGreaterThan(0);
+  });
+
+  test('a place writes real conditions, it is not a costume', async ({ page }) => {
+    // The engine has no biome term, so a rainforest/desert picker would be scenery the
+    // model cannot back — and would owe the same disclaimer the season panel carries.
+    // These presets write light/water/temperature the engine already models, so the
+    // limiting factor moves with them. That is what makes them honest.
+    await mount(page, 70, true);
+    const conds = page.locator('[data-tree-fullconds="true"]');
+    await conds.getByRole('button', { name: /Deep shade/ }).click();
+    await page.waitForTimeout(900);
+
+    const state = await page.evaluate(() => {
+      const d = (window as any).__toolData?.treeLab || {};
+      return { light: d.light, soilWater: d.soilWater, tempC: d.tempC };
+    });
+    expect(state.light).toBeCloseTo(0.18, 5);
+    expect(state.soilWater).toBeCloseTo(0.75, 5);
+    expect(state.tempC).toBe(20);
+
+    // And the consequence the student is meant to notice.
+    await expect(page.locator('[data-tree-fullhud="true"]').getByText(/Limiting now: Light/)).toBeVisible();
+  });
+
+  test('a dead tree reports no income and no limiting factor', async ({ page }) => {
+    // live.gross is computed from stored leafArea whether or not the tree is alive, so
+    // the panel used to show "This tree has died" and "Left to grow with 47 kg C" in
+    // the same column — a corpse with a healthy income, and a limiting-factor line
+    // inviting the student to go and fix it. Same claim-audit class as the post-mortem
+    // trusting a stale flag: a surface must not report a number its own state could
+    // not produce.
+    await page.setViewportSize({ width: 1400, height: 820 });
+    await page.goto(`${(harness as any).base}/__harness`);
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.treeLab, null, { timeout: 30000 });
+    await page.evaluate(() => {
+      const E = (window as any).__alloTreeLabEngine;
+      const sp = E.speciesById('oak');
+      let t = E.newTree('oak');
+      for (let i = 0; i < 70 && t.alive; i++) {
+        t = E.simulateYear(t, sp, { tempC: 22, light: 0.85, co2ppm: 420, soilWater: 0.75 },
+          { leaf: 0.3, root: 0.2, wood: 0.35, repro: 0.05, store: 0.1 });
+      }
+      t.alive = false; t.causeOfDeath = 'carbon_starvation';
+      (window as any).__mount({
+        treeLab: {
+          view: 'grow', speciesId: 'oak', tree: t, viewerFull: true, bandOverride: 'g68',
+          soilWater: 0.75, light: 0.85, co2ppm: 420, tempC: 22,
+        },
+      });
+    });
+    await page.waitForSelector('canvas', { timeout: 30000 });
+    await page.waitForTimeout(2600);
+
+    const hud = page.locator('[data-tree-fullhud="true"]');
+    await expect(hud.getByText(/This tree has died/)).toBeVisible();
+    await expect(hud.getByText(/Limiting now/)).toHaveCount(0);
+
+    const conds = page.locator('[data-tree-fullconds="true"]');
+    await expect(conds.getByText(/A dead tree makes no sugar/)).toBeVisible();
+    await expect(conds.getByText(/Nothing limits a dead tree/)).toBeVisible();
+    const text = (await conds.innerText()) || '';
+    expect(text, 'no fabricated income for a corpse').not.toMatch(/Left to grow with/);
+    expect(text).not.toMatch(/is the limit right now/);
+  });
+
   test('the camera frames the tree it is actually pointed at', async ({ page }) => {
     await mount(page, 90, true);
     const big = await page.evaluate(() => (window as any).__alloTreeLabCam);

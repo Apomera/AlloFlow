@@ -11354,7 +11354,6 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             probeHiddenSinceRef.current = null;
             setProbeElapsed(0);
           }
-          setBlendingProgress(0);
           setSoundChips([]);
           setShowSessionComplete(false);
           // Session recap/mastery spans adaptive activity transitions. It is

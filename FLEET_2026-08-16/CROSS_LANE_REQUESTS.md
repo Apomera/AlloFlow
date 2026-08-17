@@ -205,3 +205,98 @@ request done by appending ` (done by L<N>)` to its line. Do not delete lines.
   are `mind_map_module.js` (20) and `concept_graph_engine_module.js` (11); the other five
   modules report clean and are listed anyway as regression tests.
 - [W5 -> all] `stem_lab/stem_tool_birdlab.js` (+ its `desktop/web-app/public/` mirror) — Aaron asked me directly, mid-run, to improve the BirdLab bird art, so I have edited a file no wave-2 lane owns. Scope: the soaring flight sprites only (raven / Cooper's hawk / herring gull shared ONE moth-shaped silhouette across three code paths; now one `renderSoaringBird` + a `SOARING_FLIGHT_ART` table with three species-true shapes), plus the kingfisher hover wings. No scenery, no layout, no state. Stays inside the documented 30x30 sprite contract. `node dev-tools/birdlab_visual_qa.mjs` 83/402 exit 0, 47/47 birdlab tests, `verify:gate` exit 0, mirror byte-identical. Detail in `reports/W5_report.md`.
+- [W1 -> Aaron] Knowledge-graph follow-up work, done at your request outside the W1 brief.
+  **A real defect fixed:** `view_alignment_report_source.jsx:333` showed a green "no missing
+  prerequisites" whenever the audited standards resolved and no gaps were found. Only
+  `ccss-math` carries `buildsTowards` edges (757); `ccss-ela` and `ma-science-grade-5` have
+  **zero**. So every ELA and science audit met that condition by having no data, and printed a
+  green all-clear about sequencing that was never checked. Now split into a true green case and
+  a neutral "prerequisite check not available" case, using the `prerequisiteCount` the provider
+  already returned. Source edited, `_build_view_alignment_report_module.js` re-run, public mirror
+  matches. Same class as your commit `3e2dc6826`.
+  Also: `mind_map_module.js` alignment-graph panel fully localized (30 new `alignment_graph.*`
+  keys in `ui_strings.js`, scanner 20 -> 10 for that file), public mirror synced.
+  `LEARNING_WEB_KNOWLEDGE_GRAPH_HANDOFF.md` updated with all of it.
+- [W1 -> Aaron] Ran `dev-tools/profile_learning_commons_export.cjs` against the real Learning
+  Commons v1.11.0 export (downloaded to scratchpad, sha256 verified against
+  `learning_commons_snapshot_manifest.json`, both matched, then deleted; nothing committed, per
+  the manifest's importer-only rule). Two results, both in
+  `LEARNING_WEB_KNOWLEDGE_GRAPH_HANDOFF.md`.
+  (1) OPEN QUESTION 2 CLOSED: `buildsTowards` is **757 across the entire export** and
+  `ccss-math.json` already holds all 757; `relatesTo` is 284 globally and ccss-math holds all
+  284. AlloFlow already has 100% of the progression edges that exist. ELA and science have none
+  upstream, so widening scope yields nothing, and prerequisite detection is permanently a CCSS
+  Math feature on this dataset.
+  (2) BIGGER: the binding constraint is the **node scope**, not the framework list. The export
+  has 137,380 `supports` edges (`LearningComponent -> StandardsFrameworkItem`, i.e. the learning
+  components this doc asks for and that AlloFlow currently approximates with hasChild), 25,113
+  `hasStandardAlignment` cross-framework crosswalk edges, and 52,807 curriculum-to-standard
+  links. All are discarded by the "descendants of one framework root" scope plus the
+  both-endpoints rule. Fixing that is an ingestion change in
+  `build_learning_commons_snapshot.cjs`, not a new dataset. Not attempted; it changes snapshot
+  size and the meaning of "in scope" and wants your call.
+- [Activities -> L8] `doc_pipeline_source.jsx` capability row for `brainstorm` (~line 454) — the notes still say "Exports as a readable idea set." Brainstorm items can now also be discussion kits and jigsaw activities (`kind` field); the export path routes those through `GenDispatcher.describeActivityItem` (see export_source.jsx ~1836), so exports are structured text with a teacher-only answer-key section. Suggested notes update: "Exports ideas, discussion kits, and jigsaw activities as readable structured text." Metadata only — no behavior change needed in your file.
+- [W1 -> Aaron] Learning-components ingestion implemented at your request (outside the W1 brief).
+  `dev-tools/build_learning_commons_snapshot.cjs` gained opt-in `--include-components`;
+  `standards_provider_module.js` `getLearningComponents` now prefers incoming `supports`
+  neighbours over the `hasChild` approximation and reports which via `edgeSource`. Public mirror
+  synced. Measured on the real export: CCSS Math goes 837/0/1877 -> 837 standards, **1,797
+  components**, 3,674 edges; 508 of 597 standards gain real components. MA science is unchanged
+  (no `supports` edges upstream). **Proven no-op when off:** rebuilding the shipped
+  ma-science-grade-5 scope reproduces contentDigest `5da6fb36ffb0933e` byte-identical.
+  `tests/standards_provider|component_coverage|prerequisite_gaps|enablement` 35/35 pass.
+  NOT done, both deliberate: no shipped snapshot rebuilt (data change, wants a reviewed commit),
+  and the `hasStandardAlignment` crosswalk still needs the resolvable/searchable fork decided.
+  Pre-existing failures seen while testing, NOT mine and NOT touched:
+  `tests/learning_commons_snapshot_builder.test.js` expects `__ALLO_LOCAL_STANDARDS_SNAPSHOT__`
+  but the builder emits the plural `..._SNAPSHOTS__` (identical at HEAD; my diff touches that
+  region 0 times), and `tests/standards_context_integration.test.js` asserts on
+  `generate_dispatcher_source.jsx` text that W5 is actively editing.
+- [W5 -> all] added `tests/e2e/33-birdlab-ispy-mobile.spec.ts` — a live Playwright mount of BirdLab I-Spy at 390x844. It found a real phone bug: the small-stage lens auto-focus crops to a 450x500 sector while the card kept the habitat 1.8 aspect and paints `slice`, so half the scene height was thrown away and the one bird marked `presence="visible"` sat 3px below the card, entirely clipped. Fixed in `stem_lab/stem_tool_birdlab.js` by giving the card the LENS aspect when the stage is small; desktop untouched. **If you write a mobile test against `GlHarness`, note its `#wrap` is `display:flex`** — that makes the tool root a non-shrinking flex item and fakes a 540px overflow the real host (a plain block div, `stem_lab_module.js:1560`) never produces. Add `#wrap{display:block}` first.
+- [W1 -> Aaron] Two hardening follow-ups to the knowledge-graph work, both API-level, no product
+  decision needed. (1) `getPrerequisiteGaps` now returns **`prerequisiteEdgesExamined`**, the
+  count of buildsTowards edges actually inspected. `missing.length === 0` has two opposite
+  meanings ("checked and complete" vs "nothing to check"), and only ccss-math has any
+  buildsTowards edges, so any caller reading only `missing.length` reports a clean bill of health
+  for a check that never ran. `view_alignment_report_source.jsx` now consumes the provider value
+  instead of re-deriving it, keeping a per-entry fallback for older snapshot/provider pairs;
+  module rebuilt, both mirrors synced. (2) Documented the **`getComponentCoverage` vs
+  `getLearningComponents` naming collision** in both function headers: same word "component",
+  different edge (`hasChild` sub-statements vs `supports` pedagogical nodes), different meaning.
+  Both already return `edgeSource`, so they were distinguishable programmatically; the risk was
+  someone "fixing" getComponentCoverage to use `supports` for symmetry, which would peg it at 0%
+  coverage forever. The comment says so explicitly. Behavioural proof of all three prerequisite
+  cases recorded; `tests/standards_*` 35/35 pass.
+- [W5 -> coordinator] **`word_sounds_module.js:11357` is a committed render crash.** `npm run verify:gate` now exits 1 at `check_render_refs`: `setBlendingProgress` is called there with **no declaration anywhere in the file**. Commit `f6262f166 "Dead state sweep: recallBank, blendingProgress, preloadProgress"` removed the `blendingProgress` useState and left the setter call behind. The file is clean against HEAD, so this is IN HEAD, not working-tree drift, and it will crash Word Sounds on render. Not mine and not in my ownership; reported per RULES section 4, not fixed and not bypassed. `check_render_refs` reports 0 findings in BirdLab.
+- [W1 -> Aaron] Two more items done at your request. (1) **ccss-math snapshot REBUILT with
+  --include-components**: 837 standards + 1,797 learning components + 3,674 edges, snapshotId
+  `...-components-4b041781e71aff57`, sourceIntegrity verified against the manifest before build,
+  control build first reproduced the shipped digest `f114e329749ca68b` exactly. Root + public
+  mirror synced; `sync_allosheet_assets --check` passes. **File grew 1.22 MB -> 2.49 MB** (bigger
+  than my earlier estimate; components carry long descriptions). Pre-change files backed up in
+  session scratchpad. TWO things for deploy: the loader pin `AlloFlowANTI.txt:11907`
+  (`ccss-math.js?v=e805fe3c7`) needs its usual restamp or clients keep the cached old snapshot,
+  and the CDN copy under `desktop/app-build`/`build` regenerates at build time.
+  (2) **The 46 new keys (storage.* 16, alignment_graph.* 30) hand-translated into all 63 packs**:
+  +5,796 values, additive-only, {size} placeholder validated, packs JSON-valid, manifest
+  regenerated, and all 46 keys blessed into the staleness baseline so future English rewording
+  flags them. My own new-key debt from today is now zero.
+- [W5 -> coordinator] `word_sounds_module.js:11357` render crash — **(done by W5, at Aaron's direct request after the owning session stopped)**. `setBlendingProgress(0)` was called with no declaration anywhere in the file; commit `f6262f166 "Dead state sweep"` removed the state and left this one call. It sat inside `startActivity`, which begins EVERY activity from 8 call sites, so any Word Sounds activity threw `ReferenceError`. Line deleted (the module has no `_source.jsx` pair, so it is the source), mirrored to `desktop/web-app/public/`. `check_render_refs` now exit 0. Note the word_sounds suite has 4 pre-existing failures that are NOT this: 2 are the 5-mirror byte-identity test tripping on **`ui_strings.js`** (W1's file, unsynced mirror), 2 are a missing `wsProgress` validator region in `AlloFlowANTI.txt`. Gate now fails further along on `educator_evaluation_source.jsx` (+7 hardcoded strings), another session's in-flight file.
+- [W1 -> Aaron] Priority queue from OPEN_ITEMS_W1 executed. (1) **B1 LIVE**: `check_lang_staleness`
+  gained `--gate-guarded` (8 protected namespaces, all verified stale-free first) and `--ratchet`
+  (watermark file `dev-tools/i18n/lang_staleness_watermark.json`, initialised 22930, auto-lowers).
+  Both failure paths PROVEN by poisoning a baseline hash / lowering the watermark (exit 1 each),
+  clean run exit 0; wired into `verify:gate` in package.json. (2) **B2 batch 1**: the 7 stale keys
+  in guarded namespaces were all the STEM->STEAM and Adapted Text renames; re-translated across
+  63 packs (882 values), EN em dashes in 2 launch_pad values fixed under lock, blessed; stale
+  count 23,364 -> 22,930. (3) **A1/A3 measured on the verified corpus**: crosswalk would pull
+  21,492 external partners for ccss-math / 2,388 for ELA (option C stays right, cost now known);
+  and **ccss-ela HAS 4,135 upstream learning components**, so (bonus, same proven procedure as
+  math incl. digest-verified control build) **ccss-ela REBUILT with --include-components**:
+  1,464 standards + 4,135 components + 5,598 edges, file 1.54 MB -> 4.42 MB (!), mirrors synced,
+  validation 0/0, same `?v=e805fe3c7` pin restamp needed at deploy. (4) **C1 DONE**: storage &
+  recovery panel in AlloFlowANTI.txt fully localized — 27 keys added (storage.* now 46 keys, all
+  blessed), concatenated sentences converted to placeholder keys, the retention-note em dash
+  removed, ANTI scanner 621 -> 594, panel range now ZERO findings. NOT mine: the gate currently
+  fails at another lane's new `scan_shell_i18n --all --gate` on `educator_evaluation_source.jsx`
+  (+6), which is their in-flight edit.

@@ -16,6 +16,108 @@ const AE_ONBOARDING_KEY = 'allo_educator_evaluation_onboarding_v1';
 const AE_EXPORT_KIND = 'alloflow-educator-evaluation-workspace';
 const AE_FRAMEWORK = 'pa-act13-classroom-2021';
 
+// ── Framework profiles (2026-08-16) ─────────────────────────────────────────
+// The summative engine was born hardcoded to Pennsylvania Act 13. Profiles
+// make the state framework a workspace configuration instead: PA stays the
+// default with byte-identical behavior; the Maine PEPG profile reflects that
+// Maine evaluation is governed by a LOCAL plan (20-A M.R.S.A. ch. 508 + DOE
+// Rule Ch. 180, steering committee with a teacher majority) — so its labels
+// ship as State-Model defaults with confirm-against-your-plan caveats, and its
+// two-category weights are entered by the district, never invented here.
+const AE_FRAMEWORKS = {
+  pa_act13: {
+    id: 'pa_act13',
+    name: 'Pennsylvania Act 13 (Danielson 2021)',
+    versionTag: 'pa-act13-classroom-2021',
+    practiceLabel: 'Observation & Practice',
+    practiceShort: 'O&P',
+    bands: [
+      { min: 2.5, label: 'Distinguished' },
+      { min: 1.5, label: 'Proficient' },
+      { min: 0.5, label: 'Needs Improvement' },
+      { min: 0, label: 'Failing' },
+    ],
+    domainWeighted: true, // 20/30/30/20 within practice, per 22 Pa. Code § 19.2a
+  },
+  portland_me: {
+    id: 'portland_me',
+    name: 'Portland ME (PEPG guidebook)',
+    versionTag: 'me-portland-pepg-guidebook-v1',
+    practiceLabel: 'Educator Practice',
+    practiceShort: 'EP',
+    // Verified from the district's Educator Evaluation Gradual Implementation
+    // Guidebook v1.0 (Portland Framework for Teaching): four levels —
+    // Excellent / Proficient / Novice-Needs Improvement / Unsatisfactory.
+    // The band thresholds below serve auxiliary numeric displays only; the
+    // guidebook's OFFICIAL practice roll-up is the categorical decision
+    // matrix implemented in aePortlandPracticeRating, not any average.
+    bands: [
+      { min: 2.5, label: 'Excellent' },
+      { min: 1.5, label: 'Proficient' },
+      { min: 0.5, label: 'Novice/Needs Improvement' },
+      { min: 0, label: 'Unsatisfactory' },
+    ],
+    ratingLabels: { 0: 'Unsatisfactory', 1: 'Novice/Needs Improvement', 2: 'Proficient', 3: 'Excellent' },
+    domainWeighted: false,
+    categoricalRollup: true,
+    // Portland Framework for Teaching, Table 1 (22 components).
+    components: {
+      d1: [['1a', 'Demonstrating Knowledge of Content and Pedagogy'], ['1b', 'Demonstrating Knowledge of Students'], ['1c', 'Setting Instructional Outcomes'], ['1d', 'Demonstrating Knowledge of Resources'], ['1e', 'Designing Coherent Instruction'], ['1f', 'Designing Student Assessments']],
+      d2: [['2a', 'Creating an Environment of Respect and Rapport'], ['2b', 'Establishing a Culture for Learning'], ['2c', 'Managing Classroom Procedures'], ['2d', 'Managing Student Behavior'], ['2e', 'Organizing Physical Space']],
+      d3: [['3a', 'Communicating with Students'], ['3b', 'Using Questioning and Discussion Techniques'], ['3c', 'Engaging Students in Learning'], ['3d', 'Using Assessment in Instruction'], ['3e', 'Demonstrating Flexibility and Responsiveness']],
+      d4: [['4a', 'Reflection on Teaching'], ['4b', 'Maintaining Accurate Records'], ['4c', 'Communicating with Families'], ['4d', 'Participating in a Professional Community'], ['4e', 'Growing and Developing Professionally'], ['4f', 'Showing Professionalism']],
+    },
+  },
+  maine_pepg: {
+    id: 'maine_pepg',
+    name: 'Maine PEPG (district plan governs)',
+    versionTag: 'me-pepg-local',
+    practiceLabel: 'Professional Practice',
+    practiceShort: 'PP',
+    // Default four-level labels follow the Maine State Model. The DISTRICT
+    // PEPG plan defines the official levels and cut points; these are display
+    // defaults, flagged as such everywhere they appear.
+    bands: [
+      { min: 2.5, label: 'Distinguished' },
+      { min: 1.5, label: 'Effective' },
+      { min: 0.5, label: 'Developing' },
+      { min: 0, label: 'Ineffective' },
+    ],
+    // Dropdown labels match the band vocabulary — otherwise a Maine evaluator
+    // rates with PA words and reads results in State-Model words.
+    ratingLabels: { 0: 'Ineffective', 1: 'Developing', 2: 'Effective', 3: 'Distinguished' },
+    domainWeighted: false, // no statutory within-practice weights; equal average, labeled as such
+  },
+};
+// Active-framework pointer: refreshed from workspace config at the top of the
+// panel render (and at normalize time), so the many small scoring/label
+// helpers keep their existing signatures. Single-workspace panel — the pointer
+// is always the rendering workspace's framework.
+// Guidebook v1.0 domain-to-practice operating principles, verbatim logic:
+// Excellent = two+ domains Excellent, remaining no lower than Proficient;
+// Unsatisfactory = any domain Unsatisfactory; Novice/Needs Improvement =
+// three+ domains at that level; otherwise Proficient. Returns the label and
+// the rule that fired, so the UI can show its work.
+function aePortlandPracticeRating(domains) {
+  const values = AE_DOMAINS.map((domain) => aeNumberOrNull(domains && domains[domain.id]));
+  if (values.some((value) => value === null)) return null;
+  const levels = values.map((value) => value >= 2.5 ? 3 : value >= 1.5 ? 2 : value >= 0.5 ? 1 : 0);
+  const count = (level) => levels.filter((item) => item === level).length;
+  if (count(0) > 0) return { label: 'Unsatisfactory', rule: 'any domain rated Unsatisfactory' };
+  if (count(3) >= 2 && levels.every((level) => level >= 2)) return { label: 'Excellent', rule: 'two or more domains Excellent, none below Proficient' };
+  if (count(1) >= 3) return { label: 'Novice/Needs Improvement', rule: 'three or more domains at Novice/Needs Improvement' };
+  return { label: 'Proficient', rule: 'no more than two domains below Proficient, none Unsatisfactory' };
+}
+
+let AE_ACTIVE_FW = { ...AE_FRAMEWORKS.pa_act13, practiceWeight: null };
+function aeSetActiveFramework(config) {
+  const profile = AE_FRAMEWORKS[config && config.frameworkProfile] || AE_FRAMEWORKS.pa_act13;
+  const rawWeight = config && config.pepgPracticeWeight;
+  const weight = rawWeight != null && String(rawWeight) !== '' && Number.isFinite(Number(rawWeight)) && Number(rawWeight) >= 0 && Number(rawWeight) <= 100 ? Math.round(Number(rawWeight)) : null;
+  AE_ACTIVE_FW = { ...profile, practiceWeight: profile.id === 'maine_pepg' ? weight : null };
+  return AE_ACTIVE_FW;
+}
+
 const AE_DOMAINS = [
   {
     id: 'd1', code: '1', label: 'Planning and Preparation', weight: 20, color: '#2563eb',
@@ -218,8 +320,13 @@ function aeNormalizeWorkspace(value) {
     evaluatorName: aeString(rawConfig.evaluatorName, 160, 'Principal'),
     evaluatorInitials: aeString(rawConfig.evaluatorInitials, 12, 'AP'),
     frameworkVersion: AE_FRAMEWORK,
+    frameworkProfile: AE_FRAMEWORKS[rawConfig.frameworkProfile] ? rawConfig.frameworkProfile : 'pa_act13',
+    pepgPracticeWeight: (() => { const raw = rawConfig.pepgPracticeWeight; if (raw == null || String(raw) === '') return null; const n = Number(raw); return Number.isFinite(n) && n >= 0 && n <= 100 ? Math.round(n) : null; })(),
     sampleMode: aeBoolean(rawConfig.sampleMode, false),
   };
+  // Keep the framework pointer honest for everything normalized below
+  // (weight snapshots, trend math) and for the render that follows.
+  aeSetActiveFramework(config);
   const usedTeacherIds = new Set();
   const teachers = (Array.isArray(value.teachers) ? value.teachers : []).filter(aePlainObject).slice(0, 1000).map((raw, index) => {
     let id = aeSafeId(raw.id, 'teacher-' + (index + 1));
@@ -252,6 +359,20 @@ function aeNormalizeWorkspace(value) {
         teacher: aeRatingValue(ratings.teacher),
         lea: aeRatingValue(ratings.lea),
       },
+      // Server-owned pointer to the released strengths-first summary shared to
+      // the educator's Drive; the portal ignores client-sent values on save.
+      releasedDoc: raw.releasedDoc && typeof raw.releasedDoc === 'object' ? {
+        url: aeString(raw.releasedDoc.url, 400, ''),
+        at: aeTimestamp(raw.releasedDoc.at),
+        by: aeString(raw.releasedDoc.by, 160, ''),
+        openedAt: aeTimestamp(raw.releasedDoc.openedAt),
+      } : null,
+      // Teacher-owned statement for the record; the portal adopts it only from
+      // the educator's own saves and freezes it at finalization.
+      educatorStatement: raw.educatorStatement && typeof raw.educatorStatement === 'object' && aeString(raw.educatorStatement.text, 20000, '') ? {
+        text: aeString(raw.educatorStatement.text, 20000, ''),
+        updatedAt: aeTimestamp(raw.educatorStatement.updatedAt),
+      } : null,
     };
   });
   const teacherIds = new Set(teachers.map((teacher) => teacher.id));
@@ -382,16 +503,109 @@ function aeSampleWorkspace() {
     mkTeacher(7, 'not_started', { employeeType: 'temporary', buildingData: false, teacherSpecificData: false }),
     mkTeacher(8, 'not_started', { buildingData: false }),
   ];
+  const iso = (daysAgo) => new Date(now - daysAgo * day).toISOString();
+  const dstr = (daysAgo) => iso(daysAgo).slice(0, 10);
+  const walkthroughs = [
+    { id: 'sample-w1', teacherId: teachers[0].id, createdAt: iso(55), date: dstr(55), startedAt: iso(55), durationMin: '10', announced: 'unannounced', lessonPhase: 'guided_practice', subject: 'Grade 4 Mathematics', evidence: 'At 10:14 students moved to guided practice in under a minute using the posted routine. Teacher circulated with a checklist and conferred with three students; the sentence-frame chart was referenced twice without prompting.', interpretation: 'Transition routine is well established. Possible discussion point: how checklist notes feed small-group planning.', componentTags: ['2C', '3D'], privacyChecked: true, observer: 'A. Principal', publishedAt: iso(55), teacherAcknowledgedAt: iso(54), version: 1 },
+    { id: 'sample-w2', teacherId: teachers[0].id, createdAt: iso(48), date: dstr(48), startedAt: iso(48), durationMin: '8', announced: 'announced', lessonPhase: 'opening', subject: 'Grade 4 Mathematics', evidence: 'Do-now was posted before entry; 21 of 24 students started within two minutes. The objective was read aloud and restated by a student volunteer.', interpretation: 'Strong opening routine. Wondered with the teacher about a quicker on-ramp for the three late starters.', componentTags: ['2B', '3A'], privacyChecked: true, observer: 'A. Principal', publishedAt: iso(48), teacherAcknowledgedAt: iso(47), version: 1 },
+    { id: 'sample-w3', teacherId: teachers[2].id, createdAt: iso(9), date: dstr(9), startedAt: iso(9), durationMin: '12', announced: 'unannounced', lessonPhase: 'independent_practice', subject: 'Grade 6 ELA', evidence: 'Independent reading with a conference rotation; teacher met two students with logged goals. A student referenced the discussion-norms anchor chart without prompting.', interpretation: 'Conference notes are specific and dated. Sharing the goal-logging routine at a team meeting could be a bright spot.', componentTags: ['2B', '3D'], privacyChecked: true, observer: 'J. Rivera', publishedAt: iso(9), version: 1 },
+    { id: 'sample-w4', teacherId: teachers[4].id, createdAt: iso(1), date: dstr(1), startedAt: iso(1), durationMin: '8', announced: 'unannounced', lessonPhase: 'middle', subject: 'Elementary Science', evidence: 'Draft notes: station rotation timing, journal use at stations 2 and 4.', interpretation: '', componentTags: ['2C'], privacyChecked: false, observer: 'A. Principal', version: 1 },
+  ];
+  const observations = [
+    { id: 'sample-f1', teacherId: teachers[0].id, createdAt: iso(45), updatedAt: iso(28), version: 3,
+      prework: { plan: 'Grade 4 fractions: compare unit fractions using one half as a benchmark; partner talk with number-line models, then independent practice.', outcomes: 'Students justify comparisons with a visual model and academic vocabulary (numerator, denominator, benchmark).', resources: 'Number-line strips, fraction cards, exit slip; co-planned supports for two students with IEP math goals.', assessment: 'Exit slip with two comparisons and a drawn model; conference notes for the small group.', artifactReferences: 'Unit 3 lesson plan (district curriculum portal, doc M4-U3-L7).' },
+      preConferenceNotes: 'Discussed pacing of partner talk and how supports for the small group will be staged.',
+      observedLocal: dstr(38),
+      evidence: 'At 9:12 the posted objective read "Compare fractions using 1/2 as a benchmark." Teacher modeled 3/8 versus 5/8 on the class number line; 22 of 24 students placed their cards within two minutes. During partner talk the teacher conferred with two pairs and recorded notes. Three students used the sentence-frame chart unprompted. Exit slips were collected at 9:54.',
+      reflection: 'Partner talk gave me clearer evidence than whole-group questioning. Next cycle I want to tighten the transition into independent practice, which took four minutes.',
+      postConferenceNotes: 'Agreed: keep the benchmark routine, trial a two-minute transition timer, revisit small-group composition after the next unit assessment.',
+      ratings: { d1: 2, d2: 3, d3: 2, d4: 2 },
+      rationales: { d1: 'Plan aligned outcomes, model, and assessment; supports for IEP goals were specific.', d2: 'Routines ran without teacher redirection; students initiated tools and frames on their own.', d3: 'Questioning pressed for justification with the benchmark; pacing of the closing transition is the growth edge.', d4: 'Reflection identified a concrete next step tied to observed evidence.' },
+      componentTags: ['1E', '2B', '3B', '3D'], privacyChecked: true, ackChecked: true,
+      preworkSubmittedAt: iso(42), preConferenceAt: iso(40), observedAt: iso(38), evidencePublishedAt: iso(36), reflectionSubmittedAt: iso(34), postConferenceAt: iso(32), evaluatorSignedAt: iso(30), teacherAcknowledgedAt: iso(29), finalizedAt: iso(28) },
+    { id: 'sample-f3', teacherId: teachers[2].id, createdAt: iso(20), updatedAt: iso(4), version: 2,
+      prework: { plan: 'Grade 6 ELA: text-dependent questions on a shared article; annotation routine, then structured discussion.', outcomes: 'Students cite two pieces of text evidence in discussion and in writing.', resources: 'Article set at three reading levels; discussion tracker.', assessment: 'Discussion tracker plus written-response rubric.', artifactReferences: '' },
+      preConferenceNotes: 'Teacher requested a focus on equitable talk time.',
+      observedLocal: dstr(12),
+      evidence: 'Annotation routine started at 10:03 with a two-minute model. The discussion tracker showed 14 of 26 students spoke at least once; teacher used cold-call cards for six students. Two table groups finished early without an extension task.',
+      reflection: 'The tracker data surprised me. I want a clearer plan for early finishers and quieter voices.',
+      postConferenceNotes: 'Reviewed the tracker together; agreed on an extension bin and a talk-goal routine for the next observed lesson.',
+      ratings: { d1: 2, d2: 2, d3: 2, d4: 2 },
+      rationales: { d1: 'Leveled texts matched the class profile.', d2: 'Routines were consistent; early-finisher structure is the gap.', d3: 'Cold-call broadened participation mid-lesson.', d4: 'Teacher brought their own tracker data to the conference.' },
+      componentTags: ['2C', '3B', '3C'], privacyChecked: true, ackChecked: false,
+      preworkSubmittedAt: iso(17), preConferenceAt: iso(15), observedAt: iso(12), evidencePublishedAt: iso(10), reflectionSubmittedAt: iso(8), postConferenceAt: iso(6), evaluatorSignedAt: iso(4) },
+    { id: 'sample-f4', teacherId: teachers[3].id, createdAt: iso(14), updatedAt: iso(3), version: 1,
+      prework: { plan: 'ELA writing conference cycle: mini-lesson on evidence-based claims, then individual conferences.', outcomes: 'Each conferred student names one revision they will make and why.', resources: 'Conference log, mentor texts.', assessment: 'Conference-log entries and revised drafts.', artifactReferences: '' },
+      preConferenceNotes: '', observedLocal: dstr(8),
+      evidence: 'Mini-lesson ran 9:31 to 9:39. Teacher held five conferences averaging four minutes; log entries captured a named revision for each. Two students off task during independent writing were redirected once each.',
+      reflection: 'Conferences felt rushed by the end. I may cut to four and protect the closing share.',
+      postConferenceNotes: '', ratings: { d1: null, d2: null, d3: null, d4: null }, rationales: { d1: '', d2: '', d3: '', d4: '' },
+      componentTags: ['3A', '3D'], privacyChecked: true, ackChecked: false,
+      preworkSubmittedAt: iso(12), preConferenceAt: iso(10), observedAt: iso(8), evidencePublishedAt: iso(6), reflectionSubmittedAt: iso(3) },
+    { id: 'sample-f5', teacherId: teachers[4].id, createdAt: iso(4), updatedAt: iso(2), version: 1,
+      prework: { plan: 'Elementary science: states-of-matter stations with observation journals.', outcomes: 'Students record one observation and one question per station.', resources: 'Four stations, journal pages, timer.', assessment: 'Journal check with a two-point scale.', artifactReferences: '' },
+      preConferenceNotes: '', observedLocal: '', evidence: '', reflection: '', postConferenceNotes: '',
+      ratings: { d1: null, d2: null, d3: null, d4: null }, rationales: { d1: '', d2: '', d3: '', d4: '' },
+      componentTags: [], privacyChecked: false, ackChecked: false,
+      preworkSubmittedAt: iso(2) },
+  ];
+  const spms = [
+    { id: 'sample-s1', teacherId: teachers[0].id, createdAt: iso(130), updatedAt: iso(30), status: 'locked', version: 2,
+      context: 'Grade 4 mathematics, 24 students, fractions and operations focus.',
+      baseline: 'Beginning-of-year district screener: 9 of 24 students at or above benchmark on the fraction strand.',
+      goal: 'By the spring administration, at least 17 of 24 students score at or above benchmark on the fraction strand.',
+      measures: 'District screener (fall, winter, spring) plus unit assessments.',
+      actionPlan: 'Benchmark-fraction routines three times weekly; small-group cycles regrouped after each unit assessment; family practice letters.',
+      results: 'Spring screener: 18 of 24 students at or above benchmark. A winter dip in one small group was addressed by regrouping.',
+      reflection: 'The regrouping cadence mattered more than total minutes. Keeping it next year.',
+      rating: 2.5, ratingRationale: 'Goal met, with documented midcourse adjustments.', approvedBy: 'A. Principal',
+      revisions: [{ version: 1, submittedAt: iso(120), context: '', baseline: '', goal: 'By spring, at least 15 of 24 students at or above benchmark on the fraction strand.', measures: '', actionPlan: '' }],
+      submittedAt: iso(120), firstOpenedAt: iso(119), approvedAt: iso(112), resultsSubmittedAt: iso(35), lockedAt: iso(30) },
+    { id: 'sample-s3', teacherId: teachers[2].id, createdAt: iso(16), updatedAt: iso(11), status: 'approved', version: 1,
+      context: 'Grade 6 ELA, 26 students, reading evidence and discussion focus.',
+      baseline: 'Fall writing sample: 11 of 26 students cited two or more pieces of text evidence.',
+      goal: 'By spring, at least 19 of 26 students cite two or more pieces of text evidence in an on-demand response.',
+      measures: 'Quarterly on-demand writing samples scored with the district rubric.',
+      actionPlan: 'Weekly annotation routine, discussion tracker with talk goals, and conference cycles for the six students furthest from benchmark.',
+      approvedBy: 'J. Rivera', revisions: [],
+      submittedAt: iso(13), firstOpenedAt: iso(12), approvedAt: iso(11) },
+    { id: 'sample-s4', teacherId: teachers[3].id, createdAt: iso(9), updatedAt: iso(3), status: 'submitted', version: 1,
+      context: 'ELA writing, two sections, 48 students total.',
+      baseline: 'Fall on-demand draft: 17 of 48 students met the evidence criterion on the district rubric.',
+      goal: 'By spring, at least 31 of 48 students meet the evidence criterion on the district rubric.',
+      measures: 'District rubric applied to fall, winter, and spring on-demand drafts, double-scored with a colleague.',
+      actionPlan: 'Conference cycle prioritized by rubric data; mentor-text mini-lessons; winter checkpoint added to catch drift early.',
+      revisions: [], submittedAt: iso(3), firstOpenedAt: iso(3) },
+  ];
+  const comments = [
+    { id: 'sample-c1', teacherId: teachers[0].id, recordType: 'formal_observation', recordId: 'sample-f1', text: 'The benchmark routine is one of the strongest I have seen this year. Would you be willing to share it at the October PLC?', role: 'Evaluator', author: 'A. Principal', at: iso(31), version: 1 },
+    { id: 'sample-c2', teacherId: teachers[0].id, recordType: 'formal_observation', recordId: 'sample-f1', text: 'Happy to. I will bring the number-line strips and the exit-slip data.', role: 'Teacher', author: 'Teacher 01', at: iso(30), version: 1 },
+    { id: 'sample-c3', teacherId: teachers[2].id, recordType: 'formal_observation', recordId: 'sample-f3', text: 'Ratings and rationales are ready for your review. The acknowledgment step is yours whenever you are ready.', role: 'Evaluator', author: 'A. Principal', at: iso(4), version: 1 },
+    { id: 'sample-c4', teacherId: teachers[3].id, recordType: 'spm', recordId: 'sample-s4', text: 'Submitted with the winter checkpoint added, as we discussed.', role: 'Teacher', author: 'Teacher 04', at: iso(3), version: 1 },
+  ];
   const workspace = aeNormalizeWorkspace({
-    config: { organization: 'Sample School District', building: 'Main Building', academicYear: '2026–27', evaluatorName: 'A. Principal', evaluatorInitials: 'AP', frameworkVersion: AE_FRAMEWORK, sampleMode: true },
-    teachers, walkthroughs: [], observations: [], spms: [], comments: [],
+    config: { organization: 'Sample School District', building: 'Main Building', academicYear: '2026–27', evaluatorName: 'A. Principal', evaluatorInitials: 'AP', frameworkVersion: AE_FRAMEWORK, frameworkProfile: 'pa_act13', pepgPracticeWeight: null, sampleMode: true },
+    teachers, walkthroughs, observations, spms, comments,
     cycleSnapshots: [
-      { id: 'sample-cycle-1a', teacherId: teachers[0].id, staffCodeSnapshot: teachers[0].code, academicYear: '2024–25', buildingSnapshot: teachers[0].building, employeeTypeSnapshot: 'professional', finalizedAt: new Date(now - 730 * day).toISOString(), finalScore: 2.08, domainRatings: { d1: 2, d2: 2, d3: 2, d4: 2 }, frameworkVersion: AE_FRAMEWORK },
-      { id: 'sample-cycle-1b', teacherId: teachers[0].id, staffCodeSnapshot: teachers[0].code, academicYear: '2025–26', buildingSnapshot: teachers[0].building, employeeTypeSnapshot: 'professional', finalizedAt: new Date(now - 365 * day).toISOString(), finalScore: 2.22, domainRatings: { d1: 2, d2: 2, d3: 2.5, d4: 2 }, frameworkVersion: AE_FRAMEWORK },
+      { id: 'sample-cycle-1a', teacherId: teachers[0].id, staffCodeSnapshot: teachers[0].code, academicYear: '2024–25', buildingSnapshot: teachers[0].building, employeeTypeSnapshot: 'professional', finalizedAt: '2025-06-12T20:30:00.000Z', finalScore: 2.08, domainRatings: { d1: 2, d2: 2, d3: 2, d4: 2 }, frameworkVersion: AE_FRAMEWORK },
+      { id: 'sample-cycle-1b', teacherId: teachers[0].id, staffCodeSnapshot: teachers[0].code, academicYear: '2025–26', buildingSnapshot: teachers[0].building, employeeTypeSnapshot: 'professional', finalizedAt: '2026-06-11T20:30:00.000Z', finalScore: 2.22, domainRatings: { d1: 2, d2: 2, d3: 2.5, d4: 2 }, frameworkVersion: AE_FRAMEWORK },
     ],
     audit: [
-      { id: 'sample-a1', teacherId: teachers[0].id, event: 'RELEASED', summary: 'Final evaluation released', actor: 'A. Principal', role: 'Evaluator', at: teachers[0].finalizedAt, entityType: 'evaluation', entityId: teachers[0].id, version: 1 },
-      { id: 'sample-a2', teacherId: teachers[1].id, event: 'RELEASED', summary: 'Final evaluation released', actor: 'A. Principal', role: 'Evaluator', at: teachers[1].finalizedAt, entityType: 'evaluation', entityId: teachers[1].id, version: 1 },
+      { id: 'sample-a1', teacherId: teachers[0].id, event: 'ASSIGNED', summary: 'Formal observation assigned', actor: 'A. Principal', role: 'Evaluator', at: iso(45), entityType: 'formal_observation', entityId: 'sample-f1', version: 1 },
+      { id: 'sample-a2', teacherId: teachers[0].id, event: 'PREWORK_SUBMITTED', summary: 'Prework submitted', actor: 'Teacher 01', role: 'Teacher', at: iso(42), entityType: 'formal_observation', entityId: 'sample-f1', version: 1 },
+      { id: 'sample-a3', teacherId: teachers[0].id, event: 'OBSERVED', summary: 'Observation completed', actor: 'A. Principal', role: 'Evaluator', at: iso(38), entityType: 'formal_observation', entityId: 'sample-f1', version: 1 },
+      { id: 'sample-a4', teacherId: teachers[0].id, event: 'EVIDENCE_PUBLISHED', summary: 'Observation evidence published to teacher', actor: 'A. Principal', role: 'Evaluator', at: iso(36), entityType: 'formal_observation', entityId: 'sample-f1', version: 1 },
+      { id: 'sample-a5', teacherId: teachers[0].id, event: 'REFLECTION_SUBMITTED', summary: 'Teacher reflection submitted', actor: 'Teacher 01', role: 'Teacher', at: iso(34), entityType: 'formal_observation', entityId: 'sample-f1', version: 1 },
+      { id: 'sample-a6', teacherId: teachers[0].id, event: 'SIGNED', summary: 'Ratings and rationales signed by evaluator', actor: 'A. Principal', role: 'Evaluator', at: iso(30), entityType: 'formal_observation', entityId: 'sample-f1', version: 2 },
+      { id: 'sample-a7', teacherId: teachers[0].id, event: 'SPM_LOCKED', summary: 'SPM results locked after review', actor: 'A. Principal', role: 'Evaluator', at: iso(30), entityType: 'spm', entityId: 'sample-s1', version: 2 },
+      { id: 'sample-a8', teacherId: teachers[0].id, event: 'ACKNOWLEDGED', summary: 'Teacher acknowledged the signed observation', actor: 'Teacher 01', role: 'Teacher', at: iso(29), entityType: 'formal_observation', entityId: 'sample-f1', version: 2 },
+      { id: 'sample-a9', teacherId: teachers[0].id, event: 'FINALIZED', summary: 'Formal observation finalized', actor: 'A. Principal', role: 'Evaluator', at: iso(28), entityType: 'formal_observation', entityId: 'sample-f1', version: 3 },
+      { id: 'sample-a10', teacherId: teachers[0].id, event: 'RELEASED', summary: 'Final evaluation released', actor: 'A. Principal', role: 'Evaluator', at: teachers[0].finalizedAt, entityType: 'evaluation', entityId: teachers[0].id, version: 1 },
+      { id: 'sample-a11', teacherId: teachers[1].id, event: 'RELEASED', summary: 'Final evaluation released', actor: 'A. Principal', role: 'Evaluator', at: teachers[1].finalizedAt, entityType: 'evaluation', entityId: teachers[1].id, version: 1 },
+      { id: 'sample-a12', teacherId: teachers[2].id, event: 'PUBLISHED', summary: 'Walkthrough published to teacher', actor: 'J. Rivera', role: 'Evaluator', at: iso(9), entityType: 'walkthrough', entityId: 'sample-w3', version: 1 },
+      { id: 'sample-a13', teacherId: teachers[2].id, event: 'SIGNED', summary: 'Ratings and rationales signed by evaluator', actor: 'A. Principal', role: 'Evaluator', at: iso(4), entityType: 'formal_observation', entityId: 'sample-f3', version: 2 },
+      { id: 'sample-a14', teacherId: teachers[3].id, event: 'SPM_SUBMITTED', summary: 'SPM submitted for approval', actor: 'Teacher 04', role: 'Teacher', at: iso(3), entityType: 'spm', entityId: 'sample-s4', version: 1 },
+      { id: 'sample-a15', teacherId: teachers[4].id, event: 'PREWORK_SUBMITTED', summary: 'Prework submitted', actor: 'Teacher 05', role: 'Teacher', at: iso(2), entityType: 'formal_observation', entityId: 'sample-f5', version: 1 },
     ],
   });
   return workspace;
@@ -399,7 +613,7 @@ function aeSampleWorkspace() {
 
 function aeBlankWorkspace() {
   return aeNormalizeWorkspace({
-    config: { organization: 'My School District', building: 'My School', academicYear: aeSchoolYear(), evaluatorName: 'Principal', evaluatorInitials: '', frameworkVersion: AE_FRAMEWORK, sampleMode: false },
+    config: { organization: 'My School District', building: 'My School', academicYear: aeSchoolYear(), evaluatorName: 'Principal', evaluatorInitials: '', frameworkVersion: AE_FRAMEWORK, frameworkProfile: 'pa_act13', pepgPracticeWeight: null, sampleMode: false },
     teachers: [], walkthroughs: [], observations: [], spms: [], comments: [], audit: [], cycleSnapshots: [],
   });
 }
@@ -407,6 +621,33 @@ function aeBlankWorkspace() {
 function aeWeightProfile(teacher) {
   const snapshot = teacher && aeSafeWeightSnapshot(teacher.weightSnapshot);
   if (snapshot) return snapshot;
+  if (AE_ACTIVE_FW.id === 'portland_me') {
+    // Guidebook v1.0 publishes the categorical practice roll-up but left the
+    // student-growth combination formula to later plan versions — so this
+    // profile shows practice only and defers the combined score to the
+    // district's current plan documents.
+    return [
+      { id: 'observation', label: 'Educator Practice (Portland Framework for Teaching)', short: 'EP', weight: 100, color: '#1d4ed8' },
+    ];
+  }
+  if (AE_ACTIVE_FW.id === 'maine_pepg') {
+    // Maine PEPG: two locally weighted categories — professional practice and
+    // student learning & growth. The split comes from the district's plan via
+    // configuration; until entered, practice shows 100% and the UI prompts for
+    // the plan's split rather than inventing one. The SLG measure reuses the
+    // generic `lea` rating slot.
+    const practice = AE_ACTIVE_FW.practiceWeight;
+    if (practice === null) return [
+      // A practice-only configuration is legitimate: since Maine's 2019
+      // amendments, student learning & growth measures are a district CHOICE,
+      // not a mandate. The About field sets a split only if the plan has one.
+      { id: 'observation', label: 'Professional Practice (100% — set an SLG split in About if your plan includes one)', short: 'PP', weight: 100, color: '#1d4ed8' },
+    ];
+    return [
+      { id: 'observation', label: 'Professional Practice', short: 'PP', weight: practice, color: '#1d4ed8' },
+      { id: 'lea', label: 'Student Learning & Growth', short: 'SLG', weight: 100 - practice, color: '#b45309' },
+    ].filter((item) => item.weight > 0);
+  }
   const temporary = teacher && teacher.employeeType === 'temporary';
   if (temporary) return [
     { id: 'observation', label: 'Observation & Practice', short: 'O&P', weight: 100, color: '#1d4ed8' },
@@ -428,16 +669,40 @@ function aeFreezeTeacherCycle(teacher) {
   teacher.weightSnapshot = aeWeightProfile(teacher).map((part) => ({
     id: part.id, label: part.label, short: part.short, weight: part.weight, color: part.color,
   }));
-  teacher.frameworkVersion = AE_FRAMEWORK;
+  teacher.frameworkVersion = AE_ACTIVE_FW.versionTag;
   teacher.cycleLockedAt = aeNow();
 }
 
 function aeNumberOrNull(value) {
   return aeRatingValue(value);
 }
+// Historical records must score under the framework they were created in —
+// a workspace profile switch may never move finalized history (domains
+// 3,2,2,3 = 2.40 weighted vs 2.50 equal-average crosses a band boundary).
+// PA-era tags (and all legacy/unknown stamps, which predate profiles) use the
+// statutory 20/30/30/20 weighting; me-* tags use the equal average.
+function aeObservationScoreFor(ratings, frameworkVersion) {
+  const domains = (ratings && ratings.domains) || {};
+  if (AE_DOMAINS.some((domain) => aeNumberOrNull(domains[domain.id]) === null)) return null;
+  const tag = String(frameworkVersion || '');
+  const weighted = !tag.startsWith('me-');
+  if (!weighted) {
+    const total = AE_DOMAINS.reduce((sum, domain) => sum + Math.round(aeNumberOrNull(domains[domain.id]) * 100), 0);
+    return total / (AE_DOMAINS.length * 100);
+  }
+  const scaled = AE_DOMAINS.reduce((sum, domain) => sum + Math.round(aeNumberOrNull(domains[domain.id]) * domain.weight * 100), 0);
+  return scaled / 10000;
+}
+
 function aeObservationScore(ratings) {
   const domains = (ratings && ratings.domains) || {};
   if (AE_DOMAINS.some((domain) => aeNumberOrNull(domains[domain.id]) === null)) return null;
+  if (!AE_ACTIVE_FW.domainWeighted) {
+    // No statutory within-practice weights in this framework: equal average,
+    // and the UI says so wherever the composite is explained.
+    const total = AE_DOMAINS.reduce((sum, domain) => sum + Math.round(aeNumberOrNull(domains[domain.id]) * 100), 0);
+    return total / (AE_DOMAINS.length * 100);
+  }
   const scaled = AE_DOMAINS.reduce((sum, domain) => sum + Math.round(aeNumberOrNull(domains[domain.id]) * domain.weight * 100), 0);
   return scaled / 10000;
 }
@@ -464,10 +729,8 @@ function aeRoundedScore(score) {
 function aeBand(score) {
   const n = aeRoundedScore(score);
   if (n === null) return null;
-  if (n >= 2.5) return 'Distinguished';
-  if (n >= 1.5) return 'Proficient';
-  if (n >= 0.5) return 'Needs Improvement';
-  return 'Failing';
+  const band = AE_ACTIVE_FW.bands.find((item) => n >= item.min);
+  return band ? band.label : AE_ACTIVE_FW.bands[AE_ACTIVE_FW.bands.length - 1].label;
 }
 
 function aeTeacherStatus(teacher) {
@@ -543,14 +806,14 @@ function aeTeacherTrendPoints(workspace, teacherId, filters) {
     const date = aeString(snapshot.finalizedAt, 10, '').slice(0, 10);
     points.push({
       teacherId, source: 'cycle_snapshot', recordId: snapshot.id, date,
-      academicYear: snapshot.academicYear || '', overall: aeObservationScore({ domains }),
+      academicYear: snapshot.academicYear || '', overall: aeObservationScoreFor({ domains }, snapshot.frameworkVersion),
       d1: aeRatingValue(domains.d1), d2: aeRatingValue(domains.d2), d3: aeRatingValue(domains.d3), d4: aeRatingValue(domains.d4),
     });
   });
   (workspace.observations || []).filter((observation) => observation.teacherId === teacherId && observation.finalizedAt).forEach((observation) => {
     const domains = observation.ratings || {};
     const date = aeString(observation.observedAt || observation.finalizedAt, 10, '').slice(0, 10);
-    const overall = aeObservationScore({ domains });
+    const overall = aeObservationScoreFor({ domains }, observation.frameworkVersion);
     if (overall === null) return;
     points.push({
       teacherId, source: 'formal_observation', recordId: observation.id, date,
@@ -715,11 +978,11 @@ function AeThread({ workspace, recordType, recordId, teacherId, role, onAdd }) {
 
 function AeFrameworkReference() {
   return <div className="ae-card">
-    <h3>Evidence map · Pennsylvania classroom-teacher framework</h3>
-    <p className="ae-sub">Component names organize evidence. Rubric-level performance descriptors are not reproduced in this workspace.</p>
+    <h3>{AE_ACTIVE_FW.id === 'pa_act13' ? 'Evidence map · Pennsylvania classroom-teacher framework' : 'Evidence map · rubric domains (as adapted by your district’s PEPG plan)'}</h3>
+    <p className="ae-sub">Component names organize evidence. Rubric-level performance descriptors are not reproduced in this workspace.{AE_ACTIVE_FW.id === 'pa_act13' ? '' : ' Confirm domain and component names against your district’s adapted rubric.'}</p>
     {AE_DOMAINS.map((domain) => <details className="ae-domain" key={domain.id}>
       <summary>Domain {domain.code} · {domain.label} <span className="ae-chip ae-chip-neutral">{domain.weight}% of O&amp;P</span></summary>
-      <div className="ae-domain-body">{domain.components.map(([code, label]) => <div className="ae-domain-component" key={code}><strong>{code}</strong><span>{label}</span></div>)}</div>
+      <div className="ae-domain-body">{((AE_ACTIVE_FW.components && AE_ACTIVE_FW.components[domain.id]) || domain.components).map(([code, label]) => <div className="ae-domain-component" key={code}><strong>{code}</strong><span>{label}</span></div>)}</div>
     </details>)}
   </div>;
 }
@@ -749,17 +1012,19 @@ function AeRatingComposer({ teacher, role, updateTeacher }) {
     draft.cycleStatus = 'finalized';
     draft.finalScore = aeRoundedScore(overall);
     draft.weightSnapshot = profile.map((part) => ({ id: part.id, label: part.label, weight: part.weight }));
-    draft.frameworkVersion = AE_FRAMEWORK;
+    draft.frameworkVersion = AE_ACTIVE_FW.versionTag;
   }, 'RELEASED', 'Final rating release recorded');
   return <div className="ae-card">
-    <div className="ae-record-head"><div><h3>Annual summative calculation preview</h3><p className="ae-sub">Enter cycle-level domain judgments after reviewing all relevant observations, walkthroughs, artifacts, and professional-practice evidence. Observation-specific ratings stay separate; the system performs arithmetic only.</p></div>
-      <div>{overall === null ? <span className="ae-chip ae-chip-amber">Draft · {missing.length} input{missing.length === 1 ? '' : 's'} missing</span> : <span className="ae-chip ae-chip-blue">{aeRoundedScore(overall).toFixed(2)} · {aeBand(overall)}</span>}</div>
+    <div className="ae-record-head"><div><h3>{role === 'evaluator' ? 'Annual summative calculation preview' : 'How your final rating is calculated'}</h3><p className="ae-sub">{role === 'evaluator'
+      ? 'Enter cycle-level domain judgments after reviewing all relevant observations, walkthroughs, artifacts, and professional-practice evidence. Observation-specific ratings stay separate; the system performs arithmetic only.'
+      : 'Full transparency into the arithmetic: these are the only inputs that enter your final rating, entered by your evaluator after reviewing your evidence. Nothing else affects the math.'}</p></div>
+      <div>{overall === null ? <span className={'ae-chip ' + (role === 'evaluator' ? 'ae-chip-amber' : 'ae-chip-neutral')}>{role === 'evaluator' ? 'Draft · ' + missing.length + ' input' + (missing.length === 1 ? '' : 's') + ' missing' : 'In progress · ' + missing.length + ' component' + (missing.length === 1 ? '' : 's') + ' still ahead in your cycle'}</span> : (AE_ACTIVE_FW.id === 'portland_me' ? <span className="ae-chip ae-chip-blue">{(aePortlandPracticeRating(teacher.ratings.domains) || {}).label}</span> : <span className="ae-chip ae-chip-blue">{aeRoundedScore(overall).toFixed(2)} · {aeBand(overall)}</span>)}</div>
     </div>
     <div className="ae-rating-grid" style={{ marginTop: 12 }}>
       {AE_DOMAINS.map((domain) => <div className="ae-rating-card" key={domain.id} style={{ borderTop: '4px solid ' + domain.color }}>
         <h4>{domain.code}. {domain.label} <span className="ae-chip ae-chip-neutral">{domain.weight}% of O&amp;P</span></h4>
         <label className="ae-field"><span>Human-selected rating</span><select className="ae-select" value={teacher.ratings.domains[domain.id] == null ? '' : teacher.ratings.domains[domain.id]} disabled={role !== 'evaluator' || !!teacher.finalizedAt} onChange={(event) => setRating(domain.id, event.target.value)}>
-          <option value="">Not rated</option>{AE_RATINGS.map((rating) => <option key={rating.value} value={rating.value}>{rating.value} · {rating.label}</option>)}
+          <option value="">Not rated</option>{AE_RATINGS.map((rating) => <option key={rating.value} value={rating.value}>{rating.value} · {(AE_ACTIVE_FW.ratingLabels && AE_ACTIVE_FW.ratingLabels[rating.value]) || rating.label}</option>)}
         </select></label>
       </div>)}
     </div>
@@ -768,10 +1033,30 @@ function AeRatingComposer({ teacher, role, updateTeacher }) {
         <input className="ae-input" type="number" min="0" max="3" step="0.01" value={teacher.ratings[part.id] == null ? '' : teacher.ratings[part.id]} disabled={role !== 'evaluator' || !!teacher.finalizedAt} onChange={(event) => setRating(part.id, event.target.value)} placeholder="0.00–3.00" />
       </label>)}
     </div>
-    <div className="ae-note ae-warn">This is a planning preview, not an official PDE 13-1 form. Follow your LEA’s approved process and enter/release the official summative form in PEERS or the district’s authorized record system.</div>
+    {AE_ACTIVE_FW.id === 'portland_me' && (() => { const rollup = aePortlandPracticeRating(teacher.ratings.domains); return rollup ? <div className="ae-note" style={{ marginTop: 10 }}><strong>Practice rating (guidebook roll-up): {rollup.label}</strong> — {rollup.rule}. The guidebook derives this rating from the four domain ratings by rule, not by averaging; the numeric average never appears on official Portland forms. Student growth combines per the district’s current plan documents. Confirm against the current PEPG plan — this mirrors guidebook v1.0.</div> : null; })()}
+    <div className="ae-note ae-warn">{AE_ACTIVE_FW.id === 'pa_act13' ? 'This is a planning preview, not an official PDE 13-1 form. Follow your LEA’s approved process and enter/release the official summative form in PEERS or the district’s authorized record system.' : 'This is a planning preview, not an official PEPG summative form. Your district’s PEPG plan (developed with its teacher-majority steering committee) governs the official process, rating levels, and forms — record the official summative rating in the district-authorized system.'}</div>
     {teacher.finalizedAt && <div className="ae-note ae-ok" style={{ marginTop: 10 }}><strong>Final release recorded · {Number(teacher.finalScore == null ? aeRoundedScore(overall) : teacher.finalScore).toFixed(2)}</strong><br/>Released {aeDateTime(teacher.finalizedAt)}. This local receipt does not replace the official record.</div>}
-    {!teacher.finalizedAt && role === 'evaluator' && overall !== null && <div style={{ marginTop: 12 }}><label className="ae-check"><input type="checkbox" checked={releaseChecked} onChange={(event) => setReleaseChecked(event.target.checked)}/><span>I confirm the official final rating form has already been released in PEERS or the LEA-authorized record system.</span></label><button type="button" className="ae-btn ae-btn-primary" disabled={!releaseChecked} onClick={recordFinalRelease}>Record final release</button><p className="ae-help">This locks the local cycle and advances the “teachers evaluated” completion pie.</p></div>}
+    {!teacher.finalizedAt && role === 'evaluator' && overall !== null && <div style={{ marginTop: 12 }}><label className="ae-check"><input type="checkbox" checked={releaseChecked} onChange={(event) => setReleaseChecked(event.target.checked)}/><span>{AE_ACTIVE_FW.id === 'pa_act13' ? 'I confirm the official final rating form has already been released in PEERS or the LEA-authorized record system.' : 'I confirm the official summative rating has already been recorded through the district-authorized PEPG process.'}</span></label><button type="button" className="ae-btn ae-btn-primary" disabled={!releaseChecked} onClick={recordFinalRelease}>Record final release</button><p className="ae-help">This locks the local cycle and advances the “teachers evaluated” completion pie.</p></div>}
   </div>;
+}
+
+function AeEducatorStatement({ teacher, role, updateTeacher }) {
+  const saved = (teacher.educatorStatement && teacher.educatorStatement.text) || '';
+  const [text, setText] = React.useState(saved);
+  React.useEffect(() => { setText((teacher.educatorStatement && teacher.educatorStatement.text) || ''); }, [teacher.id, teacher.educatorStatement && teacher.educatorStatement.updatedAt]);
+  const frozen = !!teacher.finalizedAt;
+  const isOwner = role === 'teacher';
+  if (!isOwner && !saved) return null;
+  return <section className="ae-card ae-span-12">
+    <div className="ae-record-head"><div><h3>{isOwner ? 'Your statement for the record' : 'Educator’s statement'}</h3><p className="ae-sub">{isOwner
+      ? 'Optional and in your own words: what you are proud of this year, and any context you want on the record. It appears verbatim — under "In your own words" — in your released evaluation summary, and no one can edit it but you.'
+      : 'Written by the educator; read-only for evaluators. It appears verbatim in the released summary.'}</p></div>
+      {frozen && <span className="ae-chip ae-chip-neutral">Frozen at finalization</span>}</div>
+    {isOwner && !frozen ? <>
+      <label className="ae-field"><span>Statement</span><textarea className="ae-textarea" style={{ minHeight: 110 }} maxLength={20000} value={text} onChange={(event) => setText(event.target.value)} placeholder="What I’m proud of this year… context I want alongside my ratings…"/></label>
+      <div className="ae-actions"><button type="button" className="ae-btn ae-btn-primary" disabled={text.trim() === saved.trim()} onClick={() => updateTeacher(teacher.id, (draft) => { const trimmed = text.trim(); draft.educatorStatement = trimmed ? { text: trimmed, updatedAt: aeNow() } : null; }, 'STATEMENT_SAVED', 'Educator statement updated')}>{saved ? 'Update statement' : 'Save statement'}</button>{saved && <span className="ae-sub">Last saved {aeDateTime(teacher.educatorStatement.updatedAt)}</span>}</div>
+    </> : (saved ? <div className="ae-evidence">{saved}</div> : <div className="ae-empty">No statement recorded before finalization.</div>)}
+  </section>;
 }
 
 function AeOverview({ workspace, selectedTeacher, setSelectedTeacherId, role, updateTeacher, setTab }) {
@@ -785,6 +1070,16 @@ function AeOverview({ workspace, selectedTeacher, setSelectedTeacherId, role, up
   const profile = selectedTeacher ? aeWeightProfile(selectedTeacher) : [];
   const profileLabel = selectedTeacher ? profile.map((part) => part.label + ' ' + part.weight + '%').join(', ') : '';
   const activeTeachers = visibleTeachers.filter((teacher) => teacher.active !== false);
+  // Coming-due workload bands (SpEd Timelines urgency pattern): open cycles
+  // only, keyed off each educator's due date. Descriptive triage, not a queue.
+  const today = aeToday();
+  const plusDays = (days) => { const date = new Date(); date.setDate(date.getDate() + days); return date.toISOString().slice(0, 10); };
+  const openWithDue = activeTeachers.filter((teacher) => !teacher.finalizedAt && teacher.dueDate);
+  const workload = {
+    overdue: openWithDue.filter((teacher) => teacher.dueDate < today).length,
+    soon: openWithDue.filter((teacher) => teacher.dueDate >= today && teacher.dueDate <= plusDays(14)).length,
+    month: openWithDue.filter((teacher) => teacher.dueDate > plusDays(14) && teacher.dueDate <= plusDays(30)).length,
+  };
   return <div className="ae-page">
     <div className="ae-heading"><div><h2>{isEvaluator ? 'Evaluation overview' : 'My evaluation'}</h2><p>Completion means the final rating record has been finalized—not that a walkthrough occurred.</p></div>
       {isEvaluator && <label className="ae-field" style={{ minWidth: 230, margin: 0 }}><span>Selected educator</span><select className="ae-select" value={selectedTeacher ? selectedTeacher.id : ''} onChange={(event) => setSelectedTeacherId(event.target.value)}>
@@ -792,6 +1087,11 @@ function AeOverview({ workspace, selectedTeacher, setSelectedTeacherId, role, up
       </select></label>}
     </div>
     <div className="ae-grid">
+      {isEvaluator && (workload.overdue > 0 || workload.soon > 0 || workload.month > 0) && <section className="ae-card ae-span-12" aria-labelledby="ae-workload-title"><h3 id="ae-workload-title">Coming due</h3><p className="ae-sub">Open cycles by due date. A band is triage for your calendar, not a judgment about anyone.</p><div className="ae-grid" style={{ marginTop: 10 }}>
+        <div className="ae-span-4 ae-stat" style={{ borderLeftColor: workload.overdue ? '#b91c1c' : undefined }}><strong>{workload.overdue}</strong><span>past due date</span></div>
+        <div className="ae-span-4 ae-stat" style={{ borderLeftColor: workload.soon ? '#b45309' : undefined }}><strong>{workload.soon}</strong><span>due within 14 days</span></div>
+        <div className="ae-span-4 ae-stat"><strong>{workload.month}</strong><span>due in 15–30 days</span></div>
+      </div></section>}
       {isEvaluator && <section className="ae-card ae-span-5" aria-labelledby="ae-completion-title"><h3 id="ae-completion-title">Teachers evaluated</h3><p className="ae-sub">Active educators due in {workspace.config.academicYear}</p>
         <AeDonut segments={completionSegments} centerTop={summary.finalized + ' / ' + summary.total} centerBottom="finalized" label={summary.finalized + ' of ' + summary.total + ' eligible teachers finalized; ' + summary.open + ' not finalized'} />
         <div className="ae-table-wrap" style={{ marginTop: 12 }}><table className="ae-table"><caption className="ae-live">Evaluation status counts</caption><thead><tr><th>Status</th><th>Teachers</th></tr></thead><tbody>
@@ -800,12 +1100,12 @@ function AeOverview({ workspace, selectedTeacher, setSelectedTeacherId, role, up
       </section>}
       <section className={'ae-card ' + (isEvaluator ? 'ae-span-7' : 'ae-span-12')} aria-labelledby="ae-composition-title"><h3 id="ae-composition-title">Weight in final evaluation</h3>
         {!selectedTeacher ? <div className="ae-empty"><strong>Choose an educator</strong><p>The pie recalculates by employee category and data availability.</p></div> : <>
-          <div className="ae-record-head"><p className="ae-sub">{selectedTeacher.name} · {selectedTeacher.employeeType === 'temporary' ? 'Temporary professional employee' : 'Professional classroom teacher'}</p><AeStatus status={aeTeacherStatus(selectedTeacher)} /></div>
-          <AeDonut segments={profile.map((part) => ({ id: part.id, label: part.label, value: part.weight, display: part.weight + '%', color: part.color }))} centerTop={profile[0] ? profile[0].weight + '%' : '—'} centerBottom="Observation & Practice" label={'Weight in final evaluation: ' + profileLabel} />
-          <div className="ae-note" style={{ marginTop: 10 }}>Within Observation &amp; Practice: Planning &amp; Preparation 20%, Classroom Environment 30%, Instruction 30%, Professional Responsibilities 20%.</div>
-          {selectedTeacher.employeeType === 'temporary' && <div className="ae-note ae-warn" style={{ marginTop: 8 }}>Temporary professional employee: this cycle uses 100% Observation &amp; Practice.</div>}
-          {selectedTeacher.employeeType !== 'temporary' && selectedTeacher.buildingData === false && <div className="ae-note ae-warn" style={{ marginTop: 8 }}>No Building Level Data: its 10% is reallocated to Observation &amp; Practice.</div>}
-          {selectedTeacher.employeeType !== 'temporary' && selectedTeacher.teacherSpecificData === false && <div className="ae-note ae-warn" style={{ marginTop: 8 }}>No attributable Teacher-Specific Data: its 10% is reallocated to the LEA Selected Measure.</div>}
+          <div className="ae-record-head"><p className="ae-sub">{selectedTeacher.name} · {selectedTeacher.employeeType === 'temporary' ? (AE_ACTIVE_FW.id === 'pa_act13' ? 'Temporary professional employee' : 'Probationary (years 1–3)') : (AE_ACTIVE_FW.id === 'pa_act13' ? 'Professional classroom teacher' : 'Continuing contract')}</p><AeStatus status={aeTeacherStatus(selectedTeacher)} /></div>
+          <AeDonut segments={profile.map((part) => ({ id: part.id, label: part.label, value: part.weight, display: part.weight + '%', color: part.color }))} centerTop={profile[0] ? profile[0].weight + '%' : '—'} centerBottom={AE_ACTIVE_FW.practiceLabel} label={'Weight in final evaluation: ' + profileLabel} />
+          <div className="ae-note" style={{ marginTop: 10 }}>{AE_ACTIVE_FW.id === 'pa_act13' ? <>Within Observation &amp; Practice: Planning &amp; Preparation 20%, Classroom Environment 30%, Instruction 30%, Professional Responsibilities 20%.</> : <>Within Professional Practice the four rubric domains average equally here; your district’s PEPG plan and adapted rubric govern any official aggregation.</>}</div>
+          {AE_ACTIVE_FW.id === 'pa_act13' && selectedTeacher.employeeType === 'temporary' && <div className="ae-note ae-warn" style={{ marginTop: 8 }}>Temporary professional employee: this cycle uses 100% Observation &amp; Practice.</div>}
+          {AE_ACTIVE_FW.id === 'pa_act13' && selectedTeacher.employeeType !== 'temporary' && selectedTeacher.buildingData === false && <div className="ae-note ae-warn" style={{ marginTop: 8 }}>No Building Level Data: its 10% is reallocated to Observation &amp; Practice.</div>}
+          {AE_ACTIVE_FW.id === 'pa_act13' && selectedTeacher.employeeType !== 'temporary' && selectedTeacher.teacherSpecificData === false && <div className="ae-note ae-warn" style={{ marginTop: 8 }}>No attributable Teacher-Specific Data: its 10% is reallocated to the LEA Selected Measure.</div>}
         </>}
       </section>
       {isEvaluator && <section className="ae-card ae-span-12"><div className="ae-record-head"><div><h3>Roster status</h3><p className="ae-sub">Select a row to open the educator’s working record.</p></div><button type="button" className="ae-btn" onClick={() => setTab('staff')}>Manage staff</button></div>
@@ -818,6 +1118,13 @@ function AeOverview({ workspace, selectedTeacher, setSelectedTeacherId, role, up
           })}
         </tbody></table></div>}
       </section>}
+      {selectedTeacher && AE_ACTIVE_FW.id === 'portland_me' && (() => {
+        const published = workspace.walkthroughs.filter((item) => item.teacherId === selectedTeacher.id && item.publishedAt).length;
+        const observed = workspace.observations.filter((item) => item.teacherId === selectedTeacher.id && item.evidencePublishedAt).length;
+        const pieces = published + observed;
+        return <section className="ae-card ae-span-12" aria-labelledby="ae-evidence-count-title"><h3 id="ae-evidence-count-title">Evidence collected this cycle</h3><div className="ae-grid" style={{ marginTop: 10 }}><div className="ae-span-4 ae-stat"><strong>{pieces}</strong><span>portal-tracked evidence pieces</span></div><div className="ae-span-8"><p className="ae-sub">The guidebook calls for at least nine pieces of evidence per cycle across the full range of practice — including an observation cycle, and possibly walk-throughs, student materials, parent communication, surveys, and team-meeting performance. This counter sees only what lives in this portal ({published} published walkthrough{published === 1 ? '' : 's'} + {observed} observation{observed === 1 ? '' : 's'} with published evidence); evidence gathered outside it counts toward the nine as well.</p></div></div></section>;
+      })()}
+      {selectedTeacher && <AeEducatorStatement teacher={selectedTeacher} role={role} updateTeacher={updateTeacher} />}
       {selectedTeacher && <section className="ae-span-12"><AeRatingComposer teacher={selectedTeacher} role={role} updateTeacher={updateTeacher} /></section>}
     </div>
   </div>;
@@ -846,7 +1153,7 @@ function AeTrends({ workspace, selectedTeacher, setSelectedTeacherId, role, isRe
   const [metric, setMetric] = React.useState('overall');
   const [from, setFrom] = React.useState('');
   const [to, setTo] = React.useState('');
-  const metricLabels = { overall: 'Overall O&P', d1: 'Planning & Preparation', d2: 'Classroom Environment', d3: 'Instruction', d4: 'Professional Responsibilities' };
+  const metricLabels = { overall: 'Overall ' + AE_ACTIVE_FW.practiceShort, d1: 'Planning & Preparation', d2: 'Classroom Environment', d3: 'Instruction', d4: 'Professional Responsibilities' };
   const filters = { from, to, source: 'formal_observation' };
   const points = selectedTeacher ? aeTeacherTrendPoints(workspace, selectedTeacher.id, filters) : [];
   const inRange = (value) => {
@@ -889,16 +1196,16 @@ function AeStaff({ workspace, selectedTeacher, setSelectedTeacherId, role, updat
     return hay.includes(search.toLowerCase()) && (statusFilter === 'all' || aeTeacherStatus(teacher) === statusFilter);
   });
   const set = (field, value) => updateTeacher(selectedTeacher.id, (draft) => { draft[field] = value; }, 'PROFILE_UPDATED', 'Educator assignment updated');
-  return <div className="ae-page"><div className="ae-heading"><div><h2>{isRemote ? 'Staff and cycle profiles' : 'Staff and evaluation assignments'}</h2><p>Configure the employee category and data availability that drive each educator’s Act 13 pie.</p></div>{role === 'evaluator' && canAddStaff && <button type="button" className="ae-btn ae-btn-primary" onClick={addTeacher}>+ Add educator</button>}</div>
+  return <div className="ae-page"><div className="ae-heading"><div><h2>{isRemote ? 'Staff and cycle profiles' : 'Staff and evaluation assignments'}</h2><p>{AE_ACTIVE_FW.id === 'pa_act13' ? 'Configure the employee category and data availability that drive each educator’s Act 13 pie.' : 'Configure each educator’s profile. Under the Maine PEPG profile, summative weights come from your district plan’s category split in About, not from these toggles.'}</p></div>{role === 'evaluator' && canAddStaff && <button type="button" className="ae-btn ae-btn-primary" onClick={addTeacher}>+ Add educator</button>}</div>
     <div className="ae-grid"><section className="ae-card ae-span-7"><div className="ae-toolbar"><input className="ae-input" type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search staff" aria-label="Search staff"/><select className="ae-select" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} aria-label="Filter by evaluation status"><option value="all">All statuses</option>{Object.keys(AE_STATUS_META).map((key) => <option key={key} value={key}>{AE_STATUS_META[key].label}</option>)}</select></div>
       <div className="ae-table-wrap"><table className="ae-table"><thead><tr><th>Educator</th><th>Employee type</th><th>Status</th><th>Due</th></tr></thead><tbody>{matches.map((teacher) => <tr key={teacher.id}><td><button type="button" className="ae-row-btn" onClick={() => setSelectedTeacherId(teacher.id)}>{teacher.name}</button><br/><span className="ae-sub">{teacher.code} · {teacher.assignment || 'No assignment'}</span></td><td>{teacher.employeeType === 'temporary' ? 'Temporary' : 'Professional'}</td><td><AeStatus status={aeTeacherStatus(teacher)} /></td><td>{aeDate(teacher.dueDate)}</td></tr>)}</tbody></table></div>
     </section><section className="ae-card ae-span-5"><h3>Selected educator</h3>{selectedTeacher && selectedTeacher.cycleLockedAt && <div className="ae-note ae-warn" style={{ marginBottom: 12 }}>Employee category, data availability, and framework weights were frozen when cycle work began ({aeDateTime(selectedTeacher.cycleLockedAt)}).</div>}{!selectedTeacher ? <div className="ae-empty">Select an educator to review the assignment.</div> : <fieldset disabled={role !== 'evaluator' || !!selectedTeacher.finalizedAt || !!selectedTeacher.cycleLockedAt} style={{ border: 0, padding: 0, margin: 0 }}>
       <div className="ae-form-grid"><label className="ae-field"><span>Name</span><input className="ae-input" value={selectedTeacher.name} onChange={(event) => set('name', event.target.value)} /></label><label className="ae-field"><span>Staff code</span><input className="ae-input" value={selectedTeacher.code} onChange={(event) => set('code', event.target.value)} /></label></div>
       <label className="ae-field"><span>Assignment</span><input className="ae-input" value={selectedTeacher.assignment || ''} onChange={(event) => set('assignment', event.target.value)} placeholder="Grade / subject / role" /></label>
       <div className="ae-form-grid"><label className="ae-field"><span>Building</span><input className="ae-input" value={selectedTeacher.building || ''} onChange={(event) => set('building', event.target.value)} /></label><label className="ae-field"><span>{isRemote ? 'Lead evaluator display label' : 'Lead evaluator'}</span><input className="ae-input" value={selectedTeacher.evaluator || ''} readOnly={isRemote} onChange={isRemote ? undefined : (event) => set('evaluator', event.target.value)} /></label></div>{isRemote && <div className="ae-note ae-warn" style={{ marginBottom: 12 }}><strong>Portal access is separate from this profile.</strong><br/>Evaluator assignments are managed by an authorized district administrator or IT. This display label does not grant or revoke access.</div>}
-      <div className="ae-form-grid"><label className="ae-field"><span>Employee type</span><select className="ae-select" value={selectedTeacher.employeeType} onChange={(event) => set('employeeType', event.target.value)}><option value="professional">Professional classroom teacher</option><option value="temporary">Temporary professional employee</option></select></label><label className="ae-field"><span>Cycle due date</span><input className="ae-input" type="date" value={selectedTeacher.dueDate || ''} onChange={(event) => set('dueDate', event.target.value)} /></label></div>
-      <label className="ae-check"><input type="checkbox" checked={selectedTeacher.buildingData !== false} onChange={(event) => set('buildingData', event.target.checked)} /><span>Building Level Data is available for this assignment.</span></label>
-      <label className="ae-check"><input type="checkbox" checked={selectedTeacher.teacherSpecificData !== false} onChange={(event) => set('teacherSpecificData', event.target.checked)} /><span>Teacher-Specific Data is attributable to this educator.</span></label>
+      <div className="ae-form-grid"><label className="ae-field"><span>{AE_ACTIVE_FW.id === 'pa_act13' ? 'Employee type' : 'Contract status'}</span><select className="ae-select" value={selectedTeacher.employeeType} onChange={(event) => set('employeeType', event.target.value)}><option value="professional">{AE_ACTIVE_FW.id === 'pa_act13' ? 'Professional classroom teacher' : 'Continuing contract'}</option><option value="temporary">{AE_ACTIVE_FW.id === 'pa_act13' ? 'Temporary professional employee' : 'Probationary (years 1–3)'}</option></select></label><label className="ae-field"><span>Cycle due date</span><input className="ae-input" type="date" value={selectedTeacher.dueDate || ''} onChange={(event) => set('dueDate', event.target.value)} /></label></div>
+      {AE_ACTIVE_FW.id === 'pa_act13' && <label className="ae-check"><input type="checkbox" checked={selectedTeacher.buildingData !== false} onChange={(event) => set('buildingData', event.target.checked)} /><span>Building Level Data is available for this assignment.</span></label>}
+      {AE_ACTIVE_FW.id === 'pa_act13' && <label className="ae-check"><input type="checkbox" checked={selectedTeacher.teacherSpecificData !== false} onChange={(event) => set('teacherSpecificData', event.target.checked)} /><span>Teacher-Specific Data is attributable to this educator.</span></label>}{!AE_ACTIVE_FW.id === 'pa_act13' && selectedTeacher.employeeType === 'temporary' && <div className="ae-note" style={{ marginTop: 8 }}>Probationary educators are evaluated at least once each year of the three-year probationary period, with more frequent observation cycles than continuing-contract educators (board policy GCOA; PEPG guidebook).</div>}
       <label className="ae-check"><input type="checkbox" checked={selectedTeacher.active !== false} onChange={(event) => set('active', event.target.checked)} /><span>Include in the current cycle denominator.</span></label>
       <div className="ae-note">Current pie: {aeWeightProfile(selectedTeacher).map((part) => part.short + ' ' + part.weight + '%').join(' · ')}</div>
     </fieldset>}</section></div>
@@ -907,7 +1214,7 @@ function AeStaff({ workspace, selectedTeacher, setSelectedTeacherId, role, updat
 
 function AeComponentChecks({ selected, onChange, disabled }) {
   const values = Array.isArray(selected) ? selected : [];
-  return <div><span className="ae-legend-label">Evidence tags</span>{AE_DOMAINS.map((domain) => <details className="ae-domain" key={domain.id}><summary>{domain.code}. {domain.label}</summary><div className="ae-domain-body">{domain.components.map(([code, label]) => <label className="ae-check" key={code}><input disabled={disabled} type="checkbox" checked={values.includes(code)} onChange={(event) => onChange(event.target.checked ? values.concat(code) : values.filter((item) => item !== code))}/><span><strong>{code}</strong> · {label}</span></label>)}</div></details>)}</div>;
+  return <div><span className="ae-legend-label">Evidence tags</span>{AE_DOMAINS.map((domain) => <details className="ae-domain" key={domain.id}><summary>{domain.code}. {domain.label}</summary><div className="ae-domain-body">{((AE_ACTIVE_FW.components && AE_ACTIVE_FW.components[domain.id]) || domain.components).map(([code, label]) => <label className="ae-check" key={code}><input disabled={disabled} type="checkbox" checked={values.includes(code)} onChange={(event) => onChange(event.target.checked ? values.concat(code) : values.filter((item) => item !== code))}/><span><strong>{code}</strong> · {label}</span></label>)}</div></details>)}</div>;
 }
 
 function AeWalkthroughs({ workspace, selectedTeacher, setSelectedTeacherId, role, createWalkthrough, publishWalkthrough, addComment, acknowledgeWalkthrough, isRemote = false }) {
@@ -938,14 +1245,14 @@ function AeWalkthroughs({ workspace, selectedTeacher, setSelectedTeacherId, role
       <label className="ae-field"><span>Duration (minutes)</span><input className="ae-input" type="number" min="1" max="180" value={draft.durationMin} onChange={(event) => setDraft(Object.assign({}, draft, { durationMin: event.target.value }))}/></label>
       <label className="ae-field"><span>Lesson phase</span><select className="ae-select" value={draft.lessonPhase} onChange={(event) => setDraft(Object.assign({}, draft, { lessonPhase: event.target.value }))}><option value="opening">Opening</option><option value="middle">Middle of lesson</option><option value="guided_practice">Guided practice</option><option value="independent_practice">Independent practice</option><option value="closure">Closure</option></select></label>
       <label className="ae-field"><span>Course / subject</span><input className="ae-input" value={draft.subject} onChange={(event) => setDraft(Object.assign({}, draft, { subject: event.target.value }))}/></label>
-    </div><label className="ae-field"><span>Directly witnessed evidence</span><textarea className="ae-textarea" value={draft.evidence} onChange={(event) => setDraft(Object.assign({}, draft, { evidence: event.target.value }))} placeholder="At 10:14, the teacher asked… Six students… The posted objective read…"/><span className="ae-help">Record observable words, actions, artifacts, and student responses. Avoid student names.</span></label>
+    </div><label className="ae-field"><span>Directly witnessed evidence</span><textarea className="ae-textarea" value={draft.evidence} onChange={(event) => setDraft(Object.assign({}, draft, { evidence: event.target.value }))} placeholder="At 10:14, the teacher asked… Six students… The posted objective read…"/><span className="ae-help">Record observable words, actions, artifacts, and student responses. Avoid student names.</span><span className="ae-help">If any of this evidence originates from a complaint by a parent, student, or other party, personnel-records rules (e.g., contract articles like Portland PEA Article 16.B) typically require the complaint be reduced to writing and promptly disclosed to the educator, with sources identified if discipline follows. State the complaint origin in the record itself.</span></label>
     <label className="ae-field"><span>Interpretation / feedback (separate)</span><textarea className="ae-textarea" value={draft.interpretation} onChange={(event) => setDraft(Object.assign({}, draft, { interpretation: event.target.value }))} placeholder="Possible strength, question, or area for discussion…"/></label>
     <AeComponentChecks selected={draft.componentTags} onChange={(componentTags) => setDraft(Object.assign({}, draft, { componentTags }))}/>
     <label className="ae-check"><input type="checkbox" checked={draft.privacyChecked} onChange={(event) => setDraft(Object.assign({}, draft, { privacyChecked: event.target.checked }))}/><span>I reviewed these notes and removed student-identifying information.</span></label>
     <div className="ae-actions"><button type="button" className="ae-btn" disabled={!draft.teacherId || !draft.evidence.trim()} onClick={() => submit(false)}>Save private draft</button><button type="button" className="ae-btn ae-btn-primary" disabled={!draft.teacherId || !draft.evidence.trim() || !draft.privacyChecked} onClick={() => submit(true)}>Publish to teacher</button></div>
     </section>}
     <div className="ae-grid"><section className="ae-card ae-span-5"><h3>Visit records</h3>{records.length === 0 ? <div className="ae-empty">No walkthroughs yet.</div> : records.map((record) => { const teacher = workspace.teachers.find((item) => item.id === record.teacherId); return <button type="button" key={record.id} className="ae-record" style={{ width: '100%', textAlign: 'left', cursor: 'pointer' }} onClick={() => { setOpenId(record.id); setSelectedTeacherId(record.teacherId); }}><div className="ae-record-head"><div><h4>{teacher ? teacher.name : 'Unknown educator'}</h4><div className="ae-meta"><span>{aeDate(record.date)}</span><span>{record.durationMin} min</span><span>{record.announced}</span></div></div><span className={'ae-chip ' + (record.publishedAt ? 'ae-chip-good' : 'ae-chip-neutral')}>{record.publishedAt ? 'Published' : 'Private draft'}</span></div><p className="ae-sub" style={{ marginTop: 8 }}>{record.evidence.slice(0, 120)}{record.evidence.length > 120 ? '…' : ''}</p></button>; })}</section>
-      <section className="ae-card ae-span-7"><h3>Walkthrough detail</h3>{!openId ? <div className="ae-empty">Choose a visit to review evidence and conversation.</div> : (() => { const record = records.find((item) => item.id === openId); if (!record) return <div className="ae-empty">Record not found.</div>; const teacher = workspace.teachers.find((item) => item.id === record.teacherId); return <><div className="ae-record-head"><div><h4>{teacher ? teacher.name : 'Unknown educator'} · {aeDate(record.date)}</h4><div className="ae-meta"><span>Started {aeDateTime(record.startedAt)}</span><span>{record.durationMin} minutes</span><span>{record.lessonPhase.replace(/_/g, ' ')}</span></div></div><span className={'ae-chip ' + (record.publishedAt ? 'ae-chip-good' : 'ae-chip-neutral')}>{record.publishedAt ? 'Published snapshot' : 'Private evaluator draft'}</span></div><h4>Directly witnessed evidence</h4><div className="ae-evidence">{record.evidence}</div>{record.interpretation && <><h4>Interpretation / feedback</h4><div className="ae-evidence ae-interpretation">{record.interpretation}</div></>}<div className="ae-chips">{record.componentTags.map((code) => <span className="ae-chip ae-chip-blue" key={code}>{code}</span>)}</div>{!record.publishedAt && role === 'evaluator' && <div className="ae-note ae-warn" style={{ marginTop: 12 }}><label className="ae-check"><input type="checkbox" checked={draftReleaseChecked} onChange={(event) => setDraftReleaseChecked(event.target.checked)}/><span>I reviewed this saved draft and removed student-identifying information.</span></label><button type="button" className="ae-btn ae-btn-primary" disabled={!draftReleaseChecked} onClick={() => { publishWalkthrough(record.id); setDraftReleaseChecked(false); }}>Publish saved draft to teacher</button></div>}{record.publishedAt && role === 'teacher' && !record.teacherAcknowledgedAt && <div style={{ marginTop: 12 }}><button type="button" className="ae-btn ae-btn-primary" onClick={() => acknowledgeWalkthrough(record.id)}>Acknowledge receipt</button><p className="ae-help">Acknowledgment records receipt, not agreement.</p></div>}{record.teacherAcknowledgedAt && <div className="ae-note ae-ok" style={{ marginTop: 12 }}>Teacher acknowledged receipt {aeDateTime(record.teacherAcknowledgedAt)}.</div>}{record.publishedAt && <AeThread workspace={workspace} recordType="walkthrough" recordId={record.id} teacherId={record.teacherId} role={role} onAdd={addComment}/>}</>; })()}</section>
+      <section className="ae-card ae-span-7"><h3>Walkthrough detail</h3>{!openId ? <div className="ae-empty">Choose a visit to review evidence and conversation.</div> : (() => { const record = records.find((item) => item.id === openId); if (!record) return <div className="ae-empty">Record not found.</div>; const teacher = workspace.teachers.find((item) => item.id === record.teacherId); return <><div className="ae-record-head"><div><h4>{teacher ? teacher.name : 'Unknown educator'} · {aeDate(record.date)}</h4><div className="ae-meta"><span>Started {aeDateTime(record.startedAt)}</span><span>{record.durationMin} minutes</span><span>{record.lessonPhase.replace(/_/g, ' ')}</span></div></div><span className={'ae-chip ' + (record.publishedAt ? 'ae-chip-good' : ((Date.now() - new Date(record.startedAt).getTime()) > 14 * 86400000 ? 'ae-chip-amber' : 'ae-chip-neutral'))}>{record.publishedAt ? 'Published snapshot' : ((Date.now() - new Date(record.startedAt).getTime()) > 14 * 86400000 ? 'Private draft · ' + Math.floor((Date.now() - new Date(record.startedAt).getTime()) / 86400000) + ' days unpublished' : 'Private evaluator draft')}</span></div><h4>Directly witnessed evidence</h4><div className="ae-evidence">{record.evidence}</div>{record.interpretation && <><h4>Interpretation / feedback</h4><div className="ae-evidence ae-interpretation">{record.interpretation}</div></>}<div className="ae-chips">{record.componentTags.map((code) => <span className="ae-chip ae-chip-blue" key={code}>{code}</span>)}</div>{!record.publishedAt && role === 'evaluator' && <div className="ae-note ae-warn" style={{ marginTop: 12 }}><label className="ae-check"><input type="checkbox" checked={draftReleaseChecked} onChange={(event) => setDraftReleaseChecked(event.target.checked)}/><span>I reviewed this saved draft and removed student-identifying information.</span></label><button type="button" className="ae-btn ae-btn-primary" disabled={!draftReleaseChecked} onClick={() => { publishWalkthrough(record.id); setDraftReleaseChecked(false); }}>Publish saved draft to teacher</button><p className="ae-help">Unpublished drafts never enter the educator’s record, documents, or trends — but they also sit outside the educator’s review rights. Publish promptly, or clear notes you do not intend to publish.</p></div>}{record.publishedAt && role === 'teacher' && !record.teacherAcknowledgedAt && <div style={{ marginTop: 12 }}><button type="button" className="ae-btn ae-btn-primary" onClick={() => acknowledgeWalkthrough(record.id)}>Acknowledge receipt</button><p className="ae-help">Acknowledgment records receipt, not agreement.</p></div>}{record.teacherAcknowledgedAt && <div className="ae-note ae-ok" style={{ marginTop: 12 }}>Teacher acknowledged receipt {aeDateTime(record.teacherAcknowledgedAt)}.</div>}{record.publishedAt && <AeThread workspace={workspace} recordType="walkthrough" recordId={record.id} teacherId={record.teacherId} role={role} onAdd={addComment}/>}</>; })()}</section>
     </div>
   </div>;
 }
@@ -992,12 +1299,12 @@ function AeFormalObservations({ workspace, selectedTeacher, setSelectedTeacherId
           {step === 1 && <div><h4>Teacher submission</h4><div className="ae-evidence">{active.prework && active.prework.plan}</div><h4>Expected outcomes</h4><div className="ae-evidence">{active.prework && active.prework.outcomes}</div>{role === 'evaluator' ? <><label className="ae-field"><span>Pre-conference notes</span><textarea className="ae-textarea" value={active.preConferenceNotes || ''} onChange={(event) => patch({ preConferenceNotes: event.target.value }, 'DRAFT_SAVED', 'Pre-conference notes updated')}/></label><button type="button" className="ae-btn ae-btn-primary" onClick={() => patch({ preConferenceAt: aeNow() }, 'CONFERENCED', 'Pre-conference completed')}>Mark pre-conference complete</button></> : <div className="ae-note">Submitted {aeDateTime(active.preworkSubmittedAt)}. Awaiting evaluator pre-conference.</div>}</div>}
           {step === 2 && role === 'evaluator' && <div><label className="ae-field"><span>Observation date and time</span><input className="ae-input" type="datetime-local" value={active.observedLocal || ''} onChange={(event) => patch({ observedLocal: event.target.value }, 'DRAFT_SAVED', 'Observation schedule updated')}/></label><button type="button" className="ae-btn ae-btn-primary" onClick={() => patch({ observedAt: active.observedLocal ? new Date(active.observedLocal).toISOString() : aeNow() }, 'OBSERVATION_STARTED', 'Formal observation started')}>Start observation</button></div>}
           {step === 2 && role === 'teacher' && <div className="ae-note">Pre-conference completed {aeDateTime(active.preConferenceAt)}. The evaluator will record observed evidence.</div>}
-          {step === 3 && role === 'evaluator' && <div><label className="ae-field"><span>Time-stamped factual evidence</span><textarea className="ae-textarea" style={{ minHeight: 180 }} value={active.evidence || ''} onChange={(event) => patch({ evidence: event.target.value }, 'DRAFT_SAVED', 'Observation evidence draft saved')} placeholder="10:04 — Posted learning outcome…\n10:11 — Students discussed…"/></label><AeComponentChecks selected={active.componentTags || []} onChange={(componentTags) => patch({ componentTags }, 'DRAFT_SAVED', 'Evidence tags updated')}/><label className="ae-check"><input type="checkbox" checked={!!active.privacyChecked} onChange={(event) => patch({ privacyChecked: event.target.checked }, 'DRAFT_SAVED', 'Privacy review updated')}/><span>I reviewed the evidence and removed student-identifying information.</span></label><button type="button" className="ae-btn ae-btn-primary" disabled={!active.evidence || !active.privacyChecked} onClick={() => patch({ evidencePublishedAt: aeNow() }, 'EVIDENCE_PUBLISHED', 'Formal observation evidence published')}>Publish evidence to teacher</button></div>}
+          {step === 3 && role === 'evaluator' && <div><label className="ae-field"><span>Time-stamped factual evidence</span><textarea className="ae-textarea" style={{ minHeight: 180 }} value={active.evidence || ''} onChange={(event) => patch({ evidence: event.target.value }, 'DRAFT_SAVED', 'Observation evidence draft saved')} placeholder="10:04 — Posted learning outcome…\n10:11 — Students discussed…"/><span className="ae-help">If any of this evidence originates from a complaint by a parent, student, or other party, personnel-records rules (e.g., contract articles like Portland PEA Article 16.B) typically require the complaint be reduced to writing and promptly disclosed to the educator, with sources identified if discipline follows. State the complaint origin in the record itself.</span></label><AeComponentChecks selected={active.componentTags || []} onChange={(componentTags) => patch({ componentTags }, 'DRAFT_SAVED', 'Evidence tags updated')}/><label className="ae-check"><input type="checkbox" checked={!!active.privacyChecked} onChange={(event) => patch({ privacyChecked: event.target.checked }, 'DRAFT_SAVED', 'Privacy review updated')}/><span>I reviewed the evidence and removed student-identifying information.</span></label><button type="button" className="ae-btn ae-btn-primary" disabled={!active.evidence || !active.privacyChecked} onClick={() => patch({ evidencePublishedAt: aeNow() }, 'EVIDENCE_PUBLISHED', 'Formal observation evidence published')}>Publish evidence to teacher</button></div>}
           {step === 3 && role === 'teacher' && <div className="ae-note">Formal observation is in progress. Evidence remains private until the evaluator publishes it.</div>}
           {step === 4 && <div><h4>Published evidence</h4><div className="ae-evidence">{active.evidence}</div><div className="ae-chips">{(active.componentTags || []).map((code) => <span className="ae-chip ae-chip-blue" key={code}>{code}</span>)}</div>{role === 'teacher' ? <><label className="ae-field"><span>Reflection / self-assessment</span><textarea className="ae-textarea" value={active.reflection || ''} onChange={(event) => patch({ reflection: event.target.value }, 'DRAFT_SAVED', 'Teacher reflection draft saved')} placeholder="What worked, what evidence supports that, and what would you change?"/></label><button type="button" className="ae-btn ae-btn-primary" disabled={!active.reflection} onClick={() => patch({ reflectionSubmittedAt: aeNow() }, 'SUBMITTED', 'Teacher reflection submitted')}>Submit reflection</button></> : <div className="ae-note">Awaiting teacher reflection. The evidence snapshot remains immutable; clarification belongs in the conversation.</div>}</div>}
           {step === 5 && role === 'evaluator' && <div><h4>Teacher reflection</h4><div className="ae-evidence">{active.reflection}</div><label className="ae-field"><span>Post-conference discussion and follow-up</span><textarea className="ae-textarea" value={active.postConferenceNotes || ''} onChange={(event) => patch({ postConferenceNotes: event.target.value }, 'DRAFT_SAVED', 'Post-conference notes updated')}/></label><button type="button" className="ae-btn ae-btn-primary" disabled={!active.postConferenceNotes} onClick={() => patch({ postConferenceAt: aeNow() }, 'CONFERENCED', 'Post-conference completed')}>Mark post-conference complete</button></div>}
           {step === 5 && role === 'teacher' && <div className="ae-note">Reflection submitted {aeDateTime(active.reflectionSubmittedAt)}. Awaiting the post-conference.</div>}
-          {step === 6 && role === 'evaluator' && <div><div className="ae-note ae-warn">Assign each rating yourself and enter an evidence-linked rationale. The software performs arithmetic only.</div><div className="ae-rating-grid" style={{ marginTop: 12 }}>{AE_DOMAINS.map((domain) => <div className="ae-rating-card" key={domain.id}><h4>{domain.code}. {domain.label}</h4><label className="ae-field"><span>Rating</span><select className="ae-select" value={(active.ratings && active.ratings[domain.id]) == null ? '' : active.ratings[domain.id]} onChange={(event) => patch({ ratings: Object.assign({}, active.ratings, { [domain.id]: event.target.value === '' ? null : Number(event.target.value) }) }, 'RATING_UPDATED', 'Formal observation rating updated')}><option value="">Not rated</option>{AE_RATINGS.map((rating) => <option key={rating.value} value={rating.value}>{rating.value} · {rating.label}</option>)}</select></label><label className="ae-field"><span>Rationale</span><textarea className="ae-textarea" style={{ minHeight: 82 }} value={(active.rationales && active.rationales[domain.id]) || ''} onChange={(event) => patch({ rationales: Object.assign({}, active.rationales, { [domain.id]: event.target.value }) }, 'DRAFT_SAVED', 'Rating rationale updated')}/></label></div>)}</div><button type="button" className="ae-btn ae-btn-primary" disabled={AE_DOMAINS.some((domain) => !active.ratings || active.ratings[domain.id] == null || !active.rationales || !active.rationales[domain.id])} onClick={() => patch({ evaluatorSignedAt: aeNow() }, 'SIGNED', 'Evaluator signed formal observation')}>Sign evaluator assessment</button></div>}
+          {step === 6 && role === 'evaluator' && <div><div className="ae-note ae-warn">Assign each rating yourself and enter an evidence-linked rationale. The software performs arithmetic only.</div><div className="ae-rating-grid" style={{ marginTop: 12 }}>{AE_DOMAINS.map((domain) => <div className="ae-rating-card" key={domain.id}><h4>{domain.code}. {domain.label}</h4><label className="ae-field"><span>Rating</span><select className="ae-select" value={(active.ratings && active.ratings[domain.id]) == null ? '' : active.ratings[domain.id]} onChange={(event) => patch({ ratings: Object.assign({}, active.ratings, { [domain.id]: event.target.value === '' ? null : Number(event.target.value) }) }, 'RATING_UPDATED', 'Formal observation rating updated')}><option value="">Not rated</option>{AE_RATINGS.map((rating) => <option key={rating.value} value={rating.value}>{rating.value} · {(AE_ACTIVE_FW.ratingLabels && AE_ACTIVE_FW.ratingLabels[rating.value]) || rating.label}</option>)}</select></label><label className="ae-field"><span>Rationale</span><textarea className="ae-textarea" style={{ minHeight: 82 }} value={(active.rationales && active.rationales[domain.id]) || ''} onChange={(event) => patch({ rationales: Object.assign({}, active.rationales, { [domain.id]: event.target.value }) }, 'DRAFT_SAVED', 'Rating rationale updated')}/></label></div>)}</div><button type="button" className="ae-btn ae-btn-primary" disabled={AE_DOMAINS.some((domain) => !active.ratings || active.ratings[domain.id] == null || !active.rationales || !active.rationales[domain.id])} onClick={() => patch({ evaluatorSignedAt: aeNow() }, 'SIGNED', 'Evaluator signed formal observation')}>Sign evaluator assessment</button></div>}
           {step === 6 && role === 'teacher' && <div className="ae-note">Post-conference completed {aeDateTime(active.postConferenceAt)}. Awaiting evaluator ratings and rationale.</div>}
           {step === 7 && role === 'teacher' && <div><h4>Evaluator assessment</h4><div className="ae-rating-grid">{AE_DOMAINS.map((domain) => <div className="ae-rating-card" key={domain.id}><h4>{domain.label}</h4><div className="ae-score">{active.ratings[domain.id]}</div><p className="ae-sub">{aeRatingLabel(active.ratings[domain.id])}</p><p>{active.rationales[domain.id]}</p></div>)}</div><label className="ae-check"><input type="checkbox" checked={!!active.ackChecked} onChange={(event) => patch({ ackChecked: event.target.checked }, 'DRAFT_SAVED', 'Acknowledgment confirmation updated')}/><span>I received this record and had an opportunity to discuss it. I understand acknowledgment does not mean agreement.</span></label><button type="button" className="ae-btn ae-btn-primary" disabled={!active.ackChecked} onClick={() => patch({ teacherAcknowledgedAt: aeNow() }, 'ACKNOWLEDGED', 'Teacher acknowledged formal observation')}>Acknowledge receipt</button></div>}
           {step === 7 && role === 'evaluator' && <div className="ae-note">Evaluator signed {aeDateTime(active.evaluatorSignedAt)}. Awaiting teacher acknowledgment; acknowledgment does not indicate agreement.</div>}
@@ -1022,7 +1329,7 @@ function AeSpm({ workspace, selectedTeacher, setSelectedTeacherId, role, createS
   }, [active && active.id, active && active.status, role]);
   const patch = (changes, event, summary) => updateSpm(active.id, changes, event, summary);
   const canEditPlan = active && role === 'teacher' && ['draft', 'returned'].includes(active.status);
-  return <div className="ae-page"><div className="ae-heading"><div><h2>SPM / SLO</h2><p>Current Act 13 terminology is LEA Selected Measure · Student Performance Measure (SPM); SLO remains a familiar local alias.</p></div>{role === 'teacher' && selectedTeacher && !records.some((record) => record.teacherId === selectedTeacher.id) && <button type="button" className="ae-btn ae-btn-primary" onClick={() => setOpenId(createSpm(selectedTeacher.id))}>+ Start SPM proposal</button>}</div>
+  return <div className="ae-page"><div className="ae-heading"><div><h2>SPM / SLO</h2><p>{AE_ACTIVE_FW.id === 'pa_act13' ? 'Current Act 13 terminology is LEA Selected Measure · Student Performance Measure (SPM); SLO remains a familiar local alias.' : 'Under Maine PEPG this record holds the Student Learning &amp; Growth measure; SPM/SLO remain familiar aliases.'}</p></div>{role === 'teacher' && selectedTeacher && !records.some((record) => record.teacherId === selectedTeacher.id) && <button type="button" className="ae-btn ae-btn-primary" onClick={() => setOpenId(createSpm(selectedTeacher.id))}>+ Start SPM proposal</button>}</div>
     {role === 'evaluator' ? <div className="ae-toolbar"><label className="ae-field" style={{ minWidth: 260, margin: 0 }}><span>Educator</span><select className="ae-select" value={selectedTeacher ? selectedTeacher.id : ''} onChange={(event) => { setSelectedTeacherId(event.target.value); const found = workspace.spms.find((record) => record.teacherId === event.target.value); setOpenId(found ? found.id : ''); }}><option value="">Choose an educator</option>{teachers.map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.name} · {teacher.code}</option>)}</select></label></div> : selectedTeacher && <div className="ae-note">Viewing records for {selectedTeacher.name} · {selectedTeacher.code}</div>}
     {!active ? <div className="ae-card ae-empty">{selectedTeacher ? (role === 'teacher' ? 'Start a proposal for the selected educator.' : 'No SPM has been submitted for this educator.') : 'Choose an educator.'}</div> : (() => { const teacher = workspace.teachers.find((item) => item.id === active.teacherId); return <div className="ae-grid"><section className="ae-card ae-span-7"><div className="ae-record-head"><div><h3>{teacher ? teacher.name : 'Educator'} · SPM plan</h3><p className="ae-sub">Version {active.version || 1} · created {aeDateTime(active.createdAt)}</p></div><span className="ae-chip ae-chip-blue">{active.status.replace(/_/g, ' ')}</span></div>
       {active.returnReason && <div className="ae-note ae-danger" style={{ marginTop: 12 }}><strong>Returned for revision:</strong> {active.returnReason}</div>}
@@ -1032,7 +1339,7 @@ function AeSpm({ workspace, selectedTeacher, setSelectedTeacherId, role, createS
       {active.status === 'submitted' && role === 'teacher' && <div className="ae-note" style={{ marginTop: 12 }}>Submitted {aeDateTime(active.submittedAt)}. Awaiting evaluator action.</div>}
       {active.status === 'approved' && role === 'teacher' && <div style={{ marginTop: 14 }}><div className="ae-note ae-ok">Plan approved by {active.approvedBy} {aeDateTime(active.approvedAt)}.</div><label className="ae-field"><span>Year-end results</span><textarea className="ae-textarea" value={active.results || ''} onChange={(event) => patch({ results: event.target.value }, 'DRAFT_SAVED', 'SPM results draft saved')}/></label><label className="ae-field"><span>Teacher reflection</span><textarea className="ae-textarea" value={active.reflection || ''} onChange={(event) => patch({ reflection: event.target.value }, 'DRAFT_SAVED', 'SPM reflection draft saved')}/></label><button type="button" className="ae-btn ae-btn-primary" disabled={!active.results || !active.reflection} onClick={() => patch({ status: 'results_submitted', resultsSubmittedAt: aeNow() }, 'SUBMITTED', 'SPM results submitted')}>Submit results and reflection</button></div>}
       {active.status === 'approved' && role === 'evaluator' && <div className="ae-note ae-ok" style={{ marginTop: 12 }}>Plan approved. Awaiting year-end results from the teacher.</div>}
-      {active.status === 'results_submitted' && role === 'evaluator' && <div style={{ marginTop: 14 }}><h4>Year-end results</h4><div className="ae-evidence">{active.results}</div><h4>Teacher reflection</h4><div className="ae-evidence">{active.reflection}</div><label className="ae-field"><span>Human-selected SPM rating</span><select className="ae-select" value={active.rating == null ? '' : active.rating} onChange={(event) => patch({ rating: event.target.value === '' ? null : Number(event.target.value) }, 'RATING_UPDATED', 'SPM rating updated')}><option value="">Not rated</option>{AE_RATINGS.map((rating) => <option value={rating.value} key={rating.value}>{rating.value} · {rating.label}</option>)}</select></label><label className="ae-field"><span>Rating rationale</span><textarea className="ae-textarea" value={active.ratingRationale || ''} onChange={(event) => patch({ ratingRationale: event.target.value }, 'DRAFT_SAVED', 'SPM rating rationale updated')}/></label><button type="button" className="ae-btn ae-btn-primary" disabled={active.rating == null || !active.ratingRationale} onClick={() => { updateTeacher(active.teacherId, (draft) => { draft.ratings.lea = active.rating; }, 'RATING_UPDATED', 'LEA Selected Measure rating recorded'); patch({ status: 'locked', lockedAt: aeNow() }, 'FINALIZED', 'SPM record rated and locked'); }}>Rate and lock record</button></div>}
+      {active.status === 'results_submitted' && role === 'evaluator' && <div style={{ marginTop: 14 }}><h4>Year-end results</h4><div className="ae-evidence">{active.results}</div><h4>Teacher reflection</h4><div className="ae-evidence">{active.reflection}</div><label className="ae-field"><span>Human-selected SPM rating</span><select className="ae-select" value={active.rating == null ? '' : active.rating} onChange={(event) => patch({ rating: event.target.value === '' ? null : Number(event.target.value) }, 'RATING_UPDATED', 'SPM rating updated')}><option value="">Not rated</option>{AE_RATINGS.map((rating) => <option value={rating.value} key={rating.value}>{rating.value} · {(AE_ACTIVE_FW.ratingLabels && AE_ACTIVE_FW.ratingLabels[rating.value]) || rating.label}</option>)}</select></label><label className="ae-field"><span>Rating rationale</span><textarea className="ae-textarea" value={active.ratingRationale || ''} onChange={(event) => patch({ ratingRationale: event.target.value }, 'DRAFT_SAVED', 'SPM rating rationale updated')}/></label><button type="button" className="ae-btn ae-btn-primary" disabled={active.rating == null || !active.ratingRationale} onClick={() => { updateTeacher(active.teacherId, (draft) => { draft.ratings.lea = active.rating; }, 'RATING_UPDATED', 'LEA Selected Measure rating recorded'); patch({ status: 'locked', lockedAt: aeNow() }, 'FINALIZED', 'SPM record rated and locked'); }}>Rate and lock record</button></div>}
       {active.status === 'results_submitted' && role === 'teacher' && <div className="ae-note" style={{ marginTop: 12 }}>Results submitted {aeDateTime(active.resultsSubmittedAt)}. Awaiting evaluator rating.</div>}
       {active.status === 'locked' && <div className="ae-note ae-ok" style={{ marginTop: 12 }}><strong>Rated and locked · {active.rating} ({aeBand(active.rating)})</strong><br/>Locked {aeDateTime(active.lockedAt)}. Plan approval and final result rating remain separate audit events.</div>}
       <AeThread workspace={workspace} recordType="spm" recordId={active.id} teacherId={active.teacherId} role={role} onAdd={addComment}/>
@@ -1040,7 +1347,7 @@ function AeSpm({ workspace, selectedTeacher, setSelectedTeacherId, role, createS
   </div>;
 }
 
-function AeAuditExport({ workspace, selectedTeacher, exportWorkspace, exportCsv, exportSummary, importWorkspace, resetWorkspace, role, isRemote = false }) {
+function AeAuditExport({ workspace, selectedTeacher, exportWorkspace, exportCsv, exportSummary, exportGrowthSnapshot, importWorkspace, resetWorkspace, role, isRemote = false }) {
   const [filter, setFilter] = React.useState('selected');
   const [clearStep, setClearStep] = React.useState(false);
   const fileRef = React.useRef(null);
@@ -1051,31 +1358,65 @@ function AeAuditExport({ workspace, selectedTeacher, exportWorkspace, exportCsv,
     <div className="ae-grid">
       <section className={'ae-card ' + (isEvaluator ? 'ae-span-7' : 'ae-span-12')}>
         <div className="ae-record-head"><div><h3>Audit timeline</h3><p className="ae-sub">{isRemote ? 'This permission-filtered timeline is loaded from the district repository; the server owns the authoritative audit history.' : 'Local demonstration events; production requires server-side tamper-evident logs.'}</p></div>{isEvaluator && <select className="ae-select" style={{ width: 'auto' }} value={filter} onChange={(event) => setFilter(event.target.value)} aria-label="Filter audit timeline"><option value="selected">Selected educator</option><option value="all">All educators</option></select>}</div>
-        {events.length === 0 ? <div className="ae-empty">No matching audit events.</div> : <div className="ae-timeline">{events.slice(0, 150).map((event) => <div className="ae-event" key={event.id}><h4>{event.event.replace(/_/g, ' ')} · {event.summary}</h4><p>{event.actor} · {event.role} · {aeDateTime(event.at)}</p><p>{event.entityType} · version {event.version || 1}</p></div>)}</div>}
+        {events.length === 0 ? <div className="ae-empty">No matching audit events.</div> : <>{events.length > 150 && <p className="ae-sub">Showing the 150 most recent of {events.length} events; older history is not deleted and remains in the {isRemote ? 'district repository' : 'workspace export'}.</p>}<div className="ae-timeline">{events.slice(0, 150).map((event) => <div className="ae-event" key={event.id}><h4>{event.event.replace(/_/g, ' ')} · {event.summary}</h4><p>{event.actor} · {event.role} · {aeDateTime(event.at)}</p><p>{event.entityType} · version {event.version || 1}</p></div>)}</div></>}
       </section>
       {isRemote ? <section className="ae-card ae-span-12"><h3>District exports unavailable</h3><div className="ae-note ae-warn" style={{ marginTop: 12 }}><strong>District export policy not configured.</strong><br/>Downloads, imports, and reset are disabled for every portal role until the LEA approves an export policy and an audited server export workflow is implemented.</div></section> : isEvaluator ? <section className="ae-card ae-span-5">
         <h3>Export and transfer</h3>
         <p className="ae-sub">Exports can contain confidential personnel information. Store and transmit them only through district-authorized systems.</p>
-        <div className="ae-actions" style={{ marginTop: 12 }}><button type="button" className="ae-btn" onClick={exportWorkspace}>Export workspace JSON</button><button type="button" className="ae-btn" onClick={exportCsv}>Export status CSV</button><button type="button" className="ae-btn" disabled={!selectedTeacher} onClick={exportSummary}>Workflow summary HTML</button></div>
+        <div className="ae-actions" style={{ marginTop: 12 }}><button type="button" className="ae-btn" onClick={exportWorkspace}>Export workspace JSON</button><button type="button" className="ae-btn" onClick={exportCsv}>Export status CSV</button><button type="button" className="ae-btn" disabled={!selectedTeacher} onClick={exportSummary}>Workflow summary HTML</button><button type="button" className="ae-btn" disabled={!selectedTeacher} onClick={exportGrowthSnapshot} title="Formative, no ratings: published bright spots, evidence progress, and documentation coverage — identical for educator and evaluator.">Growth snapshot (formative)</button></div>
         <hr style={{ border: 0, borderTop: '1px solid #d8deea', margin: '18px 0' }}/>
         <h4>Import another device export</h4>
         <p className="ae-sub">Import replaces this local demonstration workspace after validation. Export first if you need a backup.</p>
         <button type="button" className="ae-btn" onClick={() => fileRef.current && fileRef.current.click()}>Choose JSON export</button>
         <input ref={fileRef} hidden tabIndex={-1} aria-label="Import evaluation workspace JSON" type="file" accept="application/json,.json" onChange={(event) => { const file = event.target.files && event.target.files[0]; if (file) importWorkspace(file); event.target.value = ''; }}/>
-        <div className="ae-note ae-warn" style={{ marginTop: 16 }}>This export assists front-end supervision work. PEERS or your LEA-authorized system remains the official summative rating record for this MVP.</div>
+        <div className="ae-note ae-warn" style={{ marginTop: 16 }}>This export assists front-end supervision work. {AE_ACTIVE_FW.id === 'pa_act13' ? 'PEERS or your LEA-authorized system' : 'Your district-authorized PEPG record system'} remains the official summative rating record for this MVP.</div>
         {workspace.config.sampleMode && <div style={{ marginTop: 18 }}><h4>Sample workspace</h4>{!clearStep ? <button type="button" className="ae-btn ae-btn-danger" onClick={() => setClearStep(true)}>Replace sample with blank workspace</button> : <div className="ae-note ae-danger"><strong>This removes all current local demonstration records.</strong><div className="ae-actions" style={{ marginTop: 8 }}><button className="ae-btn" type="button" onClick={() => setClearStep(false)}>Cancel</button><button className="ae-btn ae-btn-danger" type="button" onClick={() => { setClearStep(false); resetWorkspace(); }}>Confirm and start blank</button></div></div>}</div>}
-      </section> : <section className="ae-card ae-span-12"><h3>My copy</h3><p className="ae-sub">Download only the selected educator’s workflow summary.</p><button type="button" className="ae-btn" disabled={!selectedTeacher} onClick={exportSummary}>Download my summary HTML</button><div className="ae-note" style={{ marginTop: 12 }}>Teacher view cannot export or import the full workspace or view organization-wide audit events.</div></section>}
+      </section> : <section className="ae-card ae-span-12"><h3>My copy</h3><p className="ae-sub">Download only the selected educator’s workflow summary.</p><button type="button" className="ae-btn" disabled={!selectedTeacher} onClick={exportSummary}>Download my summary HTML</button><button type="button" className="ae-btn" disabled={!selectedTeacher} onClick={exportGrowthSnapshot}>Download my growth snapshot</button><div className="ae-note" style={{ marginTop: 12 }}>Teacher view cannot export or import the full workspace or view organization-wide audit events.</div></section>}
     </div>
   </div>;
 }
 
-function AeAbout({ workspace, updateConfig, role, isRemote = false, currentUser = null }) {
+function AeSetupHealth({ repository }) {
+  const [state, setState] = React.useState({ status: 'idle', result: null, error: '' });
+  const run = async () => {
+    if (state.status === 'running') return;
+    setState({ status: 'running', result: null, error: '' });
+    try {
+      const result = await repository.getSetupHealth();
+      if (!result || result.ok === false) throw new Error((result && (result.error || result.message)) || 'The setup health check could not run.');
+      setState({ status: 'done', result, error: '' });
+    } catch (error) {
+      setState({ status: 'error', result: null, error: String((error && error.message) || error) });
+    }
+  };
+  const checks = state.result && state.result.checks;
+  const rows = checks ? [
+    ['District domain configured', checks.allowedDomain ? 'Yes · ' + checks.allowedDomain : 'No — run setup with allowedDomain', !!checks.allowedDomain],
+    ['Portal web-app URL known', checks.webAppUrlConfigured ? 'Yes' : 'No — deploy as a web app and re-run setup', !!checks.webAppUrlConfigured],
+    ['Repository Drive folder reachable', checks.repositoryFolderAccessible ? 'Yes' : 'No — the service cannot open its own folder', !!checks.repositoryFolderAccessible],
+    ['Workspace integrity metadata', checks.workspaceMetadataIntact ? 'Intact · revision ' + checks.workspaceRevision : 'Missing — re-run setup as the bootstrap administrator', !!checks.workspaceMetadataIntact],
+    ['Active members', (checks.memberCounts.admin + ' admin · ' + checks.memberCounts.evaluator + ' evaluator · ' + checks.memberCounts.teacher + ' teacher' + (checks.memberCounts.inactive ? ' · ' + checks.memberCounts.inactive + ' inactive' : '')), checks.memberCounts.admin > 0],
+    ['Educators with a portal account', (checks.activeEducators - checks.educatorsWithoutMemberAccount) + ' of ' + checks.activeEducators + (checks.educatorsWithoutMemberAccount ? ' — ' + checks.educatorsWithoutMemberAccount + ' cannot sign in or receive shared summaries yet' : ''), checks.educatorsWithoutMemberAccount === 0],
+    ['Educators with an assigned evaluator', (checks.activeEducators - checks.educatorsWithoutEvaluatorAssignment) + ' of ' + checks.activeEducators + (checks.educatorsWithoutEvaluatorAssignment ? ' — assign evaluators before their cycles begin' : ''), checks.educatorsWithoutEvaluatorAssignment === 0],
+  ] : [];
+  return <section className="ae-card ae-span-12"><div className="ae-record-head"><div><h3>Setup health</h3><p className="ae-sub">The bootstrap verifications, without opening the script editor. Read-only; counts only, never member emails.</p></div>
+    <button type="button" className="ae-btn ae-btn-primary" disabled={state.status === 'running'} onClick={run}>{state.status === 'running' ? 'Checking…' : 'Run setup health check'}</button></div>
+    {state.status === 'error' && <div className="ae-note ae-danger" style={{ marginTop: 10 }}>{state.error}</div>}
+    {checks && <div className="ae-table-wrap" style={{ marginTop: 12 }}><table className="ae-table"><caption className="ae-live">Setup health results</caption><thead><tr><th scope="col">Check</th><th scope="col">Result</th><th scope="col">Status</th></tr></thead><tbody>
+      {rows.map(([label, detail, ok]) => <tr key={label}><th scope="row">{label}</th><td>{detail}</td><td>{ok ? <span className="ae-chip ae-chip-good">OK</span> : <span className="ae-chip ae-chip-amber">Needs attention</span>}</td></tr>)}
+    </tbody></table></div>}
+  </section>;
+}
+
+function AeAbout({ workspace, updateConfig, role, isRemote = false, currentUser = null, repository = null }) {
   const set = (field, value) => updateConfig(field, value);
   return <div className="ae-page">
     <div className="ae-heading"><div><h2>Setup, sources, and {isRemote ? 'district boundary' : 'production boundary'}</h2><p>{isRemote ? 'Review the authenticated repository boundary and the approvals that still belong to your district.' : 'Configure this local demonstration and review what is required before a school adopts it.'}</p></div></div>
     <div className="ae-grid">
-      <section className="ae-card ae-span-6"><h3>Workspace setup</h3><fieldset disabled={isRemote || role !== 'evaluator'} style={{ border: 0, padding: 0, margin: 0 }}><label className="ae-field"><span>Organization / LEA</span><input className="ae-input" value={workspace.config.organization} onChange={(event) => set('organization', event.target.value)}/></label><div className="ae-form-grid"><label className="ae-field"><span>Building</span><input className="ae-input" value={workspace.config.building} onChange={(event) => set('building', event.target.value)}/></label><label className="ae-field"><span>Academic year</span><input className="ae-input" value={workspace.config.academicYear} onChange={(event) => set('academicYear', event.target.value)}/></label><label className="ae-field"><span>Evaluator name</span><input className="ae-input" value={workspace.config.evaluatorName} onChange={(event) => set('evaluatorName', event.target.value)}/></label><label className="ae-field"><span>Evaluator initials</span><input className="ae-input" value={workspace.config.evaluatorInitials} onChange={(event) => set('evaluatorInitials', event.target.value)}/></label></div></fieldset>{isRemote && <div className="ae-note ae-warn" style={{ marginBottom: 12 }}>Portal configuration is read-only. An authorized district administrator or IT must use the reviewed setup process to change repository configuration.</div>}<div className="ae-note">Framework snapshot: Pennsylvania Act 13 classroom-teacher framework, June 2021. Full performance-level rubric text is not bundled.</div></section>
-      <section className="ae-card ae-span-6"><h3>Official references</h3><ul><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://www.pa.gov/agencies/education/programs-and-services/educators/educator-effectiveness">Pennsylvania Department of Education · Educator Effectiveness</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://www.pacodeandbulletin.gov/secure/pacode/data/022/chapter19/s19.2a.html">22 Pa. Code § 19.2a · Classroom teachers</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://www.pdesas.org/Page/Viewer/ViewPage/75">PDE/SAS Act 13 Toolkit</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://danielsongroup.org/the-framework-for-teaching/">Danielson Group · Framework access and licensing</a></li></ul><div className="ae-note ae-warn">The older 50% observation model is not the default current Act 13 classroom-teacher composition. This workspace uses assignment-aware 70/10/10/10, 80% O&amp;P where Building Level Data is unavailable, and 100% O&amp;P for temporary classroom teachers.</div></section>
+      <section className="ae-card ae-span-6"><h3>Workspace setup</h3><fieldset disabled={isRemote || role !== 'evaluator'} style={{ border: 0, padding: 0, margin: 0 }}><label className="ae-field"><span>Organization / LEA</span><input className="ae-input" value={workspace.config.organization} onChange={(event) => set('organization', event.target.value)}/></label><div className="ae-form-grid"><label className="ae-field"><span>Building</span><input className="ae-input" value={workspace.config.building} onChange={(event) => set('building', event.target.value)}/></label><label className="ae-field"><span>Academic year</span><input className="ae-input" value={workspace.config.academicYear} onChange={(event) => set('academicYear', event.target.value)}/></label><label className="ae-field"><span>Evaluator name</span><input className="ae-input" value={workspace.config.evaluatorName} onChange={(event) => set('evaluatorName', event.target.value)}/></label><label className="ae-field"><span>Evaluator initials</span><input className="ae-input" value={workspace.config.evaluatorInitials} onChange={(event) => set('evaluatorInitials', event.target.value)}/></label><label className="ae-field"><span>Evaluation framework</span><select className="ae-select" value={workspace.config.frameworkProfile || 'pa_act13'} onChange={(event) => set('frameworkProfile', event.target.value)}>{Object.keys(AE_FRAMEWORKS).map((id) => <option key={id} value={id}>{AE_FRAMEWORKS[id].name}</option>)}</select></label>{workspace.config.frameworkProfile === 'maine_pepg' && <label className="ae-field"><span>Professional Practice weight (%) — optional; SLG measures are a district choice under the 2019 amendments</span><input className="ae-input" type="number" min="0" max="100" step="1" value={workspace.config.pepgPracticeWeight == null ? '' : workspace.config.pepgPracticeWeight} onChange={(event) => set('pepgPracticeWeight', event.target.value)} placeholder="e.g. 75 — Student Learning & Growth gets the rest"/></label>}</div></fieldset>{isRemote && <div className="ae-note ae-warn" style={{ marginBottom: 12 }}>Portal configuration is read-only. An authorized district administrator or IT must use the reviewed setup process to change repository configuration.</div>}<div className="ae-note">{AE_ACTIVE_FW.id === 'pa_act13' ? 'Framework snapshot: Pennsylvania Act 13 classroom-teacher framework, June 2021. Full performance-level rubric text is not bundled.' : 'Framework: Maine PEPG — the district plan governs. Rating-level labels shown are Maine State Model defaults; confirm labels, cut points, and category weights against your district’s PEPG plan. Full rubric text is not bundled.'}</div></section>
+      <section className="ae-card ae-span-6"><h3>Official references</h3>{AE_ACTIVE_FW.id === 'pa_act13' ? <ul><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://www.pa.gov/agencies/education/programs-and-services/educators/educator-effectiveness">Pennsylvania Department of Education · Educator Effectiveness</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://www.pacodeandbulletin.gov/secure/pacode/data/022/chapter19/s19.2a.html">22 Pa. Code § 19.2a · Classroom teachers</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://www.pdesas.org/Page/Viewer/ViewPage/75">PDE/SAS Act 13 Toolkit</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://danielsongroup.org/the-framework-for-teaching/">Danielson Group · Framework access and licensing</a></li></ul> : <ul><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://www.maine.gov/doe/educators/educatoreval/educator">Maine DOE · Educator Effectiveness (PEPG)</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://legislature.maine.gov/statutes/20-A/title20-Ach508sec0.html">20-A M.R.S.A. ch. 508 · Educator Effectiveness</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://www.law.cornell.edu/regulations/maine/department-05/division-071/chapter-180">DOE Rule Chapter 180 · PEPG Systems</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://danielsongroup.org/the-framework-for-teaching/">Danielson Group · Framework access and licensing</a></li></ul>}{AE_ACTIVE_FW.id === 'pa_act13' ? <div className="ae-note ae-warn">The older 50% observation model is not the default current Act 13 classroom-teacher composition. This workspace uses assignment-aware 70/10/10/10, 80% O&amp;P where Building Level Data is unavailable, and 100% O&amp;P for temporary classroom teachers.</div> : <div className="ae-note ae-warn">Maine PEPG systems are LOCAL: the district plan — built with a steering committee that must have a teacher majority chosen by the bargaining unit, revising by consensus — defines the rubric, rating levels, category weights, and process. Since the 2019 amendments, student learning &amp; growth measures are a district choice, not a state mandate. This workspace mirrors that plan; it never substitutes for it. Enter the plan’s Professional Practice / Student Learning &amp; Growth split above.</div>}</section>
+      {!isRemote && <section className="ae-card ae-span-12"><h3>Connecting the district portal, step by step</h3><div className="ae-note">This panel is a demonstration. Real two-way evaluation records — including sharing released summaries to educators' Drive — need the district-hosted portal. It is a separate deployment from the Class Mailbox: the mailbox is deliberately open ("anyone with the link" + tokens) for homework; the evaluation portal is the opposite — district-domain accounts only, and it fails closed without one.</div><ol className="ae-sub" style={{ margin: '10px 0 0 18px', display: 'grid', gap: 6 }}><li>A district administrator copies <code>apps_script/educator_evaluation/</code> (Code.gs, Portal.html, appsscript.json) into a district-owned Apps Script project — never a personal account.</li><li>They run the one-time <code>setupEvaluationRepository</code> with the district domain, bootstrap admin, educators, members, and evaluator assignments (the README shows the exact call).</li><li>They deploy as a Web app with <strong>Execute as: Me</strong> and <strong>Who has access: users in your domain</strong>, then verify with <code>verifyDeploymentIdentity()</code>.</li><li>Each user pastes the deployment's <code>/macros/s/…/exec</code> link into AlloFlow's Project Settings (or bookmarks it directly). Opening it signs them in with their district Google account; the server — not the link — decides their role and which records they see.</li></ol></section>}
+      {isRemote && currentUser && currentUser.role === 'admin' && repository && typeof repository.getSetupHealth === 'function' && <AeSetupHealth repository={repository}/>}
       {isRemote ? <section className="ae-card ae-span-12"><h3>District-hosted portal boundary</h3><div className="ae-grid"><div className="ae-span-4"><h4>Verified identity</h4><p className="ae-sub">Signed in as {currentUser && currentUser.email ? currentUser.email : 'a managed district user'}. The server—not an emailed link—determines role and record assignments.</p></div><div className="ae-span-4"><h4>Repository and audit</h4><p className="ae-sub">The district Apps Script repository validates authorized mutations, versions saves, filters reads, and records server-side audit events. Drive is not exposed as an open storage bin.</p></div><div className="ae-span-4"><h4>District responsibilities</h4><p className="ae-sub">The LEA still controls deployment, membership, evaluator assignments, retention, legal hold, incident response, approved forms, and any licensed Danielson content.</p></div></div><div className="ae-note ae-warn"><strong>Google Workspace does not make a custom app automatically FERPA compliant.</strong> Use this portal for real records only after your LEA authorizes the deployment and confirms its privacy, security, records, and employment-policy requirements.</div></section> :
       <section className="ae-card ae-span-12"><h3>What production still requires</h3><div className="ae-grid"><div className="ae-span-4"><h4>Identity and permissions</h4><p className="ae-sub">District SSO/MFA, tenant isolation, assigned-evaluator access, co-evaluator rules, and an educator-only view.</p></div><div className="ae-span-4"><h4>Records and security</h4><p className="ae-sub">Encrypted server datastore and backups, retention/legal hold, malware-scanned attachments with version history, conflict handling, and tamper-evident audit. This MVP accepts text and approved document references only.</p></div><div className="ae-span-4"><h4>Approval and licensing</h4><p className="ae-sub">LEA authorization, FERPA/security review, approved rating forms/process, and permission for any licensed Danielson descriptor content.</p></div></div><div className="ae-note ae-danger"><strong>This local demonstration is not an official personnel-record system.</strong> Role switching is only a demonstration; it is not authentication or access control. Do not enter real names, student information, ratings, or confidential evidence until a district-authorized production backend is connected.</div></section>}
     </div>
@@ -1101,6 +1442,9 @@ function EducatorEvaluationPanel(props) {
   const isRemote = !!repository && typeof repository.bootstrap === 'function' && typeof repository.saveWorkspace === 'function';
   const firstLocalWorkspace = !isRemote ? aeLoad() : null;
   const [workspace, setWorkspace] = React.useState(() => isRemote ? aeBlankWorkspace() : (firstLocalWorkspace || aeSampleWorkspace()));
+  // Refresh the module-level framework pointer for this render pass, so every
+  // scoring/label helper below reflects THIS workspace's configured framework.
+  aeSetActiveFramework(workspace.config);
   const [showLocalOnboarding, setShowLocalOnboarding] = React.useState(() => !isRemote && !firstLocalWorkspace && !aeReadOnboardingChoice());
   const [role, setRole] = React.useState('evaluator');
   const [tab, setTab] = React.useState('overview');
@@ -1108,6 +1452,7 @@ function EducatorEvaluationPanel(props) {
   const [liveMessage, setLiveMessage] = React.useState({ text: '', id: 0 });
   const [remoteState, setRemoteState] = React.useState(() => ({ status: isRemote ? 'loading' : 'local', error: '', currentUser: null, deployment: null, inFlight: false }));
   const [notificationState, setNotificationState] = React.useState({ status: 'idle', error: '' });
+  const [releaseShareState, setReleaseShareState] = React.useState({ status: 'idle', error: '' });
   const dialogRef = React.useRef(null);
   const workspaceRef = React.useRef(workspace);
   const remoteRevisionRef = React.useRef(0);
@@ -1252,6 +1597,30 @@ function EducatorEvaluationPanel(props) {
       addToast(message, 'error');
     }
   }, [isRemote, selectedTeacher, repository, notificationState.status, role, announce, addToast]);
+
+  // Share the finalized evaluation with the educator as a view-only,
+  // strengths-first Google Doc (server-built; see sharePortalReleasedEvaluation
+  // in Code.gs). Reloads the district copy afterwards so the record's
+  // releasedDoc link appears for both parties.
+  const shareReleasedEvaluation = React.useCallback(async () => {
+    if (!isRemote || !selectedTeacher || typeof repository.shareReleasedEvaluation !== 'function' || releaseShareState.status === 'sending') return;
+    setReleaseShareState({ status: 'sending', error: '' });
+    try {
+      const result = await repository.shareReleasedEvaluation({ teacherId: selectedTeacher.id });
+      if (!result || result.ok === false) throw new Error((result && (result.error || result.message)) || 'The released evaluation could not be shared.');
+      if (!remoteMountedRef.current) return;
+      setReleaseShareState({ status: 'sent', error: '' });
+      const message = 'A view-only copy of the released evaluation was shared to the educator’s district Drive.';
+      announce(message);
+      addToast(message, 'success');
+      loadRemoteWorkspace();
+    } catch (error) {
+      if (!remoteMountedRef.current) return;
+      const message = String((error && error.message) || error || 'The released evaluation could not be shared.');
+      setReleaseShareState({ status: 'error', error: message });
+      addToast(message, 'error');
+    }
+  }, [isRemote, selectedTeacher, repository, releaseShareState.status, announce, addToast, loadRemoteWorkspace]);
 
   const enqueueRemoteSave = React.useCallback((job) => {
     if (!isRemote || !job || remoteInFlightRef.current) return;
@@ -1501,9 +1870,48 @@ function EducatorEvaluationPanel(props) {
 
   const exportWorkspace = () => { const payload = Object.assign({}, workspace, { kind: AE_EXPORT_KIND, exportedAt: aeNow() }); aeDownload('alloflow-evaluation-' + aeToday() + '.json', 'application/json', JSON.stringify(payload, null, 2)); commit(() => {}, { event: 'EXPORTED', summary: 'Workspace JSON exported', entityType: 'workspace', entityId: 'workspace' }, 'Workspace export created'); };
   const exportCsv = () => { const rows = workspace.teachers.map((teacher) => ({ staff_code: teacher.code, educator: teacher.name, building: teacher.building, assignment: teacher.assignment, employee_type: teacher.employeeType, evaluation_status: aeTeacherStatus(teacher), due_date: teacher.dueDate, evaluator: teacher.evaluator, walkthroughs: workspace.walkthroughs.filter((item) => item.teacherId === teacher.id && item.publishedAt).length, formal_observation: workspace.observations.some((item) => item.teacherId === teacher.id && item.finalizedAt) ? 'finalized' : (workspace.observations.some((item) => item.teacherId === teacher.id) ? 'in_progress' : 'not_started'), spm_status: (workspace.spms.find((item) => item.teacherId === teacher.id) || {}).status || 'not_started' })); aeDownload('evaluation-status-' + aeToday() + '.csv', 'text/csv;charset=utf-8', '\uFEFF' + aeCsv(rows)); commit(() => {}, { event: 'EXPORTED', summary: 'Evaluation status CSV exported', entityType: 'workspace', entityId: 'workspace' }, 'Status CSV created'); };
+  // Formative growth snapshot: the growth-first companion to the released
+  // summary, available at ANY point in the cycle. Published records only, no
+  // ratings and no bands anywhere — evidence, the educator's own words, and
+  // derived (never invented) observations about where documentation is rich
+  // or thin. Both roles generate the identical document.
+  const exportGrowthSnapshot = () => {
+    if (!selectedTeacher) return;
+    const walks = workspace.walkthroughs.filter((item) => item.teacherId === selectedTeacher.id && item.publishedAt);
+    const observations = workspace.observations.filter((item) => item.teacherId === selectedTeacher.id);
+    const publishedObs = observations.filter((item) => item.evidencePublishedAt);
+    const spm = workspace.spms.find((item) => item.teacherId === selectedTeacher.id);
+    const componentLookup = {};
+    AE_DOMAINS.forEach((domain) => ((AE_ACTIVE_FW.components && AE_ACTIVE_FW.components[domain.id]) || domain.components).forEach(([code, label]) => { componentLookup[code] = { label, domain: domain.label }; }));
+    const tagCounts = {};
+    walks.concat(publishedObs).forEach((record) => (record.componentTags || []).forEach((code) => { tagCounts[code] = (tagCounts[code] || 0) + 1; }));
+    const topTags = Object.keys(tagCounts).sort((a, b) => tagCounts[b] - tagCounts[a]).slice(0, 3);
+    const domainsWithTags = new Set(Object.keys(tagCounts).map((code) => (componentLookup[code] || {}).domain).filter(Boolean));
+    const quietDomains = AE_DOMAINS.map((domain) => domain.label).filter((label) => !domainsWithTags.has(label));
+    const interpretations = walks.filter((item) => item.interpretation).sort((a, b) => String(b.publishedAt).localeCompare(String(a.publishedAt))).slice(0, 8);
+    const statement = selectedTeacher.educatorStatement && selectedTeacher.educatorStatement.text;
+    const pieces = walks.length + publishedObs.length;
+    const html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Growth snapshot (formative)</title><style>body{font:14px system-ui;color:#172033;max-width:850px;margin:40px auto;padding:0 24px}h1{color:#14532d}h2{color:#173e70}blockquote{margin:8px 0;padding:8px 14px;border-left:4px solid #16815d;background:#f2faf6}.notice{padding:12px;background:#eef6ff;border:1px solid #93b8e8}ul{padding-left:22px}</style></head><body>'
+      + '<h1>Growth snapshot — formative</h1>'
+      + '<p><strong>' + aeEsc(selectedTeacher.name) + '</strong> · ' + aeEsc(workspace.config.organization) + ' · ' + aeEsc(workspace.config.academicYear) + '</p>'
+      + '<p class="notice"><strong>This is a growth document, not an evaluation.</strong> It contains no ratings, is generated identically for educator and evaluator, and only reflects records already published to the educator. It exists to support a growth conversation partway through the cycle.</p>'
+      + (statement ? '<h2>In the educator’s own words</h2><blockquote>' + aeEsc(statement) + '</blockquote>' : '')
+      + '<h2>Bright spots from published walkthroughs</h2>'
+      + (interpretations.length ? '<ul>' + interpretations.map((item) => '<li><strong>' + aeEsc(aeDate(item.date || item.publishedAt)) + ':</strong> ' + aeEsc(item.interpretation) + '</li>').join('') + '</ul>' : '<p>No published walkthrough feedback yet this cycle.</p>')
+      + '<h2>Evidence so far</h2>'
+      + '<p>' + pieces + ' portal-tracked evidence piece' + (pieces === 1 ? '' : 's') + ' (' + walks.length + ' published walkthrough' + (walks.length === 1 ? '' : 's') + ' + ' + publishedObs.length + ' observation' + (publishedObs.length === 1 ? '' : 's') + ' with published evidence).'
+      + (AE_ACTIVE_FW.id === 'portland_me' ? ' The guidebook calls for at least nine pieces per cycle across the full range of practice; evidence gathered outside this portal counts toward that as well.' : '')
+      + (spm ? ' Student-measure record status: ' + aeEsc(spm.status.replace(/_/g, ' ')) + '.' : '') + '</p>'
+      + '<h2>Where the documentation is rich — and thin</h2>'
+      + (topTags.length ? '<p>Most-documented areas so far: ' + topTags.map((code) => '<strong>' + aeEsc(code) + ' ' + aeEsc((componentLookup[code] || {}).label || '') + '</strong> (' + tagCounts[code] + ')').join(', ') + '.</p>' : '<p>No evidence tags recorded yet.</p>')
+      + (quietDomains.length && pieces > 0 ? '<p>Little or no tagged evidence yet in: ' + quietDomains.map(aeEsc).join(', ') + '. That is a documentation gap to look at together — not a judgment about practice.</p>' : '')
+      + '<p>Generated ' + aeEsc(aeDateTime(aeNow())) + ' · identical for educator and evaluator · the ' + (isRemote ? 'district portal' : 'workspace') + ' remains the record.</p></body></html>';
+    aeDownload('growth-snapshot-' + selectedTeacher.code + '-' + aeToday() + '.html', 'text/html;charset=utf-8', html);
+    commit(() => {}, { teacherId: selectedTeacher.id, event: 'EXPORTED', summary: 'Formative growth snapshot exported', entityType: 'evaluation', entityId: selectedTeacher.id }, 'Growth snapshot created');
+  };
   const exportSummary = () => {
-    if (!selectedTeacher) return; const score = aeOverallScore(selectedTeacher); const profile = aeWeightProfile(selectedTeacher);
-    const html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Evaluation workflow summary</title><style>body{font:14px system-ui;color:#172033;max-width:850px;margin:40px auto;padding:0 24px}h1{color:#173e70}table{border-collapse:collapse;width:100%;margin:14px 0}th,td{border:1px solid #ccd5e2;padding:8px;text-align:left}.notice{padding:12px;background:#fff8e8;border:1px solid #e5bd59}</style></head><body><h1>Educator evaluation workflow summary</h1><p><strong>' + aeEsc(workspace.config.organization) + '</strong> · ' + aeEsc(workspace.config.academicYear) + '</p><h2>' + aeEsc(selectedTeacher.name) + ' · ' + aeEsc(selectedTeacher.code) + '</h2><p>' + aeEsc(selectedTeacher.assignment) + ' · evaluator ' + aeEsc(selectedTeacher.evaluator) + '</p><h2>Weighting snapshot</h2><table><thead><tr><th>Factor</th><th>Weight</th></tr></thead><tbody>' + profile.map((part) => '<tr><td>' + aeEsc(part.label) + '</td><td>' + part.weight + '%</td></tr>').join('') + '</tbody></table><h2>Observation &amp; Practice ratings</h2><table><thead><tr><th>Domain</th><th>Weight within O&amp;P</th><th>Rating</th></tr></thead><tbody>' + AE_DOMAINS.map((domain) => '<tr><td>' + aeEsc(domain.label) + '</td><td>' + domain.weight + '%</td><td>' + aeEsc(selectedTeacher.ratings.domains[domain.id] == null ? 'Not rated' : selectedTeacher.ratings.domains[domain.id]) + '</td></tr>').join('') + '</tbody></table><p><strong>Calculation preview:</strong> ' + (score == null ? 'Incomplete' : score.toFixed(2) + ' · ' + aeBand(score)) + '</p><p class="notice"><strong>Workflow aid only.</strong> This is not an official PDE rating form or proof of PEERS release. Verify all inputs and complete the LEA-authorized process.</p><p>Generated ' + aeEsc(aeDateTime(aeNow())) + '</p></body></html>';
+    if (!selectedTeacher) return; const score = selectedTeacher.finalizedAt && selectedTeacher.finalScore != null ? selectedTeacher.finalScore : aeOverallScore(selectedTeacher); const profile = aeWeightProfile(selectedTeacher);
+    const html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Evaluation workflow summary</title><style>body{font:14px system-ui;color:#172033;max-width:850px;margin:40px auto;padding:0 24px}h1{color:#173e70}table{border-collapse:collapse;width:100%;margin:14px 0}th,td{border:1px solid #ccd5e2;padding:8px;text-align:left}.notice{padding:12px;background:#fff8e8;border:1px solid #e5bd59}</style></head><body><h1>Educator evaluation workflow summary</h1><p><strong>' + aeEsc(workspace.config.organization) + '</strong> · ' + aeEsc(workspace.config.academicYear) + '</p><h2>' + aeEsc(selectedTeacher.name) + ' · ' + aeEsc(selectedTeacher.code) + '</h2><p>' + aeEsc(selectedTeacher.assignment) + ' · evaluator ' + aeEsc(selectedTeacher.evaluator) + '</p><h2>Weighting snapshot</h2><table><thead><tr><th>Factor</th><th>Weight</th></tr></thead><tbody>' + profile.map((part) => '<tr><td>' + aeEsc(part.label) + '</td><td>' + part.weight + '%</td></tr>').join('') + '</tbody></table><h2>' + aeEsc(AE_ACTIVE_FW.practiceLabel) + ' ratings</h2><table><thead><tr><th>Domain</th><th>' + (AE_ACTIVE_FW.id === 'pa_act13' ? 'Weight within O&amp;P' : 'Share (equal average)') + '</th><th>Rating</th></tr></thead><tbody>' + AE_DOMAINS.map((domain) => '<tr><td>' + aeEsc(domain.label) + '</td><td>' + (AE_ACTIVE_FW.id === 'pa_act13' ? domain.weight : 25) + '%</td><td>' + aeEsc(selectedTeacher.ratings.domains[domain.id] == null ? 'Not rated' : selectedTeacher.ratings.domains[domain.id]) + '</td></tr>').join('') + '</tbody></table><p><strong>Calculation preview:</strong> ' + (score == null ? 'Incomplete' : score.toFixed(2) + ' · ' + aeBand(score)) + '</p><p class="notice"><strong>Workflow aid only.</strong> ' + (AE_ACTIVE_FW.id === 'pa_act13' ? 'This is not an official PDE rating form or proof of PEERS release. Verify all inputs and complete the LEA-authorized process.' : 'This is not an official PEPG summative form. Verify all inputs against your district’s PEPG plan and complete the district-authorized process.') + '</p><p>Generated ' + aeEsc(aeDateTime(aeNow())) + '</p></body></html>';
     aeDownload('evaluation-summary-' + selectedTeacher.code + '-' + aeToday() + '.html', 'text/html;charset=utf-8', html); commit(() => {}, { teacherId: selectedTeacher.id, event: 'EXPORTED', summary: 'Educator workflow summary exported', entityType: 'evaluation', entityId: selectedTeacher.id }, 'Summary export created');
   };
   const importWorkspace = (file) => {
@@ -1557,6 +1965,9 @@ function EducatorEvaluationPanel(props) {
       {remoteState.status === 'saved' && <button type="button" className="ae-btn" onClick={loadRemoteWorkspace}>Refresh</button>}
       {remoteState.status === 'error' && <button type="button" className="ae-btn" onClick={loadRemoteWorkspace}>Reload district copy</button>}
       {typeof repository.sendNotification === 'function' && <button type="button" className="ae-btn" disabled={!selectedTeacher || notificationState.status === 'sending' || remoteState.status === 'saving'} onClick={sendPortalNotice}>{notificationState.status === 'sending' ? 'Sending notice…' : (role === 'teacher' ? 'Email evaluator a portal notice' : 'Email educator a portal notice')}</button>}
+      {role !== 'teacher' && typeof repository.shareReleasedEvaluation === 'function' && <button type="button" className="ae-btn" title={selectedTeacher && !selectedTeacher.finalizedAt ? 'Available after the educator cycle is finalized.' : 'Creates a plain-language, strengths-first summary document and shares it view-only to the educator’s district Drive.'} disabled={!selectedTeacher || !selectedTeacher.finalizedAt || releaseShareState.status === 'sending' || remoteState.status === 'saving'} onClick={shareReleasedEvaluation}>{releaseShareState.status === 'sending' ? 'Sharing summary…' : (selectedTeacher && selectedTeacher.releasedDoc ? 'Re-share released summary (Drive)' : 'Share released summary to educator’s Drive')}</button>}
+      {selectedTeacher && selectedTeacher.releasedDoc && /^https:\/\/docs\.google\.com\//.test(selectedTeacher.releasedDoc.url || '') && <a className="ae-btn" href={selectedTeacher.releasedDoc.url} target="_blank" rel="noopener noreferrer" onClick={() => { if (role === 'teacher' && typeof repository.recordReleasedSummaryOpened === 'function' && !selectedTeacher.releasedDoc.openedAt) { repository.recordReleasedSummaryOpened({ teacherId: selectedTeacher.id }).then(() => loadRemoteWorkspace()).catch(() => {}); } }}>{role === 'teacher' ? 'Open your released evaluation summary' : 'Open shared summary'}</a>}
+      {role !== 'teacher' && selectedTeacher && selectedTeacher.releasedDoc && selectedTeacher.releasedDoc.openedAt && <span className="ae-chip ae-chip-good" title="Records that the educator clicked the portal link. It cannot claim the document was read.">Summary link opened {aeDateTime(selectedTeacher.releasedDoc.openedAt)}</span>}
     </div> : <div className={'ae-local-banner ' + (workspace.config.sampleMode ? 'ae-sample' : '')}><strong>{workspace.config.sampleMode ? 'Simulated data' : 'Blank local workspace'}</strong><span>This is a local demonstration. Data stays in this browser; role switching is not secure access. Do not enter confidential personnel or student information.</span></div>}
     <nav className="ae-tabs" role="tablist" aria-label="Evaluation workspace sections">{tabs.map(([id, label], index) => <button type="button" role="tab" key={id} id={'ae-tab-' + id} aria-selected={tab === id} aria-controls="ae-panel" tabIndex={tab === id ? 0 : -1} className="ae-tab" onClick={() => setTab(id)} onKeyDown={(event) => tabKey(event, index)}>{label}</button>)}</nav>
     <main className="ae-main" id="ae-panel" role="tabpanel" tabIndex={-1} aria-labelledby={'ae-tab-' + tab} aria-busy={remoteState.inFlight ? 'true' : undefined} aria-disabled={isRemote && remoteState.status === 'error' ? 'true' : undefined} onClickCapture={blockRemoteMutation} onChangeCapture={blockRemoteMutation} onInputCapture={blockRemoteMutation} onSubmitCapture={blockRemoteMutation}>
@@ -1566,8 +1977,8 @@ function EducatorEvaluationPanel(props) {
       {tab === 'walkthroughs' && <AeWalkthroughs workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} createWalkthrough={createWalkthrough} publishWalkthrough={publishWalkthrough} addComment={addComment} acknowledgeWalkthrough={acknowledgeWalkthrough} isRemote={isRemote}/>}
       {tab === 'formal' && <AeFormalObservations workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} createObservation={createObservation} updateObservation={updateObservation} updateTeacher={updateTeacher} addComment={addComment}/>}
       {tab === 'spm' && <AeSpm workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} createSpm={createSpm} updateSpm={updateSpm} updateTeacher={updateTeacher} addComment={addComment}/>}
-      {tab === 'audit' && <AeAuditExport workspace={workspace} selectedTeacher={selectedTeacher} exportWorkspace={exportWorkspace} exportCsv={exportCsv} exportSummary={exportSummary} importWorkspace={importWorkspace} resetWorkspace={resetWorkspace} role={role} isRemote={isRemote}/>}
-      {tab === 'about' && <AeAbout workspace={workspace} updateConfig={updateConfig} role={role} isRemote={isRemote} currentUser={remoteState.currentUser}/>}
+      {tab === 'audit' && <AeAuditExport workspace={workspace} selectedTeacher={selectedTeacher} exportWorkspace={exportWorkspace} exportCsv={exportCsv} exportSummary={exportSummary} exportGrowthSnapshot={exportGrowthSnapshot} importWorkspace={importWorkspace} resetWorkspace={resetWorkspace} role={role} isRemote={isRemote}/>}
+      {tab === 'about' && <AeAbout workspace={workspace} updateConfig={updateConfig} role={role} isRemote={isRemote} currentUser={remoteState.currentUser} repository={repository}/>}
     </main>
     <footer className="ae-footer"><span>No AI scoring · evidence and judgments stay separate · published records are append-only in the workflow model</span><span><a href="https://www.pa.gov/agencies/education/programs-and-services/educators/educator-effectiveness" target="_blank" rel="noreferrer">PDE Educator Effectiveness</a> · <a href="https://www.pdesas.org/Page/Viewer/ViewPage/75" target="_blank" rel="noreferrer">Act 13 Toolkit</a></span></footer><div className="ae-live" aria-live="polite" aria-atomic="true"><span key={liveMessage.id}>{liveMessage.text}</span></div>
   </div>;

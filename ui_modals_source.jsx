@@ -1338,7 +1338,7 @@ const TeacherGate = React.memo(({ isOpen, onClose, onUnlock }) => {
                 className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60 text-white font-bold py-3 rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2"
                 data-help-key="teacher_gate_unlock"
             >
-                {busy ? 'Checkingâ€¦' : retrySeconds > 0 ? `Try again in ${retrySeconds}s` : t('modals.teacher_gate.unlock')}
+                {busy ? 'Checking…' : retrySeconds > 0 ? `Try again in ${retrySeconds}s` : t('modals.teacher_gate.unlock')}
             </button>
         </form>
         <button

@@ -192,6 +192,144 @@ test.describe('schedule sleuth', () => {
   });
 });
 
+test.describe('level 4 actually runs an FR-3 schedule', () => {
+  // The level is titled "On Schedule", its contingency card says "Every 3rd press",
+  // its hint says "count them!" and its quiz asks when an FR-3 delivers — but the
+  // level accepted reinforcement on any press and scored identically whether the
+  // student followed the schedule or reinforced continuously. These assertions are
+  // the difference between the level teaching FR-3 and merely mentioning it.
+
+  async function reinforce(page: import('@playwright/test').Page) {
+    // The Deliver Food control is the same path the Space shortcut uses.
+    await page.evaluate(() => {
+      const fn = (window as any)._blReinforceFn;
+      if (typeof fn === 'function') fn();
+    });
+    await page.waitForTimeout(180);
+  }
+
+  test('an early press is refused and delivers nothing', async ({ page }) => {
+    await mount(page, Object.assign({}, RUNNING, {
+      blLevel: 4, blLevelScore: 0, blFrPresses: 1,
+      blLastAction: 'pressLever', blMouseAction: 'pressLever',
+    }), 'dark');
+    await reinforce(page);
+    const st = await page.evaluate(() => {
+      const d = (window as any).__toolData;
+      return {
+        score: d.blLevelScore || 0,
+        food: !!d.blFoodVisible,
+        reinforcements: d.blReinforcements || 0,
+        lastLog: (d.blAbcLog || [])[0] || null,
+        toasts: (window as any).__events.toasts.length,
+      };
+    });
+    expect(st.score, 'an off-schedule press scored').toBe(0);
+    expect(st.food, 'food was delivered off schedule').toBe(false);
+    expect(st.reinforcements, 'an off-schedule delivery was counted').toBe(0);
+    expect(st.toasts, 'the student got no feedback about the schedule').toBeGreaterThan(0);
+    // The ABC log must record what happened, not what was attempted.
+    expect(String(st.lastLog?.c || ''), 'the log claims food that was never delivered').toContain('No food');
+  });
+
+  test('the third press is reinforced and resets the ratio', async ({ page }) => {
+    await mount(page, Object.assign({}, RUNNING, {
+      blLevel: 4, blLevelScore: 0, blFrPresses: 3,
+      blLastAction: 'pressLever', blMouseAction: 'pressLever',
+    }), 'dark');
+    await reinforce(page);
+    const st = await page.evaluate(() => {
+      const d = (window as any).__toolData;
+      return {
+        score: d.blLevelScore || 0,
+        food: !!d.blFoodVisible,
+        presses: d.blFrPresses,
+        lastLog: (d.blAbcLog || [])[0] || null,
+      };
+    });
+    expect(st.score, 'the on-schedule press did not score').toBe(1);
+    expect(st.food, 'no pellet on the third press').toBe(true);
+    expect(st.presses, 'the ratio did not reset after delivery').toBe(0);
+    expect(String(st.lastLog?.c || '')).toContain('Food');
+  });
+
+  test('shaping an approach is still allowed — only presses are on the schedule', async ({ page }) => {
+    // Press weight starts at 3 in ~110. If the ratio gate also blocked approaches,
+    // a student could never shape a press to put on the schedule in the first place.
+    await mount(page, Object.assign({}, RUNNING, {
+      blLevel: 4, blLevelScore: 0, blFrPresses: 0,
+      blLastAction: 'approachLever', blMouseAction: 'approachLever',
+    }), 'dark');
+    await reinforce(page);
+    const st = await page.evaluate(() => {
+      const d = (window as any).__toolData;
+      return { food: !!d.blFoodVisible, weight: (d.blWeights || {}).approachLever };
+    });
+    expect(st.food, 'shaping an approach was blocked by the ratio').toBe(true);
+    expect(st.weight, 'the approach was not strengthened').toBeGreaterThan(10);
+  });
+
+  test('the ratio counter counts presses, not pellets', async ({ page }) => {
+    // It used to read `reinforcementsDelivered % 3` while labelled as progress
+    // toward the next pellet — the wrong events, under a caption that made the
+    // number look like the right ones.
+    await mount(page, Object.assign({}, RUNNING, {
+      blLevel: 4, blFrPresses: 2, blScheduleCount: 7,
+    }), 'dark');
+    const text = await page.evaluate(() =>
+      [...document.querySelectorAll('p')].map((p) => p.textContent || '')
+        .find((t) => /\d\s*\/\s*3/.test(t) && /press/i.test(t)) || null);
+    expect(text, 'no ratio readout found').not.toBeNull();
+    expect(text).toContain('2 / 3');
+  });
+});
+
+test.describe('Free Lab honours its own target selector', () => {
+  test('reinforcing the chosen behaviour scores', async ({ page }) => {
+    // Level 6 offers a dropdown to pick the behaviour you are shaping, and its
+    // level record has `target: null`. Everything that MEASURED the target read
+    // `currentLevel.target || 'pressLever'` and fell through to lever pressing, so
+    // picking "Spin" and reinforcing spins scored nothing, plotted the wrong
+    // behaviour on the cumulative record and announced the wrong prompt. The
+    // sandbox measured a behaviour the student had not chosen.
+    await mount(page, Object.assign({}, RUNNING, {
+      blLevel: 6, blLevelScore: 0, blSandboxTarget: 'spin',
+      blLastAction: 'spin', blMouseAction: 'spin',
+    }), 'dark');
+    await page.evaluate(() => {
+      const fn = (window as any)._blReinforceFn;
+      if (typeof fn === 'function') fn();
+    });
+    await page.waitForTimeout(300);
+    const st = await page.evaluate(() => {
+      const d = (window as any).__toolData;
+      return { score: d.blLevelScore || 0, food: !!d.blFoodVisible };
+    });
+    expect(st.food, 'no reinforcement was delivered at all').toBe(true);
+    expect(st.score, 'the chosen sandbox target did not score').toBe(1);
+  });
+
+  test('reinforcing a different behaviour does not score', async ({ page }) => {
+    // The other half: if everything scored, the selector would look like it works
+    // while measuring nothing.
+    await mount(page, Object.assign({}, RUNNING, {
+      blLevel: 6, blLevelScore: 0, blSandboxTarget: 'spin',
+      blLastAction: 'groom', blMouseAction: 'groom',
+    }), 'dark');
+    await page.evaluate(() => {
+      const fn = (window as any)._blReinforceFn;
+      if (typeof fn === 'function') fn();
+    });
+    await page.waitForTimeout(300);
+    const st = await page.evaluate(() => {
+      const d = (window as any).__toolData;
+      return { score: d.blLevelScore || 0, food: !!d.blFoodVisible };
+    });
+    expect(st.food, 'shaping a non-target should still deliver').toBe(true);
+    expect(st.score, 'a non-target behaviour scored').toBe(0);
+  });
+});
+
 test.describe('one lever, one position', () => {
   test('the drawn lever, the shaping rule and the meter agree', async ({ page }) => {
     // The simulation walks the mouse to (340, 210) and reinforces approach to it.
@@ -216,6 +354,122 @@ test.describe('one lever, one position', () => {
   });
 });
 
+test.describe('idle cost', () => {
+  test('the chamber stops redrawing when it is scrolled away, and resumes', async ({ page }) => {
+    // This tool is ~3800px tall. A student reading the glossary at the bottom used
+    // to leave a 60fps canvas redraw running for the rest of the session. The two
+    // failure modes to guard are opposite: never pausing (wasted battery on the
+    // Chromebooks this is piloted on) and pausing wrongly (a blank chamber, which
+    // is far worse).
+    await mount(page, RUNNING, 'dark');
+
+    const frames = () => page.evaluate(() => new Promise<number>((resolve) => {
+      // Count how many times the canvas contents actually change over ~700ms.
+      const c = document.getElementById('bl-chamber-canvas') as HTMLCanvasElement;
+      const g = c.getContext('2d')!;
+      // Sample the WHOLE canvas on a stride, not a corner. An earlier version read
+      // the top-left 300x40 strip, which holds the score and tick readouts — those
+      // only change once per simulation tick (up to 5s apart), so the test was
+      // asserting "is a tick due right now" rather than "is the chamber animating".
+      const sample = () => {
+        const px = g.getImageData(0, 0, c.width, c.height).data;
+        let sum = 0;
+        for (let i = 0; i < px.length; i += 997) sum += px[i];
+        return sum;
+      };
+      let last = sample();
+      let changes = 0;
+      const t = setInterval(() => { const now = sample(); if (now !== last) changes += 1; last = now; }, 40);
+      setTimeout(() => { clearInterval(t); resolve(changes); }, 700);
+    }));
+
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.waitForTimeout(400);
+    const visibleChanges = await frames();
+    expect(visibleChanges, 'the chamber is not animating while it is on screen').toBeGreaterThan(0);
+
+    // Scroll the chamber well out of view.
+    await page.evaluate(() => {
+      const c = document.getElementById('bl-chamber-canvas')!;
+      const bottom = document.querySelector('#wrap > div:last-child') || document.body;
+      bottom.scrollIntoView({ block: 'end' });
+      c.getBoundingClientRect();
+    });
+    await page.waitForTimeout(600);
+    const offScreen = await page.evaluate(() => {
+      const r = document.getElementById('bl-chamber-canvas')!.getBoundingClientRect();
+      return r.bottom < 0 || r.top > window.innerHeight;
+    });
+    // Only meaningful if the scroll actually moved it away; the harness page may
+    // be short enough that it cannot.
+    if (offScreen) {
+      expect(await frames(), 'the chamber kept redrawing while off screen').toBe(0);
+    }
+
+    // Back into view: it must start drawing again, and the canvas must not be blank.
+    await page.evaluate(() => document.getElementById('bl-chamber-canvas')!.scrollIntoView({ block: 'center' }));
+    await page.waitForTimeout(700);
+    expect(await frames(), 'the chamber never resumed after scrolling back').toBeGreaterThan(0);
+    const lit = await page.evaluate(() => {
+      const c = document.getElementById('bl-chamber-canvas') as HTMLCanvasElement;
+      const px = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data;
+      let n = 0;
+      for (let i = 0; i < px.length; i += 4) if (px[i] + px[i + 1] + px[i + 2] > 60) n += 1;
+      return n;
+    });
+    expect(lit, 'the chamber came back blank').toBeGreaterThan(1000);
+  });
+});
+
+test.describe('ABC log export', () => {
+  test('the CSV survives a spreadsheet', async ({ page }) => {
+    // This is the tool's only data pipeline out and its destination is a school
+    // psychologist's spreadsheet. The old writer wrapped values in quotes and
+    // escaped nothing, emitted no BOM (so Excel on Windows mojibakes every row —
+    // and every consequence in this log carries an emoji), and put a 13-digit
+    // epoch integer under a column headed "Timestamp".
+    await mount(page, {
+      blPhase: 'running',
+      blLevel: 4,
+      blTick: 20,
+      blAbcLog: [
+        { tick: 9, a: 'Chamber', b: 'Pressing Lever', c: '🍕 Food pellet (+SR)', t: 1755300000000 },
+        { tick: 4, a: 'FR-3 schedule', b: 'A "quoted" behaviour', c: '=SUM(A1:A9)', t: 1755300060000 },
+        { tick: 1, a: 'Chamber', b: 'Exploring', c: 'No food', t: 1755300120000 },
+      ],
+    }, 'dark');
+
+    const out = await page.evaluate(async () => {
+      const realCreate = URL.createObjectURL;
+      (URL as any).createObjectURL = (b: Blob) => { (window as any).__blob = b; return 'blob:stub'; };
+      const btn = [...document.querySelectorAll('button')]
+        .find((b) => (b.getAttribute('aria-label') || '').includes('CSV')) as HTMLButtonElement;
+      btn.click();
+      (URL as any).createObjectURL = realCreate;
+      const blob = (window as any).__blob as Blob;
+      // Blob.text() strips a leading BOM per the encoding spec, so the BOM has to
+      // be checked in the BYTES — testing it through text() silently passes on a
+      // file that has none.
+      const bytes = new Uint8Array(await blob.arrayBuffer());
+      return { text: await blob.text(), head: [bytes[0], bytes[1], bytes[2]], type: blob.type };
+    });
+
+    expect(out.head, 'no UTF-8 BOM: Excel will mojibake every emoji in the log').toEqual([0xEF, 0xBB, 0xBF]);
+    expect(out.type).toContain('charset=utf-8');
+    expect(out.text, 'rows are not CRLF-terminated').toContain('\r\n');
+    expect(out.text, 'an embedded quote was not doubled — the row would tear apart').toContain('""quoted""');
+    expect(out.text, 'a leading = was left executable by the spreadsheet').toContain('"\'=SUM');
+    expect(out.text, 'the time column is still a raw epoch integer').toMatch(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/);
+
+    // A data file reads oldest-first; the on-screen log is newest-first because
+    // that is what a live observer wants.
+    const rows = out.text.replace(/^﻿/, '').trim().split('\r\n');
+    expect(rows).toHaveLength(4);
+    expect(rows[1].startsWith('"1"'), 'export is not oldest-first').toBe(true);
+    expect(rows[3].startsWith('"9"')).toBe(true);
+  });
+});
+
 test.describe('3D chamber', () => {
   test('renders a live scene and stays in step with the simulation', async ({ page }) => {
     await mount(page, Object.assign({}, RUNNING, { blChamberView: '3d' }), 'dark');
@@ -232,14 +486,51 @@ test.describe('3D chamber', () => {
     // The subject follows the simulation's world coordinates. Two very different
     // positions must land the mesh in two very different places — this is what
     // stops the 3D view drifting into a decorative animation of its own.
-    const at = (x: number, y: number) => page.evaluate(({ x, y }) => {
-      const d = (window as any).__toolData;
-      d.blMouseX = x; d.blMouseY = y; d.blTargetX = x; d.blTargetY = y;
-      (window as any).__rerender();
-      // The chamber lerps the subject toward its target, so give it time to arrive
-      // rather than sampling mid-travel.
-      return new Promise((r) => setTimeout(r, 1800));
-    }, { x, y });
+    const chipLeft = () => page.evaluate(() => {
+      const chip = [...document.querySelectorAll('[data-behaviorlab-3d] div')]
+        .find((e) => (e as HTMLElement).textContent === 'Subject') as HTMLElement | undefined;
+      return chip && chip.style.opacity !== '0' ? parseFloat(chip.style.left) : null;
+    });
+
+    // The chamber lerps the subject toward its target, so the assertion has to wait
+    // for it to ARRIVE. A fixed sleep looks like it does that and doesn't: under
+    // load the rAF loop runs fewer frames in the same wall-clock, so the sample
+    // lands mid-travel and the test fails for reasons that have nothing to do with
+    // the tool. Poll for the position to stop changing instead.
+    // Waiting for an animation is the whole difficulty here, and two earlier
+    // attempts were both wrong in instructive ways:
+    //   * a fixed sleep — under load the rAF loop runs fewer frames per wall-clock
+    //     second, so the sample landed mid-travel;
+    //   * "poll until the value stops changing" — starvation looks EXACTLY like
+    //     arrival, so two identical reads meant "converged" when they really meant
+    //     "the loop did not run between them".
+    // So: wait for it to MOVE first, and only then for it to settle. Starvation now
+    // makes this wait longer instead of returning a wrong answer.
+    const at = async (x: number, y: number) => {
+      const before = await chipLeft();
+      await page.evaluate(({ x, y }) => {
+        const d = (window as any).__toolData;
+        d.blMouseX = x; d.blMouseY = y; d.blTargetX = x; d.blTargetY = y;
+        (window as any).__rerender();
+      }, { x, y });
+      let moved = before === null;
+      let last: number | null = null;
+      let stable = 0;
+      for (let i = 0; i < 80; i += 1) {
+        await page.waitForTimeout(150);
+        const now = await chipLeft();
+        if (now === null) { last = null; stable = 0; continue; }
+        if (!moved) {
+          if (before !== null && Math.abs(now - before) > 2) moved = true;
+          last = now;
+          continue;
+        }
+        stable = (last !== null && Math.abs(now - last) < 0.5) ? stable + 1 : 0;
+        last = now;
+        if (stable >= 2) return;
+      }
+      throw new Error('the subject never settled at its target');
+    };
 
     // Read the viewer's own label chip rather than the framebuffer: the renderer is
     // created without preserveDrawingBuffer, so readPixels after a frame returns a
@@ -248,16 +539,11 @@ test.describe('3D chamber', () => {
     // left offset IS the mesh's screen position.
     await page.evaluate(() => { (window as any).__toolData.bl3dSel = 'subject'; (window as any).__rerender(); });
     await page.waitForTimeout(600);
-    const chipX = () => page.evaluate(() => {
-      const chip = [...document.querySelectorAll('[data-behaviorlab-3d] div')]
-        .find((e) => (e as HTMLElement).textContent === 'Subject') as HTMLElement | undefined;
-      return chip && chip.style.opacity !== '0' ? parseFloat(chip.style.left) : null;
-    });
 
     await at(60, 200);
-    const xLeft = await chipX();
+    const xLeft = await chipLeft();
     await at(345, 200);
-    const xRight = await chipX();
+    const xRight = await chipLeft();
 
     expect(xLeft, 'the subject has no projected label — the mesh is not in the scene').not.toBeNull();
     expect(xRight).not.toBeNull();

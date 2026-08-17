@@ -11713,7 +11713,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // Meeting Documentation is its third tool (needs callGemini).
     window.__alloLazyAdminHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AdminHub', 'https://alloflow-cdn.pages.dev/admin_hub_module.js?v=ah080304'); }; })();
     // Educator Growth & Evaluation (Aug 13 2026) — Act 13 workflow prototype.
-    window.__alloLazyEducatorEvaluation = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorEvaluation', 'https://alloflow-cdn.pages.dev/educator_evaluation_module.js?v=9977748e'); }; })();
+    window.__alloLazyEducatorEvaluation = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorEvaluation', 'https://alloflow-cdn.pages.dev/educator_evaluation_module.js?v=565fc491'); }; })();
     window.__alloLazyMeetingDocs = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MeetingDocs', 'https://alloflow-cdn.pages.dev/meeting_docs_module.js?v=md080302'); }; })();
     window.__alloLazySpedTimelines = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SpedTimelines', 'https://alloflow-cdn.pages.dev/sped_timelines_module.js?v=st080301'); }; })();
     window.__alloLazyDiagnosisEligibility = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DiagnosisEligibility', 'https://alloflow-cdn.pages.dev/stem_lab/stem_tool_eligibility.js?v=d7ff70fc6'); }; })();
@@ -45818,7 +45818,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl border border-indigo-200 bg-white p-6 text-slate-800 shadow-2xl">
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
-                <p className="mb-1 text-xs font-black uppercase tracking-[0.18em] text-indigo-600">Storage and recovery</p>
+                <p className="mb-1 text-xs font-black uppercase tracking-[0.18em] text-indigo-600">{t('storage.panel_eyebrow') || 'Storage and recovery'}</p>
                 <h2 id="canvas-recovery-title" className="text-2xl font-black text-slate-900">
                   {canvasRecoveryDialogMode === 'checking' ? 'Checking this device…'
                     : canvasRecoveryDialogMode === 'vault-locked' ? 'Unlock protected saved work'
@@ -45848,8 +45848,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             {canvasRecoveryDialogMode === 'checking' ? (
               <div className="rounded-2xl border border-indigo-100 bg-indigo-50 p-6 text-center" role="status" aria-live="polite">
                 <RefreshCw className="mx-auto mb-3 animate-spin text-indigo-700" size={30} aria-hidden="true" />
-                <p className="font-bold text-slate-900">Checking saved work…</p>
-                <p className="mt-2 text-sm text-slate-600">This can take a few seconds in Gemini Canvas.</p>
+                <p className="font-bold text-slate-900">{t('storage.checking_title') || 'Checking saved work…'}</p>
+                <p className="mt-2 text-sm text-slate-600">{t('storage.checking_canvas_note') || 'This can take a few seconds in Gemini Canvas.'}</p>
               </div>
             ) : canvasRecoveryDialogMode === 'vault-locked' ? (
               renderCanvasRecoveryLockedScreen()
@@ -45870,7 +45870,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   <button type="button" disabled={Boolean(canvasRecoveryBusyId)}
                     onClick={continueWithoutCanvasRecovery}
                     className="min-h-12 rounded-xl border-2 border-slate-300 px-4 py-3 font-black text-slate-800 hover:bg-slate-100 disabled:opacity-60">
-                    Work without device recovery
+                    {t('storage.work_without_recovery') || 'Work without device recovery'}
                   </button>
                 </div>
                 <p className="mt-4 text-xs leading-relaxed text-slate-600">
@@ -45883,10 +45883,10 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
               const latest = canvasRecoveryStore.snapshots[0];
               if (!latest) return (
                 <div>
-                  <p className="rounded-xl bg-slate-50 p-4 text-sm text-slate-700">No restorable workspace was found.</p>
+                  <p className="rounded-xl bg-slate-50 p-4 text-sm text-slate-700">{t('storage.no_restorable') || 'No restorable workspace was found.'}</p>
                   <button type="button" data-recovery-autofocus="true" onClick={startFreshCanvasWorkspace}
                     className="mt-4 min-h-11 w-full rounded-xl bg-indigo-700 px-4 py-3 font-bold text-white hover:bg-indigo-800">
-                    Start a fresh workspace
+                    {t('storage.start_fresh') || 'Start a fresh workspace'}
                   </button>
                 </div>
               );
@@ -45897,11 +45897,11 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   <div className="mb-5 rounded-2xl border border-indigo-100 bg-indigo-50 p-4">
                     <div className="font-black text-slate-900">{latest.title}</div>
                     <div className="mt-1 text-sm text-slate-600">
-                      {latest.resourceCount} {latest.resourceCount === 1 ? 'resource' : 'resources'} · Saved {savedDate.toLocaleString()}
+                      {latest.resourceCount} {latest.resourceCount === 1 ? 'resource' : 'resources'} · {t('storage.saved_label') || 'Saved'} {savedDate.toLocaleString()}
                     </div>
                     {latest.assetPolicy === 'text-only' && (
                       <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900">
-                        Resource history and settings are saved. {latest.omittedAssets || 'Some'} media or draft asset(s) were omitted; export to review details.
+                        {t('storage.saved_summary') || 'Resource history and settings are saved.'} {t('storage.omitted_assets', { n: latest.omittedAssets || (t('storage.some') || 'Some') }) || ((latest.omittedAssets || 'Some') + ' media or draft asset(s) were omitted; export to review details.')}
                       </div>
                     )}
                   </div>
@@ -45914,22 +45914,21 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     </button>
                     <button type="button" disabled={Boolean(canvasRecoveryBusyId)} onClick={startFreshCanvasWorkspace}
                       className="min-h-12 rounded-xl border-2 border-slate-300 px-4 py-3 font-black text-slate-800 hover:bg-slate-100">
-                      Start a fresh workspace
+                      {t('storage.start_fresh') || 'Start a fresh workspace'}
                     </button>
                     <button type="button" disabled={Boolean(canvasRecoveryBusyId)} onClick={openCanvasRecoveryManager}
                       className="min-h-12 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 font-bold text-indigo-800 hover:bg-indigo-100">
-                      Manage saved work ({canvasRecoveryStore.snapshots.length} of {choiceRetention.maxSnapshots})
+                      {t('storage.manage_saved', { n: canvasRecoveryStore.snapshots.length, max: choiceRetention.maxSnapshots }) || ('Manage saved work (' + canvasRecoveryStore.snapshots.length + ' of ' + choiceRetention.maxSnapshots + ')')}
                     </button>
                     <button type="button" disabled={Boolean(canvasRecoveryBusyId)}
                       onClick={() => canvasRecoveryImportInputRef.current?.click()}
                       className="min-h-12 rounded-xl border border-slate-300 px-4 py-3 text-center font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-60">
-                      Import project file
+                      {t('storage.import_project') || 'Import project file'}
                     </button>
                   </div>
                   <p className="mt-3 text-xs text-slate-500">
-                    AlloFlow keeps up to {choiceRetention.maxSnapshots} recent device workspaces under the {choiceRetention.effectivePolicyId} policy
-                    ({_alloFormatWorkspaceBytes(ALLO_WORKSPACE_RECOVERY.totalBytes(canvasRecoveryStore))} used). Saving beyond that
-                    removes the oldest — so export anything you want to keep for good.
+                    {t('storage.retention_note', { max: choiceRetention.maxSnapshots, policy: choiceRetention.effectivePolicyId, used: _alloFormatWorkspaceBytes(ALLO_WORKSPACE_RECOVERY.totalBytes(canvasRecoveryStore)) })
+                      || ('AlloFlow keeps up to ' + choiceRetention.maxSnapshots + ' recent device workspaces under the ' + choiceRetention.effectivePolicyId + ' policy (' + _alloFormatWorkspaceBytes(ALLO_WORKSPACE_RECOVERY.totalBytes(canvasRecoveryStore)) + ' used). Saving beyond that removes the oldest, so export anything you want to keep for good.')}
                   </p>
                   <p className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950">
                     {canvasRecoveryVaultState.enabled
@@ -45972,9 +45971,9 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                       <section aria-labelledby="storage-status-title" className="mb-5 rounded-2xl border border-slate-200 p-4">
                         <div className="flex flex-wrap items-center justify-between gap-3">
                           <div>
-                            <h3 id="storage-status-title" className="font-black text-slate-900">Storage status</h3>
+                            <h3 id="storage-status-title" className="font-black text-slate-900">{t('storage.status_title') || 'Storage status'}</h3>
                             <p className="mt-1 text-xs leading-relaxed text-slate-600">
-                              Browser totals are physical estimates. AlloFlow categories and Canvas namespaces are approximate breakdowns and are not added to that total.
+                              {t('storage.status_note') || 'Browser totals are physical estimates. AlloFlow categories and Canvas namespaces are approximate breakdowns and are not added to that total.'}
                             </p>
                           </div>
                           <button type="button" disabled={storageManagerInventory.loading}
@@ -45993,7 +45992,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                             </div>
                           </div>
                           <div className="rounded-xl bg-slate-50 p-3">
-                            <div className="text-[11px] font-black uppercase tracking-wide text-slate-500">Persistence</div>
+                            <div className="text-[11px] font-black uppercase tracking-wide text-slate-500">{t('storage.persistence_label') || 'Persistence'}</div>
                             <div className="mt-1 font-black text-slate-900">
                               {persistence === true ? 'Protected from automatic eviction'
                                 : persistence === false ? 'Best effort'
@@ -46001,9 +46000,9 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                             </div>
                           </div>
                           <div className="rounded-xl bg-slate-50 p-3">
-                            <div className="text-[11px] font-black uppercase tracking-wide text-slate-500">Recovery workspaces</div>
+                            <div className="text-[11px] font-black uppercase tracking-wide text-slate-500">{t('storage.recovery_workspaces_label') || 'Recovery workspaces'}</div>
                             <div className="mt-1 font-black text-slate-900">
-                              {retention.count} / {retention.maxSnapshots} target · {_alloFormatWorkspaceBytes(retention.bytes)}
+                              {t('storage.recovery_target', { count: retention.count, max: retention.maxSnapshots, bytes: _alloFormatWorkspaceBytes(retention.bytes) }) || (retention.count + ' / ' + retention.maxSnapshots + ' target · ' + _alloFormatWorkspaceBytes(retention.bytes))}
                             </div>
                           </div>
                         </div>
@@ -46039,7 +46038,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         </div>
                         {storageManagerInventory.managed.length > 0 && (
                           <div className="mt-4">
-                            <h4 className="text-sm font-black text-slate-900">AlloFlow-managed browser data</h4>
+                            <h4 className="text-sm font-black text-slate-900">{t('storage.managed_data_title') || 'AlloFlow-managed browser data'}</h4>
                             <div className="mt-2 divide-y divide-slate-200 rounded-xl border border-slate-200">
                               {storageManagerInventory.managed.map(row => (
                                 <div key={row.id} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
@@ -46052,7 +46051,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         )}
                         {isCanvas && storageManagerInventory.deviceNamespaces.length > 0 && (
                           <div className="mt-4">
-                            <h4 className="text-sm font-black text-slate-900">Canvas durable-device namespaces</h4>
+                            <h4 className="text-sm font-black text-slate-900">{t('storage.canvas_namespaces_title') || 'Canvas durable-device namespaces'}</h4>
                             <div className="mt-2 divide-y divide-slate-200 rounded-xl border border-slate-200">
                               {storageManagerInventory.deviceNamespaces.map(row => (
                                 <div key={row.ns} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
@@ -46071,9 +46070,9 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                       </section>
 
                       <section aria-labelledby="storage-policy-title" className="mb-5 rounded-2xl border border-indigo-100 bg-indigo-50 p-4">
-                        <h3 id="storage-policy-title" className="font-black text-slate-900">Retention policy</h3>
+                        <h3 id="storage-policy-title" className="font-black text-slate-900">{t('storage.retention_title') || 'Retention policy'}</h3>
                         <p className="mt-1 text-xs leading-relaxed text-slate-600">
-                          Choose a tested policy instead of a manual MB limit. Pinned work and the newest workspace are never automatically removed.
+                          {t('storage.retention_intro') || 'Choose a tested policy instead of a manual MB limit. Pinned work and the newest workspace are never automatically removed.'}
                         </p>
                         <div className="mt-3 grid gap-2">
                           {policyOptions.map(option => {
@@ -46085,7 +46084,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                 className={'min-h-11 rounded-xl border px-3 py-3 text-left disabled:opacity-60 ' +
                                   (selected ? 'border-indigo-600 bg-white ring-2 ring-indigo-200' : 'border-indigo-200 bg-indigo-50 hover:bg-white')}>
                                 <span className="block font-black text-slate-900">
-                                  {option.name}{selected && option.id === 'automatic' ? ' (currently ' + retention.effectivePolicyId + ')' : ''}
+                                  {option.name}{selected && option.id === 'automatic' ? (t('storage.retention_currently', { policy: retention.effectivePolicyId }) || (' (currently ' + retention.effectivePolicyId + ')')) : ''}
                                 </span>
                                 <span className="mt-1 block text-xs leading-relaxed text-slate-600">{option.detail}</span>
                               </button>
@@ -46094,7 +46093,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         </div>
                         {retention.overTarget && (
                           <p className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs font-semibold text-amber-950">
-                            Protected work exceeds this policy target. Pinned work and the newest workspace are being kept; unpin, remove embedded media, export, or erase items to reclaim space.
+                            {t('storage.retention_over_target') || 'Protected work exceeds this policy target. Pinned work and the newest workspace are being kept; unpin, remove embedded media, export, or erase items to reclaim space.'}
                           </p>
                         )}
                       </section>
@@ -46103,10 +46102,10 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 })()}
                   {isCanvas && !canvasRecoveryStoreAuthoritative && (
                     <div className="rounded-xl border border-red-200 bg-red-50 p-3">
-                      <p className="text-sm font-semibold text-red-800">Saved work has not been safely re-read yet.</p>
+                      <p className="text-sm font-semibold text-red-800">{t('storage.not_reread') || 'Saved work has not been safely re-read yet.'}</p>
                       <button type="button" disabled={Boolean(canvasRecoveryBusyId)} onClick={retryCanvasRecoveryStorage}
                         className="mt-2 min-h-11 rounded-lg bg-indigo-700 px-3 py-2 text-sm font-bold text-white hover:bg-indigo-800 disabled:opacity-60">
-                        {canvasRecoveryBusyId === 'storage-retry' ? 'Checking…' : 'Retry device storage'}
+                        {canvasRecoveryBusyId === 'storage-retry' ? (t('storage.checking_short') || 'Checking…') : (t('storage.retry_device_storage') || 'Retry device storage')}
                       </button>
                     </div>
                   )}

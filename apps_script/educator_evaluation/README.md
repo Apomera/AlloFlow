@@ -9,6 +9,71 @@ It is intentionally separate from `apps_script/session_mailbox`. The Class
 Mailbox's anonymous capability model is useful for classroom participation,
 but it is not an authorization model for confidential personnel records.
 
+**If you have set up the Class Mailbox before, note the two deliberate
+differences:** the mailbox deploys as "Execute as me / Access: Anyone" and
+hands out capability tokens; this portal must deploy as "Execute as me /
+Access: users in your domain" and hands out nothing — the signed-in district
+account *is* the credential, and the server fails closed without one.
+
+## Quick start (the five steps, in order)
+
+1. **Copy the package** — `Code.gs`, `Portal.html`, `Index.html`,
+   `appsscript.json` — into a NEW Apps Script project owned by a district
+   account (never personal).
+2. **Run setup once** from the editor as that account:
+   `setupEvaluationRepository({...})` with your domain, bootstrap admin,
+   educators, members, and evaluator assignments (full example below).
+3. **Deploy → New deployment → Web app** with **Execute as: Me** and
+   **Who has access: users in your domain**. Copy the `/macros/s/…/exec` URL.
+4. **Verify** — run `verifyDeploymentIdentity()`, then open the URL as an
+   evaluator account and as a teacher account; each should see only their
+   own records, and a personal Gmail account should see "Access unavailable."
+5. **Hand out the URL** — staff paste it into AlloFlow's Project Settings
+   (which then launches the portal instead of the demo) or bookmark it.
+
+Every step is expanded with cautions in "Install and bootstrap" below.
+
+## Released evaluation summaries (educator's copy)
+
+When an educator's cycle is finalized, an evaluator or administrator can click
+**"Share released summary to educator's Drive"** in the portal. The server
+then:
+
+- generates a plain-language, strengths-first Google Doc summary (strengths
+  and the evaluator's own evidence-linked rationale first, then the ratings
+  with the weighting arithmetic explained in words, then growth areas framed
+  with support rights, then a transparency section listing exactly what the
+  summary was built from);
+- files it in a `Released evaluations` subfolder of the repository (the
+  central folder itself stays unshared);
+- shares that single file **view-only** with the educator's active district
+  member account — Drive sharing sends no email, so the content-free portal
+  notification remains the only email pathway;
+- stamps the educator record (`releasedDoc`) and the audit log
+  (`RELEASED_DOC_SHARED`). The pointer is server-owned: client saves can
+  never set or clear it.
+
+The document states explicitly that the portal remains the authoritative
+record. Re-sharing after corrections creates a new document and a new audit
+event; nothing is edited in place.
+
+Related behaviors added alongside:
+
+- **Educator's statement** — a teacher-owned "in your own words" field on
+  their record (the ONLY teacher-writable field there), editable until
+  finalization and then frozen. Evaluator saves can never modify it. When
+  present it leads the released summary, marked "no one edited it."
+- **Open receipt** — when the educator clicks the portal's summary link,
+  `recordReleasedSummaryOpened` stamps `releasedDoc.openedAt` and an audit
+  event. It is labeled a LINK click; Drive cannot report actual reading.
+- **Setup health** — administrators get a read-only portal card running the
+  bootstrap verifications (domain, deployment URL, folder access, workspace
+  integrity, member counts, educators lacking accounts or assignments)
+  without opening the script editor. Counts only; never member emails.
+- **Deep-linked notices** — content-free notification emails now link to
+  `?view=overview&teacher=<id>`: opaque identifiers only, useless without an
+  authorized signed-in district account.
+
 ## Important compliance boundary
 
 As of the Google Workspace Services Summary last modified July 16, 2026,

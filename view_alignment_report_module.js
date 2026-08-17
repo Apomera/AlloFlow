@@ -605,9 +605,17 @@ function AlignmentEvidenceMap(p) {
     }, ' — builds toward ' + gap.buildsToward.join(', ')));
   })), prereqGaps.unresolved.length > 0 && /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-[11px] text-amber-800"
-  }, prereqGaps.unresolved.length + ' audited standard(s) not in the local snapshots were not checked.')), prereqGaps && !prereqGaps.missing.length && prereqGaps.evaluated.length > 0 && /*#__PURE__*/React.createElement("p", {
-    className: "mt-2 text-[11px] text-emerald-900"
-  }, "Knowledge graph: no missing prerequisites among source buildsTowards edges for the audited standards", prereqGaps.unresolved.length ? ' (' + prereqGaps.unresolved.length + ' not in the local snapshots)' : '', "."), componentCoverage && /*#__PURE__*/React.createElement("div", {
+  }, prereqGaps.unresolved.length + ' audited standard(s) not in the local snapshots were not checked.')), prereqGaps && !prereqGaps.missing.length && prereqGaps.evaluated.length > 0 && function () {
+    var edgesChecked = typeof prereqGaps.prerequisiteEdgesExamined === 'number' ? prereqGaps.prerequisiteEdgesExamined : prereqGaps.evaluated.reduce(function (n, entry) {
+      return n + (entry && entry.prerequisiteCount || 0);
+    }, 0);
+    var unresolvedNote = prereqGaps.unresolved.length ? ' (' + prereqGaps.unresolved.length + ' not in the local snapshots)' : '';
+    return edgesChecked > 0 ? /*#__PURE__*/React.createElement("p", {
+      className: "mt-2 text-[11px] text-emerald-900"
+    }, "Knowledge graph: no missing prerequisites among source buildsTowards edges for the audited standards", unresolvedNote, ".") : /*#__PURE__*/React.createElement("p", {
+      className: "mt-2 text-[11px] text-slate-700"
+    }, "Knowledge graph: prerequisite check not available. The reviewed dataset carries no buildsTowards edges for these standards, so sequencing was not checked either way", unresolvedNote, ".");
+  }(), componentCoverage && /*#__PURE__*/React.createElement("div", {
     className: "mt-2 rounded border border-sky-300 bg-sky-50 p-2 text-xs",
     role: "note",
     "aria-label": "Component coverage from the knowledge graph"

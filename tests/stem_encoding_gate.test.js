@@ -111,6 +111,11 @@ const DIRS = ['stem_lab', 'desktop/web-app/public/stem_lab', 'src', 'desktop/com
 //   AGENT_HANDOFF.md                 — the coordination file every session writes; it
 //                                      changes between any two tool calls.
 //   _fix_*.js, *_scan.txt            — one-off scratch artifacts.
+//   _bl_*.cjs/.js (2026-08-16)       — same class, newer naming: the BehaviorLab
+//                                      lane's root-level patch scripts. Their
+//                                      "mojibake" can be a patch ANCHOR that must
+//                                      byte-match corrupted target content, so
+//                                      repairing the script breaks the patch.
 // The fossil rule applies ONLY outside the stem_lab trees. Applying it everywhere made
 // the stem_lab scans skip every tool file and pass vacuously — caught by the pinned
 // deferred count, which is exactly what a pinned number is for.
@@ -118,6 +123,7 @@ const STEM_DIRS = ['stem_lab', 'desktop/web-app/public/stem_lab'];
 function skipFile(dir, name) {
   if (name === 'AGENT_HANDOFF.md') return true;
   if (/^_fix_.*\.js$/.test(name) || /_scan\.txt$/.test(name)) return true;
+  if (/^_bl_.*\.(cjs|js)$/.test(name)) return true;
   if (STEM_DIRS.indexOf(dir) === -1 && /^stem_tool_.*\.js$/.test(name)) return true;
   return false;
 }

@@ -2640,7 +2640,7 @@ ${(typeof window !== 'undefined' && typeof window.formatToolCatalogForPrompt ===
             - **image**: AI-generated illustration of a key concept. Good for visual learners.
             - **quiz**: Assessment questions testing comprehension. Include after content resources.
             - **sentence-frames**: Scaffolded writing prompts. Good for ELL students or structured responses.
-            - **brainstorm**: Open-ended idea generation around a topic.
+            - **brainstorm**: Activity designer — idea starters, class discussion kits, jigsaw cooperative activities.
             - **timeline**: Chronological sequence of events. Use for historical or procedural content.
             - **concept-sort**: Categorization activity — students sort terms into groups. Good for vocabulary/classification.
             - **adventure**: Interactive choose-your-own-adventure narrative. Good for engagement and decision-making.
@@ -2671,7 +2671,8 @@ ${(typeof window !== 'undefined' && typeof window.formatToolCatalogForPrompt ===
                 "resourcePlan": [
                     { "tool": "analysis", "directive": "Analyze text..." },
                     { "tool": "simplified", "directive": "Adapt text for ${grade}..." },
-                    { "tool": "outline", "directive": "Create a Venn Diagram comparing..." }
+                    { "tool": "outline", "directive": "Create a Venn Diagram comparing..." },
+                    { "tool": "brainstorm", "directive": "Seminar on the central conflict...", "activityMode": "discussion", "activityConfig": { "protocol": "socratic-seminar" } }
                 ],
                 "lessonDNA": {
                     "essentialQuestion": "The ONE main learning objective phrased as a guiding question students will answer",
@@ -2689,6 +2690,7 @@ ${(typeof window !== 'undefined' && typeof window.formatToolCatalogForPrompt ===
                 "adventureConfig": { "mode": "choice" | "debate", "theme": "string" },
                 "brainstormConfig": { "focus": "string" }
             }
+            BRAINSTORM STEP MODES: on a brainstorm resourcePlan row, "activityMode" is OPTIONAL — "ideas" (default: quick activity ideas), "discussion" (a runnable class discussion kit; set activityConfig.protocol to "think-pair-share" | "socratic-seminar" | "fishbowl" | "gallery-walk"), or "jigsaw" (cooperative expert groups; set activityConfig.groupSize 2-6). Prefer "discussion" when the text has multiple defensible readings, "jigsaw" when it splits naturally into interdependent sections. Omit the field for simple idea generation.
         `;
         const result = await callGemini(prompt, true, false, null, null, generationSignal || null);
         const config = JSON.parse(cleanJson(result));
@@ -2697,10 +2699,16 @@ ${(typeof window !== 'undefined' && typeof window.formatToolCatalogForPrompt ===
             if (!item || typeof item !== 'object') return null;
             const tool = item.tool || item.type || item.id;
             if (!tool) return null;
-            return {
+            const normalized = {
                 tool: String(tool),
                 directive: item.directive || item.instructions || item.customInstructions || (config.toolDirectives && config.toolDirectives[tool]) || ""
             };
+            // Activities redesign (2026-08-16): keep the optional activity-mode
+            // fields a brainstorm row may carry — this normalizer otherwise
+            // strips unknown fields and the mode would never reach the runner.
+            if (typeof item.activityMode === 'string') normalized.activityMode = item.activityMode;
+            if (item.activityConfig && typeof item.activityConfig === 'object') normalized.activityConfig = item.activityConfig;
+            return normalized;
         };
         if (Array.isArray(config.resourcePlan) && config.resourcePlan.length > 0) {
             config.resourcePlan = config.resourcePlan.map(normalizePlanItem).filter(Boolean);

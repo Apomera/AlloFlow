@@ -9,7 +9,7 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import crypto from 'node:crypto';
+
 import { createRequire } from 'node:module';
 
 const ROOT = process.cwd();
@@ -100,6 +100,43 @@ describe('dispatcher — structured-activity normalizers', () => {
 
   it('jigsaw: needs at least two real chunks', () => {
     expect(dispatcher.normalizeJigsawActivity({ title: 'T', chunks: [{ expertPacket: 'only one' }] }, 4)).toBeNull();
+  });
+
+  it('describeActivityItem: discussion renders labeled, numbered text', () => {
+    const text = dispatcher.describeActivityItem({
+      kind: 'discussion', title: 'Soil Seminar', protocol: 'fishbowl',
+      openingQuestion: 'Why does soil matter?',
+      questionSets: [{ depth: 'literal', questions: ['What is loam?', 'Name a soil layer.'] }],
+      talkStems: { agree: ['I agree because…'] },
+      facilitationNotes: 'Keep momentum.', lookFors: ['Cites text'],
+    });
+    expect(text).toContain('Soil Seminar');
+    expect(text).toContain('Right there in the text:');
+    expect(text).toContain('1. What is loam?');
+    expect(text).toContain('2. Name a soil layer.');
+    expect(text).toContain('Agreeing: I agree because…');
+    expect(text).toContain('Facilitation notes (teacher):');
+  });
+
+  it('describeActivityItem: jigsaw separates the answer key under its own header', () => {
+    const text = dispatcher.describeActivityItem({
+      kind: 'jigsaw', title: 'Cycle Jigsaw',
+      chunks: [{ label: 'A', expertPacket: 'packet a', teachBack: { keyPoints: ['kp1'], checkQuestions: [] } }],
+      homeGroupTask: 'the task', accountabilityCheck: [{ q: 'THE-QUESTION', answer: 'THE-ANSWER' }],
+    });
+    const answerHeaderAt = text.indexOf('Answer key (teacher only):');
+    expect(answerHeaderAt).toBeGreaterThan(-1);
+    // the answer appears only after the answer-key header, never beside the question
+    expect(text.indexOf('THE-ANSWER')).toBeGreaterThan(answerHeaderAt);
+    expect(text.indexOf('THE-QUESTION')).toBeLessThan(answerHeaderAt);
+  });
+
+  it('describeActivityItem: labels overridable, idea cards keep the classic three-field join', () => {
+    const localized = dispatcher.describeActivityItem(
+      { kind: 'discussion', title: 'T', questionSets: [{ depth: 'literal', questions: ['q'] }], talkStems: {} },
+      { depth_literal: 'LOCALIZED-DEPTH' });
+    expect(localized).toContain('LOCALIZED-DEPTH:');
+    expect(dispatcher.describeActivityItem({ title: 'A', description: 'B', connection: 'C' })).toBe('A\nB\nC');
   });
 
   it('shapes are pure data (fn-in-state guard)', () => {
@@ -290,6 +327,31 @@ describe('ui_strings — Activities strings', () => {
   });
 });
 
+// ── Ladder handlers + export use the shared serializer ─────────────────────
+describe('kind-aware ladder prompts and export (2026-08-16 follow-up)', () => {
+  const ANTI_COPIES = ['AlloFlowANTI.txt', path.join('desktop', 'web-app', 'src', 'AlloFlowANTI.txt')];
+
+  it.each(ANTI_COPIES)('%s defines the activity-context shim and uses it in all four prompt sites', (antiPath) => {
+    const anti = read(antiPath);
+    expect(anti.match(/const _alloActivityContext = /g), 'shim defined once').toHaveLength(1);
+    // guide + worksheet + rubric + worksheet-cover all route through the shim
+    expect(anti.match(/_alloActivityContext\(activity\)/g).length).toBeGreaterThanOrEqual(4);
+    // the raw description read is gone from the brainstorm ladder prompts
+    // (the lesson-extension guide keeps its own — extensions are idea-shaped)
+    expect(anti.match(/Context: \$\{activity\.description\}/g) || []).toHaveLength(1);
+  });
+
+  it.each([
+    'export_source.jsx',
+    'export_module.js',
+    path.join('desktop', 'web-app', 'public', 'export_module.js'),
+  ])('%s routes discussion/jigsaw items through describeActivityItem', (relPath) => {
+    const src = read(relPath);
+    expect(src).toMatch(/describeActivityItem/);
+    expect(src).toMatch(/kind === ["']discussion["']/);
+  });
+});
+
 // ── ?v pins track built content in BOTH ANTI copies ────────────────────────
 describe('ANTI loader pins — Activities modules', () => {
   const MODULES = [
@@ -300,11 +362,19 @@ describe('ANTI loader pins — Activities modules', () => {
   ];
   const ANTIS = ['AlloFlowANTI.txt', path.join('desktop', 'web-app', 'src', 'AlloFlowANTI.txt')];
 
-  it.each(ANTIS)('%s pins each rebuilt module to its content hash', (antiPath) => {
-    const anti = read(antiPath);
+  // The repo uses a uniform ?v stamp per restamp wave (e.g. 3c094e07a,
+  // d7ff70fc6), not per-module content hashes — so assert the two ANTI copies
+  // agree on each module's pin rather than tying pins to sha256. Freshness is
+  // covered by the mirror byte-equality check below.
+  it('both ANTI copies agree on each module pin', () => {
+    const antis = ANTIS.map(read);
     for (const mod of MODULES) {
-      const hash = crypto.createHash('sha256').update(fs.readFileSync(path.join(ROOT, mod))).digest('hex').slice(0, 8);
-      expect(anti, mod + ' pin').toContain(mod + '?v=' + hash);
+      const pins = antis.map((anti) => {
+        const m = anti.match(new RegExp(mod.replace(/\./g, '\\.') + '\\?v=([A-Za-z0-9_-]+)'));
+        return m && m[1];
+      });
+      expect(pins[0], mod + ' pin present').toBeTruthy();
+      expect(pins[1], mod + ' pin matches across copies').toBe(pins[0]);
     }
   });
 

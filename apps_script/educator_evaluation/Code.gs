@@ -301,7 +301,10 @@ function sendPortalNotification(request) {
   var config = configMap_();
   var url = config.webAppUrl || safePortalUrl_(ScriptApp.getService().getUrl() || '');
   var body = 'There is new activity in the AlloFlow Educator Evaluation portal.\n\nSign in with your district Google account';
-  if (url) body += ':\n' + url;
+  // Deep link straight to the relevant educator record. The parameters carry
+  // only opaque record identifiers — no name, rating, or content — and are
+  // useless without an authorized signed-in district account.
+  if (url) body += ':\n' + url + (url.indexOf('?') >= 0 ? '&' : '?') + 'view=overview&teacher=' + encodeURIComponent(teacherId);
   body += '\n\nFor privacy, this email contains no evaluation content, ratings, evidence, comments, or educator name.';
   var lock = LockService.getScriptLock();
   if (!lock.tryLock(30000)) throw eeError_('busy', 'Repository is busy.');
@@ -314,6 +317,307 @@ function sendPortalNotification(request) {
     appendAuditRow_({ teacherId: teacherId, event: 'NOTIFICATION_SENT', summary: 'Content-free portal notification sent', entityType: 'notification', entityId: target, version: 1 }, actor);
     return { ok: true, sent: true, target: target };
   } finally { lock.releaseLock(); }
+}
+
+/**
+ * Share a released (finalized) evaluation with the evaluated educator as a
+ * strengths-first Google Doc: created in a repository subfolder, shared
+ * VIEW-ONLY to the educator's active district member account (single-file ACL —
+ * the central folder stays unshared), recorded on the educator record and in
+ * the audit log. Drive sharing here sends no email; the existing content-free
+ * portal notification remains the only email pathway.
+ */
+var EE_DOC_DOMAINS = [
+  { id: 'd1', code: '1', label: 'Planning and Preparation', plain: 'how the lesson and its goals were designed' },
+  { id: 'd2', code: '2', label: 'Classroom Environment', plain: 'the respect, routines, and culture students experience' },
+  { id: 'd3', code: '3', label: 'Instruction', plain: 'the teaching itself — engagement, questioning, and feedback' },
+  { id: 'd4', code: '4', label: 'Professional Responsibilities', plain: 'reflection, communication, and professional growth' },
+];
+
+function eeBandLabel_(score, frameworkProfile) {
+  var value = Number(score);
+  if (!isFinite(value) || value < 0 || value > 3) return null;
+  var truncated = Math.floor((value + 1e-9) * 1000) / 1000;
+  var rounded = Math.round((truncated + 1e-9) * 100) / 100;
+  var labels = frameworkProfile === 'portland_me'
+    ? ['Excellent', 'Proficient', 'Novice/Needs Improvement', 'Unsatisfactory']
+    : frameworkProfile === 'maine_pepg'
+      ? ['Distinguished', 'Effective', 'Developing', 'Ineffective']
+      : ['Distinguished', 'Proficient', 'Needs Improvement', 'Failing'];
+  if (rounded >= 2.5) return labels[0];
+  if (rounded >= 1.5) return labels[1];
+  if (rounded >= 0.5) return labels[2];
+  return labels[3];
+}
+
+// Guidebook v1.0 domain-to-practice operating principles (mirror of the
+// client's aePortlandPracticeRating — keep the two in step).
+function eePortlandPracticeRating_(domains) {
+  var ids = ['d1', 'd2', 'd3', 'd4'];
+  var levels = [];
+  for (var i = 0; i < ids.length; i++) {
+    var value = Number(domains && domains[ids[i]]);
+    if (!isFinite(value)) return null;
+    levels.push(value >= 2.5 ? 3 : value >= 1.5 ? 2 : value >= 0.5 ? 1 : 0);
+  }
+  var count = function (level) { return levels.filter(function (item) { return item === level; }).length; };
+  if (count(0) > 0) return { label: 'Unsatisfactory', rule: 'any domain rated Unsatisfactory' };
+  var allAtLeastProficient = levels.every(function (level) { return level >= 2; });
+  if (count(3) >= 2 && allAtLeastProficient) return { label: 'Excellent', rule: 'two or more domains Excellent, none below Proficient' };
+  if (count(1) >= 3) return { label: 'Novice/Needs Improvement', rule: 'three or more domains at Novice/Needs Improvement' };
+  return { label: 'Proficient', rule: 'no more than two domains below Proficient, none Unsatisfactory' };
+}
+
+function teacherMemberEmail_(teacherId) {
+  var members = memberObjects_();
+  for (var i = 0; i < members.length; i++) {
+    if (members[i].active && members[i].role === 'teacher' && members[i].teacherId === teacherId) return members[i].email;
+  }
+  throw eeError_('not_configured', 'No active portal member account is linked to this educator record, so the document cannot be shared. Add the educator as a member first.');
+}
+
+function releasedEvaluationsFolder_() {
+  var props = PropertiesService.getScriptProperties();
+  var existingId = props.getProperty('EE_RELEASED_FOLDER_ID');
+  if (existingId) {
+    try { return DriveApp.getFolderById(existingId); } catch (err) {}
+  }
+  var parent = DriveApp.getFolderById(props.getProperty('EE_FOLDER_ID'));
+  var folder = parent.createFolder('Released evaluations');
+  props.setProperty('EE_RELEASED_FOLDER_ID', folder.getId());
+  return folder;
+}
+
+function sharePortalReleasedEvaluation(request) {
+  var actor = currentActor_();
+  if (actor.role !== 'admin' && actor.role !== 'evaluator') throw eeError_('denied', 'Only an assigned evaluator or administrator can share a released evaluation.');
+  request = requireObject_(request || {}, 'request');
+  var teacherId = safeId_(request.teacherId, true);
+  requireTeacherAccess_(actor, teacherId);
+  var recipient = teacherMemberEmail_(teacherId);
+  var allowedDomain = normalizeDomain_(PropertiesService.getScriptProperties().getProperty('EE_ALLOWED_DOMAIN'));
+  if (!allowedDomain || emailDomain_(recipient) !== allowedDomain) throw eeError_('denied', 'The educator account is outside the district domain.');
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) throw eeError_('busy', 'Repository is busy.');
+  try {
+    var state = readWorkspaceState_();
+    var workspace = state.workspace;
+    var teacher = findById_(workspace.teachers || [], teacherId);
+    if (!teacher) throw eeError_('not_found', 'Educator record not found.');
+    if (!teacher.finalizedAt) throw eeError_('invalid_transition', 'The educator cycle must be finalized before the evaluation can be shared.');
+    var built = buildReleasedEvaluationDoc_(workspace, teacher, actor);
+    var file = DriveApp.getFileById(built.id);
+    file.moveTo(releasedEvaluationsFolder_());
+    file.setShareableByEditors(false);
+    file.addViewer(recipient); // DriveApp sharing sends no email; notifications stay content-free
+    teacher.releasedDoc = { url: built.url, at: nowIso_(), by: actor.email };
+    writeWorkspaceState_(workspace, state.revision + 1, actor.email);
+    appendAuditRow_({ teacherId: teacherId, event: 'RELEASED_DOC_SHARED', summary: 'Released evaluation document shared view-only with the educator', entityType: 'evaluation', entityId: teacherId, version: 1 }, actor);
+    return { ok: true, url: built.url, sharedWith: recipient };
+  } finally { lock.releaseLock(); }
+}
+
+function eeDocPlainDate_(iso) {
+  if (!iso) return '';
+  try { return Utilities.formatDate(new Date(iso), Session.getScriptTimeZone(), 'MMMM d, yyyy'); } catch (err) { return String(iso).slice(0, 10); }
+}
+
+function buildReleasedEvaluationDoc_(workspace, teacher, actor) {
+  var config = configMap_();
+  var frameworkProfile = (workspace.config && workspace.config.frameworkProfile) || 'pa_act13';
+  var teacherName = safeString_(teacher.name, 160, '') || safeString_(teacher.code, 60, 'Educator');
+  var year = safeString_(teacher.academicYear || (workspace.config && workspace.config.academicYear), 40, '');
+  var doc = DocumentApp.create('Released evaluation - ' + teacherName + (year ? ' - ' + year : ''));
+  var body = doc.getBody();
+  var H = DocumentApp.ParagraphHeading;
+
+  body.appendParagraph('Educator Effectiveness Summary' + (year ? ' — ' + year : '')).setHeading(H.HEADING1);
+  body.appendParagraph('Prepared for ' + teacherName + ' on ' + eeDocPlainDate_(nowIso_()) + ' by ' + (actor.displayName || actor.email) + '.').setHeading(H.NORMAL);
+  body.appendParagraph('This document is a plain-language summary of your finalized evaluation. It is shared view-only with you and your evaluation team — no one else. The district portal remains the official record and holds every observation, note, timestamp, and revision behind this summary; nothing here is hidden from you there.').setHeading(H.NORMAL);
+
+  // ── The educator's own words lead the document when provided. ──────────
+  if (teacher.educatorStatement && teacher.educatorStatement.text) {
+    body.appendParagraph('In your own words').setHeading(H.HEADING2);
+    body.appendParagraph(safeString_(teacher.educatorStatement.text, 20000, '')).setHeading(H.NORMAL);
+    body.appendParagraph('Written by you in the portal' + (teacher.educatorStatement.updatedAt ? ' (' + eeDocPlainDate_(teacher.educatorStatement.updatedAt) + ')' : '') + '; no one edited it.').setHeading(H.NORMAL);
+  }
+
+  // ── Strengths come FIRST, and are drawn from the evaluator's own
+  // evidence-linked rationale text, never generated. ─────────────────────
+  body.appendParagraph('Your strengths').setHeading(H.HEADING2);
+  var observations = (workspace.observations || []).filter(function (o) { return o.teacherId === teacher.id && o.finalizedAt; });
+  var strengths = [];
+  var growth = [];
+  observations.forEach(function (observation) {
+    EE_DOC_DOMAINS.forEach(function (domain) {
+      var rating = observation.ratings ? observation.ratings[domain.id] : null;
+      var rationale = observation.rationales ? safeString_(observation.rationales[domain.id], 15000, '') : '';
+      if (rating == null) return;
+      var entry = { domain: domain, rating: rating, rationale: rationale, date: observation.observedAt || observation.finalizedAt };
+      if (rating >= 2) strengths.push(entry); else growth.push(entry);
+    });
+  });
+  (workspace.spms || []).forEach(function (spm) {
+    if (spm.teacherId !== teacher.id || spm.status !== 'locked' || spm.rating == null || spm.rating < 2) return;
+    strengths.push({ spm: true, rating: spm.rating, goal: safeString_(spm.goal, 20000, ''), rationale: safeString_(spm.ratingRationale, 15000, '') });
+  });
+  // Published walkthroughs carry the informal praise: include the five most
+  // recent PUBLISHED interpretations (private drafts never enter documents).
+  (workspace.walkthroughs || [])
+    .filter(function (w) { return w.teacherId === teacher.id && w.publishedAt && safeString_(w.interpretation, 20000, ''); })
+    .sort(function (a, b) { return String(b.publishedAt).localeCompare(String(a.publishedAt)); })
+    .slice(0, 5)
+    .forEach(function (w) {
+      strengths.push({ walkthrough: true, date: w.date || w.publishedAt, rationale: safeString_(w.interpretation, 20000, '') });
+    });
+  if (strengths.length) {
+    strengths.forEach(function (entry) {
+      var lead = entry.spm
+        ? 'Student performance goal — rated ' + eeBandLabel_(entry.rating, frameworkProfile)
+        : entry.walkthrough
+          ? 'Walkthrough observation' + (entry.date ? ' (' + eeDocPlainDate_(entry.date) + ')' : '')
+          : entry.domain.label + ' — rated ' + eeBandLabel_(entry.rating, frameworkProfile) + ' (' + entry.domain.plain + ')';
+      var item = body.appendListItem(lead);
+      item.setGlyphType(DocumentApp.GlyphType.BULLET);
+      var detail = entry.spm ? (entry.goal ? 'Goal: ' + entry.goal + (entry.rationale ? ' — ' + entry.rationale : '') : entry.rationale) : entry.rationale;
+      if (detail) body.appendListItem(detail).setNestingLevel(1).setGlyphType(DocumentApp.GlyphType.HOLLOW_BULLET);
+    });
+  } else {
+    body.appendParagraph('Your strongest observed areas and the evidence behind them are discussed in your post-conference records in the portal. This summary lists strengths whenever a component is rated Proficient or Distinguished.').setHeading(H.NORMAL);
+  }
+
+  // ── Ratings, with the arithmetic explained in words. ───────────────────
+  body.appendParagraph('Your overall rating, in plain language').setHeading(H.HEADING2);
+  var bandLabel = eeBandLabel_(teacher.finalScore, frameworkProfile);
+  if (frameworkProfile === 'portland_me') {
+    var rollup = eePortlandPracticeRating_(teacher.ratings && teacher.ratings.domains);
+    if (rollup) {
+      body.appendParagraph('Practice rating: "' + rollup.label + '" — reached because ' + rollup.rule + '. Under the Portland guidebook the practice rating is derived from the four domain ratings by rule, never by averaging. The student-growth portion of the summative rating combines under the district’s current plan documents; confirm this summary against the current PEPG plan.').setHeading(H.NORMAL);
+    }
+  } else if (teacher.finalScore != null && bandLabel) {
+    var bandSentence = frameworkProfile === 'maine_pepg'
+      ? 'Overall score: ' + teacher.finalScore + ' out of 3, shown here with the default label "' + bandLabel + '". Your district’s PEPG plan defines the official rating levels and cut points — confirm this label against the plan; the score arithmetic itself is shown below.'
+      : 'Overall score: ' + teacher.finalScore + ' out of 3, which is the "' + bandLabel + '" performance band. Bands are fixed statewide cut points: 2.50 and above is Distinguished, 1.50–2.49 Proficient, 0.50–1.49 Needs Improvement, below 0.50 Failing.';
+    body.appendParagraph(bandSentence).setHeading(H.NORMAL);
+  }
+  var profile = teacher.weightSnapshot ? teacher.weightSnapshot : serverWeightProfile_(teacher, workspace.config);
+  var table = body.appendTable();
+  var header = table.appendTableRow();
+  ['Component', 'Weight', 'What it measures'].forEach(function (label) { header.appendTableCell(label).editAsText().setBold(true); });
+  (profile || []).forEach(function (component) {
+    var row = table.appendTableRow();
+    row.appendTableCell(component.label);
+    row.appendTableCell(component.weight + '%');
+    row.appendTableCell(component.id === 'observation' ? 'Your observed practice across the four domains below.' : component.short === 'BLD' ? 'Your building\'s performance data for the year.' : 'The measures selected for your role and assignment.');
+  });
+  body.appendParagraph('Your final score is the weighted average of these components — each score is multiplied by its weight and the results are added. No component is hidden and no other factor enters the calculation.').setHeading(H.NORMAL);
+  var domainTable = body.appendTable();
+  var domainHeader = domainTable.appendTableRow();
+  ['Domain', 'Rating', 'In plain language'].forEach(function (label) { domainHeader.appendTableCell(label).editAsText().setBold(true); });
+  EE_DOC_DOMAINS.forEach(function (domain) {
+    var rating = teacher.ratings && teacher.ratings.domains ? teacher.ratings.domains[domain.id] : null;
+    var row = domainTable.appendTableRow();
+    row.appendTableCell(domain.code + '. ' + domain.label);
+    row.appendTableCell(rating == null ? 'Not rated' : rating + ' — ' + eeBandLabel_(rating, frameworkProfile));
+    row.appendTableCell(domain.plain.charAt(0).toUpperCase() + domain.plain.slice(1) + '.');
+  });
+
+  // ── Growth framed constructively, tied to the evaluator's own words. ───
+  body.appendParagraph('Growth focus').setHeading(H.HEADING2);
+  if (growth.length) {
+    body.appendParagraph('These areas were rated below Proficient. They are the focus of support — not a verdict — and each one comes with your evaluator\'s written reasoning:').setHeading(H.NORMAL);
+    growth.forEach(function (entry) {
+      var item = body.appendListItem(entry.domain.label + (entry.rationale ? ' — ' + entry.rationale : ''));
+      item.setGlyphType(DocumentApp.GlyphType.BULLET);
+    });
+    body.appendParagraph('You are entitled to discuss supports, resources, and timelines for each of these in your post-conference and through the portal dialogue.').setHeading(H.NORMAL);
+  } else {
+    body.appendParagraph('No component of your finalized evaluation was rated below Proficient.').setHeading(H.NORMAL);
+  }
+
+  // ── Rights and transparency. ───────────────────────────────────────────
+  body.appendParagraph('Transparency and your rights').setHeading(H.HEADING2);
+  body.appendParagraph('This summary was assembled only from the finalized records in the district portal: ' + observations.length + ' finalized formal observation' + (observations.length === 1 ? '' : 's') + ' and your locked student performance measures. Every rating shown here was assigned by a person and carries that person\'s written rationale in the portal; the software performs arithmetic only.').setHeading(H.NORMAL);
+  var rights = [
+    'You can read every underlying record, timestamp, and revision in the portal at any time.',
+    'You acknowledged the observation before finalization; acknowledgment records that you received it, not that you agree.',
+    'You can add a written response through the portal dialogue, and it becomes part of the record.',
+    'Finalized records are immutable — nothing in this summary can be edited after release without a new, visible record.',
+  ];
+  rights.forEach(function (line) { body.appendListItem(line).setGlyphType(DocumentApp.GlyphType.BULLET); });
+  body.appendParagraph('Questions about this evaluation go first to your evaluator' + (config.organization ? ' or to ' + safeString_(config.organization, 160, 'your district') + ' leadership' : '') + '. This copy is shared view-only to your district account; if any detail here disagrees with the portal, the portal record governs.').setHeading(H.NORMAL);
+
+  doc.saveAndClose();
+  return { id: doc.getId(), url: doc.getUrl() };
+}
+
+/**
+ * Honest open receipt for the released summary: records that the educator
+ * clicked the portal link to their shared Doc. Deliberately labeled a LINK
+ * click — Drive itself cannot tell us the document was read.
+ */
+function recordReleasedSummaryOpened(request) {
+  var actor = currentActor_();
+  if (actor.role !== 'teacher') return { ok: true, skipped: true };
+  request = requireObject_(request || {}, 'request');
+  var teacherId = safeId_(request.teacherId, true);
+  if (actor.teacherId !== teacherId) throw eeError_('denied', 'Educator record is outside this account.');
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) throw eeError_('busy', 'Repository is busy.');
+  try {
+    var state = readWorkspaceState_();
+    var teacher = findById_(state.workspace.teachers || [], teacherId);
+    if (!teacher || !teacher.releasedDoc) return { ok: true, skipped: true };
+    if (teacher.releasedDoc.openedAt) return { ok: true, openedAt: teacher.releasedDoc.openedAt, duplicate: true };
+    teacher.releasedDoc.openedAt = nowIso_();
+    var mutation = { teacherId: teacherId, event: 'RECEIPT_OPENED', summary: 'Educator opened the released summary link', entityType: 'released_summary', entityId: teacherId, version: 1 };
+    appendWorkspaceAudit_(state.workspace, mutation, actor);
+    writeWorkspaceState_(state.workspace, state.revision + 1, actor.email);
+    appendAuditRow_(mutation, actor);
+    return { ok: true, openedAt: teacher.releasedDoc.openedAt };
+  } finally { lock.releaseLock(); }
+}
+
+/**
+ * Admin-only, read-only bootstrap health check: surfaces in the portal the
+ * verifications that previously required running functions in the script
+ * editor. Names counts, never member emails.
+ */
+function getPortalSetupHealth() {
+  var actor = requireAdmin_();
+  var props = PropertiesService.getScriptProperties();
+  var members = memberObjects_();
+  var assignments = assignmentObjects_();
+  var state = readWorkspaceState_();
+  var teachers = (state.workspace.teachers || []).filter(function (t) { return t.active !== false; });
+  var counts = { admin: 0, evaluator: 0, teacher: 0, inactive: 0 };
+  members.forEach(function (m) { if (!m.active) counts.inactive++; else if (counts[m.role] !== undefined) counts[m.role]++; });
+  var teacherIdsWithMember = {};
+  members.forEach(function (m) { if (m.active && m.role === 'teacher' && m.teacherId) teacherIdsWithMember[m.teacherId] = true; });
+  var teacherIdsWithAssignment = {};
+  assignments.forEach(function (a) { if (a.active && a.teacherId) teacherIdsWithAssignment[a.teacherId] = true; });
+  var withoutMember = 0, withoutAssignment = 0;
+  teachers.forEach(function (t) {
+    if (!teacherIdsWithMember[t.id]) withoutMember++;
+    if (!teacherIdsWithAssignment[t.id]) withoutAssignment++;
+  });
+  var folderOk = false;
+  try { DriveApp.getFolderById(props.getProperty('EE_FOLDER_ID')); folderOk = true; } catch (folderErr) {}
+  return {
+    ok: true,
+    checkedAt: nowIso_(),
+    checks: {
+      allowedDomain: normalizeDomain_(props.getProperty('EE_ALLOWED_DOMAIN')) || '',
+      webAppUrlConfigured: !!(configMap_().webAppUrl || safePortalUrl_(ScriptApp.getService().getUrl() || '')),
+      repositoryFolderAccessible: folderOk,
+      workspaceMetadataIntact: !!state.metadataExists,
+      workspaceRevision: state.revision,
+      memberCounts: counts,
+      activeEducators: teachers.length,
+      educatorsWithoutMemberAccount: withoutMember,
+      educatorsWithoutEvaluatorAssignment: withoutAssignment,
+    },
+  };
 }
 
 function getPortalCohortStats(request) {
@@ -484,9 +788,9 @@ function redactUnsubmittedSpmForEvaluator_(spm) {
   var allowed = accessibleTeacherIds_(actor, current);
   if (actor.role === 'admin') merged.config = incoming.config;
   mergeTeacherProfiles_(merged, incoming, actor, allowed);
-  merged.walkthroughs = mergeRecords_(current.walkthroughs, incoming.walkthroughs, actor, allowed, 'walkthrough', merged.config.frameworkVersion);
-  merged.observations = mergeRecords_(current.observations, incoming.observations, actor, allowed, 'observation', merged.config.frameworkVersion);
-  merged.spms = mergeRecords_(current.spms, incoming.spms, actor, allowed, 'spm', merged.config.frameworkVersion);
+  merged.walkthroughs = mergeRecords_(current.walkthroughs, incoming.walkthroughs, actor, allowed, 'walkthrough', merged.config.frameworkVersion, merged.teachers);
+  merged.observations = mergeRecords_(current.observations, incoming.observations, actor, allowed, 'observation', merged.config.frameworkVersion, merged.teachers);
+  merged.spms = mergeRecords_(current.spms, incoming.spms, actor, allowed, 'spm', merged.config.frameworkVersion, merged.teachers);
   merged.comments = mergeComments_(current.comments || [], incoming.comments || [], actor, allowed, current);
   recomputeCycleStatuses_(merged);
   merged.audit = clone_(current.audit || []); // client audit is never authoritative
@@ -506,10 +810,32 @@ function mergeTeacherProfiles_(merged, incoming, actor, allowed) {
       if (actor.role !== 'admin') throw eeError_('denied', 'Only an administrator can create educator records.');
       next.finalizedAt = null; next.cycleLockedAt = null; next.weightSnapshot = null;
       next.finalScore = null; next.cycleStatus = 'not_started'; next.lastActivityAt = null;
+      next.releasedDoc = null; // server-owned: only sharePortalReleasedEvaluation writes it
+      next.educatorStatement = null; // teacher-owned: adopted only from the educator's own saves
       merged.teachers.push(next);
       allowed[id] = true;
     } else if (allowed[id]) {
-      if (actor.role === 'teacher') continue; // teachers never mutate cycle/profile authority
+      if (actor.role === 'teacher') {
+        // Teachers never mutate cycle/profile authority — with ONE exception:
+        // the educator statement is THEIR field on THEIR record, editable until
+        // the cycle is finalized, then frozen with everything else.
+        if (actor.teacherId === id && !old.finalizedAt) {
+          var statement = sanitizeEducatorStatement_(next.educatorStatement);
+          var mergedTeacher = findById_(merged.teachers, id);
+          if (mergedTeacher && !same_(mergedTeacher.educatorStatement || null, statement)) {
+            mergedTeacher.educatorStatement = statement ? { text: statement.text, updatedAt: nowIso_() } : null;
+            mergedTeacher.lastActivityAt = nowIso_();
+          }
+        }
+        continue;
+      }
+      // releasedDoc is server-owned (written only by sharePortalReleasedEvaluation)
+      // and educatorStatement is teacher-owned. Overwrite the client's copies
+      // BEFORE the immutability comparison, so an evaluator holding a stale
+      // snapshot doesn't fail finalized-record saves — and can never edit the
+      // educator's words.
+      next.releasedDoc = old.releasedDoc ? clone_(old.releasedDoc) : null;
+      next.educatorStatement = old.educatorStatement ? clone_(old.educatorStatement) : null;
       if (old.finalizedAt && !same_(old, next)) throw eeError_('immutable', 'A released educator cycle cannot be edited.');
       if (old.cycleLockedAt && (old.employeeType !== next.employeeType || old.buildingData !== next.buildingData || old.teacherSpecificData !== next.teacherSpecificData)) {
         throw eeError_('immutable', 'Evaluation weighting inputs cannot change after cycle work begins.');
@@ -524,7 +850,9 @@ function mergeTeacherProfiles_(merged, incoming, actor, allowed) {
       replaceById_(merged.teachers, result);
     }
   }
-}function mergeRecords_(current, incoming, actor, allowed, kind, frameworkVersion) {
+}function mergeRecords_(current, incoming, actor, allowed, kind, frameworkVersion, teachers) {
+  var inactiveTeacherIds = {};
+  (teachers || []).forEach(function (t) { if (t.active === false) inactiveTeacherIds[t.id] = true; });
   var result = clone_(current || []);
   var oldById = indexById_(current || []);
   var seen = {};
@@ -536,6 +864,10 @@ function mergeTeacherProfiles_(merged, incoming, actor, allowed) {
     var old = oldById[next.id];
     if (old && old.teacherId !== next.teacherId) throw eeError_('immutable', 'Record ownership cannot change.');
     if (!old) {
+      // Personnel-records rule (e.g., Portland PEA Article 16.C): no new
+      // performance reports for an archived/separated educator. Existing
+      // records stay readable; only CREATION is barred.
+      if (inactiveTeacherIds[next.teacherId]) throw eeError_('invalid_transition', 'New records cannot be created for an archived educator; personnel-records rules bar post-severance performance reports.');
       if (actor.role === 'teacher') {
         if (kind !== 'spm') throw eeError_('denied', 'Teachers cannot create this record type.');
         validateTeacherSpm_(null, next);
@@ -819,10 +1151,10 @@ function freezeCycleWeights_(oldWorkspace, workspace) {
     var old = findById_(oldWorkspace.teachers || [], teacher.id);
     if (old && old.cycleLockedAt) {
       teacher.cycleLockedAt = old.cycleLockedAt;
-      teacher.weightSnapshot = clone_(old.weightSnapshot || serverWeightProfile_(old));
+      teacher.weightSnapshot = clone_(old.weightSnapshot || serverWeightProfile_(old, workspace.config));
     } else if (teacher.cycleLockedAt || hasCycleActivity_(workspace, teacher)) {
       teacher.cycleLockedAt = nowIso_();
-      teacher.weightSnapshot = serverWeightProfile_(teacher);
+      teacher.weightSnapshot = serverWeightProfile_(teacher, workspace.config);
     } else {
       teacher.cycleLockedAt = null;
       teacher.weightSnapshot = null;
@@ -841,7 +1173,24 @@ function hasCycleActivity_(workspace, teacher) {
   return [ratings.domains.d1, ratings.domains.d2, ratings.domains.d3, ratings.domains.d4, ratings.building, ratings.teacher, ratings.lea].some(function(v) { return numberOrNull_(v) !== null; });
 }
 
-function serverWeightProfile_(teacher) {
+function serverWeightProfile_(teacher, config) {
+  // Portland ME guidebook profile: practice only — the guidebook publishes a
+  // categorical practice roll-up and defers the growth combination to later
+  // plan documents, so no combined weights exist to encode.
+  if (config && config.frameworkProfile === 'portland_me') {
+    return [{ id: 'observation', label: 'Educator Practice (Portland Framework for Teaching)', short: 'EP', weight: 100, color: '#1d4ed8' }];
+  }
+  // Maine PEPG: two locally weighted categories entered from the district's
+  // plan; never invented server-side. SLG reuses the generic `lea` slot.
+  if (config && config.frameworkProfile === 'maine_pepg') {
+    var practiceWeight = config.pepgPracticeWeight;
+    if (practiceWeight == null) return [{ id: 'observation', label: 'Professional Practice', short: 'PP', weight: 100, color: '#1d4ed8' }];
+    var pepgParts = [
+      { id: 'observation', label: 'Professional Practice', short: 'PP', weight: practiceWeight, color: '#1d4ed8' },
+      { id: 'lea', label: 'Student Learning & Growth', short: 'SLG', weight: 100 - practiceWeight, color: '#b45309' }
+    ];
+    return pepgParts.filter(function(part) { return part.weight > 0; });
+  }
   if (teacher.employeeType === 'temporary') return [{ id: 'observation', label: 'Observation & Practice', short: 'O&P', weight: 100, color: '#1d4ed8' }];
   var hasBuilding = teacher.buildingData !== false;
   var hasTeacher = teacher.teacherSpecificData !== false;
@@ -864,14 +1213,14 @@ function deriveFinalizedSnapshots_(oldWorkspace, workspace, actor, rawMutation) 
     if (actor.role === 'teacher' || !isPlainObject_(rawMutation) || String(rawMutation.event || '').toUpperCase() !== 'RELEASED' || safeId_(rawMutation.teacherId || '', false) !== teacher.id) {
       throw eeError_('invalid_transition', 'Annual release requires an authorized RELEASED action for this educator.');
     }
-    var score = serverOverallScore_(teacher);
+    var score = serverOverallScore_(teacher, workspace.config);
     if (score === null) throw eeError_('invalid_transition', 'Annual release requires every weighted rating input.');
     var academicYear = workspace.config.academicYear;
     for (var j = 0; j < workspace.cycleSnapshots.length; j++) {
       if (workspace.cycleSnapshots[j].teacherId === teacher.id && workspace.cycleSnapshots[j].academicYear === academicYear) throw eeError_('immutable', 'A finalized snapshot already exists for this educator and academic year.');
     }
     teacher.finalizedAt = nowIso_(); teacher.finalScore = serverRoundedScore_(score); teacher.cycleStatus = 'finalized';
-    teacher.frameworkVersion = workspace.config.frameworkVersion;
+    teacher.frameworkVersion = eeFrameworkTag_(workspace.config);
     workspace.cycleSnapshots.push({
       id: newId_('cycle'), teacherId: teacher.id, staffCodeSnapshot: teacher.code,
       academicYear: academicYear, buildingSnapshot: teacher.building, employeeTypeSnapshot: teacher.employeeType,
@@ -882,16 +1231,36 @@ function deriveFinalizedSnapshots_(oldWorkspace, workspace, actor, rawMutation) 
   }
 }
 
-function serverObservationScore_(domains) {
+// Framework-aware practice composite. PA uses the statutory 20/30/30/20;
+// the Maine profiles average equally (no statutory within-practice weights).
+// This MUST agree with the client's aeObservationScore or the released
+// finalScore disagrees with the number the evaluator watched on screen.
+function serverObservationScore_(domains, config) {
   if (!completeDomains_(domains)) return null;
+  var keys = ['d1','d2','d3','d4'];
+  var profile = config && config.frameworkProfile;
+  if (profile === 'maine_pepg' || profile === 'portland_me') {
+    var total = 0;
+    for (var j = 0; j < keys.length; j++) total += Math.round(Number(domains[keys[j]]) * 100);
+    return total / (keys.length * 100);
+  }
   var weights = { d1: 20, d2: 30, d3: 30, d4: 20 };
-  var scaled = 0, keys = ['d1','d2','d3','d4'];
+  var scaled = 0;
   for (var i = 0; i < keys.length; i++) scaled += Math.round(Number(domains[keys[i]]) * weights[keys[i]] * 100);
   return scaled / 10000;
 }
 
-function serverOverallScore_(teacher) {
-  var observation = serverObservationScore_(teacher.ratings && teacher.ratings.domains);
+// Profile id -> the same immutable era tag the client stamps, so historical
+// records always know which arithmetic created them.
+function eeFrameworkTag_(config) {
+  var profile = config && config.frameworkProfile;
+  if (profile === 'maine_pepg') return 'me-pepg-local';
+  if (profile === 'portland_me') return 'me-portland-pepg-guidebook-v1';
+  return 'pa-act13-classroom-2021';
+}
+
+function serverOverallScore_(teacher, config) {
+  var observation = serverObservationScore_(teacher.ratings && teacher.ratings.domains, config);
   if (observation === null) return null;
   var factors = { observation: observation, building: numberOrNull_(teacher.ratings.building), teacher: numberOrNull_(teacher.ratings.teacher), lea: numberOrNull_(teacher.ratings.lea) };
   var profile = teacher.weightSnapshot || serverWeightProfile_(teacher), scaled = 0;
@@ -990,8 +1359,16 @@ function sanitizeWorkspace_(raw) {
   return result;
 }
 
-function sanitizeConfig_(v) { v = requireObject_(v || {}, 'config'); return { organization: safeString_(v.organization,160,'District'), building: safeString_(v.building,160,''), academicYear: safeString_(v.academicYear,20,''), evaluatorName: safeString_(v.evaluatorName,160,'Evaluator'), evaluatorInitials: safeString_(v.evaluatorInitials,12,''), frameworkVersion: safeString_(v.frameworkVersion,80,'PA Act 13 / Danielson 2021'), sampleMode: false }; }
-function sanitizeTeacher_(v) { v=requireObject_(v,'teacher'); var ratings=requireObject_(v.ratings||{},'ratings'); return { id:safeId_(v.id,true), code:safeString_(v.code,40,''), name:safeString_(v.name,160,''), building:safeString_(v.building,160,''), assignment:safeString_(v.assignment,240,''), employeeType:v.employeeType==='temporary'?'temporary':'professional', buildingData:!!v.buildingData, teacherSpecificData:!!v.teacherSpecificData, active:v.active!==false, evaluator:safeString_(v.evaluator,160,''), dueDate:optionalDate_(v.dueDate), cycleStatus:oneOf_(v.cycleStatus||'not_started',['not_started','in_progress','awaiting_teacher','awaiting_evaluator','finalized'],'cycleStatus'), lastActivityAt:optionalTimestamp_(v.lastActivityAt), finalizedAt:optionalTimestamp_(v.finalizedAt), cycleLockedAt:optionalTimestamp_(v.cycleLockedAt), frameworkVersion:safeString_(v.frameworkVersion,80,'PA Act 13 / Danielson 2021'), weightSnapshot:sanitizeWeights_(v.weightSnapshot), finalScore:rating_(v.finalScore), ratings:{domains:sanitizeRubricDomains_(ratings.domains),building:rating_(ratings.building),teacher:rating_(ratings.teacher),lea:rating_(ratings.lea)} }; }
+function sanitizeConfig_(v) { v = requireObject_(v || {}, 'config'); return { organization: safeString_(v.organization,160,'District'), building: safeString_(v.building,160,''), academicYear: safeString_(v.academicYear,20,''), evaluatorName: safeString_(v.evaluatorName,160,'Evaluator'), evaluatorInitials: safeString_(v.evaluatorInitials,12,''), frameworkVersion: safeString_(v.frameworkVersion,80,'PA Act 13 / Danielson 2021'), frameworkProfile: oneOf_(v.frameworkProfile || 'pa_act13', ['pa_act13', 'maine_pepg', 'portland_me'], 'frameworkProfile'), pepgPracticeWeight: (v.pepgPracticeWeight == null || String(v.pepgPracticeWeight) === '' ? null : clampInt_(v.pepgPracticeWeight, 0, 100, 0)), sampleMode: false }; }
+function sanitizeTeacher_(v) { v=requireObject_(v,'teacher'); var ratings=requireObject_(v.ratings||{},'ratings'); return { id:safeId_(v.id,true), code:safeString_(v.code,40,''), name:safeString_(v.name,160,''), building:safeString_(v.building,160,''), assignment:safeString_(v.assignment,240,''), employeeType:v.employeeType==='temporary'?'temporary':'professional', buildingData:!!v.buildingData, teacherSpecificData:!!v.teacherSpecificData, active:v.active!==false, evaluator:safeString_(v.evaluator,160,''), dueDate:optionalDate_(v.dueDate), cycleStatus:oneOf_(v.cycleStatus||'not_started',['not_started','in_progress','awaiting_teacher','awaiting_evaluator','finalized'],'cycleStatus'), lastActivityAt:optionalTimestamp_(v.lastActivityAt), finalizedAt:optionalTimestamp_(v.finalizedAt), cycleLockedAt:optionalTimestamp_(v.cycleLockedAt), frameworkVersion:safeString_(v.frameworkVersion,80,'PA Act 13 / Danielson 2021'), weightSnapshot:sanitizeWeights_(v.weightSnapshot), finalScore:rating_(v.finalScore), ratings:{domains:sanitizeRubricDomains_(ratings.domains),building:rating_(ratings.building),teacher:rating_(ratings.teacher),lea:rating_(ratings.lea)}, releasedDoc:sanitizeReleasedDoc_(v.releasedDoc), educatorStatement:sanitizeEducatorStatement_(v.educatorStatement) }; }
+// releasedDoc: server-owned pointer to the shared released-summary Doc. It must
+// survive sanitizeStoredWorkspace_ (which rebuilds every teacher through
+// sanitizeTeacher_ at commit time) or the pointer written by
+// sharePortalReleasedEvaluation evaporates before it ever reaches disk.
+function sanitizeReleasedDoc_(v){ if(!isPlainObject_(v))return null; var url=safeString_(v.url,400,''); if(url.indexOf('https://docs.google.com/')!==0)return null; return { url:url, at:optionalTimestamp_(v.at), by:safeString_(v.by,160,''), openedAt:optionalTimestamp_(v.openedAt) }; }
+// educatorStatement: the educator's own words for the record. Owned by the
+// teacher (merge adopts it only from teacher saves, only pre-finalization).
+function sanitizeEducatorStatement_(v){ if(!isPlainObject_(v))return null; var text=safeString_(v.text,20000,''); if(!text)return null; return { text:text, updatedAt:optionalTimestamp_(v.updatedAt) }; }
 function sanitizeWalkthrough_(v) { v=requireObject_(v,'walkthrough'); return { id:safeId_(v.id,true),teacherId:safeId_(v.teacherId,true),createdAt:optionalTimestamp_(v.createdAt),updatedAt:optionalTimestamp_(v.updatedAt),date:optionalDate_(v.date),startedAt:optionalTimestamp_(v.startedAt),durationMin:String(clampInt_(v.durationMin,1,180,8)),announced:v.announced==='announced'?'announced':'unannounced',lessonPhase:oneOf_(v.lessonPhase||'middle',['opening','middle','guided_practice','independent_practice','closure'],'lessonPhase'),subject:safeString_(v.subject,240,''),evidence:safeString_(v.evidence,30000,''),interpretation:safeString_(v.interpretation,15000,''),componentTags:sanitizeTags_(v.componentTags),privacyChecked:!!v.privacyChecked,observer:safeString_(v.observer,160,''),publishedAt:optionalTimestamp_(v.publishedAt),teacherAcknowledgedAt:optionalTimestamp_(v.teacherAcknowledgedAt),version:clampInt_(v.version,1,1000,1) }; }
 function sanitizeObservation_(v) { v=requireObject_(v,'observation'); var p=requireObject_(v.prework||{},'prework'); var r=requireObject_(v.rationales||{},'rationales'); return { id:safeId_(v.id,true),teacherId:safeId_(v.teacherId,true),createdAt:optionalTimestamp_(v.createdAt),updatedAt:optionalTimestamp_(v.updatedAt),frameworkVersion:safeString_(v.frameworkVersion,80,''),version:clampInt_(v.version,1,1000,1),prework:{plan:safeString_(p.plan,30000,''),outcomes:safeString_(p.outcomes,20000,''),resources:safeString_(p.resources,20000,''),assessment:safeString_(p.assessment,20000,''),artifactReferences:safeString_(p.artifactReferences,10000,'')},preConferenceNotes:safeString_(v.preConferenceNotes,20000,''),observedLocal:safeString_(v.observedLocal,30,''),evidence:safeString_(v.evidence,50000,''),reflection:safeString_(v.reflection,30000,''),postConferenceNotes:safeString_(v.postConferenceNotes,30000,''),ratings:sanitizeRubricDomains_(v.ratings),rationales:{d1:safeString_(r.d1,15000,''),d2:safeString_(r.d2,15000,''),d3:safeString_(r.d3,15000,''),d4:safeString_(r.d4,15000,'')},componentTags:sanitizeTags_(v.componentTags),privacyChecked:!!v.privacyChecked,ackChecked:!!v.ackChecked,preworkSubmittedAt:optionalTimestamp_(v.preworkSubmittedAt),preConferenceAt:optionalTimestamp_(v.preConferenceAt),observedAt:optionalTimestamp_(v.observedAt),evidencePublishedAt:optionalTimestamp_(v.evidencePublishedAt),reflectionSubmittedAt:optionalTimestamp_(v.reflectionSubmittedAt),postConferenceAt:optionalTimestamp_(v.postConferenceAt),evaluatorSignedAt:optionalTimestamp_(v.evaluatorSignedAt),teacherAcknowledgedAt:optionalTimestamp_(v.teacherAcknowledgedAt),finalizedAt:optionalTimestamp_(v.finalizedAt) }; }
 function sanitizeSpm_(v) { v=requireObject_(v,'spm'); var revisions=mapLimited_(v.revisions||[],20,function(x){x=requireObject_(x,'revision');return {version:clampInt_(x.version,1,1000,1),submittedAt:optionalTimestamp_(x.submittedAt),context:safeString_(x.context,20000,''),baseline:safeString_(x.baseline,20000,''),goal:safeString_(x.goal,20000,''),measures:safeString_(x.measures,20000,''),actionPlan:safeString_(x.actionPlan,20000,'')};}); return { id:safeId_(v.id,true),teacherId:safeId_(v.teacherId,true),createdAt:optionalTimestamp_(v.createdAt),updatedAt:optionalTimestamp_(v.updatedAt),status:oneOf_(v.status||'draft',['draft','submitted','returned','approved','results_submitted','locked'],'status'),version:clampInt_(v.version,1,1000,1),context:safeString_(v.context,20000,''),baseline:safeString_(v.baseline,20000,''),goal:safeString_(v.goal,20000,''),measures:safeString_(v.measures,20000,''),actionPlan:safeString_(v.actionPlan,20000,''),returnReason:safeString_(v.returnReason,10000,''),pendingReturnReason:safeString_(v.pendingReturnReason,10000,''),results:safeString_(v.results,30000,''),reflection:safeString_(v.reflection,30000,''),rating:rating_(v.rating),ratingRationale:safeString_(v.ratingRationale,15000,''),approvedBy:safeString_(v.approvedBy,160,''),revisions:revisions,submittedAt:optionalTimestamp_(v.submittedAt),firstOpenedAt:optionalTimestamp_(v.firstOpenedAt),returnedAt:optionalTimestamp_(v.returnedAt),approvedAt:optionalTimestamp_(v.approvedAt),resultsSubmittedAt:optionalTimestamp_(v.resultsSubmittedAt),lockedAt:optionalTimestamp_(v.lockedAt) }; }

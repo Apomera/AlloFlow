@@ -330,7 +330,24 @@ var _lazyIcon = function (name) {
         })}</ul>
         {prereqGaps.unresolved.length > 0 && <p className="mt-1 text-[11px] text-amber-800">{prereqGaps.unresolved.length + ' audited standard(s) not in the local snapshots were not checked.'}</p>}
       </div>}
-      {prereqGaps && !prereqGaps.missing.length && prereqGaps.evaluated.length > 0 && <p className="mt-2 text-[11px] text-emerald-900">Knowledge graph: no missing prerequisites among source buildsTowards edges for the audited standards{prereqGaps.unresolved.length ? ' (' + prereqGaps.unresolved.length + ' not in the local snapshots)' : ''}.</p>}
+      {/* "No missing prerequisites" is only a real finding when the dataset actually
+          carried prerequisite edges to check. Of the three shipped snapshots only
+          ccss-math has buildsTowards edges at all (757); ccss-ela and ma-science-grade-5
+          are hasChild only. Without this split, every ELA and science audit resolved its
+          standards, found 0 of 0 prerequisites, and printed a green all-clear that read
+          as "your sequencing is fine" when it meant "we have no prerequisite data for
+          this subject". The provider now reports prerequisiteEdgesExamined so every caller
+          gets the distinction rather than each re-deriving it; the per-entry fallback keeps
+          this working against an older snapshot/provider pair. */}
+      {prereqGaps && !prereqGaps.missing.length && prereqGaps.evaluated.length > 0 && (function () {
+        var edgesChecked = typeof prereqGaps.prerequisiteEdgesExamined === 'number'
+          ? prereqGaps.prerequisiteEdgesExamined
+          : prereqGaps.evaluated.reduce(function (n, entry) { return n + (entry && entry.prerequisiteCount || 0); }, 0);
+        var unresolvedNote = prereqGaps.unresolved.length ? ' (' + prereqGaps.unresolved.length + ' not in the local snapshots)' : '';
+        return edgesChecked > 0
+          ? <p className="mt-2 text-[11px] text-emerald-900">Knowledge graph: no missing prerequisites among source buildsTowards edges for the audited standards{unresolvedNote}.</p>
+          : <p className="mt-2 text-[11px] text-slate-700">Knowledge graph: prerequisite check not available. The reviewed dataset carries no buildsTowards edges for these standards, so sequencing was not checked either way{unresolvedNote}.</p>;
+      })()}
       {componentCoverage && <div className="mt-2 rounded border border-sky-300 bg-sky-50 p-2 text-xs" role="note" aria-label="Component coverage from the knowledge graph">
         <div className="font-bold text-sky-950">Component coverage (knowledge graph)</div>
         <p className="mt-0.5 text-sky-950">For audited standards that contain source-provided components, which components are themselves in the audited set. Structural containment{componentCoverage.dataset && componentCoverage.dataset.provider ? ' from ' + componentCoverage.dataset.provider : ''} — planning context for educator judgment, not a claim about lesson content.</p>

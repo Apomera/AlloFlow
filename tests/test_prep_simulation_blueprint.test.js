@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { loadAlloModule } from './setup.js';
+import { loadAlloModule, registerCredentialPacks } from './setup.js';
 
 let Hub;
 
@@ -13,6 +13,9 @@ beforeAll(() => {
   };
   loadAlloModule('test_prep_hub_module.js');
   Hub = window.AlloModules.TestPrepHub;
+  // Credential packs are lazy in the shipped module; register them as
+  // fixtures so listPacks() can see them (see registerCredentialPacks).
+  registerCredentialPacks();
 });
 
 const countDomains = (items) => items.reduce((counts, item) => {

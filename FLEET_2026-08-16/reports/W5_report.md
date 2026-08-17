@@ -853,3 +853,431 @@ looked at after each change — forest, marsh, coast, backyard and mountain.
   wants the faceting the mountain boulder already got.
 - The **eider** on the water reads as a grey lozenge.
 - The forest's **distant treeline** is still a regular row of identical `Q` arches.
+### Third pass — the rest of the open list, plus one real bug
+
+**Kingfisher hover.** The worst remaining bird. A belted kingfisher is top-heavy: an oversized
+shaggy-crested head and a dagger bill on a compact body. This had it exactly backwards — a
+small dark head circle sitting on a big pale oval, with two narrow wings above it — so zoomed
+it read as a cat's face and at scene scale as a moth. Head is now larger than the body, the
+bill is the longest thing in the sprite, the crest is several ragged points rather than one
+smooth triangle, and it carries the white collar and blue breast band that separate it from
+everything else in that marsh at a glance.
+
+**Coast granite ledge.** One flat mauve fill with a single thin crack scratched on it, i.e.
+the same paper-cutout defect the mountain boulder had already had fixed. Now four facets in
+different tones with joint lines along the breaks, because granite breaks along planes and the
+joints are what describe the shape.
+
+**Forest distant treeline.** Eleven identical `Q` arches on a constant 50-unit pitch, which
+reads as a scalloped border rather than as trees. Crown width and height now vary tree to
+tree, and a second nearer band in a darker tone gives the ridge depth.
+
+**The vireo was standing on nothing.** Chasing a small unidentified sprite in the marsh
+mid-air turned up a genuine bug rather than an art nit. The vireo's hint reads *"Hidden in the
+reeds — only the song betrays it"* and there was **no vegetation anywhere on its route**: it
+crossed open sky above the bank with its legs dangling. The clue described scenery that did
+not exist, and the marsh's hardest I-Spy target was its most exposed bird.
+
+Fixing it needed a measurement, not a guess. The bird config's `x`/`y` are **not** scene
+units, and the actor **travels** — measured at scene x 198 to 405 across the behaviour states,
+so my first attempt (one clump at the config's x=380) landed to the right of the bird. Built a
+`where.mjs` probe that reports each actor's rendered box in viewBox space, took the range, and
+laid a sparse sedge bed across the whole stretch. Deliberately sparse: the bird has to stay
+findable through the gaps or a hard target becomes an impossible one.
+
+### Verified (third pass)
+
+`node dev-tools/birdlab_visual_qa.mjs` **83 core / 402 exhaustive, exit 0**; the four BirdLab
+test files **47/47**; `check_keyless_map` clean (the new reed loop is keyed); `npm run
+verify:gate` **exit 0**; mirror byte-identical. Kingfisher checked zoomed at 4x and at scene
+scale; ledge, treeline and reed bed checked in full-scene renders; the vireo confirmed
+half-occluded in the wide marsh view.
+
+### Method note worth keeping
+
+Two of the three defects this round were invisible in the code and only showed up by
+**cropping a region of the rendered scene at 4x** (`crop.mjs`) or by **measuring rendered
+geometry** (`where.mjs`) rather than reading coordinates out of the config. The bird `x`/`y`
+in `HABITATS[...].birds` do not map directly to the `viewBox` space the scenery paths are
+authored in, so any scenery meant to line up with a bird has to be derived from a measurement.
+I got that wrong once and the reeds missed the bird entirely.
+
+### Still open
+
+- The **Cooper's hawk** soaring silhouette is the weakest bird left.
+- The **eider** is fine zoomed (black cap, white body, wedge bill) but at 20px it loses
+  contrast against the water and reads as a grey lozenge; it wants a darker outline or a
+  stronger white/black split rather than a redraw.
+- Backyard **house roofs** and the forest **trunk rectangles** are still untextured flats.
+### Fourth pass — the last of the list, and a correction to my own report
+
+**Cooper's hawk.** The bird I had been calling the weakest, now fixed properly. Two things
+were wrong and only one of them was shape. The wings tapered to a thin blade almost
+immediately, so they read as propeller paddles rather than a raptor's broad soaring surface:
+the leading edge is now straight, the trailing edge bulges back, and the rounded tip carries
+slotted fingers. The larger problem was **tone**: dark grey wings either side of a bright pale
+body split the bird into three objects, two paddles and a lozenge between them, which is most
+of why it read as an insect however the outlines were tuned. Real underwing coverts are close
+to the body tone with the flight feathers darker along the trailing edge and at the tips, so
+the wing is now pale like the body and carries a dark trailing-edge band and dark tips. The
+body was also a 2.8:1 lozenge and is now shorter and broader through the chest.
+
+Wing markings are authored once on the left and mirrored with the wing, through a new
+`mirroredOverlays` list on the art entry, for the same reason the outline is: two hand-written
+halves drift the moment either is retouched.
+
+**Forest trunks.** The two prominent ones were uniform `<rect>`s, i.e. posts. Both now flare
+toward the base and carry vertical bark in two tones. The mid-right one is the trunk the
+nuthatch walks head-down, so it is worth having bark to walk on.
+
+**Backyard roofs.** Flat triangles read as paper folded over a box. Two shingle courses and a
+ridge line each, kept faint so they do not compete with the feeder.
+
+**Eider — and a correction.** My previous report said "the eider reads as a grey lozenge at
+20px". **That was wrong: the grey shape I was looking at in the coast scene is the seal**, a
+distractor animal, and it is drawn correctly. I cropped it at 4x to be sure. The eider itself
+was never the problem I described.
+
+I had already rebalanced the eider before catching this, and I have kept the change because it
+stands on its own: a drake common eider's field mark is "white above, black below" in roughly
+equal halves, and the sprite had the white covering about twice the depth of the black. The
+two bands are now balanced and the outline is darker. That is an accuracy fix, not the
+legibility fix I originally claimed, and the distinction matters because the thing I set out
+to fix did not need fixing.
+
+### Verified (fourth pass)
+
+`node dev-tools/birdlab_visual_qa.mjs` **83 core / 402 exhaustive, exit 0**; the four BirdLab
+test files **47/47**; `check_keyless_map` clean; `npm run verify:gate` **exit 0**; mirror
+byte-identical. Hawk and eider checked zoomed at 4x and in the wide scene; trunks and roofs in
+full-scene renders.
+
+### Still open
+
+- The hawk's tail bands are the highest-contrast thing left on that sprite; defensible, since
+  the banded tail is the field mark the silhouette clue names, but it is what I would look at
+  next.
+- Forest back-row trunks (the four thin ones at z=1) are still plain rects. Left deliberately:
+  they are distant and small, and barking them would add noise behind the canopies.
+- Nothing else on my list. The five habitats have each been rendered and read at scene scale
+  after every change in these four passes.
+### Fifth pass — a sprite sweep, plus the conditions I had never looked at
+
+Having worked from a list for three passes, this one started by **zooming every species
+sprite** in the day/desktop states rather than by picking from notes, and by rendering the two
+lighting conditions and the mobile viewport I had never once looked at.
+
+**Great blue heron: the owl eye.** The `heron-strike` pose appeared to have one enormous eye
+with an iris ring. It does not, and this is worth recording because the cause was not where it
+looked. The eye is a 0.65-unit dot and is correct. The ring was the **head circle's own
+outline**: an outlined blob at the end of a neck of the same colour reads as an eye, because
+the outline is the only thing separating head from neck, and the real eye was lost inside it.
+Flattening the head to an ellipse helped a little; removing the stroke entirely fixed it. Head
+and neck are now one continuous shape whose only dark point is the eye, which is what makes an
+eye read.
+
+**Cooper's hawk tail.** Softened the band contrast and lightened the tail tone, as flagged.
+The bands were the highest-contrast thing on the sprite and pulled the eye off the silhouette.
+They are still clearly legible, because that banded tail is the field mark the Target Search
+silhouette clue names.
+
+**Dawn and dusk: checked, no change needed.** My new pale-winged hawk, the lobed canopies and
+the barked trunks all hold up under the dusk grade, and the Cooper's hawk actually reads
+*better* at dusk than in daylight because a pale bird separates cleanly from a darkened sky.
+The grade releasing before the actor band, which a previous session built, is doing its job.
+
+**Mobile: looked at, and I cannot conclude from it.** The wide-sweep mobile render puts the
+whole 900-unit scene into roughly 310px and the birds are a few pixels each. But the QA
+harness renders with `sceneViewportWidth === 0`, which the tool treats as "unmeasured" and
+keeps on the wide sweep — so the lens auto-focus that a real phone would trigger never fires
+here. **This harness cannot tell me what a phone shows.** Saying so rather than reporting the
+screenshot as a mobile result.
+
+### Sprites reviewed and left alone
+
+Bald eagle, blue jay, cardinal, pileated woodpecker, junco, chickadee at the feeder, mallard,
+puffin, eider. All read correctly at drawing size. The eagle's talons sit slightly beside the
+snag rather than gripping it and the blue jay's eye slash gives it a permanent scowl; both are
+stylistic rather than wrong, and I left them.
+
+### Verified (fifth pass)
+
+`node dev-tools/birdlab_visual_qa.mjs` **83 core / 402 exhaustive, exit 0**; the four BirdLab
+test files **47/47**; `npm run verify:gate` **exit 0**; mirror byte-identical. Heron confirmed
+zoomed at 4x before and after; dusk, dawn and mobile rendered and read.
+
+### Still open
+
+- **Mobile needs a real device or a Playwright mount with a measured viewport.** Everything I
+  have said about this tool's mobile rendering across five passes comes from a harness that
+  deliberately stays on the wide sweep. Per the memory note from a previous session, the way
+  to do it is mounting the real tool in Playwright with React UMD, not `renderToStaticMarkup`.
+- Forest back-row trunks (four thin distant rects) still plain, deliberately.
+### Sixth pass — mobile, properly, and a real bug it found
+
+Five passes of caveats about mobile being unverified, so this one closed it. Mounted the REAL
+tool in Playwright at 390x844 through the repo's existing `GlHarness` (the same helper
+`tests/e2e/32-birdlab-diagram-keyboard.spec.ts` uses) instead of the static-markup QA harness.
+
+**A near-miss first, worth recording.** My first run said the scene rendered **540px wide
+inside a 390px viewport** — the exact `300 x 1.8` overflow number from a defect a previous
+session had already fixed. It looked like a regression. It was not. `GlHarness` gives `#wrap`
+`display:flex`, which makes the tool root a flex ITEM with the default `min-width:auto`, so it
+refuses to shrink below its content; `maxWidth:100%` on the scene card is then useless because
+its ancestors have already grown to 540. The **real** host does not do that: `StemLab.renderTool`
+wraps every tool in a plain block div (`stem_lab_module.js:1560`). I traced the ancestor chain
+before believing the number, restored the host's box model in the spec, and the overflow
+vanished. Reporting that as a phone bug would have been the seal mistake again.
+
+**Then the real bug, which nothing else could see.** With the box model right, the auto-focus
+works as designed: the lens narrows to a 450-unit sector and birds go from ~7px to 44-52px.
+But the focused lens is **450x500 (aspect 0.9)** and the card kept the habitat's **1.8**
+aspect, with the SVG painting `preserveAspectRatio="xMidYMid slice"`. Cover-scaling therefore
+threw away **half the scene height, centred**.
+
+Measured on the real mount: card occupied y 103..403, and the one bird the tool marked
+`presence="visible"` — the forest towhee, its findable I-Spy target — sat at **y=406, three
+pixels below the card**. Entirely clipped. A vireo was cut too. The auto-focus made the birds
+big enough to identify and then hid them, and because the crop is applied automatically rather
+than chosen, a student on a phone had no way to know anything was missing.
+
+**Fix:** when the stage is small and the lens has auto-focused, the card takes the **lens's**
+aspect instead of the habitat's, so `slice` has nothing left to crop. Desktop is untouched —
+the stage is never small there, so a deliberately chosen focused lens keeps its cinematic crop.
+
+Measured before and after on the same mount:
+
+| | card | towhee (`presence=visible`) |
+|---|---|---|
+| before | 390 x 300 | **0% on screen** |
+| after | 390 x 433 | **100% on screen** |
+
+**New regression test:** `tests/e2e/33-birdlab-ispy-mobile.spec.ts`, three cases — the scene
+fits the phone column with no sideways scroll, the lens narrows itself on a small stage, and
+every bird the tool marks findable is actually **on screen**, not merely large. That last
+assertion is the one that would have caught this: `getBoundingClientRect` still returns a box
+for SVG content clipped out of view, so "has a rect" is not "is visible", and a size-only
+check passes happily while the bird is off the card.
+
+### Verified (sixth pass)
+
+`tests/e2e/33-birdlab-ispy-mobile.spec.ts` **3/3**; `node dev-tools/birdlab_visual_qa.mjs`
+**83 core / 402 exhaustive, exit 0** (unchanged — the QA harness renders with
+`sceneViewportWidth === 0`, so it never takes the small-stage path and the desktop baseline
+cannot move); the four BirdLab test files **47/47**; mirror byte-identical; the real phone
+composition screenshotted and read.
+
+**One gate note.** `npm run verify:gate` came back exit 1 once, on
+`PARSE FAIL stem_tool_fisherlab.js: Unterminated string constant (2421:97)`. That is another
+session's file, `node --check` parses it fine, and a re-run was **exit 0** — a concurrent
+session was mid-write when acorn read it. Not mine, and not a real break. Also note the gate
+script itself grew five new scans while I was working (`scan_silent_announcer`,
+`scan_mouse_only_controls`, `scan_fn_in_tool_state`, `scan_window_key_listeners`,
+`scan_answer_position_bias`); I ran all five against BirdLab individually — clean, zero
+findings in this tool.
+
+### Still open
+
+- The mobile fix makes the card taller (390x433) on a phone. That is right for portrait and
+  shows the whole sector, but it does push the panels below it further down; worth a look on a
+  real device.
+- Forest back-row trunks still plain, deliberately.
+### Seventh pass — the Silhouette Quiz, i.e. the rest of the tool
+
+The live mount opened up the other **123 views** of this tool, none of which I had ever
+looked at. Screenshotting the illustration-heavy ones found the worst remaining art in
+BirdLab, and it was not in a habitat scene.
+
+**The Silhouette Quiz was drawing ellipses and rectangles.** This is a sub-tool whose entire
+content is silhouettes and whose own description calls it "the skill experienced birders use
+for distant flying birds". What it actually drew:
+
+- `buteo` (Red-tailed Hawk) — a plain `<ellipse>`, `rx 110 ry 20`
+- `loon` — another plain `<ellipse>`
+- `crow` — a plain `<rect>`, 140x16
+- `raven` — a flat six-point bar
+- `eagle` — wings, plus a literal 10x25 rectangle for the body, which reads as a bird impaled
+  on a post
+- `duck` — an ellipse with a wedge stuck on the side
+
+So several species were not merely crude, they were **mutually indistinguishable**: a quiz
+that shows a horizontal blob and asks which of four birds it is cannot be answered from the
+picture. That is the same defect class I fixed in the habitat scene in the first pass, where
+raven, Cooper's hawk and herring gull shared one outline — except here it is the whole point
+of the exercise.
+
+**Rebuilt as a generator plus a table**, the approach that worked for the soaring sprites: one
+`renderSilhouetteParts`, one row of numbers per species, the left wing authored once and
+mirrored (via a generalised `birdlabMirrorPathX(d, axis)`, which the scene sprites' mirror now
+also calls). Nineteen shapes, each differing in the things that actually separate species in
+the air: span and chord, how pointed or fingered the tip is, dihedral, tail shape
+(square / wedge / fork / fan / long), head and neck projection, and trailing legs.
+
+Specific marks now carried: the osprey's M-kink at the wrist; the turkey vulture's dihedral V;
+the accipiter's short wings against a very long tail; the falcon's swept sickle; the tern's
+deep fork against the gull's square tail; **crow square vs raven wedge**, which is the classic
+pair and was previously a rectangle against a bar; the heron's folded neck with legs trailing
+past the tail; the loon's drooping neck and trailing feet; the kingfisher's outsized head and
+dagger bill.
+
+Body and tail are one tapered outline, not two stacked shapes, and the wings are drawn behind
+the body — both lessons carried directly from the Cooper's hawk earlier in this session.
+
+### A third harness artifact, caught before reporting
+
+The quiz screenshot also showed the heading, the instructions and the habitat clue as dark
+text on the dark navy shell — a glaring contrast failure. It is not real. That contrast fix is
+injected by a `React.useEffect` inside `StemLabModal` (`stem_lab_module.js:1716`), the host
+component; my harness calls `StemLab.renderTool()` directly and never mounts it. The real app
+has the stylesheet.
+
+That is now **three** times in this session that something that looked like a bug was an
+artifact of how I was looking at it — the seal I mistook for the eider, the 540px overflow
+from the harness's flex `#wrap`, and this. All three were caught by checking the mechanism
+before writing it down; the pattern is worth more than any of the individual saves.
+
+### Verified (seventh pass)
+
+Silhouettes reviewed as a 20-up contact sheet built by stepping the real quiz, before and
+after. `node dev-tools/birdlab_visual_qa.mjs` **83 core / 402 exhaustive, exit 0**; the four
+BirdLab test files **47/47**; both BirdLab e2e specs **7/7**; `check_keyless_map` clean (the
+generator's parts are keyed); mirror byte-identical. Scratch capture specs removed; only the
+mobile regression spec from the previous pass remains in `tests/e2e/`.
+
+### Gate: red, and NOT mine
+
+`npm run verify:gate` exits 1 at `check_render_refs`:
+
+```
+❌ word_sounds_module.js
+   line 11357: setBlendingProgress  [dropped useState setter (render crash)]
+```
+
+`word_sounds_module.js` is **clean against HEAD** and untouched by me. HEAD advanced during
+this session, and commit `f6262f166 "Dead state sweep: recallBank, blendingProgress,
+preloadProgress"` removed the `blendingProgress` state while leaving `setBlendingProgress(0)`
+called at `:11357` with no declaration anywhere in the file. That is a real render crash in
+Word Sounds, committed, and it will take out that tool at runtime — worth someone's attention,
+but per RULES section 4 I have not fixed it and have not bypassed it.
+`node dev-tools/check_render_refs.cjs` reports **0 findings in BirdLab**.
+
+Earlier in the session the same gate also went red once on
+`PARSE FAIL stem_tool_fisherlab.js` and passed on re-run — that one was a concurrent session
+mid-write, a different thing from this.
+### Eighth pass — the Beak & Feet bill shapes
+
+Reviewed the other nine views I had captured but not yet looked at. The foot illustrations in
+**Beak & Feet Lab** are good — perching, raptor talons, zygodactyl, webbed, wading and
+shorebird are all clearly drawn and distinguishable. The **bills next to them were not.**
+
+Each of the eight bills was drawn **floating alone** in a 35x20 box at only 2-6 units tall,
+which paints a 3-10px sliver at the rendered 60x32. The result was eight near-identical
+horizontal dashes under a heading that reads "8 bill shapes — click to learn what each one
+eats". You could not tell a cone from a hook from a chisel, which is the entire lesson, and
+the summary underneath ("Bill shape → diet. Cone = seeds. Hook = meat. Spear = fish...")
+depends on being able to.
+
+**Fix: draw each bill on a head.** A bill has no readable shape without a head to give it
+scale and somewhere to attach, which is why every field guide draws it that way. Shared
+neutral-grey head with an eye, so the bill carries the colour and is the only thing that
+changes between the eight. Each bill was then redrawn to its actual proportion rather than a
+generic sliver:
+
+| | what now reads |
+|---|---|
+| cone | short and DEEP — depth is the seed-cracker's whole point |
+| hook | tip curls down past the jaw line |
+| spear | long straight dagger |
+| tube | longest and finest, slightly decurved |
+| chisel | stout with a BLUNT end, no taper |
+| filter | broad flat spatula with a rounded nail |
+| parrot | deep triangular wedge, deeper than it is long, with the colour band |
+| thin probe | short and fine — the deliberate contrast against the long tube |
+
+Checked at 4x: all eight now match their labels and are mutually distinguishable, which is the
+requirement the panel sets for itself.
+
+### Verified (eighth pass)
+
+`node dev-tools/birdlab_visual_qa.mjs` **83 core / 402 exhaustive, exit 0**; the four BirdLab
+test files **47/47**; both BirdLab e2e specs **7/7**; `check_keyless_map` clean; mirror
+byte-identical. Bill row reviewed both at rendered size and cropped at 4x. Scratch capture
+spec removed.
+
+### The clear next target
+
+**`flightPatterns` ("Flight Patterns + Wing Shape") has no illustrations at all.** It is a
+view entirely about shape and motion — soaring, direct powered, bounding/undulating,
+hovering — taught in prose, and its own text describes pictures that are not there: "Note wing
+posture — V = vulture, flat = eagle", "Distinctive wave-pattern flight path", "Look for wing
+dihedral (V-shape)". That is the same class as the vireo's missing reeds: the copy promises
+something the art does not supply. It wants a small flight-path trace per pattern (a wave for
+bounding, a straight line for direct, a spiral for soaring, a fixed point for hovering) plus a
+head-on wing-posture pair for the V-versus-flat distinction. I have not built it — it is a new
+illustration set rather than a repair, and I would rather hand it over described than half
+done.
+
+Also still open: the gate remains red on the committed `word_sounds_module.js:11357` render
+crash reported in the previous pass, which is not mine.
+---
+
+## Word Sounds render crash — investigated and fixed (Aaron asked directly; outside W5's lane)
+
+Aaron asked me to take this over after the owning session stopped. `word_sounds_module.js` is
+not in W5's ownership list, so recording that clearly.
+
+### Found — a guaranteed crash, not a lint nit
+
+`word_sounds_module.js:11357` called `setBlendingProgress(0)`. Evidence it is undeclared,
+not merely unusual:
+
+- `grep "blendingProgress"` over the whole file returns **exactly one line** — the call. A
+  `const [blendingProgress, setBlendingProgress] = useState(...)` would show the identifier in
+  its destructuring; there is none.
+- Control: `setSoundChips`, the setter on the very next line, returns **10** occurrences
+  (declaration plus call sites). Same grep, so the method is sound.
+- No dynamic setter creation anywhere in the file (no `window['set'+…]`, no `setters[…]`, no
+  `eval`).
+- `git log` on the file: commit `f6262f166 "Dead state sweep: recallBank, blendingProgress,
+  preloadProgress"` removed the state. `setRecallBank(` and `setPreloadProgress(` have **zero**
+  call sites, so those two were swept cleanly — `blendingProgress` was the one left half-done.
+
+**Severity is higher than "a render crash somewhere".** The call sits inside `startActivity`,
+the `React.useCallback` that begins *every* activity, invoked from eight sites including the
+mount and activity-change effects (`:11628`, `:11642`, `:11687`, `:11729`, `:11758`) and the
+answer handlers (`:12857`, `:12876`, `:12972`). Starting any Word Sounds activity would throw
+`ReferenceError: setBlendingProgress is not defined`.
+
+**Why no test caught it.** I ran the whole `word_sounds` suite: the runtime/golden/view-identity
+files pass because they are structural and never execute `startActivity`'s body. This is
+exactly the class `dev-tools/check_render_refs.cjs` exists to catch statically, and it did.
+
+### Changed
+
+Deleted the orphaned line. `word_sounds_module.js` has **no `_source.jsx` pair**, so per RULES
+section 2 it is itself the source and is edited directly; mirrored to
+`desktop/web-app/public/word_sounds_module.js` (`cmp` identical).
+
+Behaviourally this is a no-op beyond removing the throw: nothing reads `blendingProgress`
+anywhere, so setting it was already dead. `grep` now returns 0 occurrences — the sweep the
+commit intended is complete.
+
+### Verified
+
+- `node --check word_sounds_module.js` clean; mirror byte-identical.
+- `node dev-tools/check_render_refs.cjs` → **exit 0**, and 0 mentions of word_sounds (was the
+  single blocking finding).
+- Full `word_sounds` suite: **459 passed, 4 failed / 46 files**. All four failures are other
+  sessions' files and cannot be caused by deleting a line in this module:
+  - 2x "mirrors are byte-identical" — that test checks **five** mirrors, and the one that
+    differs is **`ui_strings.js`**, W1's lock-protected file, mid-wave. The other four,
+    including `word_sounds_module.js`, are identical.
+  - 2x `word_sounds_live_progress` — expects a `wsProgress: 1` validator region in
+    `AlloFlowANTI.txt` and extracts `''`.
+
+### Gate
+
+`check_render_refs` is green. `npm run verify:gate` still exits 1, but now on a **different**
+check and a different session's file: new hardcoded user-facing strings in
+`educator_evaluation_source.jsx` (488 → 495, +7), which is ` M` in the working tree and not in
+my ownership. Reported, not fixed, not bypassed.

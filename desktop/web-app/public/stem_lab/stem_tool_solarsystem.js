@@ -1714,6 +1714,16 @@ const d = labToolData.solarSystem || {};
 
                 camera.lookAt(currentLookAt);
 
+
+                // Only written when the rounded value actually changes: updateCamera
+                // runs every frame, and an unconditional attribute write per frame is
+                // a DOM mutation per frame for nothing.
+                var camReadout = camTheta.toFixed(3) + ',' + camPhi.toFixed(3) + ',' + currentDist.toFixed(2);
+                if (canvas._solarCamReadout !== camReadout) {
+                  canvas._solarCamReadout = camReadout;
+                  canvas.dataset.camera = camReadout;
+                }
+
               }
 
               updateCamera();
@@ -1754,6 +1764,45 @@ const d = labToolData.solarSystem || {};
 
                 canvas.releasePointerCapture(e.pointerId);
 
+              }
+
+              // Keyboard equivalents for drag-to-orbit and wheel-to-zoom. Same clamps
+              // and the same targetPhi release as the pointer path, so steering by key
+              // and by mouse cannot drift apart. Every handled key preventDefaults:
+              // without it the arrows scrolled the page out from under the model.
+              function onSolarKey(e) {
+                if (e.altKey || e.ctrlKey || e.metaKey) return;
+                var orbitStep = e.shiftKey ? 0.30 : 0.12;
+                var zoomStep = e.shiftKey ? 10 : 4;
+                var handled = true;
+                switch (e.key) {
+                  case 'ArrowLeft': camTheta += orbitStep; break;
+                  case 'ArrowRight': camTheta -= orbitStep; break;
+                  case 'ArrowUp':
+                  case 'ArrowDown': {
+                    var dir = e.key === 'ArrowUp' ? -1 : 1;
+                    camPhi = Math.max(0.15, Math.min(Math.PI - 0.15, camPhi + dir * orbitStep));
+                    targetPhi = camPhi;
+                    break;
+                  }
+                  case '+':
+                  case '=':
+                  case 'PageUp': targetDist = Math.max(3, Math.min(120, targetDist - zoomStep)); break;
+                  case '-':
+                  case '_':
+                  case 'PageDown': targetDist = Math.max(3, Math.min(120, targetDist + zoomStep)); break;
+                  case 'Home':
+                  case 'r':
+                  case 'R':
+                    // Same route the Reset button takes, so one behaviour, one definition.
+                    canvas.dataset.resetCamera = 'true';
+                    break;
+                  default: handled = false;
+                }
+                if (!handled) return;
+                e.preventDefault();
+                updateCamera();
+                scheduleSolarFrame();
               }
 
               function onSolarWheel(e) {
@@ -1864,6 +1913,8 @@ const d = labToolData.solarSystem || {};
 
               canvas.addEventListener('dblclick', onSolarDblClick);
 
+              canvas.addEventListener('keydown', onSolarKey);
+
 
 
               // â"€â"€ Planet label overlay â"€â"€
@@ -1879,10 +1930,18 @@ const d = labToolData.solarSystem || {};
               let solarAlive = true;
 
               let resizeObserver = null;
+              let viewObserver = null;
+              // Starts true: if IntersectionObserver is unavailable, or its first
+              // callback has not arrived yet, the scene must run rather than sit blank.
+              let solarOnScreen = true;
 
               let time = 0;
 
               function isSolarHidden() {
+                // Off-screen counts as hidden: the frame is not seen, so it is not
+                // worth drawing. Time stops advancing while paused, exactly as it
+                // already did for a hidden tab, so the planets resume where they were.
+                if (!solarOnScreen) return true;
                 return typeof document !== 'undefined' && !!document.hidden;
               }
 
@@ -1926,9 +1985,13 @@ const d = labToolData.solarSystem || {};
 
                 canvas.removeEventListener('dblclick', onSolarDblClick);
 
+                canvas.removeEventListener('keydown', onSolarKey);
+
                 if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onSolarVisibilityChange);
 
                 if (resizeObserver) { resizeObserver.disconnect(); resizeObserver = null; }
+
+                if (viewObserver) { viewObserver.disconnect(); viewObserver = null; }
 
                 clearSolarLabels();
 
@@ -2297,6 +2360,20 @@ const d = labToolData.solarSystem || {};
 
               resizeObserver.observe(canvas);
 
+              // IntersectionObserver clips against ancestor overflow, so this is also
+              // correct when the tool scrolls inside the STEM modal rather than the page.
+              // rootMargin resumes the loop just before the model comes back, so it is
+              // already moving when it appears instead of starting frozen.
+              if (typeof IntersectionObserver === 'function') {
+                viewObserver = new IntersectionObserver(function (entries) {
+                  var entry = entries[entries.length - 1];
+                  if (!entry) return;
+                  solarOnScreen = entry.isIntersecting;
+                  if (solarOnScreen) scheduleSolarFrame();
+                }, { rootMargin: '200px' });
+                viewObserver.observe(canvas);
+              }
+
               if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onSolarVisibilityChange);
 
 
@@ -2548,7 +2625,7 @@ const d = labToolData.solarSystem || {};
                               React.createElement("span", { className: "text-sm font-black" }, route.label),
                               React.createElement("span", { className: "text-[11px] font-bold" }, active ? 'Active' : 'Open')
                             ),
-                            React.createElement("p", { className: "mt-1 text-[11px] leading-snug " + (isDark ? 'text-slate-400' : 'text-slate-500') }, route.desc)
+                            React.createElement("p", { className: "mt-1 text-[11px] leading-snug " + (isDark ? 'text-slate-400' : 'text-slate-600') }, route.desc)
                           );
                         })
                       )
@@ -8012,11 +8089,20 @@ const d = labToolData.solarSystem || {};
 
                 ref: canvasRef,
 
-                role: 'img',
+                // role="application", not "img": this canvas takes keyboard input of
+                // its own, and a screen reader in browse mode claims the arrow keys
+                // for itself before the orbit handler ever sees them.
+                role: 'application',
                 'aria-label': 'Interactive 3D solar system model. ' + (sel ? 'Viewing ' + sel.name + '. ' + sel.fact : 'Showing the 8 planets and dwarf planet Pluto orbiting the Sun. Click a planet to explore it.'),
+                'aria-describedby': 'solar3d-canvas-keys',
+                'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown + - PageUp PageDown Home R',
                 tabIndex: 0,
 
-                className: "solar3d-canvas w-full",
+                // Chrome's default focus ring here is a 1px near-black outline on a deep
+                // space background: measured invisible. Same treatment the Particle Lab
+                // canvas uses, with a NEGATIVE offset so the ring sits inside the canvas
+                // box instead of being clipped by the rounded container.
+                className: "solar3d-canvas w-full focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-[-4px] focus-visible:outline-cyan-300",
 
                 style: { height: '520px', display: 'block', cursor: 'grab' },
 
@@ -8027,6 +8113,12 @@ const d = labToolData.solarSystem || {};
                 'data-selected': d.selectedPlanet || ''
 
               }),
+              // The canvas is in the tab order, so a keyboard user lands on it and has
+              // to be told what it answers to. Planet SELECTION already has a keyboard
+              // route through the planet buttons above; this covers the camera.
+              React.createElement("p", { id: "solar3d-canvas-keys", className: "sr-only" },
+                __alloT('stem.solarsystem.canvas_keyboard_instructions',
+                  'When the model has focus: arrow keys orbit the camera, plus and minus zoom, Page Up and Page Down zoom faster, Home or R returns to the default view. Hold Shift for larger steps. Use the planet buttons above to choose a planet.')),
 
               // WebXR "Enter VR" — overlay, shown only when a headset is present.
               (!d.webglError && xrSupported) && React.createElement("button", {
@@ -8074,7 +8166,9 @@ const d = labToolData.solarSystem || {};
 
                 }, __alloT('stem.solarsystem.reset', "\uD83C\uDFE0 Reset")),
 
-                React.createElement("span", { className: "text-[11px] text-white/60 ml-auto hidden sm:inline", style: { fontStyle: 'italic' } }, __alloT('stem.solarsystem.drag_scroll_click', "Drag \u2022 Scroll \u2022 Click"))
+                React.createElement("span", { className: "text-[11px] text-white/60 ml-auto hidden sm:inline", style: { fontStyle: 'italic' } }, __alloT('stem.solarsystem.drag_scroll_click', "Drag \u2022 Scroll \u2022 Click")),
+                React.createElement("span", { className: "text-[11px] text-white/60 hidden sm:inline", style: { fontStyle: 'italic' } },
+                  ' \u2022 \u2190\u2192\u2191\u2193 ' + __alloT('stem.solarsystem.keys_orbit_zoom', 'orbit \u2022 +/- zoom \u2022 R reset'))
 
               )
 
@@ -8345,27 +8439,27 @@ const d = labToolData.solarSystem || {};
                   )
                 ),
 
-                React.createElement("p", { className: "text-sm text-slate-600 italic bg-indigo-50 rounded-lg p-2 border border-indigo-100 mb-2" }, "\uD83D\uDCA1 " + sel.fact),
+                React.createElement("p", { className: "text-sm italic rounded-lg p-2 border mb-2 " + (isDark ? 'bg-slate-800 border-slate-700 text-slate-200' : 'bg-indigo-50 border-indigo-100 text-slate-600') }, "\uD83D\uDCA1 " + sel.fact),
 
-                sel.surfaceDesc && React.createElement("div", { className: "bg-gradient-to-r from-sky-50 to-blue-50 rounded-lg p-2 border border-sky-200 mb-2" },
+                sel.surfaceDesc && React.createElement("div", { className: "rounded-lg p-2 border mb-2 " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-gradient-to-r from-sky-50 to-blue-50 border-sky-200') },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-sky-700 mb-0.5" }, __alloT('stem.solarsystem.surface_description', "\uD83C\uDF0D Surface Description")),
+                  React.createElement("p", { className: "text-[11px] font-bold mb-0.5 " + (isDark ? 'text-sky-300' : 'text-sky-700') }, __alloT('stem.solarsystem.surface_description', "\uD83C\uDF0D Surface Description")),
 
-                  React.createElement("p", { className: "text-[11px] text-sky-600 leading-relaxed" }, sel.surfaceDesc),
+                  React.createElement("p", { className: "text-[11px] leading-relaxed " + (isDark ? 'text-sky-100' : 'text-sky-700') }, sel.surfaceDesc),
 
                 ),
 
-                sel.notableFeatures && sel.notableFeatures.length > 0 && React.createElement("div", { className: "bg-gradient-to-r from-violet-50 to-purple-50 rounded-lg p-2 border border-violet-200 mb-2" },
+                sel.notableFeatures && sel.notableFeatures.length > 0 && React.createElement("div", { className: "rounded-lg p-2 border mb-2 " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-gradient-to-r from-violet-50 to-purple-50 border-violet-200') },
 
-                  React.createElement("p", { className: "text-[11px] font-bold text-violet-700 mb-1" }, __alloT('stem.solarsystem.notable_features', "\uD83C\uDFAF Notable Features")),
+                  React.createElement("p", { className: "text-[11px] font-bold mb-1 " + (isDark ? 'text-violet-300' : 'text-violet-700') }, __alloT('stem.solarsystem.notable_features', "\uD83C\uDFAF Notable Features")),
 
                   React.createElement("div", { className: "grid grid-cols-1 gap-1" },
 
                     sel.notableFeatures.map(function (feat, fi) {
 
-                      return React.createElement("div", { key: fi, className: "flex items-center gap-1.5 text-[11px] text-violet-600" },
+                      return React.createElement("div", { key: fi, className: "flex items-center gap-1.5 text-[11px] " + (isDark ? 'text-violet-100' : 'text-violet-700') },
 
-                        React.createElement("span", { className: "w-1.5 h-1.5 rounded-full bg-violet-400 flex-shrink-0" }),
+                        React.createElement("span", { className: "w-1.5 h-1.5 rounded-full flex-shrink-0 " + (isDark ? 'bg-violet-300' : 'bg-violet-500') }),
 
                         React.createElement("span", null, feat)
 
@@ -13097,6 +13191,10 @@ const d = labToolData.solarSystem || {};
                         // intentionally retain their established free-flight tuning below.
                         var droneFrameDt = 1 / 60;
                         var droneLastFrameMs = null;
+                        // Starts true so the scene runs if IntersectionObserver is
+                        // missing or its first callback has not arrived.
+                        var droneOnScreen = true;
+                        var droneViewObserver = null;
                         var roverDrive = {
                           speed: 0,
                           steering: 0,
@@ -16063,6 +16161,13 @@ const d = labToolData.solarSystem || {};
 
                           animId3d = requestAnimationFrame(animate3dV2);
 
+                          // Scheduled but idle while scrolled away: skipping the body is
+                          // enough, and keeping the rAF alive means there is no restart
+                          // path that can fail and strand a frozen rover. droneLastFrameMs
+                          // was refreshed above, so dt stays honest on the way back (and is
+                          // clamped to 0.05s regardless).
+                          if (!droneOnScreen) return;
+
                           tick3d++;
 
                           // ── Descent intro sequence ──
@@ -18192,6 +18297,8 @@ const d = labToolData.solarSystem || {};
 
                           cancelAnimationFrame(animId3d);
 
+                          if (droneViewObserver) { droneViewObserver.disconnect(); droneViewObserver = null; canvasEl._droneViewObserver = null; }
+
                           if (descentArrivalTimer) { clearTimeout(descentArrivalTimer); descentArrivalTimer = null; }
 
                           disposeRoverAudio();
@@ -18378,6 +18485,22 @@ const d = labToolData.solarSystem || {};
 
                         canvasEl._droneRO = droneRO;
 
+                        if (typeof IntersectionObserver === 'function') {
+                          droneViewObserver = new IntersectionObserver(function (entries) {
+                            var entry = entries[entries.length - 1];
+                            if (!entry) return;
+                            droneOnScreen = entry.isIntersecting;
+                            // updateRoverAudio only runs inside the frame body, so without
+                            // this the motor keeps droning from a scene nobody is looking at.
+                            if (!droneOnScreen && roverAudio) {
+                              try { roverAudio.master.gain.setTargetAtTime(0, roverAudio.context.currentTime, 0.025); } catch (e) {}
+                              canvasEl.dataset.roverAudioLevel = '0.000';
+                            }
+                          }, { rootMargin: '200px' });
+                          droneViewObserver.observe(canvasEl);
+                          canvasEl._droneViewObserver = droneViewObserver;
+                        }
+
                       }
 
 
@@ -18411,7 +18534,7 @@ const d = labToolData.solarSystem || {};
                       }, __alloT('stem.solarsystem.i_have_a_prediction', "\uD83D\uDCDD I have a prediction!")),
                       React.createElement("button", {
                         onClick: function() { upd('poe_seen_' + sel.name, 'skipped'); var seen = (d.poeSeen || []).concat([sel.name]); upd('poeSeen', seen); },
-                        className: "px-3 py-2 text-xs font-bold rounded-lg bg-white text-amber-700 border border-amber-600 hover:bg-amber-50 transition-all"
+                        className: "px-3 py-2 text-xs font-bold rounded-lg border transition-all " + (isDark ? 'bg-slate-800 text-amber-200 border-amber-500 hover:bg-slate-700' : 'bg-white text-amber-700 border-amber-600 hover:bg-amber-50')
                       }, __alloT('stem.solarsystem.skip_for_now', "Skip for now")))
                   ),
 
@@ -18501,11 +18624,11 @@ const d = labToolData.solarSystem || {};
 
                     ),
 
-                    d.quiz && React.createElement("div", { className: "bg-indigo-50 rounded-xl p-4 border border-indigo-200" },
+                    d.quiz && React.createElement("div", { className: "rounded-xl p-4 border " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-indigo-50 border-indigo-200') },
 
-                      d.quiz.concept && React.createElement("div", { className: "text-[11px] font-bold text-indigo-400 mb-1 tracking-wider" }, '\uD83C\uDFAF CONCEPT: ' + d.quiz.concept.toUpperCase()),
+                      d.quiz.concept && React.createElement("div", { className: "text-[11px] font-bold mb-1 tracking-wider " + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, '\uD83C\uDFAF CONCEPT: ' + d.quiz.concept.toUpperCase()),
 
-                      React.createElement("p", { className: "text-sm font-bold text-indigo-800 mb-3" }, d.quiz.q),
+                      React.createElement("p", { className: "text-sm font-bold mb-3 " + (isDark ? 'text-indigo-100' : 'text-indigo-800') }, d.quiz.q),
 
                       React.createElement("div", { className: "grid grid-cols-2 gap-2" },
 
@@ -18549,8 +18672,8 @@ const d = labToolData.solarSystem || {};
                         React.createElement("p", { className: "text-xs font-bold mt-2 " + (isDark ? 'text-emerald-300' : 'text-emerald-600') }, "\u2705 The answer is " + d.quiz.a + ": " + d.quiz.tip),
                         d.quiz.concept && VOCAB[d.quiz.concept] && React.createElement("div", { className: "mt-2 rounded p-2 border " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-100') },
                           React.createElement("span", { className: "text-[11px] font-black text-indigo-500" }, "\uD83D\uDCD6 "),
-                          React.createElement("span", { className: "text-[11px] font-bold text-slate-700" }, d.quiz.concept + ': '),
-                          React.createElement("span", { className: "text-[11px] text-slate-600" }, VOCAB[d.quiz.concept].def))
+                          React.createElement("span", { className: "text-[11px] font-bold " + (isDark ? 'text-slate-200' : 'text-slate-700') }, d.quiz.concept + ': '),
+                          React.createElement("span", { className: "text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, VOCAB[d.quiz.concept].def))
                       ),
 
                       d.quiz.answered && d.quiz.correct && React.createElement("p", { className: "mt-2 text-xs text-emerald-600 italic" }, "\uD83D\uDCA1 " + d.quiz.tip)
@@ -18629,7 +18752,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, "\uD83C\uDF19 Moons of " + sel.name + " (" + sel.moons + " total)"),
                   React.createElement("button", { "aria-label": __alloT('stem.solarsystem.toggle_moon_explorer_panel', "Toggle moon explorer panel"),
                     onClick: function() { upd('showMoons', !d.showMoons); },
-                    className: "transition-colors text-[11px] text-indigo-500 hover:text-indigo-700"
+                    className: "transition-colors text-[11px] " + (isDark ? 'text-indigo-300 hover:text-indigo-200' : 'text-indigo-700 hover:text-indigo-900')
                   }, d.showMoons ? 'Hide' : 'Explore \u2192')
                 ),
                 d.showMoons && React.createElement("div", { className: "space-y-2" },
@@ -18646,7 +18769,7 @@ const d = labToolData.solarSystem || {};
                       React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') + " italic" }, moon.fact),
                       React.createElement("button", { "aria-label": __alloT('stem.solarsystem.listen', "Listen"),
                         onClick: function() { solTouch('moons'); speakText(moon.name + '. ' + moon.fact); },
-                        className: "transition-colors mt-1 text-[11px] text-indigo-400 hover:text-indigo-600"
+                        className: "transition-colors mt-1 text-[11px] " + (isDark ? 'text-indigo-300 hover:text-indigo-200' : 'text-indigo-700 hover:text-indigo-900')
                       }, __alloT('stem.solarsystem.listen_2', "\uD83D\uDD0A Listen"))
                     );
                   })
@@ -18732,7 +18855,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-blue-300' : 'text-blue-700') }, "\uD83E\uDE82 Atmosphere Descent \u2014 " + sel.name),
                   React.createElement("button", { "aria-label": __alloT('stem.solarsystem.toggle_atmosphere_descent_simulator', "Toggle atmosphere descent simulator"),
                     onClick: function() { upd('showDescent', !d.showDescent); if (!d.descentAlt && d.descentAlt !== 0) upd('descentAlt', 100); },
-                    className: "transition-colors text-[11px] text-blue-500 hover:text-blue-700"
+                    className: "transition-colors text-[11px] " + (isDark ? 'text-blue-300 hover:text-blue-200' : 'text-blue-700 hover:text-blue-900')
                   }, d.showDescent ? 'Hide' : 'Descend \u2192')
                 ),
                 d.showDescent && React.createElement("div", null,
@@ -18796,7 +18919,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, __alloT('stem.solarsystem.planet_size_comparison', "\uD83D\uDCCF Planet Size Comparison")),
                   React.createElement("button", { "aria-label": __alloT('stem.solarsystem.toggle_planet_size_comparison', "Toggle planet size comparison"),
                     onClick: function() { upd('showScale', !d.showScale); },
-                    className: "transition-colors text-[11px] text-emerald-500 hover:text-emerald-700"
+                    className: "transition-colors text-[11px] " + (isDark ? 'text-emerald-300 hover:text-emerald-200' : 'text-emerald-700 hover:text-emerald-900')
                   }, d.showScale ? 'Hide' : 'Show \u2192')
                 ),
                 d.showScale && React.createElement("div", { className: "space-y-1" },
@@ -18824,7 +18947,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-purple-300' : 'text-purple-700') }, __alloT('stem.solarsystem.orbital_mechanics', "\uD83C\uDF0C Orbital Mechanics")),
                   React.createElement("button", { "aria-label": __alloT('stem.solarsystem.keplers_three_laws_of_planetary_motion', "Keplers Three Laws of Planetary Motion"),
                     onClick: function() { upd('showOrbital', !d.showOrbital); },
-                    className: "transition-colors text-[11px] text-purple-500 hover:text-purple-700"
+                    className: "transition-colors text-[11px] " + (isDark ? 'text-purple-300 hover:text-purple-200' : 'text-purple-700 hover:text-purple-900')
                   }, d.showOrbital ? 'Hide' : 'Learn \u2192')
                 ),
                 d.showOrbital && React.createElement("div", { className: "space-y-3" },
@@ -18841,7 +18964,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement("div", { className: (isDark ? 'bg-slate-800' : 'bg-indigo-50') + " rounded-xl overflow-hidden border " + (isDark ? 'border-slate-600' : 'border-indigo-200') },
                     // Planet selector buttons
                     React.createElement("div", { className: "flex flex-wrap gap-1 p-2 " + (isDark ? 'bg-slate-900' : 'bg-indigo-100') },
-                      React.createElement("span", { className: "text-[11px] font-bold uppercase tracking-wider self-center mr-1 " + (isDark ? 'text-slate-200' : 'text-indigo-400') }, "Body:"),
+                      React.createElement("span", { className: "text-[11px] font-bold uppercase tracking-wider self-center mr-1 " + (isDark ? 'text-slate-200' : 'text-indigo-700') }, "Body:"),
                       [{ id: 'custom', emoji: '\u2699', name: __alloT('stem.solarsystem.custom', 'Custom') }].concat(PLANETS.map(function(p) { return { id: p.name, emoji: p.emoji, name: p.name }; })).concat([{ id: 'halley', emoji: '\u2604', name: __alloT('stem.solarsystem.halley_s_comet_3', "Halley's Comet") }]).map(function(body) {
                         var isActive = (d._keplerBody || 'custom') === body.id;
                         return React.createElement("button", {
@@ -18857,7 +18980,7 @@ const d = labToolData.solarSystem || {};
                     ),
                     // Math toggle buttons
                     React.createElement("div", { className: "flex gap-1 px-2 py-1 " + (isDark ? 'bg-slate-900/50' : 'bg-indigo-50') },
-                      React.createElement("span", { className: "text-[11px] font-bold uppercase tracking-wider self-center mr-1 " + (isDark ? 'text-slate-200' : 'text-indigo-400') }, "Show:"),
+                      React.createElement("span", { className: "text-[11px] font-bold uppercase tracking-wider self-center mr-1 " + (isDark ? 'text-slate-200' : 'text-indigo-700') }, "Show:"),
                       [{ id: 'equations', label: __alloT('stem.solarsystem.equations', '\uD83D\uDCDD Equations') }, { id: 'energy', label: __alloT('stem.solarsystem.energy', '\u26A1 Energy') }, { id: 'calculus', label: __alloT('stem.solarsystem.calculus', '\u222B Calculus') }, { id: 'vectors', label: __alloT('stem.solarsystem.vectors', '\u2192 Vectors') }].map(function(tog) {
                         var on = d['_keplerShow_' + tog.id] !== false; // default ON
                         return React.createElement("button", {
@@ -19260,9 +19383,9 @@ const d = labToolData.solarSystem || {};
                           },
                           className: "flex-1 h-1.5 accent-amber-500"
                         }),
-                        React.createElement("span", { className: "text-[11px] font-mono w-8 " + (isDark ? 'text-amber-300' : 'text-amber-700') }, (d._keplerSemiA || 100) + ' AU')
+                        React.createElement("span", { className: "text-[11px] font-mono w-8 " + (isDark ? 'text-amber-300' : 'text-amber-800') }, (d._keplerSemiA || 100) + ' AU')
                       ),
-                      React.createElement("p", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-indigo-400') + " italic" }, __alloT('stem.solarsystem.adjust_eccentricity_to_see_how_orbits_', "Adjust eccentricity to see how orbits change from circular (e\u22480) to highly elliptical (e\u22481). Watch how the velocity vector and swept areas respond in real-time."))
+                      React.createElement("p", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-indigo-700') + " italic" }, __alloT('stem.solarsystem.adjust_eccentricity_to_see_how_orbits_', "Adjust eccentricity to see how orbits change from circular (e\u22480) to highly elliptical (e\u22481). Watch how the velocity vector and swept areas respond in real-time."))
                     )
                   ),
                   // Orbital speed visualization
@@ -19292,7 +19415,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-pink-300' : 'text-pink-700') }, __alloT('stem.solarsystem.planet_builder', "\uD83C\uDFD7 Planet Builder")),
                   React.createElement("button", { "aria-label": __alloT('stem.solarsystem.design_your_own_hypothetical_planet', "Design your own hypothetical planet!"),
                     onClick: function() { upd('showBuilder', !d.showBuilder); },
-                    className: "transition-colors text-[11px] text-pink-500 hover:text-pink-700"
+                    className: "transition-colors text-[11px] " + (isDark ? 'text-pink-300 hover:text-pink-200' : 'text-pink-700 hover:text-pink-900')
                   }, d.showBuilder ? 'Hide' : 'Build \u2192')
                 ),
                 d.showBuilder && React.createElement("div", { className: "space-y-2" },
@@ -19358,7 +19481,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-teal-300' : 'text-teal-700') }, __alloT('stem.solarsystem.exoplanet_comparison', "\uD83C\uDF0C Exoplanet Comparison")),
                   React.createElement("button", { "aria-label": __alloT('stem.solarsystem.toggle_exoplanet_comparison_panel', "Toggle exoplanet comparison panel"),
                     onClick: function() { upd('showExo', !d.showExo); },
-                    className: "transition-colors text-[11px] text-teal-500 hover:text-teal-700"
+                    className: "transition-colors text-[11px] " + (isDark ? 'text-teal-300 hover:text-teal-200' : 'text-teal-700 hover:text-teal-900')
                   }, d.showExo ? 'Hide' : 'Explore \u2192')
                 ),
                 d.showExo && React.createElement("div", { className: "space-y-1.5" },
@@ -19386,7 +19509,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-yellow-300' : 'text-yellow-700') }, "\uD83E\uDD14 What If? \u2014 " + sel.name),
                   React.createElement("button", { "aria-label": __alloT('stem.solarsystem.toggle_what_if_scenarios_panel', "Toggle What If scenarios panel"),
                     onClick: function() { upd('showWhatIf', !d.showWhatIf); },
-                    className: "transition-colors text-[11px] text-yellow-500 hover:text-yellow-700"
+                    className: "transition-colors text-[11px] " + (isDark ? 'text-yellow-300 hover:text-yellow-200' : 'text-yellow-700 hover:text-yellow-900')
                   }, d.showWhatIf ? 'Hide' : 'Think \u2192')
                 ),
                 d.showWhatIf && React.createElement("div", { className: "space-y-2" },
@@ -19396,7 +19519,7 @@ const d = labToolData.solarSystem || {};
                       React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, wi.a),
                       React.createElement("button", { "aria-label": __alloT('stem.solarsystem.listen_3', "Listen"),
                         onClick: function() { solTouch('whatif'); speakText(wi.q + ' ' + wi.a); },
-                        className: "transition-colors mt-1 text-[11px] text-yellow-400 hover:text-yellow-600"
+                        className: "transition-colors mt-1 text-[11px] " + (isDark ? 'text-yellow-300 hover:text-yellow-200' : 'text-yellow-700 hover:text-yellow-900')
                       }, __alloT('stem.solarsystem.listen_4', "\uD83D\uDD0A Listen"))
                     );
                   })
@@ -19409,11 +19532,16 @@ const d = labToolData.solarSystem || {};
                 React.createElement("div", { className: "flex items-center gap-2 mb-1" },
                   React.createElement("div", {
                     className: "w-8 h-8 rounded-full flex items-center justify-center text-sm",
-                    style: { background: MAGNETOSPHERE[sel.key].shield ? 'linear-gradient(135deg, #818cf8, #6366f1)' : 'linear-gradient(135deg, #94a3b8, #64748b)' }
+                    // The glyph inside had no colour of its own, so it inherited whatever
+                    // the host set — black in any shell that does not set one, on a
+                    // mid-slate gradient. Fixed white, with both gradients darkened one
+                    // step so white clears 4.5:1 at BOTH stops (lightest stops were
+                    // #818cf8 at 3.0 and #94a3b8 at 2.4).
+                    style: { color: '#ffffff', background: MAGNETOSPHERE[sel.key].shield ? 'linear-gradient(135deg, #6366f1, #4338ca)' : 'linear-gradient(135deg, #475569, #334155)' }
                   }, MAGNETOSPHERE[sel.key].shield ? '\uD83D\uDEE1' : '\u2716'),
                   React.createElement("div", null,
                     React.createElement("div", { className: "text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, "Field strength: " + MAGNETOSPHERE[sel.key].strength),
-                    React.createElement("div", { className: "text-[11px] " + (MAGNETOSPHERE[sel.key].shield ? 'text-green-500' : 'text-red-500') }, MAGNETOSPHERE[sel.key].shield ? '\u2705 Protected from solar wind' : '\u274C No magnetic shielding')
+                    React.createElement("div", { className: "text-[11px] " + (MAGNETOSPHERE[sel.key].shield ? (isDark ? 'text-green-300' : 'text-green-700') : (isDark ? 'text-red-300' : 'text-red-700')) }, MAGNETOSPHERE[sel.key].shield ? '\u2705 Protected from solar wind' : '\u274C No magnetic shielding')
                   )
                 ),
                 React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-700') + " italic" }, MAGNETOSPHERE[sel.key].note)
@@ -19425,7 +19553,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.space_exploration_timeline', "\uD83D\uDCC5 Space Exploration Timeline")),
                   React.createElement("button", { "aria-label": __alloT('stem.solarsystem.toggle_space_exploration_timeline', "Toggle space exploration timeline"),
                     onClick: function() { upd('showTimeline', !d.showTimeline); },
-                    className: "transition-colors text-[11px] text-slate-600 hover:text-slate-700"
+                    className: "transition-colors text-[11px] " + (isDark ? 'text-slate-300 hover:text-slate-200' : 'text-slate-700 hover:text-slate-900')
                   }, d.showTimeline ? 'Hide' : 'View \u2192')
                 ),
                 d.showTimeline && React.createElement("div", { className: "relative pl-4 border-l-2 " + (isDark ? 'border-slate-600' : 'border-indigo-200') + " space-y-1.5 max-h-64 overflow-y-auto" },
@@ -19433,7 +19561,7 @@ const d = labToolData.solarSystem || {};
                     return React.createElement("div", { key: evi, className: "relative" },
                       React.createElement("div", { className: "absolute -left-[21px] top-1 w-3 h-3 rounded-full " + (isDark ? 'bg-indigo-400' : 'bg-indigo-500') }),
                       React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') },
-                        React.createElement("span", { className: "font-bold text-indigo-500 mr-1" }, ev.year),
+                        React.createElement("span", { className: "font-bold mr-1 " + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, ev.year),
                         React.createElement("span", { className: "mr-1" }, ev.icon),
                         ev.event
                       )
@@ -19455,7 +19583,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-rose-300' : 'text-rose-700') }, "\uD83D\uDE80 Mission to " + sel.name + " (Hohmann Transfer)"),
                   React.createElement("button", { "aria-label": __alloT('stem.solarsystem.toggle_hohmann_transfer_calculator', "Toggle Hohmann transfer calculator"),
                     onClick: function() { upd('showHohmann', !d.showHohmann); },
-                    className: "transition-colors text-[11px] text-rose-500 hover:text-rose-700"
+                    className: "transition-colors text-[11px] " + (isDark ? 'text-rose-300 hover:text-rose-200' : 'text-rose-700 hover:text-rose-900')
                   }, d.showHohmann ? 'Hide' : 'Plan \u2192')
                 ),
                 d.showHohmann && React.createElement("div", null,
@@ -19570,7 +19698,7 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-red-300' : 'text-red-700') }, __alloT('stem.solarsystem.escape_velocity', "\uD83D\uDE80 Escape Velocity")),
                   React.createElement("button", { "aria-label": __alloT('stem.solarsystem.toggle_escape_velocity_comparison', "Toggle escape velocity comparison"),
                     onClick: function() { upd('showEscape', !d.showEscape); },
-                    className: "transition-colors text-[11px] text-red-500 hover:text-red-700"
+                    className: "transition-colors text-[11px] " + (isDark ? 'text-red-300 hover:text-red-200' : 'text-red-700 hover:text-red-900')
                   }, d.showEscape ? 'Hide' : 'Show \u2192')
                 ),
                 d.showEscape && React.createElement("div", { className: "space-y-1" },
@@ -19752,7 +19880,7 @@ const d = labToolData.solarSystem || {};
                 React.createElement("div", { className: "space-y-1.5" },
                   (EXTRA_FACTS[sel.key] || []).map(function(fact, fi) {
                     return React.createElement("div", { key: fi, className: "text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') + " flex items-start gap-2" },
-                      React.createElement("span", { style: { fontWeight: 700, color: isDark ? '#fbbf24' : '#d97706', minWidth: '16px', fontSize: '10px' } }, (fi + 1) + "."),
+                      React.createElement("span", { style: { fontWeight: 700, color: isDark ? '#fbbf24' : '#b45309', minWidth: '16px', fontSize: '10px' } }, (fi + 1) + "."),
                       fact
                     );
                   })
@@ -25817,12 +25945,12 @@ const d = labToolData.solarSystem || {};
                   React.createElement("span", { className: "text-xs font-bold " + (isDark ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.solarsystem.mission_log', "\uD83D\uDCCB Mission Log")),
                   React.createElement("button", { "aria-label": __alloT('stem.solarsystem.no_entries_yet_start_exploring', "No entries yet. Start exploring!"),
                     onClick: function() { upd('showLog', !d.showLog); },
-                    className: "transition-colors text-[11px] text-indigo-500 hover:text-indigo-700"
+                    className: "transition-colors text-[11px] " + (isDark ? 'text-indigo-300 hover:text-indigo-200' : 'text-indigo-700 hover:text-indigo-900')
                   }, d.showLog ? 'Hide' : 'Show (' + (missionLog.length) + ')')
                 ),
                 d.showLog && React.createElement("div", { className: "space-y-1 max-h-32 overflow-y-auto" },
                   missionLog.length === 0
-                    ? React.createElement("div", { className: "text-[11px] text-slate-600 italic" }, __alloT('stem.solarsystem.no_entries_yet_start_exploring_2', "No entries yet. Start exploring!"))
+                    ? React.createElement("div", { className: "text-[11px] italic " + (isDark ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.solarsystem.no_entries_yet_start_exploring_2', "No entries yet. Start exploring!"))
                     : missionLog.map(function(entry, ei) {
                         return React.createElement("div", { key: ei, className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-700') + " flex gap-2" },
                           React.createElement("span", { className: "text-slate-600 font-mono whitespace-nowrap" }, entry.time),
@@ -25910,11 +26038,11 @@ const d = labToolData.solarSystem || {};
                   })
                 ),
                 // Show steps for active path
-                d.learningPath && LEARNING_PATHS[d.learningPath] && React.createElement("div", { className: "mt-2 bg-indigo-50 rounded-lg p-3 border border-indigo-100" },
+                d.learningPath && LEARNING_PATHS[d.learningPath] && React.createElement("div", { className: "mt-2 rounded-lg p-3 border " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-indigo-50 border-indigo-100') },
                   LEARNING_PATHS[d.learningPath].steps.map(function(step, si2) {
                     return React.createElement("div", { key: si2, className: "flex items-start gap-2 mb-1" },
-                      React.createElement("span", { className: "text-[11px] font-bold text-indigo-400 mt-0.5" }, (si2 + 1) + '.'),
-                      React.createElement("span", { className: "text-[11px] text-slate-600" }, step)
+                      React.createElement("span", { className: "text-[11px] font-bold mt-0.5 " + (isDark ? 'text-indigo-300' : 'text-indigo-700') }, (si2 + 1) + '.'),
+                      React.createElement("span", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, step)
                     );
                   })
                 )
@@ -25997,10 +26125,10 @@ const d = labToolData.solarSystem || {};
                     }, (looked ? '\u2705 ' : '') + term + (v.grade > 6 ? ' \u2B50' : ''));
                   })
                 ),
-                d.showVocab && d.vocabSelected && VOCAB[d.vocabSelected] && React.createElement("div", { className: "mt-2 bg-indigo-50 rounded-lg p-3 border border-indigo-200" },
-                  React.createElement("div", { className: "text-xs font-bold text-indigo-800 mb-1" }, d.vocabSelected),
-                  React.createElement("p", { className: "text-[11px] text-slate-600 leading-relaxed" }, VOCAB[d.vocabSelected].def),
-                  React.createElement("div", { className: "text-[11px] text-slate-200 mt-1" }, "Grade level: " + VOCAB[d.vocabSelected].grade + "+")
+                d.showVocab && d.vocabSelected && VOCAB[d.vocabSelected] && React.createElement("div", { className: "mt-2 rounded-lg p-3 border " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-indigo-50 border-indigo-200') },
+                  React.createElement("div", { className: "text-xs font-bold mb-1 " + (isDark ? 'text-indigo-200' : 'text-indigo-800') }, d.vocabSelected),
+                  React.createElement("p", { className: "text-[11px] leading-relaxed " + (isDark ? 'text-slate-200' : 'text-slate-600') }, VOCAB[d.vocabSelected].def),
+                  React.createElement("div", { className: "text-[11px] mt-1 " + (isDark ? 'text-slate-300' : 'text-slate-600') }, "Grade level: " + VOCAB[d.vocabSelected].grade + "+")
                 )
               ),
 
@@ -26053,13 +26181,15 @@ const d = labToolData.solarSystem || {};
                   }, __alloT('stem.solarsystem.export_progress_csv', "\uD83D\uDCCA Export Progress (CSV)")),
                   React.createElement("span", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.solarsystem.for_teacher_review', "For teacher review"))
                 ),
-                // Quick stats summary
+                // Quick stats summary. Both tile colours are theme-paired: the dark-card
+                // values (slate-400 muted, green-500 earned) measure 2.45 and ~2.0 against
+                // the light card, so a light-mode student could not read their own progress.
                 React.createElement("div", { className: "mt-2 grid grid-cols-4 gap-1" },
                   [
-                    { label: __alloT('stem.solarsystem.planets', 'Planets'), value: planetsVisited.length + '/9', color: planetsVisited.length >= 9 ? '#22c55e' : '#94a3b8' },
-                    { label: __alloT('stem.solarsystem.quiz', 'Quiz'), value: (d.quiz ? d.quiz.score : 0) + '', color: (d.quiz && d.quiz.score >= 5) ? '#22c55e' : '#94a3b8' },
-                    { label: __alloT('stem.solarsystem.journal', 'Journal'), value: journalEntries.length + '', color: journalEntries.length > 0 ? '#22c55e' : '#94a3b8' },
-                    { label: __alloT('stem.solarsystem.vocab', 'Vocab'), value: (d.vocabLookedUp || []).length + '/' + Object.keys(VOCAB).length, color: 'var(--allo-stem-text-soft, #94a3b8)' }
+                    { label: __alloT('stem.solarsystem.planets', 'Planets'), value: planetsVisited.length + '/9', color: planetsVisited.length >= 9 ? (isDark ? '#22c55e' : '#15803d') : (isDark ? '#94a3b8' : '#475569') },
+                    { label: __alloT('stem.solarsystem.quiz', 'Quiz'), value: (d.quiz ? d.quiz.score : 0) + '', color: (d.quiz && d.quiz.score >= 5) ? (isDark ? '#22c55e' : '#15803d') : (isDark ? '#94a3b8' : '#475569') },
+                    { label: __alloT('stem.solarsystem.journal', 'Journal'), value: journalEntries.length + '', color: journalEntries.length > 0 ? (isDark ? '#22c55e' : '#15803d') : (isDark ? '#94a3b8' : '#475569') },
+                    { label: __alloT('stem.solarsystem.vocab', 'Vocab'), value: (d.vocabLookedUp || []).length + '/' + Object.keys(VOCAB).length, color: (isDark ? '#94a3b8' : '#475569') }
                   ].map(function(stat) {
                     return React.createElement("div", { key: stat.label, className: "text-center p-1.5 rounded border " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-100') },
                       React.createElement("div", { className: "text-sm font-bold", style: { color: stat.color, fontFamily: 'monospace' } }, stat.value),

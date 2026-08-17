@@ -611,14 +611,20 @@
         // Teacher-facing lists contain only resolvable records — structural
         // grouping/framework nodes stay traversal-only, same rule as
         // resolveStandard. Results are bounded and deterministically ordered.
-        function neighborsByType(record, type, direction, maxResults) {
+        // includeUnresolvable is opt-in and off for every existing caller. Non-resolvable
+        // records are normally structural scaffolding (frameworks, clusters) that must never
+        // surface as a "related standard", hence the default skip. Learning components are the
+        // one legitimate exception: they are deliberately non-resolvable so they stay out of
+        // search, yet they are exactly what getLearningComponents is asked to return.
+        function neighborsByType(record, type, direction, maxResults, includeUnresolvable) {
             const out = [];
             let truncated = false;
             for (const entry of adjacency.get(idToken(record.id)) || []) {
                 if (entry.relationship.type !== type) continue;
                 if (direction && entry.direction !== direction) continue;
                 const other = byId.get(entry.otherId);
-                if (!other || other.resolvable === false) continue;
+                if (!other) continue;
+                if (other.resolvable === false && !includeUnresolvable) continue;
                 if (out.length >= maxResults) { truncated = true; break; }
                 out.push(publicRecord(other));
             }
@@ -665,22 +671,32 @@
         }
 
         function getLearningComponents(id, options) {
-            // The Academic Standards dataset represents a standard's component
-            // statements as its hasChild children (cluster -> standard ->
-            // component parts). This returns DIRECT children only, and only
-            // resolvable ones; it deliberately does not synthesize components
-            // that the source data does not contain. When a dedicated
-            // learning-components dataset is imported later, this method is
-            // where it surfaces, under the same shape.
+            // NAMING WARNING — see getComponentCoverage. That function also says "component"
+            // but means a standard's hasChild sub-statements, which are auditable. This one
+            // means pedagogical LearningComponent nodes, which are not. Different edge, different
+            // meaning; `edgeSource` on both returns is the reliable discriminator.
+            //
+            // Two possible sources, in order of authority:
+            //
+            //   1. Real LearningComponent nodes, attached to the standard by INCOMING
+            //      `supports` edges. This is the upstream learning-components layer, and it
+            //      only exists in snapshots built with --include-components.
+            //   2. Otherwise the historical approximation: the standard's own hasChild
+            //      children (cluster -> standard -> component parts).
+            //
+            // The approximation is kept because most shipped snapshots do not carry
+            // components, and it is better than nothing — but it is a different thing, so
+            // edgeSource always reports which one the caller got. Nothing is synthesized.
             const record = getRecord(id);
             if (!record) return null;
             const maxResults = boundedMax(options);
-            const children = neighborsByType(record, 'hasChild', 'outgoing', maxResults);
+            const supported = neighborsByType(record, 'supports', 'incoming', maxResults, true);
+            const children = supported.records.length ? supported : neighborsByType(record, 'hasChild', 'outgoing', maxResults);
             return {
                 standard: record.resolvable === false ? null : publicRecord(record),
                 components: children.records,
                 truncated: children.truncated,
-                edgeSource: 'hasChild',
+                edgeSource: supported.records.length ? 'supports' : 'hasChild',
                 dataset: cloneManifest(value.dataset)
             };
         }
@@ -732,10 +748,20 @@
             }
             const missing = Array.from(missingById.values());
             missing.sort((a, b) => compareRecords({ record: a }, { record: b }));
+            // prerequisiteEdgesExamined is the count of buildsTowards edges actually looked at.
+            // It exists because `missing.length === 0` has TWO meanings and they are opposite:
+            // "checked, and the sequencing is complete" versus "there was nothing to check".
+            // Only ccss-math carries buildsTowards edges (757, which is every one in the whole
+            // Learning Commons v1.11.0 export); ccss-ela and ma-science-grade-5 have none. So an
+            // ELA audit resolves its standards, finds 0 of 0 prerequisites, and a caller reading
+            // only `missing.length` reports a clean bill of health for a check that never ran.
+            // Callers MUST gate any "no missing prerequisites" claim on this being > 0.
+            const prerequisiteEdgesExamined = evaluated.reduce((total, entry) => total + (entry.prerequisiteCount || 0), 0);
             return {
                 evaluated,
                 missing,
                 unresolved,
+                prerequisiteEdgesExamined,
                 edgeSource: 'buildsTowards',
                 dataset: cloneManifest(value.dataset)
             };
@@ -795,6 +821,19 @@
             return { standards: picked, pool: pool.length, gradeFiltered: graded.length > 0 };
         }
         function getComponentCoverage(queries, options) {
+            // NAMING WARNING — this is NOT getLearningComponents, and the two words "component"
+            // mean different things:
+            //
+            //   getComponentCoverage   hasChild   sub-STATEMENTS of a standard (5.MD.A.1 ->
+            //                                     5.MD.A.1a). Things a teacher can audit against,
+            //                                     hence "is it in the audited set".
+            //   getLearningComponents  supports   pedagogical LearningComponent nodes ("Act out
+            //                                     'look'"). Never in an audited set.
+            //
+            // Do not "fix" this one to use `supports` for symmetry. LearningComponents can never
+            // be members of an audited set, so it would report 0% coverage forever. Both
+            // functions report their edge type in `edgeSource`; trust that, not the name.
+            //
             // Component-level alignment by SET MEMBERSHIP, the same spine as
             // getPrerequisiteGaps: resolve the audited standards, then for each
             // one that has source-provided hasChild components, report which

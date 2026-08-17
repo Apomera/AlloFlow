@@ -1457,10 +1457,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         return h('g', { filter: 'url(#blSoftDrop)' },
           // Water reflection
           h('ellipse', { cx: 17, cy: 23.5, rx: 12, ry: 1.4, fill: '#3a5a8a', opacity: 0.28 }),
-          // Black underside / belly
-          h('path', { d: 'M 5 17 Q 4.5 23.5 16 23.8 Q 27 23.5 27 17 Q 16 19.5 5 17 Z', fill: '#0c0c0c' }),
+          // Black underside / belly. The drake's whole field mark is "white
+          // above, black below" in roughly equal halves; this had the white
+          // covering about twice the depth of the black, so out on the swell
+          // at ~20px the bird lost its split and read as one pale lozenge.
+          // The two bands are now balanced and the outline is darker, which is
+          // what carries the mark at distance.
+          h('path', { d: 'M 4.6 15.6 Q 4.2 23.6 16 23.9 Q 27.4 23.6 27.4 15.6 Q 16 18.4 4.6 15.6 Z', fill: '#0c0c0c' }),
           // White back / breast
-          h('path', { d: 'M 4 15.5 Q 3.5 9.5 16 9.5 Q 28 9.5 28 15.5 Q 28 18 16 18 Q 4.5 18 4 15.5 Z', fill: '#fbfbf7', stroke: '#3a3a3a', strokeWidth: 0.4 }),
+          h('path', { d: 'M 4 15.2 Q 3.5 9.3 16 9.3 Q 28 9.3 28 15.2 Q 28 17.4 16 17.4 Q 4.5 17.4 4 15.2 Z', fill: '#fbfbf7', stroke: '#22252b', strokeWidth: 0.55 }),
           // Pale peach flush on the breast (real eider drake mark)
           h('path', { d: 'M 6 14 Q 6 11 11 11 Q 15 11.2 15 14 Q 12 15 6 14 Z', fill: '#f0d8c0', opacity: 0.7 }),
           blShade(h, 16, 15.5, 12, 6),
@@ -1688,9 +1693,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       // Layer 0: distant background (sky already gradient)
       if (z === 0) {
         return h('g', null,
-          // Distant tree silhouettes
-          h('path', { d: 'M 0 380 Q 50 320 100 380 Q 150 290 200 380 Q 250 310 300 380 Q 350 280 400 380 Q 450 320 500 380 Q 550 290 600 380 Q 650 320 700 380 Q 750 280 800 380 Q 850 310 900 380 L 900 500 L 0 500 Z',
-            fill: '#7a9a7a' })
+          // Distant treeline. This was eleven identical Q arches on a constant
+          // 50-unit pitch, which reads as a scalloped border rather than as
+          // trees. Crown width and height now vary tree to tree, and a second
+          // nearer band in a darker tone gives the ridge some depth.
+          h('g', null,
+            h('path', {
+              d: 'M 0 384 Q 34 330 72 380 Q 104 300 148 378 Q 178 338 214 382 Q 252 292 300 376'
+                + ' Q 330 344 366 381 Q 402 306 452 378 Q 486 330 520 382 Q 558 296 606 377'
+                + ' Q 638 340 674 381 Q 712 302 762 379 Q 796 334 830 382 Q 866 310 900 380'
+                + ' L 900 500 L 0 500 Z',
+              fill: '#7a9a7a'
+            }),
+            h('path', {
+              d: 'M 0 406 Q 60 368 118 404 Q 176 360 240 406 Q 300 372 356 405 Q 420 358 486 404'
+                + ' Q 546 374 604 406 Q 668 362 730 404 Q 790 370 848 406 Q 878 390 900 404'
+                + ' L 900 500 L 0 500 Z',
+              fill: '#6b8d6d'
+            })
+          )
         );
       }
       // Layer 1: middle-distance trees
@@ -1712,7 +1733,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       if (z === 3) {
         return h('g', null,
           // Mid-front tree on the right side, partly framing the nuthatch
-          h('rect', { x: 740, y: 150, width: 40, height: 350, fill: '#4a3525' }),
+          // Trunks flare toward the base and carry vertical bark. A uniform
+          // rect reads as a post, and this is the trunk the nuthatch walks
+          // head-down, so it is worth having bark to walk on.
+          h('path', { d: 'M 742 150 L 778 150 L 784 500 L 736 500 Z', fill: '#4a3525' }),
+          h('g', { fill: 'none', stroke: '#5d442f', strokeWidth: 2.4, opacity: 0.55 },
+            h('path', { d: 'M 750 154 L 747 500 M 761 152 L 762 500 M 771 156 L 776 500' })
+          ),
+          h('g', { fill: 'none', stroke: '#33241a', strokeWidth: 1.6, opacity: 0.5 },
+            h('path', { d: 'M 755 160 L 753 498 M 767 158 L 770 498' })
+          ),
           birdlabCanopy(h, 760, 160, 80, 110, '#3a7a3a', '#4f9349', '#2b5d31', 0.85, 9, 1.7),
           // Mid-front branch stretching across (occludes some birds). Drawn as
           // a tapered filled path rather than a uniform 4px stroke, and the tip
@@ -1729,7 +1759,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       if (z === 4) {
         return h('g', null,
           // Big foreground tree on left
-          h('rect', { x: 30, y: 100, width: 50, height: 400, fill: '#3a2a1a' }),
+          h('path', { d: 'M 32 100 L 78 100 L 86 500 L 24 500 Z', fill: '#3a2a1a' }),
+          h('g', { fill: 'none', stroke: '#4d382a', strokeWidth: 3, opacity: 0.5 },
+            h('path', { d: 'M 42 104 L 38 500 M 56 102 L 56 500 M 70 106 L 76 500' })
+          ),
+          h('g', { fill: 'none', stroke: '#241a12', strokeWidth: 2, opacity: 0.5 },
+            h('path', { d: 'M 48 110 L 45 498 M 64 108 L 67 498' })
+          ),
           birdlabCanopy(h, 55, 110, 90, 130, '#2a6a2a', '#3d833a', '#1e4f22', 1, 9, 2.6),
           // Forest floor / leaf litter
           h('path', { d: 'M 0 440 L 900 430 L 900 500 L 0 500 Z', fill: '#8a7050' }),
@@ -1824,6 +1860,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 }),
                 h('ellipse', { cx: stemX + lean, cy: headY, rx: 2, ry: 5, fill: '#3a2515' })
               );
+            }),
+            // Sedge bed along the bank. The vireo's hint reads "Hidden in the
+            // reeds — only the song betrays it", and there was nothing at all
+            // where it flies: it crossed open sky above the bank with its legs
+            // dangling, so the clue described scenery that did not exist and
+            // the marsh's hardest bird was its most exposed one.
+            //
+            // It TRAVELS, measured at scene x 198 to 405 across the behaviour
+            // states, so a single clump cannot cover it — the bed spans that
+            // whole stretch. Slender sedge, not cattails, and deliberately
+            // sparse: the bird has to stay findable through the gaps or the
+            // I-Spy target becomes impossible rather than hard.
+            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].map(function(i) {
+              var reedX = 194 + i * 16 + ((i * 7) % 9);
+              var reedLean = ((i % 2) ? 1 : -1) * (3 + (i % 5));
+              var reedTop = 282 + ((i * 13) % 31);
+              return h('path', {
+                key: 'vreed' + i,
+                d: 'M ' + reedX + ' 380 Q ' + (reedX + reedLean * 0.4) + ' ' + ((reedTop + 380) / 2)
+                  + ' ' + (reedX + reedLean) + ' ' + reedTop,
+                fill: 'none', stroke: '#6f8a4a', strokeWidth: 1.4, strokeLinecap: 'round', opacity: 0.8
+              });
             })
           );
         }
@@ -1899,11 +1957,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             // Left house
             h('rect', { x: 214, y: 300, width: 72, height: 50, fill: '#a3968a' }),
             h('path', { d: 'M 204 302 L 250 276 L 296 302 Z', fill: '#8a7669' }),
+            // Shingle courses and a ridge line. Flat roof triangles read as
+            // paper folded over a box; two courses are enough at this distance
+            // to say "roof" without competing with the feeder.
+            h('g', { fill: 'none', stroke: '#7a675b', strokeWidth: 1.1, opacity: 0.6 },
+              h('path', { d: 'M 219 294 L 281 294 M 227 288 L 273 288 M 234 283 L 266 283' })
+            ),
+            h('path', { d: 'M 204 302 L 296 302', stroke: '#6f5d51', strokeWidth: 1.4, opacity: 0.65, fill: 'none' }),
             h('rect', { x: 232, y: 310, width: 16, height: 14, fill: '#cbbfa6', opacity: 0.85 }),
             h('rect', { x: 240, y: 270, width: 12, height: 25, fill: '#7a6a5a' }),
             // Right house, set slightly further back and a touch hazier
             h('rect', { x: 524, y: 296, width: 84, height: 54, fill: '#a99c8f', opacity: 0.94 }),
             h('path', { d: 'M 512 298 L 566 270 L 620 298 Z', fill: '#8f7b6d', opacity: 0.94 }),
+            h('g', { fill: 'none', stroke: '#7f6c5f', strokeWidth: 1.1, opacity: 0.5 },
+              h('path', { d: 'M 528 290 L 604 290 M 537 284 L 595 284 M 546 278 L 586 278' })
+            ),
+            h('path', { d: 'M 512 298 L 620 298', stroke: '#746256', strokeWidth: 1.3, opacity: 0.55, fill: 'none' }),
             h('rect', { x: 546, y: 306, width: 18, height: 15, fill: '#cbbfa6', opacity: 0.78 }),
             h('rect', { x: 560, y: 265, width: 14, height: 25, fill: '#7a6a5a' })
           );
@@ -2078,8 +2147,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             // now steps into the water and carries a darker wet band plus a
             // foam line at the waterline, so the rock reads as entering the sea.
             h('path', { d: 'M 0 280 L 50 250 L 120 260 L 180 245 L 230 265 L 270 280 L 282 318 L 236 330 L 168 322 L 96 332 L 0 324 Z', fill: '#9a8a8a' }),
+            // Facets. The outcrop was one flat mauve fill with a single thin
+            // crack scratched on it, which reads as a paper cutout — the same
+            // defect the mountain boulder already had fixed. Granite breaks
+            // along planes, so it gets planes: each catches the light
+            // differently and the joints between them do the describing.
+            h('path', { d: 'M 0 280 L 50 250 L 58 294 L 0 302 Z', fill: '#a89898', opacity: 0.9 }),
+            h('path', { d: 'M 50 250 L 120 260 L 112 298 L 58 294 Z', fill: '#8e7f80', opacity: 0.88 }),
+            h('path', { d: 'M 120 260 L 180 245 L 192 290 L 112 298 Z', fill: '#a29192', opacity: 0.85 }),
+            h('path', { d: 'M 180 245 L 230 265 L 270 280 L 240 302 L 192 290 Z', fill: '#87797a', opacity: 0.9 }),
+            h('g', { fill: 'none', stroke: '#5f5050', strokeLinecap: 'round' },
+              h('path', { d: 'M 50 250 L 58 294 M 120 260 L 112 298 M 180 245 L 192 290', strokeWidth: 1.1, opacity: 0.55 }),
+              h('path', { d: 'M 22 272 L 46 266 M 138 268 L 166 262 M 206 258 L 228 268', strokeWidth: 0.8, opacity: 0.4 })
+            ),
             h('path', { d: 'M 0 310 L 96 318 L 168 310 L 236 318 L 282 310 L 282 318 L 236 330 L 168 322 L 96 332 L 0 324 Z', fill: '#7d6f70', opacity: 0.85 }),
-            h('path', { d: 'M 50 280 L 100 270 L 150 280', stroke: '#5a4a4a', strokeWidth: 1, fill: 'none' }),
             h('path', { d: 'M 0 326 Q 60 334 120 326 Q 190 318 262 328', fill: 'none', stroke: '#eef6f7', strokeWidth: 2.4, opacity: 0.5 }),
             // Smaller foreground rock right side
             h('path', { d: 'M 700 440 L 750 430 L 820 445 L 850 470 L 700 490 Z', fill: '#7a6a6a' }),
@@ -2704,21 +2785,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       // reads as an insect's membrane at this size. Dark tail with PALE bands,
       // not the other way round, which is both how the bird is marked and the
       // only version that does not look like a wasp's abdomen.
-      wingFill: '#8c96a3', bodyFill: '#e9e2d4', edge: '#3f4854', headFill: '#79828f',
-      billFill: '#3f4854', tailShadeFill: '#7b8592',
+      // Underwing coverts are close to the body tone with the flight feathers
+      // darker along the trailing edge and at the tips. Painting the whole
+      // wing dark against a bright pale body split the bird into three
+      // objects — two grey paddles and a pale lozenge between them — which is
+      // most of why it read as an insect however the shapes were tuned.
+      wingFill: '#ded8ca', bodyFill: '#e9e2d4', edge: '#3f4854', headFill: '#79828f',
+      billFill: '#3f4854', tailShadeFill: '#8d97a3',
+      mirroredOverlays: [
+        { d: 'M3.4 14.4 C6.4 16.0 9.4 17.0 12.8 17.6', stroke: '#8a94a1', strokeWidth: 1.5, opacity: 0.9 },
+        { d: 'M2.0 10.8 L0.8 11.6 L2.4 12.0 L1.2 12.8 L2.8 13.2 L1.8 14.0 L3.4 14.4 C3.0 13.0 2.4 11.8 2.0 10.8 Z', fill: '#7f8996', opacity: 0.92 }
+      ],
       // Broad, ROUNDED, and nearly full span. A Cooper's hawk's wingspan is
       // about 1.9x its body length; the "flying cross" people describe is the
       // long TAIL, not short wings. Drawing it short-winged was what made it
       // read as a wasp in the first place.
-      // Held nearly HORIZONTAL. A wing that sweeps down and back from a narrow
-      // shoulder is an insect wing; a soaring accipiter holds them straight out
-      // to the sides, so the leading edge stays close to level.
-      leftWing: 'M12.6 11.4 C9.0 10.4 5.0 10.6 2.2 11.6 C1.2 12.0 1.3 12.9 2.4 13.4'
-        + ' C5.0 14.6 8.6 15.5 13.0 16.2 Z',
-      bodyPath: 'M13.4 10.2 C12.0 12.0 11.9 14.6 12.4 17.6 C12.6 18.6 12.7 19.4 12.8 20.2'
-        + ' L12.9 25.6 Q15 27.4 17.1 25.6 L17.2 20.2 C17.3 19.4 17.4 18.6 17.6 17.6'
-        + ' C18.1 14.6 18.0 12.0 16.6 10.2 Z',
-      tailShade: 'M12.82 19.6 L12.9 25.6 Q15 27.4 17.1 25.6 L17.18 19.6 Z',
+      // Held nearly HORIZONTAL, with a straight leading edge, a trailing edge
+      // that BULGES back, and slotted fingers at a rounded tip. The previous
+      // version tapered to a thin blade almost immediately, so the wings read
+      // as propeller paddles rather than as a raptor's broad soaring surface.
+      leftWing: 'M12.4 11.2 C8.8 10.2 5.0 10.2 2.0 10.8 L0.8 11.6 L2.4 12.0 L1.2 12.8'
+        + ' L2.8 13.2 L1.8 14.0 L3.4 14.4 C6.4 16.0 9.4 17.0 12.8 17.6 Z',
+      // Shorter and broader through the chest: the old outline was a 2.8:1
+      // lozenge, which is an abdomen.
+      bodyPath: 'M13.2 10.2 C11.6 12.0 11.4 14.8 12.2 17.8 C12.5 18.8 12.7 19.6 12.9 20.4'
+        + ' L12.9 24.8 Q15 26.6 17.1 24.8 L17.1 20.4 C17.3 19.6 17.5 18.8 17.8 17.8'
+        + ' C18.6 14.8 18.4 12.0 16.8 10.2 Z',
+      tailShade: 'M12.9 20.2 L12.9 24.8 Q15 26.6 17.1 24.8 L17.1 20.2 Z',
       billPath: 'M14.3 7.8 L15 6.2 L15.7 7.8 Z',
       headR: 1.9, headCy: 8.8
     },
@@ -2740,16 +2833,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   // which take coordinate PAIRS: the numbers alternate x, y, so flipping the
   // even-indexed ones reflects the shape. Keep it that way — an H, V, S or A
   // command would break this assumption silently.
-  function mirrorFlightWing(d) {
+  // Reflect a path through a vertical axis by flipping every even-indexed
+  // number. Valid only for absolute M/L/C/Q/Z paths, whose numbers alternate
+  // x, y — an H, V, S, T or A command breaks the assumption silently.
+  function birdlabMirrorPathX(d, axis) {
     var index = 0;
     return String(d).replace(/-?\d+(?:\.\d+)?/g, function(token) {
       var isX = (index % 2) === 0;
       index += 1;
-      return isX ? String(Number((30 - Number(token)).toFixed(2))) : token;
+      return isX ? String(Number((axis - Number(token)).toFixed(2))) : token;
     });
   }
+  function mirrorFlightWing(d) { return birdlabMirrorPathX(d, 30); }
   function renderSoaringBird(h, speciesKey, fieldPose) {
     var art = SOARING_FLIGHT_ART[speciesKey] || SOARING_FLIGHT_ART.coopershawk;
+    // Wing markings are authored ONCE on the left and mirrored with the wing
+    // itself, for the same reason the wing outline is: two hand-written halves
+    // drift the moment either is retouched.
+    var wingMarks = (art.mirroredOverlays || []).map(function(mark, markIndex) {
+      var side = function(d, suffix) {
+        var props = { key: 'wingmark-' + markIndex + suffix, d: d, fill: mark.fill == null ? 'none' : mark.fill };
+        if (mark.opacity != null) props.opacity = mark.opacity;
+        if (mark.stroke) { props.stroke = mark.stroke; props.strokeWidth = mark.strokeWidth; props.strokeLinecap = 'round'; }
+        return h('path', props);
+      };
+      return h('g', { key: 'wingmark-' + markIndex }, side(mark.d, '-l'), side(mirrorFlightWing(mark.d), '-r'));
+    });
     return h('g', { 'aria-hidden': 'true', 'data-birdlab-field-pose': fieldPose, 'data-birdlab-flight-pose': speciesKey },
       // Wings FIRST, body over them. The other way round the wings cover the
       // outer third of the body on each side and what is left reads as a thin
@@ -2758,6 +2867,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       // the shoulder joint disappear.
       h('path', { d: art.leftWing, fill: art.wingFill, stroke: art.edge, strokeWidth: 0.7, strokeLinejoin: 'round' }),
       h('path', { d: mirrorFlightWing(art.leftWing), fill: art.wingFill, stroke: art.edge, strokeWidth: 0.7, strokeLinejoin: 'round' }),
+      wingMarks,
       // Body + tail as ONE stroked silhouette.
       h('path', { d: art.bodyPath, fill: art.bodyFill, stroke: art.edge, strokeWidth: 0.6, strokeLinejoin: 'round' }),
       // Tail tone, if the species has one, unstroked and inside that outline.
@@ -2777,7 +2887,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       // ONLY marking kept. Underwing and breast barring were both dropped: at
       // scene scale three sets of parallel bars turned the bird into a wasp,
       // stripes on a thorax and a banded abdomen. One marking, read clearly.
-      speciesKey === 'coopershawk' && h('g', { fill: 'none', stroke: '#e6e9ec', strokeWidth: 1.0, opacity: 0.92 },
+      speciesKey === 'coopershawk' && h('g', { fill: 'none', stroke: '#dfe4e9', strokeWidth: 0.95, opacity: 0.72 },
         h('path', { d: 'M12.95 20.8 L17.05 20.8 M12.95 23.2 L17.05 23.2 M13.15 25.6 L16.85 25.6' })
       ),
       speciesKey === 'raven' && h('path', {
@@ -2914,7 +3024,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       h('path', { d: 'M4 16 L0 20 L7 18 Z', fill: '#64748b' }),
       h('g', { className: 'birdlab-anatomy-motion birdlab-heron-neck' },
         h('path', { d: 'M15 15 C20 15 15 7 20 5 C22 4 23 6 22 8 C20 10 18 9 18 12', fill: 'none', stroke: '#9fb0bd', strokeWidth: 3.3, strokeLinecap: 'round' }),
-        h('circle', { cx: 21.5, cy: 5.5, r: 2.8, fill: '#9fb0bd', stroke: '#475569', strokeWidth: .65 }),
+        // Flatter head, and NO outline. An outlined blob at the end of a neck
+        // of the same colour reads as an eye, because the outline is the only
+        // thing separating head from neck — the bird appeared to have one
+        // enormous owl eye and the real 0.65 eye dot was lost inside it.
+        // Unstroked, head and neck are one shape and the only dark point on it
+        // is the eye, which is what makes an eye read.
+        h('ellipse', { cx: 21.8, cy: 5.4, rx: 3.0, ry: 2.2, fill: '#9fb0bd' }),
         h('path', { d: 'M20 3.4 Q23 1.2 25 3.5', fill: 'none', stroke: '#334155', strokeWidth: .9 }),
         h('path', { d: 'M24 5 L33 7 L24 7.2 Z', fill: '#d6a33d', stroke: '#7c5c20', strokeWidth: .45 }),
         h('circle', { cx: 22.6, cy: 4.8, r: .65, fill: '#0f172a' })
@@ -2987,19 +3103,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     );
     if (fieldPose === 'kingfisher-hover') {
       return h('g', { 'aria-hidden': 'true', 'data-birdlab-field-pose': fieldPose, 'data-birdlab-flight-pose': 'kingfisher-hover' },
-        // Beating wings, not antennae. These were slivers a couple of tenths
-        // wide running from the shoulder to y=1, well above the head, which at
-        // scene scale read as a moth's feelers. Broader chord, and they stop
-        // above the crest instead of at the top of the box.
-        h('path', { d: 'M13.2 14.6 C9.0 12.2 6.0 8.4 4.6 4.2 C8.0 5.8 11.2 8.8 14.2 12.4 Z', fill: '#64748b', stroke: '#334155', strokeWidth: 0.7, strokeLinejoin: 'round' }),
-        h('path', { d: 'M16.8 14.6 C21.0 12.2 24.0 8.4 25.4 4.2 C22.0 5.8 18.8 8.8 15.8 12.4 Z', fill: '#64748b', stroke: '#334155', strokeWidth: 0.7, strokeLinejoin: 'round' }),
-        h('ellipse', { cx: 15, cy: 17, rx: 4.4, ry: 7.8, fill: '#dbeafe', stroke: '#334155', strokeWidth: 0.7 }),
-        h('path', { d: 'M11 17 Q15 13 19 17 L18 22 Q15 25 12 22 Z', fill: '#3f647d', opacity: 0.9 }),
+        // A belted kingfisher is TOP-HEAVY: an oversized shaggy-crested head
+        // and a dagger bill on a compact body. This had it the other way round
+        // — a small dark head circle on a big pale oval, with two narrow
+        // wings above it — so it read as a cat's face, and at scene scale as a
+        // moth. The head is now larger than the body and the bill is the
+        // longest thing in the sprite, which is what the bird actually is.
+        h('path', { d: 'M12.6 15.4 C9.2 13.4 6.4 10.2 5.0 6.4 C8.2 8.0 11.0 10.6 13.8 13.6 Z', fill: '#5b7387', stroke: '#334155', strokeWidth: 0.6, strokeLinejoin: 'round' }),
+        h('path', { d: 'M17.4 15.4 C20.8 13.4 23.6 10.2 25.0 6.4 C21.8 8.0 19.0 10.6 16.2 13.6 Z', fill: '#5b7387', stroke: '#334155', strokeWidth: 0.6, strokeLinejoin: 'round' }),
+        h('ellipse', { cx: 15, cy: 19.6, rx: 3.7, ry: 5.4, fill: '#eef4fa', stroke: '#334155', strokeWidth: 0.65 }),
+        // Blue breast band and white collar: the two marks that separate it
+        // from every other bird in this marsh at a glance.
+        h('path', { d: 'M11.4 18.2 Q15 16.6 18.6 18.2 Q18.2 20.6 15 21.0 Q11.8 20.6 11.4 18.2 Z', fill: '#4f7188', opacity: 0.92 }),
+        h('path', { d: 'M11.3 14.7 Q15 13.3 18.7 14.7 Q15 15.9 11.3 14.7 Z', fill: '#f8fafc' }),
         h('g', { className: 'birdlab-behavior-motion birdlab-anatomy-motion--pinned-safe' + (behaviorState && (behaviorState.state === 'aim' || behaviorState.state === 'pre-dive') ? ' birdlab-kingfisher-aim' : ' birdlab-kingfisher-balance') },
-          h('circle', { cx: 15, cy: 9.5, r: 4.4, fill: '#4f7188', stroke: '#334155', strokeWidth: 0.7 }),
-          h('path', { d: 'M11 8 L8 5 L12.5 6.2 Z', fill: '#3f647d' }),
-          h('path', { d: 'M18.5 9 L27 10.8 L18.5 11.2 Z', fill: '#334155' }),
-          h('circle', { cx: 16.8, cy: 8.6, r: 0.8, fill: '#f8fafc' })
+          h('circle', { cx: 14.6, cy: 9.6, r: 5.0, fill: '#4f7188', stroke: '#334155', strokeWidth: 0.65 }),
+          // Shaggy crest: several ragged points, not one smooth triangle.
+          h('path', { d: 'M10.4 6.8 L8.0 3.2 L11.4 5.0 L10.6 2.0 L13.2 4.4 L13.5 1.6 L15.6 4.8 Z', fill: '#446277' }),
+          h('path', { d: 'M18.6 9.0 L28.6 11.0 L18.6 11.7 Z', fill: '#2b3949' }),
+          h('circle', { cx: 16.6, cy: 8.5, r: 0.9, fill: '#f8fafc' }),
+          h('circle', { cx: 16.8, cy: 8.6, r: 0.42, fill: '#0f172a' })
         )
       );
     }
@@ -13857,7 +13980,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               // so on a 390px phone the whole tool scrolled sideways. Capped,
               // the card becomes 342x300, which is exactly the geometry
               // dev-tools/birdlab_visual_qa.mjs has always modelled.
-              style: { aspectRatio: (habitat.width / habitat.height).toString(), minHeight: '300px', maxWidth: '100%', touchAction: 'none' }
+              // On a small stage the lens auto-focuses to a 450x500 sector, but
+              // the card kept the habitat's 1.8 aspect and the SVG paints with
+              // preserveAspectRatio="slice" — so cover-scaling threw away HALF
+              // the scene height, centred. Measured on a real 390x844 mount:
+              // card y 103..403, and the one bird the tool marked
+              // presence="visible" sat at y=406, entirely below the card. The
+              // auto-focus made birds bigger and then hid them, and because the
+              // crop is applied automatically the student never chose it.
+              // Giving the card the LENS's aspect when the stage is small
+              // leaves slice with nothing to crop. Desktop is untouched: there
+              // the stage is never small, so a deliberately chosen focused lens
+              // keeps its cinematic crop.
+              style: {
+                aspectRatio: (sceneStageIsSmall && activeSceneLens && activeSceneLens.id !== 'wide' && activeSceneLens.h
+                  ? (activeSceneLens.w / activeSceneLens.h)
+                  : (habitat.width / habitat.height)).toString(),
+                minHeight: '300px', maxWidth: '100%', touchAction: 'none'
+              }
             },
               h('div', { className: 'birdlab-scope-corners', 'aria-hidden': 'true' }),
               h('div', {
@@ -15537,57 +15677,74 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       // the deep evolution story of how beak shape can change in a few
       // generations under selection pressure.
       // ─────────────────────────────────────────────────────
+      // Each bill is drawn ON A HEAD. They used to float alone in the 35x20 box
+      // at 2-6 units tall, which paints a 3-10px sliver at the rendered 60x32:
+      // eight near-identical dashes for a panel whose whole lesson is "8 bill
+      // shapes — click to learn what each one eats". A bill has no readable
+      // shape without a head to give it scale and a place to attach, which is
+      // why every field guide draws it that way. Head is neutral grey so the
+      // bill carries the colour and the eye is the only other mark.
+      var beakHead = function(h) {
+        return [
+          h('path', { key: 'hd', d: 'M 13 4.4 C 7.5 2.4 1.6 4.6 1.6 10 C 1.6 15.4 7.5 17.6 13 15.6 Z', fill: '#8d8578' }),
+          h('circle', { key: 'ey', cx: 7.4, cy: 8.6, r: 1.15, fill: '#12161c' })
+        ];
+      };
+      var beakArt = function(h, billPath, fill, extra) {
+        var kids = beakHead(h);
+        kids.push(h('path', { key: 'bl', d: billPath, fill: fill, stroke: '#00000022', strokeWidth: 0.3 }));
+        if (extra) kids.push(extra);
+        return h('g', null, kids);
+      };
       var BEAK_TYPES = [
         {
           id: 'cone', label: __alloT('stem.birdlab.cone_seed_cracker', 'Cone (seed-cracker)'),
           diet: 'Seeds — strong jaw muscles to crack hard shells',
           examples: 'Northern Cardinal, House Finch, Evening Grosbeak, sparrows',
-          svg: function(h) { return h('path', { d: 'M 0 10 L 20 8 L 20 12 Z', fill: '#3a3a3a' }); }
+          svg: function(h) { return beakArt(h, 'M 12 5.6 L 25 10 L 12 14.4 Z', '#4a4640'); }
         },
         {
           id: 'hook', label: __alloT('stem.birdlab.hook_raptor', 'Hook (raptor)'),
           diet: 'Tearing meat from prey — hooked tip rips, sharp edges slice',
           examples: 'Bald Eagle, Cooper\'s Hawk, owls, falcons',
-          svg: function(h) { return h('path', { d: 'M 0 8 L 18 8 Q 22 8 22 12 Q 20 14 18 12 L 0 12 Z', fill: '#3a3a3a' }); }
+          svg: function(h) { return beakArt(h, 'M 12 5.4 L 21 6.4 Q 26.5 8 26.6 11.4 Q 24.4 14.6 22.4 11.6 Q 20 9.4 12 13.4 Z', '#3f3b36'); }
         },
         {
           id: 'spear', label: __alloT('stem.birdlab.spear_fish', 'Spear (fish)'),
           diet: 'Fish — long sharp bill stabs through water at high speed',
           examples: 'Great Blue Heron, egrets, kingfishers (slightly modified version)',
-          svg: function(h) { return h('path', { d: 'M 0 9 L 35 10 L 0 11 Z', fill: '#e8c440' }); }
+          svg: function(h) { return beakArt(h, 'M 12 7.9 L 34 10 L 12 12.1 Z', '#e8c440'); }
         },
         {
           id: 'tube', label: __alloT('stem.birdlab.tube_nectar', 'Tube (nectar)'),
           diet: 'Flower nectar — long thin bill probes deep flower throats; tongue extends past bill tip',
           examples: 'Hummingbirds (Ruby-throated common in Maine summers)',
-          svg: function(h) { return h('path', { d: 'M 0 9.5 L 32 9.5 L 32 10.5 L 0 10.5 Z', fill: '#1a1a1a' }); }
+          svg: function(h) { return beakArt(h, 'M 12 8.9 Q 24 9.5 34.2 10.6 L 34.2 11.4 Q 24 10.7 12 11.1 Z', '#1f1c1a'); }
         },
         {
           id: 'chisel', label: __alloT('stem.birdlab.chisel_excavator', 'Chisel (excavator)'),
           diet: 'Insects in wood + sap — bill is straight chisel; skull and neck shock-absorb hammering',
           examples: 'Pileated Woodpecker, all woodpeckers',
-          svg: function(h) { return h('path', { d: 'M 0 8 L 22 9 L 22 11 L 0 12 Z', fill: '#e8d8a8', stroke: '#8a7a4a', strokeWidth: 0.4 }); }
+          svg: function(h) { return beakArt(h, 'M 12 6.2 L 26.5 8.5 L 26.5 11.5 L 12 13.8 Z', '#ddcfa2'); }
         },
         {
           id: 'filter', label: __alloT('stem.birdlab.filter_dabbler', 'Filter (dabbler)'),
           diet: 'Floating plants + small invertebrates — flat bill with comb-like edges strains water',
           examples: 'Mallard, Common Eider, geese',
-          svg: function(h) { return h('path', { d: 'M 0 7 L 20 7 Q 22 8 22 11 Q 22 13 20 13 L 0 13 Z', fill: '#e8c440', stroke: '#8a7020', strokeWidth: 0.4 }); }
+          svg: function(h) { return beakArt(h, 'M 12 5.8 L 24 6.4 Q 28.6 7.6 28.6 10 Q 28.6 12.6 24 13.6 L 12 14.2 Z', '#e0bf4a'); }
         },
         {
           id: 'parrot', label: __alloT('stem.birdlab.parrot_like_wedge', 'Parrot-like wedge'),
           diet: 'Small fish — colorful triangular bill carries multiple fish at once for chicks',
           examples: 'Atlantic Puffin (the Maine icon) — and other auks',
-          svg: function(h) { return h('g', null,
-            h('path', { d: 'M 0 8 L 15 7 Q 20 8 20 11 Q 18 13 15 12 L 0 12 Z', fill: '#e85a20' }),
-            h('path', { d: 'M 8 8.5 L 18 9 L 18 11 L 8 11.5 Z', fill: '#e8c020' })
-          ); }
+          svg: function(h) { return beakArt(h, 'M 12 4.6 L 23.5 6.6 Q 26.6 10 23.5 13.6 L 12 15.4 Z', '#e85a20',
+            h('path', { key: 'bd', d: 'M 16.4 7.4 L 24.6 8.8 Q 25.6 10 24.6 11.4 L 16.4 12.6 Z', fill: '#f0c520' })); }
         },
         {
           id: 'thin', label: __alloT('stem.birdlab.thin_probe_insectivore', 'Thin probe (insectivore)'),
           diet: 'Insects on leaves + bark — slender bill plucks small bugs',
           examples: 'Red-eyed Vireo, warblers, kinglets',
-          svg: function(h) { return h('path', { d: 'M 0 9.5 L 22 10 L 22 10.5 L 0 10.5 Z', fill: '#3a3a3a' }); }
+          svg: function(h) { return beakArt(h, 'M 12 8.8 L 23.5 10 L 12 11.2 Z', '#43403c'); }
         }
       ];
 
@@ -22286,7 +22443,149 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
         var cur = SILHOUETTES[idx];
 
+        // ── Quiz silhouettes ───────────────────────────────────────────────
+        // These were the weakest art in the tool and the sub-tool is ENTIRELY
+        // silhouettes: 'buteo' was a plain <ellipse>, 'loon' another ellipse,
+        // 'crow' a plain <rect>, 'raven' a flat bar, and the eagle's body was a
+        // literal 10x25 rectangle hanging below its wings, which reads as a
+        // bird impaled on a post. Several species were therefore not merely
+        // crude but INDISTINGUISHABLE from each other, in a quiz whose own
+        // description calls this "the skill experienced birders use for distant
+        // flying birds".
+        //
+        // One generator, one row of numbers per species, so every bird is built
+        // the same way and the differences between them are real ones: wing
+        // span and chord, how pointed or fingered the tip is, dihedral, tail
+        // shape and length, head and neck projection, trailing legs. The left
+        // wing is authored once and mirrored, so the halves cannot drift.
+        // Head is up, wings spread, tail down — the same convention as the
+        // habitat scene's soaring sprites, so the two teach one shape language.
+        var SIL_INK = '#1e293b';
+        // Body and tail as ONE tapered outline, never two shapes stacked. Drawn
+        // separately they read as a post with a bar on the end — the same
+        // thorax-and-abdomen problem the habitat scene's soaring sprites had,
+        // and the reason the old eagle looked impaled on a stick.
+        var silBodyTail = function(p) {
+          var w = p.bodyW, top = p.bodyTop, tt = p.tailTop, tw = p.tailW, len = p.tailLen;
+          var bot = tt + len;
+          var d = 'M' + (150 - w * 0.5) + ' ' + top
+            + ' C' + (150 - w) + ' ' + (top + (tt - top) * 0.3) + ' ' + (150 - w * 0.92) + ' ' + (tt - 5) + ' ' + (150 - tw) + ' ' + tt;
+          if (p.tail === 'wedge') {
+            d += ' L150 ' + (bot + len * 0.4) + ' L' + (150 + tw) + ' ' + tt;
+          } else if (p.tail === 'fork') {
+            d += ' L' + (150 - tw * 1.2) + ' ' + bot + ' L150 ' + (tt + len * 0.45) + ' L' + (150 + tw * 1.2) + ' ' + bot + ' L' + (150 + tw) + ' ' + tt;
+          } else if (p.tail === 'fan') {
+            d += ' Q' + (150 - tw * 1.55) + ' ' + bot + ' 150 ' + (bot + 4) + ' Q' + (150 + tw * 1.55) + ' ' + bot + ' ' + (150 + tw) + ' ' + tt;
+          } else {
+            d += ' L' + (150 - tw) + ' ' + bot + ' L' + (150 + tw) + ' ' + bot + ' L' + (150 + tw) + ' ' + tt;
+          }
+          d += ' C' + (150 + w * 0.92) + ' ' + (tt - 5) + ' ' + (150 + w) + ' ' + (top + (tt - top) * 0.3) + ' ' + (150 + w * 0.5) + ' ' + top + ' Z';
+          return d;
+        };
+        var renderSilhouetteParts = function(p) {
+          var parts = [];
+          // Wings behind the body, as with the scene sprites: body-first hides
+          // the outer third of the body and leaves a strip between two paddles.
+          parts.push(h('path', { key: 'wl', d: p.wing, fill: SIL_INK }));
+          parts.push(h('path', { key: 'wr', d: birdlabMirrorPathX(p.wing, 300), fill: SIL_INK }));
+          if (p.legs) parts.push(h('path', { key: 'lg', d: p.legs, fill: SIL_INK }));
+          parts.push(h('path', { key: 'bd', d: silBodyTail(p), fill: SIL_INK }));
+          if (p.neck) parts.push(h('path', { key: 'nk', d: p.neck, fill: SIL_INK }));
+          if (p.head) parts.push(h('path', { key: 'hd', d: p.head, fill: SIL_INK }));
+          return h('g', null, parts);
+        };
+        // span/chord/tip shape carry the ID. Numbers are in the 300x200 box.
+        var SIL_SHAPES = {
+          // Long plank wings held flat with deep fingers, short square tail, big
+          // projecting head. The classic "flying door".
+          eagle: { wing: 'M138 92 C110 84 74 82 34 86 L20 92 L38 95 L22 100 L40 103 L26 109 L46 110 C82 112 112 110 139 106 Z',
+            bodyW: 17, bodyTop: 76, tailTop: 120, tail: 'square', tailW: 11, tailLen: 20,
+            head: 'M150 60 C142 60 138 66 138 72 C138 78 143 82 150 82 C157 82 162 78 162 72 C162 66 158 60 150 60 Z M162 68 L178 71 L162 76 Z' },
+          // The M-kink at the wrist is the whole osprey mark.
+          osprey: { wing: 'M139 92 C122 84 108 78 88 76 C74 88 58 96 30 100 L52 106 C76 106 98 102 118 98 C128 96 134 94 140 104 Z',
+            bodyW: 14, bodyTop: 78, tailTop: 116, tail: 'square', tailW: 8, tailLen: 17,
+            head: 'M150 64 C143 64 139 69 139 74 C139 80 144 84 150 84 C156 84 161 80 161 74 C161 69 157 64 150 64 Z M161 70 L175 73 L161 77 Z' },
+          // Strong dihedral V, long fingers, small head, longish tail.
+          turkeyvulture: { wing: 'M138 96 C112 84 78 74 36 68 L26 76 L44 82 L28 86 L46 92 L32 97 L52 100 C86 106 114 108 139 108 Z',
+            bodyW: 15, bodyTop: 82, tailTop: 118, tail: 'square', tailW: 9, tailLen: 24,
+            head: 'M150 74 C145 74 142 78 142 82 C142 86 146 89 150 89 C154 89 158 86 158 82 C158 78 155 74 150 74 Z' },
+          // Broad rounded wings, short FANNED tail — chunky and wide-shouldered.
+          buteo: { wing: 'M137 90 C112 78 78 76 50 86 C40 90 38 98 46 104 C74 114 110 112 138 108 Z',
+            bodyW: 18, bodyTop: 78, tailTop: 116, tail: 'fan', tailW: 15, tailLen: 22,
+            head: 'M150 66 C142 66 137 71 137 77 C137 83 143 86 150 86 C157 86 163 83 163 77 C163 71 158 66 150 66 Z M163 73 L177 76 L163 80 Z' },
+          // Accipiter: SHORT rounded wings and a very long tail — a flying cross.
+          accipiter: { wing: 'M138 90 C118 80 92 80 72 90 C64 94 64 100 72 104 C94 112 118 110 139 106 Z',
+            bodyW: 15, bodyTop: 76, tailTop: 112, tail: 'long', tailW: 9, tailLen: 46,
+            head: 'M150 66 C143 66 139 71 139 76 C139 82 144 85 150 85 C156 85 161 82 161 76 C161 71 157 66 150 66 Z M161 72 L173 75 L161 79 Z' },
+          // Sickle: sharply pointed, swept hard back, short tail.
+          falcon: { wing: 'M139 90 C120 78 92 66 58 56 C62 74 76 92 100 102 C114 108 128 110 140 108 Z',
+            bodyW: 15, bodyTop: 78, tailTop: 114, tail: 'square', tailW: 8, tailLen: 26,
+            head: 'M150 68 C144 68 140 72 140 77 C140 82 145 85 150 85 C155 85 160 82 160 77 C160 72 156 68 150 68 Z M160 73 L171 76 L160 80 Z' },
+          // Long narrow angled wings with a crook, short tail, bill projecting.
+          gull: { wing: 'M139 92 C118 82 92 72 58 66 C44 64 32 66 26 72 C40 78 62 88 88 96 C106 102 126 106 140 106 Z',
+            bodyW: 14, bodyTop: 80, tailTop: 114, tail: 'square', tailW: 9, tailLen: 16,
+            head: 'M150 68 C143 68 139 73 139 78 C139 83 144 86 150 86 C156 86 161 83 161 78 C161 73 157 68 150 68 Z M161 74 L176 77 L161 81 Z' },
+          // Slimmer than the gull, sharper, and DEEPLY forked.
+          tern: { wing: 'M139 92 C120 82 96 68 64 56 C56 62 56 74 68 86 C86 100 116 108 140 108 Z',
+            bodyW: 12, bodyTop: 82, tailTop: 112, tail: 'fork', tailW: 8, tailLen: 30,
+            head: 'M150 72 C145 72 141 76 141 80 C141 84 145 87 150 87 C155 87 159 84 159 80 C159 76 155 72 150 72 Z M159 77 L173 80 L159 83 Z' },
+          // Neck folded into an S bulge, broad bowed wings, legs trailing well
+          // past the tail. The trailing legs are the heron.
+          heron: { wing: 'M138 96 C112 84 76 80 40 88 C30 92 30 100 40 105 C76 114 112 112 139 108 Z',
+            bodyW: 17, bodyTop: 82, tailTop: 118, tail: 'square', tailW: 10, tailLen: 14,
+            neck: 'M142 84 C134 78 134 68 142 64 C150 60 160 62 163 68 L156 72 C151 69 145 70 145 75 C145 79 149 82 154 83 Z',
+            head: 'M163 62 L182 68 L163 73 Z',
+            legs: 'M146 136 L142 176 L148 176 L152 136 Z M154 136 L158 176 L164 176 L160 136 Z' },
+          // Crank-shaped: long neck out front and a long tail, wings mid-body.
+          cormorant: { wing: 'M139 96 C118 88 92 86 66 92 C58 96 58 102 66 106 C92 112 118 110 140 106 Z',
+            bodyW: 15, bodyTop: 86, tailTop: 118, tail: 'long', tailW: 8, tailLen: 32,
+            neck: 'M144 88 L146 62 L156 62 L154 88 Z',
+            head: 'M151 54 C145 54 141 58 141 62 C141 66 146 68 151 68 C156 68 160 66 160 62 C160 58 157 54 151 54 Z M160 59 L174 62 L160 66 Z' },
+          // Hunchbacked, neck DROOPING below the body line, big feet trailing.
+          loon: { wing: 'M139 94 C122 88 102 86 82 90 C74 94 74 100 82 104 C102 110 124 108 140 104 Z',
+            bodyW: 18, bodyTop: 82, tailTop: 114, tail: 'square', tailW: 8, tailLen: 12,
+            neck: 'M143 86 C136 84 132 78 134 72 C137 66 146 64 152 66 L150 74 C146 73 142 74 142 78 C142 81 144 84 148 85 Z',
+            head: 'M154 60 C148 60 144 64 144 68 C144 72 149 74 154 74 C159 74 163 72 163 68 C163 64 160 60 154 60 Z M163 65 L178 68 L163 72 Z',
+            legs: 'M146 130 L143 152 L150 152 L152 130 Z M154 130 L160 152 L166 152 L160 130 Z' },
+          // Plump, pointed wings swept back, neck out, short tail.
+          duck: { wing: 'M139 94 C120 86 96 76 68 68 C64 78 72 92 92 100 C110 107 128 108 140 106 Z',
+            bodyW: 19, bodyTop: 82, tailTop: 116, tail: 'square', tailW: 9, tailLen: 14,
+            neck: 'M145 86 L148 66 L158 66 L155 86 Z',
+            head: 'M154 58 C148 58 144 62 144 66 C144 70 149 72 154 72 C160 72 164 70 164 66 C164 62 160 58 154 58 Z M164 63 L178 66 L164 70 Z' },
+          // Long neck out front, broad wings, heavy body.
+          goose: { wing: 'M139 96 C116 86 86 80 54 82 C44 86 44 96 54 101 C86 110 116 110 140 106 Z',
+            bodyW: 20, bodyTop: 84, tailTop: 118, tail: 'square', tailW: 10, tailLen: 14,
+            neck: 'M144 88 L146 56 L157 56 L155 88 Z',
+            head: 'M152 46 C146 46 142 50 142 55 C142 59 147 62 152 62 C157 62 161 59 161 55 C161 50 158 46 152 46 Z M161 52 L174 55 L161 59 Z' },
+          // Crow vs raven is the tail: crow SQUARE, raven WEDGE. Same wings.
+          crow: { wing: 'M138 94 C114 84 84 80 52 84 L38 90 L54 94 L40 99 L56 103 C86 110 114 110 139 106 Z',
+            bodyW: 15, bodyTop: 80, tailTop: 116, tail: 'square', tailW: 11, tailLen: 26,
+            head: 'M150 68 C143 68 139 73 139 78 C139 83 144 86 150 86 C156 86 161 83 161 78 C161 73 157 68 150 68 Z M161 74 L174 77 L161 81 Z' },
+          raven: { wing: 'M138 94 C112 82 80 76 46 80 L30 87 L48 92 L32 98 L50 103 C84 111 114 111 139 106 Z',
+            bodyW: 16, bodyTop: 78, tailTop: 116, tail: 'wedge', tailW: 12, tailLen: 24,
+            head: 'M150 64 C142 64 138 69 138 75 C138 81 143 84 150 84 C157 84 162 81 162 75 C162 69 158 64 150 64 Z M162 70 L179 74 L162 79 Z' },
+          // Top-heavy: outsized head, dagger bill, short rounded wings.
+          kingfisher: { wing: 'M139 98 C124 92 108 90 92 94 C86 98 86 104 92 107 C110 112 128 110 140 106 Z',
+            bodyW: 15, bodyTop: 88, tailTop: 114, tail: 'square', tailW: 8, tailLen: 16,
+            head: 'M150 62 C140 62 134 69 134 77 C134 85 141 90 150 90 C159 90 166 85 166 77 C166 69 160 62 150 62 Z M166 72 L192 78 L166 84 Z' },
+          // Crested head on a long neck, broad rounded wings.
+          'woodpecker-large': { wing: 'M139 96 C120 86 96 84 74 90 C66 94 66 102 74 106 C96 112 120 110 140 106 Z',
+            bodyW: 16, bodyTop: 84, tailTop: 116, tail: 'square', tailW: 9, tailLen: 26,
+            neck: 'M145 88 L147 70 L156 70 L154 88 Z',
+            head: 'M151 56 C144 56 140 61 140 66 C140 71 145 74 151 74 C157 74 161 71 161 66 C161 61 158 56 151 56 Z M144 58 L138 44 L152 54 Z M161 62 L175 66 L161 70 Z' },
+          // Bulky: broad rounded wings, small head, big fanned tail.
+          turkey: { wing: 'M137 96 C114 88 88 88 66 96 C58 100 58 106 66 110 C90 116 116 114 138 108 Z',
+            bodyW: 23, bodyTop: 84, tailTop: 118, tail: 'fan', tailW: 20, tailLen: 30,
+            neck: 'M146 88 L148 72 L156 72 L154 88 Z',
+            head: 'M152 62 C147 62 143 66 143 70 C143 74 147 77 152 77 C157 77 161 74 161 70 C161 66 157 62 152 62 Z' },
+          // Small, rounded wings, notched tail.
+          songbird: { wing: 'M139 98 C126 92 112 90 100 94 C94 98 94 104 100 107 C114 112 130 110 140 106 Z',
+            bodyW: 13, bodyTop: 88, tailTop: 112, tail: 'fork', tailW: 7, tailLen: 20,
+            head: 'M150 76 C144 76 140 80 140 84 C140 88 145 91 150 91 C155 91 160 88 160 84 C160 80 156 76 150 76 Z M160 81 L170 84 L160 87 Z' }
+        };
         var renderSilhouette = function(shape) {
+          var spec = SIL_SHAPES[shape] || (shape === 'falcon-large' ? SIL_SHAPES.falcon : null);
+          if (spec) return renderSilhouetteParts(spec);
           var w = 300, hgt = 200;
           if (shape === 'eagle') return h('path', { d: 'M 150 100 L 80 80 Q 40 90 30 100 Q 50 95 80 100 L 145 105 L 145 130 L 155 130 L 155 105 L 220 100 Q 250 95 270 100 Q 260 90 220 80 Z M 150 100 L 150 80 Q 145 75 140 75 Q 140 85 145 95 Z', fill: '#1e293b' });
           if (shape === 'osprey') return h('path', { d: 'M 60 100 L 130 95 L 150 80 L 170 95 L 240 100 Q 220 85 180 90 L 155 88 Q 153 86 155 75 Q 153 86 145 88 L 120 90 Q 80 85 60 100 Z', fill: '#1e293b' });

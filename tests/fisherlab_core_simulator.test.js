@@ -696,3 +696,758 @@ describe('Fisher Lab buoy glyphs', () => {
     }
   });
 });
+
+// Light characters are parsed out of prose ("White flash every 4 seconds"),
+// because that is how the LIGHTHOUSES and BUOYAGE tables actually store them.
+// A navigator tells one light from another BY its rhythm, so a guessed rhythm
+// is worse than no picture — hence the null cases below.
+describe('Fisher Lab light characters', () => {
+  const ch = (s) => window.__FisherLabCore.getCoreLightCharacter(s);
+  const lit = (c) => c.phases.filter((p) => p.on).length;
+  const total = (c) => c.phases.reduce((a, p) => a + p.sec, 0);
+
+  it('reads colour, period and rhythm off a plain flashing character', () => {
+    const c = ch('White flash every 4 seconds');
+    expect(c).toMatchObject({ color: 'white', kind: 'flash', periodSec: 4, periodKnown: true });
+    expect(lit(c)).toBe(1);
+    expect(total(c)).toBeCloseTo(4, 5);
+  });
+
+  it('reads the LIGHT, not the paint job, when the text describes both', () => {
+    // "Red + white candy-stripe; flashing red every 15s" — West Quoddy Head.
+    // Taking the first colour word yields a red-and-white daymark instead of
+    // the red light, and a strip that shows the wrong colour is a wrong answer.
+    const c = ch('Red + white candy-stripe; flashing red every 15s');
+    expect(c.color).toBe('red');
+    expect(c.periodSec).toBe(15);
+    expect(c.kind).toBe('flash');
+  });
+
+  it('returns nothing when the text describes the tower rather than the light', () => {
+    // "Two Lights — historic twin tower system" carries no rhythm at all.
+    expect(ch('Two Lights — historic twin tower system')).toBeNull();
+    expect(ch('')).toBeNull();
+    expect(ch(null)).toBeNull();
+    expect(ch(undefined)).toBeNull();
+  });
+
+  it('treats fixed and continuous lights as steady, with no dark phase', () => {
+    for (const s of ['Fixed white', 'Continuous green']) {
+      const c = ch(s);
+      expect(c.kind).toBe('fixed');
+      expect(c.phases.every((p) => p.on)).toBe(true);
+    }
+    expect(ch('Continuous green').color).toBe('green');
+  });
+
+  it('lets a mention of flashing win over a mention of quick', () => {
+    // "Red flashing or quick" leads with flashing; "continuous quick or very
+    // quick" has no flash at all. Getting these backwards swaps two rhythms a
+    // navigator uses to tell a cardinal mark from a lateral one.
+    expect(ch('Red flashing or quick')).toMatchObject({ kind: 'flash', color: 'red' });
+    expect(ch('White, continuous quick or very quick').kind).toBe('quick');
+  });
+
+  it('counts the flashes in a group and keeps the trailing long flash', () => {
+    const g3 = ch('White, group flash (3)');
+    expect(g3).toMatchObject({ kind: 'group-flash', flashes: 3, longFlash: false });
+    expect(lit(g3)).toBe(3);
+    const g6 = ch('White, group flash (6) + long flash');
+    expect(g6).toMatchObject({ kind: 'group-flash', flashes: 6, longFlash: true });
+    expect(lit(g6)).toBe(7);                     // six short plus the long one
+    const longest = Math.max(...g6.phases.filter((p) => p.on).map((p) => p.sec));
+    expect(longest).toBeGreaterThan(1.5);        // the long flash really is long
+  });
+
+  it('gives isophase equal light and dark', () => {
+    const c = ch('Isophase white 6 seconds');
+    expect(c.kind).toBe('iso');
+    const on = c.phases.filter((p) => p.on).reduce((a, p) => a + p.sec, 0);
+    expect(on).toBeCloseTo(total(c) / 2, 5);
+  });
+
+  it('gives Morse A a short flash then a long one', () => {
+    const c = ch('Morse "A" (.-) white');
+    expect(c.kind).toBe('morse-a');
+    const on = c.phases.filter((p) => p.on).map((p) => p.sec);
+    expect(on.length).toBe(2);
+    expect(on[1]).toBeGreaterThan(on[0]);        // dot then dash, never dash then dot
+  });
+
+  it('always produces phases that fill exactly one period', () => {
+    // The strip maps phase seconds onto the full width, so any drift here
+    // silently mis-scales every rhythm drawn from it.
+    for (const s of ['White flash every 4 seconds', 'Continuous green', 'Fixed white',
+      'White flash every 15 seconds', 'White, group flash (3)', 'White, group flash (6) + long flash',
+      'Isophase white 6 seconds', 'Morse "A" (.-) white', 'White, continuous quick',
+      'Red flashing or quick', 'Green flashing or quick']) {
+      const c = ch(s);
+      expect(c, s).not.toBeNull();
+      expect(total(c), s).toBeCloseTo(c.periodSec, 5);
+      expect(c.phases.every((p) => p.sec > 0), s).toBe(true);
+      expect(['white', 'red', 'green', 'yellow']).toContain(c.color);
+    }
+  });
+
+  it('parses every character actually shipped in the lighthouse table', () => {
+    // Walk the real data: a strip is only trustworthy if it survives the
+    // wording the tool ships, not fixtures written to match the parser.
+    const source = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    // Scoped to the LIGHTHOUSES table: FAMOUS_SPOTS uses a `character:` key too,
+    // for prose about undersea terrain, and it is never fed to this parser.
+    const from = source.indexOf('var LIGHTHOUSES = [');
+    const to = source.indexOf('\n  ];', from);
+    expect(from).toBeGreaterThan(-1);
+    expect(to).toBeGreaterThan(from);
+    const chars = [...source.slice(from, to).matchAll(/^ +character: '([^']*)',$/gm)].map((m) => m[1]);
+    expect(chars.length).toBeGreaterThanOrEqual(12);
+    let drawn = 0;
+    for (const c of chars) {
+      const parsed = ch(c);
+      if (!parsed) continue;                     // no rhythm in the text is a valid outcome
+      drawn++;
+      expect(total(parsed), c).toBeCloseTo(parsed.periodSec, 5);
+    }
+    // Only the twin-tower entry legitimately has no rhythm.
+    expect(drawn).toBe(chars.length - 1);
+  });
+});
+// The teaching figures draw numbers. These check the numbers, and — where a
+// figure hard-codes a value into a caption — that the caption still agrees
+// with the formula it claims to be showing.
+describe('Fisher Lab teaching-figure math', () => {
+  const core = () => window.__FisherLabCore;
+
+  describe('rule of twelfths', () => {
+    it('runs 1-2-3-3-2-1 and accounts for the whole range', () => {
+      const rows = core().getCoreTwelfths();
+      expect(rows.map((r) => r.twelfths)).toEqual([1, 2, 3, 3, 2, 1]);
+      expect(rows[rows.length - 1].cumulative).toBeCloseTo(1, 10);
+      // Monotonic: the tide never runs backwards inside a half-cycle.
+      rows.forEach((r, i) => { if (i) expect(r.cumulative).toBeGreaterThan(rows[i - 1].cumulative); });
+    });
+
+    it('puts exactly half the range at mid-tide', () => {
+      // This is the one number the tab quotes in prose and the figure calls out.
+      expect(core().getCoreTwelfths()[2].cumulative).toBeCloseTo(0.5, 10);
+    });
+
+    it('is symmetric about mid-tide', () => {
+      const t = core().getCoreTwelfths().map((r) => r.twelfths);
+      expect(t.slice().reverse()).toEqual(t);
+    });
+
+    it('stays within a sixtieth of the exact semidiurnal curve', () => {
+      // The figure claims this in words. If the rule and the curve it is drawn
+      // against ever disagreed by more, the caption would be a false claim.
+      const worst = Math.max(...core().getCoreTwelfths().map((r) => Math.abs(r.error)));
+      expect(worst).toBeLessThan(1 / 60);
+      expect(worst).toBeGreaterThan(0);      // it IS an approximation, not exact
+    });
+
+    it('agrees with the worked example the tab prints', () => {
+      // "High 04:00, low 10:00, range 9 ft. At 07:00 ... 4.5 ft."
+      const fallenAt3h = core().getCoreTwelfths()[2].cumulative * 9;
+      expect(fallenAt3h).toBeCloseTo(4.5, 10);
+    });
+  });
+
+  describe('distance to the horizon', () => {
+    it('matches the two worked examples in NAV_MATH', () => {
+      // "10 ft eye height -> 3.7 nm horizon. Lighthouse 100 ft -> 11.7 nm."
+      expect(core().getCoreHorizonNm(10)).toBeCloseTo(3.7, 1);
+      expect(core().getCoreHorizonNm(100)).toBeCloseTo(11.7, 1);
+    });
+
+    it('grows with the square root of height, not linearly', () => {
+      // Quadrupling your eye height doubles your horizon; a linear model would
+      // quadruple it, and that error compounds over a passage plan.
+      expect(core().getCoreHorizonNm(40) / core().getCoreHorizonNm(10)).toBeCloseTo(2, 6);
+      expect(core().getCoreHorizonNm(0)).toBe(0);
+      expect(core().getCoreHorizonNm(-5)).toBe(0);
+    });
+
+    it('adds the two horizons to give the geographic range', () => {
+      const r = core().getCoreGeographicRangeNm(10, 100);
+      expect(r).toBeCloseTo(core().getCoreHorizonNm(10) + core().getCoreHorizonNm(100), 10);
+      expect(r).toBeCloseTo(15.4, 1);
+    });
+
+    it('keeps the figure captions in step with the formula', () => {
+      // The horizon figure hard-codes 3.7, 11.7 and 15.4 into its labels. If the
+      // constant were ever retuned, those captions would quietly become wrong.
+      const source = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+      const from = source.indexOf('function flHorizonSvg');
+      const fig = source.slice(from, source.indexOf('function flCompassChainSvg', from));
+      expect(from).toBeGreaterThan(-1);
+      expect(fig).toContain(core().getCoreHorizonNm(10).toFixed(1));
+      expect(fig).toContain(core().getCoreHorizonNm(100).toFixed(1));
+      expect(fig).toContain(core().getCoreGeographicRangeNm(10, 100).toFixed(1));
+    });
+  });
+
+  describe('water column depth bands', () => {
+    it('reads the depth range out of each zone label', () => {
+      expect(core().getCoreZoneDepths({ zone: 'Surface (0-5 m)' })).toEqual({ topM: 0, bottomM: 5, openEnded: false });
+      expect(core().getCoreZoneDepths({ zone: 'Deep (100-300 m)' })).toEqual({ topM: 100, bottomM: 300, openEnded: false });
+      expect(core().getCoreZoneDepths({ zone: 'Continental Slope (300+ m)' })).toEqual({ topM: 300, bottomM: null, openEnded: true });
+    });
+
+    it('returns nothing for a habitat that is not a depth band', () => {
+      // "Benthic (on the seabed)" is drawn as the floor, not as a slab of water.
+      // Parsing it as a band would stack a second seabed inside the column.
+      expect(core().getCoreZoneDepths({ zone: 'Benthic (on the seabed)' })).toBeNull();
+      expect(core().getCoreZoneDepths({})).toBeNull();
+      expect(core().getCoreZoneDepths(null)).toBeNull();
+    });
+
+    it('covers the shipped table with contiguous, non-overlapping bands', () => {
+      // Walk the real WATER_COLUMN: a gap or an overlap would draw a column
+      // that misrepresents where a species actually sits.
+      const source = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+      const from = source.indexOf('var WATER_COLUMN = [');
+      const table = source.slice(from, source.indexOf('\n  ];', from));
+      const zones = [...table.matchAll(/^ +\{ zone: '([^']*)'/gm)].map((m) => ({ zone: m[1] }));
+      expect(zones.length).toBeGreaterThanOrEqual(6);
+      const bands = zones.map((z) => core().getCoreZoneDepths(z)).filter(Boolean);
+      expect(bands.length).toBe(zones.length - 1);        // benthic is the floor
+      expect(bands[0].topM).toBe(0);
+      bands.forEach((b, i) => {
+        if (i) expect(b.topM, zones[i].zone).toBe(bands[i - 1].bottomM);
+      });
+      expect(bands[bands.length - 1].openEnded).toBe(true);
+    });
+  });
+
+  describe('day shapes', () => {
+    const shapes = () => {
+      const source = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+      const from = source.indexOf('var DAY_SHAPES = [');
+      const to = source.indexOf('\n  ];', from);
+      return source.slice(from, to);
+    };
+
+    it('gives every shape a rule citation', () => {
+      const rows = [...shapes().matchAll(/rule: '([^']*)'/g)].map((m) => m[1]);
+      expect(rows.length).toBeGreaterThanOrEqual(8);
+      rows.forEach((r) => expect(r).toMatch(/^Rule \d+(\([a-e]\))?$/));
+    });
+
+    it('distinguishes the ball counts that mean different things', () => {
+      const src = shapes();
+      // One ball is anchored, two is not under command, three is aground. Get a
+      // count wrong and the drawing states the wrong casualty.
+      expect(src).toContain("id: 'anchor', rule: 'Rule 30(a)', stack: ['ball']");
+      expect(src).toContain("id: 'nuc', rule: 'Rule 27(a)', stack: ['ball', 'ball']");
+      expect(src).toContain("id: 'aground', rule: 'Rule 30(d)', stack: ['ball', 'ball', 'ball']");
+      expect(src).toContain("stack: ['ball', 'diamond', 'ball']");
+    });
+
+    it('keeps the fishing bicone distinct from a single cone', () => {
+      const src = shapes();
+      // Two cones apex-to-apex is a vessel fishing; ONE cone apex-down is a
+      // sailing vessel under power. They are different vessels under different
+      // rules, and the only difference in the drawing is the shape.
+      expect(src).toContain("id: 'fishing'");
+      expect(src).toMatch(/id: 'fishing'[^}]*stack: \['bicone'\]/);
+      expect(src).toMatch(/id: 'sailpower'[^}]*stack: \['cone-down'\]/);
+    });
+  });
+});
+// The chart-symbols tab is a list of DESCRIPTIONS OF PICTURES, so each glyph is
+// matched from the shipped description. Matching the wrong one would draw a
+// chart mark the caption never asked for, which on a chart means a different
+// hazard.
+describe('Fisher Lab chart symbols', () => {
+  const sym = (t) => window.__FisherLabCore.getCoreChartSymbol(t);
+  const source = () => fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+
+  it('splits an entry into the symbol name and what it looks like', () => {
+    const r = sym('Rock (below water): plus sign (+) with depth');
+    expect(r.name).toBe('Rock (below water)');
+    expect(r.desc).toBe('plus sign (+) with depth');
+    expect(r.glyph).toBe('rock-sub');
+  });
+
+  it('keeps the two rock symbols apart', () => {
+    // Above water is an asterisk, below water is a plus with a depth. Swap them
+    // and the chart tells you to steer over a rock that dries.
+    expect(sym('Rock (above water): asterisk or cross').glyph).toBe('rock-dry');
+    expect(sym('Rock (below water): plus sign (+) with depth').glyph).toBe('rock-sub');
+  });
+
+  it('gives the lighthouse plan symbol and the tower elevation different glyphs', () => {
+    // "Lighthouse: solid star with rays" is the plan-view symbol; "Lighthouse +
+    // tower: side profile drawings" is an elevation. One rule matching both
+    // drew a star next to a caption promising a side profile.
+    expect(sym('Lighthouse: solid star with rays, name + light characteristics labeled').glyph).toBe('lighthouse');
+    expect(sym('Lighthouse + tower: side profile drawings').glyph).toBe('lighthouse-profile');
+  });
+
+  it('draws nothing for an entry that is a notation rather than a symbol', () => {
+    // "Datum" and "NDZ notation" describe wording on the chart, not a mark.
+    expect(sym('Datum: "Mean Lower Low Water" (MLLW) is most common US chart datum').glyph).toBeNull();
+    expect(sym('No-discharge zone: NDZ notation').glyph).toBeNull();
+    expect(sym('Something nobody has drawn yet: who knows').glyph).toBeNull();
+    expect(sym('').glyph).toBeNull();
+    expect(sym(null).glyph).toBeNull();
+  });
+
+  it('handles an entry with no colon without losing the text', () => {
+    const r = sym('Just a bare label');
+    expect(r.name).toBe('Just a bare label');
+    expect(r.desc).toBe('');
+  });
+
+  it('parses every entry in the shipped table and draws most of them', () => {
+    const src = source();
+    const from = src.indexOf('var CHART_SYMBOLS = [');
+    const table = src.slice(from, src.indexOf('\n  ];', from));
+    const items = [...table.matchAll(/^ {6}'((?:[^'\\]|\\.)*)'/gm)].map((m) => m[1].replace(/\\'/g, "'"));
+    expect(items.length).toBeGreaterThanOrEqual(30);
+    let drawn = 0;
+    for (const it of items) {
+      const r = sym(it);
+      expect(r.name.length, it).toBeGreaterThan(0);
+      expect(r.name, it).not.toContain(': ');       // the split really happened
+      if (r.glyph) drawn++;
+    }
+    // Most entries are real marks; the rest are notations. If this ever drops
+    // sharply, a rule has stopped matching the wording it was written for.
+    expect(drawn).toBeGreaterThanOrEqual(24);
+    expect(drawn).toBeLessThan(items.length);       // notations stay undrawn
+  });
+
+  it('renders one glyph per matched entry and no orphans', () => {
+    // Every glyph id a rule can produce must have a branch that draws it,
+    // or a matched entry silently renders an empty tile.
+    const src = source();
+    const rulesFrom = src.indexOf('var CHART_GLYPH_RULES = [');
+    const rules = [...src.slice(rulesFrom, src.indexOf('\n  ];', rulesFrom)).matchAll(/id: '([^']+)'/g)].map((m) => m[1]);
+    const drawFrom = src.indexOf('function flChartGlyphSvg');
+    const drawBody = src.slice(drawFrom, src.indexOf('\n  // ─── Lobster zones', drawFrom));
+    expect(rules.length).toBeGreaterThanOrEqual(28);
+    rules.forEach((id) => expect(drawBody, id).toContain("id === '" + id + "'"));
+  });
+});
+
+describe('Fisher Lab lobster zone ribbon', () => {
+  const summary = (z) => window.__FisherLabCore.getCoreZoneTrapSummary(z);
+
+  it('states the shared limit when every zone carries the same one', () => {
+    const out = summary([{ traps: '800' }, { traps: '800' }, { traps: '800' }]);
+    expect(out).toContain('All 3');
+    expect(out).toContain('800-trap');
+  });
+
+  it('stops claiming a shared limit as soon as one zone differs', () => {
+    // The whole reason this is derived: a hard-coded "all seven are 800" line
+    // would go quietly false the day a zone council changed its limit, and the
+    // figure would be teaching a regulation that no longer holds.
+    const out = summary([{ traps: '800' }, { traps: '600' }, { traps: '800' }]);
+    expect(out).not.toContain('All 3');
+    expect(out).toContain('differ by zone');
+    expect(out).toContain('800 / 600');
+  });
+
+  it('survives an empty or missing list', () => {
+    expect(typeof summary([])).toBe('string');
+    expect(typeof summary(null)).toBe('string');
+  });
+
+  it('runs the shipped zones from north-east to south-west', () => {
+    // The ribbon draws them left to right in array order and labels the ends
+    // Canadian border and New Hampshire. If the array were ever reordered the
+    // drawing would put Kittery on the Canadian line.
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const from = src.indexOf('var LOBSTER_ZONES = [');
+    const table = src.slice(from, src.indexOf('\n  ];', from));
+    const ids = [...table.matchAll(/^ +\{ id: '([A-G])'/gm)].map((m) => m[1]);
+    expect(ids).toEqual(['A', 'B', 'C', 'D', 'E', 'F', 'G']);
+    expect(table).toMatch(/id: 'A'[\s\S]*?Eastport/);
+    expect(table).toMatch(/id: 'G'[\s\S]*?Kittery/);
+  });
+});
+describe('Fisher Lab fog signals', () => {
+  const src = () => fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+  const table = () => {
+    const s = src();
+    const from = s.indexOf('var FOG_SIGNALS = [');
+    return s.slice(from, s.indexOf('\n  ];', from));
+  };
+
+  it('cites a Rule 35 paragraph for every signal', () => {
+    const rules = [...table().matchAll(/rule: '([^']*)'/g)].map((m) => m[1]);
+    expect(rules.length).toBeGreaterThanOrEqual(4);
+    rules.forEach((r) => expect(r).toMatch(/^Rule 35\([a-h]\)$/));
+  });
+
+  it('uses blast durations inside the range the tool states elsewhere', () => {
+    // NAV_PROBLEMS quotes Rule 35(a) verbatim: "one prolonged blast (4-6 sec)".
+    // The strips are drawn to scale in seconds, so a duration outside that
+    // range would draw a blast the rest of the tool calls wrong.
+    const s = src();
+    const from = s.indexOf('var BLAST_SEC = {');
+    const durations = s.slice(from, s.indexOf('};', from));
+    const prolonged = Number(durations.match(/prolonged: ([\d.]+)/)[1]);
+    const short = Number(durations.match(/short: ([\d.]+)/)[1]);
+    expect(prolonged).toBeGreaterThanOrEqual(4);
+    expect(prolonged).toBeLessThanOrEqual(6);
+    expect(short).toBeGreaterThan(0);
+    expect(short).toBeLessThan(2);
+    expect(prolonged).toBeGreaterThan(short * 3);   // it must LOOK prolonged
+  });
+
+  it('gives the power-driven vessel exactly one prolonged blast', () => {
+    // This is the signal the simulator scores on the B key during its Rule 19
+    // encounter. If the figure showed a different pattern, the tab would be
+    // teaching one thing and the sim marking another.
+    const t = table();
+    const entry = t.slice(t.indexOf("id: 'power'"), t.indexOf("id: 'sailfish'"));
+    expect(entry).toContain("pattern: [{ kind: 'prolonged' }]");
+    expect(entry).toContain("every: 'every 2 min'");
+  });
+
+  it('keeps the bell signals distinct from the horn signals', () => {
+    // At anchor and aground are BELL, not horn — the tab says to listen for the
+    // difference, so the two must not share a blast kind.
+    const t = table();
+    expect(t.slice(t.indexOf("id: 'anchored'"), t.indexOf("id: 'aground'"))).toContain("kind: 'bell'");
+    const aground = t.slice(t.indexOf("id: 'aground'"));
+    expect(aground).toContain('bellgroup');
+    // Three strokes, the rapid bell, three strokes again.
+    expect((aground.match(/bellgroup/g) || []).length).toBe(2);
+  });
+});
+
+describe('Fisher Lab lobster gauge figure', () => {
+  it('draws the same slot the simulator actually enforces', () => {
+    // ★ The figure hard-codes its keeper band. The sim scores catch decisions
+    // against getCoreShellfishReleaseReason. If those two ever disagreed, the
+    // conservation tab would teach one slot and the game would mark another —
+    // and the student would be right and the tool wrong.
+    const { getCoreShellfishReleaseReason } = window.__FisherLabCore;
+    const tooSmall = (len) => /below the ([\d.]+)-inch/.exec(getCoreShellfishReleaseReason({ length: len }));
+    const tooBig = (len) => /above the ([\d.]+)-inch/.exec(getCoreShellfishReleaseReason({ length: len }));
+    const minIn = Number(tooSmall(1)[1]);
+    const maxIn = Number(tooBig(99)[1]);
+    expect(minIn).toBeGreaterThan(0);
+    expect(maxIn).toBeGreaterThan(minIn);
+
+    // Boundaries behave as a band, not a floor.
+    expect(tooSmall(minIn - 0.01)).toBeTruthy();
+    expect(tooSmall(minIn)).toBeNull();
+    expect(tooBig(maxIn + 0.01)).toBeTruthy();
+    expect(tooBig(maxIn)).toBeNull();
+
+    const source = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    expect(source).toContain('flLobsterGaugeSvg(h, ' + minIn + ', ' + maxIn + ')');
+  });
+
+  it('measures the carapace and says so, since that is the mistake students make', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const from = source.indexOf('function flLobsterGaugeSvg');
+    const fig = source.slice(from, source.indexOf('\n  // ─── Camera rig geometry', from));
+    expect(fig).toContain('CARAPACE');
+    expect(fig).toContain('not the tail');
+    expect(fig).toContain('not the whole animal');
+    // And the alt text has to carry the same content for a screen reader.
+    expect(fig).toMatch(/aria-label[^]*carapace only/);
+    expect(fig).toMatch(/aria-label[^]*protected for life/);
+  });
+});
+// Gear selectivity is read from each gear's OWN tradeoff line, so the tool
+// never grades a fishery beyond what it already says in prose.
+describe('Fisher Lab gear selectivity', () => {
+  const sel = (t) => window.__FisherLabCore.getCoreGearSelectivity({ tradeoff: t });
+
+  it('★ does not call the lobster trap a bycatch problem for saying "bycatch is minimal"', () => {
+    // The trap's line is "Highly target-specific bycatch is minimal". A naive
+    // substring test for "bycatch" tags the most target-specific gear in the
+    // Maine fishery as a bycatch offender — the exact opposite of its text.
+    expect(sel('Highly target-specific bycatch is minimal; requires license (apprentice → student → Class I/II/III).')).toBe('selective');
+    expect(sel('Minimal bycatch when rigged correctly.')).toBe('selective');
+  });
+
+  it('flags gear whose own line reports bycatch', () => {
+    expect(sel('High catch volume; bycatch of seabirds + non-target fish a known issue. Mitigation gear required.')).toBe('bycatch');
+    expect(sel('Efficient but bycatch of seals, porpoises, sea turtles depending on configuration.')).toBe('bycatch');
+    expect(sel('Wasteful of bait + creates nontarget attraction.')).toBe('bycatch');
+  });
+
+  it('recognises the ways the data says selective', () => {
+    expect(sel('Most selective gear: you decide every fish kept or released.')).toBe('selective');
+    expect(sel('Highly selective + low impact. Skill-intensive.')).toBe('selective');
+    expect(sel('Highly selective by definition. Requires DMR endorsement for some species.')).toBe('selective');
+  });
+
+  it('says nothing when the gear says nothing', () => {
+    // Silence is the correct output. Inventing a rating for jigging or trolling
+    // would be the tool editorialising past its own source text.
+    expect(sel('Covers a lot of water. Burns fuel.')).toBeNull();
+    expect(sel('Effective when fish are tight to bottom or holding mid-water on bait. Cardio workout.')).toBeNull();
+    expect(sel('')).toBeNull();
+    expect(window.__FisherLabCore.getCoreGearSelectivity(null)).toBeNull();
+    expect(window.__FisherLabCore.getCoreGearSelectivity({})).toBeNull();
+  });
+
+  it('tags the shipped gear table the way that table reads', () => {
+    // Walk the real GEAR list rather than fixtures, and pin the handful whose
+    // classification a reader could check by eye against the card beside it.
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const from = src.indexOf('var GEAR = [');
+    const table = src.slice(from, src.indexOf('\n  ];', from));
+    const rows = [...table.matchAll(/\{ id: '([^']+)'[\s\S]*?tradeoff: '((?:[^'\\]|\\.)*)'/g)]
+      .map((m) => ({ id: m[1], tradeoff: m[2].replace(/\\'/g, "'") }));
+    expect(rows.length).toBeGreaterThanOrEqual(13);
+    const tagged = Object.fromEntries(rows.map((r) => [r.id, window.__FisherLabCore.getCoreGearSelectivity(r)]));
+    expect(tagged.trap).toBe('selective');
+    expect(tagged.rodReel).toBe('selective');
+    expect(tagged.fly).toBe('selective');
+    expect(tagged.spear).toBe('selective');
+    expect(tagged.longline).toBe('bycatch');
+    expect(tagged.gillnet).toBe('bycatch');
+    expect(tagged.troll).toBeNull();
+    expect(tagged.jigging).toBeNull();
+    // Every tag must be one of the two known values or nothing at all.
+    Object.values(tagged).forEach((v) => expect([null, 'selective', 'bycatch']).toContain(v));
+  });
+});
+// Species ID: the drawings are a key to the VOCABULARY the idMarks text uses,
+// and the feature chips are read straight out of that text. Drawn rather than
+// photographed on purpose — a photo is one individual at one angle, and a
+// drawing can show the diagnostic feature and suppress everything else.
+describe('Fisher Lab species identification', () => {
+  const feats = (marks) => window.__FisherLabCore.getCoreIdFeatures({ idMarks: marks }).map((f) => f.id);
+  const source = () => fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+  const speciesTable = () => {
+    const s = source();
+    const from = s.indexOf('var MAINE_SPECIES = [');
+    return s.slice(from, s.indexOf('\n  ];', from));
+  };
+
+  it('picks the named parts out of an ID note', () => {
+    // Sorted: which features a note mentions is the contract, the order the
+    // rule table happens to sit in is not.
+    const set = (marks) => feats(marks).slice().sort();
+    expect(set('Three dorsal fins; barbel on chin; lateral line pale + curved upward over pectoral.'))
+      .toEqual(['barbel', 'dorsal', 'lateral', 'pectoral']);
+    expect(set('Seven or eight dark horizontal stripes; silvery sides; large mouth.'))
+      .toEqual(['colour', 'mouth', 'stripes']);
+    expect(set('Silver body, single black spot behind gill; large eye; deeply forked tail.'))
+      .toEqual(['eye', 'gill', 'spot', 'tail']);
+    // Terms the first pass missed entirely — a blunt head and crushing teeth
+    // are how you tell a tautog, and mottling is how you tell a sculpin.
+    expect(set('Dark mottled body, blunt head, thick lips, strong crushing teeth.'))
+      .toEqual(['colour', 'mouth', 'shape', 'teeth']);
+    expect(set('Snake-like body. Adults yellow/brown; elvers transparent + tiny.'))
+      .toEqual(['shape']);
+  });
+
+  it('says nothing when there is nothing to say', () => {
+    expect(feats('')).toEqual([]);
+    expect(window.__FisherLabCore.getCoreIdFeatures(null)).toEqual([]);
+    expect(window.__FisherLabCore.getCoreIdFeatures({})).toEqual([]);
+  });
+
+  it('★ labels every anatomical chip on the anatomy key', () => {
+    // A chip naming a PART the key does not show sends a student looking for
+    // something the tool never taught them to find. Chips flagged onKey must
+    // therefore appear as a label in the drawing; the rest are general
+    // appearance — colour, body shape — which need no diagram to act on.
+    const src = source();
+    const from = src.indexOf('var FISH_FEATURE_RULES = [');
+    const rulesSrc = src.slice(from, src.indexOf('\n  ];', from));
+    const anatFrom = src.indexOf('function flFishAnatomySvg');
+    const anat = src.slice(anatFrom, src.indexOf('function flCodHaddockSvg', anatFrom));
+    const onKey = [...rulesSrc.matchAll(/label: '([^']+)', onKey: true/g)].map((m) => m[1]);
+    expect(onKey.length).toBeGreaterThanOrEqual(6);
+    onKey.forEach((label) => {
+      // "dorsal fins" is labelled as first/second/third dorsal; match the noun.
+      const noun = label.replace(/^chin |^\w+ (?=fin)/, '').replace(/ fins?$/, '');
+      expect(anat.toLowerCase(), label).toContain(noun.toLowerCase());
+    });
+  });
+
+  it('covers the shipped ID notes, and admits the one it cannot', () => {
+    const rows = [...speciesTable().matchAll(/\{ id: '([^']+)'[\s\S]*?idMarks: '((?:[^'\\]|\\.)*)'/g)]
+      .map((m) => ({ id: m[1], marks: m[2].replace(/\\'/g, "'") }));
+    expect(rows.length).toBeGreaterThanOrEqual(20);
+    const bare = rows.filter((r) => feats(r.marks).length === 0).map((r) => r.id);
+    // Only juvenile pollock legitimately has no anatomical ID marks — it is
+    // told apart by its SIZE and by where it holds, not by a body part. Any
+    // other bare entry means the vocabulary has stopped covering the corpus.
+    expect(bare).toEqual(['pollock-young']);
+  });
+
+  it('keeps the cod-versus-haddock figure in step with the shipped ID notes', () => {
+    // ★ The figure asserts three diagnostics per fish. Every one has to be
+    // something the species data actually says, or the drawing is teaching an
+    // identification the rest of the tool does not support.
+    const table = speciesTable();
+    const cod = table.slice(table.indexOf("id: 'cod'"), table.indexOf("id: 'haddock'"));
+    const had = table.slice(table.indexOf("id: 'haddock'"), table.indexOf("id: 'pollock'"));
+    expect(cod).toMatch(/lateral line pale/i);
+    expect(cod).toMatch(/curved upward over pectoral/i);
+    expect(had).toMatch(/thumbprint/i);
+    expect(had).toMatch(/dark lateral line/i);
+    expect(had).toMatch(/pointed first dorsal/i);
+    // Haddock's own note is written as a contrast with cod, which is why this
+    // pair is the one worth drawing at all.
+    // The apostrophe is backslash-escaped in the source literal.
+    expect(had).toMatch(/cod\\?'s is pale/i);
+  });
+
+  it('labels the figure as schematic rather than passing it off as a portrait', () => {
+    const src = source();
+    const from = src.indexOf('function flFishAnatomySvg');
+    const anat = src.slice(from, src.indexOf('function flCodHaddockSvg', from));
+    expect(anat).toContain('Schematic');
+    // And the caption has to admit what varies, or a reader counts three dorsal
+    // fins on a striped bass and concludes the key is wrong.
+    expect(anat).toMatch(/varies by family/);
+  });
+});
+
+// ★ ONE DERIVATION OF CORRECTNESS FOR THE MARKS.
+// The 3-D sim and the Buoyage tab must be showing the same mark. They were not:
+// the sim drew a north cardinal with its two topmark cones SIDE BY SIDE (an
+// IALA topmark is two cones one above the other) and a safe-water mark as a red
+// sphere with one horizontal white band (safe water is read by its VERTICAL
+// stripes). Both were drawn correctly two tabs away and wrong in the sim, which
+// is the worst shape a teaching bug can take.
+//
+// The sim now resolves its marks through getCoreBuoyGlyph — the same function
+// the tab draws from — so shape, band order and topmark come from one place.
+describe('Fisher Lab sim buoys match the buoyage lesson', () => {
+  const spec = (t) => window.__FisherLabCore.getCoreSimBuoySpec(t);
+
+  it('resolves every mark the sim places', () => {
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const placed = [...src.matchAll(/addBuoy\([^,]+,\s*[^,]+,\s*'([^']+)'\)/g)].map((m) => m[1]);
+    expect(placed.length).toBeGreaterThanOrEqual(6);
+    [...new Set(placed)].forEach((t) => {
+      expect(spec(t), 'sim places an unresolvable mark: ' + t).toBeTruthy();
+    });
+  });
+
+  it('gives the north cardinal two STACKED up-cones, not a side-by-side pair', () => {
+    const n = spec('cardinal-N');
+    expect(n.topmark).toEqual(['up', 'up']);
+    expect(n.bands).toEqual(['black', 'yellow']);   // black over yellow
+    // The sim builds the topmark by walking spec.topmark and offsetting each
+    // cone in Y. A regression to side-by-side would have to change x, and the
+    // builder has no x term at all.
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const from = src.indexOf('function addBuoy');
+    const body = src.slice(from, src.indexOf('\n    }', src.indexOf('buoys.push(g)', from)));
+    expect(body).toContain('spec.topmark');
+    expect(body).not.toMatch(/position\.set\(\s*-?0\.1[0-9]\s*,/);   // the old side-by-side offsets
+  });
+
+  it('gives safe water vertical stripes, never horizontal bands', () => {
+    const w = spec('safe-water');
+    expect(w.striped).toBe(true);
+    expect(w.bands).toEqual(['red', 'white']);
+    expect(w.body).toBe('sphere');
+  });
+
+  it('keeps the lateral pair shape-coded, which is the accessibility argument', () => {
+    // Red is always conical, green always cylindrical. The Buoyage tab closes
+    // by saying a colourblind boater can navigate by shape alone; if the sim
+    // did not honour that, the claim would be false inside the same tool.
+    expect(spec('red-nun')).toMatchObject({ body: 'nun', bands: ['red'], striped: false });
+    expect(spec('green-can')).toMatchObject({ body: 'can', bands: ['green'], striped: false });
+  });
+
+  it('returns nothing for a mark the buoyage table does not define', () => {
+    expect(spec('purple-triangle')).toBeNull();
+    expect(spec('')).toBeNull();
+  });
+
+  it('is literally the same resolver the tab draws from', () => {
+    // Not "looks the same" — the same call. This is what makes the two
+    // drawings incapable of drifting apart.
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const from = src.indexOf('function getCoreSimBuoySpec');
+    expect(src.slice(from, from + 500)).toContain('getCoreBuoyGlyph(');
+  });
+});
+
+// ★ The opening frame of every voyage. The boat starts at the dock bow-out, so
+// a chase camera 9.5 units astern of it sits inside the shoreline block — the
+// first thing a student saw after pressing "Cast off" was a wall of green with
+// the boat hidden behind it.
+describe('Fisher Lab chase camera and the shoreline', () => {
+  const rig = (o) => window.__FisherLabCore.getCoreCameraRig('chase', o);
+  // Heading π is north-facing; the sim's start is z = 5.5 with the shore front
+  // face at z = 11, so the un-clamped chase eye lands at z = 15, inside it.
+  const AT_DOCK = { x: 0, y: 0, z: 5.5, heading: Math.PI, speed: 0 };
+  const SHORE = 10;
+
+  it('never puts the eye past the shoreline', () => {
+    const r = rig({ ...AT_DOCK, shoreZ: SHORE });
+    expect(r.eye[2]).toBeLessThanOrEqual(SHORE);
+  });
+
+  it('lifts the eye by as much as it was pushed in', () => {
+    // Sliding the camera forward without raising it just puts the boat's own
+    // transom in the lens. A real chase camera rises when it runs out of room.
+    const free = rig(AT_DOCK);
+    const clamped = rig({ ...AT_DOCK, shoreZ: SHORE });
+    expect(free.eye[2]).toBeGreaterThan(SHORE);          // proves the case is real
+    expect(clamped.eye[1]).toBeGreaterThan(free.eye[1]);
+  });
+
+  it('leaves the aim point alone, so the boat stays centred', () => {
+    const free = rig(AT_DOCK);
+    const clamped = rig({ ...AT_DOCK, shoreZ: SHORE });
+    expect(clamped.target).toEqual(free.target);
+  });
+
+  it('does nothing once the boat is clear of the shore', () => {
+    const offshore = { x: 0, y: 0, z: -60, heading: Math.PI, speed: 4 };
+    const free = rig(offshore);
+    const clamped = rig({ ...offshore, shoreZ: SHORE });
+    expect(clamped.eye).toEqual(free.eye);
+  });
+
+  it('is a no-op when no shoreline is supplied', () => {
+    // The rig stays pure and usable without scene knowledge.
+    expect(rig(AT_DOCK).eye).toEqual(rig({ ...AT_DOCK, shoreZ: null }).eye);
+  });
+
+  it('leaves the overhead rigs alone, which already clear the land', () => {
+    const core = window.__FisherLabCore;
+    for (const view of ['topdown', 'chartup']) {
+      const free = core.getCoreCameraRig(view, AT_DOCK);
+      const withShore = core.getCoreCameraRig(view, { ...AT_DOCK, shoreZ: SHORE });
+      expect(withShore.eye, view).toEqual(free.eye);
+      expect(withShore.eye[1], view).toBeGreaterThan(20);
+    }
+  });
+
+  it('derives the clamp from the same constant that builds the terrain', () => {
+    // Not a magic number: LAND_FRONT_Z positions the seaward edge of the
+    // coastal mesh AND sets the camera clamp, so moving the shore moves both.
+    // (It used to read land.geometry.parameters.depth off a BoxGeometry; the
+    // coastline is now a displaced mesh with no such parameters, and this test
+    // is what caught that when the terrain was rebuilt.)
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    expect(src).toMatch(/var LAND_FRONT_Z = \d+/);
+    expect(src).toContain('var shoreLineZ = LAND_FRONT_Z - 1;');
+    expect(src).toContain('shoreZ: shoreLineZ');
+    // The terrain must be built from it too, or the two could drift apart.
+    expect(src).toContain('LAND_FRONT_Z + (iz / NZ)');
+  });
+
+  it('stands the trees on the terrain instead of at sea level', () => {
+    // createTree used to hard-code y = 0, which left the coastal pines buried
+    // to the waist in a hillside once the shore stopped being flat.
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    expect(src).toContain('function createTree(x, z, groundY)');
+    expect(src).toContain('tree.position.set(x, groundY || 0, z)');
+    expect(src).toContain('landHeightAt(mtx, mtz)');
+    expect(src).toContain('islandHeightAt(dx, dz)');
+  });
+});

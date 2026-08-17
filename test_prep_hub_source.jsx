@@ -20,6 +20,7 @@ const TEST_PREP_PACK_VISIBILITIES = ['public', 'preview', 'internal'];
 const TEST_PREP_FETCH_TIMEOUT_MS = 12000;
 const TEST_PREP_HANDS_FREE_ACTION_CONFIDENCE_MIN = 0.6;
 const TEST_PREP_HANDS_FREE_PROMPT_MODE_KEY = 'alloflow_test_prep_hands_free_prompt_mode_v1';
+const TEST_PREP_HANDS_FREE_EXPLANATIONS_KEY = 'alloflow_test_prep_hands_free_explanations_v1';
 const TEST_PREP_HANDS_FREE_SYNTHESIS_TIMEOUT_MS = 15000;
 // V7: the microphone is CLOSED for the whole synthesis wait, so this budget is
 // dead air the user is talking into. A flat 15s is right for narrating a whole
@@ -3731,10 +3732,16 @@ function TestPrepHub(props) {
   const handsFreeRateRef = React.useRef(1);
   const handsFreePromptModeRef = React.useRef(handsFreePromptMode);
   // Whether checking an answer automatically reads the explanation aloud.
-  // A ref rather than state: the command handler runs inside the speech
-  // pipeline and must see the value set moments earlier, without waiting for a
-  // re-render. Defaults on, so nobody loses explanations by upgrading.
-  const handsFreeExplanationsRef = React.useRef(true);
+  // State drives the visible toggle; the ref is what the command handler reads,
+  // because that handler runs inside the speech pipeline and must see a value
+  // set moments earlier without waiting for a re-render. Persisted like the
+  // prompt-mode preference, and defaults ON so nobody loses explanations by
+  // upgrading - only an explicit opt-out turns them off.
+  const [handsFreeExplanations, setHandsFreeExplanations] = React.useState(() => {
+    try { return window.localStorage.getItem(TEST_PREP_HANDS_FREE_EXPLANATIONS_KEY) !== 'off'; }
+    catch (_) { return true; }
+  });
+  const handsFreeExplanationsRef = React.useRef(handsFreeExplanations);
   const handsFreePendingChoiceRef = React.useRef(null);
   const voiceSetChoicePromptUntilRef = React.useRef(0);
   const handsFreeAudioCacheRef = React.useRef(new Map());
@@ -3865,6 +3872,7 @@ function TestPrepHub(props) {
 
   handsFreeEnabledRef.current = handsFreeEnabled;
   handsFreeRateRef.current = handsFreeRate;
+  handsFreeExplanationsRef.current = handsFreeExplanations;
   handsFreePromptModeRef.current = handsFreePromptMode;
   handsFreePendingChoiceRef.current = handsFreePendingChoice;
   testPrepPracticeVoiceRef.current = {
@@ -5072,6 +5080,14 @@ function TestPrepHub(props) {
     announce(next === 'quick' ? 'Quick hands-free prompts are on.' : 'Guided hands-free prompts are on.', 'info');
   }
 
+  function setHandsFreeExplanationsPreference(on) {
+    const next = !!on;
+    handsFreeExplanationsRef.current = next;
+    setHandsFreeExplanations(next);
+    try { window.localStorage.setItem(TEST_PREP_HANDS_FREE_EXPLANATIONS_KEY, next ? 'on' : 'off'); } catch (_) {}
+    announce(next ? 'Answer explanations will be read aloud.' : 'Answer explanations are off. Say explain to hear one.', 'info');
+  }
+
   function clearHandsFreeAudioCache() {
     handsFreeCacheGenerationRef.current += 1;
     handsFreeAudioCacheRef.current.forEach((entry) => {
@@ -5770,7 +5786,7 @@ function TestPrepHub(props) {
     }
     if (command.type === 'explanations') {
       const wantExplanations = command.explanations !== 'off';
-      handsFreeExplanationsRef.current = wantExplanations;
+      setHandsFreeExplanationsPreference(wantExplanations);
       await speakTestPrepText(wantExplanations
         ? 'Explanations on. I will read the full explanation after each answer you check.'
         : 'Explanations off. After you check an answer I will say whether it was right and give the supported answer. Say explain any time to hear the full reasoning.');
@@ -6304,6 +6320,8 @@ function TestPrepHub(props) {
                     <button type="button" aria-pressed={readAloudActive} onClick={readQuestion} className="rounded-lg border border-indigo-400 bg-indigo-50 px-3 py-2 text-sm font-bold text-indigo-900 hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-600">{'\uD83D\uDD0A'} {readAloudStatus === 'loading' ? 'Preparing audio' : readAloudStatus === 'speaking' ? 'Stop reading' : 'Read question'}</button>
                     <button type="button" aria-pressed={handsFreeEnabled} aria-describedby="test-prep-hands-free-privacy" onClick={toggleHandsFree} className={'rounded-lg border px-3 py-2 text-sm font-black focus:ring-2 focus:ring-cyan-700 ' + (handsFreeEnabled ? 'border-cyan-700 bg-cyan-700 text-white' : 'border-cyan-500 bg-cyan-50 text-cyan-950')}>{handsFreeEnabled ? '\uD83C\uDFA4 Stop hands-free' : '\uD83C\uDFA4 Hands-free mode'}</button>
                     <button type="button" aria-pressed={handsFreePromptMode === 'quick'} aria-describedby="test-prep-hands-free-quick-help" onClick={() => setHandsFreePromptModePreference(handsFreePromptMode === 'quick' ? 'guided' : 'quick')} className={'rounded-lg border px-3 py-2 text-sm font-black focus:ring-2 focus:ring-cyan-700 ' + (handsFreePromptMode === 'quick' ? 'border-amber-600 bg-amber-50 text-amber-950' : 'border-slate-400 bg-white text-slate-800')}>{handsFreePromptMode === 'quick' ? '⚡ Quick prompts on' : '⚡ Quick prompts'}</button>
+                    <button type="button" aria-pressed={handsFreeExplanations} aria-describedby="test-prep-hands-free-explanations-help" onClick={() => setHandsFreeExplanationsPreference(!handsFreeExplanations)} className={'rounded-lg border px-3 py-2 text-sm font-black focus:ring-2 focus:ring-cyan-700 ' + (handsFreeExplanations ? 'border-emerald-600 bg-emerald-50 text-emerald-950' : 'border-slate-400 bg-white text-slate-800')}>{handsFreeExplanations ? '🔊 Explanations on' : '🔇 Explanations off'}</button>
+                    <p id="test-prep-hands-free-explanations-help" className="sr-only">When on, checking an answer reads the full explanation aloud. When off, you hear the result and the supported answer, and can say explain to hear the reasoning.</p>
                     {currentItem.examItemStatus !== 'not-approved-as-independent-exam-item' && <button type="button" aria-pressed={currentItemSavedForReview} onClick={() => toggleSavedForReview(currentItem.id)} className={'rounded-lg border px-3 py-2 text-sm font-bold focus:ring-2 focus:ring-indigo-600 ' + (currentItemSavedForReview ? 'border-emerald-600 bg-emerald-50 text-emerald-950' : 'border-indigo-400 bg-indigo-50 text-indigo-900')}>{currentItemSavedForReview ? 'Remove from review' : 'Save for review'}</button>}
                     <button type="button" onClick={() => beginAnnotation({ targetType: 'question', targetId: currentItem.id, targetLabel: 'Question: ' + currentItem.prompt })} className="rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-sm font-bold text-amber-950 focus:ring-2 focus:ring-amber-600">Add note or highlight</button>
                     <button type="button" onClick={() => { try { window.AlloModules && window.AlloModules.ItemCorrection && window.AlloModules.ItemCorrection.openFor({ packId: selectedPack.id, packTitle: selectedPack.title, itemId: currentItem.id, prompt: currentItem.prompt, domain: currentItem.domainId, reviewTier: currentItem.examItemStatus === 'not-approved-as-independent-exam-item' ? 'guided-review' : 'source-reviewed', currentAnswer: currentItem.choices[currentItem.answerIndex] }); } catch (_) {} }} className="rounded-lg border border-teal-400 bg-teal-50 px-3 py-2 text-sm font-bold text-teal-900 focus:ring-2 focus:ring-teal-600">Suggest a correction</button>

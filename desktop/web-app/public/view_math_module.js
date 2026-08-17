@@ -455,7 +455,6 @@ function MathView(props) {
     className: "w-full p-2 border border-amber-200 rounded-lg focus:ring-2 focus:ring-amber-300 outline-none bg-amber-50/50 font-serif text-lg font-bold text-green-900",
     value: problem.answer || '',
     onChange: e => handleMathProblemEdit(pIdx, 'answer', e.target.value),
-    "aria-label": t('math.edit_answer') || `Edit answer for problem ${pIdx + 1}`,
     placeholder: t('common.placeholder_enter_answer')
   }) : /*#__PURE__*/React.createElement("div", {
     className: "text-lg font-bold text-green-900 font-serif"
@@ -530,7 +529,7 @@ function MathView(props) {
         className: "flex gap-2 items-start p-3 rounded-xl bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 animate-in fade-in slide-in-from-top-1 duration-200"
       }, /*#__PURE__*/React.createElement("span", {
         className: "text-lg flex-shrink-0"
-      }, hIdx === 0 ? '💡' : hIdx === 1 ? '🔦' : '🔍'), /*#__PURE__*/React.createElement("div", {
+      }, hIdx === 0 ? '💡' : hIdx === 1 ? '🔦' : '🔍'), /*#__PURE__*/React.createElement("div", {
         className: "flex-1"
       }, /*#__PURE__*/React.createElement("span", {
         className: "text-[11px] font-black text-amber-600 uppercase tracking-widest"

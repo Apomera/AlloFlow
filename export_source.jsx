@@ -1834,7 +1834,35 @@ const createExport = (deps) => {
                         }
                     });
                 } else if (type === 'faq' || type === 'brainstorm' || type === 'sentence-frames') {
-                    const text = resourceText(item.data).replace(/\n{3,}/g, '\n\n').trim();
+                    // Activities redesign (2026-08-16): discussion/jigsaw items
+                    // have structure the generic flattener turns into label-less
+                    // soup (and it would sit answers directly under questions).
+                    // Route them through GenDispatcher.describeActivityItem with
+                    // t()-driven section labels; idea cards and other types keep
+                    // the old flatten path byte-for-byte. Falls back gracefully
+                    // if the dispatcher module is not loaded (restored project,
+                    // export before any generation).
+                    const _dispatcherMod = (typeof window !== 'undefined') && window.AlloModules && window.AlloModules.GenDispatcher;
+                    const _describeActivity = _dispatcherMod && typeof _dispatcherMod.describeActivityItem === 'function' ? _dispatcherMod.describeActivityItem : null;
+                    const _activityLabels = () => {
+                        const out = {};
+                        [['protocol', 'brainstorm.protocol_label'],
+                         ['depth_literal', 'brainstorm.depth_literal'], ['depth_inferential', 'brainstorm.depth_inferential'], ['depth_evaluative', 'brainstorm.depth_evaluative'],
+                         ['talk_stems', 'brainstorm.talk_stems'], ['stems_agree', 'brainstorm.stems_agree'], ['stems_disagree', 'brainstorm.stems_disagree'], ['stems_clarify', 'brainstorm.stems_clarify'], ['stems_build', 'brainstorm.stems_build'],
+                         ['facilitation_notes', 'brainstorm.facilitation_notes'], ['look_fors', 'brainstorm.look_fors'],
+                         ['expert_group', 'brainstorm.expert_group'], ['teach_back_points', 'brainstorm.teach_back_points'], ['teach_back_questions', 'brainstorm.teach_back_questions'],
+                         ['home_group_task', 'brainstorm.home_group_task'], ['synthesis_organizer', 'brainstorm.synthesis_organizer'],
+                         ['accountability_check', 'brainstorm.accountability_check'], ['answer_key', 'brainstorm.answer_key']].forEach(([slot, key]) => {
+                            const v = t(key);
+                            if (v) out[slot] = v;
+                        });
+                        return out;
+                    };
+                    const text = (type === 'brainstorm' && Array.isArray(item.data) && _describeActivity
+                        ? item.data.map(entry => (entry && (entry.kind === 'discussion' || entry.kind === 'jigsaw'))
+                            ? _describeActivity(entry, _activityLabels())
+                            : resourceText(entry)).filter(Boolean).join('\n\n')
+                        : resourceText(item.data)).replace(/\n{3,}/g, '\n\n').trim();
                     const chunks = chunkText(text || itemTitle, 760);
                     chunks.forEach((chunk, index) => {
                         const slide = pptx.addSlide({ masterName: "MASTER_SLIDE" });

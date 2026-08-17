@@ -105,13 +105,14 @@ describe('district evaluation portal launcher', () => {
     expect(save).toHaveBeenCalledWith('');
   });
 
-  it('labels the unconfigured fallback as a local preview', () => {
+  it('labels the unconfigured fallback as a demonstration, not a ready personnel tool', () => {
     const container = mount({
       t: () => '', studentProjectSettings: {}, setStudentProjectSettings: vi.fn(), isTeacherMode: true,
       handleSetIsProjectSettingsOpenToFalse: vi.fn(), onOpenPrincipalEvaluation: vi.fn(),
       evaluationPortalUrl: '', isEvaluationPortalConnected: false, onSaveEvaluationPortalUrl: vi.fn(),
     });
-    expect(container.textContent).toContain('Local preview available');
-    expect(button(container, 'Open local preview')).toBeTruthy();
+    expect(container.textContent).toContain('Demonstration only, not connected');
+    expect(container.textContent).toContain('is not a personnel record');
+    expect(button(container, 'Open the demonstration')).toBeTruthy();
   });
 });

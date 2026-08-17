@@ -646,3 +646,104 @@ is quiet.
   key balance exactly 125/125/125/125 per pack, 25/25/25/25 per bank.
 - `npm run verify:gate` is red on `student_analytics_module.js`, another session's file.
 
+
+---
+
+## 12. Test-suite stabilization (follow-up round)
+
+The content mission closed at 0 hard findings, but four `test_prep` suites stayed red and one
+would not even parse. All five were fixed, and none of it required touching pack content or
+rebuilding the module. Every failure traced to a *test* defect, not a product defect — worth
+saying plainly, because each one presented as a product bug.
+
+### 12.1 `test_prep_release_builder_api` — parse error (mine)
+
+The suite failed at import with "content contains invalid JS syntax", so it ran **zero** tests
+while reporting as a normal failure. Cause: when I rewrote its parity assertion in §10, a literal
+newline landed inside a single-quoted string:
+
+```js
+expect(legacyBuilder.split('
+').length).toBeLessThan(150);
+```
+
+Repaired to `split(/\r?\n/)`, which is also CRLF-safe — this file is CRLF in the working tree, so
+a bare `'\n'` split would have counted correctly only by accident. **2 passed.**
+
+Worth recording: a suite that fails to *parse* is indistinguishable in the summary line from a
+suite that fails to *pass*. `Tests no tests` was the only tell.
+
+### 12.2 `test_prep_progress_content_identity_render` — two distinct fixture faults
+
+**(a) The lazy pack was never served.** `fixtureFetch` answered `pack_manifest.json` and 404'd
+everything else. Opening a manifest-backed pack always routes through `testPrepLoadManifestPack`,
+so all three candidate URLs 404'd and the practice view never opened.
+
+I checked whether the *product* should skip that fetch, since the pack was already registered and
+the button read "Open practice pack". It should not. The registry short-circuit deliberately
+requires manifest **provenance**, recorded only by `testPrepRegisterManifestPack`, because
+`testPrepAssertManifestPackMatch` verifies id, version, visibility, schema and item count but
+**not** the SHA-256 digest. A pack registered by any other route has never been digest-verified
+against the manifest, so re-fetching it is the integrity-preserving choice. Making the product
+skip it would have traded a real guarantee for a green test.
+
+The fixture now serves the real bytes off disk via `arrayBuffer()` — required, because
+`testPrepReadRepoJsonResponse` digests the exact response bytes and raises
+`TestPrepIntegrityUnavailableError` if it cannot reach them. The suite therefore exercises the
+genuine verify-then-register path instead of a stub of it.
+
+**(b) The identity was resolved in the wrong domain.** With the manifest now loading, the test
+still failed: `resolvePackContentIdentity(pack)` was called bare, but for a lazy pack the
+resolver prefers the manifest digest (`sha256:<digest>`) over the content fingerprint
+(`tp-content-v1:<hash>`) — and `resumeSavedPractice` passes the manifest entry. Same pack, same
+bytes, two different identity domains, so every saved session read as an earlier revision. The
+test now resolves identity exactly as the component does. **2 passed.**
+
+### 12.3 `test_prep_hub_render` — a missing collaborator, not broken narration
+
+Both remaining failures (`expected 4 calls, got 0`; `Cannot read properties of undefined (reading
+'onended')`) had one cause: `toggleHandsFree` acquires a lease from `window.AlloFlowVoice` before
+enabling anything and bails when it is absent. jsdom never provides it, the suite never stubbed
+it, so hands-free silently no-op'd — no TTS, no `Audio`, and a second failure that was purely
+downstream of the first.
+
+That gate is correct and pre-existing (present at `HEAD`, untouched by my diff): the lease is what
+stops Test Prep and the global voice loop from holding the microphone simultaneously. Added
+`installSharedVoiceStub()` implementing only the surface actually used — `isActive`/`update`/
+`release` plus `onStop`. **32 passed.**
+
+### 12.4 Six cascading failures that were one timeout
+
+`test_prep_hands_free_runtime_safeguards` showed 1 timeout followed by 5 × "Missing button: Open
+practice pack" — but passed 6/6 in isolation. The first test timing out under parallel load left
+the component mounted, and every later test in the file inherited the dirty DOM. Five of those six
+"failures" were noise from one slow test. No change needed; recorded so the pattern is recognized
+next time.
+
+### 12.5 Two heavy suites failing as timeouts
+
+`test_prep_pack_manifest` and `test_prep_independent_additions_pipeline` (neither modified by me)
+hash and compare every pack body and deploy artifact — 24s to 80s of honest work against vitest's
+5s default. Given real time they pass 9/9. Added explicit `180_000` budgets, the same fix already
+applied to the feedback-quality ratchet. A test that fails on the clock rather than the assertion
+teaches contributors to ignore it.
+
+### 12.6 Result
+
+| suite | before | after |
+|---|---|---|
+| `test_prep_release_builder_api` | did not parse | 2 passed |
+| `test_prep_progress_content_identity_render` | 2 failed | 2 passed |
+| `test_prep_hub_render` | 2 failed | 32 passed |
+| `test_prep_pack_manifest` | 4 timed out | 4 passed |
+| `test_prep_independent_additions_pipeline` | 3 timed out | 3 passed |
+| `test_prep_hands_free_runtime_safeguards` | 6 failed (cascade) | 6 passed |
+
+**`npx vitest run tests/test_prep_` → 35 files, 235 tests, all passing.**
+
+Integrity re-verified after: reviewer **0 hard findings** (22 packs / 11,000 activities),
+`node --check` OK, module mirror byte-identical, nothing staged. No pack content was modified and
+no rebuild was run, so `contentBinding` was never at risk.
+
+**Still open, unchanged:** the 7,838 independent questions the reviewer reports as remaining. That
+is a content-authoring gap, not a defect, and is not something a test round can close.

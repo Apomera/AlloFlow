@@ -94,11 +94,168 @@ module **is** the source.
    and Math are substantial. Science is a single state at a single grade band (44 standards).
    There is no NGSS. A teacher outside CCSS ELA/Math currently gets "not available" for most
    lookups, which is the correct behavior but a small product.
-2. **The edge mix is thinnest where the pedagogical value is highest.** 69% of edges are
-   `hasChild`, which is only hierarchy. The payload is 757 `buildsTowards` and 284 `relatesTo`
-   across 2,345 standards. Before concluding the upstream data is sparse, check whether the
-   ingestion filter is dropping relationship rows that `relationships.jsonl` actually contains;
-   the snapshot ids are marked `structural-current`, which suggests a structural extract.
+2. **RESOLVED, and the answer was worse than the question.** The hypothesis was that the
+   ingestion filter drops relationship rows by type. It does not:
+   `dev-tools/build_learning_commons_snapshot.cjs:347-359` applies **no type filter at all**. It
+   keeps an edge only when *both* endpoints are already in the selected node set, which is an
+   ordinary induced-subgraph rule.
+
+   The real finding is the per-snapshot split:
+
+   | Snapshot | hasChild | buildsTowards | relatesTo |
+   |---|---:|---:|---:|
+   | `ccss-math` | 836 | **757** | **284** |
+   | `ccss-ela` | 1,463 | **0** | **0** |
+   | `ma-science-grade-5` | 43 | **0** | **0** |
+
+   **Every progression edge in the product comes from CCSS Math.** ELA and science are hierarchy
+   only. So prerequisite-gap detection is a math-only feature in practice, and any Phase 4/5 work
+   that assumes progression data will work in math and silently do nothing elsewhere.
+
+2a. **CLOSED 2026-08-16 by profiling the real export. The answer is that there is nothing more
+   to get.** `dev-tools/profile_learning_commons_export.cjs` was run against the actual
+   v1.11.0 files. Both downloads were verified byte-for-byte against
+   `learning_commons_snapshot_manifest.json` first: sizes and sha256 matched exactly, so the
+   pinned upstream is still intact and the snapshots below describe current data.
+
+   Profile of the whole export:
+
+   ```
+   247,786 nodes · 456,620 relationships
+   222,865 academic standards items across 214 frameworks
+   hasChild roots: 214 · max observed depth: 8
+   known relationship endpoints: 100.0% · between standards items: 54.4%
+   ```
+
+   Global relationship-type distribution:
+
+   | Type | Count |
+   |---|---:|
+   | `hasChild` | 223,462 |
+   | `supports` | 137,380 |
+   | `hasEducationalAlignment` | 52,807 |
+   | `hasStandardAlignment` | 25,113 |
+   | `hasPart` | 15,944 |
+   | **`buildsTowards`** | **757** |
+   | `hasReference` | 472 |
+   | **`relatesTo`** | **284** |
+   | `hasDependency` | 209 |
+   | `mutuallyExclusiveWith` | 192 |
+
+   **`buildsTowards` is 757 across the entire export, and `ccss-math.json` already contains 757.
+   `relatesTo` is 284 globally, and ccss-math already contains 284.** AlloFlow therefore already
+   holds **100% of the progression edges that exist anywhere in Learning Commons v1.11.0**. ELA
+   and science are not losing edges to the both-endpoints rule; those edges do not exist
+   upstream. Widening the ingestion scope will not produce a single additional one.
+
+   All 757 are `StandardsFrameworkItem -> StandardsFrameworkItem`. For scale: 757 edges across
+   222,865 standards items means roughly **0.34%** of the corpus participates in any progression
+   relation at all.
+
+   `hasDependency` (209) is not a hidden second source of prerequisites: every one of them is
+   `LessonGrouping -> LessonGrouping`, which is curriculum sequencing, not standards progression.
+
+   **Consequence for the product:** prerequisite-gap detection is structurally a CCSS Math
+   feature and will stay that way on this dataset, no matter how coverage grows. That makes the
+   2b fix below the permanently correct behavior rather than a stopgap. If prerequisite
+   detection is wanted for ELA or science, the data has to come from somewhere other than the
+   Learning Commons academic-standards export.
+
+2c. **The bigger finding: the real constraint is the node scope, not the framework list.**
+   Profiling the endpoint labels of the edge types AlloFlow currently ships none of:
+
+   | Type | Count | Shape |
+   |---|---:|---|
+   | `supports` | **137,380** | `LearningComponent -> StandardsFrameworkItem` |
+   | `hasEducationalAlignment` | 52,807 | `Activity` / `Lesson` / `LessonGrouping` / `Assessment` / `Course` `-> StandardsFrameworkItem` |
+   | `hasStandardAlignment` | **25,113** | `StandardsFrameworkItem -> StandardsFrameworkItem` |
+   | `hasPart` | 15,944 | `Lesson -> Activity` / `Lesson -> Assessment` / `LessonGrouping -> Lesson` |
+
+   The ingestion scope is "descendants of one framework root", so the node set only ever contains
+   `StandardsFrameworkItem`s from a single framework. The both-endpoints rule then discards every
+   edge above. Three of them are things this document explicitly asks for:
+
+   - **`supports` is the learning-components layer.** 137,380 `LearningComponent` nodes are
+     attached to standards upstream. The Phase 1 contract in this document lists
+     `getLearningComponents(id)`, and "retrieve available learning components" is named as an
+     upstream requirement. AlloFlow currently ships **zero** LearningComponent nodes and
+     approximates components with `hasChild` children instead (see `getComponentCoverage`, which
+     documents itself as "set membership over source hasChild edges"). The real components exist
+     and are not being used.
+   - **`hasStandardAlignment` is the cross-framework crosswalk.** 25,113 standard-to-standard
+     alignments, all between `StandardsFrameworkItem`s. These are exactly the edges that connect
+     one jurisdiction's standards to another's, and they are structurally guaranteed to be
+     dropped by a single-framework scope because the partner is in a different framework. This is
+     the cheapest path to serving non-CCSS states without ingesting every state separately.
+   - **`hasEducationalAlignment` is the curriculum-resource layer** (Phase 6 / OpenSciEd),
+     already present as 52,807 links from Activities, Lessons and Assessments to standards.
+
+2d. **IMPLEMENTED 2026-08-16: learning components, behind `--include-components`.**
+
+   `dev-tools/build_learning_commons_snapshot.cjs` gained an opt-in `--include-components` flag.
+   When set it runs two extra streaming passes: relationships, to find every `supports` edge
+   whose target is an in-scope standard, then nodes, to materialise those `LearningComponent`s.
+   The existing edge loop then picks the `supports` edges up unchanged, because it has no type
+   filter and both endpoints now resolve.
+
+   Components are emitted as `kind: 'component'`, `resolvable: false`. They deliberately do not
+   go through `toStandard()`: upstream they have no `statementCode`, no `caseIdentifierUUID` and
+   no `name`, only a description, so `toStandard` would have minted a UUID as the teacher-visible
+   `code`. The UUID still appears in `code` because `validateSnapshot` requires it non-empty, but
+   it is inert: the provider filters `resolvable === false` out of every search path.
+
+   `standards_provider_module.js` was updated on the read side. `getLearningComponents` now
+   prefers incoming `supports` neighbours and falls back to the historical `hasChild`
+   approximation, reporting which one the caller got via the existing `edgeSource` field. This is
+   the extension point the module's own comment anticipated ("when a dedicated learning-components
+   dataset is imported later, this method is where it surfaces, under the same shape").
+   `neighborsByType` gained an opt-in `includeUnresolvable` argument, off for every existing
+   caller, because its default skip of non-resolvable records is correct for related/prerequisite
+   lookups but would otherwise hide components by construction.
+
+   **Measured on the real v1.11.0 export:**
+
+   | Build | Standards | Components | Edges |
+   |---|---:|---:|---:|
+   | CCSS Math, default | 837 | 0 | 1,877 |
+   | CCSS Math, `--include-components` | 837 | **1,797** | **3,674** |
+   | MA science grade 5, either way | 44 | 0 | 43 |
+
+   508 of 597 CCSS Math standards gain real components. MA science has no `supports` edges at
+   all, so that snapshot is unchanged; the flag is not useful for every framework.
+
+   Verified end to end: a rebuild of the shipped `ma-science-grade-5` scope without the flag
+   reproduces `contentDigest` **`5da6fb36ffb0933e`**, byte-identical to the shipped file, so the
+   change is a proven no-op when off. `scope.includeComponents` is only written when true, for
+   exactly that reason: `scope` is hashed into `contentDigest`, and an always-present key would
+   have changed the digest of every existing snapshot on its next rebuild. With the flag on, the
+   snapshot registers with 0 errors and 0 warnings, `getLearningComponents('5.MD.A.1')` returns
+   `edgeSource: 'supports'` and three real components, a standard without components still falls
+   back to `hasChild`, and components remain invisible to `resolveStandard`, `listStandards` and
+   `getRelatedStandards`.
+
+   **Not done: the `hasStandardAlignment` crosswalk.** It needs a product decision first. Those
+   25,113 partners are `StandardsFrameworkItem`s, so admitting them as `resolvable: true` would
+   make a "CCSS Math" snapshot return standards from other frameworks in ordinary search, while
+   `resolvable: false` would leave them inert, since `getRelatedStandards` skips non-resolvable
+   records. Neither default is obviously right and the choice changes what a snapshot means.
+
+   **Also not done: no shipped snapshot was rebuilt.** The flag exists and is tested; turning it
+   on for `ccss-math` is a data change that grows the file and belongs in a reviewed commit.
+
+2b. **FIXED 2026-08-16: the audit was reporting that silence as good news.**
+   `view_alignment_report_source.jsx:333` printed a green "Knowledge graph: no missing
+   prerequisites among source buildsTowards edges" whenever the standards resolved and no gaps
+   were found. For ELA and science that condition is met *by having no prerequisite data at all*,
+   so every ELA and science audit displayed a green all-clear about sequencing that had never
+   been checked. The provider already returned `prerequisiteCount` per evaluated standard, so the
+   fix was to sum it and split the two cases: green only when edges were actually examined,
+   otherwise a neutral "prerequisite check not available. The reviewed dataset carries no
+   buildsTowards edges for these standards, so sequencing was not checked either way."
+   This is the guardrail already in this document ("display 'not available' when a relationship
+   is missing") and the same class as commit `3e2dc6826`, "Audit results: stop dressing the worst
+   news in green". Source edited and `_build_view_alignment_report_module.js` re-run; the public
+   mirror matches.
 3. **These modules were outside the i18n sweep entirely** until 2026-08-16, so nothing was
    watching them while the feature was built. They had drifted apart accordingly:
    `learning_web_explorer_module.js` was hand-localized (55 translator calls, 0 findings) while
@@ -108,13 +265,30 @@ module **is** the source.
    `learning_web_registry_module.js`, `standards_context_module.js` and
    `standards_provider_module.js` report zero findings because they carry no user-facing strings
    at all, which is the right shape for a data layer.
-4. **31 hardcoded strings remain in the graph surfaces.** In `concept_graph_engine_module.js`
-   these are axis and grouping labels shown to teachers (`causes → effect`, `reading order`,
-   `Cognitive depth (concrete/recall -> abstract/create, Bloom)`, `Text/Activity/Assessment
-   alignment`). In `mind_map_module.js` they include the alignment-graph search placeholder, its
-   `aria-label`s, and four `addToast` error strings. The aria-labels matter most: they are the
-   accessible names for the graph controls, and this document requires a readable non-visual
-   path whenever a graph visualization is shown.
+4. **Hardcoded strings in the graph surfaces: 31 found, 21 fixed, 10 + 11 left.**
+
+   **Done:** the whole alignment-graph panel in `mind_map_module.js` is now routed through
+   `t()` under a new `alignment_graph.*` namespace (30 keys in `ui_strings.js`): both filter
+   selects and all 12 of their options, the search label, placeholder and `aria-label`, the
+   reading-order `aria-label`, the empty-filter message, the open/close toolbar buttons and
+   their titles, and all four `addToast` errors. The scanner count for that file went 20 → 10.
+   Note that 12 of those 30 were the `h('option', …)` labels, which the scanner cannot see
+   because they are positional arguments rather than JSX text; localizing only what the scanner
+   reports would have left the panel half-translated.
+
+   **Left, deliberately:** the remaining 10 in `mind_map_module.js` are toolbar `title`s in the
+   unit-path view plus two module-level constants (`EDGE_STYLES` labels "teach next" /
+   "prerequisite gate", and "Ungrouped"). The constants sit outside component scope where no
+   translator is bound, so they need resolving at use time rather than at definition, which is a
+   small refactor rather than a wrap.
+
+   **Not attempted:** the 11 in `concept_graph_engine_module.js`. That module has **zero**
+   translator calls by design, and the strings are teacher-visible axis and grouping labels
+   (`causes → effect`, `reading order`, `Cognitive depth (concrete/recall -> abstract/create,
+   Bloom)`, `Text/Activity/Assessment alignment`). Wiring `t()` into an engine module is the
+   wrong direction; the right fix is for the engine to return stable label **keys** and let the
+   view layer translate them. That is a contract change across every consumer of the engine and
+   should be a deliberate decision, not an ad-hoc edit.
 
 ## Key decisions and recommendations
 

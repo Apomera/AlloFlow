@@ -14,10 +14,45 @@
 > `configOverride.{activityMode, activityConfig}` rather than host state — zero
 > new deps threading through both ANTI copies during fleet week, and guided
 > mode/blueprints stay ideas-only for free because they never pass the override.
-> The §5.9 writer pin tests the panel setter instead. Still open: hand-translate
-> ~40 new/changed `brainstorm.*`, `status_steps.*`, `meta.*`, tour, and help
-> strings into the language packs; P3 composition (seating-chart grouping
-> handoff, leveled expert packets, AlloBot passing activityMode).
+> The §5.9 writer pin tests the panel setter instead.
+>
+> **§8 TRANSLATIONS + P3 RECORD (2026-08-16, same day, uncommitted).**
+> i18n: all 42 short keys hand-translated into all 62 packs (maay_maay excluded
+> per policy) + mirrors synced byte-identical; script-family regex, {n}
+> placeholder, check_lang_json, and spanglish gates all clean; the 42 keys
+> blessed in lang_source_baseline. Deliberately NOT translated (routed to the
+> existing pipelines): `tour.brainstorm_text` (long; left stale on purpose) and
+> the 6 new help_strings paragraphs (help_mode gap pipeline Aaron runs).
+> P3 shipped: (a) blueprint/AlloBot activity modes — plan rows may carry
+> `activityMode` + `activityConfig` (schema + BRAINSTORM STEP MODES note in
+> phase_k blueprint prompt; carried through BOTH plan normalizers — phase_k's
+> normalizePlanItem strips unknown fields and would have silently dropped it —
+> and both phase_o executor call sites incl. rebuilds, guarded on
+> tool==='brainstorm'); (b) leveled expert packets — jigsaw prompt consumes
+> `differentiationContext`, asks for varied packet demand with
+> `suggestedLevel: support|core|stretch` whitelisted in the normalizer, and the
+> level word rides INSIDE the chunk label in the output language so no new
+> chrome strings were needed. (c) Seating-chart grouping handoff DEFERRED: the
+> seating chart has named-group rendering but no auto-form-groups-of-N API;
+> building one is a seating-chart feature owned outside this effort — revisit
+> with its owner. Pin convention learned: the repo restamps ?v uniformly per
+> wave (3c094e07a → d7ff70fc6), NOT per-module sha256; the pin test now asserts
+> cross-copy agreement instead.
+>
+> **§9 LADDER + EXPORT KIND-AWARENESS (2026-08-16, same day, uncommitted).**
+> One shared serializer `GenDispatcher.describeActivityItem(item, labels?)`
+> (dispatcher module, exported, pure) renders any brainstorm item as labeled
+> plain text. Consumers: (a) ANTI's four ladder prompt sites (guide, worksheet,
+> rubric, worksheet-cover) via an App-scope shim `_alloActivityContext` that
+> falls back to `activity.description` — idea cards behave byte-identically;
+> the lesson-extension guide keeps its own description read (extensions are
+> idea-shaped, pinned). Worksheet prompt also told to adapt section contents
+> for discussion/jigsaw. (b) export_source's brainstorm branch routes
+> discussion/jigsaw items through it with t()-driven labels (keys from the
+> translated brainstorm.* set), so exports are structured text with the answer
+> key under its own teacher-only-labeled section instead of answers sitting
+> beside questions in flattener soup. doc_pipeline notes row update filed to
+> L8 via CROSS_LANE_REQUESTS (their file). Tests 47/47 + build smoke + gates.
 
 ## 1. Summary
 

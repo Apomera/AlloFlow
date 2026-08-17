@@ -1523,14 +1523,21 @@ const normalizeJigsawActivity = (raw, requestedGroupSize) => {
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
     const str = v => String(v == null ? '' : v).trim();
     const strList = v => (Array.isArray(v) ? v.map(str).filter(Boolean) : []);
-    const chunks = (Array.isArray(raw.chunks) ? raw.chunks : []).map((c, i) => ({
-        label: str(c && c.label) || ('Expert ' + (i + 1)),
-        expertPacket: str(c && c.expertPacket),
-        teachBack: {
-            keyPoints: strList(c && c.teachBack && c.teachBack.keyPoints).slice(0, 6),
-            checkQuestions: strList(c && c.teachBack && c.teachBack.checkQuestions).slice(0, 4),
-        },
-    })).filter(c => c.expertPacket).slice(0, 6);
+    const chunks = (Array.isArray(raw.chunks) ? raw.chunks : []).map((c, i) => {
+        const chunk = {
+            label: str(c && c.label) || ('Expert ' + (i + 1)),
+            expertPacket: str(c && c.expertPacket),
+            teachBack: {
+                keyPoints: strList(c && c.teachBack && c.teachBack.keyPoints).slice(0, 6),
+                checkQuestions: strList(c && c.teachBack && c.teachBack.checkQuestions).slice(0, 4),
+            },
+        };
+        // Optional differentiation tag (P3). The level word also rides inside
+        // the label in the output language, so no chrome string depends on it.
+        const level = String(c && c.suggestedLevel || '').toLowerCase();
+        if (level === 'support' || level === 'core' || level === 'stretch') chunk.suggestedLevel = level;
+        return chunk;
+    }).filter(c => c.expertPacket).slice(0, 6);
     const size = Number(requestedGroupSize);
     const item = {
         kind: 'jigsaw',
@@ -1548,6 +1555,82 @@ const normalizeJigsawActivity = (raw, requestedGroupSize) => {
     };
     if (!item.title || item.chunks.length < 2) return null;
     return item;
+};
+
+// Renders one brainstorm data item as labeled plain text — the ONE serializer
+// behind (a) the ladder handlers' prompt context (guide/worksheet/rubric read
+// `description`, which discussion/jigsaw items don't have) and (b) the export
+// flattener (which otherwise dumps label-less value soup). `labels` overrides
+// the English section labels; the export path passes t()-driven ones (the keys
+// all exist in ui_strings under brainstorm.*). Pure; exported on GenDispatcher.
+const describeActivityItem = (item, labels) => {
+    if (!item || typeof item !== 'object') return '';
+    const L = Object.assign({
+        protocol: 'Protocol',
+        grouping: 'Grouping',
+        opening: 'Opening question',
+        depth_literal: 'Right there in the text',
+        depth_inferential: 'Between the lines',
+        depth_evaluative: 'Your judgment',
+        talk_stems: 'Talk stems',
+        stems_agree: 'Agreeing',
+        stems_disagree: 'Disagreeing respectfully',
+        stems_clarify: 'Asking for clarity',
+        stems_build: 'Building on ideas',
+        facilitation_notes: 'Facilitation notes (teacher)',
+        look_fors: 'Participation look-fors',
+        expert_group: 'Expert group',
+        teach_back_points: 'When you teach your group, cover:',
+        teach_back_questions: 'Check your group understood:',
+        home_group_task: 'Home-group task',
+        synthesis_organizer: 'Putting it together',
+        accountability_check: 'Show what you learned (everyone answers)',
+        answer_key: 'Answer key (teacher only)',
+    }, labels || {});
+    const lines = [];
+    if (item.kind === 'discussion') {
+        if (item.title) lines.push(item.title);
+        if (item.protocol) lines.push(L.protocol + ': ' + item.protocol);
+        if (item.grouping) lines.push(L.grouping + ': ' + item.grouping);
+        if (item.openingQuestion) lines.push(L.opening + ': ' + item.openingQuestion);
+        (Array.isArray(item.questionSets) ? item.questionSets : []).forEach(set => {
+            const qs = set && Array.isArray(set.questions) ? set.questions : [];
+            if (!qs.length) return;
+            lines.push('', (L['depth_' + set.depth] || set.depth || '') + ':');
+            qs.forEach((q, i) => lines.push('  ' + (i + 1) + '. ' + q));
+        });
+        const stems = item.talkStems && typeof item.talkStems === 'object' ? item.talkStems : {};
+        const stemCats = ['agree', 'disagree', 'clarify', 'build'].filter(c => Array.isArray(stems[c]) && stems[c].length);
+        if (stemCats.length) {
+            lines.push('', L.talk_stems + ':');
+            stemCats.forEach(c => lines.push('  ' + L['stems_' + c] + ': ' + stems[c].join(' | ')));
+        }
+        if (item.facilitationNotes) lines.push('', L.facilitation_notes + ':', item.facilitationNotes);
+        if (Array.isArray(item.lookFors) && item.lookFors.length) lines.push('', L.look_fors + ': ' + item.lookFors.join('; '));
+        return lines.join('\n').trim();
+    }
+    if (item.kind === 'jigsaw') {
+        if (item.title) lines.push(item.title);
+        (Array.isArray(item.chunks) ? item.chunks : []).forEach((chunk, i) => {
+            if (!chunk || !chunk.expertPacket) return;
+            lines.push('', (chunk.label || (L.expert_group + ' ' + (i + 1))) + ':', chunk.expertPacket);
+            const tb = chunk.teachBack && typeof chunk.teachBack === 'object' ? chunk.teachBack : {};
+            if (Array.isArray(tb.keyPoints) && tb.keyPoints.length) lines.push(L.teach_back_points + ' ' + tb.keyPoints.join('; '));
+            if (Array.isArray(tb.checkQuestions) && tb.checkQuestions.length) lines.push(L.teach_back_questions + ' ' + tb.checkQuestions.join(' / '));
+        });
+        if (item.homeGroupTask) lines.push('', L.home_group_task + ':', item.homeGroupTask);
+        if (item.synthesisOrganizer) lines.push('', L.synthesis_organizer + ':', item.synthesisOrganizer);
+        const checks = Array.isArray(item.accountabilityCheck) ? item.accountabilityCheck : [];
+        if (checks.length) {
+            lines.push('', L.accountability_check + ':');
+            checks.forEach((c, i) => lines.push('  ' + (i + 1) + '. ' + (c && c.q || '')));
+            lines.push('', L.answer_key + ':');
+            checks.forEach((c, i) => lines.push('  ' + (i + 1) + '. ' + (c && c.answer || '')));
+        }
+        return lines.join('\n').trim();
+    }
+    // Classic idea card: same three fields the old flatteners produced.
+    return [item.title, item.description, item.connection].filter(Boolean).join('\n');
 };
 
 const handleGenerate = async (type, langOverride = null, keepLoading = false, textOverride = null, configOverride = {}, switchView = true, deps) => {
@@ -4152,6 +4235,9 @@ ${_itemsBlock}`;
                 ${dokDirective}
                 ${effCustomInstructions ? `Custom focus: ${effCustomInstructions}.` : ''}
                 ${languageDirective}
+                ${differentiationContext ? `DIFFERENTIATION: ${differentiationContext}
+                - Vary the reading demand of the expert packets across chunks so experts can be assigned strategically: at least one lighter-demand chunk and one stretch chunk, every packet still carrying essential knowledge the group needs.
+                - Label each chunk with "suggestedLevel": "support" | "core" | "stretch", AND append the matching plain word (in the OUTPUT LANGUAGE, in parentheses) to that chunk's "label" so teachers see it without extra UI.` : ''}
                 Requirements:
                 - "expertPacket": markdown a student expert reads to master ONLY their chunk (rewritten for ${effectiveGrade}, not copied).
                 - "teachBack": what that expert covers when teaching their home group, plus questions to check their group understood.
@@ -6260,7 +6346,9 @@ window.AlloModules.GenDispatcher = {
   protectAdaptationCitations,
   restoreProtectedAdaptationCitations,
   composeAdaptedLeveledText,
-  // Activities redesign (2026-08-16): pure structured-activity normalizers.
+  // Activities redesign (2026-08-16): pure structured-activity normalizers +
+  // the shared per-kind serializer (ladder prompts + export both use it).
   normalizeDiscussionKit,
-  normalizeJigsawActivity
+  normalizeJigsawActivity,
+  describeActivityItem
 };

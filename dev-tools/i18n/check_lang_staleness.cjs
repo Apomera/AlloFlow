@@ -28,6 +28,26 @@ const L = require('./lang_src_lib.cjs');
 const argv = process.argv.slice(2);
 const GATE = argv.includes('--gate');
 const QUIET = argv.includes('--quiet');
+// ── Partial gating (2026-08-16, W1) ──────────────────────────────────────────
+// Full --gate is unusable while the backlog exists (>20k stale entries), which is how this
+// check spent months printing the right answer and exiting 0 while renamed surfaces shipped
+// stale in 63 languages. Two composable partial gates:
+//
+//   --gate-guarded  HARD-fails on any stale entry whose key's top-level namespace is in
+//                   GUARDED below. These are the surface-name namespaces where a stale value
+//                   OVERRIDES a product rename (the Glossary/Throughline/STEAM Lab class).
+//                   All of them were verified clean when this gate was added; keeping them
+//                   clean is the contract. If your English edit trips this, re-translate the
+//                   key across packs and bless it — do not remove the namespace from the list.
+//
+//   --ratchet       HARD-fails only if the TOTAL stale count exceeds the checked-in
+//                   watermark (lang_staleness_watermark.json). Stops backlog growth
+//                   everywhere without requiring the backlog to be fixed first. When the
+//                   count drops, the watermark auto-lowers so improvements lock in.
+const GATE_GUARDED = argv.includes('--gate-guarded');
+const RATCHET = argv.includes('--ratchet');
+const GUARDED = ['sidebar', 'tools', 'glossary', 'visuals', 'universal', 'launch_pad', 'storage', 'alignment_graph'];
+const WATERMARK_PATH = path.join(__dirname, 'lang_staleness_watermark.json');
 
 if (!fs.existsSync(L.BASELINE_PATH)) {
   console.log('check_lang_staleness: no baseline yet — run  node dev-tools/i18n/bless_lang_sources.cjs  first.');
@@ -92,4 +112,46 @@ if (withStale.length) {
 } else {
   console.log(`✓ no stale translations — every changed English string is either re-translated or not yet present in any pack.`);
 }
-process.exit(0);
+
+let failed = false;
+
+if (GATE_GUARDED) {
+  const guardedHits = new Map(); // key -> pack count
+  for (const slug of slugs) {
+    for (const k of Object.keys(perPack[slug] || {})) {
+      if (GUARDED.includes(k.split('.')[0])) guardedHits.set(k, (guardedHits.get(k) || 0) + 1);
+    }
+  }
+  if (guardedHits.size) {
+    failed = true;
+    console.error(`\n❌ gate-guarded: ${guardedHits.size} stale key(s) in protected namespaces [${GUARDED.join(', ')}]:`);
+    for (const [k, n] of [...guardedHits.entries()].slice(0, 12)) console.error(`   ${k} (${n} pack(s))`);
+    console.error(`   These namespaces carry surface names; a stale pack value OVERRIDES the current English.`);
+    console.error(`   Fix: re-translate the key across packs, then bless_lang_sources.cjs --key <key>.`);
+  } else if (!QUIET) {
+    console.log(`✓ gate-guarded: protected namespaces [${GUARDED.join(', ')}] are stale-free.`);
+  }
+}
+
+if (RATCHET) {
+  let watermark = null;
+  if (fs.existsSync(WATERMARK_PATH)) {
+    try { watermark = JSON.parse(fs.readFileSync(WATERMARK_PATH, 'utf8')); } catch (e) { watermark = null; }
+  }
+  if (!watermark || typeof watermark.totalStaleEntries !== 'number') {
+    fs.writeFileSync(WATERMARK_PATH, JSON.stringify({ totalStaleEntries: totalStale, note: 'High-water mark for check_lang_staleness --ratchet. Auto-lowers when the count drops; a count ABOVE it fails the gate. Do not raise by hand — re-translate or bless instead.' }, null, 2) + '\n');
+    console.log(`ratchet: watermark initialised at ${totalStale}.`);
+  } else if (totalStale > watermark.totalStaleEntries) {
+    failed = true;
+    console.error(`\n❌ ratchet: stale count ${totalStale} EXCEEDS the watermark ${watermark.totalStaleEntries}.`);
+    console.error(`   An English edit landed without its re-translation. See lang_staleness/_summary.json`);
+    console.error(`   (changedKeys) for what moved; re-translate + bless, or revert the English edit.`);
+  } else if (totalStale < watermark.totalStaleEntries) {
+    fs.writeFileSync(WATERMARK_PATH, JSON.stringify({ ...watermark, totalStaleEntries: totalStale }, null, 2) + '\n');
+    if (!QUIET) console.log(`✓ ratchet: stale count dropped ${watermark.totalStaleEntries} -> ${totalStale}; watermark lowered.`);
+  } else if (!QUIET) {
+    console.log(`✓ ratchet: stale count holding at the watermark (${totalStale}).`);
+  }
+}
+
+process.exit(failed ? 1 : 0);

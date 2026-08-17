@@ -134,7 +134,7 @@
       "nativeQaUrl": "./test_prep/parapro_native_qa.json",
       "learningLibrarySha256": "af0034d320e1030821b073d10ca09edc82e150a1acd38fde2e01b46e89491e02",
       "learningLibraryQaSha256": "7130aa5ca8114a7aa812466f2e66b63a635b2a361d8e40297b03a02fc75f1829",
-      "nativeQaSha256": "d4079fbe97020d3b66590f99de6f7d5d69dbe4e0fbc0d334b9678eb944980632"
+      "nativeQaSha256": "b3102920a6f12833fecda182dc21246169b1be1b9cc61d54b15246c3614e73c9"
     },
     {
       "id": "praxis-special-education-5355",
@@ -167,7 +167,7 @@
       "nativeQaUrl": "./test_prep/special_education_5355_native_qa.json",
       "learningLibrarySha256": "821a5d957aaac8736bde577ce184b8c347bf5f51811610797a24528ba74f2e1e",
       "learningLibraryQaSha256": "a8fe2c47141915dc666d4aa83f2800bd5e047b1bbc70905f9e343618a45000c2",
-      "nativeQaSha256": "87c6b2a496041bc6dc15ff4f8c0d9ec7661cdff5c6ac0c2b5b8cc508cf8ec1f9"
+      "nativeQaSha256": "3fb261b544386186241405492cc5f8152f88cc1a232263adfc62e1d66bb4bd0c"
     },
     {
       "id": "praxis-school-counselor-5422",
@@ -200,7 +200,7 @@
       "nativeQaUrl": "./test_prep/school_counselor_5422_native_qa.json",
       "learningLibrarySha256": "a3e6a23efb20bba4eadf68cba1b7326f8672ea4a913fc6fc52fdbf10a165d770",
       "learningLibraryQaSha256": "137e354392edaa89f21a75398e097130511c0fd3eca6156289aeb87a75393f92",
-      "nativeQaSha256": "9c52274df03dce09e8bdc8ef0639698fbe6ae35bd2e5d4f40ec71d15f0bfb646"
+      "nativeQaSha256": "110cd38ce1bc87d691aa723e759a2be6c83ad8a4fa8ebca49d8d712bbe0bb35f"
     },
     {
       "id": "praxis-school-psychologist-5403",
@@ -233,7 +233,7 @@
       "nativeQaUrl": "./test_prep/school_psychologist_5403_native_qa.json",
       "learningLibrarySha256": "4c045733e64a1e9184c2290a0aae7a1021c35405777b9d3c9dd8180c90177316",
       "learningLibraryQaSha256": "87b2c66fe2a48c89f43564fb8540e7c7c43e7b92ae43261b87c69b9013c0cd25",
-      "nativeQaSha256": "b337478a6091b40d3399d6dc7d8c56d80f067a2202282ad0d4eb55db8840aa69"
+      "nativeQaSha256": "be3bdafda8bcd1d8ef3c76dee39c3bb01347fae4bcf049ab94c0aa5c8051a453"
     },
     {
       "id": "praxis-speech-language-pathology-5331",
@@ -266,7 +266,7 @@
       "nativeQaUrl": "./test_prep/speech_language_pathology_5331_native_qa.json",
       "learningLibrarySha256": "62066a27accebcb2e198031c811122ef60cb463808f553c97f3c44fdfb7d8478",
       "learningLibraryQaSha256": "1bc61dcad6e8c256d5eb9b5830ac54bb1232daeb54db4e28816999a1b7746331",
-      "nativeQaSha256": "07f8396bca07b3b6eccdb1005ab206713e6d5f5e28b8d6413d05b54220804d60"
+      "nativeQaSha256": "69129d5ba79b1db72fcb9b674c053fd6e7f482c180d4ba7d407a82902b1afbe6"
     },
     {
       "id": "praxis-audiology-5343",
@@ -299,7 +299,7 @@
       "nativeQaUrl": "./test_prep/audiology_5343_native_qa.json",
       "learningLibrarySha256": "e3f29e63ba06d9c8c36c52f1560ca7bbb74fd3dda36b8726f888aa343bc1fcfb",
       "learningLibraryQaSha256": "ac22779ae2311afb7ec8ba3e7b91e1b9471bc9090e702d177d149aab7ae25a98",
-      "nativeQaSha256": "7cbec637405a57b68e1f9156805d44fab2537504076798666926a101eb655e22"
+      "nativeQaSha256": "2543b9e31a6591481c6bace2ac3c520638b52e96bfefd9941da2b421a199e40a"
     },
     {
       "id": "praxis-reading-specialist-5302",
@@ -332,7 +332,7 @@
       "nativeQaUrl": "./test_prep/reading_specialist_5302_native_qa.json",
       "learningLibrarySha256": "cb94bb475971b064c52d5d889f26e01805f6a69907dcafa659c838fcb031a069",
       "learningLibraryQaSha256": "c165b6c2bfff1bc42683ea73f80399e3035d07d9f5df492b3244f24b8101e2fc",
-      "nativeQaSha256": "e848463d2dde85fb94d4345003962a697eadc76683292e3e5915f71cdcdf34f4"
+      "nativeQaSha256": "692b0635d918e475df667a0209ae4f462b797a831fdfdb08f3f49971aafe5e83"
     },
     {
       "id": "praxis-educational-leadership-5412",
@@ -365,7 +365,7 @@
       "nativeQaUrl": "./test_prep/educational_leadership_5412_native_qa.json",
       "learningLibrarySha256": "c235ae7eef17531b3e66b2ad42d2b3281e2e571fc1a557be1139c9e69702047a",
       "learningLibraryQaSha256": "07d26964f2a2db9f017cbbdd1607523e9fd4db4eb612f4210e78415712478e90",
-      "nativeQaSha256": "8b0d85bf3efb467b23b62600fe19f06579af2970f62e47bcff6cb6b65fe2620d"
+      "nativeQaSha256": "4812c1499ae2bfed845b453078ad5e9470fa6660f679bcbeb5ec5cfcec2a25ce"
     },
     {
       "id": "praxis-plt-k6-5622",
@@ -398,7 +398,7 @@
       "nativeQaUrl": "./test_prep/plt_k6_5622_native_qa.json",
       "learningLibrarySha256": "36a054934e2b038c6056b529a2e63de35860589905c1996223d82454190b2b98",
       "learningLibraryQaSha256": "f435ce9d23ede3c81fa49f210cb1a2361ab27b27d6432e1fd0b4c2a5462405aa",
-      "nativeQaSha256": "e240fdb1245cdf473d384f7ca802a44e1acf93d865cf982bffc237586126464a"
+      "nativeQaSha256": "bf088429210c64cfb3955dd06a4980113973577b8096c97cb0217db481c11f64"
     },
     {
       "id": "praxis-core-5752",
@@ -431,7 +431,7 @@
       "nativeQaUrl": "./test_prep/praxis_core_5752_native_qa.json",
       "learningLibrarySha256": "e1577181905ab167b83767e8205e46c25e06026330dc8eeee1377f4b5d2123d1",
       "learningLibraryQaSha256": "93e9abb5a7224018a81e54d6af16233b6604a3f63b81eb564cf94326e75286ac",
-      "nativeQaSha256": "b614eea8e711dbf88243143fe27b404d8ebc25ace34dbec9cf789e3b3ba5bfa9"
+      "nativeQaSha256": "6dbfab4837ecd5e8d8d9790d227baf0027424e4b583d158da49359e1655bfc24"
     },
     {
       "id": "praxis-esol-5362",
@@ -464,7 +464,7 @@
       "nativeQaUrl": "./test_prep/esol_5362_native_qa.json",
       "learningLibrarySha256": "1cba88018e11350069c1259cab1ef31d57f4e03ee19baca7e1f2cfcc26c11310",
       "learningLibraryQaSha256": "98f9ff69784d67f6a5e03eeb2ed33643b9e010e2c9a1f786fd0a1483b9b00b9b",
-      "nativeQaSha256": "f9a7561877342baa69ebaecf314c57c8642cf3be87f9f94bd39b4fd1a56e14eb"
+      "nativeQaSha256": "020ccefea488ec5dab34bacd12ec44a754bd6fe19e27321cabf950831019315d"
     },
     {
       "id": "praxis-teaching-reading-5205",
@@ -497,7 +497,7 @@
       "nativeQaUrl": "./test_prep/teaching_reading_5205_native_qa.json",
       "learningLibrarySha256": "37436e9d444d8e56efd03e9bf3cd80e98f82cd3ec798b64e52983f9aa7b2e34d",
       "learningLibraryQaSha256": "c40d6afebad64700a14f64cb10d28789c4c300c2f15251962421c06852b686c3",
-      "nativeQaSha256": "ada4decba1bc28ef60b6f09cddc8127dee5a4ee0840b37b24596c4b1d5f15eac"
+      "nativeQaSha256": "02028410b398d678a351f386c6a3a9bfbacf3c80d631081cdc2c2cef01ff0d00"
     },
     {
       "id": "praxis-early-childhood-5025",
@@ -530,7 +530,7 @@
       "nativeQaUrl": "./test_prep/early_childhood_5025_native_qa.json",
       "learningLibrarySha256": "fc24eed89a1c287c3adf72c9cd548ba1eb4acff99a07aac71dc9565c63523a0e",
       "learningLibraryQaSha256": "22d4393b4e58fb2710e697f1a04e3db76ff9771a99d2afed0b457c63de6c063a",
-      "nativeQaSha256": "56c75da770b749f449ac2387673d95c866ba790756ed507c15dea483713cc7d8"
+      "nativeQaSha256": "856f9a01df56316862577005ef73c86ea4d3f4797be2afd5746f52c0384ae32f"
     },
     {
       "id": "praxis-plt-early-childhood-5621",
@@ -563,7 +563,7 @@
       "nativeQaUrl": "./test_prep/plt_early_childhood_5621_native_qa.json",
       "learningLibrarySha256": "b86523780637ce6ae14214beca6e3a99645a6685c4aa48692835369361901fd4",
       "learningLibraryQaSha256": "9c0e87b8a01d2f2afbb0237fe0c2b42644e31a1818760636f9593d17163a2309",
-      "nativeQaSha256": "ab0f0e84ac590809eb1aa7e43ae669541452a1ff840cafc2622049d1b7f52819"
+      "nativeQaSha256": "578607b389972150b8d6ae0fc6ffdb233388fb3fe08e8cd35092242cac970ee9"
     },
     {
       "id": "praxis-special-education-early-childhood-5692",
@@ -596,7 +596,7 @@
       "nativeQaUrl": "./test_prep/special_education_early_childhood_5692_native_qa.json",
       "learningLibrarySha256": "4f77d18b57081e78133c2fb1742fc805a80fd67b9ff75e6d541b5be36fe611e4",
       "learningLibraryQaSha256": "5ee2cb43476861c1d3c5684f286d9faf69ff0e38c3c8897ebd1ede459f2c7b6f",
-      "nativeQaSha256": "03122aa5bc88d2ca046df2eb7110fab639d207d4a965a53f727e0849434b0cd8"
+      "nativeQaSha256": "1f777f849498c995bccc93a8d479089aa79f1ce109e80d65968d96a017de9a87"
     },
     {
       "id": "praxis-special-education-severe-profound-5547",
@@ -629,7 +629,7 @@
       "nativeQaUrl": "./test_prep/special_education_severe_profound_5547_native_qa.json",
       "learningLibrarySha256": "69e574a9824b24a15d3765ae647742d68575b54c54f643748ae38ba80ef9ee9a",
       "learningLibraryQaSha256": "e7dc7df251201cc1888d02b3e434a20773801131510b8d4a27ad478d11008afd",
-      "nativeQaSha256": "c5ea7b1a9282e1d1f7c4fbf7ff43d4128490a351e9ea6ce8ee29b87d4820e981"
+      "nativeQaSha256": "504ec2f9074b6e36696cadabfea546ce15fcf45c2967bfd1763ef5db012666d2"
     },
     {
       "id": "praxis-special-education-learning-disabilities-5383",
@@ -662,7 +662,7 @@
       "nativeQaUrl": "./test_prep/special_education_learning_disabilities_5383_native_qa.json",
       "learningLibrarySha256": "2eee2c4fedb13728431f244d69710782afbb5d48c976c79e104c4a980baf10d7",
       "learningLibraryQaSha256": "ca962fc600adb2b03d1e7338d4b816635618ac309cda98460ff2298a1db7c982",
-      "nativeQaSha256": "dfe691f1983d64c08fc3c1c07a0e008c2ce8ba5959368cd32050402404d73c84"
+      "nativeQaSha256": "89345e0142774d0e08820c406f857a85f44d04112c6722b78803876b6753bf18"
     },
     {
       "id": "praxis-special-education-behavior-emotional-5372",
@@ -695,7 +695,7 @@
       "nativeQaUrl": "./test_prep/special_education_behavior_emotional_5372_native_qa.json",
       "learningLibrarySha256": "59bc42cff076988e6a99f5bfb70b3c5cf185844015c8ec64ec99c772cc2750d9",
       "learningLibraryQaSha256": "95984216bee7ac267e1af1c24e6cc74c3f0ecb064eb1da1707d1a55b25256e78",
-      "nativeQaSha256": "970a94b75fdf71a7dc391d4bb227e57d6ab1c33aad5b9897f57c0ddd3905e9f8"
+      "nativeQaSha256": "82132f9f5330dda3dca879e2927913f06d0b86d99bd5ae94aa2cfc5741e97a34"
     },
     {
       "id": "praxis-special-education-intellectual-disabilities-5322",
@@ -728,7 +728,7 @@
       "nativeQaUrl": "./test_prep/special_education_intellectual_disabilities_5322_native_qa.json",
       "learningLibrarySha256": "83783a5f3f59c9fd51aa07702cf2f3835f2546c236dd20889b955944fca9c134",
       "learningLibraryQaSha256": "18e8c33499fb48f7b902d7079bff06d07e673976a56bbe74275bc3d808d7a061",
-      "nativeQaSha256": "29a62c8447a9b3d24c99ef4754c302913f74ee24d29b4d012d07c6637b5f7901"
+      "nativeQaSha256": "4835426f169cc388e528ff00f60b618f28a77c6ff81398651f9907557579022a"
     },
     {
       "id": "praxis-plt-grades-5-9-5623",
@@ -761,7 +761,7 @@
       "nativeQaUrl": "./test_prep/plt_5_9_5623_native_qa.json",
       "learningLibrarySha256": "bc1b3e35b00400c65a35fbc430b2dead0ead11df6e1582958cd546b74c4575d4",
       "learningLibraryQaSha256": "f0bb72ad9feaeeec2704836858b11bee798fa0b60f035a25b7c8fbb4f62705a0",
-      "nativeQaSha256": "5e930962dac90f78eb4dba3089d69f48dd28a155d41c7010ee82774a7d6ad4b3"
+      "nativeQaSha256": "ab8c0ef5da8d3d8ca79ad8174774b71560236403c8a1a1d30921929a762ce74b"
     },
     {
       "id": "praxis-plt-grades-7-12-5624",
@@ -794,7 +794,7 @@
       "nativeQaUrl": "./test_prep/plt_7_12_5624_native_qa.json",
       "learningLibrarySha256": "d2c283da9d654dc414367785fbe2de52d3aa7607784127c02a608b53d42676ea",
       "learningLibraryQaSha256": "81728c1c8ecb1449c1d74fe4dbd94e2675e7c6f169767878931fa168cc644eff",
-      "nativeQaSha256": "cdf54966c1cfc31783e42d875b59af80455a72c1541242c1422b46c2c473d314"
+      "nativeQaSha256": "441f638514400fc0a9321924e87c3ff5d786e107270854ee3e2e6b0f580adb32"
     },
     {
       "id": "praxis-school-librarian-5312",
@@ -827,7 +827,7 @@
       "nativeQaUrl": "./test_prep/school_librarian_5312_native_qa.json",
       "learningLibrarySha256": "9eeee966857c9d1af35550e9557251473d07ea9af45428a249063ec2e7b56d0f",
       "learningLibraryQaSha256": "71959bedf81fcd40ccc67ff5c4c53faa582b15ab001e32487404a575192aa0c6",
-      "nativeQaSha256": "c9d9767278488d198669cac895e077df245951e54369494a939ff4b77a072f06"
+      "nativeQaSha256": "4cff3f10cd02aac5ce7f4a1066a914952e098d6ed69839a6c9db4db58eb33a92"
     },
     {
       "id": "ap-psychology-pilot",

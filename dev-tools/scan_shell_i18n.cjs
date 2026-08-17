@@ -222,6 +222,9 @@ function scanFile(rel) {
 // before that date is not comparable to one after it.
 const DEFAULT_TARGETS = [
   'AlloFlowANTI.txt',
+  // Added 2026-08-16: StoryForge was never in this list and this scanner had no
+  // runner, so its 623 hardcoded strings had never once been reported.
+  'story_forge_source.jsx',
   'reading_library_module.js',
   'catalog_module.js',
   'view_fab_stack_source.jsx',
@@ -284,3 +287,50 @@ for (const r of results) {
   if (r.findings.length > 40) console.log(`  ... ${r.findings.length - 40} more (use --csv)`);
 }
 console.log(`\n── scan_shell_i18n: ${results.length} file(s), ${total} user-facing hardcoded string(s) ──`);
+
+// ── Gate mode ────────────────────────────────────────────────────────────────
+// The shell carries ~14k hardcoded strings, so this can never be a pass/fail
+// gate on absolute count. It gates on DIRECTION instead: a per-file baseline,
+// failing only when a file gains new unlocalized strings. That stops the number
+// growing while the backlog is worked down, which is the whole reason StoryForge
+// reached 623 unnoticed — this scanner existed but nothing ever ran it.
+//
+//   node dev-tools/scan_shell_i18n.cjs --all --gate              # CI check
+//   node dev-tools/scan_shell_i18n.cjs --all --update-baseline   # accept current
+const BASELINE = path.join(__dirname, 'shell_i18n_baseline.json');
+if (argv.includes('--update-baseline')) {
+  const snap = {};
+  for (const r of results) if (!r.parseError) snap[r.rel] = r.findings.length;
+  fs.writeFileSync(BASELINE, JSON.stringify(snap, null, 2) + '\n', 'utf8');
+  console.log(`baseline written: ${Object.keys(snap).length} file(s) → ${path.relative(ROOT, BASELINE)}`);
+  process.exit(0);
+}
+if (argv.includes('--gate')) {
+  if (!fs.existsSync(BASELINE)) {
+    console.error('no baseline — run with --all --update-baseline first');
+    process.exit(1);
+  }
+  const base = JSON.parse(fs.readFileSync(BASELINE, 'utf8'));
+  const worse = [], better = [];
+  for (const r of results) {
+    if (r.parseError) continue;
+    // A file absent from the baseline is treated as 0: a NEW file may not
+    // arrive pre-loaded with hardcoded strings.
+    const was = Object.prototype.hasOwnProperty.call(base, r.rel) ? base[r.rel] : 0;
+    if (r.findings.length > was) worse.push({ rel: r.rel, was, now: r.findings.length });
+    else if (r.findings.length < was) better.push({ rel: r.rel, was, now: r.findings.length });
+  }
+  if (better.length) {
+    console.log('\nimproved (run --update-baseline to lock the win in):');
+    for (const b of better) console.log(`  ${b.rel}: ${b.was} → ${b.now}`);
+  }
+  if (worse.length) {
+    console.log('\n❌ new hardcoded user-facing string(s):');
+    for (const w of worse) console.log(`  ${w.rel}: ${w.was} → ${w.now}  (+${w.now - w.was})`);
+    console.log('\n  Wrap them in the translator this file already uses, or accept');
+    console.log('  deliberately with --all --update-baseline after reading the sites.');
+    process.exit(1);
+  }
+  console.log('✓ scan_shell_i18n gate: no file gained hardcoded strings.');
+  process.exit(0);
+}

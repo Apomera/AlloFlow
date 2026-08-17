@@ -1355,6 +1355,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       var setLabToolData = ctx.setToolData;
       var setStemLabTool = ctx.setStemLabTool;
       var awardXP = function(n) { if (ctx.awardXP) ctx.awardXP('schoolBehaviorToolkit', n); };
+      // For the Function Sleuth drill moved in from behaviorLab. A bare reference
+      // to an undeclared identifier is a ReferenceError, not a falsy check.
+      var addToast = ctx.addToast;
 
       var d = labToolData.schoolBehaviorToolkit || defaultState();
       function setSBT(patch) {
@@ -1447,7 +1450,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                 border: '1px solid rgba(20,184,166,0.40)',
                 color: '#5eead4', fontSize: 10, fontWeight: 700,
                 fontFamily: 'ui-monospace, Menlo, monospace'
-              } }, __alloT('stem.schoolbehaviortoolkit.12_sections_4_interactive', '12 sections · 4 interactive'))
+              } }, __alloT('stem.schoolbehaviortoolkit.14_sections_7_interactive', '14 sections · 7 interactive'))
             ),
             h('p', { style: { margin: 0, fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600, lineHeight: 1.5 } }, __alloT('stem.schoolbehaviortoolkit.applied_k_12_practice_pbis_replacement', 'Applied K-12 practice. PBIS · Replacement Behaviors (with function-spotter) · Setting Events · Acting-Out Cycle (with phase scrubber) · Restraint Ethics (with decision tree) · Equity & Disparities.'))
           )
@@ -1458,11 +1461,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         var tabs = [
           { id: 'pbis', label: __alloT('stem.schoolbehaviortoolkit.pbis_tiers', 'PBIS Tiers'), icon: '🏫' },
           { id: 'fba', label: __alloT('stem.schoolbehaviortoolkit.fba_process', 'FBA Process'), icon: '🔬' },
+          { id: 'functions', label: __alloT('stem.schoolbehaviortoolkit.four_functions_tab', 'Four Functions'), icon: '🔍' },
           { id: 'bip', label: __alloT('stem.schoolbehaviortoolkit.bip_template', 'BIP Template'), icon: '📑' },
           { id: 'replacement', label: __alloT('stem.schoolbehaviortoolkit.replacement_behaviors', 'Replacement Behaviors'), icon: '🔄' },
           { id: 'setting', label: __alloT('stem.schoolbehaviortoolkit.setting_events', 'Setting Events'), icon: '🕰️' },
           { id: 'cycle', label: __alloT('stem.schoolbehaviortoolkit.acting_out_cycle', 'Acting-Out Cycle'), icon: '🌀' },
           { id: 'restraint', label: __alloT('stem.schoolbehaviortoolkit.restraint_seclusion', 'Restraint & Seclusion'), icon: '🛑' },
+          { id: 'tokens', label: __alloT('stem.schoolbehaviortoolkit.token_economy_tab', 'Token Economy'), icon: '🪙' },
           { id: 'cico', label: __alloT('stem.schoolbehaviortoolkit.cico_template', 'CICO Template'), icon: '📋' },
           { id: 'equity', label: __alloT('stem.schoolbehaviortoolkit.equity_disparities', 'Equity & Disparities'), icon: '⚖️' },
           { id: 'maine', label: __alloT('stem.schoolbehaviortoolkit.maine_resources', 'Maine Resources'), icon: '🦞' },
@@ -1471,8 +1476,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         ];
         var schoolBehaviorTabKeyDown = function(e, index) {
           var nextIndex = -1;
-          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % 12;
-          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + 11) % 12;
+          // Derived from the array, not a literal. This was `% 12`, so adding a tab
+          // would have made Right-arrow skip the last one and Left-arrow land wrong.
+          var tabCount = tabs.length;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % tabCount;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + tabCount - 1) % tabCount;
           else if (e.key === 'Home') nextIndex = 0;
           else if (e.key === 'End') nextIndex = 11;
           if (nextIndex < 0) return;
@@ -1829,6 +1837,358 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         );
       }
 
+      // ── Tables for the Four Functions section ───────────────────────────
+      // Moved from stem_tool_behaviorlab.js. Inside render, not at module scope
+      // beside PBIS_TIERS: those are plain strings, these carry __alloT calls, and
+      // __alloT is defined in this closure.
+      var FOUR_FUNCTIONS = [
+
+        { name: __alloT('stem.schoolbehaviortoolkit.attention', 'Attention'), abbrev: 'ATT', icon: '\uD83D\uDC40', color: '#60a5fa', desc: __alloT('stem.schoolbehaviortoolkit.behavior_maintained_by_social_attentio', 'Behavior maintained by social attention from others. Example: A student calls out in class to get the teacher to look at them. The attention (even if negative) reinforces the calling out.'), example: 'Calling out, clowning around, tantrums when ignored', intervention: 'Planned ignoring of problem behavior + attention for appropriate behavior (DRA). Teach appropriate ways to get attention.' },
+        { name: 'Escape/Avoidance', abbrev: 'ESC', icon: '\uD83C\uDFC3', color: '#f87171', desc: __alloT('stem.schoolbehaviortoolkit.behavior_maintained_by_removal_of_an_a', 'Behavior maintained by removal of an aversive stimulus. Example: A student has a meltdown when given math work, and the teacher removes the assignment. The meltdown is negatively reinforced.'), example: 'Work refusal, aggression to end demands, elopement', intervention: 'Escape extinction (don\'t remove demand). Break tasks into smaller steps. Provide breaks contingent on compliance (DRO/DRA).' },
+        { name: __alloT('stem.schoolbehaviortoolkit.tangible', 'Tangible'), abbrev: 'TAN', icon: '\uD83C\uDFAE', color: '#f59e0b', desc: __alloT('stem.schoolbehaviortoolkit.behavior_maintained_by_access_to_a_pre', 'Behavior maintained by access to a preferred item or activity. Example: A child screams in the store until the parent buys them candy. The screaming is reinforced by getting the candy.'), example: 'Grabbing items, screaming for toys, negotiating for screen time', intervention: 'Don\'t provide the item contingent on problem behavior. Teach requesting (FCT). Provide access to preferred items for appropriate behavior.' },
+        { name: 'Sensory/Automatic', abbrev: 'AUT', icon: '\u2728', color: '#a78bfa', desc: __alloT('stem.schoolbehaviortoolkit.behavior_maintained_by_the_sensory_sti', 'Behavior maintained by the sensory stimulation it produces, independent of social consequences. The behavior itself feels good. Example: Hand-flapping may produce proprioceptive input that is reinforcing.'), example: 'Hand flapping, rocking, humming, nail biting', intervention: 'Provide alternative sensory input (sensory diet). Modify the environment. Consider whether the behavior actually needs intervention (it may serve a regulatory function).' }
+      ];
+
+      // Authored 3/3/3/3 across the four functions and shuffled in order, so
+      // answering by pattern does not work.
+      var FN_VIGNETTES = [
+
+        { id: 1, scenario: 'Maya calls out across the classroom whenever the teacher is talking to another student. The teacher usually pauses to redirect Maya, then resumes with the other student. Maya stops calling out for a minute, then does it again.', correct: 'Attention',
+          why: 'The behavior reliably pulls the teacher\'s attention away from someone else and onto Maya — even though it is corrective attention. The pause-then-redirect cycle is the giveaway. Negative attention still reinforces.' },
+        { id: 2, scenario: 'Devin starts crumpling his math worksheet and tearing the corners off as soon as it is placed on his desk. The teacher gives him a quiet warning and tells him to come back to the work after a "break" at the calm-down corner.', correct: 'Escape',
+          why: 'The behavior consistently postpones or removes the math demand. The "break" is the consequence the kid is working for. Escape from math is being negatively reinforced — even though the teacher meant it as a calm-down.' },
+        { id: 3, scenario: 'Every time Aria walks past the prize bin in the resource room, she grabs at the box and then lays on the floor crying until staff hand her a fidget. Staff have started giving her one quickly to keep the hallway calm.', correct: 'Tangible',
+          why: 'The crying produces access to a preferred item (the fidget). The hallway-calm rationale matters less than the contingency: cry → get fidget. That is positive reinforcement of the behavior by the tangible item.' },
+        { id: 4, scenario: 'During independent reading, Jordan rocks rhythmically in his chair and hums quietly. He continues whether or not anyone is around or paying attention. He stops on his own when the bell rings.', correct: 'Sensory',
+          why: 'The behavior happens regardless of who is around or what is in front of him. No attention payoff, no demand to escape, no item being chased. The behavior itself is the reward — vestibular/proprioceptive input. May not need intervention.' },
+        { id: 5, scenario: 'When the cafeteria runs out of pizza on Wednesday, Sam slams his tray, screams, and refuses to move from the line until staff find him a pizza slice from the staff lounge.', correct: 'Tangible',
+          why: 'Specific item → behavior → access to that specific item. Staff sourcing pizza from the lounge is the smoking-gun reinforcer. Different from a generic escape (he is not avoiding lunch — he wants a specific thing).' },
+        { id: 6, scenario: 'When asked to read aloud, Priya immediately drops to the floor and lies face-down. Staff usually skip her and ask the next student. She returns to her seat once the read-aloud is over.', correct: 'Escape',
+          why: 'The behavior reliably gets her out of reading aloud. The "skip her" response is the reinforcer. She returns to baseline once the demand is gone — clean evidence the demand itself was what she was avoiding.' },
+        { id: 7, scenario: 'During free play, Theo flicks his fingers in front of his eyes near the window. He does it whether the teacher is watching, with peers, or alone. It seems to happen more on bright sunny days.', correct: 'Sensory',
+          why: 'Independent of social context, increases with bright light (a sensory variable). The behavior is producing visual stimulation that the kid finds reinforcing. Common in autistic students; often does not need intervention unless interfering with learning.' },
+        { id: 8, scenario: 'In the lunch line, Alex pinches the kid in front whenever a staff member walks by. The staff member always intervenes, asks Alex what is going on, and walks Alex to a separate table to "talk." Alex stops pinching for the rest of lunch.', correct: 'Attention',
+          why: 'The pinching reliably gets a 1-on-1 conversation with an adult. The "separate table" intervention is functioning as adult-attention payoff, not as a consequence. Hidden attention reinforcement is one of the most-missed FBA findings.' },
+        { id: 9, scenario: 'When his teacher asks Eli to put away his iPad, Eli starts flopping on the floor and screaming. The screaming stops the moment Eli sees the iPad placed back in his hands.', correct: 'Tangible',
+          why: 'Direct cause-and-effect with a specific item. Behavior stops the moment the item returns. That instant-stop is the diagnostic giveaway — it tells you what the behavior was working for.' },
+        { id: 10, scenario: 'Carla tears up her worksheet, throws it in the trash, and asks the teacher for a fresh one. She does this on every assignment, regardless of subject or difficulty. After tearing it up, she always completes the new copy without further issue.', correct: 'Sensory',
+          why: 'No attention payoff (teacher just hands her a new sheet, no extended interaction). No escape (she completes the work). No specific tangible (she gets back the same item). The tearing itself appears to be the reinforcer — likely tactile/auditory sensory input.' },
+        { id: 11, scenario: 'Whenever the lights are turned off for a video, Marco starts loudly humming a song. The teacher pauses the video, asks Marco to be quiet, then restarts. Marco hums again 30 seconds later.', correct: 'Attention',
+          why: 'Pattern: behavior → teacher attention (pause + redirect) → repeat. The 30-second cycle is suspicious — that is reinforcer-driven repetition, not random vocalizing. If it were sensory, it would not pause when noticed.' },
+        { id: 12, scenario: 'In gym, when the teacher announces a running drill, Sasha immediately complains of stomach pain and asks to sit out. She is fine for the rest of class, including the basketball drill that follows.', correct: 'Escape',
+          why: 'Behavior precedes the aversive demand and is specific to it. She is not avoiding gym in general — just the run. The selective onset + selective relief is the giveaway. Reinforcer = removal of the running demand.' }
+      ];
+
+      // The vignettes answer with a short id ('Escape'); FOUR_FUNCTIONS is keyed by
+      // abbrev ('ESC') and carries the fuller name ('Escape/Avoidance'). The two
+      // vocabularies met for the first time when these blocks moved, so the map is
+      // explicit rather than a prefix match that breaks on the next rewording.
+      var FN_ANSWER_TO_ABBREV = { Attention: 'ATT', Escape: 'ESC', Tangible: 'TAN', Sensory: 'AUT' };
+
+      // ── Token economy tables ────────────────────────────────────────────
+      // Moved from stem_tool_behaviorlab.js. In the render scope, not at module
+      // scope, because they carry __alloT calls.
+      var TOKEN_ITEMS = [
+        { id: 'hw', name: __alloT('stem.schoolbehaviortoolkit.homework_complete', 'Homework Complete'), tokens: 3, icon: '\uD83D\uDCD3', category: 'academic' },
+        { id: 'onTask', name: __alloT('stem.schoolbehaviortoolkit.on_task_15_min', 'On-task 15 min'), tokens: 2, icon: '\uD83C\uDFAF', category: 'behavior' },
+        { id: 'kind', name: __alloT('stem.schoolbehaviortoolkit.act_of_kindness', 'Act of Kindness'), tokens: 4, icon: '\u2764\uFE0F', category: 'social' },
+        { id: 'clean', name: __alloT('stem.schoolbehaviortoolkit.clean_up_area', 'Clean Up Area'), tokens: 2, icon: '\uD83E\uDDF9', category: 'behavior' },
+        { id: 'help', name: __alloT('stem.schoolbehaviortoolkit.help_a_peer', 'Help a Peer'), tokens: 3, icon: '\uD83E\uDD1D', category: 'social' },
+        { id: 'quiet', name: __alloT('stem.schoolbehaviortoolkit.quiet_transition', 'Quiet Transition'), tokens: 1, icon: '\uD83E\uDD2B', category: 'behavior' },
+        { id: 'read', name: __alloT('stem.schoolbehaviortoolkit.read_20_pages', 'Read 20 Pages'), tokens: 3, icon: '\uD83D\uDCDA', category: 'academic' },
+        { id: 'test', name: __alloT('stem.schoolbehaviortoolkit.score_80', 'Score 80%+'), tokens: 5, icon: '\uD83C\uDF1F', category: 'academic' }
+      ];
+
+      var TOKEN_REWARDS = [
+        { id: 'sticker', name: __alloT('stem.schoolbehaviortoolkit.sticker', 'Sticker'), cost: 5, icon: '\u2B50' },
+        { id: 'freetime', name: __alloT('stem.schoolbehaviortoolkit.5_min_free_time', '5 min Free Time'), cost: 10, icon: '\uD83C\uDFAE' },
+        { id: 'snack', name: __alloT('stem.schoolbehaviortoolkit.snack_choice', 'Snack Choice'), cost: 15, icon: '\uD83C\uDF6A' },
+        { id: 'leader', name: __alloT('stem.schoolbehaviortoolkit.line_leader', 'Line Leader'), cost: 8, icon: '\uD83D\uDC51' },
+        { id: 'computer', name: __alloT('stem.schoolbehaviortoolkit.computer_time', 'Computer Time'), cost: 12, icon: '\uD83D\uDCBB' },
+        { id: 'homework', name: __alloT('stem.schoolbehaviortoolkit.homework_pass', 'Homework Pass'), cost: 20, icon: '\uD83C\uDF89' },
+        { id: 'teacher', name: __alloT('stem.schoolbehaviortoolkit.lunch_with_teacher', 'Lunch with Teacher'), cost: 25, icon: '\uD83C\uDF55' },
+        { id: 'mystery', name: __alloT('stem.schoolbehaviortoolkit.mystery_prize', 'Mystery Prize'), cost: 30, icon: '\uD83C\uDF81' }
+      ];
+
+      // ── Section: Token Economy ──
+      // Moved here from stem_tool_behaviorlab.js. A token economy is a school-wide
+      // or classroom reinforcement system, not a fact about operant conditioning —
+      // it belongs with the practice, and the Toolkit had nothing on it.
+      //
+      // The builder arrived as-is; the framing and the pitfalls below are new. A
+      // panel that only lets you award tokens teaches that the hard part is picking
+      // the prizes, and the hard part is everything else: whether the target
+      // behaviours are ones the student can already do, whether the exchange ratio
+      // survives contact with a real week, and how the thing ever ends.
+      function renderTokens() {
+        var balance = d.tokenBalance || 0;
+        var log = d.tokenLog || [];
+
+        function pushLog(entry) {
+          var next = [entry].concat(log);
+          if (next.length > 20) next = next.slice(0, 20);
+          return next;
+        }
+
+        return h('div', null,
+          panelHeader(__alloT('stem.schoolbehaviortoolkit.token_economy_h', '🪙 Token economy'),
+            __alloT('stem.schoolbehaviortoolkit.token_economy_sub', 'Tokens are conditioned reinforcers: worthless in themselves, valuable because of what they buy. Three parts have to be designed together — the behaviours that earn, the token, and the backup reinforcers it exchanges for.')),
+
+          // ── The three parts ──
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 16 } },
+            [
+              { icon: '🎯', color: '#60a5fa',
+                title: __alloT('stem.schoolbehaviortoolkit.tk_part1', '1. What earns a token'),
+                body: __alloT('stem.schoolbehaviortoolkit.tk_part1_b', 'Specific, observable, and already within reach. If the student cannot yet do it, a token system will not teach it — that is a job for instruction and shaping first.') },
+              { icon: '🪙', color: '#fbbf24',
+                title: __alloT('stem.schoolbehaviortoolkit.tk_part2', '2. The token itself'),
+                body: __alloT('stem.schoolbehaviortoolkit.tk_part2_b', 'Delivered immediately, visibly, and without negotiation. Its value is entirely borrowed from the exchange, which is why an exchange that keeps slipping kills the system.') },
+              { icon: '🎁', color: '#34d399',
+                title: __alloT('stem.schoolbehaviortoolkit.tk_part3', '3. Backup reinforcers'),
+                body: __alloT('stem.schoolbehaviortoolkit.tk_part3_b', 'Chosen by the student, not the adult. A reinforcer is defined by its effect on behaviour — if the behaviour does not increase, the thing on the menu is not a reinforcer, however much you would like it to be.') }
+            ].map(function (p) {
+              return h('div', { key: 'tk-' + p.title,
+                style: { background: 'rgba(15,23,42,0.6)', borderRadius: 10, padding: '12px 14px', border: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + p.color } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
+                  circularBadge(p.icon, p.color, 32),
+                  h('div', { style: { fontSize: 12.5, fontWeight: 800, color: p.color, lineHeight: 1.2 } }, p.title)),
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, p.body));
+            })
+          ),
+
+          // ── The builder ──
+          h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(20,184,166,0.30)' } },
+            h('div', { style: { fontSize: 14, fontWeight: 900, color: '#5eead4', marginBottom: 4 } },
+              __alloT('stem.schoolbehaviortoolkit.tk_build_h', '🛠️ Build one')),
+            h('p', { style: { margin: '0 0 12px', fontSize: 11.5, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.55 } },
+              __alloT('stem.schoolbehaviortoolkit.tk_build_sub', 'Award tokens, then spend them. Watch the exchange ratio: a menu whose cheapest item takes a week to reach is a menu the student stops working for.')),
+
+            h('div', { role: 'status', 'aria-live': 'polite',
+              style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '10px 14px', borderRadius: 10, background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.35)', marginBottom: 12 } },
+              h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, '🪙'),
+              h('div', { style: { textAlign: 'center' } },
+                h('div', { style: { fontSize: 9.5, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em' } },
+                  __alloT('stem.schoolbehaviortoolkit.tk_balance', 'Token balance')),
+                h('div', { style: { fontSize: 22, fontWeight: 900, color: '#fbbf24', lineHeight: 1.2 } }, balance))
+            ),
+
+            h('div', { style: { fontSize: 9.5, fontWeight: 800, color: '#34d399', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } },
+              __alloT('stem.schoolbehaviortoolkit.tk_earn', 'Earn tokens')),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 6, marginBottom: 14 } },
+              TOKEN_ITEMS.map(function (item) {
+                return h('button', { key: 'earn-' + item.id,
+                  'aria-label': item.name + ', ' + item.tokens + ' tokens',
+                  onClick: function () {
+                    setSBT({
+                      tokenBalance: balance + item.tokens,
+                      tokenLog: pushLog({ type: 'earn', name: item.name, tokens: item.tokens, icon: item.icon })
+                    });
+                    if (addToast) addToast('🪙 +' + item.tokens + ' — ' + item.name, 'success');
+                  },
+                  style: { display: 'flex', alignItems: 'center', gap: 8, padding: '9px 11px', minHeight: 44, borderRadius: 9, cursor: 'pointer', textAlign: 'left', background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(52,211,153,0.35)', color: 'var(--allo-stem-text, #e2e8f0)' } },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: 17 } }, item.icon),
+                  h('span', null,
+                    h('span', { style: { display: 'block', fontSize: 11.5, fontWeight: 700 } }, item.name),
+                    h('span', { style: { display: 'block', fontSize: 10.5, color: '#34d399', fontWeight: 700 } }, '+' + item.tokens)));
+              })
+            ),
+
+            h('div', { style: { fontSize: 9.5, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } },
+              __alloT('stem.schoolbehaviortoolkit.tk_spend', 'Exchange')),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 6 } },
+              TOKEN_REWARDS.map(function (rew) {
+                var afford = balance >= rew.cost;
+                return h('button', { key: 'spend-' + rew.id,
+                  'aria-label': rew.name + ', costs ' + rew.cost + ' tokens' + (afford ? '' : ', not enough tokens yet'),
+                  onClick: function () {
+                    if (!afford) {
+                      if (addToast) addToast('❌ ' + (rew.cost - balance) + ' more tokens needed', 'info');
+                      return;
+                    }
+                    setSBT({
+                      tokenBalance: balance - rew.cost,
+                      tokenLog: pushLog({ type: 'spend', name: rew.name, tokens: -rew.cost, icon: rew.icon })
+                    });
+                    if (addToast) addToast('🎉 ' + rew.name, 'success');
+                  },
+                  style: { display: 'flex', alignItems: 'center', gap: 8, padding: '9px 11px', minHeight: 44, borderRadius: 9, cursor: 'pointer', textAlign: 'left', opacity: afford ? 1 : 0.55, background: afford ? 'rgba(251,191,36,0.10)' : 'rgba(15,23,42,0.5)', border: '1px solid ' + (afford ? 'rgba(251,191,36,0.35)' : 'rgba(100,116,139,0.3)'), color: 'var(--allo-stem-text, #e2e8f0)' } },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: 17 } }, rew.icon),
+                  h('span', null,
+                    h('span', { style: { display: 'block', fontSize: 11.5, fontWeight: 700 } }, rew.name),
+                    h('span', { style: { display: 'block', fontSize: 10.5, color: afford ? '#fbbf24' : 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, rew.cost + ' 🪙')));
+              })
+            ),
+
+            log.length > 0 && h('div', { style: { marginTop: 14 } },
+              h('div', { style: { fontSize: 9.5, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } },
+                __alloT('stem.schoolbehaviortoolkit.tk_log', 'Exchange record')),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 3 } },
+                log.slice(0, 8).map(function (e, i) {
+                  return h('div', { key: 'log-' + i,
+                    style: { display: 'flex', alignItems: 'center', gap: 8, padding: '5px 9px', borderRadius: 7, background: 'rgba(15,23,42,0.7)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } },
+                    h('span', { 'aria-hidden': 'true' }, e.icon),
+                    h('span', { style: { flex: 1 } }, e.name),
+                    h('span', { style: { fontWeight: 800, color: e.tokens > 0 ? '#34d399' : '#fbbf24' } },
+                      (e.tokens > 0 ? '+' : '') + e.tokens));
+                })
+              ),
+              h('button', {
+                onClick: function () { setSBT({ tokenBalance: 0, tokenLog: [] }); },
+                'aria-label': __alloT('stem.schoolbehaviortoolkit.tk_reset', 'Reset the token board'),
+                style: { marginTop: 8, padding: '7px 12px', minHeight: 36, borderRadius: 8, border: '1px solid rgba(100,116,139,0.4)', background: 'rgba(15,23,42,0.7)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } },
+                __alloT('stem.schoolbehaviortoolkit.tk_reset_label', '↻ Reset board'))
+            )
+          ),
+
+          // ── Pitfalls ──
+          // New. The panel this was moved from had none, and every one of these is a
+          // way a token board fails in a real classroom rather than a way it fails
+          // in theory.
+          h('div', { style: { marginTop: 16 } },
+            h('div', { style: { fontSize: 12.5, fontWeight: 800, color: '#fb923c', marginBottom: 8 } },
+              __alloT('stem.schoolbehaviortoolkit.tk_pitfalls_h', '⚠️ Where token boards go wrong')),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+              [
+                __alloT('stem.schoolbehaviortoolkit.tk_pit1', 'Paying for what the student already does reliably. That is not reinforcement, it is a wage — and it can reduce the behaviour once the wage stops.'),
+                __alloT('stem.schoolbehaviortoolkit.tk_pit2', 'An exchange ratio nobody can reach. If the cheapest item is days away, the token stops predicting anything and stops working.'),
+                __alloT('stem.schoolbehaviortoolkit.tk_pit3', 'Taking tokens away. Response cost is a punishment procedure with its own ethical and procedural requirements; bolting it onto an earn-only board is a change of intervention, not a tweak.'),
+                __alloT('stem.schoolbehaviortoolkit.tk_pit4', 'No plan to end. A board that never thins toward natural reinforcers is a board the student needs forever, which was never the goal.'),
+                __alloT('stem.schoolbehaviortoolkit.tk_pit5', 'A menu the adult picked. Preference is measured, not assumed — and it changes week to week.')
+              ].map(function (t, i) {
+                return h('div', { key: 'pit-' + i,
+                  style: { padding: '8px 11px', borderRadius: 8, background: 'rgba(251,146,60,0.06)', border: '1px solid rgba(251,146,60,0.20)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, t);
+              })
+            )
+          ),
+
+          sourceFooter(__alloT('stem.schoolbehaviortoolkit.tk_footer', '🪙 A token economy is a scaffold, not a destination. The plan should name from the start how the schedule thins, what natural reinforcer takes over, and how you would know it had.'))
+        );
+      }
+
+      // ── Section: Four Functions + Function Sleuth ──
+      // Moved here from stem_tool_behaviorlab.js. The reference and the drill sit
+      // together because identifying function IS the hard step of the FBA process
+      // in the tab before this one — the Toolkit had that process and no practice,
+      // the Skinner-box tool had the practice and no process.
+      function renderFunctions() {
+        var fnIdx = d.fnIdx === undefined ? -1 : d.fnIdx;
+        var fnShown = d.fnShown || [];
+        var fnScore = d.fnScore || 0;
+        var fnRounds = d.fnRounds || 0;
+        var fnAnswered = !!d.fnAnswered;
+        var fnPick = d.fnPick || null;
+
+        function nextVignette() {
+          var remaining = [];
+          for (var i = 0; i < FN_VIGNETTES.length; i++) {
+            if (fnShown.indexOf(i) < 0) remaining.push(i);
+          }
+          if (!remaining.length) {
+            setSBT({ fnIdx: -1, fnShown: [], fnScore: 0, fnRounds: 0, fnAnswered: false, fnPick: null });
+            return;
+          }
+          // Deterministic rotation rather than Math.random: the same student
+          // revisiting the drill should not get the same order, but a test should.
+          var pick = remaining[(fnRounds * 7 + 3) % remaining.length];
+          setSBT({ fnIdx: pick, fnShown: fnShown.concat([pick]), fnAnswered: false, fnPick: null });
+        }
+
+        var v = fnIdx >= 0 ? FN_VIGNETTES[fnIdx] : null;
+
+        return h('div', null,
+          panelHeader(__alloT('stem.schoolbehaviortoolkit.four_functions_h', '\uD83D\uDD0D Four functions of behaviour'),
+            __alloT('stem.schoolbehaviortoolkit.four_functions_sub', 'Every behaviour is maintained by what it PRODUCES or what it PREVENTS. Topography — what it looks like — does not tell you the function; two children can do the same thing for opposite reasons.')),
+
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
+            FOUR_FUNCTIONS.map(function(ff) {
+              return h('div', { key: 'ff-' + ff.abbrev,
+                style: {
+                  background: 'rgba(15,23,42,0.6)', borderRadius: 10, padding: '12px 14px',
+                  border: '1px solid rgba(100,116,139,0.25)', borderLeft: '4px solid ' + ff.color
+                } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
+                  circularBadge(ff.icon, ff.color),
+                  h('div', { style: { fontSize: 13, fontWeight: 800, color: ff.color, lineHeight: 1.2 } }, ff.name + ' (' + ff.abbrev + ')')
+                ),
+                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 8 } }, ff.desc),
+                h('div', { style: { padding: '8px 10px', borderRadius: 6, background: ff.color + '10', borderLeft: '2px solid ' + ff.color, marginBottom: 8 } },
+                  h('div', { style: { fontSize: 9, fontWeight: 800, color: ff.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } },
+                    __alloT('stem.schoolbehaviortoolkit.looks_like', 'Often looks like')),
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, ff.example)
+                ),
+                h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(20,184,166,0.06)', border: '1px solid rgba(20,184,166,0.20)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
+                  h('span', { style: { color: '#5eead4', fontWeight: 800, marginRight: 4, fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.06em' } },
+                    __alloT('stem.schoolbehaviortoolkit.matched_intervention', 'Matched intervention')),
+                  ff.intervention)
+              );
+            })
+          ),
+
+          // ── The drill ──
+          h('div', { style: { marginTop: 18, padding: 14, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(20,184,166,0.30)' } },
+            h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 8 } },
+              h('div', { style: { fontSize: 14, fontWeight: 900, color: '#5eead4' } },
+                __alloT('stem.schoolbehaviortoolkit.function_sleuth_h', '\uD83D\uDD75\uFE0F Function Sleuth')),
+              fnRounds > 0 && h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
+                fnScore + ' / ' + fnRounds + ' \u00b7 ' + fnShown.length + ' of ' + FN_VIGNETTES.length)
+            ),
+            h('p', { style: { margin: '0 0 10px', fontSize: 11.5, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.55 } },
+              __alloT('stem.schoolbehaviortoolkit.function_sleuth_sub', 'Read the vignette and name what the behaviour is getting or avoiding. On a real case this is a hypothesis you then test with ABC data \u2014 here the answer is knowable from the paragraph, which is exactly what makes it practice rather than assessment.')),
+
+            !v ? h('button', {
+              onClick: nextVignette,
+              'aria-label': __alloT('stem.schoolbehaviortoolkit.start_function_sleuth', 'Start Function Sleuth'),
+              style: { padding: '9px 16px', borderRadius: 9, border: '1px solid #14b8a6', background: 'rgba(20,184,166,0.18)', color: '#5eead4', fontSize: 12, fontWeight: 800, cursor: 'pointer', minHeight: 40 }
+            }, __alloT('stem.schoolbehaviortoolkit.start_the_drill', '\u25B6 Start the drill'))
+            : h('div', null,
+              h('div', { style: { fontSize: 9, fontWeight: 800, color: '#5eead4', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } },
+                __alloT('stem.schoolbehaviortoolkit.vignette', 'Vignette') + ' ' + fnShown.length + ' / ' + FN_VIGNETTES.length),
+              h('p', { style: { margin: '0 0 12px', fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, v.scenario),
+              h('div', { role: 'radiogroup', 'aria-label': __alloT('stem.schoolbehaviortoolkit.pick_the_function', 'Pick the function'),
+                style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 } },
+                FOUR_FUNCTIONS.map(function(ff) {
+                  var picked = fnAnswered && fnPick === ff.abbrev;
+                  var right = fnAnswered && ff.abbrev === FN_ANSWER_TO_ABBREV[v.correct];
+                  var bg = !fnAnswered ? 'rgba(15,23,42,0.7)' : right ? 'rgba(16,185,129,0.18)' : picked ? 'rgba(248,113,113,0.18)' : 'rgba(15,23,42,0.4)';
+                  var bd = !fnAnswered ? 'rgba(100,116,139,0.4)' : right ? '#34d399' : picked ? '#f87171' : 'rgba(100,116,139,0.3)';
+                  return h('button', {
+                    key: 'pick-' + ff.abbrev, role: 'radio',
+                    'aria-checked': picked ? 'true' : 'false',
+                    disabled: fnAnswered,
+                    onClick: function() {
+                      if (fnAnswered) return;
+                      var correct = ff.abbrev === FN_ANSWER_TO_ABBREV[v.correct];
+                      setSBT({
+                        fnAnswered: true, fnPick: ff.abbrev,
+                        fnScore: fnScore + (correct ? 1 : 0),
+                        fnRounds: fnRounds + 1
+                      });
+                      if (addToast) addToast(correct
+                        ? __alloT('stem.schoolbehaviortoolkit.fn_correct', '\u2705 That is the function.')
+                        : __alloT('stem.schoolbehaviortoolkit.fn_wrong', '\u274C Not this time \u2014 read the reasoning.'), correct ? 'success' : 'info');
+                    },
+                    style: {
+                      padding: '10px 12px', borderRadius: 9, minHeight: 44, cursor: fnAnswered ? 'default' : 'pointer',
+                      background: bg, border: '1px solid ' + bd, color: 'var(--allo-stem-text, #e2e8f0)',
+                      fontSize: 12, fontWeight: 700, textAlign: 'left'
+                    }
+                  }, h('span', { 'aria-hidden': 'true' }, ff.icon + '  '), ff.name);
+                })
+              ),
+              fnAnswered && h('div', { role: 'status', style: { marginTop: 10, padding: '10px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.75)', border: '1px solid rgba(100,116,139,0.3)', fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } }, v.why),
+              fnAnswered && h('button', {
+                onClick: nextVignette,
+                style: { marginTop: 10, padding: '9px 16px', borderRadius: 9, border: '1px solid #14b8a6', background: 'rgba(20,184,166,0.18)', color: '#5eead4', fontSize: 12, fontWeight: 800, cursor: 'pointer', minHeight: 40 }
+              }, fnShown.length >= FN_VIGNETTES.length
+                ? __alloT('stem.schoolbehaviortoolkit.start_over', '\u21BB Start over')
+                : __alloT('stem.schoolbehaviortoolkit.next_vignette', 'Next vignette \u2192'))
+            )
+          ),
+
+          sourceFooter(__alloT('stem.schoolbehaviortoolkit.functions_footer', '\uD83C\uDFAF Function is a hypothesis, not a label. On a real case you confirm it with ABC data and, where the behaviour is dangerous or the hypothesis is contested, a functional analysis \u2014 under supervision. Matched intervention means the plan follows the function: escape-maintained behaviour is not fixed by taking away recess.'))
+        );
+      }
+
       // ── Section: BIP Template ──
       function renderBip() {
         return h('div', null,
@@ -1867,6 +2227,113 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
                   c.pitfall)
               );
             })
+          ),
+          // ── Draft one ──────────────────────────────────────────────────
+          // The interactive drafting exercise moved here from
+          // stem_tool_behaviorlab.js. It sits BELOW the eight-component reference
+          // rather than replacing it: the reference says what a plan contains, this
+          // rehearses the reasoning chain that has to hold before any of it is
+          // worth writing. The chain is the point — every later component has to
+          // trace back to the function named in step 3.
+          h('div', { style: { marginTop: 20, padding: 14, borderRadius: 10, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(20,184,166,0.30)' } },
+            h('div', { style: { fontSize: 14, fontWeight: 900, color: '#5eead4', marginBottom: 4 } },
+              __alloT('stem.schoolbehaviortoolkit.bip_draft_h', '✏️ Draft the reasoning chain')),
+            h('p', { style: { margin: '0 0 12px', fontSize: 11.5, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.55 } },
+              __alloT('stem.schoolbehaviortoolkit.bip_draft_sub', 'Five steps, in order. Each one has to follow from the one before it — if the replacement behaviour does not get the student the same thing the problem behaviour got, the plan will not hold, however well written the rest of it is.')),
+
+            (function () {
+              var steps = [
+                { key: 'behavior', title: __alloT('stem.schoolbehaviortoolkit.bip_s1', 'Step 1 — Target behaviour'),
+                  prompt: __alloT('stem.schoolbehaviortoolkit.bip_s1_p', 'Describe it so two observers would count the same thing. Not "disruptive" — what does it look like?'),
+                  ph: 'Leaves seat without permission during independent work' },
+                { key: 'antecedent', title: __alloT('stem.schoolbehaviortoolkit.bip_s2', 'Step 2 — Antecedent'),
+                  prompt: __alloT('stem.schoolbehaviortoolkit.bip_s2_p', 'What reliably happens immediately before? Include the setting events that make it more likely.'),
+                  ph: 'Written task longer than half a page, after a non-preferred transition' },
+                { key: 'func', title: __alloT('stem.schoolbehaviortoolkit.bip_s3', 'Step 3 — Hypothesised function'),
+                  prompt: __alloT('stem.schoolbehaviortoolkit.bip_s3_p', 'What does the behaviour reliably GET or AVOID? A hypothesis you would test with ABC data, not a label.'),
+                  ph: 'Escape from extended writing demands' },
+                { key: 'replacement', title: __alloT('stem.schoolbehaviortoolkit.bip_s4', 'Step 4 — Replacement behaviour'),
+                  prompt: __alloT('stem.schoolbehaviortoolkit.bip_s4_p', 'What should the student do INSTEAD that gets the same function, faster and more reliably than the problem behaviour did?'),
+                  ph: 'Hands a break card to request a two-minute break' },
+                { key: 'strategy', title: __alloT('stem.schoolbehaviortoolkit.bip_s5', 'Step 5 — Teaching and reinforcement'),
+                  prompt: __alloT('stem.schoolbehaviortoolkit.bip_s5_p', 'How is the replacement taught, and how is it reinforced often enough at first to compete?'),
+                  ph: 'Pre-teach the card daily; honour every request immediately for two weeks, then thin' }
+              ];
+              var step = d.bipStep || 0;
+              var data = d.bipData || {};
+
+              if (step < steps.length) {
+                var st = steps[step];
+                return h('div', null,
+                  h('div', { style: { display: 'flex', gap: 4, marginBottom: 10 } },
+                    steps.map(function (x, i) {
+                      return h('div', { key: 'dot-' + i, 'aria-hidden': 'true',
+                        style: { flex: 1, height: 4, borderRadius: 2, background: i < step ? '#14b8a6' : i === step ? '#5eead4' : 'rgba(100,116,139,0.35)' } });
+                    })),
+                  h('label', { htmlFor: 'sbt-bip-step', style: { display: 'block', fontSize: 12.5, fontWeight: 800, color: '#5eead4', marginBottom: 4 } }, st.title),
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.55, marginBottom: 8 } }, st.prompt),
+                  h('textarea', {
+                    id: 'sbt-bip-step',
+                    value: data[st.key] || '',
+                    placeholder: st.ph,
+                    onChange: function (e) {
+                      var next = Object.assign({}, data);
+                      next[st.key] = e.target.value;
+                      setSBT({ bipData: next });
+                    },
+                    style: { width: '100%', minHeight: 76, padding: 10, borderRadius: 8, background: 'rgba(15,23,42,0.85)', border: '1px solid rgba(100,116,139,0.4)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.5, resize: 'vertical' }
+                  }),
+                  h('div', { style: { display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' } },
+                    step > 0 && h('button', {
+                      onClick: function () { setSBT({ bipStep: step - 1 }); },
+                      'aria-label': __alloT('stem.schoolbehaviortoolkit.bip_back', 'Back a step'),
+                      style: { padding: '8px 14px', minHeight: 40, borderRadius: 8, border: '1px solid rgba(100,116,139,0.4)', background: 'rgba(15,23,42,0.7)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11.5, fontWeight: 700, cursor: 'pointer' }
+                    }, __alloT('stem.schoolbehaviortoolkit.bip_back_label', '← Back')),
+                    h('button', {
+                      onClick: function () {
+                        if (!(data[st.key] || '').trim()) {
+                          if (addToast) addToast(__alloT('stem.schoolbehaviortoolkit.bip_fill_first', '✏️ Fill in this step first.'), 'info');
+                          return;
+                        }
+                        setSBT({ bipStep: step + 1 });
+                      },
+                      style: { padding: '8px 14px', minHeight: 40, borderRadius: 8, border: '1px solid #14b8a6', background: 'rgba(20,184,166,0.18)', color: '#5eead4', fontSize: 11.5, fontWeight: 800, cursor: 'pointer' }
+                    }, step === steps.length - 1
+                      ? __alloT('stem.schoolbehaviortoolkit.bip_finish', 'See the chain →')
+                      : __alloT('stem.schoolbehaviortoolkit.bip_next', 'Next step →'))
+                  )
+                );
+              }
+
+              // ── Summary ──
+              return h('div', null,
+                h('div', { style: { fontSize: 12.5, fontWeight: 800, color: '#5eead4', marginBottom: 4 } },
+                  __alloT('stem.schoolbehaviortoolkit.bip_chain_h', '✅ Your reasoning chain — practice draft')),
+                // Five fields is the skeleton of a plan, not a plan. Saying so on the
+                // artifact itself is the difference between an exercise and something
+                // a trainee pastes into a document that drives placement decisions.
+                h('div', { style: { fontSize: 10.5, lineHeight: 1.55, color: 'var(--allo-stem-text-soft, #94a3b8)', borderLeft: '3px solid #fb923c', paddingLeft: 9, marginBottom: 10 } },
+                  __alloT('stem.schoolbehaviortoolkit.bip_chain_scope', 'This is the reasoning, not the plan. A plan a team can run also needs the other components above — baseline data, response procedures, a crisis plan, fidelity and review — plus the student and family in the conversation and a supervising professional. Do not paste this into a real BIP.')),
+                h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                  steps.map(function (x, i) {
+                    return h('div', { key: 'sum-' + x.key,
+                      style: { padding: '9px 11px', borderRadius: 8, background: 'rgba(15,23,42,0.75)', border: '1px solid rgba(100,116,139,0.3)' } },
+                      h('div', { style: { fontSize: 9, fontWeight: 800, color: '#5eead4', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 } }, x.title),
+                      h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } },
+                        (d.bipData || {})[x.key] || '—'));
+                  })),
+                h('div', { style: { display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' } },
+                  h('button', {
+                    onClick: function () { setSBT({ bipStep: 0 }); },
+                    style: { padding: '8px 14px', minHeight: 40, borderRadius: 8, border: '1px solid rgba(100,116,139,0.4)', background: 'rgba(15,23,42,0.7)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 11.5, fontWeight: 700, cursor: 'pointer' }
+                  }, __alloT('stem.schoolbehaviortoolkit.bip_edit', '✏️ Edit')),
+                  h('button', {
+                    onClick: function () { setSBT({ bipStep: 0, bipData: {} }); },
+                    style: { padding: '8px 14px', minHeight: 40, borderRadius: 8, border: '1px solid rgba(248,113,113,0.5)', background: 'rgba(248,113,113,0.12)', color: '#fca5a5', fontSize: 11.5, fontWeight: 700, cursor: 'pointer' }
+                  }, __alloT('stem.schoolbehaviortoolkit.bip_new', '↻ Start over'))
+                )
+              );
+            })()
           ),
           sourceFooter('🎯 The BIP rule of thumb: every component must trace back to the function statement. If a strategy in the BIP cannot be defended by reference to the FBA hypothesis, it does not belong. The BIP is one document but it asks one question across all eight parts: how do we make the replacement behavior more efficient than the problem behavior? Sources: BACB ethical practice standards; PBIS.org BIP technical guide; OSEP BIP guidance; Iris Center BIP module.')
         );
@@ -2054,6 +2521,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       else if (section === 'cycle') content = renderCycle();
       else if (section === 'restraint') content = renderRestraint();
       else if (section === 'fba') content = renderFba();
+      else if (section === 'functions') content = renderFunctions();
+      else if (section === 'tokens') content = renderTokens();
       else if (section === 'bip') content = renderBip();
       else if (section === 'cico') content = renderCico();
       else if (section === 'equity') content = renderEquity();

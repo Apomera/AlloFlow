@@ -2035,7 +2035,7 @@
     function importAlignmentGraphFile(file) {
       if (!file || !onImportAlignmentGraph) return;
       if (Number(file.size) > MAX_ALIGNMENT_IMPORT_BYTES) {
-        addToast('That graph file is too large. Open an AlloFlow alignment export smaller than 2 MB.', 'error');
+        addToast(t('alignment_graph.toast_too_large') || 'That graph file is too large. Open an AlloFlow alignment export smaller than 2 MB.', 'error');
         return;
       }
       var reader = new FileReader();
@@ -2061,12 +2061,12 @@
           });
           setShowAlignmentGraph(true);
           setShowOutline(false);
-          addToast('Alignment graph opened read-only.', 'success');
+          addToast(t('alignment_graph.toast_opened') || 'Alignment graph opened read-only.', 'success');
         } catch (e) {
-          addToast('Could not open that alignment graph. Export a valid AlloFlow graph JSON file.', 'error');
+          addToast(t('alignment_graph.toast_invalid') || 'Could not open that alignment graph. Export a valid AlloFlow graph JSON file.', 'error');
         }
       };
-      reader.onerror = function () { addToast('Could not read that alignment graph file.', 'error'); };
+      reader.onerror = function () { addToast(t('alignment_graph.toast_unreadable') || 'Could not read that alignment graph file.', 'error'); };
       reader.readAsText(file);
     }
 
@@ -2124,9 +2124,9 @@
       tbBtn('🛤 ' + (t('throughline.lanes') || 'Lanes'), showLanes, function () { setShowLanes(!showLanes); }, t('throughline.lanes_title') || 'Group lessons into strands / phases (swim-lanes)'),
       alignmentGraphExport && tbBtn('Graph: ' + (t('throughline.alignment_graph') || 'Standards graph'), showAlignmentGraph, toggleAlignmentGraph, t('throughline.alignment_graph_title') || 'Read the exported standards and audit graph with provenance filters'),
       alignmentGraphExport && tbBtn('🧊 ' + (t('throughline.alignment_graph_3d') || 'View graph in 3D'), show3D && graph3dMode === 'alignment', openAlignmentGraph3D, t('throughline.alignment_graph_3d_title') || 'Explore the saved standards, evidence, and findings as a spatial Learning Web'),
-      onImportAlignmentGraph && tbBtn('Open graph', false, function () { if (alignmentGraphFileInputRef.current) alignmentGraphFileInputRef.current.click(); }, 'Open a saved AlloFlow alignment graph export'),
-      onImportAlignmentGraph && h('input', { ref: alignmentGraphFileInputRef, type: 'file', accept: 'application/json,.json', style: { display: 'none' }, 'aria-label': 'Open saved alignment graph export', onChange: function (e) { var f = e.target && e.target.files && e.target.files[0]; if (f) importAlignmentGraphFile(f); if (e.target) e.target.value = ''; } }),
-      alignmentGraphIsImported && onClearImportedAlignmentGraph && tbBtn('Close imported', false, function () { onClearImportedAlignmentGraph(); setShowAlignmentGraph(false); }, 'Return to the current resource graph'),
+      onImportAlignmentGraph && tbBtn(t('alignment_graph.open_btn') || 'Open graph', false, function () { if (alignmentGraphFileInputRef.current) alignmentGraphFileInputRef.current.click(); }, t('alignment_graph.open_btn_title') || 'Open a saved AlloFlow alignment graph export'),
+      onImportAlignmentGraph && h('input', { ref: alignmentGraphFileInputRef, type: 'file', accept: 'application/json,.json', style: { display: 'none' }, 'aria-label': t('alignment_graph.open_input_aria') || 'Open saved alignment graph export', onChange: function (e) { var f = e.target && e.target.files && e.target.files[0]; if (f) importAlignmentGraphFile(f); if (e.target) e.target.value = ''; } }),
+      alignmentGraphIsImported && onClearImportedAlignmentGraph && tbBtn(t('alignment_graph.close_imported') || 'Close imported', false, function () { onClearImportedAlignmentGraph(); setShowAlignmentGraph(false); }, t('alignment_graph.close_imported_title') || 'Return to the current resource graph'),
       showLanes && tbBtn('↕ ' + (t('throughline.arrange_lanes') || 'Arrange into lanes'), false, arrangeIntoLanes, t('throughline.arrange_lanes_title') || 'Tidy each lesson into its lane band (keeps left-to-right teaching order)'),
       (unit.nodes.length > 0) && tbBtn('🧊 ' + (t('throughline.view_3d') || 'View in 3D'), show3D, open3D, t('throughline.view_3d_title') || 'See this unit as an orbitable 3D concept map (strands become depth)'),
       h('div', { style: { width: 1, height: 20, background: '#cbd5e1', margin: '0 2px' } }),
@@ -2272,29 +2272,29 @@
         h('div', { style: { marginTop: 7, fontSize: 10, color: '#64748b' } }, 'Policy: ' + (((alignmentView && alignmentView.graph && alignmentView.graph.meta && alignmentView.graph.meta.alignmentMap && alignmentView.graph.meta.alignmentMap.provenancePolicy) || 'explicit-attribution-only'))),
         h('div', { style: { marginTop: 4, fontSize: 10, color: '#64748b' } }, alignmentGraphIsImported ? ('Opened from saved graph' + (alignmentGraphExport.sourceFileName ? ': ' + alignmentGraphExport.sourceFileName : '') + ' · read-only') : 'Current resource graph · read-only'),
         h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 10 } },
-          h('label', { style: { fontSize: 10, fontWeight: 700, color: '#475569' } }, 'Node type',
-            h('select', { value: alignmentNodeType, onChange: function (e) { setAlignmentNodeType(e.target.value); }, 'aria-label': 'Alignment graph node type', style: { display: 'block', width: '100%', marginTop: 3, padding: 5, border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 11 } },
-              h('option', { value: 'all' }, 'All graph items'),
-              h('option', { value: 'standard' }, 'Standards'),
-              h('option', { value: 'standardsContext' }, 'Standards context'),
-              h('option', { value: 'auditArtifact' }, 'Audited artifacts'),
-              h('option', { value: 'auditEvidence' }, 'Evidence'),
-              h('option', { value: 'auditFinding' }, 'Findings'),
-              h('option', { value: 'auditRecommendation' }, 'Recommendations')
+          h('label', { style: { fontSize: 10, fontWeight: 700, color: '#475569' } }, t('alignment_graph.node_type_label') || 'Node type',
+            h('select', { value: alignmentNodeType, onChange: function (e) { setAlignmentNodeType(e.target.value); }, 'aria-label': t('alignment_graph.node_type_aria') || 'Alignment graph node type', style: { display: 'block', width: '100%', marginTop: 3, padding: 5, border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 11 } },
+              h('option', { value: 'all' }, t('alignment_graph.node_all') || 'All graph items'),
+              h('option', { value: 'standard' }, t('alignment_graph.node_standard') || 'Standards'),
+              h('option', { value: 'standardsContext' }, t('alignment_graph.node_standards_context') || 'Standards context'),
+              h('option', { value: 'auditArtifact' }, t('alignment_graph.node_audit_artifact') || 'Audited artifacts'),
+              h('option', { value: 'auditEvidence' }, t('alignment_graph.node_audit_evidence') || 'Evidence'),
+              h('option', { value: 'auditFinding' }, t('alignment_graph.node_audit_finding') || 'Findings'),
+              h('option', { value: 'auditRecommendation' }, t('alignment_graph.node_audit_recommendation') || 'Recommendations')
             )
           ),
-          h('label', { style: { fontSize: 10, fontWeight: 700, color: '#475569' } }, 'Attribution source',
-            h('select', { value: alignmentSource, onChange: function (e) { setAlignmentSource(e.target.value); }, 'aria-label': 'Alignment graph attribution source', style: { display: 'block', width: '100%', marginTop: 3, padding: 5, border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 11 } },
-              h('option', { value: 'all' }, 'All sources'),
-              h('option', { value: 'audit-model' }, 'Audit model'),
-              h('option', { value: 'teacher' }, 'Teacher confirmed'),
-              h('option', { value: 'deterministic-check' }, 'Deterministic check'),
-              h('option', { value: 'unknown' }, 'Unknown')
+          h('label', { style: { fontSize: 10, fontWeight: 700, color: '#475569' } }, t('alignment_graph.source_label') || 'Attribution source',
+            h('select', { value: alignmentSource, onChange: function (e) { setAlignmentSource(e.target.value); }, 'aria-label': t('alignment_graph.source_aria') || 'Alignment graph attribution source', style: { display: 'block', width: '100%', marginTop: 3, padding: 5, border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 11 } },
+              h('option', { value: 'all' }, t('alignment_graph.source_all') || 'All sources'),
+              h('option', { value: 'audit-model' }, t('alignment_graph.source_audit_model') || 'Audit model'),
+              h('option', { value: 'teacher' }, t('alignment_graph.source_teacher') || 'Teacher confirmed'),
+              h('option', { value: 'deterministic-check' }, t('alignment_graph.source_deterministic') || 'Deterministic check'),
+              h('option', { value: 'unknown' }, t('alignment_graph.source_unknown') || 'Unknown')
             )
           )
         ),
-        h('label', { style: { display: 'block', marginTop: 8, fontSize: 10, fontWeight: 700, color: '#475569' } }, 'Search graph text',
-          h('input', { value: alignmentQuery, onChange: function (e) { setAlignmentQuery(e.target.value); }, placeholder: 'Standard, evidence, artifact, or finding…', 'aria-label': 'Search alignment graph', style: { display: 'block', width: '100%', boxSizing: 'border-box', marginTop: 3, padding: 6, border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 11 } })
+        h('label', { style: { display: 'block', marginTop: 8, fontSize: 10, fontWeight: 700, color: '#475569' } }, t('alignment_graph.search_label') || 'Search graph text',
+          h('input', { value: alignmentQuery, onChange: function (e) { setAlignmentQuery(e.target.value); }, placeholder: t('alignment_graph.search_placeholder') || 'Standard, evidence, artifact, or finding…', 'aria-label': t('alignment_graph.search_aria') || 'Search alignment graph', style: { display: 'block', width: '100%', boxSizing: 'border-box', marginTop: 3, padding: 6, border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 11 } })
         )
       ),
       alignmentView && alignmentView.ok
@@ -2306,8 +2306,8 @@
               var byId = {}; (graph.nodes || []).forEach(function (node) { if (node && node.id) byId[node.id] = node; });
               var order = alignmentView.outline && Array.isArray(alignmentView.outline.order) ? alignmentView.outline.order.slice() : [];
               (graph.nodes || []).forEach(function (node) { if (order.indexOf(node.id) < 0) order.push(node.id); });
-              if (!order.length) return h('div', { style: { padding: 24, textAlign: 'center', color: '#64748b', fontSize: 12 } }, 'No graph items match these filters.');
-              return h('ol', { 'aria-label': 'Alignment graph reading order', style: { padding: '6px 0 16px', margin: 0, listStyle: 'none' } },
+              if (!order.length) return h('div', { style: { padding: 24, textAlign: 'center', color: '#64748b', fontSize: 12 } }, t('alignment_graph.empty_filters') || 'No graph items match these filters.');
+              return h('ol', { 'aria-label': t('alignment_graph.reading_order_aria') || 'Alignment graph reading order', style: { padding: '6px 0 16px', margin: 0, listStyle: 'none' } },
                 order.map(function (id, index) {
                   var node = byId[id]; if (!node) return null;
                   var sources = []; var directSource = alignmentViewText(node.attributionSource).toLowerCase();

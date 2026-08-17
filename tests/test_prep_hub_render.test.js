@@ -2,7 +2,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
-import { loadAlloModule, registerEpppPartOne } from './setup.js';
+import { loadAlloModule, registerEpppPartOne, registerCredentialPacks } from './setup.js';
 
 const require = createRequire(import.meta.url);
 const modulesDir = resolve(process.cwd(), 'desktop/web-app/node_modules');
@@ -28,6 +28,9 @@ beforeAll(() => {
   global.IS_REACT_ACT_ENVIRONMENT = true;
   loadAlloModule('test_prep_hub_module.js');
   Hub = window.AlloModules.TestPrepHub;
+  // Credential packs ship lazily; register them as fixtures so listPacks()
+  // can resolve them (see registerCredentialPacks in setup.js).
+  registerCredentialPacks(['parapro', 'audiology_5343', 'praxis_core_5752', 'educational_leadership_5412', 'esol_5362', 'plt_k6_5622', 'reading_specialist_5302', 'school_counselor_5422', 'school_psychologist_5403', 'special_education_5355', 'speech_language_pathology_5331']);
   registerEpppPartOne(Hub);
   Component = Hub.TestPrepHub;
   originalFetch = global.fetch;
@@ -128,6 +131,37 @@ function replaceWindowProperty(name, value) {
     if (descriptor) Object.defineProperty(window, name, descriptor);
     else delete window[name];
   };
+}
+
+// Hands-free will not start without the shared voice service.
+//
+// toggleHandsFree acquires a lease from window.AlloFlowVoice before it enables
+// anything, and bails with 'The shared voice service is still loading' when that
+// object is absent - which is the correct product behaviour, because the lease is
+// what stops Test Prep and the global voice loop from holding the microphone at
+// the same time. jsdom never provides it, so a suite that omits the stub sees
+// hands-free silently no-op: zero TTS calls, zero Audio instances, and failures
+// ('expected 4 calls, got 0'; 'undefined reading onended') that look like broken
+// narration rather than a missing collaborator.
+//
+// The lease surface actually exercised is isActive/update/release plus the onStop
+// callback, so the stub implements exactly that and no more.
+function installSharedVoiceStub() {
+  const lease = {
+    released: [],
+    active: true,
+    isActive: () => lease.active,
+    update: vi.fn(),
+    release: vi.fn((reason) => { lease.active = false; lease.released.push(reason); }),
+  };
+  const acquireVoiceSession = vi.fn((owner, options) => {
+    lease.active = true;
+    lease.owner = owner;
+    lease.options = options || {};
+    return lease;
+  });
+  const restore = replaceWindowProperty('AlloFlowVoice', { acquireVoiceSession });
+  return { lease, acquireVoiceSession, restore };
 }
 
 async function expectNoAxeViolations(label) {
@@ -236,6 +270,7 @@ describe('Test Prep Hub render flow', () => {
     }
     const restoreAudio = replaceWindowProperty('Audio', AudioMock);
     const restoreRecognition = replaceWindowProperty('SpeechRecognition', MockRecognition);
+    const sharedVoice = installSharedVoiceStub();
     const callTTS = vi.fn(async (text) => 'blob:' + text.slice(0, 30));
 
     try {
@@ -266,6 +301,7 @@ describe('Test Prep Hub render flow', () => {
       expect(callTTS.mock.calls.at(-1)[0]).toContain('Selected B');
       expect(recognitionInstances[0].abort).toHaveBeenCalledTimes(1);
     } finally {
+      sharedVoice.restore();
       restoreRecognition();
       restoreAudio();
     }
@@ -287,6 +323,7 @@ describe('Test Prep Hub render flow', () => {
     }
     const restoreAudio = replaceWindowProperty('Audio', AudioMock);
     const restoreRecognition = replaceWindowProperty('SpeechRecognition', MockRecognition);
+    const sharedVoice = installSharedVoiceStub();
     const callTTS = vi.fn(async (text) => 'blob:' + text.slice(0, 30));
     const callGemini = vi.fn().mockResolvedValue('Approved means the procedure has been reviewed and authorized for this setting.');
 
@@ -310,6 +347,7 @@ describe('Test Prep Hub render flow', () => {
       expect(session.assistedItemIds).toEqual([pack.items[0].id]);
       expect(host.textContent).toContain('AI clarification - assisted item');
     } finally {
+      sharedVoice.restore();
       restoreRecognition();
       restoreAudio();
     }

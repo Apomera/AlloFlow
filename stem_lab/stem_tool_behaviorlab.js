@@ -106,17 +106,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
       '.behaviorlab-chamber-header h3{margin:0;color:var(--bl-text);font-size:13px;font-weight:900;}',
       '.behaviorlab-chamber-status{border-radius:999px;padding:4px 8px;background:var(--bl-panel);color:#fbbf24;font-size:10px;font-weight:900;}',
       '.behaviorlab-chamber-canvas{width:100%!important;height:auto!important;min-height:260px;max-height:440px;}',
+      // Section rules. A heading, a one-line orientation, and a hairline — enough
+      // hierarchy to scan a very long column without turning the page into chrome.
+      '.behaviorlab-section{display:flex;align-items:baseline;gap:10px;margin:22px 0 2px;padding-top:14px;border-top:1px solid var(--bl-border);}',
+      '.behaviorlab-section h3{margin:0;flex:0 0 auto;color:var(--bl-amber-text);font-size:13px;font-weight:900;letter-spacing:.02em;}',
+      '.behaviorlab-section p{margin:0;color:var(--bl-muted);font-size:11px;line-height:1.45;}',
+      '@media (max-width:620px){.behaviorlab-section{flex-direction:column;gap:3px;}}',
       // 2D / 3D switch. Pill buttons, and the selected one is filled rather than
       // merely tinted — an aria-pressed state that is only a 1.2:1 background
       // difference is not a state anyone can see.
       '.behaviorlab-viewswitch{display:inline-flex;gap:2px;padding:2px;border-radius:999px;background:rgba(2,6,23,.55);border:1px solid var(--bl-border);}',
-      '.behaviorlab-viewswitch-btn{border:0;border-radius:999px;padding:4px 10px;background:transparent;color:var(--bl-muted);font-size:10.5px;font-weight:800;cursor:pointer;line-height:1.2;}',
+      '.behaviorlab-viewswitch-btn{border:0;border-radius:999px;min-height:34px;padding:6px 12px;background:transparent;color:var(--bl-muted);font-size:10.5px;font-weight:800;cursor:pointer;line-height:1.2;}',
       // indigo-300, not indigo-500: dark ink on #6366f1 is 4.19:1, just under AA.
       '.behaviorlab-viewswitch-btn.is-on{background:#a5b4fc;color:#0b1220;}',
       '.theme-contrast .behaviorlab-viewswitch-btn.is-on{background:#ffff00;color:#000;}',
-      '.behaviorlab-3d-btn{min-width:34px;min-height:32px;padding:5px 9px;border-radius:9px;border:1px solid var(--bl-border);background:rgba(15,23,42,.75);color:var(--bl-text);font-size:12px;font-weight:700;cursor:pointer;}',
+      '.behaviorlab-3d-btn{min-width:40px;min-height:40px;padding:6px 10px;border-radius:9px;border:1px solid var(--bl-border);background:rgba(15,23,42,.75);color:var(--bl-text);font-size:12px;font-weight:700;cursor:pointer;}',
       '.behaviorlab-3d-btn[disabled]{opacity:.55;cursor:default;}',
-      '.behaviorlab-3d-part{min-height:32px;padding:5px 11px;border-radius:999px;border:1px solid var(--bl-border);background:rgba(15,23,42,.75);color:var(--bl-text);font-size:11px;font-weight:700;cursor:pointer;}',
+      '.behaviorlab-3d-part{min-height:40px;padding:8px 12px;border-radius:999px;border:1px solid var(--bl-border);background:rgba(15,23,42,.75);color:var(--bl-text);font-size:11px;font-weight:700;cursor:pointer;}',
       '.behaviorlab-3d-part.is-on{background:var(--bl-amber);color:#0b1220;border-color:var(--bl-amber);}',
       '.theme-contrast .behaviorlab-3d-part.is-on{background:#ffff00;color:#000;}',
       '@media (max-width:760px){.behaviorlab-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.behaviorlab-level-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.behaviorlab-sim-header{position:static;}}',
@@ -626,7 +632,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
   window.StemLab.registerTool('behaviorLab', {
     icon: "🐭",
     label: "Behavior Lab",
-    desc: 'Operant conditioning theory through a virtual Skinner box. 9 progressive levels: positive reinforcement, schedule effects (FR / VR / FI / VI), chained sequences, DRO timers, and classical conditioning (Pavlov). Plus a Schedule Sleuth (read cumulative-response curves) and Function Sleuth (FBA vignettes: attention / escape / tangible / sensory). Sister tool to PetsLab, which applies these mechanics to real-world pet training.',
+    // The old description covered only the Skinner box, and about half this tool by
+    // volume is human/school ABA — an FBA trainer, twelve student vignettes, a BIP
+    // outline builder, a classroom token economy, the ethics timeline and the
+    // autism-community critique. A teacher picking tools from this list deserves
+    // to know that before they open it in front of a class.
+    desc: 'Operant conditioning through a virtual Skinner box, then the same science applied to school settings. 9 progressive levels (positive reinforcement, shaping, extinction, FR / VR / FI / VI schedules, discrimination, chaining, DRO, Pavlov) with a 2D and a 3D chamber view; Schedule Sleuth for reading cumulative-response curves. The second half is human behaviour: the four functions of behaviour, a Function Sleuth of classroom FBA vignettes, a token-economy builder, a BIP outline, ABA history and ethics, and a neurodiversity-affirming critique of the field. Teaches concepts, not clinical competence. Sister tool to PetsLab (pet training) and School Behavior Toolkit (school-wide practice).',
     color: 'slate',
     category: 'science',
     questHooks: [
@@ -649,6 +660,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
       var addToast = ctx.addToast;
       var t = ctx.t;
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
+      // __alloT with {named} slots. Interpolated messages used to be built by
+      // gluing English fragments around a number, which hands a translator
+      // "Level " and " Complete! " and no way to reorder them; a whole sentence
+      // with slots is translatable, a pile of fragments is not.
+      var blT = function (k, fb, vars) {
+        var out = __alloT(k, fb);
+        if (!vars) return out;
+        for (var vk in vars) {
+          if (Object.prototype.hasOwnProperty.call(vars, vk)) {
+            out = out.split('{' + vk + '}').join(String(vars[vk]));
+          }
+        }
+        return out;
+      };
       var ArrowLeft = ctx.icons.ArrowLeft;
       var Calculator = ctx.icons.Calculator;
       var Sparkles = ctx.icons.Sparkles;
@@ -751,7 +776,13 @@ dataRef.current = d;
 
             {
 
-              id: 4, title: __alloT('stem.behaviorlab.on_schedule', 'On Schedule'), concept: 'Schedules of Reinforcement', target: 'pressLever', goal: 20,
+              id: 4, title: __alloT('stem.behaviorlab.on_schedule', 'On Schedule'), concept: 'Schedules of Reinforcement', target: 'pressLever', goal: 7,
+              // 20 was already the outlier among goals of 3-10, and it was calibrated
+              // against a level that reinforced every press. Now that the FR-3
+              // requirement is real, each point costs three responses: 7 deliveries is
+              // 21 presses, which sits with the rest of the ladder instead of turning
+              // the schedule lesson into an endurance test.
+
 
               intro: __alloT('stem.behaviorlab.not_every_response_needs_reinforcement', 'Not every response needs reinforcement! A Fixed Ratio (FR) schedule reinforces after a set number of responses. Try FR-3: reinforce every 3rd lever press. Watch how the mouse responds differently than continuous reinforcement!'),
 
@@ -934,8 +965,14 @@ dataRef.current = d;
             { name: __alloT('stem.behaviorlab.murray_sidman', 'Murray Sidman'), year: '1923-2019', contribution: 'Developed stimulus equivalence theory and the coercion framework. Advocated for reinforcement over punishment in all applications.', icon: '\u2696', field: 'Stimulus Equivalence' }
           ];
 
-          // === Four Functions of Behavior (FBA) ===
-          var FOUR_FUNCTIONS = [
+          // === Four Functions of Behavior — MOVED to School Behavior Toolkit ===
+          // Now rendered by stem_tool_schoolbehaviortoolkit.js under the
+          // "Four Functions" tab, together with the Function Sleuth drill that
+          // used to sit further down this file. Kept here as an archive so the
+          // migration stays auditable, exactly like the five *_MOVED_TO_TOOLKIT
+          // blocks above. NOT RENDERED.
+          /* eslint-disable no-unused-vars */
+          var FOUR_FUNCTIONS_MOVED_TO_TOOLKIT = [
             { name: __alloT('stem.behaviorlab.attention', 'Attention'), abbrev: 'ATT', icon: '\uD83D\uDC40', color: '#60a5fa', desc: __alloT('stem.behaviorlab.behavior_maintained_by_social_attentio', 'Behavior maintained by social attention from others. Example: A student calls out in class to get the teacher to look at them. The attention (even if negative) reinforces the calling out.'), example: 'Calling out, clowning around, tantrums when ignored', intervention: 'Planned ignoring of problem behavior + attention for appropriate behavior (DRA). Teach appropriate ways to get attention.' },
             { name: 'Escape/Avoidance', abbrev: 'ESC', icon: '\uD83C\uDFC3', color: '#f87171', desc: __alloT('stem.behaviorlab.behavior_maintained_by_removal_of_an_a', 'Behavior maintained by removal of an aversive stimulus. Example: A student has a meltdown when given math work, and the teacher removes the assignment. The meltdown is negatively reinforced.'), example: 'Work refusal, aggression to end demands, elopement', intervention: 'Escape extinction (don\'t remove demand). Break tasks into smaller steps. Provide breaks contingent on compliance (DRO/DRA).' },
             { name: __alloT('stem.behaviorlab.tangible', 'Tangible'), abbrev: 'TAN', icon: '\uD83C\uDFAE', color: '#f59e0b', desc: __alloT('stem.behaviorlab.behavior_maintained_by_access_to_a_pre', 'Behavior maintained by access to a preferred item or activity. Example: A child screams in the store until the parent buys them candy. The screaming is reinforced by getting the candy.'), example: 'Grabbing items, screaming for toys, negotiating for screen time', intervention: 'Don\'t provide the item contingent on problem behavior. Teach requesting (FCT). Provide access to preferred items for appropriate behavior.' },
@@ -1278,6 +1315,12 @@ dataRef.current = d;
               source: 'Autism Self Advocacy Network position statements; Kupferstein 2018 ABA-PTSD survey'
             },
             {
+              name: __alloT('stem.behaviorlab.the_aversives_in_the_history', 'The aversives in this history'),
+              icon: '\u26A0\uFE0F', color: '#fb923c',
+              desc: __alloT('stem.behaviorlab.the_aversives_in_the_history_desc', 'The timeline in this tool runs through the early intensive-intervention programs without saying what was in them. It should. Lovaas\u2019s UCLA work in the 1960s used contingent electric shock, and he published it; the 1987 study\u2019s treatment package included aversives such as a loud \u201cno\u201d and a slap on the thigh. Mainstream practice moved away from aversives and the BACB now restricts them sharply \u2014 but contingent shock has not ended everywhere, and its legal status in the United States has changed more than once. When autistic adults describe early ABA as harmful, this is a large part of what they are describing. A tool that teaches positive punishment as a quadrant on a chart owes students the version where it was a real thing done to real children.'),
+              source: 'Lovaas, Schaeffer & Simmons 1965 (contingent shock, published by the researchers); Lovaas 1987 (treatment package); BACB ethics code on restrictive procedures'
+            },
+            {
               name: __alloT('stem.behaviorlab.neurodiversity_affirming_aba', 'Neurodiversity-affirming ABA'),
               icon: '🌱', color: '#22c55e',
               desc: __alloT('stem.behaviorlab.modern_ethical_practice_has_shifted_cl', 'Modern ethical practice has shifted: client assent (not just guardian consent) is required throughout sessions, "normalization" goals are increasingly declined, stimming is recognized as self-regulation rather than a target for reduction, and client-chosen goals replace clinician-imposed ones. The acronym stays; the values inside it have moved.'),
@@ -1460,8 +1503,13 @@ dataRef.current = d;
               examples: ['Phone taken away for breaking rules', 'Loss of recess for fighting', 'Fine for parking violation', 'Time-out from preferred activity'] }
           ];
 
-          // === Wave 2: TOKEN_ITEMS for token economy builder ===
-          var TOKEN_ITEMS = [
+          // === Token economy — MOVED to School Behavior Toolkit ===
+          // Now its own tab there, with the framing and pitfalls this version
+          // never had. A token economy is a classroom system, not a fact about
+          // operant conditioning. Kept as an archive so the migration stays
+          // auditable, like the *_MOVED_TO_TOOLKIT blocks above. NOT RENDERED.
+          /* eslint-disable no-unused-vars */
+          var TOKEN_ITEMS_MOVED_TO_TOOLKIT = [
             { id: 'hw', name: __alloT('stem.behaviorlab.homework_complete', 'Homework Complete'), tokens: 3, icon: '\uD83D\uDCD3', category: 'academic' },
             { id: 'onTask', name: __alloT('stem.behaviorlab.on_task_15_min', 'On-task 15 min'), tokens: 2, icon: '\uD83C\uDFAF', category: 'behavior' },
             { id: 'kind', name: __alloT('stem.behaviorlab.act_of_kindness', 'Act of Kindness'), tokens: 4, icon: '\u2764\uFE0F', category: 'social' },
@@ -1472,7 +1520,7 @@ dataRef.current = d;
             { id: 'test', name: __alloT('stem.behaviorlab.score_80', 'Score 80%+'), tokens: 5, icon: '\uD83C\uDF1F', category: 'academic' }
           ];
 
-          var TOKEN_REWARDS = [
+          var TOKEN_REWARDS_MOVED_TO_TOOLKIT = [
             { id: 'sticker', name: __alloT('stem.behaviorlab.sticker', 'Sticker'), cost: 5, icon: '\u2B50' },
             { id: 'freetime', name: __alloT('stem.behaviorlab.5_min_free_time', '5 min Free Time'), cost: 10, icon: '\uD83C\uDFAE' },
             { id: 'snack', name: __alloT('stem.behaviorlab.snack_choice', 'Snack Choice'), cost: 15, icon: '\uD83C\uDF6A' },
@@ -1762,6 +1810,12 @@ dataRef.current = d;
           // ── rAF Animation System (hooks at top level, before returns) ──
           var _blCvRef = React.useRef(null);
           var _blAnimId = React.useRef(0);
+          // Whether the chamber is actually on screen. Held in refs so the frame
+          // loop can read it without a React round trip, and so the observer
+          // survives the loop effect — which has no dependency array and therefore
+          // tears down and rebuilds on every render.
+          var _blSeenRef = React.useRef(true);
+          var _blIoRef = React.useRef(null);
           var _blAnimState = React.useRef({
             mouseX: 200, mouseY: 150, targetX: 200, targetY: 150,
             mouseDir: 1, mouseAction: 'explore', mouseAngle: 0,
@@ -1822,6 +1876,35 @@ dataRef.current = d;
             var cv = _blCvRef.current;
             if (!cv) { cv = document.getElementById('bl-chamber-canvas'); _blCvRef.current = cv; }
             if (!cv) return;
+
+            // ── Do not rasterise a chamber nobody is looking at ──────────────
+            // This tool is about 3800px tall. A student reading the glossary at the
+            // bottom, or the ABA timeline, left a 60fps canvas redraw running for the
+            // whole session — on the school Chromebooks this is piloted on that is
+            // real battery for a picture nobody can see. Only the DRAW is skipped:
+            // the interpolation above it keeps running because the 3D scene reads the
+            // same animation state, and because the subject should not teleport when
+            // the chamber scrolls back into view.
+            //
+            // Defaults to visible and stays visible if IntersectionObserver is
+            // missing: a paused-by-mistake chamber is a blank canvas, which is much
+            // worse than a redraw nobody needed.
+            if (typeof IntersectionObserver === 'function' &&
+                (!_blIoRef.current || _blIoRef.current.node !== cv)) {
+              if (_blIoRef.current && _blIoRef.current.io) {
+                try { _blIoRef.current.io.disconnect(); } catch (e) {}
+              }
+              try {
+                var _io = new IntersectionObserver(function (entries) {
+                  for (var ei = 0; ei < entries.length; ei++) _blSeenRef.current = entries[ei].isIntersecting;
+                }, { threshold: 0 });
+                _io.observe(cv);
+                _blIoRef.current = { io: _io, node: cv };
+              } catch (e) {
+                _blIoRef.current = null;
+                _blSeenRef.current = true;
+              }
+            }
             var s = _blAnimState.current;
             // Initialize visual position to current target
             if (s.mouseX === 200 && s.mouseY === 150 && s.targetX !== 200) {
@@ -1872,11 +1955,20 @@ dataRef.current = d;
               // Draw chamber. The interpolation above still runs while the 3D view is
               // open — that scene reads st.mouseX/st.mouseY — but there is no point
               // rasterising a canvas nobody can see.
-              if (d.blChamberView !== '3d') drawChamber(cv2, st);
+              // document.hidden covers the backgrounded tab; the observer covers the
+              // far more common case of the chamber being scrolled off a very long page.
+              if (d.blChamberView !== '3d' && _blSeenRef.current && !document.hidden) {
+                drawChamber(cv2, st);
+              }
               _blAnimId.current = requestAnimationFrame(blFrame);
             }
             if (_blAnimId.current) cancelAnimationFrame(_blAnimId.current);
             blFrame();
+            // The observer is deliberately NOT disconnected here: this effect has no
+            // dependency array, so it re-runs on every render, and tearing the
+            // observer down each time would mean it never settles. It is rebuilt only
+            // when the canvas element itself changes, and the whole thing dies with
+            // the tool.
             return function() { if (_blAnimId.current) cancelAnimationFrame(_blAnimId.current); };
           });
 
@@ -1944,6 +2036,14 @@ dataRef.current = d;
 
           var currentLevel = LEVELS.find(function (l) { return l.id === blLevel; }) || LEVELS[0];
 
+          // THE target behaviour for this level, honouring the Free Lab's own
+          // selector. Level 6 has `target: null`, so every reader that fell back to
+          // `currentLevel.target || 'pressLever'` was scoring, plotting and
+          // announcing lever presses no matter what the student picked.
+          var blTargetBehavior = (blLevel === 6 && blSandboxTarget)
+            ? blSandboxTarget
+            : (currentLevel.target || 'pressLever');
+
 
 
           // ── Action labels for display ──
@@ -2001,6 +2101,25 @@ dataRef.current = d;
           // instead of pinning near the top the way a 300 cap did.
           var BL_PROX_RANGE = 330;
 
+          // ── Level 4's schedule ───────────────────────────────────────────────
+          // Level 4 is titled "On Schedule", its contingency card says "Every 3rd
+          // press", its hint says "count them!", and its quiz asks when an FR-3
+          // delivers — but nothing in the level implemented FR-3. Reinforcement was
+          // accepted on ANY press, the score was identical whether the student
+          // followed the schedule or reinforced continuously, and the on-screen
+          // "FR-3 count" was `reinforcementsDelivered % 3` — so it counted the wrong
+          // events and a student reading "1 / 3" as "one press down, two to go" was
+          // being told something untrue.
+          //
+          // Levels 5 and 7 already gate reinforcement on their own contingency (the
+          // SD colour, the completed chain). Level 4 simply never got its gate.
+          var BL_FR_RATIO = 3;
+
+          // Associative learning rate for Level 9 (Pavlov). One constant for both
+          // acquisition and extinction, because they are the same process running
+          // toward different asymptotes.
+          var BL_CS_RATE = 0.35;
+
           // ── 3D part labels and teaching text ─────────────────────────────────
           // makeBayViewer captures cfg.parts once at module load, so the floating
           // chips in the scene are English (same limitation as every other bay-viewer
@@ -2049,6 +2168,30 @@ dataRef.current = d;
 
           // ── Behavior Engine: Select next action based on weights ──
 
+          // Stamp the newest point on the cumulative record as a delivery.
+          //
+          // The chart used to draw a green pip wherever `cum` INCREASED and label it
+          // "Green = reinforcement delivery (FR-3 pattern)" — but `cum` counts target
+          // RESPONSES, so on an FR-3 schedule it marked all three presses as
+          // deliveries and flatly contradicted the level teaching that only every
+          // third one pays. Same error the Sleuth primer made in words. Reinforcement
+          // is now recorded where it happens instead of being inferred from the
+          // response count.
+          //
+          // Uses the functional updater rather than `upd`: deliveries are
+          // user-triggered while the tick timer is also writing blCumRecord, and a
+          // captured-array write would drop whichever of the two lost the race.
+          function markReinforcementOnRecord() {
+            setLabToolData(function (prev) {
+              var next = Object.assign({}, prev);
+              var rec = (next.blCumRecord || []).slice();
+              if (!rec.length) return prev;
+              rec[rec.length - 1] = Object.assign({}, rec[rec.length - 1], { reinf: true });
+              next.blCumRecord = rec;
+              return next;
+            });
+          }
+
           function selectAction() {
 
             var total = 0;
@@ -2095,11 +2238,16 @@ dataRef.current = d;
 
               var newLog = blAbcLog.slice();
 
-              newLog.unshift({ tick: blTick, a: blLightColor + ' light (S\u0394)', b: ACTION_LABELS[actionToReinforce] || actionToReinforce, c: '\u274C Food (incorrect SD)', t: Date.now() });
+              // The consequence column used to read "Food (incorrect SD)", but no
+              // food is delivered on this path and no weight changes: the ABC log was
+              // recording a consequence the simulation did not produce, in the one
+              // panel whose whole job is teaching students to record what actually
+              // happened.
+              newLog.unshift({ tick: blTick, a: blLightColor + ' light (S\u0394)', b: ACTION_LABELS[actionToReinforce] || actionToReinforce, c: '\u274C No food \u2014 wrong stimulus', t: Date.now() });
 
               upd('blAbcLog', newLog.slice(0, 50));
 
-              if (addToast) addToast('\u274C Only reinforce when the GREEN light (SD) is on!', 'error');
+              if (addToast) addToast(__alloT('stem.behaviorlab.toast_sd_only', '\u274C Only reinforce when the GREEN light (SD) is on!'), 'error');
 
               return;
 
@@ -2107,13 +2255,30 @@ dataRef.current = d;
 
 
 
+            // Level 4: the FR-3 schedule itself. Only PRESSES are on the schedule —
+            // reinforcing an approach stays allowed, because shaping the press up from
+            // a 3-in-110 baseline is how a student gets presses to put on a schedule
+            // at all.
+            if (blLevel === 4 && actionToReinforce === 'pressLever') {
+              var frPresses = d.blFrPresses || 0;
+              if (frPresses < BL_FR_RATIO) {
+                var newLogFr = blAbcLog.slice();
+                newLogFr.unshift({ tick: blTick, a: 'FR-' + BL_FR_RATIO + ' schedule',
+                  b: ACTION_LABELS[actionToReinforce] || actionToReinforce,
+                  c: '\u274C No food \u2014 press ' + frPresses + ' of ' + BL_FR_RATIO, t: Date.now() });
+                upd('blAbcLog', newLogFr.slice(0, 50));
+                if (addToast) addToast(blT('stem.behaviorlab.toast_fr_too_early', '\u26A0\uFE0F FR-{ratio}: that was press {n} of {ratio}. Wait for the next one.', { ratio: BL_FR_RATIO, n: frPresses }), 'warning');
+                return;
+              }
+            }
+
             // Level 7: behavior chain check — only allow reinforce on completed chain
 
             if (blLevel === 7) {
 
               if (blChainStep < CHAIN_SEQ.length || actionToReinforce !== 'pressLever') {
 
-                if (addToast) addToast('\u26A0\uFE0F Wait for the full chain: Sniff ➜ Rear Up ➜ Lever!', 'warning');
+                if (addToast) addToast(__alloT('stem.behaviorlab.toast_wait_for_chain', '\u26A0\uFE0F Wait for the full chain: Sniff ➜ Rear Up ➜ Lever!'), 'warning');
 
                 return;
 
@@ -2126,6 +2291,7 @@ dataRef.current = d;
             upd('blWeights', newWeights);
 
             upd('blReinforcements', blReinforcements + 1);
+            markReinforcementOnRecord();
 
             upd('blFoodVisible', true);
 
@@ -2145,11 +2311,17 @@ dataRef.current = d;
 
 
 
-            // Response latency tracking
+            // Delay to reinforcement — the gap between the TARGET behaviour
+            // occurring and the pellet arriving. It was logged on every delivery,
+            // including ones that reinforced grooming or exploring, and those were
+            // measured against the last lever press: an unrelated behaviour six
+            // ticks after a press logged a six-tick "latency" for a press that had
+            // already been dealt with. Only target deliveries belong in this metric,
+            // because delay to reinforcement is the thing it exists to teach.
 
-            if (blLastTargetTick > 0) {
+            if (blLastTargetTick > 0 && actionToReinforce === blTargetBehavior) {
 
-              var latencyTicks = blTick - blLastTargetTick;
+              var latencyTicks = Math.max(0, blTick - blLastTargetTick);
 
               var newLatencies = blLatencies.concat([latencyTicks]);
 
@@ -2163,12 +2335,12 @@ dataRef.current = d;
 
             // Update score
 
-            var isTargetAction = actionToReinforce === (currentLevel.target || 'pressLever');
+            var isTargetAction = actionToReinforce === blTargetBehavior;
 
             if (isTargetAction) {
 
               upd('blLevelScore', blLevelScore + 1);
-              if (announceToSR) announceToSR('Reinforced! Score: ' + (blLevelScore + 1) + ' of ' + (currentLevel ? currentLevel.goal : '?'));
+              if (announceToSR) announceToSR(blT('stem.behaviorlab.sr_reinforced_score', 'Reinforced! Score: {n} of {goal}', { n: blLevelScore + 1, goal: currentLevel ? currentLevel.goal : '?' }));
 
             }
 
@@ -2209,6 +2381,7 @@ dataRef.current = d;
             if (blLevel === 4) {
 
               upd('blScheduleCount', blScheduleCount + 1);
+              upd('blFrPresses', 0);
 
             }
 
@@ -2245,7 +2418,7 @@ dataRef.current = d;
 
               upd('blTotalTicks', (d.blTotalTicks || 0) + 1);
 
-              var targetAction2 = currentLevel.target || 'pressLever';
+              var targetAction2 = blTargetBehavior;
 
               var cumCount2 = blCumRecord.length > 0 ? blCumRecord[blCumRecord.length - 1].cum : 0;
 
@@ -2427,7 +2600,7 @@ dataRef.current = d;
 
             // Update cumulative record for target behavior
 
-            var targetAction = currentLevel.target || 'pressLever';
+            var targetAction = blTargetBehavior;
 
             var cumCount = blCumRecord.length > 0 ? blCumRecord[blCumRecord.length - 1].cum : 0;
 
@@ -2437,6 +2610,14 @@ dataRef.current = d;
 
               upd('blLastTargetTick', newTick);
 
+            }
+
+            // FR-3 ratio counter: RESPONSES since the last delivery, which is what a
+            // ratio schedule counts. The old counter incremented on reinforcement
+            // instead, so it told the student how many pellets they had delivered
+            // while labelled as their progress toward the next one.
+            if (blLevel === 4 && action === 'pressLever') {
+              upd('blFrPresses', (d.blFrPresses || 0) + 1);
             }
 
             // Mark extinction burst on cumulative record
@@ -2597,6 +2778,8 @@ dataRef.current = d;
 
                   upd('blDroSuccesses', blDroSuccesses + 1);
 
+                  markReinforcementOnRecord();
+
                   upd('blFoodVisible', true);
 
                   upd('blFoodTime', Date.now());
@@ -2621,7 +2804,7 @@ dataRef.current = d;
 
                   if (typeof awardStemXP === 'function') awardStemXP('behaviorLab', 2, 'DRO interval success');
 
-                  if (addToast) addToast('🍕 DRO interval met! Food delivered.', 'success');
+                  if (addToast) addToast(__alloT('stem.behaviorlab.toast_dro_met', '🍕 DRO interval met! Food delivered.'), 'success');
 
                 } else {
 
@@ -2681,8 +2864,8 @@ dataRef.current = d;
 
               if (typeof awardStemXP === 'function') awardStemXP('behaviorLab', 15, 'Completed Level ' + blLevel + ': ' + currentLevel.title);
 
-              if (addToast) addToast('\uD83C\uDF89 Level ' + blLevel + ' Complete! ' + currentLevel.concept + ' mastered!', 'success');
-              if (announceToSR) announceToSR('Congratulations! Level ' + blLevel + ' complete. ' + currentLevel.concept + ' mastered.');
+              if (addToast) addToast(blT('stem.behaviorlab.toast_level_complete', '\uD83C\uDF89 Level {n} complete! {concept}.', { n: blLevel, concept: currentLevel.concept }), 'success');
+              if (announceToSR) announceToSR(blT('stem.behaviorlab.sr_level_complete', 'Level {n} complete. {concept}.', { n: blLevel, concept: currentLevel.concept }));
 
               var newCompleted = blCompletedLevels.indexOf(blLevel) < 0 ? blCompletedLevels.concat([blLevel]) : blCompletedLevels;
 
@@ -2706,8 +2889,8 @@ dataRef.current = d;
 
                 if (typeof awardStemXP === 'function') awardStemXP('behaviorLab', 15, 'Completed Level 3: Observed extinction burst');
 
-                if (addToast) addToast('\uD83C\uDF89 Level 3 Complete! You observed the extinction burst!', 'success');
-                if (announceToSR) announceToSR('Level 3 complete! You observed the extinction burst.');
+                if (addToast) addToast(__alloT('stem.behaviorlab.toast_l3_complete', '\uD83C\uDF89 Level 3 complete! You observed the extinction burst.'), 'success');
+                if (announceToSR) announceToSR(__alloT('stem.behaviorlab.sr_l3_complete', 'Level 3 complete. You observed the extinction burst.'));
 
                 var newCompleted3 = blCompletedLevels.indexOf(3) < 0 ? blCompletedLevels.concat([3]) : blCompletedLevels;
 
@@ -2728,7 +2911,6 @@ dataRef.current = d;
             // every 2 to 5 seconds all session. The target behaviour is rare by
             // construction (that is why it needs shaping), so it is the one worth
             // interrupting for, and the prompt names the key that acts on it.
-            var blTargetBehavior = currentLevel.target || 'pressLever';
             if (announceToSR && action === blTargetBehavior && blPhase === 'running'
                 && blLevel !== 8 && blLevel !== 9) {
               announceToSR((ACTION_LABELS[action] || action)
@@ -3013,7 +3195,7 @@ dataRef.current = d;
 
             ctx.textAlign = 'center';
 
-            ctx.fillText('LEVER', leverX + 4, leverY + 42);
+            ctx.fillText(__alloT('stem.behaviorlab.canvas_lever', 'LEVER'), leverX + 4, leverY + 42);
 
 
 
@@ -3131,7 +3313,7 @@ dataRef.current = d;
 
             ctx.textAlign = 'center';
 
-            ctx.fillText('FOOD', trayX, 45);
+            ctx.fillText(__alloT('stem.behaviorlab.canvas_food', 'FOOD'), trayX, 45);
 
             // Food pellet dropping animation through chute
 
@@ -3248,7 +3430,7 @@ dataRef.current = d;
               ctx.fillStyle = pdCol; ctx.font = 'bold 10px monospace'; ctx.textAlign = 'left';
               ctx.fillText(pdArr + ' ' + Math.abs(blProxDelta).toFixed(1) + 'px', 25, 35);
               ctx.fillStyle = '#94a3b8'; ctx.font = '7px sans-serif';
-              ctx.fillText('distance \u0394', 25, 44);
+              ctx.fillText(__alloT('stem.behaviorlab.canvas_distance_delta', 'distance \u0394'), 25, 44);
             }
 
             // Movement trail (fading dots)
@@ -3278,9 +3460,9 @@ dataRef.current = d;
                 ctx.strokeRect(18, 48, W - 36, H - 65);
                 // Label
                 ctx.fillStyle = '#f87171'; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center';
-                ctx.fillText('EXTINCTION BURST', W / 2, 68);
+                ctx.fillText(__alloT('stem.behaviorlab.canvas_extinction_burst', 'EXTINCTION BURST'), W / 2, 68);
                 ctx.font = '9px sans-serif'; ctx.fillStyle = '#f87171';
-                ctx.fillText('Response rate spiking! (' + burstTick + '/12 ticks)', W / 2, 82);
+                ctx.fillText(blT('stem.behaviorlab.canvas_rate_spiking', 'Response rate spiking ({n} of 12 ticks)', { n: burstTick }), W / 2, 82);
                 ctx.restore();
               }
             }
@@ -3717,11 +3899,13 @@ dataRef.current = d;
 
             ctx.textAlign = 'right';
 
-            ctx.fillText('Tick: ' + blTick, W - 25, 20);
+            ctx.fillText(blT('stem.behaviorlab.canvas_tick', 'Tick: {n}', { n: blTick }), W - 25, 20);
 
             ctx.textAlign = 'left';
 
-            ctx.fillText('Score: ' + blLevelScore + (currentLevel.goal > 0 ? '/' + currentLevel.goal : ''), 25, 20);
+            ctx.fillText(currentLevel.goal > 0
+              ? blT('stem.behaviorlab.canvas_score_of', 'Score: {n}/{goal}', { n: blLevelScore, goal: currentLevel.goal })
+              : blT('stem.behaviorlab.canvas_score', 'Score: {n}', { n: blLevelScore }), 25, 20);
 
 
 
@@ -3739,7 +3923,7 @@ dataRef.current = d;
 
               ctx.textAlign = 'center';
 
-              ctx.fillText('\u23F8 PAUSED', W / 2, H / 2);
+              ctx.fillText(__alloT('stem.behaviorlab.canvas_paused', '\u23F8 PAUSED'), W / 2, H / 2);
 
             }
 
@@ -3779,7 +3963,7 @@ dataRef.current = d;
 
             ctx.textAlign = 'left';
 
-            ctx.fillText('CUMULATIVE RECORD', 10, 14);
+            ctx.fillText(__alloT('stem.behaviorlab.canvas_cumulative_record', 'CUMULATIVE RECORD'), 10, 14);
 
 
 
@@ -3815,7 +3999,7 @@ dataRef.current = d;
 
             ctx.textAlign = 'center';
 
-            ctx.fillText('Responses', 0, 0);
+            ctx.fillText(__alloT('stem.behaviorlab.canvas_axis_responses', 'Responses'), 0, 0);
 
             ctx.restore();
 
@@ -3829,7 +4013,7 @@ dataRef.current = d;
 
             ctx.textAlign = 'center';
 
-            ctx.fillText('Time (ticks)', W / 2, H - 4);
+            ctx.fillText(__alloT('stem.behaviorlab.canvas_axis_time_ticks', 'Time (ticks)'), W / 2, H - 4);
 
 
 
@@ -3841,7 +4025,7 @@ dataRef.current = d;
 
               ctx.textAlign = 'center';
 
-              ctx.fillText('Waiting for data...', W / 2, H / 2);
+              ctx.fillText(__alloT('stem.behaviorlab.canvas_waiting_for_data', 'Waiting for data\u2026'), W / 2, H / 2);
 
               return;
 
@@ -3932,29 +4116,32 @@ dataRef.current = d;
 
               var burstLabelX = W * 0.7;
 
-              ctx.fillText('EXTINCTION BURST ↑', burstLabelX, 28);
+              ctx.fillText(__alloT('stem.behaviorlab.canvas_extinction_burst_up', 'EXTINCTION BURST ↑'), burstLabelX, 28);
 
             }
 
 
 
-            // Reinforcement pip marks (green vertical lines where cum increases — shows schedule pattern)
-            if (blLevel === 4 || blLevel === 1 || blLevel === 6) {
-              for (var ri = 1; ri < data.length; ri++) {
-                if (data[ri].cum > data[ri - 1].cum) {
-                  var rpx = 40 + ((data[ri].tick - startTick) / tickRange) * plotW;
-                  var rpy = (H - 25) - (data[ri].cum / maxCum) * plotH;
-                  ctx.strokeStyle = 'rgba(34,197,94,0.6)'; ctx.lineWidth = 1.5;
-                  ctx.beginPath(); ctx.moveTo(rpx, rpy - 8); ctx.lineTo(rpx, rpy + 8); ctx.stroke();
-                  // Green dot at reinforcement point
-                  ctx.fillStyle = '#22c55e'; ctx.beginPath(); ctx.arc(rpx, rpy, 3, 0, Math.PI * 2); ctx.fill();
-                }
-              }
-              // FR annotation
-              if (blLevel === 4 && data.length > 20) {
-                ctx.fillStyle = 'rgba(34,197,94,0.5)'; ctx.font = '7px sans-serif'; ctx.textAlign = 'left';
-                ctx.fillText('Green = reinforcement delivery (FR-3 pattern)', 42, H - 8);
-              }
+            // Reinforcement marks. Drawn from recorded DELIVERIES, so on FR-3 there
+            // is one mark per three responses — which is the level's whole lesson,
+            // and is what makes the schedule readable off this chart at all. Same
+            // convention as the Schedule Sleuth chart: a tick under the line where
+            // the reinforcer landed.
+            var reinfMarks = 0;
+            for (var ri = 0; ri < data.length; ri++) {
+              if (!data[ri].reinf) continue;
+              reinfMarks++;
+              var rpx = 40 + ((data[ri].tick - startTick) / tickRange) * plotW;
+              var rpy = (H - 25) - (data[ri].cum / maxCum) * plotH;
+              ctx.strokeStyle = 'rgba(34,197,94,0.75)'; ctx.lineWidth = 1.5;
+              ctx.beginPath(); ctx.moveTo(rpx, rpy - 8); ctx.lineTo(rpx, rpy + 8); ctx.stroke();
+              ctx.fillStyle = '#22c55e'; ctx.beginPath(); ctx.arc(rpx, rpy, 3, 0, Math.PI * 2); ctx.fill();
+            }
+            if (reinfMarks > 0) {
+              ctx.fillStyle = '#4ade80'; ctx.font = '7px sans-serif'; ctx.textAlign = 'left';
+              ctx.fillText(blLevel === 4
+                ? 'Green = pellet delivered (one per ' + BL_FR_RATIO + ' presses on FR-' + BL_FR_RATIO + ')'
+                : 'Green = pellet delivered', 42, H - 8);
             }
 
             // Data point dots
@@ -3995,7 +4182,7 @@ dataRef.current = d;
 
               ctx.textAlign = 'right';
 
-              ctx.fillText('Rate: ' + rate + ' resp/min', W - 15, 14);
+              ctx.fillText(blT('stem.behaviorlab.canvas_rate_per_min', 'Rate: {n} resp/min', { n: rate }), W - 15, 14);
 
             }
 
@@ -4045,7 +4232,7 @@ dataRef.current = d;
 
           var sortedWeights = Object.keys(blWeights).map(function (k) {
 
-            return { action: k, weight: blWeights[k], isTarget: k === (currentLevel.target || 'pressLever') };
+            return { action: k, weight: blWeights[k], isTarget: k === blTargetBehavior };
 
           }).sort(function (a, b) { return b.weight - a.weight; });
 
@@ -4067,7 +4254,7 @@ dataRef.current = d;
               React.createElement("a", { href: "#behaviorlab-main", className: "sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-2 focus:bg-indigo-600 focus:text-white focus:rounded-lg" }, __alloT('stem.behaviorlab.skip_to_main_content', "Skip to main content")),
 
               // Header
-              React.createElement("h2", { id: "behaviorlab-main", className: "sr-only" }, "Behavior Lab — Level " + blLevel),
+              React.createElement("h2", { id: "behaviorlab-main", className: "sr-only" }, blT('stem.behaviorlab.h_lab_level', 'Behaviour Lab — level {n}', { n: blLevel })),
 
               // Hero header \u2014 matches the design system shipped on
               // School Behavior Toolkit, Disability Voices, TypingPractice
@@ -4110,7 +4297,7 @@ dataRef.current = d;
                 }, '\uD83D\uDC2D'),
                 React.createElement("div", { style: { flex: 1, minWidth: 240 } },
                   React.createElement("div", { style: { display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 4 } },
-                    React.createElement("h2", { style: { margin: 0, color: '#fbbf24', fontSize: 22, fontWeight: 900, letterSpacing: '-0.01em' } }, 'Behavior Lab'),
+                    React.createElement("h2", { style: { margin: 0, color: '#fbbf24', fontSize: 22, fontWeight: 900, letterSpacing: '-0.01em' } }, __alloT('stem.behaviorlab.h_behavior_lab', 'Behavior Lab')),
                     // Level chip \u2014 replaces the old single-line subtitle with
                     // a tabular-nums chip that reads at a glance
                     React.createElement("span", { style: {
@@ -4119,7 +4306,7 @@ dataRef.current = d;
                       border: '1px solid rgba(251,191,36,0.40)',
                       color: 'var(--bl-amber-text)', fontSize: 10, fontWeight: 700,
                       fontFamily: 'ui-monospace, Menlo, monospace'
-                    } }, 'Level ' + blLevel + ' / ' + LEVELS.length)
+                    } }, blT('stem.behaviorlab.level_of_total', 'Level {n} / {total}', { n: blLevel, total: LEVELS.length }))
                   ),
                   React.createElement("div", { style: { height: 3, width: 48, borderRadius: '999rem', marginBottom: 6, background: 'linear-gradient(90deg, #fbbf24, #f59e0b)' } }),
                   React.createElement("div", { style: { fontSize: 12, color: 'var(--bl-text)', fontWeight: 600, lineHeight: 1.5 } },
@@ -4150,7 +4337,7 @@ dataRef.current = d;
                     React.createElement("h3", { id: "behaviorlab-level-path" }, __alloT('stem.behaviorlab.choose_experiment', 'Choose an experiment')),
                     React.createElement("p", null, __alloT('stem.behaviorlab.experiment_path_help', 'Build from reinforcement fundamentals toward schedules, chaining, DRO, and classical conditioning.'))
                   ),
-                  React.createElement("span", { className: "behaviorlab-level-progress" }, 'Level ' + blLevel + ' / ' + LEVELS.length)
+                  React.createElement("span", { className: "behaviorlab-level-progress" }, blT('stem.behaviorlab.level_of_total', 'Level {n} / {total}', { n: blLevel, total: LEVELS.length }))
                 ),
 
               React.createElement("div", { className: "behaviorlab-level-grid", role: "group", "aria-label": __alloT('stem.behaviorlab.experiment_levels', 'Experiment levels') },
@@ -4192,6 +4379,7 @@ dataRef.current = d;
                       upd('blExtinctionPhase', false);
 
                       upd('blScheduleCount', 0);
+                      upd('blFrPresses', 0);
 
                       upd('blLightColor', 'green');
 
@@ -4247,7 +4435,9 @@ dataRef.current = d;
 
                 currentLevel.goal > 0 && React.createElement("p", { className: "text-xs text-amber-400 font-bold" },
 
-                  "\uD83C\uDFAF Goal: " + (blLevel === 3 ? "Reinforce 5 lever presses, then stop and observe!" : "Get " + currentLevel.goal + " " + (currentLevel.target || 'target') + " responses!")),
+                  (blLevel === 3
+                    ? __alloT('stem.behaviorlab.goal_l3', '\uD83C\uDFAF Goal: reinforce 5 lever presses, then stop and observe.')
+                    : blT('stem.behaviorlab.goal_n_responses', '\uD83C\uDFAF Goal: get {n} {target} responses.', { n: currentLevel.goal, target: blTargetBehavior }))),
 
 
 
@@ -4301,7 +4491,7 @@ dataRef.current = d;
 
                       upd('aiLoading_' + blLevel, false);
 
-                      if (announceToSR) announceToSR('Explanation ready.');
+                      if (announceToSR) announceToSR(__alloT('stem.behaviorlab.sr_explanation_ready', 'Explanation ready.'));
 
                     }).catch(function () {
 
@@ -4398,6 +4588,7 @@ dataRef.current = d;
                   upd('blExtinctionPhase', false);
 
                   upd('blScheduleCount', 0);
+                  upd('blFrPresses', 0);
 
                   upd('blLightColor', 'green');
 
@@ -4507,7 +4698,7 @@ dataRef.current = d;
 
           // ── Pulsing helper: is the current action the target? ──
 
-          var isTargetActive = blPhase === 'running' && blLastAction === (blLevel === 6 ? blSandboxTarget : (currentLevel.target || 'pressLever'));
+          var isTargetActive = blPhase === 'running' && blLastAction === blTargetBehavior;
 
           var pulseStyle = isTargetActive ? { animation: 'bl-pulse 1s ease-in-out infinite', boxShadow: '0 0 18px rgba(245,158,11,0.55)' } : {};
 
@@ -4515,11 +4706,23 @@ dataRef.current = d;
 
           // ── FR counter for Level 4 ──
 
-          var frRatio = 3;
+          // Presses since the last pellet, capped at the requirement so the readout
+          // never reads "4 / 3" while the student waits for the next press.
+          var frRatio = BL_FR_RATIO;
 
-          var frCurrent = blLevel === 4 ? (blScheduleCount % frRatio) : 0;
+          var frCurrent = blLevel === 4 ? Math.min(d.blFrPresses || 0, frRatio) : 0;
 
 
+
+          // ── Section rule ──────────────────────────────────────────────────
+          // Named so the reader can see WHERE they are in a tool that runs from a
+          // mouse in a chamber to a behaviour plan for a child, and back again.
+          function blSection(key, title, blurb) {
+            return React.createElement('div', { className: 'behaviorlab-section', key: 'sec-' + key },
+              React.createElement('h3', null, title),
+              React.createElement('p', null, blurb)
+            );
+          }
 
           // ── Glass style shorthand ──
 
@@ -4533,7 +4736,7 @@ dataRef.current = d;
 
             // Skip navigation
             React.createElement("a", { href: "#behaviorlab-sim", className: "sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-2 focus:bg-indigo-600 focus:text-white focus:rounded-lg" }, __alloT('stem.behaviorlab.skip_to_simulation', "Skip to simulation")),
-            React.createElement("h2", { id: "behaviorlab-sim", className: "sr-only" }, "Behavior Lab — Level " + blLevel + " Simulation"),
+            React.createElement("h2", { id: "behaviorlab-sim", className: "sr-only" }, blT('stem.behaviorlab.h_lab_level_sim', 'Behaviour Lab — level {n} simulation', { n: blLevel })),
 
             // ── Inject keyframe animation for pulse ──
 
@@ -4567,7 +4770,7 @@ dataRef.current = d;
 
               React.createElement("div", { className: "flex-1 min-w-0" },
 
-                React.createElement("h2", { className: "text-sm font-extrabold text-white truncate" }, "Level " + blLevel + ": " + currentLevel.title),
+                React.createElement("h2", { className: "text-sm font-extrabold text-white truncate" }, blT('stem.behaviorlab.level_titled', 'Level {n}: {title}', { n: blLevel, title: currentLevel.title })),
 
                 React.createElement("p", { className: "text-xs text-amber-300" }, currentLevel.concept)
 
@@ -4693,9 +4896,9 @@ dataRef.current = d;
 
               })(),
 
-              React.createElement("p", { className: "text-lg font-extrabold text-emerald-300 text-center mb-3 tracking-tight" }, "\uD83C\uDF89 Level " + blLevel + " Complete!"),
+              React.createElement("p", { className: "text-lg font-extrabold text-emerald-300 text-center mb-3 tracking-tight" }, blT('stem.behaviorlab.level_complete_heading', '\uD83C\uDF89 Level {n} complete!', { n: blLevel })),
 
-              React.createElement("p", { className: "text-sm text-emerald-200 text-center mb-4" }, "You demonstrated " + currentLevel.concept + "!"),
+              React.createElement("p", { className: "text-sm text-emerald-200 text-center mb-4" }, blT('stem.behaviorlab.you_demonstrated', 'You demonstrated {concept}.', { concept: currentLevel.concept })),
 
               // Results grid
 
@@ -4733,7 +4936,7 @@ dataRef.current = d;
 
                     (blLatencies.reduce(function (a, b) { return a + b; }, 0) / blLatencies.length).toFixed(1)),
 
-                  React.createElement("p", { className: "text-[11px] text-slate-200" }, __alloT('stem.behaviorlab.avg_latency_ticks', "Avg Latency (ticks)"))
+                  React.createElement("p", { className: "text-[11px] text-slate-200" }, __alloT('stem.behaviorlab.avg_delay_to_reinforcement', "Avg delay to reinforcement (ticks)"))
 
                 )
 
@@ -4805,11 +5008,11 @@ dataRef.current = d;
 
                           if (typeof awardStemXP === 'function') awardStemXP('behaviorLab', 5, 'Quiz correct: Level ' + blLevel);
 
-                          if (addToast) addToast('✅ Correct! +5 XP bonus!', 'success');
+                          if (addToast) addToast(__alloT('stem.behaviorlab.toast_quiz_correct', '✅ Correct! +5 XP bonus.'), 'success');
 
                         } else {
 
-                          if (addToast) addToast('❌ Not quite — read the explanation below.', 'error');
+                          if (addToast) addToast(__alloT('stem.behaviorlab.toast_quiz_wrong', '❌ Not quite — read the explanation below.'), 'error');
 
                         }
 
@@ -5022,9 +5225,9 @@ dataRef.current = d;
                   // Read blMouseAction, not blAction — nothing ever writes blAction, so
                   // this label was frozen at "exploring" for every screen-reader user
                   // for the whole run.
-                  'aria-label': 'Behavior lab chamber showing a mouse. Current action: ' + (ACTION_LABELS[d.blMouseAction] || d.blMouseAction || 'exploring') + '. Tick: ' + (d.blTick || 0),
+                  'aria-label': blT('stem.behaviorlab.chamber_canvas_label', 'Behaviour lab chamber showing a mouse. Current action: {action}. Tick: {tick}.', { action: ACTION_LABELS[d.blMouseAction] || d.blMouseAction || 'exploring', tick: d.blTick || 0 }),
 
-                  width: 720, height: 360, style: { width: '100%', height: 'auto', display: 'block', cursor: 'crosshair' }
+                  width: 720, height: 360, style: { width: '100%', height: 'auto', display: 'block' }
 
                 })
               )
@@ -5073,7 +5276,7 @@ dataRef.current = d;
                     // unnamed for a screen reader despite carrying labels.
                     role: 'img',
                     title: ACTION_LABELS[act] || act,
-                    'aria-label': (ACTION_LABELS[act] || act) + (act === (currentLevel.target || 'pressLever') ? ' (target behavior)' : ''),
+                    'aria-label': (ACTION_LABELS[act] || act) + (act === blTargetBehavior ? ' (target behavior)' : ''),
 
                     style: {
 
@@ -5104,7 +5307,7 @@ dataRef.current = d;
 
                       border: (blIsContrast && isLast)
                         ? '2px solid ' + (ACTION_COLORS[act] || '#94a3b8')
-                        : (act === (currentLevel.target || 'pressLever') ? '2px solid #fbbf24' : '1px solid rgba(255,255,255,0.1)')
+                        : (act === blTargetBehavior ? '2px solid #fbbf24' : '1px solid rgba(255,255,255,0.1)')
 
                     }
 
@@ -5148,7 +5351,7 @@ dataRef.current = d;
 
                     if (blLevel === 3 && blExtinctionPhase) {
 
-                      if (addToast) addToast('\u26A0\uFE0F Extinction phase: do NOT reinforce!', 'warning');
+                      if (addToast) addToast(__alloT('stem.behaviorlab.toast_extinction_no_reinforce', '\u26A0\uFE0F Extinction phase: do NOT reinforce.'), 'warning');
 
                       return;
 
@@ -5170,7 +5373,9 @@ dataRef.current = d;
 
                   style: pulseStyle
 
-                }, "\uD83C\uDF55 Deliver Food" + (blLevel === 4 ? '  (' + frCurrent + '/' + frRatio + ')' : '') + '  [Space]'),
+                }, __alloT('stem.behaviorlab.deliver_food', '\uD83C\uDF55 Deliver Food')
+                  + (blLevel === 4 ? '  (' + frCurrent + '/' + frRatio + ')' : '')
+                  + '  [' + __alloT('stem.behaviorlab.key_space', 'Space') + ']'),
 
               // Level 3: extinction trigger
 
@@ -5182,7 +5387,7 @@ dataRef.current = d;
 
                   upd('blExtinctionStart', blTick);
 
-                  if (addToast) addToast('\uD83D\uDEAB Extinction phase started! Do NOT deliver food.', 'info');
+                  if (addToast) addToast(__alloT('stem.behaviorlab.toast_extinction_started', '\uD83D\uDEAB Extinction phase started. Do NOT deliver food.'), 'info');
 
                 },
 
@@ -5280,7 +5485,9 @@ dataRef.current = d;
 
               React.createElement("p", { className: "text-[11px] text-slate-200 text-center mt-2" },
 
-                "Completed chains: " + blChainHistory.length + (currentLevel.goal > 0 ? '/' + currentLevel.goal : ''))
+                (currentLevel.goal > 0
+                  ? blT('stem.behaviorlab.completed_chains_of', 'Completed chains: {n}/{goal}', { n: blChainHistory.length, goal: currentLevel.goal })
+                  : blT('stem.behaviorlab.completed_chains', 'Completed chains: {n}', { n: blChainHistory.length })))
 
             ),
 
@@ -5334,7 +5541,9 @@ dataRef.current = d;
 
                 React.createElement("p", { className: "text-xs text-slate-200" },
 
-                  '\u2705 DRO Successes: ' + blDroSuccesses + (currentLevel.goal > 0 ? '/' + currentLevel.goal : '')),
+                  (currentLevel.goal > 0
+                    ? blT('stem.behaviorlab.dro_successes_of', '\u2705 DRO successes: {n}/{goal}', { n: blDroSuccesses, goal: currentLevel.goal })
+                    : blT('stem.behaviorlab.dro_successes', '\u2705 DRO successes: {n}', { n: blDroSuccesses }))),
 
                 React.createElement("p", { className: "text-[11px] text-cyan-300/60 italic" },
 
@@ -5446,7 +5655,7 @@ dataRef.current = d;
 
                   style: { fontSize: 11, color: '#fda4af', fontWeight: 700, letterSpacing: 2 }
 
-                }, "RING!"),
+                }, __alloT('stem.behaviorlab.ring', 'RING!')),
 
                 React.createElement("span", {
 
@@ -5494,7 +5703,7 @@ dataRef.current = d;
 
                       upd('blAbcLog', bellLog.slice(0, 50));
 
-                      if (addToast) addToast('\uD83D\uDD14 Bell rings... no response! (neutral stimulus)', 'info');
+                      if (addToast) addToast(__alloT('stem.behaviorlab.toast_bell_neutral', '\uD83D\uDD14 Bell rings… no response. It is still a neutral stimulus.'), 'info');
 
                       // After 2 baseline trials, auto-advance to pairing
 
@@ -5504,7 +5713,7 @@ dataRef.current = d;
 
                         upd('blPairCount', 0);
 
-                        if (addToast) addToast('\u27A1\uFE0F Moving to Pairing Phase! Now pair the bell WITH food.', 'info');
+                        if (addToast) addToast(__alloT('stem.behaviorlab.toast_phase_pairing', '\u27A1\uFE0F Pairing phase. Now pair the bell WITH food.'), 'info');
 
                       } else {
 
@@ -5530,19 +5739,22 @@ dataRef.current = d;
 
                         blBeep(880, 0.15, 0.2);
 
-                        if (addToast) addToast('\uD83E\uDD24 The dog salivates to the bell alone! Classical conditioning!', 'success');
+                        if (addToast) addToast(__alloT('stem.behaviorlab.toast_cr_observed', '\uD83E\uDD24 The dog salivates to the bell alone. That is a conditioned response.'), 'success');
 
                         if (typeof awardStemXP === 'function') awardStemXP('behaviorLab', 3, 'Classical conditioning CR observed');
 
-                        // After observing 2 CRs, offer extinction
+                        // After observing 2 CRs, offer extinction.
+                        // blLevelScore is the value from BEFORE the increment above, so
+                        // `>= 2` first became true on the THIRD conditioned response —
+                        // the comment and the behaviour disagreed by one trial.
 
-                        if (blLevelScore >= 2) {
+                        if (blLevelScore + 1 >= 2) {
 
                           upd('blCcPhase', 'extinction');
 
                           upd('blCcExtTrials', 0);
 
-                          if (addToast) addToast('\u27A1\uFE0F Moving to Extinction Phase! Ring bell without food to weaken the association.', 'info');
+                          if (addToast) addToast(__alloT('stem.behaviorlab.toast_phase_extinction', '\u27A1\uFE0F Extinction phase. Ring the bell without food to weaken the association.'), 'info');
 
                         }
 
@@ -5552,7 +5764,7 @@ dataRef.current = d;
 
                         upd('blAbcLog', bellLog.slice(0, 50));
 
-                        if (addToast) addToast('\uD83D\uDD14 Weak response... association not strong enough. Go back and pair more!', 'warning');
+                        if (addToast) addToast(__alloT('stem.behaviorlab.toast_assoc_too_weak', '\uD83D\uDD14 Weak response — the association is not strong enough yet. Pair some more.'), 'warning');
 
                         upd('blCcPhase', 'pairing');
 
@@ -5562,7 +5774,12 @@ dataRef.current = d;
 
                       // Extinction: bell alone weakens association
 
-                      var newAssoc = Math.max(0, blAssocStrength - 20);
+                      // Extinction is the same process with no US to support the
+                      // association, so it decays proportionally rather than by a flat
+                      // 20 points: fast at first, then slower — which is why the last
+                      // traces of a conditioned response are the hardest to remove, and
+                      // why spontaneous recovery is a thing at all.
+                      var newAssoc = Math.max(0, Math.round(blAssocStrength * (1 - BL_CS_RATE)));
 
                       upd('blAssocStrength', newAssoc);
 
@@ -5582,7 +5799,7 @@ dataRef.current = d;
 
                       if (newAssoc <= 10) {
 
-                        if (addToast) addToast('\u2705 Association extinguished! The bell no longer causes salivation.', 'success');
+                        if (addToast) addToast(__alloT('stem.behaviorlab.toast_extinguished', '\u2705 Association extinguished. The bell no longer produces salivation.'), 'success');
 
                         // Complete the level
 
@@ -5590,7 +5807,7 @@ dataRef.current = d;
 
                         if (typeof awardStemXP === 'function') awardStemXP('behaviorLab', 15, 'Completed Level 9: Classical Conditioning');
 
-                        if (addToast) addToast('\uD83C\uDF89 Level 9 Complete! Classical Conditioning mastered!', 'success');
+                        if (addToast) addToast(__alloT('stem.behaviorlab.toast_l9_complete', '\uD83C\uDF89 Level 9 complete! Classical conditioning.'), 'success');
 
                         var newCompleted9 = blCompletedLevels.indexOf(9) < 0 ? blCompletedLevels.concat([9]) : blCompletedLevels;
 
@@ -5598,7 +5815,7 @@ dataRef.current = d;
 
                       } else {
 
-                        if (addToast) addToast('\uD83D\uDD14 Bell without food... association weakening (' + newAssoc + '%)', 'info');
+                        if (addToast) addToast(blT('stem.behaviorlab.toast_assoc_weakening', '\uD83D\uDD14 Bell without food — association weakening ({pct}%).', { pct: newAssoc }), 'info');
 
                       }
 
@@ -5612,7 +5829,10 @@ dataRef.current = d;
 
                     (blCcPhase !== 'pairing' ? "bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-md hover:from-rose-700 hover:to-pink-700 hover:scale-[1.02]" : "bg-slate-700 text-slate-200 cursor-not-allowed")
 
-                }, "\uD83D\uDD14 Ring Bell" + (blCcPhase === 'baseline' ? ' (Baseline)' : blCcPhase === 'test' ? ' (Test CR)' : blCcPhase === 'extinction' ? ' (Extinction)' : '')),
+                }, __alloT('stem.behaviorlab.ring_bell', '\uD83D\uDD14 Ring Bell')
+                  + (blCcPhase === 'baseline' ? ' (' + __alloT('stem.behaviorlab.phase_baseline', 'Baseline') + ')'
+                    : blCcPhase === 'test' ? ' (' + __alloT('stem.behaviorlab.phase_test_cr', 'Test CR') + ')'
+                    : blCcPhase === 'extinction' ? ' (' + __alloT('stem.behaviorlab.phase_extinction', 'Extinction') + ')' : '')),
 
                 // Pair Bell + Food button (only in pairing phase)
 
@@ -5622,7 +5842,7 @@ dataRef.current = d;
 
                     if (blCcPhase !== 'pairing') {
 
-                      if (addToast) addToast('\u26A0\uFE0F Pairing is only available in the Pairing phase!', 'warning');
+                      if (addToast) addToast(__alloT('stem.behaviorlab.toast_pairing_phase_only', '\u26A0\uFE0F Pairing is only available during the pairing phase.'), 'warning');
 
                       return;
 
@@ -5642,7 +5862,15 @@ dataRef.current = d;
 
                     var newPairCount = blPairCount + 1;
 
-                    var newAssocP = Math.min(100, blAssocStrength + 18);
+                    // Acquisition is NEGATIVELY ACCELERATED — each pairing adds less
+                    // than the one before, because there is less left to learn. A flat
+                    // +18 per trial drew a straight ramp and taught the standard
+                    // misconception that every pairing is worth the same, in the one
+                    // panel a student watches to find out what acquisition looks like.
+                    // Rescorla-Wagner in its simplest form: delta = rate * (asymptote - V).
+                    // Five pairings still land near 90%, so the phase structure and the
+                    // 30% CR threshold below are unchanged — only the SHAPE is fixed.
+                    var newAssocP = Math.min(100, Math.round(blAssocStrength + BL_CS_RATE * (100 - blAssocStrength)));
 
                     upd('blPairCount', newPairCount);
 
@@ -5660,7 +5888,7 @@ dataRef.current = d;
 
                     upd('blAbcLog', pairLog.slice(0, 50));
 
-                    if (addToast) addToast('\uD83D\uDD14 + \uD83C\uDF55 Pair ' + newPairCount + '/5 — association building (' + newAssocP + '%)', 'success');
+                    if (addToast) addToast(blT('stem.behaviorlab.toast_pair_trial', '\uD83D\uDD14 + \uD83C\uDF55 Pair {n} of 5 — association building ({pct}%).', { n: newPairCount, pct: newAssocP }), 'success');
 
                     if (typeof awardStemXP === 'function') awardStemXP('behaviorLab', 1, 'CS-US pairing trial');
 
@@ -5672,7 +5900,7 @@ dataRef.current = d;
 
                       upd('blLevelScore', 0);
 
-                      if (addToast) addToast('\u27A1\uFE0F Moving to Test Phase! Ring the bell ALONE to test for the conditioned response.', 'info');
+                      if (addToast) addToast(__alloT('stem.behaviorlab.toast_phase_test', '\u27A1\uFE0F Test phase. Ring the bell ALONE to test for the conditioned response.'), 'info');
 
                     }
 
@@ -5684,7 +5912,7 @@ dataRef.current = d;
 
                     (blCcPhase === 'pairing' ? "bg-gradient-to-r from-amber-700 to-yellow-700 text-white shadow-md hover:from-amber-700 hover:to-yellow-700 hover:scale-[1.02]" : "bg-slate-700 text-slate-200 cursor-not-allowed")
 
-                }, "\uD83D\uDD14+\uD83C\uDF55 Pair (" + blPairCount + "/5)")
+                }, blT('stem.behaviorlab.pair_button', '\uD83D\uDD14+\uD83C\uDF55 Pair ({n}/5)', { n: blPairCount }))
 
               ),
 
@@ -5703,6 +5931,9 @@ dataRef.current = d;
             ),
 
 
+
+            blSection('data', __alloT('stem.behaviorlab.sec_data', 'Reading the data'),
+              __alloT('stem.behaviorlab.sec_data_sub', 'The same session, four ways behaviour analysts actually record it.')),
 
             // ── Current action + stats ──
 
@@ -5734,13 +5965,17 @@ dataRef.current = d;
 
                 React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold mb-0.5 uppercase tracking-wider" }, __alloT('stem.behaviorlab.session_stats', "Session Stats")),
 
-                React.createElement("p", { className: "text-xs text-amber-300" }, "\uD83C\uDF55 Reinforcements: " + blReinforcements),
+                React.createElement("p", { className: "text-xs text-amber-300" }, blT('stem.behaviorlab.stat_reinforcements', '\uD83C\uDF55 Reinforcements: {n}', { n: blReinforcements })),
 
-                React.createElement("p", { className: "text-xs text-emerald-300" }, "\uD83C\uDFAF Target hits: " + blLevelScore + (currentLevel.goal > 0 ? '/' + currentLevel.goal : '')),
+                React.createElement("p", { className: "text-xs text-emerald-300" }, (currentLevel.goal > 0
+                  ? blT('stem.behaviorlab.stat_target_hits_of', '\uD83C\uDFAF Target hits: {n}/{goal}', { n: blLevelScore, goal: currentLevel.goal })
+                  : blT('stem.behaviorlab.stat_target_hits', '\uD83C\uDFAF Target hits: {n}', { n: blLevelScore }))),
 
-                blLatencies.length > 0 && React.createElement("p", { className: "text-xs text-purple-300" }, "\u23F1 Avg Latency: " + (blLatencies.reduce(function (a, b) { return a + b; }, 0) / blLatencies.length).toFixed(1) + " ticks"),
+                blLatencies.length > 0 && React.createElement("p", { className: "text-xs text-purple-300" }, "\u23F1 " + __alloT('stem.behaviorlab.avg_delay_short', 'Avg delay to reinforcement') + ": " + (blLatencies.reduce(function (a, b) { return a + b; }, 0) / blLatencies.length).toFixed(1) + " ticks"),
 
-                blLevel === 4 && React.createElement("p", { className: "text-xs text-blue-300 mt-0.5" }, "\uD83D\uDD22 FR-3 count: " + frCurrent + " / " + frRatio)
+                blLevel === 4 && React.createElement("p", { className: "text-xs text-blue-300 mt-0.5" },
+                  "\uD83D\uDD22 " + __alloT('stem.behaviorlab.fr_presses_since_food', 'Presses since the last pellet') + ": " + frCurrent + " / " + frRatio
+                  + (frCurrent >= frRatio ? ' \u2014 ' + __alloT('stem.behaviorlab.fr_ready', 'reinforce the next press') : ''))
 
               )
 
@@ -5816,7 +6051,7 @@ dataRef.current = d;
 
                 id: "bl-cumrecord-canvas",
                 role: "img",
-                'aria-label': 'Cumulative response record chart. Score: ' + (d.blLevelScore || 0) + ' of ' + (currentLevel ? currentLevel.goal : 0),
+                'aria-label': blT('stem.behaviorlab.cumrecord_label', 'Cumulative response record chart. Score: {n} of {goal}.', { n: d.blLevelScore || 0, goal: currentLevel ? currentLevel.goal : 0 }),
 
                 style: { width: '100%', height: 130, display: 'block' }
 
@@ -5844,15 +6079,45 @@ dataRef.current = d;
 
                   onClick: function () {
 
-                    var csvRows = ['Tick,Antecedent,Behavior,Consequence,Timestamp'];
-
-                    blAbcLog.forEach(function (e) {
-
-                      csvRows.push([e.tick, '"' + (e.a || '') + '"', '"' + (e.b || '') + '"', '"' + (e.c || '') + '"', e.t || ''].join(','));
-
+                    // ── CSV export ──────────────────────────────────────────
+                    // This is the tool's one data pipeline out, and its destination is
+                    // a school psychologist's spreadsheet, so it has to survive Excel:
+                    //
+                    //  * A quote inside a value must be DOUBLED. The old writer wrapped
+                    //    values in quotes and escaped nothing, so a single " anywhere in
+                    //    the log would tear the row apart from that column onward.
+                    //  * A UTF-8 BOM, or Excel on Windows reads the file as the ANSI
+                    //    codepage — and every consequence in this log carries an emoji,
+                    //    so every row would arrive mojibaked.
+                    //  * CRLF, which is what the CSV spec actually says.
+                    //  * A leading ' on anything starting = + - @ tab or CR. Spreadsheets
+                    //    execute those as formulas. Nothing in the log starts that way
+                    //    today; a data export should not depend on that staying true.
+                    //  * A readable timestamp. The column was labelled "Timestamp" and
+                    //    contained a 13-digit epoch integer, which is not a timestamp to
+                    //    anyone opening the file.
+                    function csvCell(v) {
+                      var out = (v === null || v === undefined) ? '' : String(v);
+                      if (/^[=+\-@\t\r]/.test(out)) out = "'" + out;
+                      return '"' + out.split('"').join('""') + '"';
+                    }
+                    function csvTime(ms) {
+                      if (!ms) return '';
+                      try {
+                        var dt = new Date(ms);
+                        var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+                        return dt.getFullYear() + '-' + pad(dt.getMonth() + 1) + '-' + pad(dt.getDate())
+                          + ' ' + pad(dt.getHours()) + ':' + pad(dt.getMinutes()) + ':' + pad(dt.getSeconds());
+                      } catch (err) { return ''; }
+                    }
+                    var csvRows = [['Tick', 'Antecedent', 'Behavior', 'Consequence', 'Time'].map(csvCell).join(',')];
+                    blAbcLog.slice().reverse().forEach(function (e) {
+                      csvRows.push([csvCell(e.tick), csvCell(e.a), csvCell(e.b), csvCell(e.c), csvCell(csvTime(e.t))].join(','));
                     });
-
-                    var blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+                    // The log is newest-first on screen because that is what a live
+                    // observer wants; a data file is read oldest-first, which is why the
+                    // rows above are reversed.
+                    var blob = new Blob(['\uFEFF' + csvRows.join('\r\n') + '\r\n'], { type: 'text/csv;charset=utf-8;' });
 
                     var url = URL.createObjectURL(blob);
 
@@ -5864,7 +6129,7 @@ dataRef.current = d;
 
                     URL.revokeObjectURL(url);
 
-                    if (addToast) addToast('\uD83D\uDCE5 ABC log exported as CSV!', 'success');
+                    if (addToast) addToast(__alloT('stem.behaviorlab.toast_abc_exported', '\uD83D\uDCE5 ABC log exported as CSV.'), 'success');
 
                   },
 
@@ -5882,11 +6147,11 @@ dataRef.current = d;
 
                     React.createElement("span", { className: "text-slate-200 w-8 font-mono" }, '#' + entry.tick),
 
-                    React.createElement("span", { className: "text-blue-300 w-24 truncate", title: 'Antecedent: ' + entry.a }, "A: " + entry.a),
+                    React.createElement("span", { className: "text-blue-300 w-24 truncate", title: blT('stem.behaviorlab.abc_antecedent_tip', 'Antecedent: {v}', { v: entry.a }) }, "A: " + entry.a),
 
-                    React.createElement("span", { className: "text-amber-300 flex-1 truncate", title: 'Behavior: ' + entry.b }, "B: " + entry.b),
+                    React.createElement("span", { className: "text-amber-300 flex-1 truncate", title: blT('stem.behaviorlab.abc_behavior_tip', 'Behaviour: {v}', { v: entry.b }) }, "B: " + entry.b),
 
-                    React.createElement("span", { className: "text-emerald-300 w-36 truncate", title: 'Consequence: ' + entry.c }, "C: " + entry.c)
+                    React.createElement("span", { className: "text-emerald-300 w-36 truncate", title: blT('stem.behaviorlab.abc_consequence_tip', 'Consequence: {v}', { v: entry.c }) }, "C: " + entry.c)
 
                   );
 
@@ -5928,46 +6193,16 @@ dataRef.current = d;
               )
             ),
 
-            // === FOUR FUNCTIONS OF BEHAVIOR (FBA) ===
-            React.createElement("div", {
-              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(59,130,246,0.2)' }, glass)
-            },
-              React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h3", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.four_functions_of_behavior_fba', "\uD83D\uDCA1 Four Functions of Behavior (FBA)")),
-                React.createElement("button", { onClick: function() { upd('blShowFunctions', !d.blShowFunctions); },
-                  className: "transition-colors text-[11px] text-blue-400 hover:text-blue-300"
-                }, d.blShowFunctions ? 'Hide' : 'Learn \u2192')
-              ),
-              d.blShowFunctions && React.createElement("div", null,
-                React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-2" }, __alloT('stem.behaviorlab.every_behavior_serves_a_function_under', "Every behavior serves a function. Understanding WHY a behavior occurs is the key to changing it. These are the 4 functions identified by functional behavior assessment (FBA):")),
-                React.createElement("div", { className: "grid grid-cols-2 gap-2" },
-                  FOUR_FUNCTIONS.map(function(ff, ffi) {
-                    var isActive = d.blFuncIdx === ffi;
-                    return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: ffi,
-                      onClick: function() { upd('blFuncIdx', isActive ? null : ffi); },
-                      className: "cursor-pointer rounded-xl p-3 border-2 transition-all  hover:shadow-md hover:-translate-y-0.5" + (isActive ? 'border-opacity-100' : 'transition-colors border-opacity-30 hover:border-opacity-60'),
-                      style: { borderColor: ff.color, background: isActive ? ff.color + '15' : 'rgba(30,41,59,0.4)' }
-                    },
-                      React.createElement("div", { className: "text-center mb-1" },
-                        React.createElement("div", { className: "text-2xl" }, ff.icon),
-                        React.createElement("div", { className: "text-[11px] font-black text-white" }, ff.name),
-                        React.createElement("div", { className: "text-[11px] font-mono", style: { color: ff.color } }, ff.abbrev)
-                      ),
-                      isActive && React.createElement("div", { className: "mt-2 space-y-1.5" },
-                        React.createElement("div", { className: "text-[11px] text-slate-100" }, ff.desc),
-                        React.createElement("div", { className: "text-[11px] text-amber-400 font-medium" }, "\uD83D\uDCA1 Examples: " + ff.example),
-                        React.createElement("div", { className: "text-[11px] text-emerald-400 font-medium" }, "\u2705 Intervention: " + ff.intervention)
-                      )
-                    );
-                  })
-                )
-              )
-            ),
+            blSection('classroom', __alloT('stem.behaviorlab.sec_classroom', 'Where this goes next'),
+              __alloT('stem.behaviorlab.sec_classroom_sub', 'Everything above is a simulated mouse. The applied K-12 practice built on this science lives in two sibling tools; what stays here is the argument about the science itself.')),
 
             // === MIGRATED PANELS NOW LIVE IN SCHOOL BEHAVIOR TOOLKIT ===
             // PBIS Three Tiers, Replacement Behaviors, Setting Events,
-            // Acting-Out Cycle, and Restraint & Seclusion previously sat
-            // here. They've been moved out of BehaviorLab so the Skinner-
+            // Acting-Out Cycle, Restraint & Seclusion, the Four Functions
+            // reference, the Function Sleuth drill, the token economy and the BIP
+            // drafting exercise all previously sat here. The split is finished:
+            // what stays in BehaviorLab is the science and the argument about it;
+            // what a school psych DOES with that science is one tool over. They've been moved out of BehaviorLab so the Skinner-
             // box visual frame is not adjacent to applied K-12 practice
             // content. The new home is stem_tool_schoolbehaviortoolkit.js.
             // This callout is the bridge — students who land in BehaviorLab
@@ -6000,7 +6235,7 @@ dataRef.current = d;
               React.createElement("div", { style: { fontSize: 11, color: 'var(--bl-text)', lineHeight: 1.6, marginBottom: 10 } },
                 __alloT('stem.behaviorlab.if_you_have_just_learned_operant_condi', "If you have just learned operant conditioning here in BehaviorLab, the next step is the K-12 practice that uses it. "),
                 React.createElement("b", null, __alloT('stem.behaviorlab.we_deliberately_built_that_content_as_', "We deliberately built that content as a separate tool, not here.")),
-                __alloT('stem.behaviorlab.the_skinner_box_visual_frame_should_no', " The Skinner-box visual frame should not be adjacent to \"how to handle a kid in crisis\" content — different tonal space, different ethical weight. The Toolkit covers PBIS three-tier framework, replacement behaviors mapped to FBA functions, setting events (slow triggers most BIPs miss), Geoff Colvin's seven-phase Acting-Out Cycle for crisis de-escalation, and Restraint & Seclusion ethics anchored in Maine Chapter 33.")),
+                __alloT('stem.behaviorlab.the_skinner_box_visual_frame_should_no', " The Skinner-box visual frame should not be adjacent to \"how to handle a kid in crisis\" content \u2014 different tonal space, different ethical weight. The Toolkit covers the PBIS three-tier framework, the FBA process end to end, the four functions of behaviour and a twelve-vignette Function Sleuth for identifying them, the eight components of a BIP with a drafting exercise, a token-economy builder with its pitfalls, replacement behaviours mapped to functions, setting events (the slow triggers most plans miss), Geoff Colvin's seven-phase acting-out cycle, restraint and seclusion ethics anchored in Maine Chapter 33, CICO, and disproportionality data.")),
               React.createElement("div", { style: { fontSize: 11, color: 'var(--bl-muted)', lineHeight: 1.55, fontStyle: 'italic' } },
                 __alloT('stem.behaviorlab.open_stem_lab_behavioral_science', "Open STEAM Lab → Behavioral Science → "),
                 React.createElement("b", { style: { color: '#5eead4' } }, __alloT('stem.behaviorlab.school_behavior_toolkit', '"🏫 School Behavior Toolkit."')))
@@ -6108,6 +6343,9 @@ dataRef.current = d;
                 React.createElement("b", { style: { color: '#f9a8d4' } }, __alloT('stem.behaviorlab.disability_voices', '"🎤 Disability Voices."')))
             ),
 
+            blSection('schedules', __alloT('stem.behaviorlab.sec_schedules', 'Schedules of reinforcement'),
+              __alloT('stem.behaviorlab.sec_schedules_sub', 'Back to the chamber: how the timing of reinforcement shapes the pattern of responding.')),
+
             // === SCHEDULE COMPARISON CANVAS ===
             React.createElement("div", {
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(245,158,11,0.2)' }, glass)
@@ -6143,8 +6381,8 @@ dataRef.current = d;
                     // Labels
                     ctx.font = '9px monospace';
                     ctx.fillStyle = '#94a3b8';
-                    ctx.fillText('Cumulative Responses', 5, 12);
-                    ctx.fillText('Time \u2192', w - 45, 195);
+                    ctx.fillText(__alloT('stem.behaviorlab.canvas_cumulative_responses', 'Cumulative responses'), 5, 12);
+                    ctx.fillText(__alloT('stem.behaviorlab.canvas_time_arrow', 'Time \u2192'), w - 45, 195);
                     // Simulate schedule data.
                     // This used to be a second, independently-written copy of the
                     // generator — with the same FR deadlock and the same y-axis
@@ -6490,208 +6728,8 @@ dataRef.current = d;
               })()
             ),
 
-            // === FUNCTION SLEUTH (net-new — sister mini-game to Schedule Sleuth) ===
-            // 12 behavior vignettes. Player picks the function (ATT / ESC / TAN / AUT)
-            // that the behavior is most likely serving. Tests the FBA reasoning that
-            // sits underneath every BIP — figure out what the behavior is GETTING for
-            // the kid before you try to change it. Coaching after each pick names what
-            // makes this function more likely than the others.
-            React.createElement("div", {
-              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(59,130,246,0.25)' }, glass)
-            },
-              React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.function_sleuth_what_is_the_behavior_g', "🔍 Function Sleuth — what is the behavior getting?")),
-                React.createElement("button", {
-                  onClick: function() { upd('blShowFnSleuth', !d.blShowFnSleuth); },
-                  className: "transition-colors text-[11px] text-blue-400 hover:text-blue-300"
-                }, d.blShowFnSleuth ? 'Hide' : 'Play →')
-              ),
-              d.blShowFnSleuth && (function() {
-                var FN_VIGNETTES = [
-                  { id: 1, scenario: 'Maya calls out across the classroom whenever the teacher is talking to another student. The teacher usually pauses to redirect Maya, then resumes with the other student. Maya stops calling out for a minute, then does it again.', correct: 'Attention',
-                    why: 'The behavior reliably pulls the teacher\'s attention away from someone else and onto Maya — even though it is corrective attention. The pause-then-redirect cycle is the giveaway. Negative attention still reinforces.' },
-                  { id: 2, scenario: 'Devin starts crumpling his math worksheet and tearing the corners off as soon as it is placed on his desk. The teacher gives him a quiet warning and tells him to come back to the work after a "break" at the calm-down corner.', correct: 'Escape',
-                    why: 'The behavior consistently postpones or removes the math demand. The "break" is the consequence the kid is working for. Escape from math is being negatively reinforced — even though the teacher meant it as a calm-down.' },
-                  { id: 3, scenario: 'Every time Aria walks past the prize bin in the resource room, she grabs at the box and then lays on the floor crying until staff hand her a fidget. Staff have started giving her one quickly to keep the hallway calm.', correct: 'Tangible',
-                    why: 'The crying produces access to a preferred item (the fidget). The hallway-calm rationale matters less than the contingency: cry → get fidget. That is positive reinforcement of the behavior by the tangible item.' },
-                  { id: 4, scenario: 'During independent reading, Jordan rocks rhythmically in his chair and hums quietly. He continues whether or not anyone is around or paying attention. He stops on his own when the bell rings.', correct: 'Sensory',
-                    why: 'The behavior happens regardless of who is around or what is in front of him. No attention payoff, no demand to escape, no item being chased. The behavior itself is the reward — vestibular/proprioceptive input. May not need intervention.' },
-                  { id: 5, scenario: 'When the cafeteria runs out of pizza on Wednesday, Sam slams his tray, screams, and refuses to move from the line until staff find him a pizza slice from the staff lounge.', correct: 'Tangible',
-                    why: 'Specific item → behavior → access to that specific item. Staff sourcing pizza from the lounge is the smoking-gun reinforcer. Different from a generic escape (he is not avoiding lunch — he wants a specific thing).' },
-                  { id: 6, scenario: 'When asked to read aloud, Priya immediately drops to the floor and lies face-down. Staff usually skip her and ask the next student. She returns to her seat once the read-aloud is over.', correct: 'Escape',
-                    why: 'The behavior reliably gets her out of reading aloud. The "skip her" response is the reinforcer. She returns to baseline once the demand is gone — clean evidence the demand itself was what she was avoiding.' },
-                  { id: 7, scenario: 'During free play, Theo flicks his fingers in front of his eyes near the window. He does it whether the teacher is watching, with peers, or alone. It seems to happen more on bright sunny days.', correct: 'Sensory',
-                    why: 'Independent of social context, increases with bright light (a sensory variable). The behavior is producing visual stimulation that the kid finds reinforcing. Common in autistic students; often does not need intervention unless interfering with learning.' },
-                  { id: 8, scenario: 'In the lunch line, Alex pinches the kid in front whenever a staff member walks by. The staff member always intervenes, asks Alex what is going on, and walks Alex to a separate table to "talk." Alex stops pinching for the rest of lunch.', correct: 'Attention',
-                    why: 'The pinching reliably gets a 1-on-1 conversation with an adult. The "separate table" intervention is functioning as adult-attention payoff, not as a consequence. Hidden attention reinforcement is one of the most-missed FBA findings.' },
-                  { id: 9, scenario: 'When his teacher asks Eli to put away his iPad, Eli starts flopping on the floor and screaming. The screaming stops the moment Eli sees the iPad placed back in his hands.', correct: 'Tangible',
-                    why: 'Direct cause-and-effect with a specific item. Behavior stops the moment the item returns. That instant-stop is the diagnostic giveaway — it tells you what the behavior was working for.' },
-                  { id: 10, scenario: 'Carla tears up her worksheet, throws it in the trash, and asks the teacher for a fresh one. She does this on every assignment, regardless of subject or difficulty. After tearing it up, she always completes the new copy without further issue.', correct: 'Sensory',
-                    why: 'No attention payoff (teacher just hands her a new sheet, no extended interaction). No escape (she completes the work). No specific tangible (she gets back the same item). The tearing itself appears to be the reinforcer — likely tactile/auditory sensory input.' },
-                  { id: 11, scenario: 'Whenever the lights are turned off for a video, Marco starts loudly humming a song. The teacher pauses the video, asks Marco to be quiet, then restarts. Marco hums again 30 seconds later.', correct: 'Attention',
-                    why: 'Pattern: behavior → teacher attention (pause + redirect) → repeat. The 30-second cycle is suspicious — that is reinforcer-driven repetition, not random vocalizing. If it were sensory, it would not pause when noticed.' },
-                  { id: 12, scenario: 'In gym, when the teacher announces a running drill, Sasha immediately complains of stomach pain and asks to sit out. She is fine for the rest of class, including the basketball drill that follows.', correct: 'Escape',
-                    why: 'Behavior precedes the aversive demand and is specific to it. She is not avoiding gym in general — just the run. The selective onset + selective relief is the giveaway. Reinforcer = removal of the running demand.' }
-                ];
-                var FN_OPTIONS = [
-                  { id: 'Attention', label: __alloT('stem.behaviorlab.attention_2', 'Attention'),         color: '#60a5fa', icon: '👀' },
-                  { id: 'Escape',    label: __alloT('stem.behaviorlab.escape_avoidance', 'Escape / Avoidance'), color: '#f87171', icon: '🏃' },
-                  { id: 'Tangible',  label: __alloT('stem.behaviorlab.tangible_2', 'Tangible'),          color: '#f59e0b', icon: '🎮' },
-                  { id: 'Sensory',   label: __alloT('stem.behaviorlab.sensory_automatic', 'Sensory / Automatic'), color: '#a78bfa', icon: '✨' }
-                ];
-                var fnIdx = d.blFnIdx == null ? -1 : d.blFnIdx;
-                var fnSeed = d.blFnSeed || 1;
-                var fnAnswered = !!d.blFnAnswered;
-                var fnPick = d.blFnPick;
-                var fnScore = d.blFnScore || 0;
-                var fnRounds = d.blFnRounds || 0;
-                var fnStreak = d.blFnStreak || 0;
-                var fnBest = d.blFnBest || 0;
-                var fnShown = d.blFnShown || [];
-                function startFn() {
-                  var pool = [];
-                  for (var i = 0; i < FN_VIGNETTES.length; i++) if (fnShown.indexOf(i) < 0) pool.push(i);
-                  if (pool.length === 0) { pool = []; for (var j = 0; j < FN_VIGNETTES.length; j++) pool.push(j); fnShown = []; }
-                  var seedNext = ((fnSeed * 16807 + 11) % 2147483647) || 7;
-                  var pick = pool[seedNext % pool.length];
-                  upd('blFnSeed', seedNext);
-                  upd('blFnIdx', pick);
-                  upd('blFnAnswered', false);
-                  upd('blFnPick', null);
-                  upd('blFnShown', fnShown.concat([pick]));
-                }
-                function pickFn(fnId) {
-                  if (fnAnswered) return;
-                  var v = FN_VIGNETTES[fnIdx];
-                  var correct = fnId === v.correct;
-                  var newScore = fnScore + (correct ? 1 : 0);
-                  var newStreak = correct ? (fnStreak + 1) : 0;
-                  var newBest = Math.max(fnBest, newStreak);
-                  upd('blFnAnswered', true);
-                  upd('blFnPick', fnId);
-                  upd('blFnScore', newScore);
-                  upd('blFnRounds', fnRounds + 1);
-                  upd('blFnStreak', newStreak);
-                  upd('blFnBest', newBest);
-                  if (addToast) addToast(correct ? '✅ Correct — ' + v.correct : '❌ Not quite — it was ' + v.correct, correct ? 'success' : 'info');
-                }
-                if (fnIdx < 0) {
-                  return React.createElement("div", { className: "py-3" },
-                    React.createElement("p", { className: "text-[11px] text-slate-300 italic mb-3 leading-relaxed text-center" }, __alloT('stem.behaviorlab.12_vignettes_for_each_pick_the_functio', "12 vignettes. For each, pick the function the behavior is most likely serving. Coaching after each pick names what makes this function more likely than the other three.")),
-                    // ── Four-functions primer ──
-                    // FBA categorizes behavior reinforcement into 4
-                    // canonical functions. Students new to ABA / behavior
-                    // analysis often haven't seen these definitions in
-                    // class yet, so the vignettes feel like guessing
-                    // without this scaffolding.
-                    React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-1.5 mb-3" },
-                      [
-                        { id: 'Attention', icon: '👀', color: '#60a5fa', name: __alloT('stem.behaviorlab.attention_3', 'Attention'), def: 'Behavior produces interaction (positive OR corrective) from someone.' },
-                        { id: 'Escape',    icon: '🏃', color: '#f87171', name: __alloT('stem.behaviorlab.escape', 'Escape'),    def: 'Behavior postpones, reduces, or removes a demand the kid wants to avoid.' },
-                        { id: 'Tangible',  icon: '🎮', color: '#f59e0b', name: __alloT('stem.behaviorlab.tangible_3', 'Tangible'),  def: 'Behavior produces access to a specific item or activity.' },
-                        { id: 'Sensory',   icon: '✨', color: '#a78bfa', name: __alloT('stem.behaviorlab.sensory', 'Sensory'),   def: 'Behavior produces stimulation that is itself the reinforcer. No social or material payoff needed.' }
-                      ].map(function(f, i) {
-                        return React.createElement('div', { key: i, style: { background: 'rgba(30,41,59,0.6)', border: '1px solid ' + f.color + '55', borderRadius: 6, padding: '6px 8px' } },
-                          React.createElement('div', { style: { color: f.color, fontWeight: 800, fontSize: 11 } }, f.icon + ' ' + f.name),
-                          React.createElement('div', { className: 'text-[10px] text-slate-300 leading-tight mt-0.5' }, f.def)
-                        );
-                      })
-                    ),
-                    React.createElement('p', { className: 'text-[10px] italic text-slate-400 mb-3 text-center' },
-                      __alloT('stem.behaviorlab.a_behavior_can_have_more_than_one_func', 'A behavior can have more than one function in reality. For these vignettes, pick the most-likely primary function based on the contingency described.')
-                    ),
-                    React.createElement("div", { className: "text-center" },
-                      React.createElement("button", {
-                        onClick: startFn,
-                        "aria-label": __alloT('stem.behaviorlab.start_function_sleuth', "Start Function Sleuth"),
-                        className: "transition-colors px-4 py-2 rounded-lg bg-blue-600 text-white font-bold text-[11px] hover:bg-blue-700 focus:outline-none focus:ring-2 ring-blue-300 active:scale-[0.97]"
-                      }, __alloT('stem.behaviorlab.start_the_game_2', "🔍 Start the game"))
-                    )
-                  );
-                }
-                var v = FN_VIGNETTES[fnIdx];
-                var pickedCorrect = fnAnswered && fnPick === v.correct;
-                var pct = fnRounds > 0 ? Math.round((fnScore / fnRounds) * 100) : 0;
-                var allDone = fnShown.length >= FN_VIGNETTES.length && fnAnswered;
-                return React.createElement("div", null,
-                  React.createElement("div", { className: "flex items-center flex-wrap gap-3 mb-2 text-[11px]" },
-                    React.createElement("span", { className: "text-slate-300" }, __alloT('stem.behaviorlab.round_2', "Round "), React.createElement("strong", { className: "text-white" }, fnShown.length)),
-                    React.createElement("span", { className: "text-slate-300" }, __alloT('stem.behaviorlab.streak_2', "Streak "), React.createElement("strong", { className: "text-amber-400" }, fnStreak)),
-                    React.createElement("span", { className: "text-slate-300" }, __alloT('stem.behaviorlab.best_2', "Best "), React.createElement("strong", { className: "text-emerald-400" }, fnBest)),
-                    fnRounds > 0 && React.createElement("span", { className: "text-slate-300" }, __alloT('stem.behaviorlab.accuracy_2', "Accuracy "), React.createElement("strong", { className: "text-cyan-400" }, pct + '%'))
-                  ),
-                  React.createElement("div", { style: { background: 'var(--bl-canvas)', borderRadius: 10, padding: '12px 14px', border: '1px solid rgba(100,116,139,0.3)', marginBottom: 10 } },
-                    React.createElement("div", { className: "text-[10px] font-bold text-blue-300 uppercase tracking-widest mb-1" }, 'Vignette ' + fnShown.length + ' of ' + FN_VIGNETTES.length),
-                    React.createElement("p", { className: "text-[12px] text-slate-100 leading-relaxed", style: { margin: 0 } }, v.scenario)
-                  ),
-                  React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2", role: 'radiogroup', 'aria-label': __alloT('stem.behaviorlab.pick_the_function', 'Pick the function') },
-                    FN_OPTIONS.map(function(opt) {
-                      var picked = fnAnswered && fnPick === opt.id;
-                      var isRight = fnAnswered && opt.id === v.correct;
-                      var bg, border, color;
-                      if (fnAnswered) {
-                        if (isRight) { bg = '#064e3b'; border = '#22c55e'; color = '#bbf7d0'; }
-                        else if (picked) { bg = '#7f1d1d'; border = '#f87171'; color = '#fecaca'; }
-                        else { bg = 'rgba(30,41,59,0.5)'; border = 'rgba(100,116,139,0.4)'; color = '#94a3b8'; }
-                      } else {
-                        bg = opt.color + '20'; border = opt.color + '60'; color = '#e2e8f0';
-                      }
-                      return React.createElement('button', {
-                        key: opt.id, role: 'radio',
-                        'aria-checked': picked ? 'true' : 'false',
-                        'aria-label': opt.label,
-                        disabled: fnAnswered,
-                        onClick: function() { pickFn(opt.id); },
-                        style: { padding: '10px 12px', borderRadius: 8, background: bg, color: color, border: '2px solid ' + border, cursor: fnAnswered ? 'default' : 'pointer', fontSize: 12, fontWeight: 700, textAlign: 'left', minHeight: 50, transition: 'all 0.15s' }
-                      },
-                        React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 } },
-                          React.createElement('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, opt.icon),
-                          React.createElement('span', { style: { color: fnAnswered ? color : opt.color, fontSize: 12, fontWeight: 800 } }, opt.label)
-                        )
-                      );
-                    })
-                  ),
-                  fnAnswered && React.createElement("div", {
-                    style: {
-                      padding: '10px 12px', borderRadius: 8,
-                      background: pickedCorrect ? 'rgba(34,197,94,0.10)' : 'rgba(239,68,68,0.10)',
-                      border: '1px solid ' + (pickedCorrect ? 'rgba(34,197,94,0.45)' : 'rgba(239,68,68,0.40)')
-                    }
-                  },
-                    React.createElement("div", { className: "text-[12px] font-bold mb-1", style: { color: pickedCorrect ? '#86efac' : '#fca5a5' } },
-                      pickedCorrect ? '✅ Correct — ' + v.correct : '❌ The function is ' + v.correct + (fnPick ? ' (you picked ' + fnPick + ')' : '')
-                    ),
-                    React.createElement("p", { className: "text-[11px] text-slate-200 leading-relaxed", style: { margin: '0 0 8px' } }, v.why),
-                    allDone
-                      ? React.createElement("div", { style: { padding: '8px 10px', borderRadius: 8, background: 'rgba(59,130,246,0.10)', border: '1px solid rgba(59,130,246,0.45)' } },
-                          React.createElement("div", { className: "text-[12px] font-bold text-blue-300 mb-1" }, __alloT('stem.behaviorlab.all_12_vignettes_complete', '🏆 All 12 vignettes complete')),
-                          React.createElement("div", { className: "text-[11px] text-slate-100 leading-relaxed" },
-                            'Final: ', React.createElement('strong', null, fnScore + ' / ' + FN_VIGNETTES.length + ' (' + Math.round((fnScore / FN_VIGNETTES.length) * 100) + '%)'),
-                            // "Ready for real FBA case work" was the strongest claim in
-                            // the tool and the one with an actual harm path: a confident,
-                            // untrained user running an FBA drives BIPs, restraint
-                            // decisions and IEP goals. Twelve vignettes with the function
-                            // knowable from the text is a concept check, not a
-                            // demonstration of competence on a real case, where the
-                            // function is a hypothesis you test with ABC data.
-                            fnScore === FN_VIGNETTES.length ? __alloT('stem.behaviorlab.fn_all_correct', ' — every function correctly identified. That is the concept; on a real case the function is a hypothesis you confirm with ABC data and supervision, not a label you read off a paragraph.') :
-                            fnScore >= 10 ? ' — strong FBA reasoning. The most-confused pair is usually attention vs escape (when adult intervention happens to coincide with demand removal — both can co-occur).' :
-                            fnScore >= 7 ? ' — solid baseline. Re-read the rationales on misses; look specifically for what the behavior consistently produces vs prevents.' :
-                            ' — these distinctions take many examples. Re-read the FOUR_FUNCTIONS reference card above + the rationales on each miss, then retake.'
-                          ),
-                          React.createElement("button", {
-                            onClick: function() { upd('blFnIdx', -1); upd('blFnShown', []); upd('blFnScore', 0); upd('blFnRounds', 0); upd('blFnStreak', 0); },
-                            className: "transition-colors mt-2 px-3 py-1.5 rounded-lg bg-blue-600 text-white font-bold text-[11px] hover:bg-blue-700 active:scale-[0.97]"
-                          }, __alloT('stem.behaviorlab.restart', '🔄 Restart'))
-                        )
-                      : React.createElement("button", {
-                          onClick: startFn,
-                          className: "transition-colors px-4 py-1.5 rounded-lg bg-blue-600 text-white font-bold text-[11px] hover:bg-blue-700 focus:outline-none focus:ring-2 ring-blue-300 active:scale-[0.97]"
-                        }, __alloT('stem.behaviorlab.next_vignette', '➡️ Next vignette'))
-                  )
-                );
-              })()
-            ),
+            blSection('analysis', __alloT('stem.behaviorlab.sec_analysis', 'Analysing the contingency'),
+              __alloT('stem.behaviorlab.sec_analysis_sub', 'Naming what a consequence actually did \u2014 and telling the two kinds of conditioning apart.')),
 
             // === REINFORCEMENT / PUNISHMENT 2x2 MATRIX ===
             React.createElement("div", {
@@ -6763,93 +6801,6 @@ dataRef.current = d;
               })()
             ),
 
-            // === TOKEN ECONOMY BUILDER ===
-            React.createElement("div", {
-              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(16,185,129,0.2)' }, glass)
-            },
-              React.createElement("p", { className: "text-[11px] text-slate-200 font-bold mb-1 uppercase tracking-wider" }, __alloT('stem.behaviorlab.token_economy_builder', "\uD83C\uDFAE Token Economy Builder")),
-              React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-2" }, __alloT('stem.behaviorlab.design_a_classroom_token_economy_award', "Design a classroom token economy! Award tokens for positive behaviors, then let students exchange them for rewards. This is a real ABA strategy used in schools worldwide.")),
-              // Token balance
-              React.createElement("div", { className: "flex items-center justify-center gap-3 mb-3 py-2 bg-gradient-to-r from-amber-900/30 to-emerald-900/30 rounded-xl border border-amber-700/30" },
-                React.createElement("div", { className: "text-2xl" }, '\uD83E\uDE99'),
-                React.createElement("div", { className: "text-center" },
-                  React.createElement("div", { className: "text-[11px] text-slate-200 uppercase tracking-wider" }, __alloT('stem.behaviorlab.token_balance', 'Token Balance')),
-                  React.createElement("div", { className: "text-2xl font-black text-amber-400 tracking-tight" }, blTokenBalance)
-                ),
-                React.createElement("div", { className: "text-2xl" }, '\uD83E\uDE99')
-              ),
-              // Earn tokens
-              React.createElement("div", { className: "mb-3" },
-                React.createElement("div", { className: "text-[11px] font-bold text-emerald-400 uppercase tracking-wider mb-1" }, __alloT('stem.behaviorlab.earn_tokens', '\u2B06 Earn Tokens')),
-                React.createElement("div", { className: "grid grid-cols-2 gap-1" },
-                  TOKEN_ITEMS.map(function(item) {
-                    return React.createElement("button", { key: item.id,
-                      onClick: function() {
-                        upd('blTokenBalance', blTokenBalance + item.tokens);
-                        var newLog = (blTokenLog || []).slice();
-                        newLog.unshift({ type: 'earn', name: item.name, tokens: item.tokens, icon: item.icon, t: Date.now() });
-                        if (newLog.length > 20) newLog = newLog.slice(0, 20);
-                        upd('blTokenLog', newLog);
-                        if (addToast) addToast('\uD83E\uDE99 +' + item.tokens + ' tokens for ' + item.name + '!', 'success');
-                      },
-                      className: "flex items-center gap-1.5 p-1.5 rounded-lg text-left transition-all bg-emerald-900/20 border border-emerald-700/30 hover:bg-emerald-900/40 hover:scale-[1.02] active:scale-[0.97]"
-                    },
-                      React.createElement("span", { className: "text-lg" }, item.icon),
-                      React.createElement("div", null,
-                        React.createElement("div", { className: "text-[11px] font-bold text-slate-100" }, item.name),
-                        React.createElement("div", { className: "text-[11px] text-emerald-400 font-mono" }, '+' + item.tokens + ' tokens')
-                      )
-                    );
-                  })
-                )
-              ),
-              // Spend tokens
-              React.createElement("div", { className: "mb-2" },
-                React.createElement("div", { className: "text-[11px] font-bold text-amber-400 uppercase tracking-wider mb-1" }, __alloT('stem.behaviorlab.spend_tokens', '\uD83C\uDF81 Spend Tokens')),
-                React.createElement("div", { className: "grid grid-cols-2 gap-1" },
-                  TOKEN_REWARDS.map(function(rew) {
-                    var canAfford = blTokenBalance >= rew.cost;
-                    return React.createElement("button", { key: rew.id,
-                      onClick: function() {
-                        if (!canAfford) { if (addToast) addToast('\u274C Need ' + (rew.cost - blTokenBalance) + ' more tokens!', 'info'); return; }
-                        upd('blTokenBalance', blTokenBalance - rew.cost);
-                        var newLog2 = (blTokenLog || []).slice();
-                        newLog2.unshift({ type: 'spend', name: rew.name, tokens: rew.cost, icon: rew.icon, t: Date.now() });
-                        if (newLog2.length > 20) newLog2 = newLog2.slice(0, 20);
-                        upd('blTokenLog', newLog2);
-                        var newRew = (blTokenRewards || []).slice();
-                        newRew.push(rew.name);
-                        upd('blTokenRewards', newRew);
-                        if (addToast) addToast('\uD83C\uDF89 Redeemed ' + rew.name + '!', 'success');
-                      },
-                      className: "flex items-center gap-1.5 p-1.5 rounded-lg text-left transition-all border " + (canAfford ? 'transition-colors bg-amber-900/20 border-amber-700/30 hover:bg-amber-900/40 hover:scale-[1.02] active:scale-[0.97]' : 'bg-slate-800/40 border-slate-700/20 opacity-50 cursor-not-allowed'),
-                      disabled: !canAfford
-                    },
-                      React.createElement("span", { className: "text-lg" }, rew.icon),
-                      React.createElement("div", null,
-                        React.createElement("div", { className: "text-[11px] font-bold text-slate-100" }, rew.name),
-                        React.createElement("div", { className: "text-[11px] font-mono " + (canAfford ? 'text-amber-400' : 'text-slate-200') }, rew.cost + ' tokens')
-                      )
-                    );
-                  })
-                )
-              ),
-              // Transaction log
-              blTokenLog.length > 0 && React.createElement("div", { className: "mt-2" },
-                React.createElement("div", { className: "text-[11px] text-slate-200 uppercase tracking-wider mb-0.5" }, __alloT('stem.behaviorlab.recent_activity', 'Recent Activity')),
-                React.createElement("div", { className: "max-h-24 overflow-y-auto space-y-0.5" },
-                  blTokenLog.slice(0, 8).map(function(entry, ei) {
-                    return React.createElement("div", { key: ei, className: "flex items-center justify-between text-[11px] px-1.5 py-0.5 rounded " + (entry.type === 'earn' ? 'bg-emerald-900/10' : 'bg-amber-900/10') },
-                      React.createElement("span", null, entry.icon + ' ' + entry.name),
-                      React.createElement("span", { className: entry.type === 'earn' ? 'text-emerald-400 font-bold' : 'text-red-400 font-bold' },
-                        (entry.type === 'earn' ? '+' : '-') + entry.tokens
-                      )
-                    );
-                  })
-                )
-              )
-            ),
-
             // === OPERANT vs CLASSICAL CONDITIONING COMPARISON ===
             React.createElement("div", {
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(139,92,246,0.2)' }, glass)
@@ -6881,120 +6832,6 @@ dataRef.current = d;
               )
             ),
 
-            // === BIP (BEHAVIOR INTERVENTION PLAN) BUILDER ===
-            React.createElement("div", {
-              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(239,68,68,0.2)' }, glass)
-            },
-              React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, __alloT('stem.behaviorlab.behavior_intervention_plan_bip_builder', "\uD83D\uDCCB Behavior Intervention Plan (BIP) Builder")),
-                React.createElement("button", { onClick: function() { upd('blShowBipPlanner', !blShowBipPlanner); },
-                  className: "transition-colors text-[11px] text-red-400 hover:text-red-300"
-                }, blShowBipPlanner ? 'Hide' : 'Build a BIP \u2192')
-              ),
-              blShowBipPlanner && React.createElement("div", null,
-                React.createElement("div", { className: "text-[11px] text-slate-200 italic mb-3" }, __alloT('stem.behaviorlab.walk_through_the_steps_of_creating_a_r', "Walk through the steps of creating a real Behavior Intervention Plan \u2014 the document ABA professionals use to address challenging behavior.")),
-                // Step indicators
-                React.createElement("div", { className: "flex gap-1 justify-center mb-3" },
-                  ['Target', 'Antecedent', 'Function', 'Replace', 'Strategy', 'Summary'].map(function(step, si) {
-                    var isComplete = si < blBipStep;
-                    var isCurrent = si === blBipStep;
-                    return React.createElement("div", { role: "button", tabIndex: 0, onKeyDown: function(e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.target.click(); } },  key: si,
-                      className: "flex flex-col items-center cursor-pointer",
-                      onClick: function() { if (isComplete) upd('blBipStep', si); }
-                    },
-                      React.createElement("div", {
-                        className: "w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold border-2 transition-all " +
-                          (isCurrent ? 'bg-red-600 border-red-500 text-white scale-110' : isComplete ? 'bg-emerald-700 border-emerald-600 text-white' : 'bg-slate-800 border-slate-600 text-slate-200')
-                      }, isComplete ? '\u2713' : (si + 1)),
-                      React.createElement("div", { className: "text-[11px] mt-0.5 " + (isCurrent ? 'text-red-400 font-bold' : 'text-slate-200') }, step)
-                    );
-                  })
-                ),
-                // Step content
-                (function() {
-                  var steps = [
-                    { title: __alloT('stem.behaviorlab.step_1_identify_target_behavior', 'Step 1: Identify Target Behavior'), prompt: __alloT('stem.behaviorlab.describe_the_behavior_you_want_to_chan', 'Describe the behavior you want to change. Be specific and observable!'), field: 'behavior', placeholder: __alloT('stem.behaviorlab.e_g_student_calls_out_answers_without_', 'e.g., Student calls out answers without raising hand (3-5 times per class)') },
-                    { title: __alloT('stem.behaviorlab.step_2_identify_antecedents', 'Step 2: Identify Antecedents'), prompt: __alloT('stem.behaviorlab.what_happens_right_before_the_behavior', 'What happens RIGHT BEFORE the behavior? What triggers it?'), field: 'antecedent', placeholder: __alloT('stem.behaviorlab.e_g_teacher_asks_a_question_to_the_who', 'e.g., Teacher asks a question to the whole class') },
-                    { title: __alloT('stem.behaviorlab.step_3_hypothesize_function', 'Step 3: Hypothesize Function'), prompt: __alloT('stem.behaviorlab.why_does_the_student_engage_in_this_be', 'WHY does the student engage in this behavior? (Attention, Escape, Tangible, Sensory)'), field: 'func', placeholder: __alloT('stem.behaviorlab.e_g_attention_student_wants_teacher_an', 'e.g., Attention \u2014 student wants teacher and peer attention') },
-                    { title: __alloT('stem.behaviorlab.step_4_replacement_behavior', 'Step 4: Replacement Behavior'), prompt: __alloT('stem.behaviorlab.what_appropriate_behavior_should_repla', 'What appropriate behavior should REPLACE the problem behavior? Must serve the SAME function!'), field: 'replacement', placeholder: __alloT('stem.behaviorlab.e_g_raise_hand_and_wait_to_be_called_o', 'e.g., Raise hand and wait to be called on (still gets attention but appropriately)') },
-                    { title: __alloT('stem.behaviorlab.step_5_intervention_strategy', 'Step 5: Intervention Strategy'), prompt: __alloT('stem.behaviorlab.how_will_you_teach_and_reinforce_the_r', 'How will you teach and reinforce the replacement behavior?'), field: 'strategy', placeholder: __alloT('stem.behaviorlab.e_g_teach_hand_raising_reinforce_with_', 'e.g., Teach hand-raising, reinforce with praise + 2 tokens; ignore call-outs (extinction)') }
-                  ];
-                  if (blBipStep < 5) {
-                    var s = steps[blBipStep];
-                    return React.createElement("div", { className: "space-y-2" },
-                      React.createElement("div", { className: "text-[11px] font-bold text-red-300" }, s.title),
-                      React.createElement("div", { className: "text-[11px] text-slate-200" }, s.prompt),
-                      React.createElement("label", { htmlFor: "bip-step-" + blBipStep, className: "sr-only" }, "Step " + (blBipStep + 1) + ": " + s.field),
-                      React.createElement("textarea", {
-                        id: "bip-step-" + blBipStep,
-                        "aria-label": "Step " + (blBipStep + 1) + ": " + s.title,
-                        "aria-required": "true",
-                        value: blBipData[s.field] || '',
-                        onChange: function(e) {
-                          var newData = Object.assign({}, blBipData);
-                          newData[s.field] = e.target.value;
-                          upd('blBipData', newData);
-                        },
-                        placeholder: s.placeholder,
-                        rows: 2,
-                        className: "w-full bg-slate-800 border border-slate-500 rounded-lg p-2 text-[11px] text-slate-200 placeholder-slate-400 focus:border-red-500 focus:ring-2 focus:ring-red-500/50 focus:outline-none resize-none"
-                      }),
-                      React.createElement("div", { className: "flex gap-2 justify-end" },
-                        blBipStep > 0 && React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.back', "Back"),
-                          onClick: function() { upd('blBipStep', blBipStep - 1); },
-                          className: "transition-colors px-3 py-1 rounded-lg text-[11px] font-bold bg-slate-700 text-slate-100 hover:bg-slate-600 focus:ring-2 focus:ring-cyan-400 focus:outline-none active:scale-[0.97]"
-                        }, __alloT('stem.behaviorlab.back_2', '\u2190 Back')),
-                        React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.next', "Next"),
-                          onClick: function() {
-                            if (!blBipData[s.field]) {
-                              if (addToast) addToast('\u270F\uFE0F Fill in this step first!', 'info');
-                              var _ta = document.getElementById('bip-step-' + blBipStep);
-                              if (_ta) { _ta.setAttribute('aria-invalid', 'true'); _ta.focus(); }
-                              return;
-                            }
-                            upd('blBipStep', blBipStep + 1);
-                            if (addToast) addToast('\u2705 Step ' + (blBipStep + 1) + ' complete!', 'success');
-                          },
-                          className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-red-600 text-white hover:bg-red-700 focus:ring-2 focus:ring-red-200 focus:outline-none transition-all active:scale-[0.97]"
-                        }, __alloT('stem.behaviorlab.next_2', 'Next \u2192'))
-                      )
-                    );
-                  } else {
-                    // Summary view
-                    return React.createElement("div", { className: "space-y-2" },
-                      React.createElement("div", { className: "text-[11px] font-bold text-emerald-300" }, __alloT('stem.behaviorlab.your_behavior_intervention_plan', '\u2705 Your Behavior Intervention Plan')),
-                      React.createElement("div", { className: "rounded-xl bg-slate-800/60 p-3 space-y-2 border border-emerald-700/30" },
-                        [
-                          { label: __alloT('stem.behaviorlab.target_behavior', 'Target Behavior'), value: blBipData.behavior, color: 'text-red-300' },
-                          { label: __alloT('stem.behaviorlab.antecedent', 'Antecedent'), value: blBipData.antecedent, color: 'text-blue-300' },
-                          { label: __alloT('stem.behaviorlab.hypothesized_function', 'Hypothesized Function'), value: blBipData.func, color: 'text-amber-300' },
-                          { label: __alloT('stem.behaviorlab.replacement_behavior', 'Replacement Behavior'), value: blBipData.replacement, color: 'text-emerald-300' },
-                          { label: __alloT('stem.behaviorlab.intervention_strategy', 'Intervention Strategy'), value: blBipData.strategy, color: 'text-violet-300' }
-                        ].map(function(item, ii) {
-                          return React.createElement("div", { key: ii },
-                            React.createElement("div", { className: "text-[11px] font-bold uppercase tracking-wider " + item.color }, item.label),
-                            React.createElement("div", { className: "text-[11px] text-slate-100" }, item.value)
-                          );
-                        })
-                      ),
-                      React.createElement("div", { className: "flex gap-2 justify-center" },
-                        React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.edit', "Edit"),
-                          onClick: function() { upd('blBipStep', 0); },
-                          className: "transition-colors px-3 py-1 rounded-lg text-[11px] font-bold bg-slate-700 text-slate-100 hover:bg-slate-600 focus:ring-2 focus:ring-cyan-400 focus:outline-none active:scale-[0.97]"
-                        }, __alloT('stem.behaviorlab.edit_2', '\u270F\uFE0F Edit')),
-                        React.createElement("button", { "aria-label": __alloT('stem.behaviorlab.new_plan', "New Plan"),
-                          onClick: function() { upd('blBipStep', 0); upd('blBipData', { behavior: '', antecedent: '', consequence: '', func: '', replacement: '', strategy: '' }); },
-                          className: "transition-colors px-3 py-1 rounded-lg text-[11px] font-bold bg-red-700 text-white hover:bg-red-600 active:scale-[0.97]"
-                        }, __alloT('stem.behaviorlab.new_plan_2', '\uD83D\uDD04 New Plan'))
-                      )
-                    );
-                  }
-                })()
-              )
-            ),
-
-
-            
             // === SCENARIO CHALLENGES ===
             React.createElement("div", {
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(239,68,68,0.2)' }, glass)
@@ -7010,8 +6847,8 @@ dataRef.current = d;
               ),
               // Score
               React.createElement("div", { className: "flex justify-between items-center mb-2" },
-                React.createElement("span", { className: "text-[11px] text-slate-200" }, 'Score: ' + blScenarioScore + '/' + blScenarioTotal),
-                React.createElement("span", { className: "text-[11px] text-amber-500" }, 'Best streak: ' + blBestStreak)
+                React.createElement("span", { className: "text-[11px] text-slate-200" }, blT('stem.behaviorlab.stat_score_of', 'Score: {n}/{total}', { n: blScenarioScore, total: blScenarioTotal })),
+                React.createElement("span", { className: "text-[11px] text-amber-500" }, blT('stem.behaviorlab.stat_best_streak', 'Best streak: {n}', { n: blBestStreak }))
               ),
               (function() {
                 var sc = SCENARIO_CHALLENGES[blScenarioIdx];
@@ -7044,10 +6881,10 @@ dataRef.current = d;
                             var newStreak = blStreak + 1;
                             upd('blStreak', newStreak);
                             if (newStreak > blBestStreak) upd('blBestStreak', newStreak);
-                            if (addToast) addToast('\u2705 Correct! +1 streak (' + newStreak + ')', 'success');
+                            if (addToast) addToast(blT('stem.behaviorlab.toast_scenario_correct', '\u2705 Correct. Streak: {n}.', { n: newStreak }), 'success');
                           } else {
                             upd('blStreak', 0);
-                            if (addToast) addToast('\u274C Not quite \u2014 read the explanation!', 'info');
+                            if (addToast) addToast(__alloT('stem.behaviorlab.toast_scenario_wrong', '\u274C Not quite \u2014 read the explanation.'), 'info');
                           }
                         },
                         className: "w-full text-left p-2 rounded-lg border text-[11px] transition-all " + bgClass,
@@ -7076,11 +6913,14 @@ dataRef.current = d;
                         upd('blScenarioAnswer', -1);
                       },
                       className: "w-full py-1.5 rounded-lg text-[11px] font-bold bg-gradient-to-r from-red-600 to-amber-700 text-white hover:from-red-600 hover:to-amber-700 transition-all"
-                    }, 'Next Scenario \u2192 (' + ((blScenarioIdx + 1) % SCENARIO_CHALLENGES.length + 1) + '/' + SCENARIO_CHALLENGES.length + ')')
+                    }, blT('stem.behaviorlab.next_scenario', 'Next scenario \u2192 ({n}/{total})', { n: (blScenarioIdx + 1) % SCENARIO_CHALLENGES.length + 1, total: SCENARIO_CHALLENGES.length }))
                   )
                 );
               })()
             ),
+
+            blSection('reference', __alloT('stem.behaviorlab.sec_reference', 'Reference'),
+              __alloT('stem.behaviorlab.sec_reference_sub', 'History, terminology and quick cards \u2014 including the parts of this history the field is still arguing about.')),
 
             // === ABA TIMELINE ===
             React.createElement("div", {
@@ -7161,7 +7001,7 @@ dataRef.current = d;
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(148,163,184,0.2)' }, glass)
             },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
-                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83D\uDCD6 ABA Glossary (" + ABA_GLOSSARY.length + " terms)"),
+                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, blT('stem.behaviorlab.aba_glossary_n', '\uD83D\uDCD6 ABA glossary ({n} terms)', { n: ABA_GLOSSARY.length })),
                 React.createElement("button", { onClick: function() { upd('blShowGlossary', !d.blShowGlossary); },
                   className: "transition-colors text-[11px] text-slate-200 hover:text-slate-100"
                 }, d.blShowGlossary ? 'Hide' : 'Browse \u2192')
@@ -7197,7 +7037,7 @@ dataRef.current = d;
 
                 React.createElement("div", { className: "bg-blue-900/40 rounded-lg px-3 py-2 text-center border border-blue-700/30 min-w-[80px]" },
 
-                  React.createElement("p", { className: "text-[11px] text-blue-400 font-bold" }, "ANTECEDENT"),
+                  React.createElement("p", { className: "text-[11px] text-blue-400 font-bold" }, __alloT('stem.behaviorlab.abc_antecedent', 'ANTECEDENT')),
 
                   React.createElement("p", { className: "text-xs text-blue-200 font-medium" }, currentLevel.contingency.a)
 
@@ -7207,7 +7047,7 @@ dataRef.current = d;
 
                 React.createElement("div", { className: "bg-amber-900/40 rounded-lg px-3 py-2 text-center border border-amber-700/30 min-w-[80px]" },
 
-                  React.createElement("p", { className: "text-[11px] text-amber-400 font-bold" }, "BEHAVIOR"),
+                  React.createElement("p", { className: "text-[11px] text-amber-400 font-bold" }, __alloT('stem.behaviorlab.abc_behavior', 'BEHAVIOR')),
 
                   React.createElement("p", { className: "text-xs text-amber-200 font-medium" }, currentLevel.contingency.b)
 
@@ -7217,7 +7057,7 @@ dataRef.current = d;
 
                 React.createElement("div", { className: "bg-emerald-900/40 rounded-lg px-3 py-2 text-center border border-emerald-700/30 min-w-[80px]" },
 
-                  React.createElement("p", { className: "text-[11px] text-emerald-400 font-bold" }, "CONSEQUENCE"),
+                  React.createElement("p", { className: "text-[11px] text-emerald-400 font-bold" }, __alloT('stem.behaviorlab.abc_consequence', 'CONSEQUENCE')),
 
                   React.createElement("p", { className: "text-xs text-emerald-200 font-medium" }, currentLevel.contingency.c)
 

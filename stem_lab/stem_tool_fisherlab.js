@@ -1116,6 +1116,1460 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     return { body: body, bands: bands, striped: striped, topmark: top };
   }
 
+  // ═══════════════════════════════════════════════════════════════════
+  // TEACHING-FIGURE MATH
+  // Kept pure and exported so the numbers a figure draws can be checked
+  // against the worked examples the tabs already print in prose. Where a
+  // figure shows an APPROXIMATION, the exact form is computed alongside it
+  // and the gap is drawn, rather than the approximation being presented as
+  // the truth.
+  // ═══════════════════════════════════════════════════════════════════
+
+  // Rule of twelfths: 1,2,3,3,2,1 twelfths of the range per hour.
+  var TWELFTHS = [1, 2, 3, 3, 2, 1];
+  function getCoreTwelfths() {
+    var cum = 0;
+    return TWELFTHS.map(function(t, i) {
+      cum += t;
+      // The rule approximates a smooth semidiurnal curve. Carrying the exact
+      // sinusoid next to it is the honest way to show a rule of thumb: the two
+      // agree to within about a sixtieth of the range, and that IS the lesson.
+      var exact = (1 - Math.cos(Math.PI * (i + 1) / 6)) / 2;
+      return {
+        hour: i + 1,
+        twelfths: t,
+        fraction: t / 12,
+        cumulative: cum / 12,
+        exact: exact,
+        error: cum / 12 - exact
+      };
+    });
+  }
+
+  // Distance to the horizon, d(nm) ≈ 1.17 × √(height in feet). The constant
+  // already folds in standard atmospheric refraction, which is why it is 1.17
+  // and not the 1.06 pure geometry gives.
+  function getCoreHorizonNm(heightFt) {
+    if (!(heightFt > 0)) return 0;
+    return 1.17 * Math.sqrt(heightFt);
+  }
+  // How far off you can expect to raise a light: your horizon plus its horizon,
+  // because you each see the same point on the curve between you.
+  function getCoreGeographicRangeNm(eyeFt, lightFt) {
+    return getCoreHorizonNm(eyeFt) + getCoreHorizonNm(lightFt);
+  }
+
+  // Trap-limit caption for the zone ribbon. Derived, not asserted: a
+  // hard-coded "all seven are 800" line would go quietly false the day one
+  // zone council changes its limit, and the figure would then be teaching a
+  // regulation that no longer holds.
+  function getCoreZoneTrapSummary(zones) {
+    var list = zones || [];
+    var limits = [];
+    list.forEach(function(z) { if (z && limits.indexOf(z.traps) < 0) limits.push(z.traps); });
+    if (limits.length === 1) {
+      return 'All ' + list.length + ' carry the same ' + limits[0] + '-trap limit — what differs is the water, the waiting list and the culture.';
+    }
+    return 'Trap limits differ by zone: ' + limits.join(' / ') + '. Entry rules and culture differ too.';
+  }
+
+  // Depth band for a water-column zone, read out of the zone label itself
+  // ("Sub-surface (5-30 m)") so the drawn column cannot drift from the table.
+  function getCoreZoneDepths(zone) {
+    var label = String((zone && zone.zone) || '');
+    var m = label.match(/\((\d+)\s*[-–]\s*(\d+)\s*m\)/);
+    if (m) return { topM: Number(m[1]), bottomM: Number(m[2]), openEnded: false };
+    var plus = label.match(/\((\d+)\s*\+\s*m\)/);
+    if (plus) return { topM: Number(plus[1]), bottomM: null, openEnded: true };
+    return null;   // "Benthic (on the seabed)" is a habitat, not a depth band
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // LIGHT CHARACTERS
+  // At night you identify an aid by its RHYTHM. Night Nav tells students to
+  // "watch flash patterns to identify which buoy you're seeing" and the
+  // lighthouse inventory lists a character for each tower — with no rhythm
+  // anywhere to look at.
+  //
+  // The characters in the data are prose ("White flash every 4 seconds"), not
+  // chart notation, so this parses the prose into a phase list. Two rules it
+  // holds to: it reads the clause that describes the LIGHT rather than the
+  // tower or the daymark, and it returns null when the text carries no rhythm
+  // at all. A guessed rhythm would be worse than no picture, because a rhythm
+  // is exactly what a navigator uses to tell one light from another.
+  // ═══════════════════════════════════════════════════════════════════
+  var LIGHT_INK = { white: '#f8fafc', red: '#f0584a', green: '#37c46f', yellow: '#f2c022' };
+  function getCoreLightCharacter(text) {
+    if (!text) return null;
+    var s = String(text).toLowerCase();
+    var RHYTHM = /flash|fixed|continuous|occult|isophase|\biso\b|quick|morse/;
+    // "Two Lights — historic twin tower system" describes the STRUCTURE. No
+    // rhythm in the text means no strip.
+    if (!RHYTHM.test(s)) return null;
+    // "Red + white candy-stripe; flashing red every 15s" is a daymark followed
+    // by a light. Parse the clause that actually mentions a rhythm, or the
+    // colour of the paint job becomes the colour of the light.
+    var clause = s, parts = s.split(/[;.]/);
+    for (var p = 0; p < parts.length; p++) {
+      if (RHYTHM.test(parts[p])) { clause = parts[p]; break; }
+    }
+    var color = /\bred\b/.test(clause) ? 'red'
+      : /\bgreen\b/.test(clause) ? 'green'
+      : /\byellow\b/.test(clause) ? 'yellow' : 'white';
+    var per = clause.match(/(\d+(?:\.\d+)?)\s*(?:s\b|sec)/);
+    var periodSec = per ? Number(per[1]) : null;
+    var grp = clause.match(/\((\d+)\)/);
+    var longFlash = /long flash/.test(clause);
+    var kind;
+    if (/morse/.test(clause)) kind = 'morse-a';
+    else if (/fixed|continuous/.test(clause) && !/flash|quick/.test(clause)) kind = 'fixed';
+    else if (/isophase|\biso\b/.test(clause)) kind = 'iso';
+    else if (/occult/.test(clause)) kind = 'occulting';
+    // "continuous quick or very quick" is quick; "flashing or quick" leads with
+    // flashing, so a mention of flash wins over a mention of quick.
+    else if (/quick/.test(clause) && !/flash/.test(clause)) kind = 'quick';
+    else if (grp) kind = 'group-flash';
+    else kind = 'flash';
+
+    var flashes = grp ? Number(grp[1]) : 1;
+    var phases = [];
+    function on(sec) { phases.push({ on: true, sec: sec }); }
+    function off(sec) { if (sec > 0.01) phases.push({ on: false, sec: sec }); }
+    var period = periodSec;
+    if (kind === 'fixed') {
+      period = period || 6; on(period);
+    } else if (kind === 'iso') {
+      period = period || 6; on(period / 2); off(period / 2);
+    } else if (kind === 'occulting') {
+      period = period || 6; on(period * 0.7); off(period * 0.3);
+    } else if (kind === 'quick') {
+      period = 2; on(0.4); off(0.6); on(0.4); off(0.6);
+    } else if (kind === 'morse-a') {
+      period = period || 8; on(0.4); off(0.4); on(1.2); off(period - 2);
+    } else if (kind === 'group-flash') {
+      var used = 0;
+      for (var f = 0; f < flashes; f++) { on(0.4); used += 0.4; if (f < flashes - 1) { off(0.5); used += 0.5; } }
+      if (longFlash) { off(0.6); on(2); used += 2.6; }
+      period = period || Math.max(Math.ceil(used) + 4, 10);
+      off(period - used);
+    } else {
+      period = period || 5;
+      var lit = Math.min(1, Math.max(0.35, period * 0.12));
+      on(lit); off(period - lit);
+    }
+    return { color: color, kind: kind, periodSec: period, periodKnown: !!periodSec, flashes: flashes, longFlash: longFlash, phases: phases };
+  }
+
+  // ─── Rhythm strip. One full period drawn to scale, with second ticks, so two
+  // characters can be compared by eye the way they are at sea.
+  function flLightStripSvg(h, ch, label) {
+    if (!ch) return null;
+    var W = 320, H = 30, t = 0, kids = [];
+    kids.push(h('rect', { key: 'bg', x: 0, y: 6, width: W, height: 16, rx: 3, fill: 'rgba(2,6,23,0.85)', stroke: 'rgba(125,211,252,0.28)', strokeWidth: 1 }));
+    ch.phases.forEach(function(ph, i) {
+      var x = (t / ch.periodSec) * W, w = (ph.sec / ch.periodSec) * W;
+      if (ph.on) {
+        kids.push(h('rect', { key: 'p' + i, x: x, y: 6, width: Math.max(2, w), height: 16, fill: LIGHT_INK[ch.color] || LIGHT_INK.white }));
+      }
+      t += ph.sec;
+    });
+    // A steady light has no cycle, so second ticks and a period caption would
+    // both be describing something that isn't there.
+    var steady = ch.kind === 'fixed';
+    if (!steady) {
+      for (var sTick = 1; sTick < ch.periodSec; sTick++) {
+        var tx = (sTick / ch.periodSec) * W;
+        kids.push(h('line', { key: 'tk' + sTick, x1: tx, y1: 22, x2: tx, y2: 27, stroke: 'rgba(148,163,184,0.6)', strokeWidth: 1 }));
+      }
+    }
+    kids.push(h('text', { key: 'lab', x: W - 2, y: 4, textAnchor: 'end', fontSize: 9, fill: '#94a3b8' },
+      steady ? 'steady — no cycle'
+        : ch.periodKnown ? ch.periodSec + ' s cycle · ticks = 1 s'
+        : 'cycle length not charted · ticks = 1 s'));
+    return h('svg', {
+      viewBox: '0 -6 ' + W + ' ' + (H + 6), role: 'img', 'aria-label': label,
+      style: { width: '100%', maxWidth: 340, height: 'auto', display: 'block', marginTop: 5 }
+    }, kids);
+  }
+
+  // ─── Navigation-light sectors. Rule 23 is a set of ANGLES — 112.5° each
+  // side, 135° astern — and "see only red = she is showing you her port side"
+  // only makes sense once you have seen the arcs.
+  function flNavLightSectorsSvg(h) {
+    var cx = 120, cy = 118, r = 82;
+    // 0° is dead ahead (up the page); sectors are given as bearings from the bow.
+    function arc(from, to, fill, key) {
+      var a0 = (from - 90) * Math.PI / 180, a1 = (to - 90) * Math.PI / 180;
+      var x0 = cx + r * Math.cos(a0), y0 = cy + r * Math.sin(a0);
+      var x1 = cx + r * Math.cos(a1), y1 = cy + r * Math.sin(a1);
+      var large = (to - from) > 180 ? 1 : 0;
+      return h('path', { key: key, d: 'M' + cx + ' ' + cy + ' L' + x0 + ' ' + y0 + ' A' + r + ' ' + r + ' 0 ' + large + ' 1 ' + x1 + ' ' + y1 + ' Z', fill: fill });
+    }
+    return h('svg', {
+      viewBox: '0 0 240 246', role: 'img',
+      'aria-label': 'Navigation light sectors seen from above. The green starboard sidelight covers 112.5 degrees from dead ahead round to 22.5 degrees abaft the starboard beam. The red port sidelight covers the mirror-image 112.5 degrees to port. The white stern light covers the remaining 135 degrees astern. The three sectors together cover the full 360 degrees with no gap and no overlap.',
+      style: { width: '100%', maxWidth: 260, height: 'auto', display: 'block' }
+    }, [
+      h('circle', { key: 'c', cx: cx, cy: cy, r: r, fill: 'rgba(2,6,23,0.6)', stroke: 'rgba(125,211,252,0.25)', strokeWidth: 1 }),
+      arc(0, 112.5, 'rgba(55,196,111,0.42)', 'stbd'),
+      arc(247.5, 360, 'rgba(240,88,74,0.42)', 'port'),
+      arc(112.5, 247.5, 'rgba(248,250,252,0.30)', 'stern'),
+      h('polygon', { key: 'hull', points: (cx) + ',' + (cy - 26) + ' ' + (cx + 13) + ',' + (cy - 4) + ' ' + (cx + 13) + ',' + (cy + 22) + ' ' + (cx - 13) + ',' + (cy + 22) + ' ' + (cx - 13) + ',' + (cy - 4),
+        fill: '#e8eef5', stroke: '#0f172a', strokeWidth: 1.4 }),
+      h('circle', { key: 'pd', cx: cx - 12, cy: cy - 3, r: 4, fill: LIGHT_INK.red, stroke: '#0f172a', strokeWidth: 0.8 }),
+      h('circle', { key: 'sd', cx: cx + 12, cy: cy - 3, r: 4, fill: LIGHT_INK.green, stroke: '#0f172a', strokeWidth: 0.8 }),
+      h('circle', { key: 'wd', cx: cx, cy: cy + 22, r: 4, fill: LIGHT_INK.white, stroke: '#0f172a', strokeWidth: 0.8 }),
+      h('text', { key: 'bow', x: cx, y: cy - r - 8, textAnchor: 'middle', fontSize: 10, fontWeight: 800, fill: '#cbd5e1' }, 'BOW'),
+      h('text', { key: 'g', x: cx + 62, y: cy - 34, textAnchor: 'middle', fontSize: 10, fontWeight: 800, fill: '#4ade80' }, 'GREEN'),
+      h('text', { key: 'g2', x: cx + 62, y: cy - 22, textAnchor: 'middle', fontSize: 9, fill: '#94a3b8' }, '112.5°'),
+      h('text', { key: 'r', x: cx - 62, y: cy - 34, textAnchor: 'middle', fontSize: 10, fontWeight: 800, fill: '#fca5a5' }, 'RED'),
+      h('text', { key: 'r2', x: cx - 62, y: cy - 22, textAnchor: 'middle', fontSize: 9, fill: '#94a3b8' }, '112.5°'),
+      h('text', { key: 'w', x: cx, y: cy + 62, textAnchor: 'middle', fontSize: 10, fontWeight: 800, fill: '#e2e8f0' }, 'WHITE STERN'),
+      h('text', { key: 'w2', x: cx, y: cy + 74, textAnchor: 'middle', fontSize: 9, fill: '#94a3b8' }, '135°'),
+      h('text', { key: 'sum', x: cx, y: 236, textAnchor: 'middle', fontSize: 9.5, fill: '#94a3b8' }, '112.5 + 112.5 + 135 = 360° — no gap, no overlap')
+    ]);
+  }
+
+  // What each sector looks like from the other vessel's bridge. This is the
+  // half students actually have to act on at night.
+  var NAV_LIGHT_VIEWS = [
+    { seen: ['red', 'green'], title: 'Red AND green', meaning: 'She is bow-on to you. Head-on situation — Rule 14, both alter to starboard.' },
+    { seen: ['red'], title: 'Red only', meaning: 'You are looking at her port side, so she is crossing from your port. You are the stand-on vessel — hold course, but stay alert.' },
+    { seen: ['green'], title: 'Green only', meaning: 'You are looking at her starboard side, so she is crossing from your starboard. You give way — Rule 15.' },
+    { seen: ['white'], title: 'White only', meaning: 'You are astern of her, looking at her stern light. You are overtaking — Rule 13, keep clear.' }
+  ];
+  function flNavLightViewSvg(h, seen) {
+    var dots = seen.map(function(c, i) {
+      var n = seen.length, gap = 26;
+      var x = 44 + (i - (n - 1) / 2) * gap;
+      return h('circle', { key: 'd' + i, cx: x, cy: 22, r: 8, fill: LIGHT_INK[c], stroke: 'rgba(15,23,42,0.7)', strokeWidth: 1 });
+    });
+    // Explicit width/height, not viewBox alone: an SVG with no intrinsic size
+    // is a flex item with no basis and stretches to eat the whole row, which
+    // squeezed the explanation beside it into a one-character column.
+    return h('svg', { width: 88, height: 44, viewBox: '0 0 88 44', 'aria-hidden': 'true', focusable: 'false', style: { flex: '0 0 auto', display: 'block' } },
+      [h('rect', { key: 'bg', x: 0, y: 0, width: 88, height: 44, rx: 6, fill: 'rgba(2,6,23,0.9)', stroke: 'rgba(125,211,252,0.2)', strokeWidth: 1 })].concat(dots));
+  }
+
+  // ─── Rule of twelfths, drawn against the curve it approximates.
+  function flTwelfthsSvg(h) {
+    var rows = getCoreTwelfths();
+    var X0 = 52, X1 = 600, Y0 = 26, Y1 = 176, W = X1 - X0, H = Y1 - Y0;
+    var hx = function(t) { return X0 + (t / 6) * W; };            // hours after HW
+    var hy = function(frac) { return Y0 + frac * H; };            // fraction fallen
+    var kids = [];
+    kids.push(h('rect', { key: 'bg', x: 0, y: 0, width: 640, height: 250, fill: 'rgba(12,42,66,0.4)' }));
+
+    // Hour columns, each shaded in proportion to the twelfths that fall in it,
+    // so the 1-2-3-3-2-1 shape is visible as a shape and not just a list.
+    rows.forEach(function(r, i) {
+      var x = hx(i), w = W / 6;
+      var top = hy(i === 0 ? 0 : rows[i - 1].cumulative);
+      var bot = hy(r.cumulative);
+      kids.push(h('rect', { key: 'c' + i, x: x, y: top, width: w, height: bot - top,
+        fill: 'rgba(56,189,248,' + (0.12 + r.twelfths * 0.09) + ')', stroke: 'rgba(125,211,252,0.35)', strokeWidth: 1 }));
+      kids.push(h('text', { key: 'f' + i, x: x + w / 2, y: (top + bot) / 2 + 4, textAnchor: 'middle', fontSize: 13, fontWeight: 900, fill: '#e0f2fe' }, r.twelfths + '/12'));
+      kids.push(h('text', { key: 'hr' + i, x: x + w / 2, y: Y1 + 15, textAnchor: 'middle', fontSize: 10, fill: '#94a3b8' }, 'hour ' + r.hour));
+    });
+
+    // The exact semidiurnal curve on top. Drawing it is the point: the rule is
+    // a rule of thumb, and the reader should be able to see how good it is.
+    var d = '';
+    for (var t = 0; t <= 60; t++) {
+      var frac = (1 - Math.cos(Math.PI * (t / 10) / 6)) / 2;
+      d += (t ? ' L' : 'M') + hx(t / 10).toFixed(1) + ' ' + hy(frac).toFixed(1);
+    }
+    kids.push(h('path', { key: 'curve', d: d, fill: 'none', stroke: '#fbbf24', strokeWidth: 2.4 }));
+    rows.forEach(function(r, i) {
+      kids.push(h('circle', { key: 'p' + i, cx: hx(r.hour), cy: hy(r.cumulative), r: 3.2, fill: '#f8fafc', stroke: '#0f172a', strokeWidth: 1 }));
+    });
+
+    kids.push(h('line', { key: 'ax', x1: X0, y1: Y0, x2: X0, y2: Y1, stroke: 'rgba(148,163,184,0.6)', strokeWidth: 1 }));
+    kids.push(h('text', { key: 'hw', x: X0 - 6, y: Y0 + 4, textAnchor: 'end', fontSize: 10, fontWeight: 800, fill: '#7dd3fc' }, 'HIGH'));
+    kids.push(h('text', { key: 'lw', x: X0 - 6, y: Y1 + 4, textAnchor: 'end', fontSize: 10, fontWeight: 800, fill: '#7dd3fc' }, 'LOW'));
+    kids.push(h('text', { key: 'mid', x: X0 - 6, y: hy(0.5) + 4, textAnchor: 'end', fontSize: 10, fill: '#94a3b8' }, '½'));
+    kids.push(h('line', { key: 'midl', x1: X0, y1: hy(0.5), x2: X1, y2: hy(0.5), stroke: 'rgba(251,191,36,0.35)', strokeWidth: 1, strokeDasharray: '5 4' }));
+    kids.push(h('text', { key: 'midt', x: X1 - 4, y: hy(0.5) - 6, textAnchor: 'end', fontSize: 10, fontWeight: 700, fill: '#fde68a' }, 'half the range is gone by mid-tide'));
+    kids.push(h('text', { key: 'cap', x: X0, y: 210, fontSize: 10, fill: '#94a3b8' }, 'Amber line = the smooth semidiurnal curve the rule approximates. Largest gap between them is under 1/60 of the range.'));
+    kids.push(h('text', { key: 'cav', x: X0, y: 226, fontSize: 10, fontStyle: 'italic', fill: '#94a3b8' }, 'Assumes a six-hour half-cycle. Maine\'s is nearer 6 h 12 m, and shallow or estuarine harbours depart from it further.'));
+    return h('svg', {
+      viewBox: '0 0 640 240', role: 'img',
+      'aria-label': 'Rule of twelfths. Between high and low water the level changes by one twelfth of the range in the first hour, two twelfths in the second, three in the third, three in the fourth, two in the fifth and one in the sixth. Half the range has gone by mid-tide. Plotted against the smooth semidiurnal curve it approximates, the two never differ by more than about one sixtieth of the range.',
+      style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.25)' }
+    }, kids);
+  }
+
+  // ─── Spring and neap tides: the alignment that causes them.
+  function flSpringNeapSvg(h) {
+    function panel(ox, title, moonAngle, note, ink) {
+      var cx = ox + 96, cy = 108;
+      var mx = cx + Math.cos(moonAngle) * 58, my = cy + Math.sin(moonAngle) * 58;
+      // Tidal bulges line up with the Moon–Earth axis; at new and full the Sun
+      // reinforces them, at the quarters it pulls across them.
+      var bulgeRx = moonAngle % Math.PI === 0 ? 30 : 24, bulgeRy = moonAngle % Math.PI === 0 ? 19 : 21;
+      return h('g', { key: title }, [
+        h('text', { key: 't', x: cx, y: 20, textAnchor: 'middle', fontSize: 11, fontWeight: 900, fill: ink }, title),
+        h('ellipse', { key: 'b', cx: cx, cy: cy, rx: bulgeRx, ry: bulgeRy, fill: 'rgba(56,189,248,0.30)', stroke: 'rgba(125,211,252,0.5)', strokeWidth: 1,
+          transform: 'rotate(' + (moonAngle * 180 / Math.PI) + ' ' + cx + ' ' + cy + ')' }),
+        h('circle', { key: 'e', cx: cx, cy: cy, r: 13, fill: '#3f6f4a', stroke: '#cbd5e1', strokeWidth: 1 }),
+        h('text', { key: 'el', x: cx, y: cy + 3.5, textAnchor: 'middle', fontSize: 7.5, fontWeight: 800, fill: '#f8fafc' }, 'EARTH'),
+        h('circle', { key: 'm', cx: mx, cy: my, r: 7, fill: '#e2e8f0', stroke: '#0f172a', strokeWidth: 1 }),
+        // Label below the Moon when it sits high, or the quarter-moon panel
+        // puts "Moon" straight through its own title.
+        h('text', { key: 'ml', x: mx, y: my < cy - 20 ? my + 20 : my - 12, textAnchor: 'middle', fontSize: 8.5, fontWeight: 700, fill: '#cbd5e1' }, 'Moon'),
+        h('line', { key: 'sr', x1: ox + 8, y1: cy, x2: ox + 184, y2: cy, stroke: 'rgba(253,224,71,0.5)', strokeWidth: 1.4, strokeDasharray: '6 4' }),
+        h('text', { key: 'sl', x: ox + 8, y: cy - 7, fontSize: 8.5, fontWeight: 700, fill: '#fde047' }, 'Sun →'),
+        h('text', { key: 'n', x: cx, y: 178, textAnchor: 'middle', fontSize: 9.5, fill: '#cbd5e1' }, note[0]),
+        h('text', { key: 'n2', x: cx, y: 191, textAnchor: 'middle', fontSize: 9.5, fill: '#cbd5e1' }, note[1])
+      ]);
+    }
+    return h('svg', {
+      viewBox: '0 0 400 200', role: 'img',
+      'aria-label': 'Spring and neap tides. At new and full moon the Sun and Moon pull in line and their tidal bulges add, giving the largest range, called a spring tide. At the quarter moons they pull at right angles and partly cancel, giving the smallest range, a neap tide.',
+      style: { width: '100%', maxWidth: 520, height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.25)', background: 'rgba(12,42,66,0.4)' }
+    }, [
+      panel(4, 'SPRING — new / full moon', 0, ['Sun and Moon pull in line:', 'the bulges add. Biggest range.'], '#7dd3fc'),
+      panel(202, 'NEAP — quarter moon', -Math.PI / 2, ['Pulling at right angles:', 'the bulges fight. Smallest range.'], '#fbbf24')
+    ]);
+  }
+
+  // ─── Water column, drawn on a square-root depth scale.
+  function flWaterColumnSvg(h, zones) {
+    var MAXM = 400, TOP = 24, BOT = 396, X0 = 62, X1 = 596;
+    // A linear axis to 400 m renders the 0–5 m surface band one pixel high; a
+    // log axis cannot start at zero. Square-root keeps every band legible AND
+    // monotonic, and the axis is ticked with real depths so nothing is implied
+    // that is not true. It is labelled as compressed.
+    var dy = function(m) { return TOP + Math.sqrt(Math.max(0, m) / MAXM) * (BOT - TOP); };
+    var LIGHT_SHADE = { 'bright': 0.0, 'bright to dim': 0.22, 'dim': 0.45, 'twilight': 0.68, 'dark': 0.88 };
+    var kids = [h('rect', { key: 'bg', x: 0, y: 0, width: 640, height: 420, fill: '#0a2540' })];
+
+    zones.forEach(function(z, i) {
+      var band = getCoreZoneDepths(z);
+      if (!band) return;                       // benthic is drawn as the floor
+      var yTop = dy(band.topM), yBot = dy(band.openEnded ? MAXM : band.bottomM);
+      var shade = LIGHT_SHADE[String(z.light || '').toLowerCase()];
+      if (shade == null) shade = 0.5;
+      kids.push(h('rect', { key: 'z' + i, x: X0, y: yTop, width: X1 - X0, height: yBot - yTop,
+        fill: 'rgba(2,12,26,' + shade.toFixed(2) + ')' }));
+      kids.push(h('line', { key: 'l' + i, x1: X0, y1: yTop, x2: X1, y2: yTop, stroke: 'rgba(125,211,252,0.35)', strokeWidth: 1 }));
+      kids.push(h('text', { key: 'n' + i, x: X0 + 10, y: yTop + 15, fontSize: 12, fontWeight: 800, fill: '#e0f2fe' }, z.zone));
+      kids.push(h('text', { key: 'g' + i, x: X0 + 10, y: yTop + 29, fontSize: 10, fill: '#93c5fd' }, 'Light: ' + z.light));
+      kids.push(h('text', { key: 'd' + i, x: X1 - 8, y: yTop + 15, textAnchor: 'end', fontSize: 10, fontWeight: 700, fill: '#7dd3fc' },
+        band.openEnded ? band.topM + ' m and deeper' : band.topM + '–' + band.bottomM + ' m'));
+    });
+
+    // Depth axis, ticked at the real band edges so the compression is readable.
+    [0, 5, 30, 100, 200, 300, 400].forEach(function(m) {
+      var y = dy(m);
+      kids.push(h('line', { key: 'tk' + m, x1: X0 - 6, y1: y, x2: X0, y2: y, stroke: 'rgba(148,163,184,0.7)', strokeWidth: 1 }));
+      kids.push(h('text', { key: 'tl' + m, x: X0 - 10, y: y + 3.5, textAnchor: 'end', fontSize: 9.5, fill: '#94a3b8' }, m + ' m'));
+    });
+    kids.push(h('line', { key: 'ax', x1: X0, y1: TOP, x2: X0, y2: BOT, stroke: 'rgba(148,163,184,0.7)', strokeWidth: 1 }));
+    // Seabed, carrying the benthic zone.
+    var benthic = zones.filter(function(z) { return !getCoreZoneDepths(z); })[0];
+    kids.push(h('path', { key: 'floor', d: 'M' + X0 + ' ' + BOT + ' Q' + (X0 + 140) + ' ' + (BOT - 12) + ' ' + (X0 + 260) + ' ' + (BOT - 3) + ' T' + X1 + ' ' + (BOT - 8) + ' L' + X1 + ' 414 L' + X0 + ' 414 Z',
+      fill: '#4a3f34', stroke: 'rgba(226,232,240,0.35)', strokeWidth: 1 }));
+    if (benthic) {
+      kids.push(h('text', { key: 'bn', x: X0 + 10, y: BOT + 14, fontSize: 11, fontWeight: 800, fill: '#fde68a' }, benthic.zone));
+    }
+    kids.push(h('text', { key: 'sun', x: X1 - 8, y: 16, textAnchor: 'end', fontSize: 10, fontWeight: 700, fill: '#fde047' }, '☀ surface light'));
+    kids.push(h('text', { key: 'note', x: X0, y: 14, fontSize: 9.5, fontStyle: 'italic', fill: '#94a3b8' }, 'Depth axis is square-root compressed — ticks show true depth'));
+    return h('svg', {
+      viewBox: '0 0 640 420', role: 'img',
+      'aria-label': 'Water column of the Gulf of Maine, from the bright surface layer down to the continental slope and the seabed, shaded darker with depth. The depth axis is square-root compressed so the thin surface bands stay readable; tick marks give true depths of 0, 5, 30, 100, 200, 300 and 400 metres. Each band is labelled with its name, its light level and its depth range.',
+      style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.25)' }
+    }, kids);
+  }
+
+  // ─── Distance to the horizon, and why two heights add.
+  function flHorizonSvg(h) {
+    // ★ The sight line has to be TANGENT, not a chord. Placing the eye and the
+    // light at arbitrary angles draws a line that floats clear above the sea
+    // and shows nothing — the whole point is that the horizon is the single
+    // place the line touches. A point at angular position θ lies exactly on the
+    // tangent drawn at θ = 0 when its radius is R / cos θ, so both stations are
+    // positioned from that identity and tangency is exact by construction.
+    var R = 820, cx = 250, TANY = 88, cy = TANY + R;
+    var kids = [h('rect', { key: 'bg', x: 0, y: 0, width: 640, height: 212, fill: 'rgba(12,42,66,0.4)' })];
+    kids.push(h('circle', { key: 'earth', cx: cx, cy: cy, r: R, fill: '#143526', stroke: 'rgba(125,211,252,0.45)', strokeWidth: 2 }));
+    function station(deg) {
+      var t = deg * Math.PI / 180;
+      return {
+        x: cx + R * Math.tan(t),          // on the tangent line, by construction
+        y: TANY,
+        seaY: cy - R * Math.cos(t)        // the sea directly beneath it
+      };
+    }
+    var eye = station(-13), tower = station(22);
+    kids.push(h('line', { key: 'sight', x1: eye.x, y1: TANY, x2: tower.x, y2: TANY, stroke: '#fbbf24', strokeWidth: 2, strokeDasharray: '7 5' }));
+    kids.push(h('circle', { key: 'hz', cx: cx, cy: TANY, r: 4.5, fill: '#fbbf24' }));
+    kids.push(h('text', { key: 'hzl', x: cx, y: TANY + 22, textAnchor: 'middle', fontSize: 10, fontWeight: 800, fill: '#fde68a' }, 'the horizon you share'));
+    // Observer, on the left.
+    kids.push(h('line', { key: 'em', x1: eye.x, y1: TANY, x2: eye.x, y2: eye.seaY, stroke: '#e2e8f0', strokeWidth: 2 }));
+    kids.push(h('circle', { key: 'ed', cx: eye.x, cy: TANY, r: 4.5, fill: '#f8fafc' }));
+    kids.push(h('text', { key: 'el', x: eye.x, y: TANY - 26, textAnchor: 'middle', fontSize: 10.5, fontWeight: 800, fill: '#e2e8f0' }, 'eye 10 ft'));
+    kids.push(h('text', { key: 'ev', x: eye.x, y: TANY - 12, textAnchor: 'middle', fontSize: 10, fill: '#7dd3fc' }, '1.17 × √10 = 3.7 nm'));
+    // Light, on the right.
+    kids.push(h('line', { key: 'tm', x1: tower.x, y1: TANY, x2: tower.x, y2: tower.seaY, stroke: '#e2e8f0', strokeWidth: 3 }));
+    kids.push(h('circle', { key: 'td', cx: tower.x, cy: TANY, r: 5.5, fill: '#fde047' }));
+    kids.push(h('text', { key: 'tl', x: tower.x, y: TANY - 26, textAnchor: 'middle', fontSize: 10.5, fontWeight: 800, fill: '#e2e8f0' }, 'light 100 ft'));
+    kids.push(h('text', { key: 'tv', x: tower.x, y: TANY - 12, textAnchor: 'middle', fontSize: 10, fill: '#7dd3fc' }, '1.17 × √100 = 11.7 nm'));
+    kids.push(h('text', { key: 'sum', x: 320, y: 172, textAnchor: 'middle', fontSize: 12, fontWeight: 900, fill: '#fde68a' },
+      'You raise the light at 3.7 + 11.7 ≈ 15.4 nm — each of you sees the same point on the curve'));
+    kids.push(h('text', { key: 'cav', x: 320, y: 190, textAnchor: 'middle', fontSize: 9.5, fontStyle: 'italic', fill: '#cbd5e1' },
+      'Vertical scale hugely exaggerated; the tangent geometry is exact. The 1.17 constant already allows for normal refraction, and this is the'));
+    kids.push(h('text', { key: 'cav2', x: 320, y: 204, textAnchor: 'middle', fontSize: 9.5, fontStyle: 'italic', fill: '#cbd5e1' },
+      'GEOGRAPHIC range — how far the curve lets you see it — not the light\'s luminous range, which is how far it is bright enough to be seen.'));
+    return h('svg', {
+      viewBox: '0 0 640 212', role: 'img',
+      'aria-label': 'Distance to the horizon. An observer with an eye height of ten feet sees the horizon 3.7 nautical miles away, since 1.17 times the square root of 10 is 3.7. A hundred-foot lighthouse has its own horizon 11.7 miles away. Because both see the same point on the curve, the light can first be raised at about 15.4 miles. The earth curvature in the drawing is greatly exaggerated.',
+      style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.25)' }
+    }, kids);
+  }
+
+  // ─── "Can Dead Men Vote Twice" — the compass correction ladder.
+  function flCompassChainSvg(h) {
+    var STEPS = [
+      { k: 'C', name: 'Compass', val: '000°', note: 'what the card reads' },
+      { k: 'D', name: 'Deviation', val: '± your card', note: 'your own boat\'s error' },
+      { k: 'M', name: 'Magnetic', val: '', note: 'a clean compass reading' },
+      { k: 'V', name: 'Variation', val: '≈ 16° W in Maine', note: 'where magnetic N really is' },
+      { k: 'T', name: 'True', val: '', note: 'what the chart uses' }
+    ];
+    var kids = [h('rect', { key: 'bg', x: 0, y: 0, width: 640, height: 168, fill: 'rgba(12,42,66,0.4)' })];
+    STEPS.forEach(function(s, i) {
+      var x = 18 + i * 124, isOp = s.k === 'D' || s.k === 'V';
+      kids.push(h('rect', { key: 'b' + i, x: x, y: 40, width: 108, height: 58, rx: 8,
+        fill: isOp ? 'rgba(251,191,36,0.16)' : 'rgba(56,189,248,0.16)',
+        stroke: isOp ? 'rgba(251,191,36,0.55)' : 'rgba(125,211,252,0.55)', strokeWidth: 1.2 }));
+      kids.push(h('text', { key: 'k' + i, x: x + 54, y: 60, textAnchor: 'middle', fontSize: 15, fontWeight: 900, fill: isOp ? '#fde68a' : '#7dd3fc' }, s.k));
+      kids.push(h('text', { key: 'n' + i, x: x + 54, y: 76, textAnchor: 'middle', fontSize: 10.5, fontWeight: 700, fill: '#e2e8f0' }, s.name));
+      if (s.val) kids.push(h('text', { key: 'v' + i, x: x + 54, y: 90, textAnchor: 'middle', fontSize: 9, fill: '#cbd5e1' }, s.val));
+      kids.push(h('text', { key: 'd' + i, x: x + 54, y: 116, textAnchor: 'middle', fontSize: 8.5, fill: '#94a3b8' }, s.note.length > 26 ? s.note.slice(0, 25) + '…' : s.note));
+      if (i < STEPS.length - 1) {
+        kids.push(h('path', { key: 'a' + i, d: 'M' + (x + 110) + ' 69 L' + (x + 122) + ' 69', stroke: '#94a3b8', strokeWidth: 1.6, markerEnd: 'url(#fl-cc)' }));
+      }
+    });
+    kids.push(h('defs', { key: 'd' }, h('marker', { id: 'fl-cc', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 4, markerHeight: 4, orient: 'auto-start-reverse' },
+      h('path', { d: 'M0 0 L10 5 L0 10 z', fill: '#94a3b8' }))));
+    kids.push(h('text', { key: 'm', x: 320, y: 24, textAnchor: 'middle', fontSize: 11.5, fontWeight: 900, fill: '#fde68a' }, '"Can Dead Men Vote Twice" — compass to chart'));
+    kids.push(h('text', { key: 'w', x: 320, y: 142, textAnchor: 'middle', fontSize: 10, fill: '#cbd5e1' }, 'Left to right you are CORRECTING (compass → true). Right to left you are UNCORRECTING, to steer a course off the chart.'));
+    kids.push(h('text', { key: 'w2', x: 320, y: 158, textAnchor: 'middle', fontSize: 10, fill: '#94a3b8' }, 'Maine\'s variation is westerly, so true = magnetic − 16°.'));
+    return h('svg', {
+      viewBox: '0 0 640 168', role: 'img',
+      'aria-label': 'The compass correction chain, remembered as Can Dead Men Vote Twice: Compass, Deviation, Magnetic, Variation, True. Deviation is your own vessel\'s error and comes off its deviation card; variation is where magnetic north actually lies, about 16 degrees west in Maine. Working left to right corrects a compass reading to true; working right to left converts a charted true course into one you can steer.',
+      style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.25)' }
+    }, kids);
+  }
+
+  // ─── Anchor scope: why the ratio is about the ANGLE of pull.
+  function flScopeSvg(h) {
+    var DEPTH = 30, SURF = 44, BED = 156, X0 = 44;
+    var pxPerFt = (BED - SURF) / DEPTH;
+    function panel(ox, ratio, ink, verdict) {
+      var rode = ratio * DEPTH;
+      // Rode is the hypotenuse; horizontal run is the leg that sets the angle.
+      var run = Math.sqrt(Math.max(0, rode * rode - DEPTH * DEPTH));
+      var angle = Math.atan2(DEPTH, run) * 180 / Math.PI;
+      var scale = 150 / (7 * DEPTH);           // 7:1 fills the panel
+      var bx = ox + 8, ax = ox + 8 + run * scale;
+      return h('g', { key: ratio }, [
+        h('text', { key: 't', x: ox + 84, y: 18, textAnchor: 'middle', fontSize: 12, fontWeight: 900, fill: ink }, ratio + ':1  ·  ' + rode + ' ft of rode'),
+        h('rect', { key: 'w', x: ox, y: SURF, width: 172, height: BED - SURF, fill: 'rgba(56,189,248,0.13)' }),
+        h('rect', { key: 'bed', x: ox, y: BED, width: 172, height: 14, fill: '#4a3f34' }),
+        h('line', { key: 's', x1: ox, y1: SURF, x2: ox + 172, y2: SURF, stroke: 'rgba(125,211,252,0.55)', strokeWidth: 1.4 }),
+        h('line', { key: 'r', x1: bx, y1: SURF, x2: ax, y2: BED, stroke: ink, strokeWidth: 2.6 }),
+        h('polygon', { key: 'b', points: (bx - 11) + ',' + (SURF - 9) + ' ' + (bx + 11) + ',' + (SURF - 9) + ' ' + (bx + 7) + ',' + SURF + ' ' + (bx - 7) + ',' + SURF, fill: '#f1f5f9', stroke: '#0f172a', strokeWidth: 1 }),
+        h('path', { key: 'a', d: 'M' + ax + ' ' + BED + ' l-7 -9 l14 0 z', fill: ink, stroke: '#0f172a', strokeWidth: 0.8 }),
+        h('path', { key: 'arc', d: 'M' + (ax - 46) + ' ' + BED + ' A 46 46 0 0 1 ' + (ax - 46 * Math.cos(angle * Math.PI / 180)) + ' ' + (BED - 46 * Math.sin(angle * Math.PI / 180)),
+          fill: 'none', stroke: '#e2e8f0', strokeWidth: 1.6 }),
+        h('text', { key: 'ang', x: ax - 62, y: BED - 6, fontSize: 12, fontWeight: 900, fill: '#f1f5f9' }, angle.toFixed(0) + '°'),
+        h('text', { key: 'v', x: ox + 84, y: 186, textAnchor: 'middle', fontSize: 9.5, fill: '#cbd5e1' }, verdict)
+      ]);
+    }
+    return h('svg', {
+      viewBox: '0 0 540 196', role: 'img',
+      'aria-label': 'Anchor scope. In thirty feet of water measured from the bow, a three to one scope of ninety feet pulls on the anchor at about nineteen degrees above the seabed, a five to one scope of a hundred and fifty feet at about twelve degrees, and a seven to one scope of two hundred and ten feet at about eight degrees. The flatter the pull, the better the anchor holds; a steep pull lifts the shank and the anchor breaks out.',
+      style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.25)', background: 'rgba(12,42,66,0.4)' }
+    }, [
+      panel(2, 3, '#f0584a', 'Steep pull — lifts the shank'),
+      panel(184, 5, '#fbbf24', 'Fair weather minimum'),
+      panel(366, 7, '#4ade80', 'Flat pull — the anchor digs in')
+    ]);
+  }
+
+  // ─── Day shapes. Night Nav already tells students that day-shapes carry the
+  // same information as night-lights — then drew the lights and left the shapes
+  // as a sentence. All black, hoisted in a vertical line where shown.
+  // Rule numbers are 33 CFR 83, the citation the COLREGS tab already gives.
+  var DAY_SHAPES = [
+    { id: 'anchor', rule: 'Rule 30(a)', stack: ['ball'], name: 'At anchor', meaning: 'One ball, forward. She is anchored, not stopped and drifting.' },
+    { id: 'aground', rule: 'Rule 30(d)', stack: ['ball', 'ball', 'ball'], name: 'Aground', meaning: 'Three balls in a vertical line. She is not going anywhere and cannot manoeuvre.' },
+    { id: 'nuc', rule: 'Rule 27(a)', stack: ['ball', 'ball'], name: 'Not under command', meaning: 'Two balls. Something has failed; she cannot manoeuvre as required. Keep clear.' },
+    { id: 'ram', rule: 'Rule 27(b)', stack: ['ball', 'diamond', 'ball'], name: 'Restricted in ability to manoeuvre', meaning: 'Ball, diamond, ball. Her work — cable-laying, dredging, servicing a mark — limits how she can move.' },
+    { id: 'fishing', rule: 'Rule 26', stack: ['bicone'], name: 'Engaged in fishing', meaning: 'Two cones apex to apex. Gear is out. Under Rule 18 you keep clear of her.' },
+    { id: 'sailpower', rule: 'Rule 25(e)', stack: ['cone-down'], name: 'Sail with engine on', meaning: 'A single cone, apex DOWN. Under sail but making way under power, so she counts as a power-driven vessel.' },
+    { id: 'draught', rule: 'Rule 28', stack: ['cylinder'], name: 'Constrained by draught', meaning: 'A cylinder. She can only stay in deep water and cannot leave the channel for you.' },
+    { id: 'towing', rule: 'Rule 24(a)', stack: ['diamond'], name: 'Towing over 200 m', meaning: 'A diamond on both tug and tow when the tow is longer than 200 metres.' }
+  ];
+  function flDayShapeSvg(h, spec) {
+    var INK = '#39435a', EDGE = 'rgba(226,232,240,0.66)';   // see BUOY_INK note
+    var W = 74, unit = 26, gap = 7;
+    var stack = spec.stack;
+    var totalH = stack.reduce(function(a, s) { return a + (s === 'bicone' ? unit * 1.7 : unit) + gap; }, 0) - gap;
+    var mastTop = 14, y = mastTop + 4, cx = W / 2;
+    var kids = [h('line', { key: 'mast', x1: cx, y1: mastTop, x2: cx, y2: mastTop + totalH + 26, stroke: EDGE, strokeWidth: 1.6 })];
+    stack.forEach(function(s, i) {
+      var hgt = s === 'bicone' ? unit * 1.7 : unit;
+      var top = y, mid = y + hgt / 2, bot = y + hgt;
+      if (s === 'ball') {
+        kids.push(h('circle', { key: i, cx: cx, cy: mid, r: unit / 2, fill: INK, stroke: EDGE, strokeWidth: 1.3 }));
+      } else if (s === 'diamond') {
+        kids.push(h('polygon', { key: i, points: cx + ',' + top + ' ' + (cx + unit / 2) + ',' + mid + ' ' + cx + ',' + bot + ' ' + (cx - unit / 2) + ',' + mid, fill: INK, stroke: EDGE, strokeWidth: 1.3 }));
+      } else if (s === 'cone-down') {
+        // Apex DOWN. Drawn apex-up this is a different signal entirely.
+        kids.push(h('polygon', { key: i, points: (cx - unit / 2) + ',' + top + ' ' + (cx + unit / 2) + ',' + top + ' ' + cx + ',' + bot, fill: INK, stroke: EDGE, strokeWidth: 1.3 }));
+      } else if (s === 'bicone') {
+        // Two cones APEX TO APEX — they meet at the waist, they do not sit
+        // base to base. Base-to-base is the east cardinal topmark, not a
+        // fishing shape.
+        kids.push(h('polygon', { key: i + 'u', points: (cx - unit / 2) + ',' + top + ' ' + (cx + unit / 2) + ',' + top + ' ' + cx + ',' + mid, fill: INK, stroke: EDGE, strokeWidth: 1.3 }));
+        kids.push(h('polygon', { key: i + 'l', points: (cx - unit / 2) + ',' + bot + ' ' + (cx + unit / 2) + ',' + bot + ' ' + cx + ',' + mid, fill: INK, stroke: EDGE, strokeWidth: 1.3 }));
+      } else if (s === 'cylinder') {
+        kids.push(h('rect', { key: i, x: cx - unit / 2, y: top, width: unit, height: hgt, fill: INK, stroke: EDGE, strokeWidth: 1.3 }));
+        kids.push(h('ellipse', { key: i + 'c', cx: cx, cy: top, rx: unit / 2, ry: 4, fill: INK, stroke: EDGE, strokeWidth: 1.3 }));
+      }
+      y = bot + gap;
+    });
+    return h('svg', { width: W, height: 150, viewBox: '0 0 ' + W + ' 150', 'aria-hidden': 'true', focusable: 'false', style: { flex: '0 0 auto', display: 'block' } }, kids);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // KNOTS
+  // A knot IS its over-and-under order, so a schematic that gets the
+  // crossings wrong teaches a knot that fails under load. Every crossing
+  // here is drawn with the casing trick: lay the whole rope down first,
+  // then re-stroke the OVER strand with a background-coloured casing under
+  // it, which punches a visual hole in whatever passes beneath.
+  //
+  // Only knots whose topology can be drawn unambiguously at this size are
+  // included. The step text stands on its own for the rest.
+  // ═══════════════════════════════════════════════════════════════════
+  var ROPE = '#d9c39a', ROPE_DARK = '#a8895a', ROPE_BG = '#101c2c';
+  function flKnotStrand(h, key, d, over, width) {
+    var w = width || 9;
+    var out = [];
+    if (over) {
+      // Casing first: a fat stroke in the panel colour that hides the strand
+      // running underneath, then the rope on top of its own casing.
+      out.push(h('path', { key: key + '-case', d: d, fill: 'none', stroke: ROPE_BG, strokeWidth: w + 7, strokeLinecap: 'round' }));
+    }
+    out.push(h('path', { key: key + '-edge', d: d, fill: 'none', stroke: ROPE_DARK, strokeWidth: w + 2.5, strokeLinecap: 'round' }));
+    out.push(h('path', { key: key, d: d, fill: 'none', stroke: ROPE, strokeWidth: w, strokeLinecap: 'round' }));
+    return out;
+  }
+  // Numbered badges tie each move in the drawing to the numbered step beside
+  // it, so the reader never has to guess which strand the text means.
+  function flKnotStep(h, key, x, y, n) {
+    return h('g', { key: key }, [
+      h('circle', { key: 'c', cx: x, cy: y, r: 8.5, fill: '#0ea5e9', stroke: '#04141f', strokeWidth: 1.4 }),
+      h('text', { key: 't', x: x, y: y + 3.6, textAnchor: 'middle', fontSize: 10.5, fontWeight: 900, fill: '#04141f' }, String(n))
+    ]);
+  }
+  var KNOT_FIGURES = {
+    'bowline-detailed': {
+      alt: 'Finished bowline. A small loop is made in the standing part. The working end comes up through that loop, passes behind the standing part, and goes back down through the same loop alongside itself. The large loop below cannot slip, because the small loop is pinched shut by the standing part it encircles.',
+      draw: function(h) {
+        var k = [];
+        // Standing part down the left; this is the side that takes the load.
+        k = k.concat(flKnotStrand(h, 'stand', 'M46 14 L46 92 C46 148 96 170 134 170', false));
+        // The large fixed loop this knot exists to make.
+        k = k.concat(flKnotStrand(h, 'loop', 'M134 170 C178 170 206 138 204 104 C202 78 182 62 162 62', false));
+        // Working end: UP through the small loop, BEHIND the standing part,
+        // and back DOWN through the same loop. Only the two passes through the
+        // small loop go over; the pass behind the standing part goes under.
+        k = k.concat(flKnotStrand(h, 'w1', 'M162 62 C138 62 118 68 106 80', true));
+        k = k.concat(flKnotStrand(h, 'w2', 'M106 80 C88 94 62 94 46 80', false));
+        k = k.concat(flKnotStrand(h, 'w3', 'M46 80 C32 66 40 42 64 42 C88 42 98 62 96 80', true));
+        k = k.concat(flKnotStrand(h, 'w4', 'M96 80 C94 98 84 110 68 116', false));
+        k.push(flKnotStep(h, 's1', 74, 62, 1));    // the small loop
+        k.push(flKnotStep(h, 's2', 130, 74, 2));   // up through it
+        k.push(flKnotStep(h, 's3', 46, 100, 3));   // behind the standing part
+        k.push(flKnotStep(h, 's4', 82, 122, 4));   // back down through it
+        k.push(h('text', { key: 'l1', x: 58, y: 14, fontSize: 9.5, fontWeight: 700, fill: '#94a3b8' }, 'standing part (the load)'));
+        k.push(h('text', { key: 'l3', x: 212, y: 192, textAnchor: 'end', fontSize: 9.5, fontWeight: 700, fill: '#7dd3fc' }, 'fixed loop — will not slip'));
+        return k;
+      }
+    },
+    'clove-detailed': {
+      alt: 'Finished clove hitch on a piling. The line takes a turn round the post, crosses over itself, takes a second turn, and the working end is tucked under that second turn between rope and post, so the two ends leave in opposite directions.',
+      draw: function(h) {
+        var k = [];
+        k.push(h('rect', { key: 'post', x: 92, y: 6, width: 36, height: 178, rx: 4, fill: '#5b4632', stroke: 'rgba(226,232,240,0.4)', strokeWidth: 1.2 }));
+        // First turn: behind the post, down the far side.
+        k = k.concat(flKnotStrand(h, 't1a', 'M14 58 C50 58 74 62 92 70', false));
+        k = k.concat(flKnotStrand(h, 't1b', 'M128 70 C150 78 150 108 128 118', false));
+        // Second turn crosses OVER the first on the near face.
+        k = k.concat(flKnotStrand(h, 't2', 'M128 118 C102 126 80 110 94 94', true));
+        // Working end tucks UNDER that second turn, between rope and post.
+        k = k.concat(flKnotStrand(h, 'tuck', 'M94 94 C110 84 126 94 128 106', false));
+        k = k.concat(flKnotStrand(h, 'tail', 'M128 106 C152 114 184 120 206 120', false));
+        k.push(flKnotStep(h, 's1', 60, 62, 1));
+        k.push(flKnotStep(h, 's2', 140, 92, 2));
+        k.push(flKnotStep(h, 's4', 104, 100, 4));
+        k.push(h('text', { key: 'l1', x: 8, y: 44, fontSize: 9.5, fontWeight: 700, fill: '#94a3b8' }, 'standing part'));
+        k.push(h('text', { key: 'l2', x: 212, y: 138, textAnchor: 'end', fontSize: 9.5, fontWeight: 700, fill: '#fbbf24' }, 'working end, tucked under'));
+        k.push(h('text', { key: 'l3', x: 110, y: 196, textAnchor: 'middle', fontSize: 9.5, fill: '#7dd3fc' }, 'piling'));
+        return k;
+      }
+    },
+    'cleat-detailed': {
+      alt: 'Finished cleat hitch, seen from above. The line first takes a full turn round the base of the cleat, then a figure-of-eight across the two horns, and is finished with one locking hitch. Only one locking hitch is used: more will jam under load.',
+      draw: function(h) {
+        var k = [];
+        var cy = 104, lx = 62, rx = 158;
+        // Cleat, seen from above: centre block with a horn at each end.
+        k.push(h('rect', { key: 'base', x: lx, y: cy - 10, width: rx - lx, height: 20, rx: 7, fill: '#77828f', stroke: 'rgba(15,23,42,0.75)', strokeWidth: 1.2 }));
+        k.push(h('ellipse', { key: 'h1', cx: lx, cy: cy, rx: 17, ry: 13, fill: '#8b95a3', stroke: 'rgba(15,23,42,0.75)', strokeWidth: 1.2 }));
+        k.push(h('ellipse', { key: 'h2', cx: rx, cy: cy, rx: 17, ry: 13, fill: '#8b95a3', stroke: 'rgba(15,23,42,0.75)', strokeWidth: 1.2 }));
+        // 1 — a full turn round the BASE first. This is the turn that takes the
+        // load; students who skip it and start with a figure-eight get a hitch
+        // that slips under a surge.
+        k = k.concat(flKnotStrand(h, 'r1', 'M12 178 C46 176 78 160 96 138', false, 8));
+        k = k.concat(flKnotStrand(h, 'r2', 'M96 138 C112 118 106 96 88 92', true, 8));
+        k = k.concat(flKnotStrand(h, 'r3', 'M88 92 C70 88 62 106 74 122', false, 8));
+        // 2 — diagonally across the top to the far horn.
+        k = k.concat(flKnotStrand(h, 'f1', 'M74 122 C104 138 148 130 166 116', true, 8));
+        // 3 — round the far horn and back across to the near horn.
+        k = k.concat(flKnotStrand(h, 'f2', 'M166 116 C182 104 176 86 158 86 C132 86 108 78 96 66', true, 8));
+        // 4 — one locking hitch, the working end flipped back under itself.
+        k = k.concat(flKnotStrand(h, 'lock', 'M96 66 C80 54 84 36 104 36 C122 36 128 52 118 62', true, 8));
+        k = k.concat(flKnotStrand(h, 'tail', 'M118 62 C140 70 172 66 200 56', false, 8));
+        k.push(flKnotStep(h, 's1', 100, 116, 1));
+        k.push(flKnotStep(h, 's2', 138, 130, 2));
+        k.push(flKnotStep(h, 's3', 168, 96, 3));
+        k.push(flKnotStep(h, 's4', 112, 74, 4));
+        k.push(flKnotStep(h, 's5', 104, 24, 5));
+        k.push(h('text', { key: 'l1', x: 8, y: 174, fontSize: 9.5, fontWeight: 700, fill: '#94a3b8' }, 'load'));
+        k.push(h('text', { key: 'l2', x: 212, y: 46, textAnchor: 'end', fontSize: 9.5, fontWeight: 700, fill: '#fbbf24' }, 'ONE locking hitch'));
+        k.push(h('text', { key: 'l3', x: 110, y: 196, textAnchor: 'middle', fontSize: 9, fill: '#7dd3fc' }, 'round turn on the base comes first'));
+        return k;
+      }
+    },
+    'figure-eight-detailed': {
+      alt: 'Finished figure-of-eight stopper knot. The working end passes over the standing part, round behind it, and back down through the first loop, giving the flat figure-8 outline. It is bulkier than an overhand knot and, unlike an overhand, it can still be untied after it has been loaded.',
+      draw: function(h) {
+        var k = [];
+        k = k.concat(flKnotStrand(h, 's', 'M58 16 L58 68', false));
+        k = k.concat(flKnotStrand(h, 'a', 'M58 68 C58 98 98 98 98 68 C98 44 132 44 140 64', true));
+        k = k.concat(flKnotStrand(h, 'b', 'M140 64 C148 86 124 102 106 94', false));
+        k = k.concat(flKnotStrand(h, 'c', 'M106 94 C86 84 78 110 86 130', true));
+        k = k.concat(flKnotStrand(h, 'd', 'M86 130 C92 154 110 166 132 170', false));
+        k.push(flKnotStep(h, 's1', 78, 82, 1));
+        k.push(flKnotStep(h, 's2', 132, 84, 2));
+        k.push(flKnotStep(h, 's3', 82, 112, 3));
+        k.push(h('text', { key: 'l1', x: 70, y: 16, fontSize: 9.5, fontWeight: 700, fill: '#94a3b8' }, 'standing part'));
+        k.push(h('text', { key: 'l2', x: 212, y: 178, textAnchor: 'end', fontSize: 9.5, fontWeight: 700, fill: '#fbbf24' }, 'working end'));
+        k.push(h('text', { key: 'l3', x: 212, y: 30, textAnchor: 'end', fontSize: 9, fill: '#7dd3fc' }, 'unties after loading —'));
+        k.push(h('text', { key: 'l4', x: 212, y: 42, textAnchor: 'end', fontSize: 9, fill: '#7dd3fc' }, 'an overhand will not'));
+        return k;
+      }
+    }
+    // Palomar is deliberately absent. Its middle move is passing the whole
+    // loop back over the hook, which a flat schematic cannot show without
+    // implying a crossing that is not there. The numbered steps carry it.
+  };
+  function flKnotSvg(h, id) {
+    var fig = KNOT_FIGURES[id];
+    if (!fig) return null;
+    return h('svg', {
+      viewBox: '0 0 220 200', role: 'img', 'aria-label': fig.alt,
+      style: { width: '100%', maxWidth: 230, height: 'auto', display: 'block', borderRadius: 8, background: ROPE_BG, border: '1px solid rgba(56,189,248,0.22)' }
+    }, fig.draw(h));
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // CHART SYMBOLS
+  // The chart-symbols tab is a list of DESCRIPTIONS OF PICTURES — "Rock
+  // (below water): plus sign (+) with depth" — which is the one kind of
+  // content that is strictly worse as prose than as the thing itself.
+  //
+  // Each glyph is matched from the shipped description, and anything the
+  // vocabulary does not recognise simply gets no glyph. Drawing a symbol the
+  // caption did not ask for would teach a chart mark that is not there.
+  //
+  // These sit on buff CHART PAPER rather than on the dark card. That is not
+  // decoration: chart symbols are black and magenta line work designed for
+  // paper, and several of them (soundings, contour lines, the dotted low-water
+  // mark) are simply invisible as dark ink on a dark ground.
+  // ═══════════════════════════════════════════════════════════════════
+  var CHART_PAPER = '#e9e2cd', CHART_INK = '#1d2733', CHART_MAGENTA = '#b0327c';
+  var CHART_GLYPH_RULES = [
+    { id: 'lighthouse-profile', test: /^lighthouse \+ tower/ },
+    { id: 'lighthouse', test: /^lighthouse:?$|^lighthouse\b(?! \+)/ },
+    { id: 'beacon', test: /^beacon\b/ },
+    { id: 'lateral', test: /^buoy \(lateral\)/ },
+    { id: 'cardinal', test: /^cardinal buoy/ },
+    { id: 'light', test: /^light:/ },
+    { id: 'daybeacon', test: /^day beacon/ },
+    { id: 'sounding', test: /^soundings\b/ },
+    { id: 'contour', test: /^contour lines\b/ },
+    { id: 'bottom', test: /^bottom type\b/ },
+    { id: 'wreck', test: /^wrecks\b/ },
+    { id: 'foul', test: /^foul areas\b/ },
+    { id: 'rock-dry', test: /^rock \(above water\)/ },
+    { id: 'rock-sub', test: /^rock \(below water\)/ },
+    { id: 'reef', test: /^reef\b/ },
+    { id: 'danger', test: /^submerged danger\b/ },
+    { id: 'cable', test: /^submarine cable\b/ },
+    { id: 'pipeline', test: /^pipeline\b/ },
+    { id: 'hwm', test: /^high water mark\b/ },
+    { id: 'lwm', test: /^low water mark\b/ },
+    { id: 'marsh', test: /^marsh\b/ },
+    { id: 'sand', test: /^sand\b/ },
+    { id: 'rocky', test: /^rocky shore\b/ },
+    { id: 'anchorage', test: /^anchorage\b/ },
+    { id: 'mooring', test: /^mooring area\b/ },
+    { id: 'restricted', test: /^restricted areas\b/ },
+    { id: 'tide-station', test: /^tide station\b/ },
+    { id: 'current-diamond', test: /^current diamond\b/ },
+    { id: 'tidal-stream', test: /^tidal stream\b/ }
+  ];
+  // Items arrive as "Name: what it looks like". Split so the name can be shown
+  // in bold beside its glyph and the description reads as a caption.
+  function getCoreChartSymbol(item) {
+    var text = String(item || '');
+    var i = text.indexOf(': ');
+    var name = i > 0 ? text.slice(0, i) : text;
+    var desc = i > 0 ? text.slice(i + 2) : '';
+    var key = name.toLowerCase();
+    var glyph = null;
+    for (var r = 0; r < CHART_GLYPH_RULES.length; r++) {
+      if (CHART_GLYPH_RULES[r].test.test(key)) { glyph = CHART_GLYPH_RULES[r].id; break; }
+    }
+    return { name: name, desc: desc, glyph: glyph };
+  }
+
+  function flChartGlyphSvg(h, id) {
+    if (!id) return null;
+    var k = [];
+    function ink(el) { return el; }
+    function line(key, d, opt) {
+      return h('path', Object.assign({ key: key, d: d, fill: 'none', stroke: CHART_INK, strokeWidth: 1.6, strokeLinecap: 'round' }, opt || {}));
+    }
+    function label(key, x, y, t, opt) {
+      return h('text', Object.assign({ key: key, x: x, y: y, textAnchor: 'middle', fontSize: 11, fontWeight: 700, fill: CHART_INK, fontFamily: 'ui-monospace, Menlo, monospace' }, opt || {}), t);
+    }
+    if (id === 'lighthouse') {
+      k.push(h('circle', { key: 'c', cx: 30, cy: 34, r: 4.5, fill: CHART_MAGENTA }));
+      for (var a = 0; a < 8; a++) {
+        var t = a * Math.PI / 4;
+        k.push(line('r' + a, 'M' + (30 + Math.cos(t) * 8) + ' ' + (34 + Math.sin(t) * 8) + ' L' + (30 + Math.cos(t) * 15) + ' ' + (34 + Math.sin(t) * 15), { stroke: CHART_MAGENTA, strokeWidth: 1.4 }));
+      }
+      k.push(label('l', 30, 56, 'Fl 4s'));
+    } else if (id === 'beacon') {
+      k.push(h('polygon', { key: 't', points: '30,16 39,36 21,36', fill: CHART_INK }));
+      k.push(line('b', 'M18 44 L42 44'));
+    } else if (id === 'lateral') {
+      k.push(h('polygon', { key: 'n', points: '17,14 26,34 8,34', fill: '#c0392b' }));
+      k.push(h('rect', { key: 'c', x: 36, y: 18, width: 16, height: 16, fill: '#217a4a' }));
+      k.push(label('a', 17, 48, 'nun', { fontSize: 9, fontWeight: 600 }));
+      k.push(label('b', 44, 48, 'can', { fontSize: 9, fontWeight: 600 }));
+    } else if (id === 'cardinal') {
+      k.push(h('polygon', { key: 'd', points: '30,14 42,30 30,46 18,30', fill: CHART_INK }));
+      k.push(h('circle', { key: 'p1', cx: 26, cy: 28, r: 2.4, fill: CHART_PAPER }));
+      k.push(h('circle', { key: 'p2', cx: 34, cy: 28, r: 2.4, fill: CHART_PAPER }));
+    } else if (id === 'light') {
+      k.push(h('path', { key: 'f', d: 'M30 40 C22 34 22 22 30 14 C38 22 38 34 30 40 Z', fill: CHART_MAGENTA }));
+      k.push(label('l', 30, 54, 'Fl R 4s', { fontSize: 9 }));
+    } else if (id === 'daybeacon') {
+      k.push(h('polygon', { key: 't', points: '16,14 26,32 6,32', fill: 'none', stroke: '#c0392b', strokeWidth: 2 }));
+      k.push(h('rect', { key: 'r', x: 36, y: 16, width: 16, height: 16, fill: 'none', stroke: '#217a4a', strokeWidth: 2 }));
+      k.push(label('a', 16, 46, '"2"', { fontSize: 9, fill: '#c0392b' }));
+      k.push(label('b', 44, 46, '"3"', { fontSize: 9, fill: '#217a4a' }));
+    } else if (id === 'sounding') {
+      k.push(label('s1', 18, 24, '14'));
+      k.push(label('s2', 42, 32, '9'));
+      k.push(label('s3', 26, 44, '23'));
+    } else if (id === 'contour') {
+      k.push(line('c1', 'M6 44 Q30 30 54 44'));
+      k.push(line('c2', 'M6 34 Q30 18 54 34'));
+      k.push(line('c3', 'M6 24 Q30 8 54 24'));
+      k.push(label('l', 46, 20, '30', { fontSize: 8 }));
+    } else if (id === 'bottom') {
+      k.push(label('a', 20, 24, 'Sd', { fontStyle: 'italic' }));
+      k.push(label('b', 42, 34, 'M', { fontStyle: 'italic' }));
+      k.push(label('c', 26, 46, 'Rk', { fontStyle: 'italic' }));
+    } else if (id === 'wreck') {
+      k.push(line('h', 'M12 30 Q30 44 48 30', { strokeWidth: 2 }));
+      k.push(line('m', 'M30 30 L30 16'));
+      k.push(line('x1', 'M22 20 L26 24'));
+      k.push(line('x2', 'M38 20 L34 24'));
+      k.push(label('d', 30, 50, '4', { fontSize: 9 }));
+    } else if (id === 'foul') {
+      k.push(h('ellipse', { key: 'e', cx: 30, cy: 30, rx: 20, ry: 13, fill: 'none', stroke: CHART_INK, strokeWidth: 1.4, strokeDasharray: '4 3' }));
+      k.push(label('l', 30, 34, 'Foul', { fontSize: 9, fontStyle: 'italic' }));
+    } else if (id === 'rock-dry') {
+      k.push(line('a', 'M30 16 L30 44', { strokeWidth: 2 }));
+      k.push(line('b', 'M18 23 L42 37', { strokeWidth: 2 }));
+      k.push(line('c', 'M42 23 L18 37', { strokeWidth: 2 }));
+    } else if (id === 'rock-sub') {
+      k.push(line('a', 'M30 18 L30 38', { strokeWidth: 2 }));
+      k.push(line('b', 'M20 28 L40 28', { strokeWidth: 2 }));
+      k.push(label('d', 30, 52, '3', { fontSize: 10 }));
+    } else if (id === 'reef') {
+      k.push(h('path', { key: 'z', d: 'M8 38 Q30 20 52 38 Z', fill: 'none', stroke: CHART_INK, strokeWidth: 1.4 }));
+      for (var hx = 0; hx < 5; hx++) {
+        k.push(line('h' + hx, 'M' + (14 + hx * 8) + ' 38 L' + (20 + hx * 8) + ' 28', { strokeWidth: 1 }));
+      }
+    } else if (id === 'danger') {
+      k.push(h('circle', { key: 'c', cx: 30, cy: 30, r: 14, fill: 'none', stroke: CHART_INK, strokeWidth: 1.6 }));
+      k.push(line('a', 'M30 20 L30 40', { strokeWidth: 1.8 }));
+      k.push(line('b', 'M20 30 L40 30', { strokeWidth: 1.8 }));
+    } else if (id === 'cable') {
+      k.push(line('l', 'M6 30 L54 30', { strokeDasharray: '7 5' }));
+      k.push(line('w', 'M20 30 q5 -7 10 0 t10 0', { strokeWidth: 1.4 }));
+      k.push(label('t', 30, 48, 'Cable', { fontSize: 9, fontStyle: 'italic' }));
+    } else if (id === 'pipeline') {
+      k.push(line('l', 'M6 30 L54 30', { strokeDasharray: '7 5' }));
+      k.push(h('rect', { key: 'p', x: 24, y: 25, width: 12, height: 10, fill: 'none', stroke: CHART_INK, strokeWidth: 1.4 }));
+      k.push(label('t', 30, 48, 'Pipe', { fontSize: 9, fontStyle: 'italic' }));
+    } else if (id === 'hwm') {
+      k.push(line('l', 'M6 30 Q20 22 32 30 T54 28', { strokeWidth: 2.6 }));
+    } else if (id === 'lwm') {
+      k.push(line('l', 'M6 26 Q20 18 32 26 T54 24', { strokeWidth: 1.4, strokeDasharray: '2 3' }));
+      for (var s = 0; s < 8; s++) {
+        k.push(h('circle', { key: 'st' + s, cx: 10 + s * 6, cy: 38 + (s % 2) * 4, r: 1.1, fill: CHART_INK }));
+      }
+    } else if (id === 'marsh') {
+      for (var m = 0; m < 4; m++) {
+        var mx = 14 + m * 11;
+        k.push(line('m' + m, 'M' + mx + ' 40 L' + mx + ' 26', { strokeWidth: 1.2 }));
+        k.push(line('ml' + m, 'M' + (mx - 4) + ' 32 L' + mx + ' 26 L' + (mx + 4) + ' 32', { strokeWidth: 1 }));
+      }
+      k.push(line('base', 'M8 40 L52 40', { strokeWidth: 1.2 }));
+    } else if (id === 'sand') {
+      for (var d = 0; d < 22; d++) {
+        k.push(h('circle', { key: 'd' + d, cx: 10 + (d * 13) % 42, cy: 16 + ((d * 7) % 30), r: 1.1, fill: CHART_INK }));
+      }
+    } else if (id === 'rocky') {
+      for (var g = 0; g < 5; g++) {
+        k.push(line('a' + g, 'M' + (8 + g * 10) + ' 44 L' + (24 + g * 10) + ' 16', { strokeWidth: 1 }));
+        k.push(line('b' + g, 'M' + (8 + g * 10) + ' 16 L' + (24 + g * 10) + ' 44', { strokeWidth: 1 }));
+      }
+    } else if (id === 'anchorage') {
+      k.push(line('s', 'M30 16 L30 42', { strokeWidth: 2 }));
+      k.push(line('x', 'M22 22 L38 22', { strokeWidth: 2 }));
+      k.push(line('f', 'M16 32 Q16 44 30 44 Q44 44 44 32', { strokeWidth: 2 }));
+      k.push(h('circle', { key: 'r', cx: 30, cy: 15, r: 3.4, fill: 'none', stroke: CHART_INK, strokeWidth: 1.8 }));
+    } else if (id === 'mooring') {
+      k.push(h('circle', { key: 'b', cx: 30, cy: 20, r: 6, fill: CHART_INK }));
+      k.push(line('c', 'M30 26 q-5 7 0 11 q5 5 0 9', { strokeWidth: 1.4 }));
+    } else if (id === 'lighthouse-profile') {
+      // Elevation, not plan: a tapered tower with a lantern room, which is what
+      // "side profile drawings" on the chart means.
+      k.push(h('polygon', { key: 'tw', points: '25,22 35,22 38,46 22,46', fill: 'none', stroke: CHART_INK, strokeWidth: 1.6 }));
+      k.push(h('rect', { key: 'ln', x: 25, y: 13, width: 10, height: 9, fill: 'none', stroke: CHART_INK, strokeWidth: 1.6 }));
+      k.push(h('circle', { key: 'lt', cx: 30, cy: 17.5, r: 2.4, fill: CHART_MAGENTA }));
+      k.push(line('g', 'M17 46 L43 46', { strokeWidth: 2 }));
+    } else if (id === 'tide-station') {
+      k.push(h('rect', { key: 'sq', x: 22, y: 22, width: 11, height: 11, fill: CHART_INK }));
+      k.push(label('n', 32, 46, 'Portland', { fontSize: 8, fontStyle: 'italic', fontWeight: 600 }));
+    } else if (id === 'current-diamond') {
+      k.push(h('polygon', { key: 'd', points: '30,14 42,28 30,42 18,28', fill: 'none', stroke: CHART_MAGENTA, strokeWidth: 1.6 }));
+      k.push(line('a', 'M22 50 L42 50', { stroke: CHART_MAGENTA, strokeWidth: 1.6 }));
+      k.push(h('polygon', { key: 'h', points: '46,50 38,46 38,54', fill: CHART_MAGENTA }));
+      k.push(label('l', 30, 32, 'A', { fontSize: 10, fill: CHART_MAGENTA }));
+    } else if (id === 'tidal-stream') {
+      k.push(line('a', 'M8 30 L46 30', { strokeWidth: 1.8 }));
+      k.push(h('polygon', { key: 'h', points: '52,30 42,25 42,35', fill: CHART_INK }));
+      k.push(h('path', { key: 'f1', d: 'M20 30 l-6 -5', stroke: CHART_INK, strokeWidth: 1.4, fill: 'none' }));
+      k.push(h('path', { key: 'f2', d: 'M28 30 l-6 -5', stroke: CHART_INK, strokeWidth: 1.4, fill: 'none' }));
+      k.push(label('s', 30, 48, '2.5 kn', { fontSize: 9 }));
+    } else if (id === 'restricted') {
+      k.push(h('rect', { key: 'z', x: 8, y: 16, width: 44, height: 28, rx: 3, fill: 'none', stroke: CHART_MAGENTA, strokeWidth: 1.6, strokeDasharray: '5 3' }));
+      k.push(label('t', 30, 34, 'RA', { fill: CHART_MAGENTA }));
+    } else {
+      return null;
+    }
+    return h('svg', {
+      width: 60, height: 60, viewBox: '0 0 60 60',
+      // The caption beside it already names and describes the symbol; announcing
+      // the drawing as well would read every entry twice.
+      'aria-hidden': 'true', focusable: 'false',
+      style: { flex: '0 0 auto', display: 'block', borderRadius: 5, background: CHART_PAPER, border: '1px solid rgba(15,23,42,0.45)' }
+    }, ink(k));
+  }
+
+  // ─── Lobster zones. Seven zones in a fixed order along the coast, and the
+  // order IS the content — Zone A is Downeast on the Canadian line, Zone G is
+  // the New Hampshire end. Drawn as a schematic ribbon, NOT a map: real zone
+  // boundaries follow surveyed lines and nothing here is to scale.
+  function flZoneRibbonSvg(h, zones) {
+    var X0 = 40, X1 = 612, TOP = 48, BAND = 46;
+    var w = (X1 - X0) / zones.length;
+    var kids = [h('rect', { key: 'bg', x: 0, y: 0, width: 640, height: 168, fill: 'rgba(12,42,66,0.4)' })];
+    kids.push(h('text', { key: 'ne', x: X0, y: 24, fontSize: 10.5, fontWeight: 800, fill: '#7dd3fc' }, '◀ NORTH-EAST · Canadian border'));
+    kids.push(h('text', { key: 'sw', x: X1, y: 24, textAnchor: 'end', fontSize: 10.5, fontWeight: 800, fill: '#7dd3fc' }, 'SOUTH-WEST · New Hampshire ▶'));
+    zones.forEach(function(z, i) {
+      var x = X0 + i * w;
+      var hue = 190 + i * 14;
+      kids.push(h('path', { key: 'z' + i,
+        d: 'M' + x + ' ' + (TOP + i * 3) + ' L' + (x + w) + ' ' + (TOP + (i + 1) * 3) + ' L' + (x + w) + ' ' + (TOP + BAND + (i + 1) * 3) + ' L' + x + ' ' + (TOP + BAND + i * 3) + ' Z',
+        fill: 'hsl(' + hue + ',52%,42%)', stroke: 'rgba(2,6,23,0.55)', strokeWidth: 1 }));
+      kids.push(h('text', { key: 'l' + i, x: x + w / 2, y: TOP + 30 + i * 3, textAnchor: 'middle', fontSize: 19, fontWeight: 900, fill: '#f8fafc' }, z.id));
+      var town = (z.towns && z.towns[0]) || '';
+      kids.push(h('text', { key: 't' + i, x: x + w / 2, y: TOP + BAND + 18 + i * 3, textAnchor: 'middle', fontSize: 9, fill: '#cbd5e1' }, town));
+    });
+    kids.push(h('path', { key: 'land', d: 'M' + X0 + ' ' + TOP + ' L' + X1 + ' ' + (TOP + 21) + ' L' + X1 + ' 0 L' + X0 + ' 0 Z', fill: 'rgba(46,84,54,0.5)' }));
+    kids.push(h('text', { key: 'cap', x: 320, y: 150, textAnchor: 'middle', fontSize: 9.5, fontStyle: 'italic', fill: '#94a3b8' },
+      'Schematic, not a chart: the order of the zones along the coast is exact, the boundaries and widths are not.'));
+    kids.push(h('text', { key: 'cap2', x: 320, y: 164, textAnchor: 'middle', fontSize: 9.5, fill: '#cbd5e1' },
+      getCoreZoneTrapSummary(zones)));
+    return h('svg', {
+      viewBox: '0 0 640 172', role: 'img',
+      'aria-label': 'The seven Maine lobster management zones in order along the coast, from Zone A at the north-eastern end on the Canadian border through to Zone G at the south-western end by New Hampshire. Each is labelled with its letter and its leading port. The drawing is schematic: the order is exact, the boundaries and widths are not.',
+      style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.25)' }
+    }, kids);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // FOG SIGNALS
+  // A sound signal is a rhythm, exactly like a light character — and in fog
+  // it is the ONLY thing you have. Night Nav lists Rule 35's patterns in one
+  // run-on sentence, and the sim asks the student to sound one on the B key
+  // during its Rule 19 encounter, with nothing anywhere showing what the
+  // pattern sounds like.
+  //
+  // Durations are the ones the tool already states: a prolonged blast is
+  // 4–6 seconds (NAV_PROBLEMS quotes Rule 35(a) verbatim), a short blast is
+  // about a second. Only the four patterns Night Nav itself names are here.
+  // ═══════════════════════════════════════════════════════════════════
+  var FOG_SIGNALS = [
+    { id: 'power', rule: 'Rule 35(a)', who: 'Power-driven, underway and making way',
+      pattern: [{ kind: 'prolonged' }], every: 'every 2 min',
+      note: 'The one the simulator asks you for on the B key.' },
+    { id: 'sailfish', rule: 'Rule 35(c)', who: 'Sailing, fishing, towing or restricted',
+      pattern: [{ kind: 'prolonged' }, { kind: 'short' }, { kind: 'short' }], every: 'every 2 min',
+      note: 'One prolonged then two short. The same signal covers a sailing vessel, a vessel fishing, a vessel towing and a vessel restricted in her ability to manoeuvre — everything that cannot simply get out of your way.' },
+    { id: 'anchored', rule: 'Rule 35(g)', who: 'At anchor',
+      pattern: [{ kind: 'bell' }], every: 'every minute',
+      note: 'Bell rung rapidly for about five seconds. Not a horn — listen for the difference.' },
+    { id: 'aground', rule: 'Rule 35(h)', who: 'Aground',
+      pattern: [{ kind: 'bellgroup' }, { kind: 'bell' }, { kind: 'bellgroup' }], every: 'every minute',
+      note: 'Three separate strokes, then the rapid bell, then three strokes again.' }
+  ];
+  // A blast bar sized in real seconds, so two patterns can be compared by eye.
+  var BLAST_SEC = { prolonged: 5, short: 1, bell: 5, bellgroup: 1.6 };
+  function flFogSignalSvg(h, sig) {
+    var W = 300, SPAN = 14, GAP = 1.2;         // 14 s of timeline, drawn to scale
+    var x = 0, kids = [];
+    kids.push(h('rect', { key: 'bg', x: 0, y: 8, width: W, height: 18, rx: 3, fill: 'rgba(2,6,23,0.85)', stroke: 'rgba(125,211,252,0.28)', strokeWidth: 1 }));
+    sig.pattern.forEach(function(b, i) {
+      var sec = BLAST_SEC[b.kind] || 1;
+      var bx = (x / SPAN) * W, bw = (sec / SPAN) * W;
+      if (b.kind === 'bell' || b.kind === 'bellgroup') {
+        // A bell is struck, not held: draw it as a burst of strokes rather than
+        // a solid bar, or it reads as a horn.
+        var strokes = b.kind === 'bell' ? 9 : 3;
+        for (var s = 0; s < strokes; s++) {
+          kids.push(h('rect', { key: 'k' + i + '_' + s, x: bx + (bw / strokes) * s + 1, y: 8, width: Math.max(1.5, bw / strokes - 2.5), height: 18, fill: '#a5b4fc' }));
+        }
+      } else {
+        kids.push(h('rect', { key: 'b' + i, x: bx, y: 8, width: bw, height: 18, fill: b.kind === 'prolonged' ? '#fbbf24' : '#fde68a' }));
+      }
+      x += sec + GAP;
+    });
+    for (var t = 1; t < SPAN; t++) {
+      kids.push(h('line', { key: 't' + t, x1: (t / SPAN) * W, y1: 26, x2: (t / SPAN) * W, y2: 31, stroke: 'rgba(148,163,184,0.6)', strokeWidth: 1 }));
+    }
+    kids.push(h('text', { key: 'r', x: W - 2, y: 6, textAnchor: 'end', fontSize: 9, fill: '#94a3b8' }, 'repeats ' + sig.every + ' · ticks = 1 s'));
+    return h('svg', {
+      viewBox: '0 -6 ' + W + ' 40', role: 'img',
+      'aria-label': sig.who + ', ' + sig.rule + ': ' + sig.pattern.map(function(b) {
+        return b.kind === 'bell' ? 'the bell rung rapidly for about five seconds'
+          : b.kind === 'bellgroup' ? 'three separate bell strokes'
+          : b.kind === 'prolonged' ? 'one prolonged blast of four to six seconds' : 'one short blast of about a second';
+      }).join(', then ') + ', repeated ' + sig.every + '.',
+      style: { width: '100%', maxWidth: 320, height: 'auto', display: 'block', marginTop: 4 }
+    }, kids);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // LOBSTER GAUGE
+  // The single most-performed measurement in the Maine fishery, and the one
+  // the simulator's own caliper minigame scores you on. Students routinely
+  // measure the whole animal; the legal measure is the CARAPACE only, and the
+  // double gauge is why a keeper is a band, not a floor.
+  // ═══════════════════════════════════════════════════════════════════
+  function flLobsterGaugeSvg(h, minIn, maxIn) {
+    var kids = [];
+    var bodyY = 96, headX = 132, tailX = 300;
+    kids.push(h('rect', { key: 'bg', x: 0, y: 0, width: 640, height: 250, fill: 'rgba(12,42,66,0.4)' }));
+    // Lobster, from above, facing left.
+    kids.push(h('ellipse', { key: 'cara', cx: 196, cy: bodyY, rx: 64, ry: 34, fill: '#8f3a24', stroke: 'rgba(226,232,240,0.5)', strokeWidth: 1.4 }));
+    kids.push(h('path', { key: 'rost', d: 'M132 96 l-26 -7 l0 14 z', fill: '#8f3a24', stroke: 'rgba(226,232,240,0.5)', strokeWidth: 1.2 }));
+    kids.push(h('circle', { key: 'eye', cx: 143, cy: 85, r: 4.6, fill: '#0f172a', stroke: '#e2e8f0', strokeWidth: 1.2 }));
+    kids.push(h('circle', { key: 'eye2', cx: 143, cy: 107, r: 4.6, fill: '#0f172a', stroke: '#e2e8f0', strokeWidth: 1.2 }));
+    // Claws
+    kids.push(h('ellipse', { key: 'cl1', cx: 116, cy: 52, rx: 27, ry: 15, fill: '#7e3220', stroke: 'rgba(226,232,240,0.4)', strokeWidth: 1.1, transform: 'rotate(-24 116 52)' }));
+    kids.push(h('ellipse', { key: 'cl2', cx: 116, cy: 140, rx: 27, ry: 15, fill: '#7e3220', stroke: 'rgba(226,232,240,0.4)', strokeWidth: 1.1, transform: 'rotate(24 116 140)' }));
+    // Abdomen segments, then the tail fan.
+    for (var seg = 0; seg < 5; seg++) {
+      kids.push(h('rect', { key: 'sg' + seg, x: 258 + seg * 15, y: bodyY - 27 + seg * 2, width: 14, height: 54 - seg * 4, rx: 4, fill: '#9c4229', stroke: 'rgba(226,232,240,0.4)', strokeWidth: 1 }));
+    }
+    var fanX = 336;
+    [-30, -15, 0, 15, 30].forEach(function(off, i) {
+      kids.push(h('path', { key: 'fan' + i, d: 'M' + fanX + ' ' + (bodyY + off * 0.5) + ' q26 ' + (off * 0.55) + ' 40 ' + off, fill: 'none', stroke: '#b4532f', strokeWidth: 11, strokeLinecap: 'round' }));
+    });
+    // ★ The measure: rear of the EYE SOCKET to the rear edge of the CARAPACE,
+    // parallel to the centreline. Not the whole animal, not the tail.
+    kids.push(h('line', { key: 'gl1', x1: 143, y1: 62, x2: 143, y2: 24, stroke: '#fde047', strokeWidth: 1.3, strokeDasharray: '4 3' }));
+    kids.push(h('line', { key: 'gl2', x1: 258, y1: 68, x2: 258, y2: 24, stroke: '#fde047', strokeWidth: 1.3, strokeDasharray: '4 3' }));
+    kids.push(h('line', { key: 'gm', x1: 143, y1: 30, x2: 258, y2: 30, stroke: '#fde047', strokeWidth: 2.4, markerStart: 'url(#fl-gm)', markerEnd: 'url(#fl-gm)' }));
+    kids.push(h('defs', { key: 'defs' }, h('marker', { id: 'fl-gm', viewBox: '0 0 10 10', refX: 5, refY: 5, markerWidth: 4, markerHeight: 4, orient: 'auto' },
+      h('path', { d: 'M0 0 L10 5 L0 10 z', fill: '#fde047' }))));
+    kids.push(h('text', { key: 'gt', x: 200, y: 20, textAnchor: 'middle', fontSize: 11.5, fontWeight: 900, fill: '#fde047' }, 'CARAPACE — this is the legal measure'));
+    // Centred on the carapace, not on the whole figure: at x=200 this caption
+    // runs straight through the port claw.
+    kids.push(h('text', { key: 'gt2', x: 268, y: 48, textAnchor: 'middle', fontSize: 9.5, fill: '#cbd5e1' }, 'rear of the eye socket \u2192 rear edge of the carapace'));
+    kids.push(h('text', { key: 'no', x: 452, y: 66, fontSize: 10.5, fontStyle: 'italic', fill: '#fca5a5' }, '✕ not the tail'));
+    kids.push(h('text', { key: 'no2', x: 452, y: 81, fontSize: 10.5, fontStyle: 'italic', fill: '#fca5a5' }, '✕ not the whole animal'));
+    // V-notch on the tail fan.
+    // A wedge taken OUT of the flipper, drawn in the panel colour so it reads
+    // as missing material rather than as a marker stuck on top.
+    kids.push(h('path', { key: 'vn', d: 'M' + (fanX + 52) + ' ' + (bodyY - 30) + ' L' + (fanX + 34) + ' ' + (bodyY - 21) + ' L' + (fanX + 52) + ' ' + (bodyY - 12) + ' Z', fill: '#0d2338', stroke: '#7dd3fc', strokeWidth: 1.6 }));
+    kids.push(h('line', { key: 'vl', x1: fanX + 50, y1: bodyY - 30, x2: 468, y2: 148, stroke: '#7dd3fc', strokeWidth: 1.2 }));
+    kids.push(h('text', { key: 'vt', x: 472, y: 150, fontSize: 10.5, fontWeight: 800, fill: '#7dd3fc' }, 'V-NOTCH'));
+    kids.push(h('text', { key: 'vt2', x: 472, y: 164, fontSize: 9.5, fill: '#cbd5e1' }, 'A wedge cut from a tail flipper of'));
+    kids.push(h('text', { key: 'vt3', x: 472, y: 176, fontSize: 9.5, fill: '#cbd5e1' }, 'an egg-bearing female before release.'));
+    kids.push(h('text', { key: 'vt4', x: 472, y: 188, fontSize: 9.5, fill: '#cbd5e1' }, 'She stays protected for life — eggs'));
+    kids.push(h('text', { key: 'vt5', x: 472, y: 200, fontSize: 9.5, fill: '#cbd5e1' }, 'showing or not.'));
+
+    // The double gauge: a keeper is a BAND, not a floor.
+    var BX = 40, BW = 400, BY = 208;
+    kids.push(h('rect', { key: 'bar', x: BX, y: BY, width: BW, height: 18, rx: 4, fill: 'rgba(2,6,23,0.75)', stroke: 'rgba(125,211,252,0.3)', strokeWidth: 1 }));
+    var lo = 2.5, hi = 6;                       // inches spanned by the bar
+    var px = function(inches) { return BX + ((inches - lo) / (hi - lo)) * BW; };
+    kids.push(h('rect', { key: 'keep', x: px(minIn), y: BY, width: px(maxIn) - px(minIn), height: 18, fill: 'rgba(74,222,128,0.55)' }));
+    kids.push(h('text', { key: 'kl', x: (px(minIn) + px(maxIn)) / 2, y: BY + 13, textAnchor: 'middle', fontSize: 10.5, fontWeight: 900, fill: '#052e16' }, 'KEEPER'));
+    kids.push(h('text', { key: 'tl', x: BX + 4, y: BY + 13, fontSize: 10, fontWeight: 800, fill: '#fca5a5' }, 'too small'));
+    kids.push(h('text', { key: 'tb', x: BX + BW - 4, y: BY + 13, textAnchor: 'end', fontSize: 10, fontWeight: 800, fill: '#fca5a5' }, 'too big — a breeder'));
+    [minIn, maxIn].forEach(function(v, i) {
+      kids.push(h('line', { key: 'm' + i, x1: px(v), y1: BY - 6, x2: px(v), y2: BY + 24, stroke: '#f8fafc', strokeWidth: 1.6 }));
+      kids.push(h('text', { key: 'mv' + i, x: px(v), y: BY - 9, textAnchor: 'middle', fontSize: 10.5, fontWeight: 900, fill: '#f8fafc' }, v + '"'));
+    });
+    kids.push(h('text', { key: 'why', x: BX + BW + 14, y: BY + 6, fontSize: 9.5, fill: '#cbd5e1' }, 'Both gauges, every haul.'));
+    kids.push(h('text', { key: 'why2', x: BX + BW + 14, y: BY + 19, fontSize: 9.5, fill: '#cbd5e1' }, 'The max protects the breeders.'));
+    return h('svg', {
+      viewBox: '0 0 640 240', role: 'img',
+      'aria-label': 'Measuring a lobster. The legal measure is the carapace only — from the rear of the eye socket to the rear edge of the carapace, parallel to the centreline — not the tail and not the whole animal. A V-notch cut into a tail flipper marks an egg-bearing female, protected for life whether or not she is carrying eggs when you next see her. The keeper range is a band between ' + minIn + ' and ' + maxIn + ' inches: below it she is too small, above it she is a breeder and also protected, which is why both gauges are used at every haul.',
+      style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.25)' }
+    }, kids);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // GEAR
+  // The gear list reads as thirteen unrelated hobbies. What actually
+  // separates them is WHERE IN THE WATER COLUMN each one works and HOW MUCH
+  // ELSE it catches — and both of those are spatial facts that a list of
+  // cards cannot show. One seascape puts them side by side.
+  // ═══════════════════════════════════════════════════════════════════
+
+  // Selectivity read out of each gear's OWN tradeoff text, so the tool never
+  // editorialises about a fishery beyond what it already says in prose.
+  function getCoreGearSelectivity(gear) {
+    var t = String((gear && gear.tradeoff) || '').toLowerCase();
+    if (!t) return null;
+    // ★ "Highly target-specific bycatch is minimal" contains the word bycatch
+    // and means the OPPOSITE of a bycatch warning. A naive substring test flags
+    // the lobster trap — the most target-specific gear in the fishery — as a
+    // bycatch problem. Check the negation first.
+    var minimal = /bycatch\s+(?:is\s+)?minimal|minimal\s+bycatch/.test(t);
+    var selective = /most selective|highly selective|selective by definition|target-specific/.test(t);
+    if (!minimal && /bycatch|non-?target/.test(t)) return 'bycatch';
+    if (minimal || selective) return 'selective';
+    return null;
+  }
+
+  // ─── Where each gear works. Hand-placed, because a deployment depth is a
+  // fact about the gear and not something the card text encodes.
+  function flGearSeascapeSvg(h) {
+    // Every gear owns a horizontal slot and a matching entry in a LABEL LANE
+    // below the seabed. Labels placed next to their gear in the water collided
+    // the moment two gears shared a depth, which for three of these is the
+    // whole point.
+    var W = 760, SURF = 84, BED = 288, LANE = BED + 26;
+    var k = [];
+    k.push(h('rect', { key: 'sky', x: 0, y: 0, width: W, height: SURF, fill: 'rgba(12,42,66,0.55)' }));
+    k.push(h('rect', { key: 'sea', x: 0, y: SURF, width: W, height: BED - SURF, fill: 'rgba(30,86,124,0.45)' }));
+    // The bottom shelves up toward the beach, which is what makes wading a
+    // gear at all.
+    var bedPath = 'M0 ' + (SURF + 26) + ' Q120 ' + (SURF + 40) + ' 208 ' + BED + ' L' + W + ' ' + (BED - 3);
+    k.push(h('path', { key: 'bed', d: bedPath + ' L' + W + ' 344 L0 344 Z', fill: '#4a3f34', stroke: 'rgba(226,232,240,0.3)', strokeWidth: 1 }));
+    k.push(h('path', { key: 'shore', d: 'M0 ' + (SURF + 26) + ' L0 26 L34 30 Q58 44 68 ' + (SURF + 2) + ' Q76 ' + (SURF + 16) + ' 62 ' + (SURF + 30) + ' Z', fill: 'rgba(46,84,54,0.85)' }));
+    k.push(h('line', { key: 'sl', x1: 0, y1: SURF, x2: W, y2: SURF, stroke: 'rgba(125,211,252,0.7)', strokeWidth: 2 }));
+    k.push(h('text', { key: 'st', x: W - 6, y: SURF - 8, textAnchor: 'end', fontSize: 10, fill: '#7dd3fc' }, 'sea surface'));
+    k.push(h('text', { key: 'bt', x: 330, y: BED - 9, textAnchor: 'middle', fontSize: 10, fill: '#d6c6a8' }, 'seabed'));
+
+    function boat(key, x) {
+      return h('polygon', { key: key, points: (x - 20) + ',' + (SURF - 9) + ' ' + (x + 20) + ',' + (SURF - 9) + ' ' + (x + 28) + ',' + SURF + ' ' + (x - 16) + ',' + (SURF + 5) + ' ' + (x + 16) + ',' + (SURF + 5),
+        fill: '#f1f5f9', stroke: '#0f172a', strokeWidth: 1.2 });
+    }
+    function rope(key, d, opt) {
+      return h('path', Object.assign({ key: key, d: d, fill: 'none', stroke: '#e8eef5', strokeWidth: 1.4 }, opt || {}));
+    }
+    function lane(key, x, title, sub) {
+      return [
+        h('text', { key: key + 'a', x: x, y: LANE, textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: '#e2e8f0' }, title),
+        h('text', { key: key + 'b', x: x, y: LANE + 13, textAnchor: 'middle', fontSize: 9.5, fill: '#94a3b8' }, sub)
+      ];
+    }
+
+    // 1 — Wading the flats, in the shallows off the beach.
+    var wx = 104, wFeet = SURF + 44;
+    k.push(rope('wd', 'M' + wx + ' ' + wFeet + ' l0 -24', { strokeWidth: 3 }));
+    k.push(h('circle', { key: 'wh', cx: wx, cy: wFeet - 31, r: 6.5, fill: '#f1f5f9' }));
+    k.push(rope('wr', 'M' + wx + ' ' + (wFeet - 22) + ' L' + (wx + 38) + ' ' + (wFeet - 54), { strokeWidth: 2, stroke: '#fbbf24' }));
+    k.push(rope('wl', 'M' + (wx + 38) + ' ' + (wFeet - 54) + ' Q' + (wx + 66) + ' ' + (wFeet - 34) + ' ' + (wx + 74) + ' ' + (wFeet - 6), { strokeWidth: 1 }));
+    k = k.concat(lane('wt', 104, 'Wading the flats', 'ankle to waist'));
+
+    // 2 — Lobster trap on the bottom, buoy line to a marked surface buoy.
+    var tx = 240;
+    k.push(h('rect', { key: 'trp', x: tx - 21, y: BED - 26, width: 42, height: 22, rx: 4, fill: 'rgba(126,118,94,0.95)', stroke: '#e2e8f0', strokeWidth: 1.1 }));
+    for (var b = 1; b < 4; b++) {
+      k.push(rope('tb' + b, 'M' + (tx - 21 + b * 10.5) + ' ' + (BED - 26) + ' L' + (tx - 21 + b * 10.5) + ' ' + (BED - 4), { strokeWidth: 0.6, stroke: 'rgba(226,232,240,0.5)' }));
+    }
+    k.push(rope('twl', 'M' + tx + ' ' + (BED - 26) + ' Q' + (tx - 18) + ' ' + ((SURF + BED) / 2) + ' ' + (tx - 8) + ' ' + (SURF + 6)));
+    k.push(h('rect', { key: 'tbuoy', x: tx - 14, y: SURF - 9, width: 13, height: 17, rx: 3, fill: '#f97316', stroke: '#0f172a', strokeWidth: 0.9 }));
+    k.push(h('rect', { key: 'tband', x: tx - 14, y: SURF - 3, width: 13, height: 5, fill: '#f8fafc' }));
+    k = k.concat(lane('trt', 240, 'Lobster trap', 'on the bottom'));
+
+    // 3 — Trolling: a lure dragged through the top few metres behind a boat.
+    var mx = 384;
+    k.push(boat('tbo', mx));
+    k.push(rope('tl', 'M' + (mx - 26) + ' ' + (SURF + 2) + ' Q' + (mx - 58) + ' ' + (SURF + 18) + ' ' + (mx - 82) + ' ' + (SURF + 30)));
+    k.push(h('ellipse', { key: 'tlure', cx: mx - 84, cy: SURF + 31, rx: 6.5, ry: 3.2, fill: '#fbbf24' }));
+    k.push(h('path', { key: 'twake', d: 'M' + (mx + 30) + ' ' + (SURF + 3) + ' q11 4 22 0', stroke: 'rgba(226,232,240,0.6)', strokeWidth: 1.4, fill: 'none' }));
+    k = k.concat(lane('tt', 384, 'Trolling', 'top few metres'));
+
+    // 4 — Jigging: straight down from a drifting boat, worked bottom to mid.
+    var jx = 500;
+    k.push(boat('jbo', jx));
+    k.push(rope('jl', 'M' + jx + ' ' + (SURF + 5) + ' L' + jx + ' ' + (BED - 18)));
+    k.push(h('polygon', { key: 'jig', points: (jx - 4) + ',' + (BED - 18) + ' ' + (jx + 4) + ',' + (BED - 18) + ' ' + jx + ',' + (BED - 3), fill: '#cbd5e1', stroke: '#0f172a', strokeWidth: 0.8 }));
+    k.push(h('path', { key: 'jar', d: 'M' + (jx + 18) + ' ' + (BED - 34) + ' l0 -60 m0 60 l-5 -10 m5 10 l5 -10 m-5 -60 l-5 10 m5 -10 l5 10',
+      stroke: '#fbbf24', strokeWidth: 1.4, fill: 'none' }));
+    k = k.concat(lane('jt', 500, 'Jigging', 'straight down'));
+
+    // 5 — Gillnet: a wall of mesh, floats on the headline, lead on the foot.
+    var gx0 = 566, gx1 = 656, gTop = BED - 104;
+    k.push(h('rect', { key: 'gn', x: gx0, y: gTop, width: gx1 - gx0, height: BED - 5 - gTop, fill: 'rgba(226,232,240,0.10)', stroke: 'rgba(226,232,240,0.55)', strokeWidth: 1 }));
+    for (var m = 1; m < 8; m++) {
+      k.push(rope('gv' + m, 'M' + (gx0 + m * 11.25) + ' ' + gTop + ' L' + (gx0 + m * 11.25) + ' ' + (BED - 5), { strokeWidth: 0.5, stroke: 'rgba(226,232,240,0.4)' }));
+    }
+    for (var mh = 1; mh < 8; mh++) {
+      k.push(rope('gh' + mh, 'M' + gx0 + ' ' + (gTop + mh * 12.4) + ' L' + gx1 + ' ' + (gTop + mh * 12.4), { strokeWidth: 0.5, stroke: 'rgba(226,232,240,0.4)' }));
+    }
+    [0, 22.5, 45, 67.5, 90].forEach(function(off, i) {
+      k.push(h('circle', { key: 'gf' + i, cx: gx0 + off, cy: gTop, r: 4.2, fill: '#f8fafc', stroke: '#0f172a', strokeWidth: 0.8 }));
+    });
+    k.push(rope('glead', 'M' + gx0 + ' ' + (BED - 5) + ' L' + gx1 + ' ' + (BED - 5), { strokeWidth: 3.4, stroke: '#64748b' }));
+    k = k.concat(lane('gt', 610, 'Gillnet', 'a wall of mesh'));
+
+    // 6 — Longline: groundline along the bottom, short baited droppers, a
+    // marker buoy and flag at the end so it can be found again.
+    var lx0 = 676, lx1 = 748;
+    k.push(rope('lg', 'M' + lx0 + ' ' + (BED - 9) + ' L' + lx1 + ' ' + (BED - 9), { strokeWidth: 2 }));
+    for (var g = 0; g < 6; g++) {
+      var gxx = lx0 + 8 + g * 12;
+      k.push(rope('lgg' + g, 'M' + gxx + ' ' + (BED - 9) + ' l0 -13', { strokeWidth: 0.9 }));
+      k.push(h('circle', { key: 'lh' + g, cx: gxx, cy: BED - 24, r: 2.5, fill: '#fbbf24' }));
+    }
+    k.push(rope('lup', 'M' + lx0 + ' ' + (BED - 9) + ' L' + (lx0 + 4) + ' ' + (SURF + 6), { strokeWidth: 1 }));
+    k.push(h('circle', { key: 'lb', cx: lx0 + 4, cy: SURF + 3, r: 5.2, fill: '#f97316', stroke: '#0f172a', strokeWidth: 0.9 }));
+    k.push(rope('lfl', 'M' + (lx0 + 4) + ' ' + (SURF + 3) + ' l0 -22 l11 5 l-11 4', { strokeWidth: 1.2 }));
+    k = k.concat(lane('lt', 708, 'Longline', 'hooks on the bottom'));
+
+    return h('svg', {
+      viewBox: '0 0 760 336', role: 'img',
+      'aria-label': 'Where each kind of gear works, from the beach out to deeper water. Wading the flats fishes ankle to waist depth on foot. A lobster trap sits on the seabed with a line up to a coloured surface buoy whose colours identify its licence holder. Trolling drags a lure through the top few metres behind a moving boat. Jigging works straight down from a drifting boat, from the seabed up into mid-water. A gillnet stands as a wall of mesh held up by floats on its headline and down by lead on its footrope, fishing the whole height of the wall. A longline lies along the bottom with short baited droppers, marked at the end by a buoy and flag.',
+      style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.25)' }
+    }, k);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // VENDORED SPECIES ARTWORK
+  // Public domain and CC0 only, fetched and licence-verified by
+  // dev-tools/fetch_fisherlab_species_art.cjs. Provenance for every file is in
+  // stem_lab/assets/fisherlab/ATTRIBUTION.md and asset-manifest.json.
+  //
+  // Mostly 19th-century scientific plates — H. L. Todd and the US Fish
+  // Commission, Denton, Gervais — plus USFWS artists including Duane Raver.
+  // That is the right register for an ID key: a plate is drawn to show the
+  // diagnostic feature, where a photograph shows one individual at one angle.
+  //
+  // Species with no clean-licensed image simply have no entry here and fall
+  // back to the drawn SVG key, which is a good outcome rather than a gap.
+  // ═══════════════════════════════════════════════════════════════════
+  // Captured while document.currentScript is available; Canvas can expose a
+  // blob: baseURI, so local assets must resolve from the script URL first.
+  var __flScriptUrl = (function() {
+    if (typeof document === 'undefined') return '';
+    var cur = document.currentScript;
+    return cur && cur.src ? cur.src : '';
+  })();
+  function __flAssetUrl(fromScript, fromBase) {
+    try {
+      if (__flScriptUrl) return new URL(fromScript, __flScriptUrl).href;
+      return new URL(fromBase, document.baseURI).href;
+    } catch (_) { return ''; }
+  }
+  var SPECIES_ART = {
+    'cod': { f: 'cod.jpg', by: 'Gervais et Boulart', lic: 'Public domain' },
+    'haddock': { f: 'haddock.jpg', by: 'H. L. Todd', lic: 'Public domain' },
+    'pollock': { f: 'pollock.jpg', by: 'H. L. Todd', lic: 'Public domain' },
+    'striper': { f: 'striper.jpg', by: 'Raver Duane, U.S. Fish and Wildlife Service', lic: 'Public domain' },
+    'alewife': { f: 'alewife.jpg', by: 'Painting by Ellen Edmonson', lic: 'Public domain' },
+    'lobster': { f: 'lobster.jpg', by: 'Sikander Kiani', lic: 'CC0' },
+    'hake': { f: 'hake.jpg', by: 'H. L. Todd', lic: 'Public domain' },
+    'monkfish': { f: 'monkfish.jpg', by: 'Unknown', lic: 'Public domain' },
+    'flounder-winter': { f: 'flounder-winter.jpg', by: 'H. L. Todd', lic: 'Public domain' },
+    'flounder-yellowtail': { f: 'flounder-yellowtail.jpg', by: 'David Starr Jordan', lic: 'Public domain' },
+    'tautog': { f: 'tautog.jpg', by: 'John J. Brice', lic: 'Public domain' },
+    'cunner': { f: 'cunner.jpg', by: 'David Starr Jordan', lic: 'Public domain' },
+    'shad': { f: 'shad.jpg', by: 'Shermon Foote Denton', lic: 'Public domain' },
+    'bluefish': { f: 'bluefish.jpg', by: 'NOAA', lic: 'Public domain' },
+    'cusk': { f: 'cusk.jpg', by: 'Unknown', lic: 'Public domain' },
+    'wolffish': { f: 'wolffish.jpg', by: 'Unknown', lic: 'Public domain' },
+    'spinydogfish': { f: 'spinydogfish.jpg', by: 'encyclopedia, "Pieni Tietosanakirja"', lic: 'Public domain' },
+    'eel': { f: 'eel.jpg', by: 'Ellen Edmonson and Hugh Chrisp', lic: 'Public domain' },
+    'sturgeon': { f: 'sturgeon.jpg', by: 'Duane Raver/U.S. Fish and Wildlife Service', lic: 'Public domain' },
+    'salmon-atlantic': { f: 'salmon-atlantic.jpg', by: 'Knepp, Timothy', lic: 'Public domain' },
+    'herring-atlantic': { f: 'herring-atlantic.jpg', by: 'Gervais et Boulart', lic: 'Public domain' },
+    'smelt': { f: 'smelt.jpg', by: 'Ellen Edmonson and Hugh Chrisp', lic: 'Public domain' }
+  };
+  function getCoreSpeciesArt(id) {
+    var a = SPECIES_ART[id];
+    if (!a) return null;
+    return {
+      id: id,
+      file: a.f,
+      artist: a.by,
+      licence: a.lic,
+      url: __flAssetUrl('assets/fisherlab/species/' + a.f, 'stem_lab/assets/fisherlab/species/' + a.f)
+    };
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // FISH IDENTIFICATION
+  // Every species entry describes itself in anatomical shorthand — "lateral
+  // line pale + curved upward over pectoral", "black thumbprint above
+  // pectoral", "single black spot behind gill". A student who cannot point to
+  // a pectoral fin cannot use any of it.
+  //
+  // Deliberately drawn rather than photographed. A photograph is one
+  // individual at one angle in one condition; a field guide uses artwork
+  // because a drawing can show the diagnostic feature and suppress everything
+  // else. These are schematic and say so — they are a key to the vocabulary,
+  // not portraits of the species.
+  // ═══════════════════════════════════════════════════════════════════
+  var FISH_INK = '#cfd9e4', FISH_BODY = '#3f6d8e', FISH_EDGE = '#0b1a29';
+
+  // Anatomy terms the idMarks text actually uses, so a species card can show
+  // which parts matter for that fish. Matched against the shipped wording.
+  // `onKey` marks a part the anatomy diagram actually labels. The rest are
+  // general appearance — colour, body shape — which a reader can see without
+  // being shown where to look, and which the key therefore does not label.
+  var FISH_FEATURE_RULES = [
+    { id: 'dorsal', label: 'dorsal fins', onKey: true, test: /dorsal/ },
+    { id: 'barbel', label: 'chin barbel', onKey: true, test: /barbel/ },
+    { id: 'lateral', label: 'lateral line', onKey: true, test: /lateral line/ },
+    { id: 'pectoral', label: 'pectoral fin', onKey: true, test: /pectoral/ },
+    { id: 'tail', label: 'tail fin', onKey: true, test: /tail|caudal/ },
+    { id: 'gill', label: 'gill cover', onKey: true, test: /gill/ },
+    { id: 'eye', label: 'eye', onKey: true, test: /\beye\b/ },
+    { id: 'mouth', label: 'mouth', onKey: true, test: /mouth|jaw|lips/ },
+    { id: 'stripes', label: 'stripes / bars', test: /stripe|bars?\b/ },
+    { id: 'spot', label: 'spot / thumbprint', test: /spot|thumbprint/ },
+    { id: 'colour', label: 'colour / mottling', test: /mottl|iridescen|silvery|colou?rful/ },
+    { id: 'shape', label: 'body shape', test: /snake-like|torpedo|slim body|blunt head/ },
+    { id: 'teeth', label: 'teeth', test: /teeth/ },
+    { id: 'claw', label: 'claws', onKey: false, test: /claw/ },
+    { id: 'shell', label: 'shell / carapace', test: /carapace|shell/ }
+  ];
+  function getCoreIdFeatures(species) {
+    var t = String((species && species.idMarks) || '').toLowerCase();
+    if (!t) return [];
+    var out = [];
+    FISH_FEATURE_RULES.forEach(function(r) { if (r.test.test(t)) out.push(r); });
+    return out;
+  }
+
+  // ─── The vocabulary, drawn once. Fin ARRANGEMENT differs by family, which
+  // the caption says; the names of the parts do not.
+  function flFishAnatomySvg(h) {
+    var k = [];
+    var cx = 300, cy = 118;
+    k.push(h('rect', { key: 'bg', x: 0, y: 0, width: 620, height: 232, fill: 'rgba(12,42,66,0.4)' }));
+    // Body
+    k.push(h('path', { key: 'body', d: 'M170 118 Q210 74 300 72 Q384 74 424 106 L424 130 Q384 162 300 164 Q210 162 170 118 Z',
+      fill: FISH_BODY, stroke: FISH_INK, strokeWidth: 1.6 }));
+    // Head, gill cover, eye, mouth
+    k.push(h('path', { key: 'gill', d: 'M212 84 Q198 118 212 152', fill: 'none', stroke: FISH_INK, strokeWidth: 1.4 }));
+    k.push(h('circle', { key: 'eye', cx: 192, cy: 108, r: 6.5, fill: '#f8fafc', stroke: FISH_EDGE, strokeWidth: 1.2 }));
+    k.push(h('circle', { key: 'pup', cx: 192, cy: 108, r: 3, fill: FISH_EDGE }));
+    k.push(h('path', { key: 'mouth', d: 'M170 118 Q180 128 196 128', fill: 'none', stroke: FISH_INK, strokeWidth: 1.4 }));
+    k.push(h('path', { key: 'barbel', d: 'M178 128 q-4 12 2 18', fill: 'none', stroke: FISH_INK, strokeWidth: 1.6 }));
+    // Lateral line
+    k.push(h('path', { key: 'll', d: 'M216 110 Q300 100 420 114', fill: 'none', stroke: '#fde047', strokeWidth: 1.8, strokeDasharray: '6 4' }));
+    // Fins
+    k.push(h('path', { key: 'd1', d: 'M252 74 q14 -30 30 -2 Z', fill: FISH_BODY, stroke: FISH_INK, strokeWidth: 1.4 }));
+    k.push(h('path', { key: 'd2', d: 'M312 73 q16 -22 32 -1 Z', fill: FISH_BODY, stroke: FISH_INK, strokeWidth: 1.4 }));
+    k.push(h('path', { key: 'd3', d: 'M366 80 q14 -18 28 0 Z', fill: FISH_BODY, stroke: FISH_INK, strokeWidth: 1.4 }));
+    k.push(h('path', { key: 'pec', d: 'M232 138 q22 24 40 8 Z', fill: '#33587a', stroke: FISH_INK, strokeWidth: 1.4 }));
+    k.push(h('path', { key: 'pel', d: 'M252 152 q10 20 24 6 Z', fill: '#33587a', stroke: FISH_INK, strokeWidth: 1.3 }));
+    k.push(h('path', { key: 'anal', d: 'M330 160 q14 20 28 2 Z', fill: '#33587a', stroke: FISH_INK, strokeWidth: 1.3 }));
+    k.push(h('path', { key: 'cau', d: 'M424 106 l40 -20 l-12 32 l12 32 l-40 -20 Z', fill: FISH_BODY, stroke: FISH_INK, strokeWidth: 1.5 }));
+
+    function call(key, x1, y1, x2, y2, tx, ty, text, anchor) {
+      return [
+        h('line', { key: key + 'l', x1: x1, y1: y1, x2: x2, y2: y2, stroke: 'rgba(226,232,240,0.6)', strokeWidth: 1 }),
+        h('circle', { key: key + 'd', cx: x1, cy: y1, r: 2.6, fill: '#7dd3fc' }),
+        h('text', { key: key + 't', x: tx, y: ty, textAnchor: anchor || 'start', fontSize: 10, fontWeight: 700, fill: '#e2e8f0' }, text)
+      ];
+    }
+    k = k.concat(call('c1', 266, 56, 250, 26, 246, 22, 'first dorsal', 'middle'));
+    k = k.concat(call('c2', 328, 58, 344, 28, 344, 24, 'second dorsal', 'middle'));
+    k = k.concat(call('c3', 380, 70, 424, 40, 424, 36, 'third dorsal', 'middle'));
+    k = k.concat(call('c4', 300, 102, 300, 46, 300, 42, 'lateral line', 'middle'));
+    k = k.concat(call('c5', 252, 148, 214, 200, 210, 210, 'pectoral fin', 'middle'));
+    k = k.concat(call('c6', 264, 160, 288, 200, 288, 210, 'pelvic fin', 'middle'));
+    k = k.concat(call('c7', 344, 168, 366, 200, 366, 210, 'anal fin', 'middle'));
+    k = k.concat(call('c8', 452, 118, 486, 92, 490, 88, 'caudal (tail) fin'));
+    k = k.concat(call('c9', 180, 146, 150, 176, 146, 182, 'barbel', 'end'));
+    k = k.concat(call('c10', 210, 96, 168, 62, 164, 58, 'gill cover', 'end'));
+    k = k.concat(call('c11', 192, 116, 148, 122, 144, 126, 'eye', 'end'));
+    k = k.concat(call('c12', 186, 128, 150, 148, 146, 152, 'mouth', 'end'));
+    k.push(h('text', { key: 'cap', x: 310, y: 228, textAnchor: 'middle', fontSize: 9.5, fontStyle: 'italic', fill: '#94a3b8' },
+      'Schematic. The PARTS are named the same on every fish; how many dorsal fins there are, and whether a barbel is present at all, is what varies by family.'));
+    return h('svg', {
+      viewBox: '0 0 620 232', role: 'img',
+      'aria-label': 'A labelled fish, naming the parts the identification notes use: first, second and third dorsal fins along the back; the lateral line running the length of the flank; the gill cover behind the head; a barbel hanging under the chin; the pectoral fin behind the gill cover; the pelvic fin beneath it; the anal fin under the rear of the body; and the caudal or tail fin. The drawing is schematic — the parts are named the same on every fish, but the number of dorsal fins and the presence of a barbel vary by family.',
+      style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.25)' }
+    }, k);
+  }
+
+  // ─── Cod against haddock. This is THE identification problem in the Gulf of
+  // Maine, and the haddock entry's own idMarks text is written as a contrast
+  // with cod. Both carry three dorsal fins and a chin barbel, so the three
+  // things below are what actually separate them.
+  function flCodHaddockSvg(h) {
+    function fish(ox, opts) {
+      var g = [], cy = 96;
+      var x = function(v) { return ox + v; };
+      g.push(h('path', { key: 'b', d: 'M' + x(14) + ' ' + cy + ' Q' + x(48) + ' 58 ' + x(126) + ' 56 Q' + x(198) + ' 58 ' + x(232) + ' 86 L' + x(232) + ' 108 Q' + x(198) + ' 136 ' + x(126) + ' 138 Q' + x(48) + ' 136 ' + x(14) + ' ' + cy + ' Z',
+        fill: opts.body, stroke: FISH_INK, strokeWidth: 1.5 }));
+      g.push(h('path', { key: 'gill', d: 'M' + x(50) + ' 66 Q' + x(38) + ' 96 ' + x(50) + ' 126', fill: 'none', stroke: FISH_INK, strokeWidth: 1.2 }));
+      g.push(h('circle', { key: 'eye', cx: x(34), cy: 88, r: 5, fill: '#f8fafc', stroke: FISH_EDGE, strokeWidth: 1 }));
+      g.push(h('circle', { key: 'pup', cx: x(34), cy: 88, r: 2.2, fill: FISH_EDGE }));
+      g.push(h('path', { key: 'mouth', d: 'M' + x(14) + ' ' + cy + ' Q' + x(24) + ' 106 ' + x(38) + ' 106', fill: 'none', stroke: FISH_INK, strokeWidth: 1.2 }));
+      // Both species carry a chin barbel, so it is NOT a discriminator — but
+      // haddock's is genuinely small, and drawing them alike would invite the
+      // very mistake the caption is trying to head off.
+      g.push(h('path', { key: 'barb', d: opts.smallBarbel
+        ? 'M' + x(21) + ' 106 q-2 5 1 8'
+        : 'M' + x(21) + ' 106 q-3 10 2 15', fill: 'none', stroke: FISH_INK, strokeWidth: 1.4 }));
+      // Three dorsals on both; only the FIRST differs in outline.
+      g.push(h('path', { key: 'd1', d: opts.pointed
+        ? 'M' + x(70) + ' 58 L' + x(84) + ' 20 L' + x(96) + ' 57 Z'
+        : 'M' + x(70) + ' 58 q14 -24 28 -1 Z', fill: opts.body, stroke: FISH_INK, strokeWidth: 1.3 }));
+      g.push(h('path', { key: 'd2', d: 'M' + x(120) + ' 56 q15 -19 30 -1 Z', fill: opts.body, stroke: FISH_INK, strokeWidth: 1.3 }));
+      g.push(h('path', { key: 'd3', d: 'M' + x(172) + ' 62 q13 -15 26 0 Z', fill: opts.body, stroke: FISH_INK, strokeWidth: 1.3 }));
+      g.push(h('path', { key: 'pec', d: 'M' + x(64) + ' 116 q20 21 36 7 Z', fill: '#2f5273', stroke: FISH_INK, strokeWidth: 1.2 }));
+      g.push(h('path', { key: 'anal', d: 'M' + x(136) + ' 134 q13 18 26 2 Z', fill: '#2f5273', stroke: FISH_INK, strokeWidth: 1.2 }));
+      g.push(h('path', { key: 'cau', d: 'M' + x(232) + ' 86 l34 -17 l-10 27 l10 27 l-34 -17 Z', fill: opts.body, stroke: FISH_INK, strokeWidth: 1.4 }));
+      // The lateral line: PALE and arching over the pectoral on cod, DARK and
+      // straighter on haddock. This is the single most reliable tell.
+      g.push(h('path', { key: 'll', d: opts.archedLine
+        ? 'M' + x(52) + ' 92 Q' + x(96) + ' 74 ' + x(150) + ' 86 Q' + x(200) + ' 92 ' + x(230) + ' 96'
+        : 'M' + x(52) + ' 88 Q' + x(140) + ' 84 ' + x(230) + ' 94',
+        fill: 'none', stroke: opts.lineInk, strokeWidth: 3 }));
+      if (opts.thumbprint) {
+        g.push(h('ellipse', { key: 'tp', cx: x(84), cy: 104, rx: 13, ry: 9, fill: '#101820', stroke: 'rgba(226,232,240,0.55)', strokeWidth: 1 }));
+      }
+      return h('g', { key: opts.key }, g);
+    }
+    var k = [h('rect', { key: 'bg', x: 0, y: 0, width: 640, height: 386, fill: 'rgba(12,42,66,0.4)' })];
+    k.push(fish(24, { key: 'cod', body: '#7d6a44', pointed: false, archedLine: true, lineInk: '#f1f5f9', thumbprint: false }));
+    k.push(h('g', { key: 'hadwrap', transform: 'translate(0,188)' }, [fish(24, { key: 'had', body: '#5d7183', pointed: true, archedLine: false, lineInk: '#0d1520', thumbprint: true, smallBarbel: true })]));
+    k.push(h('text', { key: 'n1', x: 24, y: 22, fontSize: 13, fontWeight: 900, fill: '#fde68a' }, 'ATLANTIC COD'));
+    k.push(h('text', { key: 's1', x: 158, y: 22, fontSize: 10, fontStyle: 'italic', fill: '#94a3b8' }, 'Gadus morhua'));
+    k.push(h('text', { key: 'n2', x: 24, y: 210, fontSize: 13, fontWeight: 900, fill: '#7dd3fc' }, 'HADDOCK'));
+    k.push(h('text', { key: 's2', x: 116, y: 210, fontSize: 10, fontStyle: 'italic', fill: '#94a3b8' }, 'Melanogrammus aeglefinus'));
+
+    function note(key, y, ink, dot, text) {
+      return [
+        h('circle', { key: key + 'c', cx: 322, cy: y - 4, r: 3.8, fill: dot, stroke: 'rgba(226,232,240,0.75)', strokeWidth: 1 }),
+        h('text', { key: key + 't', x: 334, y: y, fontSize: 10.5, fill: ink }, text)
+      ];
+    }
+    k = k.concat(note('a1', 62, '#e2e8f0', '#f1f5f9', 'Lateral line PALE, arching up over the pectoral'));
+    k = k.concat(note('a2', 80, '#e2e8f0', '#f1f5f9', 'First dorsal rounded'));
+    k = k.concat(note('a3', 98, '#e2e8f0', '#f1f5f9', 'No dark mark on the shoulder'));
+    k = k.concat(note('b1', 250, '#e2e8f0', '#0d1520', 'Lateral line DARK, running straighter'));
+    k = k.concat(note('b2', 268, '#e2e8f0', '#0d1520', 'First dorsal tall and POINTED'));
+    k = k.concat(note('b3', 286, '#e2e8f0', '#101820', 'Black "thumbprint" above the pectoral'));
+    k.push(h('text', { key: 'both', x: 322, y: 328, fontSize: 10.5, fontWeight: 800, fill: '#fbbf24' }, 'Both are cod-family: three dorsal fins, and a barbel'));
+    k.push(h('text', { key: 'both2', x: 322, y: 342, fontSize: 10.5, fontWeight: 800, fill: '#fbbf24' }, 'under the chin — small on haddock. Neither separates'));
+    k.push(h('text', { key: 'both3', x: 322, y: 356, fontSize: 10.5, fontWeight: 800, fill: '#fbbf24' }, 'them. The lateral line does.'));
+    k.push(h('text', { key: 'why', x: 322, y: 374, fontSize: 9.5, fontStyle: 'italic', fill: '#94a3b8' }, 'It matters: cod is severely depleted here and haddock has recovered.'));
+    return h('svg', {
+      viewBox: '0 0 640 386', role: 'img',
+      'aria-label': 'Atlantic cod compared with haddock. Both are cod-family fish carrying three dorsal fins and a barbel under the chin, small on haddock, so neither of those separates them. Cod has a pale lateral line that arches upward over the pectoral fin, a rounded first dorsal fin, and no dark mark on the shoulder. Haddock has a dark lateral line running straighter along the flank, a tall pointed first dorsal fin, and a black thumbprint mark above the pectoral fin. Telling them apart matters because cod is severely depleted in the Gulf of Maine while haddock has recovered.',
+      style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.25)' }
+    }, k);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // ★ ONE DERIVATION OF CORRECTNESS FOR THE MARKS
+  // The 3-D sim and the Buoyage tab must be showing the SAME mark. They were
+  // not: the sim drew a north cardinal with its two topmark cones side by side
+  // (an IALA topmark is two cones ONE ABOVE THE OTHER) and a safe-water mark as
+  // a red sphere with one horizontal white band (safe water is read by its
+  // VERTICAL STRIPES). Both were correct two tabs away and wrong in the sim.
+  //
+  // So the sim no longer describes its own marks. It looks up the BUOYAGE entry
+  // and runs it through getCoreBuoyGlyph — the same function the tab draws
+  // from. Shape, band order and topmark can now only ever come from one place.
+  // ═══════════════════════════════════════════════════════════════════
+  var SIM_BUOY_SOURCE = {
+    'red-nun': { family: 'lateral', type: 'nun', label: 'red nun' },
+    'green-can': { family: 'lateral', type: 'can', label: 'green can' },
+    'cardinal-N': { family: 'cardinal', type: 'north', label: 'north cardinal' },
+    'safe-water': { family: 'special', type: 'safe-water', label: 'safe water' }
+  };
+  function getCoreSimBuoySpec(simType) {
+    var link = SIM_BUOY_SOURCE[simType];
+    if (!link) return null;
+    var list = BUOYAGE[link.family] || [];
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].type === link.type) {
+        var glyph = getCoreBuoyGlyph(list[i]);
+        glyph.label = link.label;
+        glyph.lightText = list[i].light || '';
+        return glyph;
+      }
+    }
+    return null;
+  }
+  // Lit 3-D needs truer pigment than the 2-D card did: BUOY_INK renders chart
+  // black as slate purely to clear 3:1 against a dark panel, which would look
+  // washed out on a mark standing in daylight.
+  var BUOY_3D_INK = { red: 0xc8302a, green: 0x2a7c44, black: 0x1b2230, yellow: 0xe8d048, white: 0xf4f6f8 };
+  var BUOY_3D_LANTERN = { red: 0xff3b30, green: 0x2fe06a, black: 0xf8fafc, yellow: 0xf8fafc, white: 0xf8fafc };
+
   // ─── Camera rig geometry, kept pure so all four views can be verified without
   // a WebGL context — tick() feeds the result straight into the three.js camera.
   // Forward is (sin heading, cos heading); heading π is north, matching
@@ -1147,8 +2601,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     }
     // Chase: astern of the boat, dollying back and lifting with speed.
     var back = 9.5 + speedFrac * 3.5;
+    var eyeX = x - fx * back, eyeY = 4.3 + speedFrac * 0.9, eyeZ = z - fz * back;
+    // ★ The voyage STARTS at the dock, bow-out. A chase camera 9.5 units astern
+    // of that is inside the shoreline block — so the opening frame of every
+    // single run was a wall of green with the boat hidden behind it. Clamp the
+    // eye seaward of the shore and lift it as it is pushed in, which is what a
+    // real chase camera does when it runs out of room behind the subject.
+    // The overhead rigs need no clamp: they already sit well above the land.
+    if (b.shoreZ != null && eyeZ > b.shoreZ) {
+      eyeY += Math.min(4.5, (eyeZ - b.shoreZ) * 0.5);
+      eyeZ = b.shoreZ;
+    }
     return { id: 'chase', follow: true, ease: 0.09, up: [0, 1, 0], fov: 58,
-      eye: [x - fx * back, 4.3 + speedFrac * 0.9, z - fz * back],
+      eye: [eyeX, eyeY, eyeZ],
       target: [x + fx * 4.5, 1.4, z + fz * 4.5] };
   }
 
@@ -1361,6 +2826,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
 
   window.__FisherLabCore = {
     getCoreBuoyGlyph: getCoreBuoyGlyph,
+    getCoreSimBuoySpec: getCoreSimBuoySpec,
+    getCoreChartSymbol: getCoreChartSymbol,
+    getCoreGearSelectivity: getCoreGearSelectivity,
+    getCoreIdFeatures: getCoreIdFeatures,
+    getCoreSpeciesArt: getCoreSpeciesArt,
+    getCoreZoneTrapSummary: getCoreZoneTrapSummary,
+    getCoreTwelfths: getCoreTwelfths,
+    getCoreHorizonNm: getCoreHorizonNm,
+    getCoreGeographicRangeNm: getCoreGeographicRangeNm,
+    getCoreZoneDepths: getCoreZoneDepths,
+    getCoreLightCharacter: getCoreLightCharacter,
     getCoreCameraRig: getCoreCameraRig,
     getCoreSimProfile: getCoreSimProfile,
     getCoreVoyageMode: getCoreVoyageMode,
@@ -8812,7 +10288,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     }
 
     // ─── Procedural Vegetation Generator
-    function createTree(x, z) {
+    function createTree(x, z, groundY) {
       var tree = new THREE.Group();
       
       if (activeRegion === 'chesapeake') {
@@ -8880,7 +10356,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         tree.add(foliage);
       }
       
-      tree.position.set(x, 0.0, z);
+      tree.position.set(x, groundY || 0, z);
       var s = 0.75 + Math.random() * 0.5;
       tree.scale.set(s, s, s);
       scene.add(tree);
@@ -8901,27 +10377,70 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         islandHeight = height * 0.8;
       }
       
-      var islandGeo = new THREE.CylinderGeometry(radius * 0.85, radius, islandHeight, 8);
-      var islandMat = new THREE.MeshLambertMaterial({ color: islandColorHex });
+      // An 8-sided cylinder reads as a green poker chip from every camera in
+      // the sim. Build a displaced dome instead: an irregular outline, a
+      // profile that falls to zero at the waterline so there is a real
+      // shoreline, and enough per-vertex jitter to look like rock rather than
+      // a lathe turning. Two harmonics per island, seeded off its position, so
+      // no two are the same shape but each is stable across frames.
+      var RINGS = 7, SEG = 16;
+      var seedA = Math.sin(x * 0.7 + z * 0.13) * 3.1, seedB = Math.cos(x * 0.19 - z * 0.41) * 2.7;
+      function outlineAt(theta) {
+        return radius * (0.84 + 0.16 * Math.sin(3 * theta + seedA) + 0.09 * Math.sin(5 * theta + seedB));
+      }
+      var ipos = [], iidx = [];
+      for (var ri = 0; ri <= RINGS; ri++) {
+        var t = ri / RINGS;                       // 0 at the peak, 1 at the shore
+        for (var si = 0; si < SEG; si++) {
+          var th = (si / SEG) * Math.PI * 2;
+          var rr = outlineAt(th) * t;
+          // Dome profile, flattening near the top and meeting the water at 0.
+          var hy = islandHeight * Math.pow(Math.cos(t * Math.PI / 2), 1.35);
+          // Rock texture: small, deterministic, and damped to zero at the shore
+          // so the waterline stays a clean curve.
+          hy += Math.sin(th * 4 + seedA * 2) * islandHeight * 0.10 * (1 - t) * t * 4;
+          ipos.push(Math.cos(th) * rr, hy - 0.2, Math.sin(th) * rr);
+        }
+      }
+      for (var ri2 = 0; ri2 < RINGS; ri2++) {
+        for (var si2 = 0; si2 < SEG; si2++) {
+          var a = ri2 * SEG + si2, b = ri2 * SEG + (si2 + 1) % SEG;
+          var c = a + SEG, d = b + SEG;
+          iidx.push(a, c, b, b, c, d);
+        }
+      }
+      var islandGeo = new THREE.BufferGeometry();
+      islandGeo.setAttribute('position', new THREE.Float32BufferAttribute(ipos, 3));
+      islandGeo.setIndex(iidx);
+      islandGeo.computeVertexNormals();
+      var islandMat = new THREE.MeshLambertMaterial({ color: islandColorHex, side: THREE.DoubleSide, flatShading: true });
       var island = new THREE.Mesh(islandGeo, islandMat);
-      island.position.set(x, islandHeight / 2 - 0.2, z);
+      island.position.set(x, 0, z);
       scene.add(island);
 
-      // Populate with trees
+      // Sample the island's own surface so trees stand on it rather than
+      // hovering at sea level or sinking into the crown.
+      function islandHeightAt(dx, dz) {
+        var th = Math.atan2(dz, dx);
+        var rr = Math.sqrt(dx * dx + dz * dz);
+        var edge = outlineAt(th);
+        if (rr >= edge) return -0.2;
+        var t = rr / edge;
+        return islandHeight * Math.pow(Math.cos(t * Math.PI / 2), 1.35) - 0.2;
+      }
+
+      // Populate with trees, kept inside the outline.
       var numTrees = Math.floor(5 + Math.random() * 6);
       for (var i = 0; i < numTrees; i++) {
-        var tx = x + (Math.random() - 0.5) * (radius * 1.1);
-        var tz = z + (Math.random() - 0.5) * (radius * 1.1);
-        createTree(tx, tz);
+        var ang = Math.random() * Math.PI * 2;
+        var rad = Math.sqrt(Math.random()) * radius * 0.62;
+        var dx = Math.cos(ang) * rad, dz = Math.sin(ang) * rad;
+        createTree(x + dx, z + dz, islandHeightAt(dx, dz));
       }
     }
 
-    // Coastal Mainland Background
-    for (var i = 0; i < 18; i++) {
-      var tx = -22 + i * 2.6 + (Math.random() - 0.5) * 1.5;
-      var tz = 13.5 + (Math.random() - 0.5) * 2;
-      createTree(tx, tz);
-    }
+    // Coastal Mainland Background — trees are placed after the terrain exists
+    // (see below) so each one can sit on the ridge rather than at sea level.
 
     // Add 3 islands in the bay
     createIsland(-32, -45, 8, 2);
@@ -8931,25 +10450,100 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     // ─── Boat (detailed skiff with gunwales, windshield, console controls, nav lights)
     var boat = new THREE.Group();
     
-    // Hull
-    var hullGeo = new THREE.BoxGeometry(2.0, 0.6, 4.8);
-    var hullMat = new THREE.MeshLambertMaterial({ color: 0xf4eedb });
+    // ─── Hull, lofted from stations.
+    // Was a 2.0 x 0.6 x 4.8 box with two slab gunwales bolted on and a cone
+    // stuck to the front. The boat is on screen in every camera view and in the
+    // helm view it frames the entire shot, so it is worth building the way a
+    // hull is actually drawn: a set of cross-sections from transom to stem,
+    // lofted together. Rise of floor, flare, sheer and a fine entry all fall
+    // out of the numbers rather than having to be faked.
+    //
+    // Each station is [z, halfBeam, keelY, chineY, sheerY]. Keel runs below the
+    // waterline amidships and lifts into the forefoot forward, which is what
+    // gives the bow its rocker.
+    var HULL_STATIONS = [
+      [-2.40, 0.86, -0.02, 0.18, 0.70],   // transom
+      [-1.60, 0.98, -0.10, 0.14, 0.72],
+      [-0.60, 1.02, -0.12, 0.12, 0.74],   // max beam
+      [0.40, 1.00, -0.10, 0.14, 0.78],
+      [1.30, 0.86, 0.00, 0.24, 0.86],
+      [2.05, 0.54, 0.18, 0.42, 0.96],
+      [2.60, 0.07, 0.42, 0.60, 1.04]      // stem
+    ];
+    // Half-section, port sheer down to the keel and back up to starboard: the
+    // shell as an open strip, so it lofts without a seam down the centreline.
+    function hullRing(st) {
+      var hb = st[1], keel = st[2], chine = st[3], sheer = st[4];
+      return [
+        [-hb, sheer], [-hb * 0.99, chine], [-hb * 0.55, keel + 0.03], [0, keel],
+        [hb * 0.55, keel + 0.03], [hb * 0.99, chine], [hb, sheer]
+      ];
+    }
+    function buildHullGeometry(stations) {
+      var rings = stations.map(hullRing);
+      var K = rings[0].length;
+      var pos = [], idx = [];
+      rings.forEach(function(r, si) {
+        r.forEach(function(pt) { pos.push(pt[0], pt[1], stations[si][0]); });
+      });
+      for (var si = 0; si < rings.length - 1; si++) {
+        for (var k = 0; k < K - 1; k++) {
+          var a = si * K + k, b = a + 1, c = a + K, d = c + 1;
+          idx.push(a, c, b, b, c, d);
+        }
+      }
+      // Transom: fan the stern ring onto its own centre so the hull is closed
+      // and you cannot see in through the back.
+      var cIdx = pos.length / 3;
+      pos.push(0, (stations[0][2] + stations[0][4]) / 2, stations[0][0]);
+      for (var t = 0; t < K - 1; t++) idx.push(t + 1, t, cIdx);
+      var g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+      g.setIndex(idx);
+      g.computeVertexNormals();
+      return g;
+    }
+    var hullGeo = buildHullGeometry(HULL_STATIONS);
+    var hullMat = new THREE.MeshLambertMaterial({ color: 0xf4eedb, side: THREE.DoubleSide });
     var hull = new THREE.Mesh(hullGeo, hullMat);
-    hull.position.y = 0.3;
     boat.add(hull);
-    
-    // Gunwales (left/right walls)
-    var portWall = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.5, 4.4), new THREE.MeshLambertMaterial({ color: 0xf4eedb }));
-    portWall.position.set(-0.95, 0.65, 0);
-    boat.add(portWall);
-    var stbdWall = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.5, 4.4), new THREE.MeshLambertMaterial({ color: 0xf4eedb }));
-    stbdWall.position.set(0.95, 0.65, 0);
-    boat.add(stbdWall);
 
-    // Deck
-    var deck = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.05, 4.4), new THREE.MeshLambertMaterial({ color: 0xc8b890 }));
-    deck.position.y = 0.42;
-    boat.add(deck);
+    // Rubbing strake along the sheer — a thin dark band that reads the sheer
+    // line from any angle and stops the topsides looking like bare geometry.
+    (function() {
+      var pts = [];
+      HULL_STATIONS.forEach(function(st) { pts.push(new THREE.Vector3(st[1], st[4], st[0])); });
+      for (var i = HULL_STATIONS.length - 1; i >= 0; i--) {
+        pts.push(new THREE.Vector3(-HULL_STATIONS[i][1], HULL_STATIONS[i][4], HULL_STATIONS[i][0]));
+      }
+      var curve = new THREE.CatmullRomCurve3(pts, false);
+      var strake = new THREE.Mesh(
+        new THREE.TubeGeometry(curve, 48, 0.045, 6, false),
+        new THREE.MeshLambertMaterial({ color: 0x35506b }));
+      boat.add(strake);
+    })();
+
+    // Interior sole, inset inside the sheer and following the hull's plan so it
+    // does not poke through the topsides at the bow.
+    (function() {
+      var pos = [], idx = [];
+      var SOLE_Y = 0.42, INSET = 0.86;
+      HULL_STATIONS.forEach(function(st) {
+        var hb = Math.max(0.02, st[1] * INSET);
+        pos.push(-hb, SOLE_Y, st[0]);
+        pos.push(hb, SOLE_Y, st[0]);
+      });
+      for (var i = 0; i < HULL_STATIONS.length - 1; i++) {
+        var a = i * 2, b = a + 1, c = a + 2, d = a + 3;
+        idx.push(a, c, b, b, c, d);
+      }
+      var g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+      g.setIndex(idx);
+      g.computeVertexNormals();
+      var deck = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ color: 0xc8b890, side: THREE.DoubleSide }));
+      boat.add(deck);
+    })();
     
     // Console
     var console_ = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.7, 0.5), new THREE.MeshLambertMaterial({ color: 0x335066 }));
@@ -8989,15 +10583,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     transom.position.set(0, 0.5, -1.9);
     boat.add(transom);
 
-    // Bow point
-    var bow = new THREE.Mesh(
-      new THREE.ConeGeometry(1.0, 1.2, 4),
-      new THREE.MeshLambertMaterial({ color: 0xf4eedb })
-    );
-    bow.rotation.x = -Math.PI / 2;
-    bow.rotation.z = Math.PI / 4;
-    bow.position.set(0, 0.35, 2.4);
-    boat.add(bow);
+    // (The bow is no longer a separate cone — the stem falls out of the
+    // lofted stations above.)
 
     // ─── Navigation Lights (COLREGS Compliance)
     // Red Light (Port side bow)
@@ -9347,44 +10934,120 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
 
     // ─── Buoyage — populated based on region.
     var buoys = [];
-    function addBuoy(x, z, type) {
-      var g = new THREE.Group();
-      var bodyColor, light, label;
-      if (type === 'red-nun') {
-        var coneGeo = new THREE.ConeGeometry(0.5, 1.4, 16);
-        var coneMat = new THREE.MeshLambertMaterial({ color: 0xc8302a });
-        var cone = new THREE.Mesh(coneGeo, coneMat);
-        cone.position.y = 0.7;
-        g.add(cone);
-        label = 'red nun';
-      } else if (type === 'green-can') {
-        var cylGeo = new THREE.CylinderGeometry(0.45, 0.45, 1.4, 16);
-        var cylMat = new THREE.MeshLambertMaterial({ color: 0x2a7c44 });
-        var cyl = new THREE.Mesh(cylGeo, cylMat);
-        cyl.position.y = 0.7;
-        g.add(cyl);
-        label = 'green can';
-      } else if (type === 'cardinal-N') {
-        var topPart = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.8, 16), new THREE.MeshLambertMaterial({ color: 0x111111 }));
-        var btm = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.8, 16), new THREE.MeshLambertMaterial({ color: 0xe8d048 }));
-        topPart.position.y = 1.0; btm.position.y = 0.4;
-        g.add(topPart); g.add(btm);
-        var t1 = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.4, 8), new THREE.MeshLambertMaterial({ color: 0x111111 }));
-        t1.position.set(-0.14, 1.6, 0); g.add(t1);
-        var t2 = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.4, 8), new THREE.MeshLambertMaterial({ color: 0x111111 }));
-        t2.position.set(0.14, 1.6, 0); g.add(t2);
-        label = 'north cardinal';
-      } else if (type === 'safe-water') {
-        var sph = new THREE.Mesh(new THREE.SphereGeometry(0.55, 16, 12), new THREE.MeshLambertMaterial({ color: 0xd03830 }));
-        sph.position.y = 0.6;
-        g.add(sph);
-        var band = new THREE.Mesh(new THREE.CylinderGeometry(0.56, 0.56, 0.18, 16), new THREE.MeshLambertMaterial({ color: 0xf6f6f6 }));
-        band.position.y = 0.6;
-        g.add(band);
-        label = 'safe water';
+    var buoyDisposables = [];
+    // Vertical stripes for the safe-water mark. A sphere's UV wraps u around
+    // the equator, so stripes that vary with u come out vertical on the mark —
+    // which is the whole point of that mark: it is read by its STRIPES.
+    function stripeTexture(colours, pairs) {
+      var c = document.createElement('canvas');
+      c.setAttribute('aria-hidden', 'true');
+      c.setAttribute('role', 'img');
+      c.setAttribute('aria-label', 'Decorative buoy stripe texture');
+      c.width = 128; c.height = 8;
+      var g = c.getContext('2d');
+      var n = pairs * colours.length;
+      var w = 128 / n;
+      for (var i = 0; i < n; i++) {
+        g.fillStyle = colours[i % colours.length];
+        g.fillRect(i * w, 0, w + 1, 8);
       }
+      var t = new THREE.CanvasTexture(c);
+      buoyDisposables.push(t);
+      return t;
+    }
+    function keepBuoyGeo(o) { buoyDisposables.push(o); return o; }
+
+    // ─── Buoyage — populated based on region.
+    var buoys = [];
+    function addBuoy(x, z, type) {
+      var spec = getCoreSimBuoySpec(type);
+      if (!spec) return null;
+      var g = new THREE.Group();
+      var bands = spec.bands.length ? spec.bands : ['white'];
+
+      // Dark collar at the waterline, so a mark reads as floating rather than
+      // standing on the sea.
+      var collar = new THREE.Mesh(
+        keepBuoyGeo(new THREE.CylinderGeometry(0.58, 0.66, 0.26, 14)),
+        new THREE.MeshLambertMaterial({ color: 0x22303f }));
+      collar.position.y = 0.1;
+      g.add(collar);
+
+      var bodyBase = 0.25, bodyTop;
+      if (spec.striped) {
+        // Read by its stripes. A sphere's UV wraps u round the equator, so a
+        // texture whose stripes vary with u comes out vertically striped.
+        var stripeMat = new THREE.MeshLambertMaterial({
+          map: stripeTexture(bands.map(function(b) { return '#' + BUOY_3D_INK[b].toString(16).padStart(6, '0'); }), 4)
+        });
+        var sph = new THREE.Mesh(keepBuoyGeo(new THREE.SphereGeometry(0.55, 20, 14)), stripeMat);
+        sph.position.y = 0.78;
+        g.add(sph);
+        bodyTop = 1.33;
+      } else if (spec.body === 'nun') {
+        var cone = new THREE.Mesh(keepBuoyGeo(new THREE.ConeGeometry(0.5, 1.4, 16)),
+          new THREE.MeshLambertMaterial({ color: BUOY_3D_INK[bands[0]] }));
+        cone.position.y = 0.95;
+        g.add(cone);
+        bodyTop = 1.65;
+      } else if (spec.body === 'can') {
+        var cyl = new THREE.Mesh(keepBuoyGeo(new THREE.CylinderGeometry(0.45, 0.45, 1.4, 16)),
+          new THREE.MeshLambertMaterial({ color: BUOY_3D_INK[bands[0]] }));
+        cyl.position.y = 0.95;
+        g.add(cyl);
+        bodyTop = 1.65;
+      } else {
+        // Pillar: one horizontal band per colour, TOP-DOWN in the order the
+        // data lists them, which is how the caption reads them too.
+        var segH = 1.6 / bands.length;
+        for (var bi = 0; bi < bands.length; bi++) {
+          var seg = new THREE.Mesh(keepBuoyGeo(new THREE.CylinderGeometry(0.4, 0.4, segH, 16)),
+            new THREE.MeshLambertMaterial({ color: BUOY_3D_INK[bands[bi]] }));
+          seg.position.y = bodyBase + 1.6 - (bi + 0.5) * segH;
+          g.add(seg);
+        }
+        bodyTop = bodyBase + 1.6;
+      }
+
+      // Topmark, if the mark carries one. Cones stack VERTICALLY; which way
+      // each one points is the whole difference between the cardinals.
+      var lanternY = bodyTop + 0.45;
+      if (spec.topmark.length) {
+        var mast = new THREE.Mesh(keepBuoyGeo(new THREE.CylinderGeometry(0.05, 0.05, 1.0, 8)),
+          new THREE.MeshLambertMaterial({ color: 0x1b2230 }));
+        mast.position.y = bodyTop + 0.5;
+        g.add(mast);
+        var tmMat = new THREE.MeshLambertMaterial({ color: BUOY_3D_INK.black });
+        for (var ti = 0; ti < spec.topmark.length && ti < 2; ti++) {
+          var dir = spec.topmark[ti];
+          // Slot 0 is the UPPER topmark, matching the caption's reading order.
+          var cy = bodyTop + (ti === 0 ? 1.06 : 0.58);
+          var m;
+          if (dir === 'sphere') {
+            m = new THREE.Mesh(keepBuoyGeo(new THREE.SphereGeometry(0.2, 12, 10)), tmMat);
+          } else {
+            m = new THREE.Mesh(keepBuoyGeo(new THREE.ConeGeometry(0.24, 0.44, 10)), tmMat);
+            if (dir === 'down') m.rotation.z = Math.PI;
+          }
+          m.position.y = cy;
+          g.add(m);
+        }
+        lanternY = bodyTop + 1.42;
+      } else {
+        var std = new THREE.Mesh(keepBuoyGeo(new THREE.CylinderGeometry(0.045, 0.045, 0.5, 8)),
+          new THREE.MeshLambertMaterial({ color: 0x9aa6b2 }));
+        std.position.y = bodyTop + 0.2;
+        g.add(std);
+      }
+      var lantern = new THREE.Mesh(keepBuoyGeo(new THREE.SphereGeometry(0.13, 10, 8)),
+        new THREE.MeshBasicMaterial({ color: BUOY_3D_LANTERN[bands[0]] || 0xf8fafc }));
+      lantern.position.y = lanternY;
+      g.add(lantern);
+
       g.position.set(x, 0, z);
-      g.userData = { type: type, label: label };
+      // Phase offset so the field does not bob in lockstep, which reads as a
+      // rigid grid rather than as water.
+      g.userData = { type: type, label: spec.label, bobPhase: (x * 0.37 + z * 0.19) % 6.283 };
       scene.add(g);
       buoys.push(g);
       return g;
@@ -9468,12 +11131,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     scene.add(dockPost2);
 
     // ─── Land mass behind dock (Portland-ish silhouette)
-    var land = new THREE.Mesh(
-      new THREE.BoxGeometry(40, 4, 8),
-      new THREE.MeshLambertMaterial({ color: 0x5e7a4e })
-    );
-    land.position.set(0, 2, 15);
-    scene.add(land);
+    // Was a flat 40 x 4 x 8 box, which from the water reads as a green wall.
+    // A ridged strip costs almost nothing and gives the harbour a horizon with
+    // some shape to it: the seaward edge meets the water at zero and the land
+    // rises inland over two low hills.
+    var LAND_FRONT_Z = 11, LAND_BACK_Z = 21, LAND_HALF_X = 34;
+    function landRidge(x) {
+      return 2.4 + 1.7 * Math.sin(x * 0.17) + 0.9 * Math.sin(x * 0.41 + 1.3) + 0.5 * Math.sin(x * 0.83 - 0.6);
+    }
+    function landHeightAt(x, z) {
+      var t = (z - LAND_FRONT_Z) / (LAND_BACK_Z - LAND_FRONT_Z);
+      if (t <= 0) return 0;
+      // Ease in from the waterline so the shore is a beach, not a cliff edge.
+      return landRidge(x) * Math.min(1, Math.pow(Math.max(0, t), 0.65));
+    }
+    (function() {
+      var NX = 40, NZ = 8, pos = [], idx = [];
+      for (var iz = 0; iz <= NZ; iz++) {
+        var zz = LAND_FRONT_Z + (iz / NZ) * (LAND_BACK_Z - LAND_FRONT_Z);
+        for (var ix = 0; ix <= NX; ix++) {
+          var xx = -LAND_HALF_X + (ix / NX) * (LAND_HALF_X * 2);
+          pos.push(xx, landHeightAt(xx, zz), zz);
+        }
+      }
+      for (var iz2 = 0; iz2 < NZ; iz2++) {
+        for (var ix2 = 0; ix2 < NX; ix2++) {
+          var a = iz2 * (NX + 1) + ix2, b = a + 1, c = a + NX + 1, d = c + 1;
+          idx.push(a, c, b, b, c, d);
+        }
+      }
+      var g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+      g.setIndex(idx);
+      g.computeVertexNormals();
+      var landMesh = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ color: 0x5e7a4e, side: THREE.DoubleSide, flatShading: true }));
+      scene.add(landMesh);
+    })();
+    for (var mt = 0; mt < 18; mt++) {
+      var mtx = -22 + mt * 2.6 + (Math.random() - 0.5) * 1.5;
+      var mtz = 13.5 + (Math.random() - 0.5) * 2;
+      createTree(mtx, mtz, landHeightAt(mtx, mtz));
+    }
+    // Front face of the shore, with a margin. Derived from the same constant
+    // the terrain is built from, so moving the land moves the clamp with it.
+    var shoreLineZ = LAND_FRONT_Z - 1;
 
     // ─── Lighthouse landmark
     var lighthouse = new THREE.Group();
@@ -10668,6 +12369,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         updateWaterSurface(elapsed, 1 + (AF.seaChop || 0.15) * 1.7);
       }
 
+      // Buoys ride the same sea the boat does — static marks in a moving
+      // seascape read as scenery pegged to the seabed. Amplitude follows the
+      // weather-driven chop, so a mark bucking in rain is a visible cue.
+      if (!reducedMotion) {
+        var buoyChop = 0.10 + (AF.seaChop || 0.15) * 0.22;
+        for (var bb = 0; bb < buoys.length; bb++) {
+          var bu = buoys[bb], ph = (bu.userData && bu.userData.bobPhase) || 0;
+          bu.position.y = Math.sin(elapsed * 1.5 + ph) * buoyChop;
+          bu.rotation.z = Math.sin(elapsed * 1.1 + ph) * buoyChop * 0.5;
+          bu.rotation.x = Math.cos(elapsed * 0.9 + ph) * buoyChop * 0.35;
+        }
+      }
+
       // Update Audio Synth modulation
       updateAudioSynth();
 
@@ -10676,7 +12390,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var cameraView = boatState.cameraView || 'chase';
       var rig = getCoreCameraRig(cameraView, {
         x: boat.position.x, y: boat.position.y, z: boat.position.z,
-        heading: boatState.heading, speed: boatState.speed
+        heading: boatState.heading, speed: boatState.speed,
+        shoreZ: shoreLineZ
       });
       camera.up.set(rig.up[0], rig.up[1], rig.up[2]);
       if (rig.follow) {
@@ -10842,6 +12557,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         window.removeEventListener('resize', onResize);
         document.removeEventListener('visibilitychange', onVisibilityChange);
         try { AF.dispose(); } catch (_) {}
+        // Buoy geometries and the stripe texture are built outside the AF
+        // layer, so AF.dispose() never saw them.
+        try { buoyDisposables.forEach(function(d) { if (d && d.dispose) d.dispose(); }); } catch (_) {}
         try { renderer.dispose(); } catch (_) {}
         if (audioCtx) {
           try { audioCtx.close(); } catch (_) {}
@@ -13427,6 +15145,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           h('div', { style: headerStyle }, '🐟 Maine Species ID'),
           h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 12, fontStyle: 'italic' } },
             'Gulf of Maine fishes + American lobster. Size limits + slots in this guide reflect typical DMR rules — verify current limits at maine.gov/dmr before fishing.'),
+
+          // Every ID note below is written in anatomical shorthand. A student
+          // who cannot point to a pectoral fin cannot use any of it.
+          h('div', { style: { fontSize: 12, fontWeight: 900, color: '#bae6fd', marginBottom: 6 } }, 'Reading an ID note — the parts by name'),
+          h('div', { style: { marginBottom: 14 } }, flFishAnatomySvg(h)),
+
+          h('div', { style: { fontSize: 12, fontWeight: 900, color: '#bae6fd', marginBottom: 2 } }, 'The one pair worth drilling: cod against haddock'),
+          h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6 } },
+            'Drawn rather than photographed on purpose: a photo is one fish at one angle, while a drawing can show the diagnostic feature and leave out everything that would distract from it. Schematic, not a portrait.'),
+          h('div', { style: { marginBottom: 14 } }, flCodHaddockSvg(h)),
+
           MAINE_SPECIES.map(function(s, i) {
             return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
               h('div', { style: { display: 'flex', gap: 12, alignItems: 'flex-start', marginBottom: 6 } },
@@ -13435,7 +15164,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                   h('div', { style: { fontSize: 14, fontWeight: 900, color: '#bae6fd' } }, s.name),
                   h('div', { style: { fontSize: 11, fontStyle: 'italic', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, s.sci),
                   h('span', { className: 'fl-pill' }, s.group))),
+              // Vendored plate, where one exists under a clean licence. onError
+              // hides the figure outright: offline, or in a bundle shipped
+              // without the assets, a card with no plate is correct and a
+              // broken-image icon is not.
+              (function() {
+                var art = getCoreSpeciesArt(s.id);
+                if (!art) return null;
+                return h('figure', { key: 'art', style: { margin: '0 0 8px', padding: 8, background: '#f4f1e8', borderRadius: 8, border: '1px solid rgba(15,23,42,0.35)' } },
+                  h('img', {
+                    src: art.url,
+                    alt: 'Scientific illustration of ' + s.name + ' (' + s.sci + '). ' + s.idMarks,
+                    loading: 'lazy',
+                    onError: function(e) { var f = e.target && e.target.closest && e.target.closest('figure'); if (f) f.style.display = 'none'; },
+                    style: { display: 'block', width: '100%', maxWidth: 420, height: 'auto', margin: '0 auto' }
+                  }),
+                  h('figcaption', { style: { marginTop: 5, fontSize: 9.5, color: '#4b5563', textAlign: 'center' } },
+                    art.artist + ' · ' + art.licence + ' · via Wikimedia Commons'));
+              })(),
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, h('b', null, 'ID: '), s.idMarks),
+              // Which named parts this fish's own ID note asks you to look at.
+              (function() {
+                var feats = getCoreIdFeatures(s);
+                if (!feats.length) return null;
+                return h('div', { 'aria-label': 'Features to check: ' + feats.map(function(f) { return f.label; }).join(', '), style: { display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 6 } },
+                  feats.map(function(f) {
+                    return h('span', { key: f.id, className: 'fl-pill', style: { background: 'rgba(56,189,248,0.14)', color: '#bae6fd' } }, '🔍 ' + f.label);
+                  }));
+              })(),
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, h('b', null, 'Habitat: '), s.habitat),
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, h('b', null, 'Gear: '), (s.gear || []).join(', ')),
               h('div', { style: { fontSize: 11, color: '#fbbf24', lineHeight: 1.5, marginBottom: 4 } },
@@ -13455,13 +15211,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '🪝 Gear & Methods'),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } }, 'Every gear has tradeoffs in selectivity, efficiency, and bycatch. The most "efficient" gear is often the most damaging — sustainability requires gear choices that match the target while protecting non-targets.'),
+          // What separates these gears is WHERE each one works, which is a
+          // spatial fact thirteen cards in a column cannot show.
+          h('div', { style: { marginBottom: 4 } }, flGearSeascapeSvg(h)),
+          h('p', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textAlign: 'center', marginBottom: 12 } },
+            'Not to scale, and not every method above is shown — chumming, fly tying and ice fishing are not defined by a depth.'),
           GEAR.map(function(g, i) {
+            var sel = getCoreGearSelectivity(g);
             return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8 } },
-              h('div', { style: { fontSize: 14, fontWeight: 800, color: '#bae6fd', marginBottom: 4 } }, g.emoji + ' ' + g.name),
+              h('div', { style: { display: 'flex', gap: 8, alignItems: 'baseline', flexWrap: 'wrap', marginBottom: 4 } },
+                h('div', { style: { fontSize: 14, fontWeight: 800, color: '#bae6fd' } }, g.emoji + ' ' + g.name),
+                // Tagged only where the gear's OWN tradeoff line says so, so the
+                // tool never grades a fishery beyond what it already states.
+                sel ? h('span', { className: 'fl-pill', style: sel === 'selective'
+                  ? { background: 'rgba(74,222,128,0.16)', color: '#86efac' }
+                  : { background: 'rgba(251,146,60,0.16)', color: '#fdba74' } },
+                  sel === 'selective' ? '◎ selective' : '△ bycatch noted') : null),
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Use: '), g.use),
               h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 3 } }, h('b', null, 'Tradeoff: '), g.tradeoff),
               h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Tip: '), g.tips));
-          })));
+          }),
+          h('p', { style: { marginTop: 10, fontSize: 10.5, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } },
+            'The selectivity tags are read from each gear\'s own tradeoff line above — they are a summary of what this page already says, not a separate rating.')));
     }
 
     // ─── DMR REGS tab
@@ -13806,6 +15577,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '🗺 Maine Lobster Zones (DMR-managed)'),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } }, 'Maine\'s commercial lobster fishery is divided into 7 zones, each governed by a Zone Council that sets entry/exit rules + local rules.'),
+          h('div', { style: { marginBottom: 12 } }, flZoneRibbonSvg(h, LOBSTER_ZONES)),
           LOBSTER_ZONES.map(function(z, i) {
             return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fbbf24' } },
               h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fde047', marginBottom: 4 } }, z.name),
@@ -13855,6 +15627,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '🌱 Conservation Case Studies'),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } }, 'Real stories from Maine + the Atlantic fisheries world. Some are collapse stories. Some are recovery stories. All have lessons.'),
+          // The measurement the whole lobster fishery turns on, and the one the
+          // simulator's caliper minigame scores. Bounds come from the training
+          // rule the sim itself enforces, so figure and gameplay cannot drift.
+          h('div', { style: { fontSize: 13, fontWeight: 900, color: '#86efac', marginBottom: 6 } }, 'How a lobster is measured — and why a keeper is a band'),
+          h('div', { style: { marginBottom: 12 } }, flLobsterGaugeSvg(h, 3.25, 5)),
           CONSERVATION_CASES.map(function(cc, i) {
             return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #86efac' } },
               h('div', { style: { fontSize: 13, fontWeight: 900, color: '#86efac', marginBottom: 6 } }, cc.title),
@@ -13977,6 +15754,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('div', { style: headerStyle }, '🌊 Tide Primer — Maine\'s Daily Rhythm'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Maine tides drive everything: fishing windows, channel passage, shellfish access, weather + sea state. Mastering the tide is mastering the coast.'),
+        h('div', { style: { marginBottom: 6 } }, flTwelfthsSvg(h)),
+        h('div', { style: { display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: 12 } },
+          h('div', { style: { flex: '1 1 420px', minWidth: 300 } }, flSpringNeapSvg(h)),
+          h('div', { style: { flex: '1 1 240px', minWidth: 230, padding: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fbbf24' } },
+            h('div', { style: { fontSize: 12, fontWeight: 900, color: '#fde68a', marginBottom: 6 } }, 'Worked example'),
+            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
+              'High 04:00, low 10:00, range 9 ft. At 07:00 you are three hours down, so ',
+              h('b', { style: { color: '#fde68a' } }, '6/12 = half the range = 4.5 ft'),
+              ' below the high-water level. Read the charted depth, add the remaining 4.5 ft, and that is your water.'))),
         TIDE_PRIMER.map(function(t, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 6 } }, t.title),
@@ -13991,6 +15777,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('div', { style: headerStyle }, '🏛 Water Column Biology'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Maine waters are stratified vertically — light, temp, oxygen, prey distribution all change with depth. Fish position themselves along this gradient.'),
+        h('div', { style: { marginBottom: 12 } }, flWaterColumnSvg(h, WATER_COLUMN)),
         WATER_COLUMN.map(function(z, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 4 } }, z.zone),
@@ -14076,6 +15863,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('div', { style: headerStyle }, '📐 Navigation Math'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Compass, bearings, dead reckoning, current correction. The math behind safe + accurate navigation.'),
+        h('div', { style: { marginBottom: 10 } }, flCompassChainSvg(h)),
+        h('div', { style: { marginBottom: 12 } }, flHorizonSvg(h)),
         NAV_MATH.map(function(n, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 6 } }, n.title),
@@ -14139,12 +15928,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('div', { style: headerStyle }, '🎬 Knot Tying — Step by Step'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Detailed step-by-step for the 5 essential knots. Practice with a 6-ft cord.'),
+        h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 12 } },
+          'Numbered markers in each drawing point to the step they show. Not every step changes the picture, so the numbers skip. Where one strand crosses another, the strand drawn unbroken is the one passing over.'),
         KNOT_STEPS.map(function(k, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 6 } }, k.name),
-            h('ol', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-              k.steps.map(function(s, si) { var dot = s.indexOf('.'); return h('li', { key: si, style: { marginBottom: 3 } }, dot >= 0 ? s.substring(dot + 2) : s); })),
-            h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, '✓ Check: '), k.check));
+            h('div', { style: { display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'flex-start' } },
+              flKnotSvg(h, k.id),
+              h('div', { style: { flex: '1 1 300px', minWidth: 260 } },
+                h('ol', { style: { margin: '0 0 8px 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
+                  k.steps.map(function(s, si) { var dot = s.indexOf('.'); return h('li', { key: si, style: { marginBottom: 3 } }, dot >= 0 ? s.substring(dot + 2) : s); })),
+                h('div', { style: { fontSize: 11, color: '#86efac', fontStyle: 'italic' } }, h('b', null, '✓ Check: '), k.check),
+                flKnotSvg(h, k.id) ? null : h('div', { style: { marginTop: 6, fontSize: 10.5, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } },
+                  'No drawing for this one on purpose: the middle move passes the whole loop back over the hook, and a flat diagram cannot show that without implying a crossing that is not there.'))));
         })));
     }
 
@@ -14224,6 +16020,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             h('div', { style: { fontSize: 11, color: '#bae6fd', marginBottom: 6 } }, h('b', null, 'Knowns: '), p.knowns),
             h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 6, lineHeight: 1.5 } }, h('b', null, 'Solve: '), p.solve),
             h('div', { style: { fontSize: 11, color: '#86efac', marginBottom: 6 } }, h('b', null, 'Answer: '), p.answer),
+            // Scope is really a statement about the ANGLE the rode pulls at,
+            // which the arithmetic on its own never shows.
+            p.id === 15 ? h('div', { style: { margin: '8px 0' } }, flScopeSvg(h)) : null,
             h('div', { style: { fontSize: 11, color: '#fb923c', fontStyle: 'italic' } }, h('b', { style: { fontStyle: 'normal' } }, 'Learning: '), p.learning));
         })));
     }
@@ -15079,11 +16878,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('div', { style: headerStyle }, '🗺 NOAA Chart Symbology Reference'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'NOAA charts contain ~1000 distinct symbols + abbreviations defined in "Chart 1." Below are the most-important categories.'),
+        h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 12 } },
+          'Symbols are drawn on buff chart paper, as they appear on a real chart — soundings, contours and the dotted low-water line are black ink meant for paper and vanish on a dark screen. Entries with no drawing are ones this reference describes in words only.'),
         CHART_SYMBOLS.map(function(c, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
-            h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 6 } }, c.category),
-            h('ul', { style: { margin: '0 0 0 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } },
-              c.items.map(function(it, ii) { return h('li', { key: ii }, it); })));
+            h('div', { style: { fontSize: 13, fontWeight: 900, color: '#bae6fd', marginBottom: 8 } }, c.category),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 10 } },
+              c.items.map(function(it, ii) {
+                var sym = getCoreChartSymbol(it);
+                return h('div', { key: ii, style: { display: 'flex', gap: 10, alignItems: 'flex-start' } },
+                  flChartGlyphSvg(h, sym.glyph),
+                  h('div', { style: { minWidth: 0 } },
+                    h('div', { style: { fontSize: 11.5, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)' } }, sym.name),
+                    sym.desc ? h('div', { style: { marginTop: 2, fontSize: 10.5, lineHeight: 1.45, color: 'var(--allo-stem-text, #cbd5e1)' } }, sym.desc) : null));
+              })));
         })));
     }
 
@@ -15098,6 +16906,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fde047', marginBottom: 4 } }, '💡 ' + l.name),
             h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Location: '), l.location, ' · ', h('b', null, 'Built: '), l.year),
             h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Height: '), l.height, ' · ', h('b', null, 'Range: '), l.range, ' · ', h('b', null, 'Character: '), l.character),
+            // The rhythm is how you tell this tower from the next one at night.
+            // Entries whose "character" describes the structure rather than the
+            // light parse to null and simply get no strip.
+            flLightStripSvg(h, getCoreLightCharacter(l.character), l.name + ' light character: ' + l.character),
             h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Historical: '), l.historical),
             h('div', { style: { fontSize: 11, color: '#86efac' } }, h('b', null, 'Access: '), l.access));
         })));
@@ -15175,6 +16987,77 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('div', { style: headerStyle }, '🌙 Night + Restricted-Visibility Navigation'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Vessels have a whole vocabulary of lights + sounds for night + fog. Reading them is core seamanship.'),
+
+        // Rule 23 is a set of ANGLES, and "see only red = give-way" only makes
+        // sense once the arcs are visible.
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(220px, 280px) minmax(240px, 1fr)', gap: 14, alignItems: 'start', padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
+          h('div', null,
+            h('div', { style: { fontSize: 12, fontWeight: 900, color: '#c4b5fd', marginBottom: 6 } }, 'Where each light shows'),
+            flNavLightSectorsSvg(h)),
+          h('div', null,
+            h('div', { style: { fontSize: 12, fontWeight: 900, color: '#c4b5fd', marginBottom: 6 } }, 'What you do about it'),
+            NAV_LIGHT_VIEWS.map(function(v, i) {
+              return h('div', { key: i, style: { display: 'flex', gap: 10, alignItems: 'center', padding: '6px 0', borderTop: i ? '1px solid rgba(148,163,184,0.16)' : 'none' } },
+                flNavLightViewSvg(h, v.seen),
+                h('div', { style: { minWidth: 0 } },
+                  h('strong', { style: { fontSize: 11.5, color: '#e2e8f0' } }, v.title),
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.45 } }, v.meaning)));
+            }))),
+
+        // The three characters the section text below already names, shown as
+        // rhythms so "Fl 4s" and "Iso" stop being abbreviations to memorise.
+        h('div', { style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
+          h('div', { style: { fontSize: 12, fontWeight: 900, color: '#c4b5fd', marginBottom: 2 } }, 'Reading a light\'s character'),
+          h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 8 } }, 'Lit bar = light showing. One full cycle shown; it repeats forever.'),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 10 } },
+            [
+              { abbr: 'Fl 4s', name: 'Single flash every 4 seconds', src: 'White flash every 4 seconds' },
+              { abbr: 'Iso 6s', name: 'Isophase — equal light and dark', src: 'Isophase white 6 seconds' },
+              { abbr: 'Mo(A)', name: 'Morse "A" — short, then long', src: 'Morse "A" (.-) white' },
+              { abbr: 'Q', name: 'Quick — about one flash a second', src: 'White, continuous quick' }
+            ].map(function(ex, i) {
+              var ch = getCoreLightCharacter(ex.src);
+              return h('div', { key: i },
+                h('div', { style: { display: 'flex', gap: 8, alignItems: 'baseline' } },
+                  h('code', { style: { fontSize: 11, fontWeight: 900, color: '#fde047', fontFamily: 'ui-monospace, Menlo, monospace' } }, ex.abbr),
+                  h('span', { style: { fontSize: 10.5, color: 'var(--allo-stem-text, #cbd5e1)' } }, ex.name)),
+                flLightStripSvg(h, ch, ex.abbr + ' — ' + ex.name));
+            }))),
+
+        // Day shapes carry the same messages as the night lights above, and the
+        // section below says exactly that. They were the half left undrawn.
+        h('div', { style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
+          h('div', { style: { fontSize: 12, fontWeight: 900, color: '#c4b5fd', marginBottom: 2 } }, 'Day shapes — the same messages in daylight'),
+          h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 8 } },
+            'The real shapes are black; they are drawn in dark slate here only so they stay visible on this page. Rule numbers are 33 CFR 83, the citation the COLREGS tab gives.'),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
+            DAY_SHAPES.map(function(ds) {
+              return h('div', { key: ds.id, style: { display: 'flex', gap: 10, alignItems: 'flex-start', padding: 8, background: 'rgba(2,6,23,0.4)', borderRadius: 6 } },
+                flDayShapeSvg(h, ds),
+                h('div', { style: { minWidth: 0 } },
+                  h('div', { style: { display: 'flex', gap: 6, alignItems: 'baseline', flexWrap: 'wrap' } },
+                    h('strong', { style: { fontSize: 11.5, color: '#e2e8f0' } }, ds.name),
+                    h('span', { className: 'fl-pill' }, ds.rule)),
+                  h('div', { style: { marginTop: 3, fontSize: 10.5, lineHeight: 1.45, color: 'var(--allo-stem-text, #cbd5e1)' } }, ds.meaning)));
+            }))),
+
+        // In fog the sound signal is the only thing you have, and Rule 35's
+        // patterns were one run-on sentence. They are rhythms, so they get the
+        // same treatment as the light characters above.
+        h('div', { style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
+          h('div', { style: { fontSize: 12, fontWeight: 900, color: '#c4b5fd', marginBottom: 2 } }, 'Fog signals — what each one sounds like'),
+          h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 8 } },
+            'Drawn to scale in seconds. A prolonged blast runs 4–6 s, a short blast about 1 s, and a bell is struck rather than held — shown as a burst of strokes, not a bar.'),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 12 } },
+            FOG_SIGNALS.map(function(sig) {
+              return h('div', { key: sig.id },
+                h('div', { style: { display: 'flex', gap: 6, alignItems: 'baseline', flexWrap: 'wrap' } },
+                  h('strong', { style: { fontSize: 11.5, color: '#e2e8f0' } }, sig.who),
+                  h('span', { className: 'fl-pill' }, sig.rule)),
+                flFogSignalSvg(h, sig),
+                h('div', { style: { marginTop: 3, fontSize: 10.5, lineHeight: 1.45, color: 'var(--allo-stem-text, #cbd5e1)' } }, sig.note));
+            }))),
+
         NIGHT_NAV.map(function(n, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #a78bfa' } },
             h('div', { style: { fontSize: 13, fontWeight: 900, color: '#c4b5fd', marginBottom: 6 } }, n.title),

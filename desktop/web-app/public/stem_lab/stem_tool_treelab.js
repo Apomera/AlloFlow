@@ -1248,7 +1248,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       sun: mixHex(base.sun, '#ff9d3d', 0.45)
     };
   }
-  function skyTexture(THREE, pal, cloudHex, cloudy) {
+  function skyTexture(THREE, pal, cloudHex, cloudy, stars, dusk) {
     // `cloudy` is a PUFF count, not a cloud count: three or four overlapping puffs
     // make one cloud, which is why the number is in the dozens.
     var c = canvas2d(512, 256);
@@ -1263,7 +1263,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     g.addColorStop(1.00, pal.lo);
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, 512, 256);
+    // The dusk band. Two wrong guesses taught the dome's geography: flipY puts the
+    // TOP pole at row 0 and the EQUATOR — which is where the ground plane, hills and
+    // treeline cut the dome, i.e. the visible horizon — at row 128. Everything below
+    // row 128 is under the ground. Warming pal.lo (rows 210+) was a sunset buried in
+    // the earth; a band at rows 70-215 was mostly buried too. The sky a student can
+    // actually see is rows ~55-128, so THAT is where dusk goes: strongest at the
+    // horizon row, gone by mid-sky, the way dusk actually grades.
+    if (dusk && dusk.a > 0) {
+      var dg = ctx.createLinearGradient(0, 55, 0, 133);
+      dg.addColorStop(0.00, rgba(dusk.hex, 0));
+      dg.addColorStop(0.72, rgba(dusk.hex, dusk.a * 0.75));
+      dg.addColorStop(1.00, rgba(dusk.hex, dusk.a));
+      ctx.fillStyle = dg;
+      ctx.fillRect(0, 55, 512, 78);
+    }
     var rnd = seeded(4211);
+    // Stars, before the clouds so a puff drifts OVER them. Dark mode's sky is dusk;
+    // dusk has stars, and they are the single cheapest thing that makes it read as
+    // evening rather than as an underexposed noon. Kept high (the top half of the
+    // dome) and faint: the first pinpricks after sunset, not a planetarium.
+    if (stars) {
+      for (var st = 0; st < 130; st++) {
+        var sx = rnd() * 512, sy = rnd() * 100, sr = 0.5 + rnd() * 0.9;
+        ctx.fillStyle = rgba('#ffffff', 0.16 + rnd() * 0.5);
+        ctx.beginPath(); ctx.arc(sx, sy, sr, 0, 6.2832); ctx.fill();
+      }
+    }
     for (var i = 0; i < cloudy; i++) {
       var cx = rnd() * 512, cy = 76 + rnd() * 54, rr = 5 + rnd() * 15;
       var al = 0.30 + rnd() * 0.48;
@@ -1344,6 +1370,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
   }
   // A clump of grass blades rising from the bottom edge of the card, so an upright
   // quad reads as a tuft. Built the same alpha-tested way as the leaves.
+  // A bird at distance is a chevron; anything more detailed is noise at the size these
+  // are drawn. White on transparent so the material colour tints it per theme.
+  function birdTexture(THREE) {
+    var c = canvas2d(64, 32);
+    if (!c) return null;
+    var ctx = c.ctx;
+    ctx.clearRect(0, 0, 64, 32);
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineCap = 'round';
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(4, 8);
+    ctx.quadraticCurveTo(20, 24, 32, 22);
+    ctx.quadraticCurveTo(44, 24, 60, 8);
+    ctx.stroke();
+    return new THREE.CanvasTexture(c.cv);
+  }
+
   function grassTexture(THREE) {
     var c = canvas2d(64, 64);
     if (!c) return null;
@@ -1411,6 +1455,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     eg.addColorStop(0, rgba(far, 0));
     eg.addColorStop(1, rgba(far, 1));
     ctx.fillStyle = eg; ctx.fillRect(0, 0, 1024, 1024);
+    return new THREE.CanvasTexture(c.cv);
+  }
+
+  // The bare earth the roots are exposed through. It was a flat-coloured circle, and a
+  // hard-edged disc of one colour is the most obviously drawn thing that can sit on a
+  // ground plane — a brown ellipse pasted on the grass, with a rim the eye locks onto
+  // immediately because nothing in a wood has an edge like that.
+  //
+  // So: an alpha falloff instead of a rim, and clods and pebbles rather than one flat
+  // fill. The centre stays fully opaque, because the point of the window is to explain
+  // why the roots are visible at all; only the last third of the radius dissolves.
+  function soilTexture(THREE, hex, wetness) {
+    var c = canvas2d(512, 512);
+    if (!c) return null;
+    var ctx = c.ctx;
+    var rnd = seeded(4211);
+    // Damp earth is darker and more saturated than dry earth, so the soil answers the
+    // water slider along with the lawn rather than staying the one fixed brown.
+    //
+    // The fixed 0.16 on top is not decoration: the roots are drawn in a pale tan, and
+    // this window exists so they can be READ. Softening its edge cost contrast the old
+    // flat disc got for free, and on dry ground — where the lawn is nearly the same tan
+    // as the soil — the cutaway had almost vanished while the control bar still called
+    // it one. Legibility of the thing being explained outranks the surface explaining it.
+    var base = mixHex(hex, '#000000', 0.16 + clamp(wetness, 0, 1) * 0.26);
+    ctx.clearRect(0, 0, 512, 512);
+    ctx.fillStyle = base;
+    ctx.beginPath(); ctx.arc(256, 256, 250, 0, 6.2832); ctx.fill();
+    // Clods: broad, soft, low contrast. Big enough to read as turned earth at the size
+    // this disc is actually drawn, which is most of a mature tree's root spread.
+    ctx.globalAlpha = 0.55;
+    for (var j = 0; j < 60; j++) {
+      var px = rnd() * 512, py = rnd() * 512, pr = 14 + rnd() * 54;
+      var g = ctx.createRadialGradient(px, py, 0, px, py, pr);
+      var ph = mixHex(base, rnd() < 0.5 ? '#000000' : '#c9a173', 0.08 + rnd() * 0.18);
+      g.addColorStop(0, rgba(ph, 0.8));
+      g.addColorStop(1, rgba(ph, 0));
+      ctx.fillStyle = g; ctx.fillRect(px - pr, py - pr, pr * 2, pr * 2);
+    }
+    // Grit, fine and sparse. Same lesson as the lawn: one scale of noise alone reads as
+    // film grain rather than as a surface.
+    ctx.globalAlpha = 0.34;
+    for (var i = 0; i < 2600; i++) {
+      var x = rnd() * 512, y = rnd() * 512, r = 0.7 + rnd() * 2.4;
+      ctx.fillStyle = mixHex(base, rnd() < 0.6 ? '#000000' : '#d8b184', 0.05 + rnd() * 0.2);
+      ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    // The edge. Punched out with destination-out so the falloff is in ALPHA, not a
+    // fade toward the lawn's colour — the lawn's colour changes with season, moisture
+    // and theme, and matching it in the texture would go wrong in every one of them.
+    ctx.globalCompositeOperation = 'destination-out';
+    // Falloff over the outer quarter only. Starting it at 0.62 dissolved so much of the
+    // disc that the roots lost the surface they are read against.
+    var eg = ctx.createRadialGradient(256, 256, 250 * 0.76, 256, 256, 250);
+    eg.addColorStop(0, 'rgba(0,0,0,0)');
+    eg.addColorStop(1, 'rgba(0,0,0,1)');
+    ctx.fillStyle = eg; ctx.fillRect(0, 0, 512, 512);
+    ctx.globalCompositeOperation = 'source-over';
     return new THREE.CanvasTexture(c.cv);
   }
 
@@ -1573,8 +1676,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     var tanHalf = Math.tan(SHELL_FOV_DEG * Math.PI / 360);
     // Vertical is the honest constraint; horizontal only bites on a wide crown in a
     // narrow box, which is exactly the portrait-phone case.
-    var dv = (Math.max(0.08, e.halfV) / f) / tanHalf;
-    var dh = (Math.max(0.02, e.radius || 0) / f) / (tanHalf * a);
+    // The `+ r` on each is perspective, not padding. A crown of radius r reaches r
+    // TOWARD the camera as well as sideways, and that nearest sweep is framed at
+    // (dist - r), not at dist, so it projects larger than a flat fit assumes. Without
+    // it a wide bare winter canopy sat right on the frame edges at a distance the
+    // arithmetic said was comfortable.
+    var r = Math.max(0.02, e.radius || 0);
+    var dv = (Math.max(0.08, e.halfV) / f) / tanHalf + r;
+    var dh = (r / f) / (tanHalf * a) + r;
     // The shell clamps its own zoom to 2.6-8.5 and reset() writes home straight in, so
     // staying inside that range keeps a student's first zoom from jumping.
     return clamp(Math.max(dv, dh, BASE_DIST), BASE_DIST, 8.5);
@@ -1679,26 +1788,117 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     // ── Light direction. The sun's HEIGHT follows the light slider, so turning the
     //    light down no longer just changes a number: the sun sinks toward the
     //    horizon, the shadows stretch, and the whole scene goes long and orange. ──
-    var sunEl = 0.20 + 0.62 * lightLevel;                  // ~11 deg to ~47 deg
-    var sunAz = 0.85 + (season === 'winter' ? 0.45 : 0) - (season === 'summer' ? 0.18 : 0);
+    // ~7 deg to ~38 deg. The top of the default frame is ~21 deg above the look
+    // point, so the lower half of this range keeps the DISC on screen: turn the light
+    // down and the sun visibly sinks into frame instead of hovering just off the top
+    // edge. Full light puts it above the frame, which is honest — nobody frames the
+    // noon sun with a tree.
+    var sunEl = 0.12 + 0.54 * lightLevel;
+    // 3.35, not the old 0.85: at 0.85 the sun sat BEHIND the default camera (home yaw
+    // 0.62), so the disc, the glow and the whole low-sun spectacle were painted into a
+    // part of the sky the student never faced, and the scene was front-lit — the
+    // flattest light there is. Across the sky from the camera, the default view is
+    // gently backlit: the sun hangs in frame beside the crown, shadows reach toward
+    // the viewer, and turning the light slider down now visibly sets the sun instead
+    // of dimming a lamp somewhere off-stage.
+    // Three-quarter BACK light: ~52 degrees left of the view axis. The progression
+    // that landed here: the original 0.85 sat behind the camera — flat front light and
+    // a sun no student ever saw; dead-opposite (3.76-ish) was pure backlight, which is
+    // atmospheric but muted the whole front of the canopy, and the canopy's colour
+    // carries the stress cues this tool teaches with. Three-quarter back keeps the
+    // long shadows reaching toward the viewer and the warm glow bleeding in at the
+    // frame's left edge, while the crown's lit flank still shows its true greens. A
+    // mature crown fills the frame, so the disc itself belongs to seedlings, winter
+    // silhouettes and anyone who orbits — which is an invitation, not a loss.
+    var sunAz = 2.85 + (season === 'winter' ? 0.45 : 0) - (season === 'summer' ? 0.18 : 0);
     var sunDir = new THREE.Vector3(
       Math.cos(sunEl) * Math.sin(sunAz), Math.sin(sunEl), Math.cos(sunEl) * Math.cos(sunAz)
     ).normalize();
     var pal = skyPalette(season, !!api.dark, dry);
+    // ── The SKY answers the low sun, not just the disc. ──
+    //
+    // The disc was already reddening and sinking as the light slider fell, but the sky
+    // behind it stayed full midday blue — half a sunset. Real dusk warms the horizon
+    // hardest, the mid-sky a little, and deepens the zenith; doing exactly that, keyed
+    // to the same slider, is what turns "the lamp got dimmer" into "the day is ending".
+    // The fog, the scene background and the hemisphere light are all derived from pal
+    // downstream, so the whole landscape inherits the hour without touching them.
+    var lowSun = clamp((clamp(1 - lightLevel, 0, 1) - 0.25) / 0.75, 0, 1);
+    if (!flat && lowSun > 0) {
+      // Dark mode's dusk palette is already warm-dimmed; full strength on top of it
+      // pushes to muddy orange.
+      var warmAmt = api.dark ? lowSun * 0.6 : lowSun;
+      pal = {
+        hi: mixHex(pal.hi, '#3d5a8c', warmAmt * 0.30),
+        mid: mixHex(pal.mid, '#e79b62', warmAmt * 0.30),
+        lo: mixHex(pal.lo, '#ffb469', warmAmt * 0.58),
+        sun: pal.sun
+      };
+    }
     // A low sun reddens everything, which is most of what makes late light beautiful.
     var sunHex = mixHex(pal.sun, '#ff8a3c', clamp(1 - lightLevel, 0, 1) * 0.6);
+
+    // ── Light reaching the FLOOR. ──
+    //
+    // Not invented for the picture: this is the same Beer-Lambert extinction the engine
+    // uses to shade a tree's own leaves (effectiveLeafArea), applied to the light that
+    // gets past them. A closed canopy really does starve its own understorey, and it is
+    // the mechanism behind the tool's central brake — twice the leaf area is not twice
+    // the carbon — so drawing it costs nothing in honesty and shows the student the
+    // consequence of a number they are already watching.
+    //
+    // What is drawn is the LIGHT FIELD, not a vegetation simulation. The engine models
+    // no ground plants, so ground cover thins and thickens as an illustration of shade,
+    // and nothing anywhere reads a number back off it.
+    var canopyGround = Math.pow(Math.max(0.01, leafArea), 0.66) * 1.2;
+    // Scaled by the canopy that is actually DRAWN. leafArea is an annual figure and the
+    // engine has no seasonal term, so on its own it shaded the ground just as hard under
+    // a bare winter tree as under a closed summer one — the picture contradicting
+    // itself, deep shade beneath a tree with no leaves in it. This does not invent a
+    // number; it stops the drawing disagreeing with the drawing.
+    var canopyLai = (leafArea / canopyGround) * clamp(visual.leafDensity, 0, 1);
+    var floorLight = clamp(lightLevel * Math.exp(-0.5 * canopyLai), 0, 1);
+
+    // Soil moisture as a CONTINUOUS ground tint rather than a dry/not-dry switch. The
+    // student moves soil water on a slider; the biggest surface in frame should answer
+    // in kind instead of waiting for a threshold to trip.
+    var soilWet = clamp(typeof props.soilWater === 'number' ? props.soilWater : 0.7, 0, 1);
+    // 0 at parched, 1 at saturated, centred so ordinary conditions sit mid-range.
+    var damp = clamp((soilWet - 0.15) / 0.65, 0, 1);
 
     var groundNear, groundFar;
     if (season === 'winter') { groundNear = api.dark ? '#43463d' : '#918a78'; groundFar = api.dark ? '#353b38' : '#7b7a6b'; }
     else if (dry)            { groundNear = api.dark ? '#6b5c3e' : '#c3ab6c'; groundFar = api.dark ? '#4a3f2b' : '#a28d57'; }
     else if (season === 'autumn') { groundNear = api.dark ? '#55502c' : '#8a8b4c'; groundFar = api.dark ? '#464426' : '#7c7d44'; }
     else { groundNear = api.dark ? '#3d5230' : '#688f4d'; groundFar = api.dark ? '#33452a' : '#5c8144'; }
+    // Applied on top of the seasonal choice above so it composes with all four, and
+    // only outside high contrast, where every decorative tint is suppressed anyway.
+    if (!flat && season !== 'winter') {
+      var parchHex = api.dark ? '#7a6636' : '#c9b477';
+      var lushHex = api.dark ? '#2f4a27' : '#4f7d3c';
+      groundNear = mixHex(mixHex(groundNear, parchHex, (1 - damp) * 0.45), lushHex, damp * 0.22);
+      groundFar = mixHex(mixHex(groundFar, parchHex, (1 - damp) * 0.38), lushHex, damp * 0.18);
+      // Low light gilds the grass the way it gilds the sky — faintly, or the lawn
+      // reads as autumn when the student only moved the light slider.
+      if (lowSun > 0) {
+        groundNear = mixHex(groundNear, '#d99a55', lowSun * 0.14);
+        groundFar = mixHex(groundFar, '#d99a55', lowSun * 0.10);
+      }
+    }
 
     // ── Sky dome, sun, fog ────────────────────────────────────────────────
     var sky = null;
+    // Declared HERE, above the background block that assigns them — an initialiser
+    // lower down would hoist its declaration and then RUN later, wiping the
+    // assignment. That is the exact bug that ate crownMaxR.
+    var birdMesh = null, birdSeeds = null;
     if (!flat) {
       var cloudHex = api.dark ? mixHex(pal.mid, '#ffd9a8', 0.35) : '#ffffff';
-      var skyTex = skyTexture(THREE, pal, cloudHex, season === 'winter' ? 210 : 150);
+      // Sunset clouds are lit from below and carry the dusk colour; pure white puffs
+      // over a warm band read as pasted on.
+      if (lowSun > 0) cloudHex = mixHex(cloudHex, '#ffbd8c', lowSun * 0.55);
+      var skyTex = skyTexture(THREE, pal, cloudHex, season === 'winter' ? 210 : 150, !!api.dark,
+        lowSun > 0 ? { hex: '#ffab5e', a: (api.dark ? 0.6 : 1) * lowSun * 0.55 } : null);
       sky = new THREE.Mesh(
         new THREE.SphereGeometry(42, 24, 16),
         new THREE.MeshBasicMaterial({
@@ -1719,13 +1919,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
 
       var sunTex = sunTexture(THREE, sunHex);
       if (sunTex) {
+        // The warm WASH around the sun, not the sun. Real sky is not a flat gradient
+        // with a disc on it: the air around the sun is bright for tens of degrees, and
+        // that wash is most of what makes a sky read as luminous rather than painted.
+        // A second, much larger and much fainter sprite at the SAME position — built
+        // from the same sunDir, so it can never sit off-axis from the disc the way a
+        // glow painted into the sky texture's UV space could.
+        var glowSprite = new THREE.Sprite(new THREE.SpriteMaterial({
+          map: sunTex, transparent: true, depthTest: false, depthWrite: false,
+          fog: false, blending: THREE.AdditiveBlending,
+          // Stronger when the sun is low: haze scatters more light near the horizon,
+          // and the low-sun scene is the one that wants to feel golden.
+          opacity: (api.dark ? 0.30 : 0.22) + clamp(1 - lightLevel, 0, 1) * 0.18
+        }));
+        glowSprite.scale.setScalar(30);
+        glowSprite.position.copy(sunDir).multiplyScalar(25);
+        glowSprite.renderOrder = -999;
+        group.add(glowSprite);
+
         var sunSprite = new THREE.Sprite(new THREE.SpriteMaterial({
           map: sunTex, transparent: true, depthTest: false, depthWrite: false,
           fog: false, blending: THREE.AdditiveBlending, opacity: api.dark ? 0.95 : 0.8
         }));
         sunSprite.scale.setScalar(10);
         sunSprite.position.copy(sunDir).multiplyScalar(26);
-        sunSprite.renderOrder = -999;
+        sunSprite.renderOrder = -998;
         group.add(sunSprite);
       }
 
@@ -1802,6 +2020,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     // ── Branches. Drawn for every tree, but they only READ on a bare winter
     //    broadleaf; in leaf they are the armature the foliage hangs from. ──
     var branchTips = [];
+    // ★ Declared HERE, above the branch builder, and not beside crownTopY below.
+    // `var` hoists, so an initialiser further down still RUNS later: the branch loop
+    // accumulated into these correctly and then the assignment underneath reset them to
+    // their seed values. A bare winter tree, whose only extent comes from branches, was
+    // framed as if it were a fifth of its real width.
+    var crownMaxR = 0;
+    var bareTopY = 0;
     var bareBranchGeometries = [];
     var UP = new THREE.Vector3(0, 1, 0);
     var DOWN = new THREE.Vector3(0, -1, 0);
@@ -1840,6 +2065,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       var end = origin.clone().addScaledVector(d, len)
         .add(new THREE.Vector3(bx, 0, bz).applyQuaternion(q));
       if (depth === 1) branchTips.push(end);
+      // Every branch END counts toward the silhouette, not just the ones that end up
+      // carrying foliage. In leaf this is redundant — the masses hung off these tips
+      // reach further anyway — but a BARE winter broadleaf has no masses and no cards,
+      // so without this its extent was never measured at all: crownMaxR stayed at its
+      // seed value, the camera framed a tree far smaller than the one on screen, and
+      // every branch ran off all four edges.
+      var tipRad = Math.sqrt(end.x * end.x + end.z * end.z);
+      if (tipRad > crownMaxR) crownMaxR = tipRad;
+      if (end.y > bareTopY) bareTopY = end.y;
       var n = depth > 1 ? 3 : 0;
       for (var i = 0; i < n; i++) {
         // Golden-angle rotation between whorls, so successive levels do not stack
@@ -1902,7 +2136,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     // only the nominal cluster radius: the branch system hangs masses well outside it,
     // so a mature oak's silhouette is several times crownR across and framing the
     // camera off crownR alone still cropped both sides of the canopy.
-    var crownMaxR = crownR * 0.6;
+    // Seeded, never reset: the branch builder above has already contributed to this.
+    if (crownMaxR < crownR * 0.6) crownMaxR = crownR * 0.6;
     var foliage = [];          // inner masses, for per-mass wind
     var cardSpec = [];         // {p, sc, q, phase, hue}
 
@@ -2057,7 +2292,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       addMass(corePt, crownR * 0.64, ci);
       scatterCards(corePt, crownR * 0.90, 96, 4441, ci);
     } else {
-      crownTopY = H;   // bare winter: the branches ARE the silhouette
+      // Bare winter: the branches ARE the silhouette, so the crown top is wherever the
+      // highest branch end actually reached rather than the nominal trunk height. The
+      // 4th branch order a bare tree earns carries limbs well above H.
+      crownTopY = Math.max(H, bareTopY);
     }
 
     // ── The leaf layer itself. Alpha-TESTED, never blended: blended foliage needs a
@@ -2210,7 +2448,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       var cang = c2 * 2.39996 + 0.6;
       var cdist = rootSpread * (1.15 + (c2 % 3) * 0.3);
       var chh = H * (0.15 + ((c2 * 7) % 5) / 42);
-      var cr3 = trunkR * 0.62;
+      // Slender, from the CLONE's own height — not a fraction of the parent's trunk.
+      // At 62% of the parent's radius and a sixth of its height, every sucker was a
+      // squat white cone with a pancake of leaves: mushrooms ringing the tree. A root
+      // sucker is a pole. The parent's radius only caps it so a seedling parent cannot
+      // have suckers thicker than itself.
+      var cr3 = Math.min(trunkR * 0.5, chh * 0.032);
       var cstem = new THREE.Mesh(
         limbGeom(THREE, chh, cr3, cr3 * 0.55, chh * 0.05, chh * 0.03, 0.07, 31 + c2, 8), cloneBarkMat);
       cstem.position.set(Math.cos(cang) * cdist, chh / 2, Math.sin(cang) * cdist);
@@ -2232,6 +2475,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           mat(mixHex(visualLeafHex(season, sp.leafType, visual, c2 + 3), '#0b2412', 0.56),
             { shininess: 3, specular: 0x0a1f10, flat: true, glow: 0.025 }));
         ctop.position.set(Math.cos(cang) * cdist, chh * (needle ? 1.15 : 1.12), Math.sin(cang) * cdist);
+        // A young broadleaf's crown is a narrow COLUMN of foliage on its pole, not a
+        // ball balanced on top. Stretched vertically and dropped slightly, so the
+        // foliage clothes the upper stem the way a real sucker's does.
+        if (!needle) {
+          ctop.scale.set(0.8, 1.5, 0.8);
+          ctop.position.y = chh * 0.98;
+        }
         if (api.wantShadow) ctop.castShadow = true;
         cloneGroup.add(ctop);
         registerPick(ctop, 'clones');
@@ -2244,7 +2494,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           var cphi = Math.acos(1 - 2 * cu);
           var cdir = new THREE.Vector3(
             Math.sin(cphi) * Math.cos(cc * 2.39996), Math.cos(cphi) * 0.85, Math.sin(cphi) * Math.sin(cc * 2.39996));
-          var cp = ctop.position.clone().addScaledVector(cdir, ctopR * (0.72 + crnd() * 0.44));
+          // Same elongation as the mass beneath them, or the column wears a spherical
+          // halo of leaves and the pancake is back.
+          var cOff = cdir.clone().multiplyScalar(ctopR * (0.72 + crnd() * 0.44));
+          if (!needle) { cOff.x *= 0.8; cOff.z *= 0.8; cOff.y *= 1.5; }
+          var cp = ctop.position.clone().add(cOff);
           var cdd = new THREE.Object3D();
           cdd.position.copy(cp);
           cdd.lookAt(cp.clone().addScaledVector(cdir, 1));
@@ -2319,10 +2573,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
 
     // A dark soil window explains why the roots remain visible. It is deliberately
     // compact and slightly above the lawn to avoid a false full-depth excavation.
+    var soilHex = dry ? '#6f5131' : '#59412c';
+    var soilTex = flat ? null : soilTexture(THREE, soilHex, damp);
     var soilWindow = new THREE.Mesh(
-      new THREE.CircleGeometry(Math.min(lawnR * 0.42, rootSpread * 1.28), 40),
+      // A few more segments now the rim is meant to be invisible: at 40 the alpha
+      // falloff was landing on a faintly polygonal outline.
+      new THREE.CircleGeometry(Math.min(lawnR * 0.42, rootSpread * 1.28), 64),
       new THREE.MeshPhongMaterial({
-        color: flat ? 0x111111 : new THREE.Color(dry ? '#6f5131' : '#59412c').getHex(),
+        color: flat ? 0x111111 : (soilTex ? 0xffffff : new THREE.Color(soilHex).getHex()),
+        map: soilTex,
+        transparent: !!soilTex,
+        // The disc sits 3mm above the lawn and is drawn after it. Writing depth from a
+        // transparent edge would punch a hole in the ground for anything behind it.
+        depthWrite: !soilTex,
         side: THREE.DoubleSide, shininess: 0
       })
     );
@@ -2333,7 +2596,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
 
     // One seasonal ground-detail draw call: drought cracks OR fallen autumn leaves.
     // Shape carries the cue, so it remains useful without depending on colour alone.
-    if (!flat && (cracked || (season === 'autumn' && !needle && alive))) {
+    // Needle duff is the evergreen counterpart to autumn leaf fall, and the reason a
+    // conifer's floor looks the way it does all year: needles shed continuously and rot
+    // slowly, so the litter is always there rather than arriving in one season.
+    var needleDuff = needle && alive && !cracked;
+    if (!flat && (cracked || needleDuff || (season === 'autumn' && !needle && alive))) {
       if (cracked) {
         var crackSegments = 32;
         var crackPos = new Float32Array(crackSegments * 6);
@@ -2355,7 +2622,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         group.add(new THREE.LineSegments(crackGeo,
           new THREE.LineBasicMaterial({ color: new THREE.Color('#4a2f20').getHex() })));
       } else {
-        var litterCount = 52;
+        // Duff is denser and finer than leaf fall, and it is needles rather than
+        // blades, so it gets a longer, thinner card and a rust-brown palette.
+        var DUFF = ['#6b4a2c', '#7d5733', '#5c3f26', '#8a6238', '#6f5130'];
+        var litterCount = needleDuff ? 76 : 52;
         var litter = new THREE.InstancedMesh(
           new THREE.CircleGeometry(1, 5),
           new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide }), litterCount
@@ -2366,13 +2636,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         for (var lit = 0; lit < litterCount; lit++) {
           var la = litterRnd() * 6.2832;
           var ld = rootSpread * (0.44 + litterRnd() * 1.05);
-          var ls = crownR * (0.020 + litterRnd() * 0.025);
+          var ls = crownR * (needleDuff ? (0.012 + litterRnd() * 0.014) : (0.020 + litterRnd() * 0.025));
           litterDummy.position.set(Math.cos(la) * ld, 0.014, Math.sin(la) * ld);
           litterDummy.rotation.set(-Math.PI / 2, 0, litterRnd() * 6.2832);
-          litterDummy.scale.set(ls * 1.45, ls, ls);
+          // Needles are long and thin; a fallen broadleaf is closer to round.
+          litterDummy.scale.set(ls * (needleDuff ? 3.4 : 1.45), ls, ls);
           litterDummy.updateMatrix();
           litter.setMatrixAt(lit, litterDummy.matrix);
-          litterColor.set(AUTUMN[lit % AUTUMN.length]);
+          litterColor.set(needleDuff ? DUFF[lit % DUFF.length] : AUTUMN[lit % AUTUMN.length]);
           litter.setColorAt(lit, litterColor);
         }
         litter.instanceMatrix.needsUpdate = true;
@@ -2442,6 +2713,80 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       group.add(fRound);
       group.add(fTrunk);
 
+      // ── Hills beyond the wood. ──
+      //
+      // The treeline ended at a flat horizon line, so the world visibly stopped where
+      // the trees did. One ring of low domes behind it gives the landscape a third
+      // depth plane, and aerial perspective comes free: they are unlit and fogged like
+      // the treeline (a lit distant hill comes back brighter than the subject), and at
+      // 20-28 units they sit deep in the 14-62 fog band, so each is hazier the further
+      // back it stands. One InstancedMesh, one draw call.
+      var NHILL = 9;
+      var hillMat = farMat(mixHex(farHex, pal.lo, 0.35));
+      var hills = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 12, 8), hillMat, NHILL);
+      var hrnd = seeded(9377);
+      for (var hI = 0; hI < NHILL; hI++) {
+        var ha = hrnd() * 6.2832;
+        var hd = 20 + hrnd() * 8;
+        var hw = 6 + hrnd() * 7;
+        var hh2 = 1.1 + hrnd() * 1.9;
+        // Centre sits at y=0 so only the upper half shows: a dome, not a ball.
+        dummy.position.set(Math.cos(ha) * hd, 0, Math.sin(ha) * hd);
+        dummy.scale.set(hw, hh2, hw * (0.7 + hrnd() * 0.5));
+        dummy.rotation.set(0, ha + hrnd(), 0);
+        dummy.updateMatrix();
+        hills.setMatrixAt(hI, dummy.matrix);
+      }
+      hills.instanceMatrix.needsUpdate = true;
+      group.add(hills);
+
+      // ── A far flock. ──
+      //
+      // Nothing in this scene was ALIVE except the tree. A handful of distant birds
+      // circling the wood is the cheapest life a landscape can carry: six instances of
+      // one chevron card, repositioned in frame(). Built only when motion runs — under
+      // reduced motion a flock frozen mid-air reads as debris, the same rule as the
+      // falling leaves. Winter keeps them; geese do not leave with the leaves.
+      if (!reduced) {
+        var birdTex = birdTexture(THREE);
+        if (birdTex) {
+          var NBIRD = 6;
+          birdMesh = new THREE.InstancedMesh(
+            new THREE.PlaneGeometry(1, 0.5),
+            new THREE.MeshBasicMaterial({
+              map: birdTex, alphaTest: 0.35, transparent: false,
+              color: new THREE.Color(api.dark ? '#1c2430' : '#2a3038').getHex(),
+              side: THREE.DoubleSide, fog: true
+            }), NBIRD);
+          birdSeeds = [];
+          for (var bI = 0; bI < NBIRD; bI++) {
+            var seed = {
+              // Loose formation: shared centre, individual radius, height and phase.
+              // Heights in WORLD units, and the whole normalised scene is 2.6 of them:
+              // a first pass at 5.2 put every bird above the frame for the default
+              // camera, which is a flock nobody would ever see.
+              r: 10 + (bI % 3) * 1.4,
+              h: 2.7 + ((bI * 5) % 4) * 0.35,
+              ph: bI * 1.05,
+              sc: 0.34 + (bI % 2) * 0.10,
+              flap: 2.6 + (bI % 3) * 0.5
+            };
+            birdSeeds.push(seed);
+            // Placed at build, not left for the first frame(): a fresh InstancedMesh
+            // is six identity matrices, which is six chevrons inside the trunk for
+            // one visible frame.
+            dummy.position.set(Math.cos(seed.ph) * seed.r, seed.h, Math.sin(seed.ph) * seed.r);
+            dummy.rotation.set(-1.25, -seed.ph, 0);
+            dummy.scale.setScalar(seed.sc);
+            dummy.updateMatrix();
+            birdMesh.setMatrixAt(bI, dummy.matrix);
+          }
+          birdMesh.instanceMatrix.needsUpdate = true;
+          birdMesh.renderOrder = -500;   // over the sky, under everything near
+          group.add(birdMesh);
+        }
+      }
+
       // ── Undergrowth. A handful of grass tufts and low scrub around the foot of the
       //    tree. They cost one draw call and they are the only thing in frame that
       //    gives the trunk a SCALE to be read against. ──
@@ -2450,7 +2795,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       // same alpha-tested card treatment the canopy does.
       var grassTex = grassTexture(THREE);
       if (grassTex) {
-        var NTUFT = 150;
         var tuftMat = new THREE.MeshPhongMaterial({
           map: grassTex, alphaTest: 0.4, transparent: false, side: THREE.DoubleSide,
           color: new THREE.Color(
@@ -2463,22 +2807,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         // A vertical card catches almost nothing from a key light overhead, so without
         // this the tufts render as dark scribbles on a lit lawn.
         if (!flat) tuftMat.emissive = new THREE.Color(tuftMat.color).multiplyScalar(0.11);
-        var tufts = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), tuftMat, NTUFT);
+        // ── Where the ground cover actually grows. ──
+        //
+        // Uniform scatter is what made the foreground read as empty wallpaper: the same
+        // 150 tufts at the same spacing whatever the tree or the light was doing. Now
+        // each candidate is KEPT against the light at that spot, so the shade of a
+        // closed crown is drawn as a thinning, and a bright gap fills in.
+        //
+        // Candidates are collected first and the mesh is sized to what survived: an
+        // InstancedMesh renders its full count, so leftover instances would pile up at
+        // the origin as a bright tuft growing out of the trunk.
+        var placed = [];
         var trnd = seeded(3331);
-        for (var ti = 0; ti < NTUFT; ti++) {
+        var CANDIDATES = 210;
+        for (var ti = 0; ti < CANDIDATES; ti++) {
           var ta = trnd() * 6.2832;
           // Nothing right at the foot: trampled bare ground under a canopy is real,
           // and tufts there would bury the root flare the Spread view needs to show.
-          var td = lawnR * (0.30 + trnd() * 0.85);
+          var td = lawnR * (0.30 + trnd() * 0.95);
+          // Under the crown a plant gets floorLight; past the drip line it gets the
+          // open sky. Softened across the edge rather than switched, so there is no
+          // ring of grass tracing the canopy outline.
+          var edge = clamp((td - crownR * 0.55) / Math.max(0.001, crownR * 0.9), 0, 1);
+          var here = floorLight + (lightLevel - floorLight) * edge;
+          // Sparse everywhere is still a lawn, so keep a floor: bare earth under a
+          // dense canopy is the point, empty frame is not.
+          if (trnd() > 0.20 + here * 0.80) continue;
           var ts = 0.055 + trnd() * 0.048;
-          dummy.position.set(Math.cos(ta) * td, ts * 0.48, Math.sin(ta) * td);
-          dummy.scale.set(ts, ts, ts);
-          dummy.rotation.set(0, trnd() * 6.2832, (trnd() - 0.5) * 0.24);
-          dummy.updateMatrix();
-          tufts.setMatrixAt(ti, dummy.matrix);
+          placed.push({
+            x: Math.cos(ta) * td, z: Math.sin(ta) * td, s: ts,
+            r: trnd() * 6.2832, t: (trnd() - 0.5) * 0.24,
+            // Shade plants are darker and lankier. A subtle cue, but it is the one the
+            // eye reads as depth rather than as a different kind of plant.
+            dim: 1 - clamp(1 - here, 0, 1) * 0.30
+          });
         }
-        tufts.instanceMatrix.needsUpdate = true;
-        group.add(tufts);
+        if (placed.length) {
+          var tufts = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), tuftMat, placed.length);
+          var tuftColor = new THREE.Color();
+          for (var tp = 0; tp < placed.length; tp++) {
+            var P = placed[tp];
+            dummy.position.set(P.x, P.s * 0.48, P.z);
+            dummy.scale.set(P.s, P.s, P.s);
+            dummy.rotation.set(0, P.r, P.t);
+            dummy.updateMatrix();
+            tufts.setMatrixAt(tp, dummy.matrix);
+            if (!flat) {
+              tuftColor.set(tuftMat.color).multiplyScalar(P.dim);
+              tufts.setColorAt(tp, tuftColor);
+            }
+          }
+          tufts.instanceMatrix.needsUpdate = true;
+          if (tufts.instanceColor) tufts.instanceColor.needsUpdate = true;
+          group.add(tufts);
+        }
+        // What the shade actually did, for a test that would otherwise have to count
+        // pixels. floorLight is the claim; groundCover is the drawing of it.
+        try {
+          window.__alloTreeLabScene = {
+            floorLight: floorLight, lightLevel: lightLevel, canopyLai: canopyLai,
+            groundCover: placed.length, candidates: CANDIDATES, damp: damp
+          };
+        } catch (e) {}
       }
     }
 
@@ -2582,6 +2972,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       wind *= form.wind;
       if (!t0) t0 = now;
       var t = (now - t0) / 1000;
+
+      // Clouds drift. One rotation write on the sky dome per frame: the slowest motion
+      // in the scene, and the one that makes a still frame feel like a paused video
+      // rather than a poster. Under reduced motion this function has already returned.
+      if (sky) sky.rotation.y = t * 0.0035;
+
+      // The flock. A slow shared circuit with per-bird radius, height and phase, plus
+      // a wing-flap squash. Distance does the rest: at nine units out a chevron card
+      // and a real silhouette are the same thing.
+      if (birdMesh && birdSeeds) {
+        for (var bi2 = 0; bi2 < birdSeeds.length; bi2++) {
+          var B = birdSeeds[bi2];
+          var ba = t * 0.10 + B.ph;
+          cardDummy.position.set(
+            Math.cos(ba) * B.r,
+            B.h + Math.sin(t * 0.5 + B.ph * 2) * 0.25,
+            Math.sin(ba) * B.r
+          );
+          // Face along the flight path, laid nearly flat so the chevron reads from
+          // the low camera angle.
+          cardDummy.rotation.set(-1.25, -ba, 0);
+          var flap = 1 + Math.sin(t * B.flap * 2.4 + B.ph) * 0.35;
+          cardDummy.scale.set(B.sc, B.sc * flap, B.sc);
+          cardDummy.updateMatrix();
+          birdMesh.setMatrixAt(bi2, cardDummy.matrix);
+        }
+        birdMesh.instanceMatrix.needsUpdate = true;
+      }
       // Gusts. Constant-amplitude sway is exactly what gives a sine wave away as a
       // sine wave; real wind arrives in pulses, so the amplitude is itself modulated
       // by two slow beats that never quite line up.
@@ -2715,6 +3133,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       else document.body.classList.remove(IMMERSIVE_CLASS);
     } catch (e) {}
   }
+
+  // ── Places, expressed as CONDITIONS. ──
+  //
+  // The temptation with scenery is a biome picker: rainforest, desert, tundra. This
+  // engine has no biome term, so those would be costumes, and the tool would owe the
+  // same disclaimer the season panel already carries ("changing this changes what you
+  // are looking at, not a figure the model recalculated"). A caption admitting the
+  // scenery means nothing is worse than no scenery.
+  //
+  // These are not costumes. Each one WRITES the light, water and temperature the engine
+  // already models, so the picture changes because the conditions changed — and the
+  // limiting factor moves with it, which is the lesson rather than a backdrop. Each is
+  // a real place a tree grows, and each one makes a different factor the limit.
+  var ENV_PLACES = [
+    {
+      id: 'open', emoji: '🌤', label: 'Open field',
+      light: 0.95, soilWater: 0.65, tempC: 22,
+      note: 'Full sun and nothing competing for it. Most trees are limited by something else here.'
+    },
+    {
+      id: 'understory', emoji: '🌑', label: 'Deep shade',
+      light: 0.18, soilWater: 0.75, tempC: 20,
+      note: 'The floor of a closed wood. Plenty of water, almost no light, and light becomes the limit.'
+    },
+    {
+      id: 'grassland', emoji: '🏜', label: 'Dry grassland',
+      light: 0.95, soilWater: 0.20, tempC: 28,
+      note: 'Bright and hot with little soil water. The stomata close, and water limits everything.'
+    },
+    {
+      id: 'valley', emoji: '⛰', label: 'Sheltered valley',
+      light: 0.70, soilWater: 0.85, tempC: 18,
+      note: 'Damp, mild and part-shaded. Close to comfortable for most of these species.'
+    },
+    {
+      id: 'cold', emoji: '❄️', label: 'Cold mountainside',
+      light: 0.85, soilWater: 0.55, tempC: 6,
+      note: 'Light and water are fine; it is simply too cold for the chemistry to run quickly.'
+    }
+  ];
 
   // Playback speeds in simulated years per real second. The slowest is deliberately
   // sub-year so the seasons actually cycle on screen; above that they would only
@@ -3387,6 +3845,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       // The slider keys are prefixed. `slider()` builds its DOM id from the key, the
       // page's own Conditions card stays mounted behind the stage, and two elements
       // sharing an id break every label/htmlFor association on the screen.
+      // One row of the full-screen carbon budget. `kg C`, never a bare `kg`: every mass
+      // in this engine is carbon, and the tool's own guard rejects a number followed by
+      // a bare kg because it reads as biomass and is about double.
+      function budgetLine(key, label, value, hex) {
+        return h('div', {
+          key: 'bl-' + key,
+          style: { display: 'flex', justifyContent: 'space-between', gap: 8 }
+        }, [
+          h('span', { key: 'a', style: { color: T.dim } }, label),
+          h('span', { key: 'b', style: { fontWeight: 800, color: hex, whiteSpace: 'nowrap' } },
+            round(value, 2) + ' kg C')
+        ]);
+      }
+
       function fullConditionsPanel() {
         var lim = live.limiting || {};
         var limLabel = experimentFactorLabel(lim.id);
@@ -3405,8 +3877,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         }, [
           h('div', {
             key: 'hd',
-            style: { fontSize: 12, fontWeight: 800, color: T.text, marginBottom: 8 }
+            style: { fontSize: 12, fontWeight: 800, color: T.text, marginBottom: 6 }
           }, __alloT('stem.treelab.conditions', 'Conditions')),
+          // Somewhere to START. Three sliders with no reference points is a lot to ask
+          // of a student who does not yet know what a limiting factor feels like; a
+          // named place they can picture gets them to an interesting state in one
+          // click, and the sliders then show them what that place actually IS.
+          h('div', {
+            key: 'places', role: 'group',
+            'aria-label': __alloT('stem.treelab.places', 'Places'),
+            style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 9 }
+          }, ENV_PLACES.map(function (pl) {
+            var on = Math.abs(envCfg.light - pl.light) < 0.03 &&
+              Math.abs(envCfg.soilWater - pl.soilWater) < 0.03 &&
+              Math.abs(envCfg.tempC - pl.tempC) < 1;
+            return btn('place-' + pl.id, pl.emoji + ' ' + __alloT('stem.treelab.place_' + pl.id, pl.label), function () {
+              // Writes the SAME inputs the sliders write, so a place is a shortcut
+              // through the model rather than a costume laid over it.
+              updMulti({ light: pl.light, soilWater: pl.soilWater, tempC: pl.tempC });
+              srSay(pl.label + '. ' + __alloT('stem.treelab.place_note_' + pl.id, pl.note));
+            }, { small: true, pressed: on, disabled: experimentLocked });
+          })),
           slider('fs-light', __alloT('stem.treelab.light', 'Light'), envCfg.light, 0, 1, 0.05,
             function (v) { upd('light', v); }, function (v) { return Math.round(v * 100) + '%'; }, experimentLocked),
           slider('fs-water', __alloT('stem.treelab.soil_water', 'Soil water'), envCfg.soilWater, 0, 1, 0.05,
@@ -3415,6 +3906,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             ? slider('fs-co2', CO2, envCfg.co2ppm, 180, 900, 10,
               function (v) { upd('co2ppm', v); }, function (v) { return v + ' ppm'; }, experimentLocked)
             : null,
+          // ── What it COSTS to stay alive. ──
+          //
+          // "What limits a tree, what it costs to stay alive, and how it makes more of
+          // itself" is the tool's own subtitle, and full screen showed the first third
+          // of it. A tree can be in full leaf, in bright light, and still be spending
+          // more than it earns — that is the fact behind every carbon-starvation death
+          // in this model, and it was invisible in the view a student actually watches.
+          //
+          // Read from the same `live` / `liveResp` the budget card uses. Deriving them
+          // again here is how a picture starts disagreeing with the table under it.
+          // A DEAD tree earns nothing and spends nothing. live.gross is computed from
+          // the stored leafArea whether or not the tree is alive, so without this gate
+          // the panel showed a corpse with a healthy income — "This tree has died" in
+          // the HUD, "Left to grow with 47 kg C" right under it. Same claim-audit class
+          // as the post-mortem trusting a stale flag: never let a surface report a
+          // number the state it describes could not produce.
+          h('div', {
+            key: 'budget',
+            style: {
+              marginTop: 2, paddingTop: 8, borderTop: '1px dashed ' + T.border,
+              fontSize: 11.5, lineHeight: 1.55, color: T.text
+            }
+          }, !tree.alive ? [
+            h('div', {
+              key: 'bh',
+              style: { fontWeight: 800, marginBottom: 4, color: T.dim, fontSize: 11 }
+            }, __alloT('stem.treelab.this_year', 'This year')),
+            h('div', { key: 'gone', style: { color: T.dim, lineHeight: 1.5 } },
+              __alloT('stem.treelab.dead_budget',
+                'Nothing. A dead tree makes no sugar and spends none. Its stored carbon stays in the wood.'))
+          ] : [
+            h('div', {
+              key: 'bh',
+              style: { fontWeight: 800, marginBottom: 4, color: T.dim, fontSize: 11 }
+            }, __alloT('stem.treelab.this_year', 'This year')),
+            budgetLine('made', __alloT('stem.treelab.made_short', 'Made'), live.gross, T.good),
+            budgetLine('spent', __alloT('stem.treelab.spent_short', 'Spent staying alive'), liveResp, T.warn),
+            budgetLine('net', __alloT('stem.treelab.left_short', 'Left to grow with'), liveNet,
+              liveNet >= 0 ? T.accent : T.bad),
+            // A negative year is the whole drama of the model and deserves saying, not
+            // just a red number a student is left to interpret.
+            liveNet < 0 ? h('div', {
+              key: 'defic',
+              style: { marginTop: 5, color: T.bad, fontSize: 11, lineHeight: 1.45 }
+            }, __alloT('stem.treelab.full_deficit',
+              'Spending more than it makes, and living off its reserves.')) : null
+          ]),
           // The reason, not just the verdict. Under drought the CO2 term genuinely IS
           // the smallest number, and reporting that alone sends a student off to add
           // CO2 — which this tool exists to teach is useless while the stomata are
@@ -3425,11 +3963,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
               marginTop: 4, paddingTop: 8, borderTop: '1px dashed ' + T.border,
               fontSize: 11.5, lineHeight: 1.5, color: T.text
             }
-          }, lim.viaStomata
-            ? __alloT('stem.treelab.full_why_stomata',
-              'Water is the limit. ' + CO2 + ' is running lower, but only because water stress has closed the stomata that let it in.')
-            : __alloT('stem.treelab.full_why_' + (lim.id || 'none'),
-              limLabel + ' is the limit right now. Raise it and the rate moves; raise anything else and it will not.'))
+          }, !tree.alive
+            // Diagnosing a limiting factor for a corpse invites the student to fix it.
+            ? __alloT('stem.treelab.full_why_dead',
+              'Nothing limits a dead tree. Start a new seedling to keep experimenting.')
+            : lim.viaStomata
+              ? __alloT('stem.treelab.full_why_stomata',
+                'Water is the limit. ' + CO2 + ' is running lower, but only because water stress has closed the stomata that let it in.')
+              : __alloT('stem.treelab.full_why_' + (lim.id || 'none'),
+                limLabel + ' is the limit right now. Raise it and the rate moves; raise anything else and it will not.'))
         ]);
       }
 
@@ -3471,8 +4013,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
               sp.emoji + ' ' + sp.name + ' · ' + __alloT('stem.treelab.age', 'age') + ' ' + tree.age),
             h('div', { key: 'b', style: { fontSize: 12, color: T.dim } },
               round(tree.heightM, 1) + ' m tall · ' + round(tree.dbhCm, 1) + ' cm across'),
-            h('div', { key: 'lim', style: { padding: '4px 8px', borderRadius: 999, background: T.cardAlt, border: '1px solid ' + T.accent, fontSize: 10, fontWeight: 800, color: T.text } },
-              __alloT('stem.treelab.limiting_now_short', 'Limiting now: ') + viewerLimit)
+            // Same dead-gate the full-screen HUD carries: naming a limiting factor for
+            // a dead tree invites the student to go and fix it.
+            h('div', { key: 'lim', style: { padding: '4px 8px', borderRadius: 999, background: T.cardAlt, border: '1px solid ' + (tree.alive ? T.accent : T.bad), fontSize: 10, fontWeight: 800, color: tree.alive ? T.text : T.bad } },
+              tree.alive
+                ? __alloT('stem.treelab.limiting_now_short', 'Limiting now: ') + viewerLimit
+                : __alloT('stem.treelab.dead_chip', 'This tree has died'))
           ]),
           h('div', {
             key: 'stage', style: stageStyle,
@@ -3712,13 +4258,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             atLeast(band, 'g68')
               ? __alloT('stem.treelab.budget_sub_g68', 'Gross photosynthesis minus maintenance respiration is what is left to grow with. Everything below is spent out of that surplus.')
               : __alloT('stem.treelab.budget_sub_k2', 'Sugar made, minus sugar used just to stay alive. What is left is what the tree can grow with.')),
-          h('div', { key: 'nums', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: 8, marginBottom: 10 } }, [
-            statTile('made', atLeast(band, 'g68') ? 'Gross photosynthesis' : 'Sugar made', round(live.gross, 2) + ' kg C', T.good),
-            statTile('spent', atLeast(band, 'g68')
-              ? __alloT('stem.treelab.tile_resp', 'Maintenance respiration')
-              : __alloT('stem.treelab.tile_resp_k2', 'Sugar used to stay alive'), round(liveResp, 2) + ' kg C', T.warn),
-            statTile('net', atLeast(band, 'g68') ? 'Net carbon' : 'Left to grow with', round(liveNet, 2) + ' kg C', liveNet >= 0 ? T.accent : T.bad)
-          ]),
+          // Same gate as the full-screen panel, for the same reason: live.gross is
+          // computed from stored leafArea whether or not the tree is alive, so these
+          // tiles reported a healthy income for a corpse while postMortem() below
+          // explained the death. Two cards on one screen telling opposite stories.
+          !tree.alive
+            ? h('div', {
+              key: 'nums-dead',
+              style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 13, color: T.dim, lineHeight: 1.55, marginBottom: 10 }
+            }, __alloT('stem.treelab.dead_budget',
+              'Nothing. A dead tree makes no sugar and spends none. Its stored carbon stays in the wood.'))
+            : h('div', { key: 'nums', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: 8, marginBottom: 10 } }, [
+              statTile('made', atLeast(band, 'g68') ? 'Gross photosynthesis' : 'Sugar made', round(live.gross, 2) + ' kg C', T.good),
+              statTile('spent', atLeast(band, 'g68')
+                ? __alloT('stem.treelab.tile_resp', 'Maintenance respiration')
+                : __alloT('stem.treelab.tile_resp_k2', 'Sugar used to stay alive'), round(liveResp, 2) + ' kg C', T.warn),
+              statTile('net', atLeast(band, 'g68') ? 'Net carbon' : 'Left to grow with', round(liveNet, 2) + ' kg C', liveNet >= 0 ? T.accent : T.bad)
+            ]),
           h('div', {
             key: 'lim',
             style: {

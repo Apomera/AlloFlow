@@ -648,7 +648,13 @@ const getBlueprintResourcePlan = (blueprint) => {
             uiId: (typeof item === 'object' && item && (item.uiId || item.stepId)) || (String(type) + '-' + idx),
             directive: typeof item === 'string'
                 ? (toolDirectives[type] || "")
-                : (item.directive || item.instructions || item.customInstructions || toolDirectives[type] || "")
+                : (item.directive || item.instructions || item.customInstructions || toolDirectives[type] || ""),
+            // Activities redesign (2026-08-16): a brainstorm step may carry an
+            // activity mode ('ideas' | 'discussion' | 'jigsaw') plus options.
+            // Optional and additive — plans without it behave exactly as before
+            // (the dispatcher defaults to idea starters).
+            activityMode: (typeof item === 'object' && item && typeof item.activityMode === 'string') ? item.activityMode : null,
+            activityConfig: (typeof item === 'object' && item && item.activityConfig && typeof item.activityConfig === 'object') ? item.activityConfig : null
         };
     }).filter(Boolean);
 };
@@ -755,6 +761,13 @@ const executeOneBlueprint = async (blueprint, ctx) => {
             // carries the real message.
             rethrowErrors: true
         };
+        // Activities redesign (2026-08-16): forward a brainstorm step's activity
+        // mode into the dispatcher's configOverride. Guarded on the tool so a
+        // stray field on another row type cannot change behavior.
+        if (type === 'brainstorm' && finalResources[i].activityMode) {
+            stepConfig.activityMode = finalResources[i].activityMode;
+            if (finalResources[i].activityConfig) stepConfig.activityConfig = finalResources[i].activityConfig;
+        }
         // The standards audit is post-hoc: it audits whatever it can find. Left
         // to itself, selectCurriculumArtifacts GUESSES its own scope — by
         // curriculumId, else a "latest analysis anchor" heuristic, else every
@@ -1153,11 +1166,18 @@ const handleRebuildBlueprintStep = async (deps, uiId) => {
     });
   });
   try {
-    const resultItem = await handleGenerate(row.tool, null, false, null, {
+    const rebuildConfig = {
       customInstructions: row.directive || '',
       historyOverride: Array.isArray(history) ? history.slice() : [],
       lessonDNA: persistedLessonDNA || null,
-    }, false, (blueprintExecutionResult && blueprintExecutionResult.settingsSnapshot) || null);
+    };
+    // Activities redesign (2026-08-16): rebuilds honor the plan row's activity
+    // mode, so a discussion/jigsaw step rebuilds as the same kind of activity.
+    if (row.tool === 'brainstorm' && typeof row.activityMode === 'string') {
+      rebuildConfig.activityMode = row.activityMode;
+      if (row.activityConfig && typeof row.activityConfig === 'object') rebuildConfig.activityConfig = row.activityConfig;
+    }
+    const resultItem = await handleGenerate(row.tool, null, false, null, rebuildConfig, false, (blueprintExecutionResult && blueprintExecutionResult.settingsSnapshot) || null);
     patch({ status: resultItem ? 'landed' : 'failed',
             resourceId: (resultItem && resultItem.id) || null,
             rebuilt: true });

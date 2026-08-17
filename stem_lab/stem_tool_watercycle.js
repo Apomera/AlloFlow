@@ -463,6 +463,12 @@
       '@media(prefers-contrast:more){.wc-precip-lab,.wc-precip-chamber,.wc-precip-canvas-dock,.wc-precip-control-group,.wc-precip-result{border-width:2px}}@media(forced-colors:active){.wc-precip-lab,.wc-precip-chamber,.wc-precip-canvas-dock,.wc-precip-control-group,.wc-precip-result,.wc-precip-metric,.wc-precip-btn,.wc-precip-pause,.wc-precip-select-grid select,.wc-precip-preset,.wc-precip-writing textarea{border-color:CanvasText;background:Canvas;color:CanvasText}.wc-precip-btn.is-primary,.wc-precip-pause[aria-pressed="true"]{background:Highlight;color:HighlightText}.wc-precip-result{border-left-color:Highlight}.wc-precip-kicker,.wc-precip-control-title,.wc-precip-field-head output,.wc-precip-table th{color:CanvasText}}'
       ,'.wc-lightning-study{margin:9px 0;padding:9px;border:1px solid rgba(14,165,233,.24);border-radius:10px;background:rgba(224,242,254,.38)}.wc-lightning-study-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap}.wc-lightning-study-head strong{font-size:11px;color:#0f172a}.wc-lightning-study-head span{font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#0369a1}.wc-lightning-study-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:7px}.wc-lightning-study-step{min-height:42px;padding:6px 7px;border:1px solid rgba(14,165,233,.28);border-radius:8px;background:rgba(255,255,255,.76);color:#334155;font-size:11px;font-weight:900;text-align:center}.wc-lightning-study-step:hover:not(:disabled){background:#fff;border-color:#0284c7}.wc-lightning-study-step[aria-pressed="true"]{border-color:#0369a1;background:#0369a1;color:#fff;box-shadow:0 0 0 2px rgba(56,189,248,.2)}.wc-lightning-study-step:disabled{cursor:not-allowed;opacity:.46}.wc-storm-anatomy .wc-lightning-study-copy{min-height:2.7em;margin:7px 0 0;font-size:11px;line-height:1.4;color:#334155}.wc-storm-anatomy .wc-lightning-study-note{margin:4px 0 0;font-size:11px;line-height:1.35;color:#075985}.dark .wc-lightning-study{border-color:rgba(56,189,248,.24);background:rgba(8,47,73,.44)}.dark .wc-lightning-study-head strong,.dark .wc-storm-anatomy .wc-lightning-study-copy{color:#e2e8f0}.dark .wc-lightning-study-head span,.dark .wc-storm-anatomy .wc-lightning-study-note{color:#7dd3fc}.dark .wc-lightning-study-step{border-color:rgba(125,211,252,.3);background:rgba(15,23,42,.76);color:#e2e8f0}.dark .wc-lightning-study-step[aria-pressed="true"]{border-color:#7dd3fc;background:#075985;color:#fff}@media(max-width:560px){.wc-lightning-study-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(forced-colors:active){.wc-lightning-study,.wc-lightning-study-step{border-color:CanvasText;background:Canvas;color:CanvasText}.wc-lightning-study-step[aria-pressed="true"]{background:Highlight;color:HighlightText}.wc-lightning-study-head strong,.wc-lightning-study-head span,.wc-lightning-study-copy,.wc-lightning-study-note{color:CanvasText}}'
       ,'.wc-precip-lab{--wc-precip-accent:#38bdf8;--wc-precip-accent-soft:rgba(56,189,248,.18);--wc-precip-accent-ink:#075985}.wc-precip-lab[data-precipitation-kind="snow"]{--wc-precip-accent:#f8fafc;--wc-precip-accent-soft:rgba(226,232,240,.22);--wc-precip-accent-ink:#475569}.wc-precip-lab[data-precipitation-kind="mix"]{--wc-precip-accent:#c4b5fd;--wc-precip-accent-soft:rgba(196,181,253,.2);--wc-precip-accent-ink:#6d28d9}.wc-precip-lab[data-precipitation-kind="freezing-rain"]{--wc-precip-accent:#67e8f9;--wc-precip-accent-soft:rgba(103,232,249,.2);--wc-precip-accent-ink:#0e7490}.wc-precip-lab[data-precipitation-kind="sleet"]{--wc-precip-accent:#93c5fd;--wc-precip-accent-soft:rgba(147,197,253,.2);--wc-precip-accent-ink:#1d4ed8}.wc-precip-lab[data-precipitation-kind="hail"]{--wc-precip-accent:#f1f5f9;--wc-precip-accent-soft:rgba(241,245,249,.22);--wc-precip-accent-ink:#334155}.wc-precip-lab[data-precipitation-kind="virga"]{--wc-precip-accent:#fbbf24;--wc-precip-accent-soft:rgba(251,191,36,.2);--wc-precip-accent-ink:#b45309}.wc-precip-lab[data-precipitation-kind="clear"]{--wc-precip-accent:#94a3b8;--wc-precip-accent-soft:rgba(148,163,184,.18);--wc-precip-accent-ink:#475569}.wc-precip-chamber{border-color:var(--wc-precip-accent);box-shadow:0 18px 38px rgba(2,6,23,.28)}.wc-precip-chamber::after{content:"";position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 0 1px var(--wc-precip-accent-soft)}.wc-precip-canvas-dock{display:grid;grid-template-columns:minmax(0,1fr) minmax(130px,.58fr) auto;align-items:center;padding:8px 10px;border:0;border-top:1px solid rgba(186,230,253,.3);border-radius:0}.wc-precip-live-outcome{display:flex;align-items:center;gap:9px;min-width:0}.wc-precip-outcome-mark{display:grid!important;place-items:center;flex:0 0 34px;width:34px;height:34px;border:1px solid var(--wc-precip-accent);border-radius:50%;background:var(--wc-precip-accent-soft);color:var(--wc-precip-accent)!important;font-size:17px!important;line-height:1!important;letter-spacing:0!important}.wc-precip-live-copy{min-width:0}.wc-precip-live-copy strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.wc-precip-live-copy small{display:block;margin-top:2px;color:#bae6fd;font-size:9px;font-weight:800;line-height:1.25}.wc-precip-live-meter{min-width:0;padding-left:10px;border-left:1px solid rgba(186,230,253,.2)}.wc-precip-live-meter-head{display:flex;align-items:center;justify-content:space-between;gap:7px}.wc-precip-live-meter-head strong{font-size:10px;color:#fff}.wc-precip-live-meter meter{display:block;width:100%;height:8px;margin-top:4px;border:0;background:transparent;accent-color:var(--wc-precip-accent)}.wc-precip-live-meter meter::-webkit-meter-bar{height:6px;border:0;border-radius:99px;background:rgba(148,163,184,.28)}.wc-precip-live-meter meter::-webkit-meter-optimum-value{border-radius:99px;background:var(--wc-precip-accent)}.wc-precip-live-meter meter::-moz-meter-bar{border-radius:99px;background:var(--wc-precip-accent)}.wc-precip-result{border-left-color:var(--wc-precip-accent-ink);background:linear-gradient(100deg,var(--wc-precip-accent-soft),rgba(255,255,255,.8) 34%)}.wc-precip-result-badge{background:var(--wc-precip-accent-soft);color:var(--wc-precip-accent-ink)}.wc-precip-path-step{display:grid;grid-template-columns:32px minmax(0,1fr);align-items:center;gap:8px;position:relative;border-top:3px solid var(--wc-precip-accent-ink);padding:8px}.wc-precip-path-icon{display:grid!important;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--wc-precip-accent-soft);color:var(--wc-precip-accent-ink)!important;font-size:14px!important;line-height:1!important;letter-spacing:0!important}.wc-precip-path-copy{display:block!important;min-width:0}.wc-precip-path-label{font-size:9px!important;letter-spacing:.07em!important;color:#0369a1!important}.wc-precip-path-arrow{color:var(--wc-precip-accent-ink)}.dark .wc-precip-result{background:linear-gradient(100deg,var(--wc-precip-accent-soft),rgba(15,23,42,.78) 38%)}.dark .wc-precip-result-badge{background:var(--wc-precip-accent-soft);color:#f8fafc}.dark .wc-precip-path-step{border-top-color:var(--wc-precip-accent)}.dark .wc-precip-path-icon,.dark .wc-precip-path-arrow{color:var(--wc-precip-accent)!important}.dark .wc-precip-path-label{color:#7dd3fc!important}@media(max-width:560px){.wc-precip-canvas-dock{grid-template-columns:minmax(0,1fr) auto}.wc-precip-live-meter{grid-column:1/-1;padding:7px 0 0;border-top:1px solid rgba(186,230,253,.2);border-left:0}.wc-precip-live-copy strong{white-space:normal}.wc-precip-path-step{grid-template-columns:30px minmax(0,1fr)}}@media(forced-colors:active){.wc-precip-outcome-mark,.wc-precip-path-icon{border-color:CanvasText;background:Canvas;color:CanvasText!important}.wc-precip-live-meter meter{forced-color-adjust:auto}.wc-precip-result,.wc-precip-path-step{border-color:CanvasText;background:Canvas;color:CanvasText}.wc-precip-result-badge,.wc-precip-path-label{background:Canvas;color:CanvasText!important}}'
+      ,'.wc-metric{transition:transform 180ms ease,box-shadow 180ms ease,border-color 180ms ease}.wc-metric:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(14,116,144,.16);border-color:rgba(14,165,233,.62)}.dark .wc-metric:hover{box-shadow:0 10px 22px rgba(2,6,23,.5);border-color:rgba(56,189,248,.5)}'
+      ,'.wc-cycle-brief{position:relative;overflow:hidden}.wc-cycle-brief::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:44%;background:linear-gradient(105deg,rgba(255,255,255,0) 0%,rgba(255,255,255,.30) 50%,rgba(255,255,255,0) 100%);transform:skewX(-14deg);animation:wcBriefSheen 9s ease-in-out infinite;pointer-events:none}.dark .wc-cycle-brief::after{background:linear-gradient(105deg,rgba(125,211,252,0) 0%,rgba(125,211,252,.12) 50%,rgba(125,211,252,0) 100%)}@keyframes wcBriefSheen{0%,62%{left:-60%}86%,100%{left:135%}}'
+      ,'.wc-canvas-shell::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:inset 0 0 64px rgba(2,6,23,.32),inset 0 1px 0 rgba(255,255,255,.10)}'
+      ,'.wc-stage-rack button{transition:transform 150ms ease,box-shadow 150ms ease,filter 150ms ease}.wc-stage-rack button:hover{transform:translateY(-1px);filter:saturate(1.12)}.wc-stage-rack button[aria-pressed="true"]{box-shadow:0 6px 16px rgba(15,23,42,.24)}'
+      ,'.wc-view-segments button[aria-pressed="true"]{background:linear-gradient(135deg,#0284c7,#0369a1)}'
+      ,'.wc-steward-card{transition:transform 170ms ease,box-shadow 170ms ease;box-shadow:0 2px 8px rgba(15,23,42,.06)}.wc-steward-card:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(15,23,42,.15)}.wc-steward-card button:hover{filter:brightness(1.1)}.wc-steward-cta{transition:transform 160ms ease,box-shadow 160ms ease,filter 160ms ease}.wc-steward-cta:hover{transform:translateY(-1px);filter:brightness(1.06)}.wc-steward-cta:active{transform:scale(.99)}'
     ].join('');
     if (document.head) document.head.appendChild(st);
   })();
@@ -2925,13 +2931,26 @@ const d = labToolData.waterCycle || {};
                 components.map(function(comp) {
                   var pts = ptsFor(comp.id);
                   return h('g', { key: comp.id },
-                    h('path', { d: pathStr(pts), stroke: comp.color, strokeWidth: 2, fill: 'none', strokeLinejoin: 'round' })
+                    h('path', { d: pathStr(pts), stroke: comp.color, strokeWidth: 2.2, fill: 'none', strokeLinejoin: 'round', strokeLinecap: 'round' }),
+                    // Point markers make single readings legible; the final year
+                    // gets a halo dot so the campaign endpoint stands out.
+                    pts.map(function(p, pi) {
+                      var isLast = pi === pts.length - 1;
+                      return h('circle', {
+                        key: 'pt' + pi, cx: p.x, cy: p.y, r: isLast ? 3.4 : 2,
+                        fill: comp.color,
+                        stroke: isLast ? (isDark ? '#0f172a' : '#ffffff') : 'none',
+                        strokeWidth: isLast ? 1.5 : 0
+                      });
+                    })
                   );
                 }),
                 components.map(function(comp, ci) {
+                  var pts = ptsFor(comp.id);
+                  var lastV = pts.length ? Math.round(pts[pts.length - 1].v) : 0;
                   return h('g', { key: 'leg' + comp.id },
-                    h('line', { x1: w - padR + 6, y1: padT + 8 + ci * 16, x2: w - padR + 20, y2: padT + 8 + ci * 16, stroke: comp.color, strokeWidth: 2.5 }),
-                    h('text', { x: w - padR + 24, y: padT + 12 + ci * 16, fontSize: 10, fill: isDark ? '#cbd5e1' : '#334155' }, comp.icon + ' ' + comp.name.split(' ')[0])
+                    h('line', { x1: w - padR + 6, y1: padT + 8 + ci * 16, x2: w - padR + 20, y2: padT + 8 + ci * 16, stroke: comp.color, strokeWidth: 2.5, strokeLinecap: 'round' }),
+                    h('text', { x: w - padR + 24, y: padT + 12 + ci * 16, fontSize: 10, fill: isDark ? '#cbd5e1' : '#334155' }, comp.icon + ' ' + comp.name.split(' ')[0] + ' · ' + lastV)
                   );
                 })
               )
@@ -3106,6 +3125,7 @@ const d = labToolData.waterCycle || {};
                   watershedComponents().map(function(c) {
                     return h('div', {
                       key: c.id,
+                      className: 'wc-steward-card',
                       style: {
                         background: isDark ? 'rgba(15,23,42,0.6)' : '#ffffff',
                         borderLeft: '3px solid ' + c.color,
@@ -3184,7 +3204,7 @@ const d = labToolData.waterCycle || {};
 
                 h('button', {
                   onClick: function() { startStewardCampaign(); },
-                  className: "focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all",
+                  className: "wc-steward-cta focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all",
                   style: {
                     width: '100%',
                     padding: '14px 20px',
@@ -3204,6 +3224,17 @@ const d = labToolData.waterCycle || {};
             // ── DEBRIEF ──
             if (steward.phase === 'debrief' && steward.finalOutcome) {
               var o = steward.finalOutcome;
+              // Outcome colours are tuned for borders and background tints; two
+              // of the four are illegible as HEADING TEXT on the near-white
+              // debrief card ('recovering' #22c55e = 2.18:1, 'mixed' #f59e0b =
+              // 2.05:1, against 3:1 for large text). Keep o.color decorative and
+              // darken the ink for light mode only. DERIVED at render, never
+              // stored: an outcome persisted before this change carries no new
+              // field (same trap as componentsAt75).
+              var outcomeInk = isDark ? o.color : ({
+                '#22c55e': '#15803d', '#f59e0b': '#b45309',
+                '#16a34a': '#15803d', '#ef4444': '#b91c1c'
+              }[o.color] || o.color);
               var baseline = computeStewardDoNothing();
               var actualAvgQ = Math.round(steward.components.reduce(function(a, c) { return a + c.quality; }, 0) / steward.components.length);
               var baselineAvgQ = Math.round(baseline.reduce(function(a, c) { return a + c.quality; }, 0) / baseline.length);
@@ -3230,7 +3261,7 @@ const d = labToolData.waterCycle || {};
                   }
                 },
                   h('div', { style: { fontSize: 40, marginBottom: 6 } }, o.icon),
-                  h('h3', { style: { margin: 0, color: o.color, fontSize: 22 } }, o.label),
+                  h('h3', { style: { margin: 0, color: outcomeInk, fontSize: 22 } }, o.label),
                   h('p', { style: { margin: '8px 0 0', color: isDark ? '#cbd5e1' : '#334155', fontSize: 14, lineHeight: 1.6 } }, o.desc)
                 ),
 
@@ -3309,7 +3340,10 @@ const d = labToolData.waterCycle || {};
                   )
                 ),
                 h('div', { style: { padding: 10, background: isDark ? 'rgba(15,23,42,0.6)' : '#f8fafc', border: isDark ? '1px solid #334155' : '1px solid #cbd5e1', borderRadius: 8, fontSize: 12, color: isDark ? '#cbd5e1' : '#334155' } },
-                  h('strong', { style: { color: '#0ea5e9' } }, t('stem.watercycle.components_at_75_quality', 'Components at 75+ quality: ')), steward.componentsAt75 + ' / 6 · ',
+                  // Derive from components rather than reading the stored copy:
+                  // a debrief state saved without componentsAt75 rendered
+                  // "undefined / 6", and the count is always derivable.
+                  h('strong', { style: { color: '#0ea5e9' } }, t('stem.watercycle.components_at_75_quality', 'Components at 75+ quality: ')), steward.components.filter(function(c) { return c.quality >= 75; }).length + ' / 6 · ',
                   h('strong', { style: { color: '#0ea5e9' } }, t('stem.watercycle.connectivity_boosts', 'Connectivity boosts: ')), (steward.connectivityBoosts || 0)
                 ),
                 h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
@@ -3418,9 +3452,18 @@ const d = labToolData.waterCycle || {};
                     var postC = (lastSnap.post || []).find(function(p) { return p.id === preC.id; }) || preC;
                     var def = getWatershedComponent(preC.id);
                     function delta(label, before, after) {
+                      // Theme-aware, matching the component-stat colours below.
+                      // The -500 green/red are only legible on the DARK card: on
+                      // white they measure 2.28:1 and 3.76:1 against 4.5:1 for
+                      // this 11px text. The neutral greys were also inverted -
+                      // the lighter slate sat on white, the darker on the dark
+                      // card (2.56:1 and 3.75:1).
                       var dlt = Math.round(after - before);
-                      var color = isDark ? '#64748b' : '#94a3b8'; var arrow = '·';
-                      if (Math.abs(dlt) >= 1) { color = dlt > 0 ? '#22c55e' : '#ef4444'; arrow = dlt > 0 ? '▲' : '▼'; }
+                      var color = isDark ? '#94a3b8' : '#475569'; var arrow = '·';
+                      if (Math.abs(dlt) >= 1) {
+                        color = dlt > 0 ? (isDark ? '#22c55e' : '#15803d') : (isDark ? '#ef4444' : '#b91c1c');
+                        arrow = dlt > 0 ? '▲' : '▼';
+                      }
                       return h('span', { style: { color: color, fontSize: 11, fontWeight: 700, marginRight: 8 } }, label + ' ' + Math.round(after) + ' ' + arrow + ' ' + (dlt > 0 ? '+' : '') + dlt);
                     }
                     return h('div', { key: preC.id, style: { fontSize: 12, padding: '4px 0', borderTop: isDark ? '1px solid #1e293b' : '1px solid #e2e8f0' } },
@@ -4253,6 +4296,11 @@ const d = labToolData.waterCycle || {};
                 canvasEl.dataset.thunderWaveRadiusKm = waveState.radiusKm.toFixed(2);
                 canvasEl.dataset.thunderWaveProgress = waveProgress.toFixed(3);
               }              function drawCloudPuff(ctx2, x, y, radius, depth, moistureValue) {
+                // Soft volumetric lobe. The old single gradient ended DARK at the
+                // rim all the way around, so every puff read as a glossy sphere.
+                // The rim now fades out, and the depth/moisture darkening sits in
+                // a second bottom-weighted pass so shading hangs under the lobe.
+                var shade = model.isDark ? 195 : 226;
                 var cloudGradient = ctx2.createRadialGradient(
                   x - radius * 0.25,
                   y - radius * 0.32,
@@ -4261,13 +4309,22 @@ const d = labToolData.waterCycle || {};
                   y,
                   radius
                 );
-                var shade = model.isDark ? 195 : 225;
-                cloudGradient.addColorStop(0, 'rgba(248,250,252,' + (0.7 + moistureValue * 0.25) + ')');
-                cloudGradient.addColorStop(0.62, 'rgba(' + shade + ',' + (shade + 8) + ',245,' + (0.64 + moistureValue * 0.2) + ')');
-                cloudGradient.addColorStop(1, 'rgba(71,85,105,' + (0.35 + depth * 0.22) + ')');
+                cloudGradient.addColorStop(0, 'rgba(248,250,252,' + (0.72 + moistureValue * 0.22) + ')');
+                cloudGradient.addColorStop(0.55, 'rgba(' + shade + ',' + (shade + 6) + ',243,' + (0.5 + moistureValue * 0.2) + ')');
+                cloudGradient.addColorStop(1, 'rgba(148,163,184,0)');
                 ctx2.fillStyle = cloudGradient;
                 ctx2.beginPath();
                 ctx2.arc(x, y, radius, 0, Math.PI * 2);
+                ctx2.fill();
+                var underGradient = ctx2.createRadialGradient(
+                  x, y + radius * 0.45, radius * 0.15,
+                  x, y + radius * 0.4, radius * 0.95
+                );
+                underGradient.addColorStop(0, 'rgba(71,85,105,' + (0.16 + depth * 0.16 + moistureValue * 0.1) + ')');
+                underGradient.addColorStop(1, 'rgba(71,85,105,0)');
+                ctx2.fillStyle = underGradient;
+                ctx2.beginPath();
+                ctx2.arc(x, y + radius * 0.18, radius * 0.92, 0, Math.PI * 2);
                 ctx2.fill();
               }
 
@@ -4611,16 +4668,18 @@ const d = labToolData.waterCycle || {};
                 drawCloudPuff(context, cloudCenter - w * 0.06, cloudY - 5, 52 * cloudScale, 0.75, model.config.moisture / 100);
                 drawCloudPuff(context, cloudCenter + w * 0.07, cloudY, 47 * cloudScale, 0.65, model.config.moisture / 100);
                 drawCloudPuff(context, cloudCenter + w * 0.17, cloudY + 15, 35 * cloudScale, 0.35, model.config.moisture / 100);
-                var cloudBaseGradient = context.createLinearGradient(0, cloudY + 18, 0, cloudBase + 8);
-                cloudBaseGradient.addColorStop(0, 'rgba(71,85,105,' + (0.18 + model.config.moisture / 300) + ')');
+                // Transparent top stop dissolves the slab's hard seam into the puffs
+                var cloudBaseGradient = context.createLinearGradient(0, cloudY + 14, 0, cloudBase + 8);
+                cloudBaseGradient.addColorStop(0, 'rgba(71,85,105,0)');
+                cloudBaseGradient.addColorStop(0.38, 'rgba(71,85,105,' + (0.18 + model.config.moisture / 300) + ')');
                 cloudBaseGradient.addColorStop(1, 'rgba(30,41,59,' + (0.34 + model.config.moisture / 250) + ')');
                 context.fillStyle = cloudBaseGradient;
                 context.beginPath();
-                context.moveTo(cloudCenter - w * 0.25, cloudY + 25);
+                context.moveTo(cloudCenter - w * 0.21, cloudY + 25);
                 context.bezierCurveTo(cloudCenter - w * 0.12, cloudY + 13,
-                  cloudCenter + w * 0.12, cloudY + 17, cloudCenter + w * 0.25, cloudY + 28);
-                context.lineTo(cloudCenter + w * 0.23, cloudBase);
-                context.quadraticCurveTo(cloudCenter, cloudBase + 10, cloudCenter - w * 0.23, cloudBase);
+                  cloudCenter + w * 0.12, cloudY + 17, cloudCenter + w * 0.21, cloudY + 28);
+                context.lineTo(cloudCenter + w * 0.19, cloudBase);
+                context.quadraticCurveTo(cloudCenter, cloudBase + 10, cloudCenter - w * 0.19, cloudBase);
                 context.closePath();
                 context.fill();
                 drawStormChargeSeparation(context, w, h, cloudCenter, cloudY, cloudBase, groundY);
@@ -6555,11 +6614,16 @@ const d = labToolData.waterCycle || {};
 
               // ── Sun / Moon with animated rays / glow ──
 
-              if (isDark) {
+              // Night is a SCENE state, not just a theme: with the solar slider
+              // low the light-theme sky already renders stars and deep indigo, so
+              // the moon must take over there too or a bright sun hangs in a
+              // night sky beside the NIGHT badge.
+              var nightScene2d = isDark || skyBright < 0.32;
+              if (nightScene2d) {
                 // Crescent Moon
                 var moonX = cW * 0.82;
                 var moonY = cH * 0.08 + Math.sin(tick * 0.005) * cH * 0.03;
-                
+
                 var moonGlow = ctx.createRadialGradient(moonX, moonY, 4 * dpr, moonX, moonY, 45 * dpr);
                 moonGlow.addColorStop(0, 'rgba(125,211,252,0.25)');
                 moonGlow.addColorStop(0.4, 'rgba(125,211,252,0.09)');
@@ -6573,8 +6637,11 @@ const d = labToolData.waterCycle || {};
                 ctx.beginPath();
                 ctx.arc(moonX, moonY, 14 * dpr, 0, Math.PI * 2);
                 ctx.fill();
-                
-                ctx.fillStyle = '#090d1f';
+
+                // Crescent cutout matches the sky's top gradient stop per theme
+                ctx.fillStyle = isDark
+                  ? '#090d1f'
+                  : 'hsl(230,' + (40 + (skyBright / 0.3) * 20) + '%,' + (8 + (skyBright / 0.3) * 15) + '%)';
                 ctx.beginPath();
                 ctx.arc(moonX - 6 * dpr, moonY - 2 * dpr, 13 * dpr, 0, Math.PI * 2);
                 ctx.fill();
@@ -6993,6 +7060,44 @@ const d = labToolData.waterCycle || {};
               ctx.fillStyle = sheen;
               ctx.fillRect(0, cH * 0.635, cW * 0.55, cH * 0.085);
 
+              // ── Leaping fish — a silver arc over the waves every few seconds ──
+              // Deterministic from tick (position varies per cycle); skipped
+              // entirely under reduced motion so no fish freezes mid-air.
+              if (!wcMotionReduced) {
+                var fishCycle2d = 520;
+                var fishPhase2d = (tick % fishCycle2d) / 34; // airborne while < 1
+                if (fishPhase2d < 1) {
+                  var fishHop2d = Math.sin(fishPhase2d * Math.PI);
+                  var fishX2d = cW * (0.14 + ((Math.floor(tick / fishCycle2d) * 7) % 5) * 0.07) + fishPhase2d * cW * 0.05;
+                  var fishY2d = cH * 0.655 - fishHop2d * cH * 0.05;
+                  ctx.save();
+                  ctx.translate(fishX2d, fishY2d);
+                  ctx.rotate((fishPhase2d - 0.5) * 1.5);
+                  var fishGrad2d = ctx.createLinearGradient(0, -3 * dpr, 0, 3 * dpr);
+                  fishGrad2d.addColorStop(0, isDark ? '#cbd5e1' : '#e2e8f0');
+                  fishGrad2d.addColorStop(1, isDark ? '#64748b' : '#94a3b8');
+                  ctx.fillStyle = fishGrad2d;
+                  ctx.beginPath();
+                  ctx.ellipse(0, 0, 7 * dpr, 2.6 * dpr, 0, 0, Math.PI * 2);
+                  ctx.fill();
+                  ctx.beginPath();
+                  ctx.moveTo(-6 * dpr, 0);
+                  ctx.lineTo(-10 * dpr, -3 * dpr);
+                  ctx.lineTo(-10 * dpr, 3 * dpr);
+                  ctx.closePath(); ctx.fill();
+                  ctx.restore();
+                  // Splash rings while the fish is near the surface
+                  if (fishHop2d < 0.35) {
+                    var fishRing2d = (0.35 - fishHop2d) / 0.35;
+                    ctx.strokeStyle = 'rgba(186,230,253,' + (0.4 * fishRing2d).toFixed(3) + ')';
+                    ctx.lineWidth = 1 * dpr;
+                    ctx.beginPath();
+                    ctx.ellipse(fishX2d, cH * 0.657, (4 + (1 - fishRing2d) * 10) * dpr, (1.4 + (1 - fishRing2d) * 2.5) * dpr, 0, 0, Math.PI * 2);
+                    ctx.stroke();
+                  }
+                }
+              }
+
 
 
               // ── River from mountain (enhanced with rapids) ──
@@ -7102,6 +7207,66 @@ const d = labToolData.waterCycle || {};
               ctx.beginPath(); ctx.arc(wfX, wfY - 3 * dpr, 10 * dpr, 0, Math.PI * 2); ctx.fill();
 
 
+
+              // ── Winter surface — snow blanket + ice sheen below freezing ──
+              // Same coherence class as the night terrain wash: the scene already
+              // drew falling snow and a SNOW badge at sub-zero temperatures while
+              // the land stayed summer-green and the ocean stayed open water.
+              // Land whitens, the water surface takes a pale ice sheen, and both
+              // deepen as the temperature falls (full effect by about -15C).
+              if (tempInput2d < 0) {
+                var winter2d = Math.max(0, Math.min(1, Math.abs(tempInput2d) / 15));
+                // Snow lies on the land band only; the shoreline is at 0.55w.
+                // Cover the whole land band (0.62 to the 0.72 underground line),
+                // staying opaque most of the way down so it reads as lying snow
+                // rather than a haze band, then easing off at the soil boundary.
+                var snowCap2d = ctx.createLinearGradient(0, cH * 0.615, 0, cH * 0.72);
+                snowCap2d.addColorStop(0, 'rgba(248,250,252,' + (0.92 * winter2d).toFixed(3) + ')');
+                snowCap2d.addColorStop(0.55, 'rgba(241,245,249,' + (0.78 * winter2d).toFixed(3) + ')');
+                snowCap2d.addColorStop(1, 'rgba(203,213,225,' + (0.22 * winter2d).toFixed(3) + ')');
+                ctx.fillStyle = snowCap2d;
+                if (landCover2d === 'urban') {
+                  ctx.fillRect(0, cH * 0.615, cW, cH * 0.105);
+                } else {
+                  // Undulating drift line so the blanket does not read as a bar
+                  ctx.beginPath();
+                  ctx.moveTo(0, cH * 0.72);
+                  for (var sx2d = 0; sx2d <= cW; sx2d += 12) {
+                    ctx.lineTo(sx2d, cH * 0.617 + Math.sin(sx2d * 0.012) * 2.2 * dpr);
+                  }
+                  ctx.lineTo(cW, cH * 0.72);
+                  ctx.closePath();
+                  ctx.fill();
+                }
+                // Ice sheen over the open water surface
+                var ice2d = ctx.createLinearGradient(0, cH * 0.645, 0, cH * 0.72);
+                ice2d.addColorStop(0, 'rgba(224,242,254,' + (0.46 * winter2d).toFixed(3) + ')');
+                ice2d.addColorStop(1, 'rgba(186,230,253,' + (0.12 * winter2d).toFixed(3) + ')');
+                ctx.fillStyle = ice2d;
+                ctx.fillRect(0, cH * 0.645, cW * 0.55, cH * 0.075);
+              }
+
+              // ── Shore reeds — cattails swaying at the near bank ──
+              // Sway amplitude follows the wind slider; alternating stems carry
+              // the brown seed head so the cluster reads as cattails, not grass.
+              for (var rd2d = 0; rd2d < 6; rd2d++) {
+                var reedX2d = cW * (0.015 + rd2d * 0.012);
+                var reedBase2d = cH * (0.66 + (rd2d % 3) * 0.008);
+                var reedH2d = (14 + (rd2d * 7) % 10) * dpr;
+                var reedSway2d = Math.sin(tick * 0.014 + rd2d * 1.4) * (2 + windInput2d) * dpr * 0.8;
+                ctx.strokeStyle = isDark ? 'rgba(74,110,63,0.85)' : 'rgba(77,124,15,0.8)';
+                ctx.lineWidth = 1.3 * dpr;
+                ctx.beginPath();
+                ctx.moveTo(reedX2d, reedBase2d);
+                ctx.quadraticCurveTo(reedX2d + reedSway2d * 0.4, reedBase2d - reedH2d * 0.6, reedX2d + reedSway2d, reedBase2d - reedH2d);
+                ctx.stroke();
+                if (rd2d % 2 === 0) {
+                  ctx.fillStyle = isDark ? 'rgba(120,80,40,0.9)' : 'rgba(120,53,15,0.85)';
+                  ctx.beginPath();
+                  ctx.ellipse(reedX2d + reedSway2d, reedBase2d - reedH2d, 1.5 * dpr, 3.4 * dpr, reedSway2d * 0.02, 0, Math.PI * 2);
+                  ctx.fill();
+                }
+              }
 
               // ── Trees (enhanced with bark texture, roots, fruit, leaf veins) ──
 
@@ -7255,27 +7420,81 @@ const d = labToolData.waterCycle || {};
                 drawTree(cW * 0.54 / dpr, cH * 0.63 / dpr, 0.7);
               }
 
+              // ── Night terrain wash (light theme) ──
+              // Same coherence class as the night moon fix: with the solar slider
+              // low, the sky renders night but the land kept full daylight colour.
+              // A cool wash fades in from the ridge line down; sky, moon, and the
+              // process particles (drawn later) stay untouched. The dark theme
+              // already carries night palettes, so it is exempt.
+              if (!isDark && skyBright < 0.32) {
+                var nightWash2d = Math.min(0.38, (0.32 - skyBright) / 0.32 * 0.38);
+                var washGrad2d = ctx.createLinearGradient(0, cH * 0.28, 0, cH);
+                washGrad2d.addColorStop(0, 'rgba(2,6,23,0)');
+                washGrad2d.addColorStop(0.514, 'rgba(2,6,23,' + nightWash2d.toFixed(3) + ')');
+                washGrad2d.addColorStop(1, 'rgba(2,6,23,' + nightWash2d.toFixed(3) + ')');
+                ctx.fillStyle = washGrad2d;
+                ctx.fillRect(0, cH * 0.28, cW, cH * 0.72);
+              }
 
+              // ── Fireflies — amber blinks drifting near the treeline at night ──
+              // Deterministic bases; drift and blink ride the tick, so under
+              // reduced motion they hold as faint static points.
+              if (nightScene2d) {
+                for (var ff2d = 0; ff2d < 7; ff2d++) {
+                  var ffBaseX2d = cW * (0.56 + ((ff2d * 37) % 100) / 100 * 0.3);
+                  var ffBaseY2d = cH * (0.53 + ((ff2d * 53) % 100) / 100 * 0.08);
+                  var ffX2d = ffBaseX2d + Math.sin(tick * 0.006 + ff2d * 2.1) * cW * 0.012;
+                  var ffY2d = ffBaseY2d + Math.sin(tick * 0.008 + ff2d * 1.3) * cH * 0.01;
+                  var ffBlink2d = Math.max(0, Math.sin(tick * 0.025 + ff2d * 2.7));
+                  var ffA2d = 0.12 + ffBlink2d * ffBlink2d * 0.55;
+                  var ffGlow2d = ctx.createRadialGradient(ffX2d, ffY2d, 0, ffX2d, ffY2d, 5 * dpr);
+                  ffGlow2d.addColorStop(0, 'rgba(253,224,71,' + ffA2d.toFixed(3) + ')');
+                  ffGlow2d.addColorStop(1, 'rgba(253,224,71,0)');
+                  ctx.fillStyle = ffGlow2d;
+                  ctx.beginPath(); ctx.arc(ffX2d, ffY2d, 5 * dpr, 0, Math.PI * 2); ctx.fill();
+                  ctx.fillStyle = 'rgba(254,240,138,' + Math.min(1, ffA2d + 0.2).toFixed(3) + ')';
+                  ctx.beginPath(); ctx.arc(ffX2d, ffY2d, 1 * dpr, 0, Math.PI * 2); ctx.fill();
+                }
+              }
 
               // ── Clouds ──
 
               function drawCloud(ccx, ccy, sz) {
 
-                ctx.fillStyle = 'rgba(226,232,240,0.85)';
+                // Volumetric puffs: each lobe is a radial gradient lit from the
+                // upper-right (sun side) with a soft shadowed underbelly, instead
+                // of flat circles over a hard-edged base rectangle. Moonlit slate
+                // tones whenever the SKY is dark (dark theme or solar slider low)
+                // so clouds stop glowing white against a night sky.
+                var duskCloud2d = isDark || skyBright < 0.4;
+                var cloudHi = duskCloud2d ? 'rgba(203,213,225,0.55)' : 'rgba(255,255,255,0.95)';
+                var cloudMid = duskCloud2d ? 'rgba(148,163,184,0.36)' : 'rgba(241,245,249,0.82)';
+                var cloudEdge = duskCloud2d ? 'rgba(71,85,105,0)' : 'rgba(203,213,225,0)';
+                var cloudLobes = [
+                  { dx: 0, dy: 0, r: 1 },
+                  { dx: -0.72, dy: 0.2, r: 0.72 },
+                  { dx: 0.72, dy: 0.15, r: 0.86 },
+                  { dx: 0.3, dy: -0.32, r: 0.62 },
+                  { dx: -0.34, dy: -0.16, r: 0.55 }
+                ];
+                for (var cli = 0; cli < cloudLobes.length; cli++) {
+                  var clb = cloudLobes[cli];
+                  var clx = ccx + clb.dx * sz, cly = ccy + clb.dy * sz, clr = sz * clb.r;
+                  var clg = ctx.createRadialGradient(clx + clr * 0.3, cly - clr * 0.35, clr * 0.12, clx, cly, clr);
+                  clg.addColorStop(0, cloudHi);
+                  clg.addColorStop(0.6, cloudMid);
+                  clg.addColorStop(1, cloudEdge);
+                  ctx.fillStyle = clg;
+                  ctx.beginPath(); ctx.arc(clx, cly, clr, 0, Math.PI * 2); ctx.fill();
+                }
 
-                ctx.beginPath(); ctx.arc(ccx, ccy, sz, 0, Math.PI * 2); ctx.fill();
+                // Soft shadowed underbelly
 
-                ctx.beginPath(); ctx.arc(ccx - sz * 0.7, ccy + sz * 0.2, sz * 0.7, 0, Math.PI * 2); ctx.fill();
-
-                ctx.beginPath(); ctx.arc(ccx + sz * 0.7, ccy + sz * 0.15, sz * 0.85, 0, Math.PI * 2); ctx.fill();
-
-                ctx.beginPath(); ctx.arc(ccx + sz * 0.3, ccy - sz * 0.3, sz * 0.6, 0, Math.PI * 2); ctx.fill();
-
-                // Bottom flat
-
-                ctx.fillStyle = 'rgba(203,213,225,0.5)';
-
-                ctx.fillRect(ccx - sz * 1.2, ccy + sz * 0.4, sz * 2.4, sz * 0.3);
+                var cug = ctx.createRadialGradient(ccx, ccy + sz * 0.5, sz * 0.1, ccx, ccy + sz * 0.5, sz * 1.3);
+                cug.addColorStop(0, duskCloud2d ? 'rgba(30,41,59,0.30)' : 'rgba(148,163,184,0.28)');
+                cug.addColorStop(1, 'rgba(148,163,184,0)');
+                ctx.fillStyle = cug;
+                ctx.beginPath(); ctx.ellipse(ccx, ccy + sz * 0.5, sz * 1.3, sz * 0.45, 0, 0, Math.PI * 2); ctx.fill();
 
               }
 
@@ -7462,6 +7681,31 @@ const d = labToolData.waterCycle || {};
                 }
               }
 
+              // ── Shooting star — a brief streak across the night sky ──
+              // Fires once per ~13s cycle from a seed-varied origin; skipped under
+              // reduced motion (a frozen frame would strand it mid-streak).
+              if ((isDark || climSolar < 0.4) && !wcMotionReduced) {
+                var ssCycle2d = 780;
+                var ssP2d = (tick % ssCycle2d) / 46; // visible while < 1
+                if (ssP2d < 1) {
+                  var ssSeed2d = Math.floor(tick / ssCycle2d);
+                  var ssX2d = cW * (0.18 + ((ssSeed2d * 13) % 7) * 0.09) + ssP2d * cW * 0.16;
+                  var ssY2d = cH * (0.05 + ((ssSeed2d * 5) % 4) * 0.03) + ssP2d * cH * 0.10;
+                  var ssFade2d = Math.sin(ssP2d * Math.PI);
+                  var ssTrail2d = ctx.createLinearGradient(ssX2d - cW * 0.05, ssY2d - cH * 0.031, ssX2d, ssY2d);
+                  ssTrail2d.addColorStop(0, 'rgba(255,255,255,0)');
+                  ssTrail2d.addColorStop(1, 'rgba(255,255,255,' + (0.65 * ssFade2d).toFixed(3) + ')');
+                  ctx.strokeStyle = ssTrail2d;
+                  ctx.lineWidth = 1.2 * dpr;
+                  ctx.beginPath();
+                  ctx.moveTo(ssX2d - cW * 0.05, ssY2d - cH * 0.031);
+                  ctx.lineTo(ssX2d, ssY2d);
+                  ctx.stroke();
+                  ctx.fillStyle = 'rgba(255,255,255,' + (0.9 * ssFade2d).toFixed(3) + ')';
+                  ctx.beginPath(); ctx.arc(ssX2d, ssY2d, 1.6 * dpr, 0, Math.PI * 2); ctx.fill();
+                }
+              }
+
               // ── Sun reflection shimmer on water ──
               if (climSolar > 0.5) {
                 var refAlpha = (climSolar - 0.5) * 0.4;
@@ -7474,7 +7718,23 @@ const d = labToolData.waterCycle || {};
               }
 
               // ── Lightning (random, when temp > 30) ──
-              if (canvasEl.dataset.stormActive === 'true') {
+              // ★ This whole block was UNREACHABLE: it gated on
+              // `dataset.stormActive`, which nothing in the tool, the host, or
+              // ANTI ever set (adjustClimate only writes climSolar/climTemp/
+              // climWind), so the flash could never fire. Restored by computing
+              // the condition the comment already described.
+              // Lightning needs deep MOIST convection, so warmth alone is not
+              // enough - requiring active rain keeps it from flashing in a clear
+              // sky. When a Precipitation Lab scenario is driving the scene, its
+              // own lightningEligible verdict wins over this heuristic.
+              var labLightning2d = canvasEl.dataset.precipitationSource === 'lab'
+                ? canvasEl.dataset.precipitationLightningEligible === 'true'
+                : null;
+              var stormActive2d = labLightning2d === null
+                ? (tempInput2d > 30 && rainActivity2d > 0.35)
+                : labLightning2d;
+              canvasEl.dataset.stormActive = String(stormActive2d);
+              if (stormActive2d) {
                 lightning.timer--;
                 if (lightning.timer <= 0 && Math.random() < 0.003) {
                   lightning.active = true;
@@ -8665,13 +8925,23 @@ const d = labToolData.waterCycle || {};
             world3d.add(cloudShadow3d);
 
             var rainbowGroup3d = new THREE.Group();
-            var rainbowColors3d = [0xf87171, 0xfb923c, 0xfacc15, 0x4ade80, 0x38bdf8, 0x818cf8, 0xc084fc];
+            // Saturated spectral hues, not the pastel -400 ramp: over the dark
+            // teal sky the soft tints averaged toward grey and the arc read as a
+            // muddy tan band. A rainbow is LIGHT, so the bands blend ADDITIVELY
+            // (they brighten the sky rather than mixing toward mud). Safe here
+            // because this scene's sky is always dark - background 0x041a2b,
+            // shader top 0x082f49 - so additive cannot blow out to white.
+            var rainbowColors3d = [0xef4444, 0xf97316, 0xfacc15, 0x22c55e, 0x0ea5e9, 0x6366f1, 0xa855f7];
             rainbowColors3d.forEach(function(rainbowColor3d, rainbowIndex3d) {
               var rainbowArc3d = new THREE.Mesh(
                 new THREE.TorusGeometry(3.5 - rainbowIndex3d * 0.075, 0.038, 6, 96, Math.PI),
                 new THREE.MeshBasicMaterial({
                   color: rainbowColor3d, transparent: true, opacity: 0,
-                  depthWrite: false, side: THREE.DoubleSide
+                  // FrontSide, not DoubleSide: additive blending sums BOTH walls
+                  // of each tube, so double-siding doubled every band and washed
+                  // the arc toward white.
+                  depthWrite: false, side: THREE.FrontSide,
+                  blending: THREE.AdditiveBlending
                 })
               );
               rainbowArc3d.renderOrder = 1;

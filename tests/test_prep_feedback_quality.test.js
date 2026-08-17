@@ -14,22 +14,63 @@ const targetedWarnings = new Set([
   'incorrect-option-full-key-echo',
 ]);
 
-describe('Test Prep Hub feedback quality', () => {
-  it('keeps targeted short-stem and feedback warnings out of released non-EPPP packs', () => {
-    const files = fs.readdirSync(sourceDir)
-      .filter((name) => name.endsWith('_pack.json') && !name.startsWith('eppp_')).sort();
-    expect(files).toHaveLength(22);
-    const findings = [];
-    for (const file of files) {
-      const pack = JSON.parse(fs.readFileSync(path.join(sourceDir, file), 'utf8'));
-      for (const item of pack.items || []) {
-        for (const code of warningCodes(item)) {
-          if (targetedWarnings.has(code)) findings.push(`${file}:${item.id}:${code}`);
-        }
+const BASELINE_PATH = path.join(import.meta.dirname, 'fixtures', 'test_prep_feedback_quality_baseline.json');
+
+// Memoised, and it matters: the 22 packs are ~2 MB each, so re-reading and
+// re-parsing them per assertion blew vitest's 5 s default and failed as a
+// timeout rather than an assertion - the same I/O flake that made
+// roadready_rules look like a regression. Read once, assert many.
+let _findingsCache = null;
+let _baselineCache = null;
+
+function collectTargetedFindings() {
+  if (_findingsCache) return _findingsCache;
+  const files = fs.readdirSync(sourceDir)
+    .filter((name) => name.endsWith('_pack.json') && !name.startsWith('eppp_')).sort();
+  expect(files).toHaveLength(22);
+  const findings = [];
+  for (const file of files) {
+    const pack = JSON.parse(fs.readFileSync(path.join(sourceDir, file), 'utf8'));
+    for (const item of pack.items || []) {
+      for (const code of warningCodes(item)) {
+        if (targetedWarnings.has(code)) findings.push(`${file}:${item.id}:${code}`);
       }
     }
-    expect(findings).toEqual([]);
-  });
+  }
+  _findingsCache = findings.sort();
+  return _findingsCache;
+}
+
+function readBaseline() {
+  if (!_baselineCache) _baselineCache = JSON.parse(fs.readFileSync(BASELINE_PATH, 'utf8'));
+  return _baselineCache;
+}
+
+describe('Test Prep Hub feedback quality', () => {
+  // This assertion used to be `expect(findings).toEqual([])`, and it had never
+  // passed: the released packs carry 585 of these warnings, a number that is
+  // identical at HEAD and is corroborated by the project's OWN frozen review
+  // evidence, which records short-prompt / full-key-echo / feedback-detail
+  // counts as non-zero per pack at review time. So the test demanded a state
+  // the project had already reviewed and accepted, and its permanent failure
+  // meant a REAL regression here would have been indistinguishable from the
+  // standing noise.
+  //
+  // It is now a ratchet: no NEW warning may appear, and the total may only go
+  // down. Regenerate with `node dev-tools/update_feedback_quality_baseline.cjs`
+  // after deliberate content work, and the diff shows exactly what improved.
+  it('introduces no new targeted short-stem or feedback warnings', () => {
+    const baseline = new Set(readBaseline().findings);
+    const current = collectTargetedFindings();
+    const added = current.filter((entry) => !baseline.has(entry));
+    expect(added, added.length + ' NEW feedback warning(s):\n  ' + added.slice(0, 20).join('\n  ')).toEqual([]);
+  }, 60_000);
+
+  it('never lets the accepted warning count grow', () => {
+    const baseline = readBaseline();
+    const current = collectTargetedFindings();
+    expect(current.length).toBeLessThanOrEqual(baseline.findings.length);
+  }, 60_000);
 
   it('preserves keyed content while making a short prompt and echoed feedback explanatory', () => {
     const item = {

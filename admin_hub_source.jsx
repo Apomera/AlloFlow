@@ -71,7 +71,7 @@ function AdminHubPanel(props) {
     {
       id: 'evaluation', icon: '\u2705',
       title: tt('adminhub.evaluation_title', 'Educator Evaluation'),
-      desc: tt('adminhub.evaluation_desc', 'Opens your connected district evaluation portal; otherwise opens a local preview with Pennsylvania Act 13 completion and weighting pies, walkthroughs, formal observations, SPM / SLO, dialogue, receipts, and audit history.'),
+      desc: tt('adminhub.evaluation_desc', 'Opens your connected district evaluation portal; otherwise opens a click-through demonstration with Pennsylvania Act 13 completion and weighting pies, walkthroughs, formal observations, SPM / SLO, dialogue, receipts, and audit history.'),
       accent: 'from-blue-50 to-indigo-50 border-blue-700', titleCls: 'text-blue-900', descCls: 'text-blue-800',
     },    {
       id: 'walkthrough', icon: '🚪',

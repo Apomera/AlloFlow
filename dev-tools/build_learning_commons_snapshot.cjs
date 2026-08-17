@@ -47,7 +47,7 @@ function parseArgs(argv) {
         '--nodes', '--relationships', '--out', '--module-out', '--module-key', '--jurisdiction', '--subject',
         '--grade', '--framework-id', '--source-version', '--generated-at', '--max-standards', '--source-manifest'
     ]);
-    const booleanFlags = new Set(['--include-structural', '--include-deprecated', '--allow-all', '--verify-source', '--help']);
+    const booleanFlags = new Set(['--include-structural', '--include-deprecated', '--allow-all', '--verify-source', '--include-components', '--help']);
     const keys = {
         '--nodes': 'nodesPath', '--relationships': 'relationshipsPath', '--out': 'outPath',
         '--module-out': 'moduleOutPath', '--module-key': 'moduleKey', '--jurisdiction': 'jurisdiction', '--subject': 'subject',
@@ -180,6 +180,39 @@ function toStandard(node, frameworkContext) {
         subject: String(properties.academicSubject || '').trim(),
         sourceUrl,
         sourceUrls: sourceUrl ? [sourceUrl] : []
+    };
+}
+
+// LearningComponent nodes are the "learning components" the Learning Web handoff asks for
+// upstream (137,380 of them in v1.11.0, attached to standards by `supports` edges). They are
+// NOT StandardsFrameworkItems and must not be run through toStandard(): they carry no
+// statementCode, no caseIdentifierUUID and no name, only a description, so toStandard would
+// mint a UUID as the teacher-visible `code`.
+//
+// They are emitted as resolvable:false context records instead. The provider excludes
+// resolvable:false from every search path (resolveStandard, code/id/label matching, and the
+// teacher-facing lists), so the UUID in `code` is inert — it exists only because
+// validateSnapshot requires id, code and label to be non-empty. The record is reachable as a
+// relationship endpoint, which is exactly what getLearningComponents needs.
+function toComponent(node) {
+    const properties = node.properties || {};
+    const id = stableId(node);
+    const description = String(properties.description || properties.name || '').trim();
+    if (!id || !description) return null;
+    return {
+        id,
+        code: id,
+        label: description,
+        text: description,
+        kind: 'component',
+        resolvable: false,
+        framework: '',
+        frameworkId: '',
+        jurisdiction: '',
+        grade: '',
+        subject: String(properties.academicSubject || '').trim(),
+        sourceUrl: '',
+        sourceUrls: []
     };
 }
 
@@ -343,6 +376,47 @@ async function buildSnapshot(options) {
     });
     standards.sort((a, b) => a.code.localeCompare(b.code) || a.id.localeCompare(b.id));
 
+    // Optional: pull in the LearningComponent nodes attached to the in-scope standards.
+    // Two extra streaming passes, and only when asked, so the default build is byte-identical.
+    //   pass A  relationships: every `supports` edge whose TARGET is an in-scope standard
+    //                          contributes its SOURCE (the component) to the wanted set
+    //   pass B  nodes:         materialise those components as resolvable:false records
+    // The existing edge loop below then picks the `supports` edges up on its own, because it
+    // has no type filter and both endpoints now resolve through rawToStable.
+    let componentCount = 0;
+    if (options.includeComponents) {
+        const wanted = new Set();
+        await readJsonLines(options.relationshipsPath, (edge) => {
+            const type = String(edge.label || (edge.properties || {}).relationshipType || '').trim();
+            if (lower(type) !== 'supports') return;
+            const target = String(edge.target_identifier || '').trim();
+            if (!target || !rawToStable.has(target)) return;
+            const source = String(edge.source_identifier || '').trim();
+            if (source) wanted.add(source);
+        });
+        // validateSnapshot rejects the whole snapshot on a duplicate id, so guard on the
+        // STABLE id as well as the raw one: two raw identifiers can normalise to the same
+        // stable id, and a component must never collide with a standard already emitted.
+        const takenIds = new Set(standards.map((standard) => standard.id));
+        const components = [];
+        if (wanted.size) {
+            await readJsonLines(options.nodesPath, (node) => {
+                const rawId = String(node.identifier || '').trim();
+                if (!rawId || !wanted.has(rawId)) return;
+                if (!labelsOf(node).includes('LearningComponent')) return;
+                const component = toComponent(node);
+                if (!component) return;
+                if (rawToStable.has(rawId) || takenIds.has(component.id)) return;
+                takenIds.add(component.id);
+                rawToStable.set(rawId, component.id);
+                components.push(component);
+            });
+        }
+        components.sort((a, b) => a.id.localeCompare(b.id));
+        componentCount = components.length;
+        for (const component of components) standards.push(component);
+    }
+
     const relationships = [];
     const edgeKeys = new Set();
     await readJsonLines(options.relationshipsPath, (edge) => {
@@ -365,9 +439,15 @@ async function buildSnapshot(options) {
         subject: options.subject || '',
         grades: (options.grades || []).slice().sort(),
         includeStructural: Boolean(options.includeStructural),
-        includeDeprecated: Boolean(options.includeDeprecated)
+        includeDeprecated: Boolean(options.includeDeprecated),
+        // Only present when enabled. `scope` is hashed into contentDigest and snapshotId, so
+        // adding an always-present key would change the digest of every existing snapshot on
+        // its next rebuild and make an unchanged import look like changed data.
+        ...(options.includeComponents ? { includeComponents: true } : {})
     };
-    const scopeLabel = [scope.frameworkId, scope.jurisdiction, scope.subject, scope.grades.join('_') || 'all-grades', scope.includeStructural ? 'structural' : 'standards', scope.includeDeprecated ? 'deprecated' : 'current'].filter(Boolean).map(slug).join('-');
+    // The label feeds snapshotId, so components have to be visible there: a snapshot with
+    // components is a different artifact from one without, and the ids must not collide.
+    const scopeLabel = [scope.frameworkId, scope.jurisdiction, scope.subject, scope.grades.join('_') || 'all-grades', scope.includeStructural ? 'structural' : 'standards', scope.includeDeprecated ? 'deprecated' : 'current', scope.includeComponents ? 'components' : ''].filter(Boolean).map(slug).join('-');
     const contentDigest = crypto.createHash('sha256').update(JSON.stringify({ sourceVersion: options.sourceVersion, scope, standards, relationships })).digest('hex');
     const snapshot = {
         schemaVersion: StandardsProvider.VERSION,
@@ -437,7 +517,8 @@ if (require.main === module) {
             return;
         }
         const snapshot = await writeBuild(options);
-        process.stdout.write(`Built ${snapshot.standards.length} standards and ${snapshot.relationships.length} relationships (${snapshot.dataset.snapshotId}).\n`);
+        const componentTotal = snapshot.standards.filter((record) => record.kind === 'component').length;
+        process.stdout.write(`Built ${snapshot.standards.length - componentTotal} standards, ${componentTotal} learning components and ${snapshot.relationships.length} relationships (${snapshot.dataset.snapshotId}).\n`);
     }).catch((error) => {
         process.stderr.write(`${error.message}\n\n${usage()}`);
         process.exitCode = 1;
