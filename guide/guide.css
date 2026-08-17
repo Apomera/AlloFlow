@@ -1023,8 +1023,27 @@ hr {
   .chapter-pager,
   .site-footer,
   .hero__actions,
-  .breadcrumbs {
+  .breadcrumbs,
+  /* On-page navigation is for scrolling; paper readers scan headings. On the
+     quick-reference "print this" page the box was a third of page one. */
+  .section-nav,
+  .chapter-nav {
     display: none !important;
+  }
+
+  /* The print block above removes screen max-widths, which let wide table
+     cells run past the page edge (the keys table clipped mid-sentence, caught
+     by a print-media screenshot 2026-08-16). Same fix as the export handouts:
+     let tables shrink to the page and cells wrap anywhere. */
+  table {
+    width: 100% !important;
+    table-layout: auto;
+  }
+
+  td,
+  th {
+    overflow-wrap: anywhere;
+    hyphens: auto;
   }
 
   .page-shell {

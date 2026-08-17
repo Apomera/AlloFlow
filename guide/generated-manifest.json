@@ -43,7 +43,7 @@
     },
     {
       "path": "guide/guide.css",
-      "sha256": "3f4dc50535457929b766814d93c74afea83ed02259e2df25525b684c655ec69c"
+      "sha256": "ec4fe293d4bd07203b62175bf0133b549bd33dd53e68adde6e4b66e22e65bc0e"
     },
     {
       "path": "guide/index.html",
@@ -63,7 +63,7 @@
     },
     {
       "path": "guide/offline.html",
-      "sha256": "23a6f2ab95d78debc57cbced0c694cdcb51d794dc33818e2da1c2ea75161deb6"
+      "sha256": "8ebe279b3ed7723e92e682cf7b32a8c5ba9fd9edca5882c50ebf115a07b24522"
     },
     {
       "path": "guide/prepare-a-lesson.html",
