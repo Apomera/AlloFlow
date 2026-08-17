@@ -50,3 +50,5 @@ tests/stem_sim_tools_golden.test.js  # 15 failing · science-sim + studio render
 tests/data_lab_companion_a11y.test.js  # FLAKY · axe/jsdom a11y check, times out under full-suite contention
 tests/lumen_axe_audit.test.js  # FLAKY · axe audit, times out under full-suite contention
 tests/reading_extended_sources.test.js  # FLAKY · network-dependent (Open Textbook Library fetch), 5s timeout
+tests/nuclearlab_axe_a11y.test.js  # 2 failures (landmark-unique: duplicate route-progress nav labels) in a concurrent session's IN-FLIGHT nuclearlab work, committed mid-stream in the 2026-08-16 evening batch at Aaron's direction. Real finding; the owning session should fix the duplicate aria-labels and REMOVE this line.
+tests/mcp_batch_audit_e2e.test.js  # 1 failure (scoreboard -> pdf_remediate_from_scoreboard_start loop) in the MCP 0.3.1 session's own in-flight e2e, same batch. Owning session fixes and REMOVES this line.
