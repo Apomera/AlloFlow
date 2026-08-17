@@ -33627,6 +33627,10 @@
     },
     "fluency": {
       "fluency_drill_started": "Fluency drill started! ",
+      "probe_button": "Fluency Probe",
+      "probe_button_aria": "Open the timed fluency probe in the Math panel",
+      "panel_opened": "Fluency Probes is open in the Math panel. Set the operation and press Start.",
+      "mixed_blocks_note": "Note: fluency blocks are not part of the generated document. Run them from the Math panel's Fluency Probes mode.",
       "stem_assessment_saved_to_resources": "STEM Assessment saved to resources (",
       "stem_assessment": "STEM Assessment: "
     },
@@ -60333,8 +60337,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Total STEAM Lab XP earned across all activities",
-      "generate_assess": "Generate & assess",
-      "manipulatives": "Manipulatives",
+      "generate_assess": "Math problems & assessments",
+      "manipulatives": "Interactive tools & labs",
       "stepbystep": "Step-by-Step",
       "conceptual": "Conceptual",
       "realworld": "Real-World"

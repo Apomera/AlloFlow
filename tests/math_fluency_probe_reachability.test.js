@@ -95,6 +95,34 @@ describe('the state of play, pinned so it is not re-argued from memory', () => {
     }
   });
 
+  it('the Create tab has a visible Fluency Probe launcher, not only the buried builder path', () => {
+    // Before 2026-08-17 the Create tab's only route to fluency was: open the
+    // Assessment Builder, add blocks, set EVERY one to "fluency", press
+    // Generate. This pins the direct button beside Build Assessment.
+    const stem = readFileSync('stem_lab/stem_lab_module.js', 'utf8');
+    const launcher = stem.slice(
+      stem.indexOf("t('stem.fluency.probe_button_aria')"),
+      stem.indexOf('"aria-label": "Open assessment builder"')
+    );
+    expect(launcher.length).toBeGreaterThan(0);
+    expect(launcher).toContain("setMathMode('Fluency Probes')");
+    expect(launcher).toContain("'math'");
+    expect(launcher).toContain("t('stem.fluency.panel_opened')");
+  });
+
+  it('every fallback-first string in the fluency paths has a real ui_strings key', () => {
+    const ui = JSON.parse(readFileSync('ui_strings.js', 'utf8'));
+    const fluency = ui.stem && ui.stem.fluency;
+    for (const key of ['probe_button', 'probe_button_aria', 'panel_opened', 'mixed_blocks_note']) {
+      expect(fluency && typeof fluency[key], 'stem.fluency.' + key).toBe('string');
+    }
+    // and the mirror carries them
+    const pub = JSON.parse(readFileSync('desktop/web-app/public/ui_strings.js', 'utf8'));
+    for (const key of ['probe_button', 'panel_opened']) {
+      expect(pub.stem.fluency[key]).toBe(fluency[key]);
+    }
+  });
+
   it('a mixed assessment names its dropped fluency blocks instead of silently omitting them', () => {
     const stem = readFileSync('stem_lab/stem_lab_module.js', 'utf8');
     expect(stem).toContain('if (fluencyBlocks.length > 0) {');

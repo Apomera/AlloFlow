@@ -4660,7 +4660,21 @@
           className: `px-4 py-2 rounded-xl text-sm font-bold transition-all ${stemLabCreateMode === m.id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-white border border-slate-400 text-slate-600 hover:border-indigo-600 hover:text-indigo-600'}`
         }, m.label)), /*#__PURE__*/React.createElement("div", {
           className: "flex-1"
-        }), /*#__PURE__*/React.createElement("button", { "aria-label": "Open assessment builder",
+        }), /*#__PURE__*/React.createElement("button", {
+          // Direct door to the live timed-fluency panel (MathFluencyPanel in the
+          // sidebar math accordion). Before this, Create's only fluency path was
+          // hidden inside the Assessment Builder \u2014 compose blocks, set every one
+          // to "fluency", press Generate \u2014 which nobody would discover. Same
+          // routing as that branch; the panel owns its own state.
+          "aria-label": t('stem.fluency.probe_button_aria') || 'Open the timed fluency probe in the Math panel',
+          onClick: () => {
+            if (typeof setMathMode === 'function') setMathMode('Fluency Probes');
+            if (typeof setExpandedTools === 'function') setExpandedTools(prev => (Array.isArray(prev) && prev.includes('math')) ? prev : [...(Array.isArray(prev) ? prev : []), 'math']);
+            setShowStemLab(false);
+            addToast(t('stem.fluency.panel_opened') || 'Fluency Probes is open in the Math panel. Set the operation and press Start.', 'info');
+          },
+          className: "px-4 py-2 rounded-xl text-sm font-bold bg-white text-indigo-700 border-2 border-indigo-200 hover:border-indigo-400 hover:bg-indigo-50 transition-all flex items-center gap-2"
+        }, "\u23F1\uFE0F " + (t('stem.fluency.probe_button') || 'Fluency Probe')), /*#__PURE__*/React.createElement("button", { "aria-label": "Open assessment builder",
           onClick: () => setShowAssessmentBuilder(true),
           className: "px-4 py-2 rounded-xl text-sm font-bold bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-lg shadow-purple-200 hover:from-violet-600 hover:to-purple-600 transition-all flex items-center gap-2"
         }, "\uD83D\uDCCB Build Assessment")), stemLabCreateMode !== 'solve' && /*#__PURE__*/React.createElement("div", {
