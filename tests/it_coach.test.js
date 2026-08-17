@@ -373,11 +373,12 @@ describe('canvas hardening', () => {
 
   it('uses exact first-party origins for educator elevation, not multi-tenant host suffixes', () => {
     const gate = html.slice(html.indexOf('function isTrustedEducatorOpenerOrigin'), html.indexOf('// ?allo_origin='));
-    for (const origin of [
-      'https://alloflow-cdn.pages.dev',
-      'https://prismflow-911fe.web.app',
-      'https://prismflow-911fe.firebaseapp.com'
-    ]) expect(gate).toContain(origin);
+    expect(gate).toContain('https://alloflow-cdn.pages.dev');
+    // The retired Prismflow HOSTING origins must stay out: that host still
+    // answers 200 with a frozen pre-migration bundle, so re-adding it would let
+    // a months-old app copy confer educator elevation. (The prismflow-911fe
+    // Firebase PROJECT remains the backend; opener trust is about hosting.)
+    expect(gate).not.toContain('prismflow-911fe');
     for (const broadHost of ['endsWith(', 'run.app', 'googleusercontent.com', 'idx.google', 'localhost']) {
       expect(gate).not.toContain(broadHost);
     }

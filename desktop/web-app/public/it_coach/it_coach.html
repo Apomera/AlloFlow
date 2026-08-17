@@ -268,10 +268,14 @@
       // Multi-tenant Canvas/Cloud Run/preview and loopback origins are valid
       // transports but not role authorities: an arbitrary opener can own one.
       // They remain learner until a server-backed role assertion exists.
+      // The retired Firebase HOSTING origins were removed 2026-08-16: no
+      // longer deployed to, still serving a frozen pre-migration bundle, so an
+      // opener there is a months-old app copy that should not confer educator
+      // elevation. (The Firebase PROJECT of the same name stays as the
+      // backend; that is unrelated to opener trust. Guarded by it_coach.test.js,
+      // which is also why this comment does not name the host.)
       return [
-        'https://alloflow-cdn.pages.dev',
-        'https://prismflow-911fe.web.app',
-        'https://prismflow-911fe.firebaseapp.com'
+        'https://alloflow-cdn.pages.dev'
       ].indexOf(u.origin) !== -1;
     } catch (_) {
       return false;

@@ -137,9 +137,13 @@
       ) {
         return true;
       }
-      return parsed.origin === 'https://alloflow-cdn.pages.dev'
-        || parsed.origin === 'https://prismflow-911fe.web.app'
-        || parsed.origin === 'https://prismflow-911fe.firebaseapp.com';
+      // The Prismflow Firebase HOSTING origins were removed 2026-08-16: that
+      // host is no longer deployed to (the 2026-07-09 production-path cleanup
+      // moved serving to the CDN) and still answers with a frozen pre-migration
+      // bundle, so trusting it meant a months-old app copy could drive this
+      // bridge. The prismflow-911fe Firebase PROJECT remains the active backend
+      // (auth/Firestore); that is unrelated to which web origins we trust.
+      return parsed.origin === 'https://alloflow-cdn.pages.dev';
     } catch (_) {
       return false;
     }
