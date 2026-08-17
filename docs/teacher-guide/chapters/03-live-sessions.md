@@ -282,4 +282,4 @@ Before ending:
 - The project and appropriate follow-up notes are saved.
 - No session code, roster, or student response remains projected.
 
-For a detailed learner-experience check before the next session, see [Accessibility and UDL](04-accessibility-and-udl.md). For privacy boundaries, see [Privacy and responsible AI](07-privacy-and-responsible-ai.md).
+For a detailed learner-experience check before the next session, see [Accessibility and UDL](04-accessibility-and-udl.md). For privacy boundaries, see [Privacy and responsible AI](07-privacy-and-responsible-ai.md). If your lesson includes a story mode, [Adventure Mode](12-adventure-mode.md) covers when students see it and how resume stays scoped to this lesson.

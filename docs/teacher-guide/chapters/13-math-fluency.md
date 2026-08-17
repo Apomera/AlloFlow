@@ -6,7 +6,7 @@ AlloFlow includes a math fluency instrument: short, timed practice in the curric
 
 Math Fluency is a mode inside the Math tool. Open the **Math** card in the sidebar, then change the **Mode** selector to **Fluency Probes** or **Fluency Maze**.
 
-The faster door, added August 2026: press **Ctrl+K** and type any of these — "math fluency", "fluency probe", "timed math", "math minute", "CBM probe", or "math maze". The command palette takes you straight there. Because opening a timed probe changes what is on screen, the assistant confirms before it acts.
+The faster door, added August 2026: press **Ctrl+K** and type any of these: "math fluency", "fluency probe", "timed math", "math minute", "CBM probe", or "math maze". The command palette takes you straight there. Because opening a timed probe changes what is on screen, the assistant confirms before it acts.
 
 ## Who sees it
 

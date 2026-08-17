@@ -7,11 +7,11 @@
   "outputs": [
     {
       "path": "AlloFlow Complete User Manual.md",
-      "sha256": "ca1fadda3869e47f270bdf97d064d9d86bef2c0ee7da71b235e4552914008793"
+      "sha256": "65b90e5c970ca780e74c6f5a4a05e1355285917e6432f25e1cd555802b9a0ffa"
     },
     {
       "path": "guide/accessibility-and-udl.html",
-      "sha256": "3bde5f3f75f242ee9e63fe2791a7c90bbbaf73da531da0936417c415857fd6d9"
+      "sha256": "dce2cac9bf5b57fb01b8b4e57e9a63ec4c23835f198dd463c9aac2680ec3d683"
     },
     {
       "path": "guide/adventure-mode.html",
@@ -23,7 +23,7 @@
     },
     {
       "path": "guide/classroom-workflows.html",
-      "sha256": "d7b32b3631da76ea0ec3f978053e9419deed5b96b92edeaaf8e61c38b58eeab3"
+      "sha256": "8f8c4b172a2d8e74dda3b794c03f6395ecb54cc068f88a0c04fcdcc9382a2f20"
     },
     {
       "path": "guide/documents-and-printing.html",
@@ -51,15 +51,15 @@
     },
     {
       "path": "guide/live-sessions.html",
-      "sha256": "80500af028e38de92105deb7b7837d3d99220f0ba86ed01727439d62779202d6"
+      "sha256": "b744d77d9eb2cef4f16f11d1730159d2330f227c7448d2bba0feffe52b0ca34c"
     },
     {
       "path": "guide/math-fluency.html",
-      "sha256": "37a8346c3400ea5bb55e4a7cfc48f0d22bdafb8e56cda06f2cc4406e8769c44b"
+      "sha256": "bddb942267b9898206f6e1f8bc416d8b827077f6e19c9afe1192374b83b8b60a"
     },
     {
       "path": "guide/offline.html",
-      "sha256": "43722102a74c4545ea63bf2cfcc3ca10d2e818f50bec1d747988e84a3215ae33"
+      "sha256": "f0d63ac9f49c57eb23170d9ed5ef749919cc25dd320789b504819c0694c3f34b"
     },
     {
       "path": "guide/prepare-a-lesson.html",
@@ -83,7 +83,7 @@
     },
     {
       "path": "guide/search-index.json",
-      "sha256": "e918094e090c7f74db555c17277852ed405e4013c36a764bb66597da3ff9e15c"
+      "sha256": "044da93b825b6cc840ef13af90f0bdb3c319504377e51604dd7aea26d090e047"
     },
     {
       "path": "guide/specialist-reference.html",

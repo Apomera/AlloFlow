@@ -158,6 +158,14 @@ Whether the final format is a webpage, shared link, word-processing file, PDF, o
 
 A document that looks organized can still be structurally inaccessible. Visual inspection is only one part of review.
 
+### What the exported handout already carries
+
+The HTML handout ships with its own accessibility toolbar, so many supports travel with the document instead of depending on the student's device: adjustable text size that reflows rather than clipping, offline dyslexia-friendly and high-legibility font options, reading themes, and annotations that stay anchored to the content through those changes. Printing always comes out black on white, whatever screen theme the teacher works in. Details and the font options table are in [Documents and printing](15-documents-and-printing.md).
+
+### Voice features announce their state
+
+For students and staff using hands-free features, the microphone indicator names its state in text (Listening, Paused, Thinking, Speaking), not color alone, every change is announced to screen readers, and a small level meter confirms the microphone hears you. See [AlloBot](14-allobot-assistant.md).
+
 ### Use tables carefully
 
 Use a table for data relationships, not page layout. Give it a descriptive introduction, identify header rows and columns in formats that support them, keep the structure simple, and avoid merged cells when possible. Check that the table is understandable when read one cell at a time.

@@ -709,7 +709,7 @@
     "chapter": "Run a live lesson safely and calmly",
     "level": 2,
     "url": "live-sessions.html#live-lesson-checklist",
-    "text": "Before students join: The student route, first resource, and one activity were rehearsed. Resource names and audience assignments are clear. The join method and codename routine follow school policy. The projected view contains no private teacher or roster information. A no-network fallback is ready. While teaching: Students know the goal, pacing mode, and next action. Delivery status is used for troubleshooting, not judging effort. Targeted supports are routed privately. Signals are acknowledged and cleared. Activities have a purpose, time boundary, and accessible alternative. Before ending: Student work is saved or submitted. Missing evidence is separated from wrong answers. The session is ended through the interface. The project and appropriate follow-up notes are saved. No session code, roster, or student response remains projected. For a detailed learner-experience check before the next session, see Accessibility and UDL. For privacy boundaries, see Privacy and responsible AI."
+    "text": "Before students join: The student route, first resource, and one activity were rehearsed. Resource names and audience assignments are clear. The join method and codename routine follow school policy. The projected view contains no private teacher or roster information. A no-network fallback is ready. While teaching: Students know the goal, pacing mode, and next action. Delivery status is used for troubleshooting, not judging effort. Targeted supports are routed privately. Signals are acknowledged and cleared. Activities have a purpose, time boundary, and accessible alternative. Before ending: Student work is saved or submitted. Missing evidence is separated from wrong answers. The session is ended through the interface. The project and appropriate follow-up notes are saved. No session code, roster, or student response remains projected. For a detailed learner-experience check before the next session, see Accessibility and UDL. For privacy boundaries, see Privacy and responsible AI. If your lesson includes a story mode, Adventure Mode covers when students see it and how resume stays scoped to this lesson."
   },
   {
     "id": "adventure-mode:adventure-mode-a-story-your-lesson-can-carry",
@@ -926,6 +926,22 @@
     "level": 3,
     "url": "accessibility-and-udl.html#structure-text-and-documents",
     "text": "Whether the final format is a webpage, shared link, word-processing file, PDF, or printout: Use one descriptive title. Organize sections with real headings in a logical hierarchy. Use list formatting for lists rather than typed dashes or manual numbering. Write descriptive link text that makes sense out of context. Identify document language and language changes when the format permits. Keep paragraphs reasonably short and left aligned for extended reading. Use real columns and tables rather than spaces or repeated tabs. Put directions before the control, blank, or response area they describe. A document that looks organized can still be structurally inaccessible. Visual inspection is only one part of review."
+  },
+  {
+    "id": "accessibility-and-udl:what-the-exported-handout-already-carries",
+    "title": "What the exported handout already carries",
+    "chapter": "Accessibility and UDL: verify the learner experience",
+    "level": 3,
+    "url": "accessibility-and-udl.html#what-the-exported-handout-already-carries",
+    "text": "The HTML handout ships with its own accessibility toolbar, so many supports travel with the document instead of depending on the student's device: adjustable text size that reflows rather than clipping, offline dyslexia-friendly and high-legibility font options, reading themes, and annotations that stay anchored to the content through those changes. Printing always comes out black on white, whatever screen theme the teacher works in. Details and the font options table are in Documents and printing."
+  },
+  {
+    "id": "accessibility-and-udl:voice-features-announce-their-state",
+    "title": "Voice features announce their state",
+    "chapter": "Accessibility and UDL: verify the learner experience",
+    "level": 3,
+    "url": "accessibility-and-udl.html#voice-features-announce-their-state",
+    "text": "For students and staff using hands-free features, the microphone indicator names its state in text (Listening, Paused, Thinking, Speaking), not color alone, every change is announced to screen readers, and a small level meter confirms the microphone hears you. See AlloBot."
   },
   {
     "id": "accessibility-and-udl:use-tables-carefully",
@@ -1589,7 +1605,7 @@
     "chapter": "Classroom workflows",
     "level": 2,
     "url": "classroom-workflows.html#turn-any-recipe-into-a-repeatable-routine",
-    "text": "After using a recipe: Save the source and reviewed resources as an AlloFlow project in an approved location. Record which support removed a barrier and which did not. Keep one student-facing direction template. Remove student-specific content before reusing or sharing the project. Recheck the resource after a product update or when moving to a different deployment. For interpreting the resulting classroom signals, return to Review evidence and plan next steps. For safe storage, sharing, and AI use, continue to Privacy and responsible AI."
+    "text": "After using a recipe: Save the source and reviewed resources as an AlloFlow project in an approved location. Record which support removed a barrier and which did not. Keep one student-facing direction template. Remove student-specific content before reusing or sharing the project. Recheck the resource after a product update or when moving to a different deployment. For interpreting the resulting classroom signals, return to Review evidence and plan next steps. For safe storage, sharing, and AI use, continue to Privacy and responsible AI. Keep the Quick reference nearby while a routine is still new."
   },
   {
     "id": "privacy-and-responsible-ai:privacy-and-responsible-ai",
@@ -2109,7 +2125,7 @@
     "chapter": "Math Fluency: timed practice and CBM probes",
     "level": 2,
     "url": "math-fluency.html#where-it-lives",
-    "text": "Math Fluency is a mode inside the Math tool. Open the Math card in the sidebar, then change the Mode selector to Fluency Probes or Fluency Maze. The faster door, added August 2026: press Ctrl+K and type any of these — \"math fluency\", \"fluency probe\", \"timed math\", \"math minute\", \"CBM probe\", or \"math maze\". The command palette takes you straight there. Because opening a timed probe changes what is on screen, the assistant confirms before it acts."
+    "text": "Math Fluency is a mode inside the Math tool. Open the Math card in the sidebar, then change the Mode selector to Fluency Probes or Fluency Maze. The faster door, added August 2026: press Ctrl+K and type any of these: \"math fluency\", \"fluency probe\", \"timed math\", \"math minute\", \"CBM probe\", or \"math maze\". The command palette takes you straight there. Because opening a timed probe changes what is on screen, the assistant confirms before it acts."
   },
   {
     "id": "math-fluency:who-sees-it",

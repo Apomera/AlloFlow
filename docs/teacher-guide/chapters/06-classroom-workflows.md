@@ -282,4 +282,4 @@ After using a recipe:
 4. Remove student-specific content before reusing or sharing the project.
 5. Recheck the resource after a product update or when moving to a different deployment.
 
-For interpreting the resulting classroom signals, return to [Review evidence and plan next steps](05-review-and-next-steps.md). For safe storage, sharing, and AI use, continue to [Privacy and responsible AI](07-privacy-and-responsible-ai.md).
+For interpreting the resulting classroom signals, return to [Review evidence and plan next steps](05-review-and-next-steps.md). For safe storage, sharing, and AI use, continue to [Privacy and responsible AI](07-privacy-and-responsible-ai.md). Keep the [Quick reference](18-quick-reference.md) nearby while a routine is still new.

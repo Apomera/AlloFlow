@@ -897,7 +897,7 @@ Before ending:
 - The project and appropriate follow-up notes are saved.
 - No session code, roster, or student response remains projected.
 
-For a detailed learner-experience check before the next session, see [Accessibility and UDL](#accessibility-and-udl-verify-the-learner-experience). For privacy boundaries, see [Privacy and responsible AI](#privacy-and-responsible-ai).
+For a detailed learner-experience check before the next session, see [Accessibility and UDL](#accessibility-and-udl-verify-the-learner-experience). For privacy boundaries, see [Privacy and responsible AI](#privacy-and-responsible-ai). If your lesson includes a story mode, [Adventure Mode](#adventure-mode-a-story-your-lesson-can-carry) covers when students see it and how resume stays scoped to this lesson.
 
 ---
 
@@ -1127,6 +1127,14 @@ Whether the final format is a webpage, shared link, word-processing file, PDF, o
 - Put directions before the control, blank, or response area they describe.
 
 A document that looks organized can still be structurally inaccessible. Visual inspection is only one part of review.
+
+#### What the exported handout already carries
+
+The HTML handout ships with its own accessibility toolbar, so many supports travel with the document instead of depending on the student's device: adjustable text size that reflows rather than clipping, offline dyslexia-friendly and high-legibility font options, reading themes, and annotations that stay anchored to the content through those changes. Printing always comes out black on white, whatever screen theme the teacher works in. Details and the font options table are in [Documents and printing](#documents-and-printing-from-resource-to-handout).
+
+#### Voice features announce their state
+
+For students and staff using hands-free features, the microphone indicator names its state in text (Listening, Paused, Thinking, Speaking), not color alone, every change is announced to screen readers, and a small level meter confirms the microphone hears you. See [AlloBot](#allobot-the-assistant-that-talks-with-you).
 
 #### Use tables carefully
 
@@ -1771,7 +1779,7 @@ After using a recipe:
 4. Remove student-specific content before reusing or sharing the project.
 5. Recheck the resource after a product update or when moving to a different deployment.
 
-For interpreting the resulting classroom signals, return to [Review evidence and plan next steps](#review-evidence-and-plan-next-steps). For safe storage, sharing, and AI use, continue to [Privacy and responsible AI](#privacy-and-responsible-ai).
+For interpreting the resulting classroom signals, return to [Review evidence and plan next steps](#review-evidence-and-plan-next-steps). For safe storage, sharing, and AI use, continue to [Privacy and responsible AI](#privacy-and-responsible-ai). Keep the [Quick reference](#quick-reference-the-one-page-to-keep-nearby) nearby while a routine is still new.
 
 ---
 
@@ -2357,7 +2365,7 @@ AlloFlow includes a math fluency instrument: short, timed practice in the curric
 
 Math Fluency is a mode inside the Math tool. Open the **Math** card in the sidebar, then change the **Mode** selector to **Fluency Probes** or **Fluency Maze**.
 
-The faster door, added August 2026: press **Ctrl+K** and type any of these — "math fluency", "fluency probe", "timed math", "math minute", "CBM probe", or "math maze". The command palette takes you straight there. Because opening a timed probe changes what is on screen, the assistant confirms before it acts.
+The faster door, added August 2026: press **Ctrl+K** and type any of these: "math fluency", "fluency probe", "timed math", "math minute", "CBM probe", or "math maze". The command palette takes you straight there. Because opening a timed probe changes what is on screen, the assistant confirms before it acts.
 
 ### Who sees it
 
