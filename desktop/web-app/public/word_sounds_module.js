@@ -7121,7 +7121,6 @@
           const nextWord = queue[0];
           const remaining = queue.slice(1);
           sessionQueueRef.current[activityId] = remaining;
-          setSessionWordLists((prev) => ({ ...prev, [activityId]: remaining }));
           return nextWord;
         },
         [wordSoundsActivity],
@@ -7132,7 +7131,6 @@
       const [showWordText, setShowWordText] = React.useState(false);
       const [draggedItem, setDraggedItem] = React.useState(null);
       const sessionQueueRef = React.useRef({});
-      const [sessionWordLists, setSessionWordLists] = React.useState({});
       // Reset only run-local evidence. Longitudinal history, badges, phoneme
       // mastery, and confusion patterns deliberately survive between runs.
       const resetRuntimeSession = React.useCallback(() => {
@@ -7151,7 +7149,6 @@
         probeCompletionSentRef.current = false;
         probeHiddenMsRef.current = 0;
         probeHiddenSinceRef.current = null;
-        setSessionWordLists({});
         setMasteryStats({});
         setRevisitQueue([]);
         setAttempts(0);
@@ -7393,7 +7390,6 @@
             `✅ Queue generated: ${queue.length} words (Sequential: ${isSequentialMode})`,
           );
           sessionQueueRef.current[activityId] = queue;
-          setSessionWordLists((prev) => ({ ...prev, [activityId]: queue }));
           return queue;
         },
         [
@@ -11420,10 +11416,6 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             if (queue && queue.length > 0) {
               word = queue[0];
               sessionQueueRef.current[activityId] = queue.slice(1);
-              setSessionWordLists((prev) => ({
-                ...prev,
-                [activityId]: queue.slice(1),
-              }));
             }
           }
           if (!word) {
@@ -13236,10 +13228,6 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 if (queue.length > 0) {
                   const queueWord = queue[0];
                   sessionQueueRef.current[actId] = queue.slice(1);
-                  setSessionWordLists((prev) => ({
-                    ...prev,
-                    [actId]: queue.slice(1),
-                  }));
                   const queueTargetWord =
                     queueWord.singleWord ||
                     queueWord.fullTerm ||
@@ -13535,10 +13523,6 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     word = fallbackQueue[0];
                     sessionQueueRef.current[fallbackActId] =
                       fallbackQueue.slice(1);
-                    setSessionWordLists((prev) => ({
-                      ...prev,
-                      [fallbackActId]: fallbackQueue.slice(1),
-                    }));
                   }
                   if (!word && wordPool && wordPool.length > 0) {
                     debugLog(
@@ -13564,12 +13548,17 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       });
                       if (fIdx < 0) fIdx = 0; // fallback to first if all match
                       word = regenQueue[fIdx];
-                      sessionQueueRef.current[fallbackActId] =
-                        regenQueue.slice(1);
-                      setSessionWordLists((prev) => ({
-                        ...prev,
-                        [fallbackActId]: regenQueue.slice(1),
-                      }));
+                      // Remove the word actually taken, not index 0. Every other
+                      // queue site takes queue[0] and drops queue[0]; this is the
+                      // only one that selects by a computed index. When
+                      // regenQueue[0] IS the current word — precisely the case
+                      // fIdx exists to skip — fIdx is 1, and slicing index 0 left
+                      // the word just served sitting at the head, so the next
+                      // advance served it straight back. The student saw the same
+                      // word twice in a row after a mid-activity queue refill.
+                      const regenRemaining = regenQueue.slice();
+                      regenRemaining.splice(fIdx, 1);
+                      sessionQueueRef.current[fallbackActId] = regenRemaining;
                     }
                   }
                   if (word) {
