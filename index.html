@@ -324,6 +324,8 @@
                     <div
                         style="background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 4px 12px rgba(0,0,0,0.06)">
                         <div style="position:relative;aspect-ratio:16/9;background:#0f172a;cursor:pointer"
+                            role="button" tabindex="0" aria-label="Play video: AlloFlow for Teachers"
+                            onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}"
                             onclick="this.innerHTML='<iframe style=&quot;position:absolute;inset:0;width:100%;height:100%&quot; src=&quot;https://www.youtube.com/embed/oDWZhSDZXrQ?autoplay=1&amp;rel=0&quot; title=&quot;AlloFlow for Teachers&quot; frameborder=&quot;0&quot; allow=&quot;accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture&quot; allowfullscreen></iframe>'">
                             <div
                                 style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#1e1b4b,#312e81);color:#fff">
@@ -351,6 +353,8 @@
                     <div
                         style="background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 4px 12px rgba(0,0,0,0.06)">
                         <div style="position:relative;aspect-ratio:16/9;background:#0f172a;cursor:pointer"
+                            role="button" tabindex="0" aria-label="Play video: AlloFlow for Families"
+                            onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}"
                             onclick="this.innerHTML='<iframe style=&quot;position:absolute;inset:0;width:100%;height:100%&quot; src=&quot;https://www.youtube.com/embed/FfZFok40Yw8?autoplay=1&amp;rel=0&quot; title=&quot;AlloFlow for Families&quot; frameborder=&quot;0&quot; allow=&quot;accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture&quot; allowfullscreen></iframe>'">
                             <div
                                 style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#052e16,#166534);color:#fff">
@@ -381,6 +385,8 @@
                     <div
                         style="background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 4px 12px rgba(0,0,0,0.06)">
                         <div style="position:relative;aspect-ratio:16/9;background:#0f172a;cursor:pointer"
+                            role="button" tabindex="0" aria-label="Play video: Supporting Multilingual Learners"
+                            onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}"
                             onclick="this.innerHTML='<iframe style=&quot;position:absolute;inset:0;width:100%;height:100%&quot; src=&quot;https://www.youtube.com/embed/VhHbmLEh3GI?autoplay=1&amp;rel=0&quot; title=&quot;Supporting Multilingual Learners&quot; frameborder=&quot;0&quot; allow=&quot;accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture&quot; allowfullscreen></iframe>'">
                             <div
                                 style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#7c2d12,#c2410c);color:#fff">
@@ -5165,9 +5171,9 @@
                 </div>
                 <div class="grid-2">
                     <div class="card">
-                        <h4 style="font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px"><i
+                        <h3 style="font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px"><i
                                 data-lucide="folder-down" style="width:18px;height:18px;color:#3b82f6"></i> File-Based
-                            Persistence</h4>
+                            Persistence</h3>
                         <p style="font-size:0.85rem;color:#475569;line-height:1.7">Because Gemini Canvas environments
                             don't
                             persist internal databases across sessions, AlloFlow uses a "sneakernet" architecture. You
@@ -5178,11 +5184,11 @@
                             simple as sharing a file.</p>
                     </div>
                     <div class="card">
-                        <h4 style="font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px"><i
+                        <h3 style="font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px"><i
                                 data-lucide="building" style="width:18px;height:18px;color:#9333ea"></i> Google
                             Education
                             Infrastructure
-                        </h4>
+                        </h3>
                         <p style="font-size:0.85rem;color:#475569;line-height:1.7">By running as an artifact within
                             Gemini
                             Canvas, AlloFlow piggybacks entirely on your district's existing <strong>Google Workspace
@@ -5194,10 +5200,10 @@
                 </div>
                 <div
                     style="background:#fef2f2;border-left:4px solid #ef4444;padding:24px;border-radius:0 12px 12px 0;margin-top:24px">
-                    <h4
+                    <h3
                         style="font-weight:700;color:#991b1b;text-transform:uppercase;font-size:0.8rem;letter-spacing:0.05em;margin-bottom:8px;display:flex;align-items:center;gap:8px">
                         <i data-lucide="hard-drive" style="width:16px;height:16px"></i> Local-First Student Data
-                    </h4>
+                    </h3>
                     <p style="font-size:0.85rem;color:#7f1d1d">Student progress, XP, quiz scores, and session data can stay on-device in local-first paths. Cloud, hosted-session, and provider-backed paths vary by deployment. Teachers can export data as JSON files for record-keeping. The Student Portal uses
                         generated codenames instead of real names, keeping learner identities private by default.
                     </p>

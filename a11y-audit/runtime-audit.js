@@ -132,11 +132,17 @@ async function runCustomChecks(page) {
     }
 
     // Check 7: Clickable divs without role
-    const clickableDivs = document.querySelectorAll('div[onclick], span[onclick]');
+    // The selector must carry the same exclusion the finding claims. It previously matched every
+    // div/span with onclick, so a correctly roled control still counted and the check could never
+    // clear, which reads as "the fix did not work."
+    const clickableDivs = document.querySelectorAll([
+      'div[onclick]:not([role])', 'span[onclick]:not([role])',
+      'div[onclick]:not([tabindex])', 'span[onclick]:not([tabindex])',
+    ].join(', '));
     if (clickableDivs.length > 0) {
       findings.push({
         id: 'custom-clickable-div',
-        description: `${clickableDivs.length} div/span elements with onclick but no role attribute`,
+        description: `${clickableDivs.length} div/span elements with onclick but no role or no tabindex`,
         wcag: '2.1.1 Keyboard, 4.1.2 Name/Role/Value',
         severity: 'critical',
         selector: 'div[onclick], span[onclick]',
