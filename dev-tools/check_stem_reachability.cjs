@@ -251,12 +251,28 @@ for (const marker of ['could not load', 'Retry loading ', "'aria-busy': 'true'"]
 for (const marker of ['__alloEnsureStemPluginLoaded', 'onMouseEnter', 'onFocus', '_stemOpenerRef', '_stemFocusableElements', 'document.activeElement === root', 'data-stem-scroll-region', 'data-stem-tool-id']) {
   if (canonicalModule.indexOf(marker) === -1) fail(MODULE_COPIES[0] + ' is missing demand-load/accessibility marker: ' + marker);
 }
-const altOneHelp = canonicalModule.indexOf('"Alt+1"');
-const exploreHelp = canonicalModule.indexOf('"Explore tab"', altOneHelp);
-const altTwoHelp = canonicalModule.indexOf('"Alt+2"', exploreHelp);
-const createHelp = canonicalModule.indexOf('"Create tab"', altTwoHelp);
-if (altOneHelp === -1 || exploreHelp - altOneHelp > 600 || altTwoHelp - exploreHelp > 600 || createHelp - altTwoHelp > 600) {
-  fail(MODULE_COPIES[0] + ' has shortcut help that does not match the Alt+1 Explore / Alt+2 Create handlers');
+// Shortcut help must describe shortcuts that actually exist.
+//
+// This used to hardcode the Alt+1 Explore / Alt+2 Create pairing. Both tabs are
+// gone (Create moved home to the math tool, 32ca079fb; the single-tab row was
+// retired in the 2026-08-17 mobile pass), and a gate pinned to specific removed
+// keys fails on a correct change while still not checking the thing that
+// matters. The invariant is the PAIRING, not the particular keys: every Alt+<k>
+// the help advertises must have a handler, so the overlay can never promise a
+// shortcut that does nothing.
+const advertisedAlt = [...new Set(
+  (canonicalModule.match(/"Alt\+([A-Za-z0-9])"/g) || []).map((m) => m.slice(5, -1).toLowerCase())
+)];
+const altBlockStart = canonicalModule.indexOf('if (e.altKey) {');
+const altBlock = altBlockStart === -1 ? '' : canonicalModule.slice(altBlockStart, altBlockStart + 1200);
+for (const key of advertisedAlt) {
+  // Alt+B is handled as 'Backspace' || 'b'; match either the letter or a named
+  // key beginning with it.
+  const handled = new RegExp("e\\.key === '" + key + "'|e\\.key === '" + key.toUpperCase() + "'", 'i').test(altBlock)
+    || new RegExp("e\\.key === '" + key + "[a-z]+'", 'i').test(altBlock);
+  if (!handled) {
+    fail(MODULE_COPIES[0] + ' shortcut help advertises Alt+' + key.toUpperCase() + ' with no matching handler');
+  }
 }
 const scrollRegionCount = (canonicalModule.match(/\x22data-stem-scroll-region\x22:\s*\x22true\x22/g) || []).length;
 if (scrollRegionCount !== 1) {
