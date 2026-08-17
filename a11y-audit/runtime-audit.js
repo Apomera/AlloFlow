@@ -37,7 +37,7 @@ const AXE_TAGS = [
 // ── Custom Runtime Checks ──────────────────────────────────────────────────
 
 async function runCustomChecks(page) {
-  return await page.evaluate(() => {
+  return await page.evaluate(async () => {
     const findings = [];
 
     // Check 1: lang attribute on <html>
@@ -94,20 +94,33 @@ async function runCustomChecks(page) {
       'button, a[href], input, select, textarea, [tabindex="0"], [role="button"]'
     );
     const originalFocus = document.activeElement;
+    const settle = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+    const hasIndicator = (el, baseBorder) => {
+      const focused = window.getComputedStyle(el);
+      const outlineWidth = Number.parseFloat(focused.outlineWidth) || 0;
+      const hasOutline = focused.outlineStyle !== 'none' && outlineWidth >= 2;
+      const hasShadow = focused.boxShadow && focused.boxShadow !== 'none';
+      const hasBorderChange = focused.borderColor !== baseBorder;
+      return hasOutline || hasShadow || hasBorderChange;
+    };
     let noVisibleFocusCount = 0;
+    const unconfirmed = [];
     interactiveElements.forEach(el => {
       const rect = el.getBoundingClientRect();
       const base = window.getComputedStyle(el);
       if (el.disabled || el.hidden || base.display === 'none' || base.visibility === 'hidden' || rect.width === 0 || rect.height === 0) return;
       const baseBorder = base.borderColor;
       el.focus({ preventScroll: true });
-      const focused = window.getComputedStyle(el);
-      const outlineWidth = Number.parseFloat(focused.outlineWidth) || 0;
-      const hasOutline = focused.outlineStyle !== 'none' && outlineWidth >= 2;
-      const hasShadow = focused.boxShadow && focused.boxShadow !== 'none';
-      const hasBorderChange = focused.borderColor !== baseBorder;
-      if (!hasOutline && !hasShadow && !hasBorderChange) noVisibleFocusCount++;
+      if (!hasIndicator(el, baseBorder)) unconfirmed.push({ el, baseBorder });
     });
+    // A control carrying a CSS transition (commonly `transition: all`) animates its ring in, so a
+    // same-tick read returns frame zero -- outline-width 0px -- and a perfectly good focus style
+    // reads as missing. Re-check only the apparent failures, after letting the transition finish.
+    for (const candidate of unconfirmed) {
+      candidate.el.focus({ preventScroll: true });
+      await settle(350);
+      if (!hasIndicator(candidate.el, candidate.baseBorder)) noVisibleFocusCount++;
+    }
     if (originalFocus && typeof originalFocus.focus === 'function') originalFocus.focus({ preventScroll: true });
     if (noVisibleFocusCount > 0) {
       findings.push({
