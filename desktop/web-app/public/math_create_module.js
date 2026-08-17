@@ -269,6 +269,20 @@
               // recorded a fabricated 0-attempt CBM result into the student's
               // probe history. The panel owns its own state, so all this button
               // must do is put it on screen.
+              // Hand the panel what the blocks actually carry: their total
+              // quantity. It used to be silently discarded at this seam
+              // (migration plan enhancement #2). Free-text directives are NOT
+              // parsed into settings; the panel consumes this slot once, on
+              // mount, snapping the count to its own fixed options.
+              try {
+                window.__alloFluencyPendingConfig = {
+                  problemCount: fluencyBlocks.reduce((s, b) => s + (Math.floor(Number(b.quantity)) || 0), 0),
+                  at: Date.now()
+                };
+                // For the case where the panel is ALREADY mounted (teacher was
+                // in Fluency Probes mode before opening Math Studio).
+                window.dispatchEvent(new CustomEvent('alloflow:fluency-pending-config'));
+              } catch (e) {}
               if (typeof setMathMode === 'function') setMathMode('Fluency Probes');
               if (typeof setExpandedTools === 'function') setExpandedTools(prev => (Array.isArray(prev) && prev.includes('math')) ? prev : [...(Array.isArray(prev) ? prev : []), 'math']);
               onClose();

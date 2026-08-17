@@ -1130,6 +1130,50 @@
     var _k = useState(''), studentInput = _k[0], setStudentInput = _k[1];
     var _l = useState(true), soundEnabled = _l[0], setSoundEnabled = _l[1];
     var _m = useState(false), autoAdvance = _m[0], setAutoAdvance = _m[1];
+
+    // ── Assessment Builder handoff ──────────────────────────────────────────
+    // Math Studio's all-fluency path opens this panel; the blocks the teacher
+    // composed carry a problem quantity that used to be silently discarded at
+    // this seam (docs/math_create_migration_plan.md, enhancement #2). The
+    // producer parks it in window.__alloFluencyPendingConfig just before
+    // opening the panel; this consumes it exactly once, on mount.
+    // Only fields a block actually carries are accepted — quantity, snapped to
+    // this panel's fixed count options, plus operation IF a future producer
+    // sends a valid one. Nothing is parsed out of free-text directives.
+    React.useEffect(function () {
+      function consumePending() {
+        var pending = null;
+        try {
+          pending = window.__alloFluencyPendingConfig;
+          delete window.__alloFluencyPendingConfig;
+        } catch (_) { return; }
+        if (!pending || typeof pending !== 'object') return;
+        // A forgotten slot from an abandoned handoff must not configure a
+        // panel opened minutes later by hand.
+        if (!Number.isFinite(Number(pending.at)) || Date.now() - Number(pending.at) > 120000) return;
+        var applied = [];
+        var ops = { add: 1, sub: 1, mul: 1, div: 1, mixed: 1 };
+        if (ops[pending.operation]) { setOperation(pending.operation); applied.push('operation'); }
+        var wanted = Math.floor(Number(pending.problemCount));
+        if (wanted >= 1) {
+          var options = [20, 40, 60, 80, 120, 150];
+          var snapped = options.reduce(function (best, opt) {
+            return Math.abs(opt - wanted) < Math.abs(best - wanted) ? opt : best;
+          }, options[0]);
+          setProblemCount(snapped);
+          applied.push('problemCount');
+        }
+        if (applied.length && typeof addToast === 'function') {
+          addToast(tt('math_fluency.builder_handoff_applied', 'Settings from your assessment plan were applied. Review and press Start.'), 'info');
+        }
+      }
+      consumePending();
+      // The event covers the already-mounted case: if the teacher is ALREADY
+      // in Fluency Probes mode when Math Studio hands off, no remount happens
+      // and a mount-only consume would let the slot expire unused.
+      window.addEventListener('alloflow:fluency-pending-config', consumePending);
+      return function () { window.removeEventListener('alloflow:fluency-pending-config', consumePending); };
+    }, []);
     var _n = useState(null), lastFeedback = _n[0], setLastFeedback = _n[1];
     var _o = useState('practice'), probeMode = _o[0], setProbeMode = _o[1];
     var _p = useState('A'), probeForm = _p[0], setProbeForm = _p[1];

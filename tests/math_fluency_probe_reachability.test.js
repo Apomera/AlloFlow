@@ -123,6 +123,32 @@ describe('the state of play, pinned so it is not re-argued from memory', () => {
     }
   });
 
+  it('the builder handoff carries the blocks\' quantity instead of discarding it', () => {
+    // Migration plan enhancement #2, closed 2026-08-17. Producer: Math Studio's
+    // all-fluency branch parks {problemCount, at} in a window slot and fires an
+    // event. Consumer: MathFluencyPanel consumes once (mount OR event, for the
+    // already-mounted case), rejects stale slots, snaps the count to its own
+    // fixed options, and never parses free-text directives into settings.
+    const studio = readFileSync('math_create_module.js', 'utf8');
+    expect(studio).toContain('window.__alloFluencyPendingConfig = {');
+    expect(studio).toContain('fluencyBlocks.reduce((s, b) => s + (Math.floor(Number(b.quantity)) || 0), 0)');
+    expect(studio).toContain("window.dispatchEvent(new CustomEvent('alloflow:fluency-pending-config'));");
+    expect(studio).not.toContain('directive'.toUpperCase()); // no directive parsing sneaks in
+
+    expect(fluency).toContain('function consumePending()');
+    expect(fluency).toContain('delete window.__alloFluencyPendingConfig;');
+    expect(fluency).toContain('> 120000) return;'); // stale-slot rejection
+    expect(fluency).toContain('var options = [20, 40, 60, 80, 120, 150];'); // snap to real options
+    expect(fluency).toContain("window.addEventListener('alloflow:fluency-pending-config', consumePending);");
+    expect(fluency).toContain("window.removeEventListener('alloflow:fluency-pending-config', consumePending);");
+    // and the snap logic actually snaps
+    const snap = (wanted) => [20, 40, 60, 80, 120, 150].reduce((best, opt) => Math.abs(opt - wanted) < Math.abs(best - wanted) ? opt : best, 20);
+    expect(snap(25)).toBe(20);
+    expect(snap(35)).toBe(40);
+    expect(snap(100)).toBe(80);
+    expect(snap(500)).toBe(150);
+  });
+
   it('a mixed assessment names its dropped fluency blocks instead of silently omitting them', () => {
     const stem = readFileSync('math_create_module.js', 'utf8');
     expect(stem).toContain('if (fluencyBlocks.length > 0) {');
