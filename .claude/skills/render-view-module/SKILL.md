@@ -180,7 +180,15 @@ stem_lab_module.js is one (7,800 lines, deep host coupling; the isolated
 attempt died on an untraceable undefined element type). For those, drive the
 DEPLOYED app and swap YOUR module in over the CDN copy:
 
-\
+```js
+const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block' });
+const page = await ctx.newPage();
+const local = fs.readFileSync('stem_lab/stem_lab_module.js', 'utf8');
+await page.route('**/stem_lab_module.js*', (r) =>
+  r.fulfill({ status: 200, contentType: 'application/javascript', body: local }));
+await page.goto('https://alloflow-cdn.pages.dev/app/');
+```
+
 **serviceWorkers: 'block' is mandatory.** The app registers a service worker,
 and SW-mediated fetches bypass page.route entirely — the interception silently
 does nothing and you measure the deployed code while believing you measured
