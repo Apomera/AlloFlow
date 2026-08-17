@@ -138,8 +138,20 @@
             <div class="blob" style="width:400px;height:400px;background:#5eead4;bottom:-100px;right:-100px"></div>
             <div style="position:relative;z-index:1;max-width:900px;margin:0 auto">
                 <p class="promo-kicker">Open source · source-aware · built for access</p>
-                <h1 style="font-size:clamp(2.45rem,6vw,4.45rem);font-weight:900;line-height:1.08;margin:18px 0 22px;letter-spacing:-0.035em">
-                    Turn a source—or a learning goal—into<br><span class="gradient-text">accessible, differentiated learning.</span>
+                <!-- The name is an acronym, and this is its canonical expansion:
+                     the same string as ui_strings.js header.tagline / splash.tagline,
+                     CITATION.cff and the desktop README, already translated into all
+                     63 language packs. The homepage was the one place still carrying
+                     a different line. Initials are styled with plain spans, never <b>
+                     or <strong>, so screen readers read the words continuously
+                     instead of announcing emphasis on every first letter. -->
+                <h1 class="promo-acronym" style="font-size:clamp(1.75rem,3.9vw,3rem);font-weight:900;line-height:1.16;margin:18px 0 20px;letter-spacing:-0.02em">
+                    <span class="acro-half acro-allo"><span class="acro-i">A</span>daptive <span class="acro-i">L</span>evels,
+                        <span class="acro-i">L</span>ayers, &amp; <span class="acro-i">O</span>utputs</span>
+                    <span class="acro-arrow" aria-hidden="true">➔</span>
+                    <span class="acro-half acro-flow"><span class="acro-i">F</span>lexible
+                        <span class="acro-i">L</span>earning <span class="acro-i">O</span>ptions for
+                        <span class="acro-i">W</span>hole-Student Education</span>
                 </h1>
                 <p style="font-size:1.15rem;color:#526176;max-width:720px;margin:0 auto 30px;line-height:1.72">
                     Find a STEM lab, adapt classroom material, build a learning resource, or create a more accessible document alternative. AlloFlow shows what each workflow needs before you begin.
@@ -5292,6 +5304,51 @@
 
             50% {
                 opacity: 0.4
+            }
+        }
+
+        /* Hero acronym lockup. The two halves stack on narrow screens so the
+           arrow never leaves a single word stranded on its own line. */
+        .promo-acronym .acro-half {
+            display: inline-block;
+        }
+
+        /* The initial letters are the whole point, so both halves are solid text
+           rather than a gradient: a gradient runs across the phrase and flattens
+           the very letters it needs to distinguish. ALLO and FLOW each take one
+           brand colour, which also separates the two words of the name.
+           Both pass AA on the hero background (#3730a3 8.9:1, #0f766e 4.9:1). */
+        .promo-acronym .acro-allo {
+            color: #1e293b;
+        }
+
+        .promo-acronym .acro-allo .acro-i {
+            color: #3730a3;
+        }
+
+        .promo-acronym .acro-flow {
+            color: #1e293b;
+        }
+
+        .promo-acronym .acro-flow .acro-i {
+            color: #0f766e;
+        }
+
+        .promo-acronym .acro-arrow {
+            color: #64748b;
+            margin: 0 6px;
+            font-weight: 700;
+        }
+
+        @media (max-width: 720px) {
+            .promo-acronym .acro-half {
+                display: block;
+            }
+
+            .promo-acronym .acro-arrow {
+                display: block;
+                margin: 2px 0;
+                font-size: 0.8em;
             }
         }
 

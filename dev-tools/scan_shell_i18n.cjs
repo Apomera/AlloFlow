@@ -41,6 +41,27 @@ const UI_PROPS = new Set(['label', 'title', 'sub', 'subtitle', 'subhead', 'headi
 const UI_CALLS = new Set(['addToast', 'toast', 'alert', 'confirm', 'announce', 'announceToSR',
   'setError', 'setSpotlightMessage', 'setStatusMessage', 'speak']);
 
+// ── --deep: see through the expression SHAPES that wrap a visible string ─────
+// Everything above only matches a bare StringLiteral sitting in a watched slot.
+// A string is equally visible when it is wrapped in a ternary, a template
+// literal, a `+` concatenation or an `||` default — and those shapes are common.
+// Measured on view_misc_panels_source.jsx (2026-08-17): the default pass
+// reported 100 strings while ~20 more were hand-found in exactly these shapes,
+// e.g. `{dim === 'l' ? 'Length' : 'Width'}`, `` `Move ${x} earlier` ``, the
+// three AI-confidence verdicts, and a lone <option>Self-corrected</option>
+// sitting between four siblings that WERE reported.
+//
+// Opt-in, because --gate ratchets per-file COUNTS against a baseline: turning
+// this on by default would raise every count at once and fail the gate for the
+// whole tree. --deep keeps its own baseline so it can ratchet independently.
+let DEEP = false;
+// Props that carry visible text but were not in UI_PROPS. Both confirm-dialog
+// button labels lived here: their `title`/`message` siblings were watched, so a
+// dialog could ship a localized question with English-only buttons.
+const DEEP_PROPS = new Set(['confirmLabel', 'cancelLabel', 'okLabel', 'dismissLabel',
+  'submitLabel', 'actionLabel', 'closeLabel', 'retryLabel', 'nextLabel', 'backLabel',
+  'saveLabel', 'deleteLabel', 'ariaDescription', 'srLabel', 'srText', 'announcement']);
+
 // ── Attributes/props whose string value is never prose ───────────────────────
 const NEVER = new Set(['className', 'class', 'style', 'id', 'key', 'type', 'role', 'href', 'src',
   'name', 'value', 'htmlFor', 'data-help-key', 'data-testid', 'viewBox', 'd', 'fill', 'stroke',
@@ -65,7 +86,14 @@ function looksLikeProse(s) {
   if (v.length < 3 || v.length > 400) return false;
   if (!/[A-Za-z]{2}/.test(v)) return false;              // needs real letters
   if (/^https?:|^\/|^data:|^blob:|^#|^\.|^@/.test(v)) return false;
-  if (/^[a-z0-9]+([._-][a-z0-9]+)+$/i.test(v)) return false;   // key.like.this, kebab-token
+  // key.like.this, kebab-token. The /i here also swallowed ordinary capitalised
+  // hyphenated ENGLISH — "Self-corrected", "Teacher-reviewed", "Comma-separated",
+  // "Follow-up" — classifying real copy as a code token. That is why
+  // <option>Self-corrected</option> went unreported while its four sibling
+  // <option> labels were reported. Code tokens are lowercase by convention, so
+  // under --deep the test is case-SENSITIVE and capitalised phrases survive.
+  if (DEEP) { if (/^[a-z0-9]+([._-][a-z0-9]+)+$/.test(v)) return false; }
+  else if (/^[a-z0-9]+([._-][a-z0-9]+)+$/i.test(v)) return false;
   if (/^[a-z][a-zA-Z0-9]*$/.test(v) && !/ /.test(v)) return false; // camelCase identifier
   if (/^[A-Z][A-Z0-9_]+$/.test(v)) return false;         // CONSTANT_CASE
   // Tailwind / CSS class soup: several hyphenated tokens, no sentence punctuation.
@@ -159,11 +187,61 @@ function scanFile(rel) {
     findings.push({ line: node.loc ? node.loc.start.line : 0, why, text: String(text).trim().replace(/\s+/g, ' ') });
   };
 
+  // --deep only. Descend through the shapes that wrap a visible string without
+  // making it any less visible. Deliberately does NOT widen which POSITIONS are
+  // watched — a className ternary stays invisible — so the extra findings are
+  // real strings in slots this scanner already considered user-facing.
+  // `covered` still applies, so `t('k') || 'Fallback'` stays clean.
+  const pushExpr = (node, why, depth) => {
+    if (!node || !DEEP) return;
+    const d = depth || 0;
+    if (d > 6) return;                       // pathological nesting guard
+    switch (node.type) {
+      case 'StringLiteral':
+        push(node, node.value, why);
+        break;
+      case 'ConditionalExpression':          // {cond ? 'Length' : 'Width'}
+        pushExpr(node.consequent, why, d + 1);
+        pushExpr(node.alternate, why, d + 1);
+        break;
+      case 'LogicalExpression':              // {x || 'Untitled'}
+        pushExpr(node.left, why, d + 1);
+        pushExpr(node.right, why, d + 1);
+        break;
+      case 'BinaryExpression':               // {'Notch ' + dim}
+        if (node.operator === '+') {
+          pushExpr(node.left, why, d + 1);
+          pushExpr(node.right, why, d + 1);
+        }
+        break;
+      case 'TemplateLiteral':                // {`Move ${x} earlier`}
+        // Report the literal chunks; the interpolations are values, not copy.
+        // Short joiners like ": " or "/10" fall out via looksLikeProse.
+        for (const q of node.quasis) {
+          const raw = q.value && (q.value.cooked != null ? q.value.cooked : q.value.raw);
+          if (raw && raw.trim()) push(q, raw, why);
+        }
+        break;
+      case 'JSXExpressionContainer':
+        pushExpr(node.expression, why, d + 1);
+        break;
+      default:
+        break;
+    }
+  };
+
   traverse(ast, {
     JSXText(p) {
       const raw = p.node.value;
       if (!raw.trim()) return;
       push(p.node, raw, 'jsx-text');
+    },
+    JSXExpressionContainer(p) {
+      // Children position only — attribute containers are handled by JSXAttribute
+      // below, which knows whether the attribute is a UI-bearing one.
+      if (!DEEP) return;
+      if (p.parent && p.parent.type === 'JSXAttribute') return;
+      pushExpr(p.node.expression, 'jsx-expr');
     },
     JSXAttribute(p) {
       const name = p.node.name && (p.node.name.name || '');
@@ -172,15 +250,22 @@ function scanFile(rel) {
       if (!UI_ATTRS.has(attr)) return;
       const v = p.node.value;
       if (v && v.type === 'StringLiteral') push(v, v.value, `attr:${attr}`);
-      if (v && v.type === 'JSXExpressionContainer' && v.expression.type === 'StringLiteral') push(v.expression, v.expression.value, `attr:${attr}`);
+      if (v && v.type === 'JSXExpressionContainer') {
+        if (v.expression.type === 'StringLiteral') push(v.expression, v.expression.value, `attr:${attr}`);
+        else pushExpr(v.expression, `attr:${attr}`);
+      }
     },
     ObjectProperty(p) {
       const k = p.node.key;
       const key = k ? (k.name || k.value) : null;
-      if (!key || !UI_PROPS.has(String(key))) return;
-      if (NEVER.has(String(key)) && !UI_PROPS.has(String(key))) return;
+      const ks = String(key);
+      const watched = key && (UI_PROPS.has(ks) || (DEEP && DEEP_PROPS.has(ks)));
+      if (!watched) return;
+      if (NEVER.has(ks) && !UI_PROPS.has(ks) && !DEEP_PROPS.has(ks)) return;
       const v = p.node.value;
-      if (v && v.type === 'StringLiteral') push(v, v.value, `prop:${key}${fallbackProps.has(String(key)) ? '?' : ''}`);
+      const why = `prop:${key}${fallbackProps.has(ks) ? '?' : ''}`;
+      if (v && v.type === 'StringLiteral') push(v, v.value, why);
+      else pushExpr(v, why);
     },
     CallExpression(p) {
       const callee = p.node.callee;
@@ -190,6 +275,7 @@ function scanFile(rel) {
       if (!name || !UI_CALLS.has(name)) return;
       const first = p.node.arguments[0];
       if (first && first.type === 'StringLiteral') push(first, first.value, `call:${name}`);
+      else pushExpr(first, `call:${name}`);
     },
   });
 
@@ -260,6 +346,7 @@ function allShellTargets() {
 
 const argv = process.argv.slice(2);
 const wantCsv = argv.includes('--csv');
+DEEP = argv.includes('--deep');
 const explicit = argv.filter(a => !a.startsWith('--'));
 const targets = explicit.length ? explicit : (argv.includes('--all') ? allShellTargets() : DEFAULT_TARGETS);
 
@@ -300,7 +387,10 @@ console.log(`\n── scan_shell_i18n: ${results.length} file(s), ${total} user-
 //
 //   node dev-tools/scan_shell_i18n.cjs --all --gate              # CI check
 //   node dev-tools/scan_shell_i18n.cjs --all --update-baseline   # accept current
-const BASELINE = path.join(__dirname, 'shell_i18n_baseline.json');
+// --deep ratchets against its OWN baseline. Sharing one file would mean the
+// first --deep run reported hundreds of "new" strings against a shallow
+// baseline and failed the gate for every lane at once.
+const BASELINE = path.join(__dirname, DEEP ? 'shell_i18n_deep_baseline.json' : 'shell_i18n_baseline.json');
 if (argv.includes('--update-baseline')) {
   const snap = {};
   for (const r of results) if (!r.parseError) snap[r.rel] = r.findings.length;
