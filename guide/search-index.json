@@ -104,6 +104,14 @@
     "text": "A strong AlloFlow lesson should feel like one coherent class task with useful choices, not a collection of unrelated apps. Students should know: The shared learning goal. Which resource or pathway is theirs. Whether they may choose another support. How to ask for help without disclosing private information. What they will create, answer, discuss, or submit. What happens when they finish. Avoid labeling pathways as “low,” “easy,” or “special.” Use neutral names tied to purpose, such as “audio and glossary,” “visual overview,” “practice with examples,” or “extension.” When possible, offer supports to the whole class while privately directing students to the options most likely to help."
   },
   {
+    "id": "start-here:the-smallest-possible-start-one-tool-one-link",
+    "title": "The smallest possible start: one tool, one link",
+    "chapter": "Start here: prepare your first student-ready resource",
+    "level": 2,
+    "url": "start-here.html#the-smallest-possible-start-one-tool-one-link",
+    "text": "You do not have to begin with a lesson at all. Every interactive STEAM Lab tool has its own direct web address that opens just that tool, with no sign-in for you or your students. Pasting one such link into whatever you already use (your LMS, a slide, a message home) is the lowest-commitment way to try AlloFlow, share it with a colleague, or give a family one good activity. When you are ready for more than one tool, come back to the fifteen-minute lesson above."
+  },
+  {
     "id": "start-here:if-something-does-not-work",
     "title": "If something does not work",
     "chapter": "Start here: prepare your first student-ready resource",
@@ -694,6 +702,38 @@
     "level": 2,
     "url": "adventure-mode.html#practical-guidance",
     "text": "Graded work: turn the assignment switch off. Adventure is practice and engagement, not assessment. XP worries: XP earned in an adventure spends in the same place as all other XP. Removing the adventure does not take away anything a student already earned. Teachers in family mode see the Adventure panel pre-expanded in the sidebar rather than the student presentation."
+  },
+  {
+    "id": "family-mode:family-mode-alloflow-for-a-parent-at-home",
+    "title": "Family mode: AlloFlow for a parent at home",
+    "chapter": "Family mode: AlloFlow for a parent at home",
+    "level": 1,
+    "url": "family-mode.html#family-mode-alloflow-for-a-parent-at-home",
+    "text": "What a parent authoring at home can reach, what stays school-only, and how teachers hand off cleanly. Family mode is the parent-facing way to use AlloFlow: a parent or caregiver authoring support for their own child. It was reviewed and tightened in the August 2026 update, so what a parent can reach is now a decision, not an accident. If you are a teacher sending work home instead, see Prepare a lesson; this chapter is about a family running AlloFlow themselves."
+  },
+  {
+    "id": "family-mode:what-a-parent-gets",
+    "title": "What a parent gets",
+    "chapter": "Family mode: AlloFlow for a parent at home",
+    "level": 2,
+    "url": "family-mode.html#what-a-parent-gets",
+    "text": "Family mode is the authoring experience, with home-appropriate language. A parent can build adapted texts, glossaries, quizzes, visuals, and activities for their child, use the STEAM Lab and Learning Hub tools, and manage everything saved on their own device. Several tools introduce themselves in family terms: the glossary presents as a word helper, the lesson plan as a family guide, and the alignment tools in plain language. Two things are deliberately kept: Class Analytics stays available. A home-schooling parent tracking their own child's progress is the point of the panel. What changed in August 2026: inside it, a parent sees the practice and progress side only. Class roster import and the research-study suite are school surfaces and no longer render in family mode. The Adventure panel appears pre-expanded in the sidebar, since a family lesson often centers on it."
+  },
+  {
+    "id": "family-mode:what-a-parent-cannot-do",
+    "title": "What a parent cannot do",
+    "chapter": "Family mode: AlloFlow for a parent at home",
+    "level": 2,
+    "url": "family-mode.html#what-a-parent-cannot-do",
+    "text": "These are school-role surfaces, closed to family mode by design: starting a live class session (all entry points, including the one inside Guided Mode); class rosters, QTI and LMS exports, and the LMS integration section; Family Bridge sending and class-session tooling; the password-gated Educator Tools remain gated as everywhere else."
+  },
+  {
+    "id": "family-mode:practical-guidance",
+    "title": "Practical guidance",
+    "chapter": "Family mode: AlloFlow for a parent at home",
+    "level": 2,
+    "url": "family-mode.html#practical-guidance",
+    "text": "Everything lives on the family's own device. There is no account, so there is also no recovery from another machine; families who invest real time should use Save Project and keep the file somewhere safe. AI setup is the family's choice: their own free Gemini key, running AlloFlow inside Gemini Canvas, or a local model. The setup screen walks through all three. See Troubleshooting. Teachers coordinating with families: the cleanest handoff is still a delivered assignment or a single-tool link, not asking a family to reproduce your setup. Family mode shines when the family is driving."
   },
   {
     "id": "accessibility-and-udl:accessibility-and-udl-verify-the-learner-experience",
@@ -2165,7 +2205,7 @@
     "chapter": "Specialist and product reference",
     "level": 2,
     "url": "specialist-reference.html#product-glossary",
-    "text": "AAC: Augmentative and alternative communication. Methods and systems that support or replace speech, including symbols, text, gestures, partner-assisted scanning, and speech-generating devices. Activity Pulse: A teacher-facing live view of activity lifecycle or response status. It helps identify delivery and follow-up needs; it is not a mastery score. Adapted Text: A version of the source rewritten toward a target reading level. Produced by the Text Adaptation tool. It should change the reading load, not the learning goal. AI backend: The configured service or local engine that performs generation. Provider, account, data handling, availability, and capabilities depend on deployment. AlloBot: The in-app assistant. It answers questions in conversation and can offer to open a tool for you. Screen-changing actions are offered rather than performed, so you confirm before the view moves. AlloFlow project: A downloadable project file used to preserve lesson state for later loading. It may contain source and generated content and should be stored accordingly. Assignment or package: A reviewed collection of directions, resources, and evidence tasks delivered through an approved share, export, LMS, QR, or live route. Codename: A classroom alias used to reduce the need for student names in a live workflow. A codename still requires careful handling if the teacher can link it to a student. Deployment: The approved combination of app location, hosting, accounts, AI backend, live-session services, storage, security rules, and retention settings. Evidence cohort: A temporary grouping suggested from recorded classroom signals, such as incomplete participation, catch-up need, or revision. The teacher must verify the group and its next move. Generated resource: AI-assisted or tool-produced material that requires teacher review before use. Guided Mode: A task sequence that leads from source and lesson intent through resources, directions, review, and delivery. Help Mode: Contextual explanations attached to supported controls, toggled with ?. Immersive Reader: A reading overlay that can provide read-aloud, highlighting, spacing, focus, or other presentation supports depending on the current build. Lesson Images: The image generation tool. It creates pictures and diagrams for the content, and can refine or remove text inside an image. Do not confuse it with Visual Organizer, which builds concept maps and diagrams of structure, or with the AAC visual supports used for communication boards and schedules. OCR: Optical character recognition, which converts an image of text into machine-readable text. OCR output must be checked, especially for tables, formulas, columns, and poor scans. Source Material: The grounding content for generation. It remains the reference for fact and quotation checks. Station: A saved or assigned learning-tool experience used in a rotation, center, or independent sequence. Student-Paced: A live-session mode in which students can move through assigned material with more individual control. Teacher-Paced: A live-session mode in which the teacher advances or activates the shared classroom experience. Teacher Signal: A live-session cue, direction, delivery, or status control used to coordinate the class. Confirm the audience before sending. TTS: Text-to-speech. Voice and language availability depend on the browser, provider, device, and deployment. UDL: Universal Design for Learning, a planning framework that anticipates variability through multiple routes for engagement, representation, and action or expression. Universal Settings: The shared defaults every generator inherits, including grade level, output language, translations, standards, interests, Depth of Knowledge, and emoji. They apply to new work only. See Universal Settings."
+    "text": "AAC: Augmentative and alternative communication. Methods and systems that support or replace speech, including symbols, text, gestures, partner-assisted scanning, and speech-generating devices. Activity Pulse: A teacher-facing live view of activity lifecycle or response status. It helps identify delivery and follow-up needs; it is not a mastery score. Adapted Text: A version of the source rewritten toward a target reading level. Produced by the Text Adaptation tool. It should change the reading load, not the learning goal. AI backend: The configured service or local engine that performs generation. Provider, account, data handling, availability, and capabilities depend on deployment. AlloBot: The in-app assistant. It answers questions in conversation and can offer to open a tool for you. Screen-changing actions are offered rather than performed, so you confirm before the view moves. AlloFlow project: A downloadable project file used to preserve lesson state for later loading. It may contain source and generated content and should be stored accordingly. Assignment or package: A reviewed collection of directions, resources, and evidence tasks delivered through an approved share, export, LMS, QR, or live route. Codename: A classroom alias used to reduce the need for student names in a live workflow. A codename still requires careful handling if the teacher can link it to a student. Deep link: A direct web address that opens one interactive tool by itself, with no sign-in (for example, a water cycle link a teacher can put in any assignment or message). Every STEAM Lab tool has one. Deployment: The approved combination of app location, hosting, accounts, AI backend, live-session services, storage, security rules, and retention settings. Expert Workbench: A Document Builder ribbon tab that applies plain-language structural instructions to a document (\"make every heading a proper H2\"). The same engine the PDF remediation pathway uses. Evidence cohort: A temporary grouping suggested from recorded classroom signals, such as incomplete participation, catch-up need, or revision. The teacher must verify the group and its next move. Generated resource: AI-assisted or tool-produced material that requires teacher review before use. Guided Mode: A task sequence that leads from source and lesson intent through resources, directions, review, and delivery. Help Mode: Contextual explanations attached to supported controls, toggled with ?. Immersive Reader: A reading overlay that can provide read-aloud, highlighting, spacing, focus, or other presentation supports depending on the current build. Lesson Images: The image generation tool. It creates pictures and diagrams for the content, and can refine or remove text inside an image. Do not confuse it with Visual Organizer, which builds concept maps and diagrams of structure, or with the AAC visual supports used for communication boards and schedules. OCR: Optical character recognition, which converts an image of text into machine-readable text. OCR output must be checked, especially for tables, formulas, columns, and poor scans. Source Material: The grounding content for generation. It remains the reference for fact and quotation checks. Station: A saved or assigned learning-tool experience used in a rotation, center, or independent sequence. Student-Paced: A live-session mode in which students can move through assigned material with more individual control. Teacher-Paced: A live-session mode in which the teacher advances or activates the shared classroom experience. Teacher Signal: A live-session cue, direction, delivery, or status control used to coordinate the class. Confirm the audience before sending. TTS: Text-to-speech. Voice and language availability depend on the browser, provider, device, and deployment. UDL: Universal Design for Learning, a planning framework that anticipates variability through multiple routes for engagement, representation, and action or expression. Universal Settings: The shared defaults every generator inherits, including grade level, output language, translations, standards, interests, Depth of Knowledge, and emoji. They apply to new work only. See Universal Settings. Worksheet export: The export format that produces a blank copy to write on: ruled answer lines, fill-in bubbles, and a Name and Date header. Contrast with Print / Save as PDF, which produces a finished copy to read. See Documents and printing."
   },
   {
     "id": "specialist-reference:if-you-cannot-find-a-feature",
@@ -2310,5 +2350,69 @@
     "level": 2,
     "url": "school-rollout-and-coaching.html#prepare-a-staff-facing-one-page-handoff",
     "text": "Every teacher should be able to answer these questions without opening a feature catalog: Goal. What are students meant to understand or be able to do in this lesson? Source. What material is this built from, and what must remain accurate in any adapted version? Review. Who read the student-facing version before students received it? Route. How does the material actually reach students, and has that route been tested from a student's position? Access. Which barrier was anticipated, and what usable alternative is ready? Privacy. What must never be entered, where does this content live, and who may see it? Recovery. What happens to the lesson if the provider, network, device, or module fails? Keep the answers on a single page and write them for this school, not for AlloFlow in general. Questions 1 through 5 belong to the teacher and change with each lesson. Questions 6 and 7 are school decisions and should be filled in once by leadership, in specific terms: the approved deployment and student link, the storage location, the named support contact, the escalation route, and the boundary on what may be entered or shared. Post the page where planning actually happens and revisit it whenever the deployment, provider, accounts, or approved routes change. A teacher who cannot answer question 6 or 7 has been handed a gap in the rollout, not a personal deficiency. Treat the page as an orientation aid rather than a compliance form. It exists so a teacher joining mid-year, a substitute, or a specialist supporting a single student can act confidently without reading this guide first. If answering all seven questions takes more than a few minutes, the routine is probably too elaborate to sustain, and the more useful response is to narrow the routine rather than expand the page."
+  },
+  {
+    "id": "for-your-it-department:for-your-it-department-the-one-page-technical-brief",
+    "title": "For your IT department: the one-page technical brief",
+    "chapter": "For your IT department: the one-page technical brief",
+    "level": 1,
+    "url": "for-your-it-department.html#for-your-it-department-the-one-page-technical-brief",
+    "text": "The technical brief: static app, no accounts, on-device data, the three AI backend options, and what to verify. When a school pilots AlloFlow, the questions come from IT within a week. This chapter answers them in IT's own terms. It describes the public deployment; if your district self-hosts, verify each answer against your own instance, in the spirit of Privacy and responsible AI: assume nothing until verified."
+  },
+  {
+    "id": "for-your-it-department:what-it-is-architecturally",
+    "title": "What it is, architecturally",
+    "chapter": "For your IT department: the one-page technical brief",
+    "level": 2,
+    "url": "for-your-it-department.html#what-it-is-architecturally",
+    "text": "A static web application served from a CDN. There is no application server holding user data, no database of students, and no login system. The code is open source (AGPL) and publicly auditable on GitHub, so your security review can read exactly what runs."
+  },
+  {
+    "id": "for-your-it-department:accounts-and-authentication",
+    "title": "Accounts and authentication",
+    "chapter": "For your IT department: the one-page technical brief",
+    "level": 2,
+    "url": "for-your-it-department.html#accounts-and-authentication",
+    "text": "None. Staff and students use it without creating accounts. This removes the usual pilot blockers (rostering, SSO integration, account lifecycle) and also means AlloFlow holds no credential or directory data at all."
+  },
+  {
+    "id": "for-your-it-department:where-data-lives",
+    "title": "Where data lives",
+    "chapter": "For your IT department: the one-page technical brief",
+    "level": 2,
+    "url": "for-your-it-department.html#where-data-lives",
+    "text": "Work product stays in the browser's own storage on the device that created it (localStorage and equivalent browser storage). Nothing is synced to an AlloFlow server, because there is not one. The practical consequences cut both ways: Nothing to breach centrally, nothing to subpoena from a vendor, nothing to delete on offboarding. A lost or wiped device loses its local work unless the user exported a project file. Treat exported project files as instructional records under your normal file-handling policy. The full data-path table, including live sessions, exports, QR codes, and LMS launches, is in Privacy and responsible AI; it is written to be reviewed line by line with a privacy officer."
+  },
+  {
+    "id": "for-your-it-department:the-ai-question-which-is-really-three-options",
+    "title": "The AI question, which is really three options",
+    "chapter": "For your IT department: the one-page technical brief",
+    "level": 2,
+    "url": "for-your-it-department.html#the-ai-question-which-is-really-three-options",
+    "text": "AI features only work when a backend is configured, and the district controls which: Option What leaves the device Fits when Gemini Canvas or a Gemini API key Prompts and source content go to Google under the account or key used The district already permits Google AI services A local model (LM Studio, Ollama, LocalAI on the device or a district server) Nothing leaves the machine or the district network Confidential contexts, strict no-egress requirements No backend Nothing; AI features hide or disable themselves and everything else keeps working Evaluation phase, or a deliberate non-AI deployment Teachers are instructed throughout this guide to use de-identified content with any cloud backend. The no-backend state is honest by design: the interactive tools, delivery, and documents all work without AI."
+  },
+  {
+    "id": "for-your-it-department:network-requirements",
+    "title": "Network requirements",
+    "chapter": "For your IT department: the one-page technical brief",
+    "level": 2,
+    "url": "for-your-it-department.html#network-requirements",
+    "text": "Allow the application host (for the public deployment, alloflow-cdn.pages.dev). If a cloud AI backend is chosen, allow that provider's endpoint (for Gemini, Google's API hosts). Exported HTML handouts are self-contained and work offline; the optional high-legibility web fonts are off by default and clearly labeled \"needs internet\" when a teacher opts in."
+  },
+  {
+    "id": "for-your-it-department:what-to-verify-yourself-because-you-should-not-take-a-guides-word-for-it",
+    "title": "What to verify yourself, because you should not take a guide's word for it",
+    "chapter": "For your IT department: the one-page technical brief",
+    "level": 2,
+    "url": "for-your-it-department.html#what-to-verify-yourself-because-you-should-not-take-a-guides-word-for-it",
+    "text": "Open the app on a managed device with your standard filtering and confirm it loads and a sample tool runs. Watch the network tab during generation with your chosen backend and confirm traffic goes only where this chapter says. Review the repository if your process requires code review; the license permits it and the build is reproducible from source."
+  },
+  {
+    "id": "for-your-it-department:the-two-sentence-version-for-a-busy-director",
+    "title": "The two-sentence version for a busy director",
+    "chapter": "For your IT department: the one-page technical brief",
+    "level": 2,
+    "url": "for-your-it-department.html#the-two-sentence-version-for-a-busy-director",
+    "text": "AlloFlow is a static, open source web app with no accounts and no vendor-side data storage; work stays on the device, and AI runs only through the backend the district chooses, including a fully local option. The realistic review effort is the same as approving a website plus, if you choose one, an AI provider you have likely already reviewed."
   }
 ]

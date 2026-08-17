@@ -169,7 +169,11 @@ Keyboard behavior can vary inside simulations and specialized editors. Turn on H
 
 **Codename:** A classroom alias used to reduce the need for student names in a live workflow. A codename still requires careful handling if the teacher can link it to a student.
 
+**Deep link:** A direct web address that opens one interactive tool by itself, with no sign-in (for example, a water cycle link a teacher can put in any assignment or message). Every STEAM Lab tool has one.
+
 **Deployment:** The approved combination of app location, hosting, accounts, AI backend, live-session services, storage, security rules, and retention settings.
+
+**Expert Workbench:** A Document Builder ribbon tab that applies plain-language structural instructions to a document ("make every heading a proper H2"). The same engine the PDF remediation pathway uses.
 
 **Evidence cohort:** A temporary grouping suggested from recorded classroom signals, such as incomplete participation, catch-up need, or revision. The teacher must verify the group and its next move.
 
@@ -200,6 +204,8 @@ Keyboard behavior can vary inside simulations and specialized editors. Turn on H
 **UDL:** Universal Design for Learning, a planning framework that anticipates variability through multiple routes for engagement, representation, and action or expression.
 
 **Universal Settings:** The shared defaults every generator inherits, including grade level, output language, translations, standards, interests, Depth of Knowledge, and emoji. They apply to new work only. See [Universal Settings](11-universal-settings.md).
+
+**Worksheet export:** The export format that produces a blank copy to write on: ruled answer lines, fill-in bubbles, and a Name and Date header. Contrast with Print / Save as PDF, which produces a finished copy to read. See [Documents and printing](15-documents-and-printing.md).
 
 ## If you cannot find a feature
 

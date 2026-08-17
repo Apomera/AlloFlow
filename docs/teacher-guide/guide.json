@@ -44,7 +44,9 @@
             "description": "Set shared guardrails, coach teachers, and measure useful implementation signals.",
             "chapterSlugs": [
                 "school-rollout-and-coaching",
-                "privacy-and-responsible-ai"
+                "privacy-and-responsible-ai",
+                "for-your-it-department",
+                "family-mode"
             ]
         },
         {
@@ -93,6 +95,13 @@
             "slug": "adventure-mode",
             "summary": "When students see Adventure Mode, lesson-scoped resume, and the assignment switch.",
             "audience": "Classroom teachers",
+            "time": "5 minutes"
+        },
+        {
+            "source": "chapters/16-family-mode.md",
+            "slug": "family-mode",
+            "summary": "What a parent authoring at home can reach, what stays school-only, and how teachers hand off cleanly.",
+            "audience": "Families and teachers who coordinate with them",
             "time": "5 minutes"
         },
         {
@@ -164,6 +173,13 @@
             "summary": "Introduce AlloFlow as an instructional routine with shared guardrails and coaching.",
             "audience": "School leader or coach",
             "time": "30-day rollout"
+        },
+        {
+            "source": "chapters/17-for-your-it-department.md",
+            "slug": "for-your-it-department",
+            "summary": "The technical brief: static app, no accounts, on-device data, the three AI backend options, and what to verify.",
+            "audience": "IT and technology directors",
+            "time": "5 minutes"
         }
     ]
 }

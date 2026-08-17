@@ -160,3 +160,19 @@ Remaining known gaps, still deliberate: Family mode (role scoping settled this f
 parent-facing surface review is fresh; document next pass), Educator evaluation (the demo vs
 connected split is now honest in-app; a chapter should follow real district setup experience),
 Page Designer (power-user surface), Admin/IT (different audience, different document).
+
+## Gaps closed 2026-08-16 (third pass)
+
+- **Family mode** — chapter 16, written against the settled role scoping: what a parent
+  reaches, what stays school-only (all live-session doors, rosters, LMS/QTI), the Class
+  Analytics keep-but-scope decision, and the teacher handoff guidance.
+- **For your IT department** — chapter 17: the technical brief in IT's own terms (static app,
+  no accounts, on-device data, the three AI-backend options with their egress profiles,
+  network allowlist, and a verify-it-yourself list). Written to the privacy chapter's
+  assume-nothing register and cross-linked to its data-path table.
+- **Product glossary** — Deep link, Expert Workbench, Worksheet export entries.
+- **Start here** — "The smallest possible start: one tool, one link" section, since
+  single-tool deep links are now the lowest-commitment entry to the whole platform.
+
+Remaining deliberate gaps: Educator evaluation (document after a real district setup),
+Page Designer (power-user surface).

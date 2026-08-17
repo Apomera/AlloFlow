@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
-  <meta name="description" content="The four export formats, the handout reading tools, annotations that stay put, and printing that always comes out light.">
-  <title>Documents and printing: from resource to handout · AlloFlow Teacher Guide</title>
+  <meta name="description" content="The technical brief: static app, no accounts, on-device data, the three AI backend options, and what to verify.">
+  <title>For your IT department: the one-page technical brief · AlloFlow Teacher Guide</title>
   <link rel="stylesheet" href="guide.css">
 </head>
 <body>
@@ -40,12 +40,12 @@
           <li><a href="classroom-workflows.html">Classroom workflows</a></li>
           <li><a href="privacy-and-responsible-ai.html">Privacy and responsible AI</a></li>
           <li><a href="allobot-assistant.html">AlloBot: the assistant that talks with you</a></li>
-          <li><a href="documents-and-printing.html" aria-current="page">Documents and printing: from resource to handout</a></li>
+          <li><a href="documents-and-printing.html">Documents and printing: from resource to handout</a></li>
           <li><a href="troubleshooting.html">Troubleshooting</a></li>
           <li><a href="math-fluency.html">Math Fluency: timed practice and CBM probes</a></li>
           <li><a href="specialist-reference.html">Specialist and product reference</a></li>
           <li><a href="school-rollout-and-coaching.html">School rollout and coaching</a></li>
-          <li><a href="for-your-it-department.html">For your IT department: the one-page technical brief</a></li>
+          <li><a href="for-your-it-department.html" aria-current="page">For your IT department: the one-page technical brief</a></li>
         </ol>
       </nav>
     </aside>
@@ -53,32 +53,33 @@
       <nav class="breadcrumbs" aria-label="Breadcrumb">
         <ol>
           <li><a href="index.html">Guide home</a></li>
-          <li aria-current="page">Documents and printing: from resource to handout</li>
+          <li aria-current="page">For your IT department: the one-page technical brief</li>
         </ol>
       </nav>
       <article class="guide-article">
-<h1 id="documents-and-printing-from-resource-to-handout">Documents and printing: from resource to handout</h1>
-        <p class="chapter-summary">The four export formats, the handout reading tools, annotations that stay put, and printing that always comes out light.</p>
+<h1 id="for-your-it-department-the-one-page-technical-brief">For your IT department: the one-page technical brief</h1>
+        <p class="chapter-summary">The technical brief: static app, no accounts, on-device data, the three AI backend options, and what to verify.</p>
         <dl class="chapter-cues" aria-label="Chapter at a glance">
           <div>
             <dt>Best for</dt>
-            <dd>Classroom teachers</dd>
+            <dd>IT and technology directors</dd>
           </div>
           <div>
             <dt>Typical use</dt>
-            <dd>10 minutes</dd>
+            <dd>5 minutes</dd>
           </div>
         </dl>
-        <p class="chapter-meta">Chapter 12 of 17 · Verified <time datetime="2026-08-16">2026-08-16</time></p>
+        <p class="chapter-meta">Chapter 17 of 17 · Verified <time datetime="2026-08-16">2026-08-16</time></p>
         <nav class="section-nav" aria-labelledby="section-nav-title">
           <p id="section-nav-title" class="section-nav__title">On this page</p>
           <ol>
-            <li><a href="#the-four-export-formats-plainly">The four export formats, plainly</a></li>
-            <li><a href="#the-html-handouts-reading-tools">The HTML handout&#39;s reading tools</a></li>
-            <li><a href="#annotations-that-stay-put">Annotations that stay put</a></li>
-            <li><a href="#printing">Printing</a></li>
-            <li><a href="#the-expert-workbench">The Expert Workbench</a></li>
-            <li><a href="#practical-guidance">Practical guidance</a></li>
+            <li><a href="#what-it-is-architecturally">What it is, architecturally</a></li>
+            <li><a href="#accounts-and-authentication">Accounts and authentication</a></li>
+            <li><a href="#where-data-lives">Where data lives</a></li>
+            <li><a href="#the-ai-question-which-is-really-three-options">The AI question, which is really three options</a></li>
+            <li><a href="#network-requirements">Network requirements</a></li>
+            <li><a href="#what-to-verify-yourself-because-you-should-not-take-a-guides-word-for-it">What to verify yourself, because you should not take a guide&#39;s word for it</a></li>
+            <li><a href="#the-two-sentence-version-for-a-busy-director">The two-sentence version for a busy director</a></li>
           </ol>
         </nav>
       <section class="guide-search" aria-labelledby="guide-search-title" data-guide-search data-search-index="search-index.json">
@@ -117,72 +118,67 @@
             </div>
           </noscript>
       </section>
-<p>Everything AlloFlow generates can leave the app as a document a student can hold: a finished copy to read, a blank copy to write on, or a self-contained web page with its own reading tools. This chapter covers choosing between them and the details that matter once paper is involved.</p>
-<p>For building the resources themselves, see <a href="prepare-a-lesson.html">Prepare a lesson</a>.</p>
-<h2 id="the-four-export-formats-plainly">The four export formats, plainly</h2>
+<p>When a school pilots AlloFlow, the questions come from IT within a week. This chapter answers them in IT's own terms. It describes the public deployment; if your district self-hosts, verify each answer against your own instance, in the spirit of <a href="privacy-and-responsible-ai.html">Privacy and responsible AI</a>: assume nothing until verified.</p>
+<h2 id="what-it-is-architecturally">What it is, architecturally</h2>
+<p>A static web application served from a CDN. There is no application server holding user data, no database of students, and no login system. The code is open source (AGPL) and publicly auditable on GitHub, so your security review can read exactly what runs.</p>
+<h2 id="accounts-and-authentication">Accounts and authentication</h2>
+<p>None. Staff and students use it without creating accounts. This removes the usual pilot blockers (rostering, SSO integration, account lifecycle) and also means AlloFlow holds no credential or directory data at all.</p>
+<h2 id="where-data-lives">Where data lives</h2>
+<p>Work product stays in the browser's own storage on the device that created it (localStorage and equivalent browser storage). Nothing is synced to an AlloFlow server, because there is not one. The practical consequences cut both ways:</p>
+<ul>
+<li>Nothing to breach centrally, nothing to subpoena from a vendor, nothing to delete on offboarding.</li>
+<li>A lost or wiped device loses its local work unless the user exported a project file. Treat exported project files as instructional records under your normal file-handling policy.</li>
+</ul>
+<p>The full data-path table, including live sessions, exports, QR codes, and LMS launches, is in <a href="privacy-and-responsible-ai.html">Privacy and responsible AI</a>; it is written to be reviewed line by line with a privacy officer.</p>
+<h2 id="the-ai-question-which-is-really-three-options">The AI question, which is really three options</h2>
+<p>AI features only work when a backend is configured, and the district controls which:</p>
 <div class="table-scroll" role="region" aria-label="Scrollable table" tabindex="0">
 <table>
 <thead>
 <tr>
-<th scope="col">Format</th>
-<th scope="col">What it is</th>
-<th scope="col">Reach for it when</th>
+<th scope="col">Option</th>
+<th scope="col">What leaves the device</th>
+<th scope="col">Fits when</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>Print / Save as PDF</strong></td>
-<td>A finished copy to read. Opens your print window; print it or save as PDF there.</td>
-<td>Reference copies, family communication, reading material.</td>
+<td><strong>Gemini Canvas or a Gemini API key</strong></td>
+<td>Prompts and source content go to Google under the account or key used</td>
+<td>The district already permits Google AI services</td>
 </tr>
 <tr>
-<td><strong>Worksheet</strong></td>
-<td>A blank copy to write on: answer boxes become ruled lines, multiple choice becomes fill-in bubbles, and a Name / Date / Score header appears.</td>
-<td>Paper practice and anything handed in physically.</td>
+<td><strong>A local model</strong> (LM Studio, Ollama, LocalAI on the device or a district server)</td>
+<td>Nothing leaves the machine or the district network</td>
+<td>Confidential contexts, strict no-egress requirements</td>
 </tr>
 <tr>
-<td><strong>HTML handout</strong></td>
-<td>One self-contained file with its own reading toolbar. Works offline once downloaded; nothing phones home.</td>
-<td>Sending work home, devices without AlloFlow, screen-reader use.</td>
-</tr>
-<tr>
-<td><strong>Slides</strong></td>
-<td>A presentation export.</td>
-<td>Whole-class instruction.</td>
+<td><strong>No backend</strong></td>
+<td>Nothing; AI features hide or disable themselves and everything else keeps working</td>
+<td>Evaluation phase, or a deliberate non-AI deployment</td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>The export screen explains each format under its selector, so you do not need to memorize this table.</p>
-<p><strong>The worksheet has one more trick:</strong> if your lesson has both an adapted text and a glossary, you can turn the passage into a fill-in-the-blank worksheet. Glossary terms become numbered blanks, a word bank appears below, and the teacher copy carries the answer key. It works in any lesson language.</p>
-<h2 id="the-html-handouts-reading-tools">The HTML handout's reading tools</h2>
-<p>The exported page carries its own accessibility toolbar, independent of AlloFlow:</p>
+<p>Teachers are instructed throughout this guide to use de-identified content with any cloud backend. The no-backend state is honest by design: the interactive tools, delivery, and documents all work without AI.</p>
+<h2 id="network-requirements">Network requirements</h2>
 <ul>
-<li><strong>Text size</strong> steps from 90% to 175%, with a live percentage readout. Content reflows instead of getting cut off, at every size, on every screen width.</li>
-<li><strong>Fonts:</strong> nine faces that work with no internet at all, including a readable serif, a rounded face, and a dyslexia-friendly option. Four high-legibility web fonts (OpenDyslexic, Atkinson Hyperlegible, Lexend, Andika) are available behind a clearly labeled &quot;needs internet&quot; checkbox at export time, off by default so no handout phones out unless you chose that.</li>
-<li><strong>Reading themes</strong>, sentence read-along where the lesson includes audio, and the annotation tools below.</li>
+<li>Allow the application host (for the public deployment, <code>alloflow-cdn.pages.dev</code>).</li>
+<li>If a cloud AI backend is chosen, allow that provider's endpoint (for Gemini, Google's API hosts).</li>
+<li>Exported HTML handouts are self-contained and work offline; the optional high-legibility web fonts are off by default and clearly labeled &quot;needs internet&quot; when a teacher opts in.</li>
 </ul>
-<h2 id="annotations-that-stay-put">Annotations that stay put</h2>
-<p>Students and teachers can highlight, add notes and stickers, record voice notes, and draw freehand directly on the handout. Marks belong to the document: they scroll with it, stay attached through text-size and font changes, and survive reload. &quot;Erase my marks&quot; clears only your own annotations, tells you how many it would erase, and is disabled when there is nothing to erase.</p>
-<p>Teacher annotations made in the app travel into the export, including drawings.</p>
-<h2 id="printing">Printing</h2>
-<ul>
-<li>Screen-only controls never print; what comes out is the worksheet, not the interface.</li>
-<li><strong>Printing from dark mode produces a normal light page.</strong> Dark themes are for screens; paper always comes out black on white, so no one empties a toner cartridge by accident.</li>
-<li>The crossword and other glossary printables include a separate answer-key page after a page break, so you can keep the key and hand out the rest.</li>
-</ul>
-<h2 id="the-expert-workbench">The Expert Workbench</h2>
-<p>The Document Builder's ribbon has an <strong>Expert Workbench</strong> tab: type a plain-language instruction (&quot;make every heading a proper H2&quot;, &quot;add alt text to the images&quot;) and it applies structural edits across the document. It is the same engine the PDF remediation pathway uses. The panel shows example instructions, so an empty text box never greets you.</p>
-<h2 id="practical-guidance">Practical guidance</h2>
-<ul>
-<li><strong>Preview in the real format.</strong> A resource that looks right in the app can break at 175% text on a phone; the reflow work makes this rare, but the habit is free.</li>
-<li><strong>For families without reliable internet</strong>, the HTML handout with the default fonts is the safest artifact: one file, works from a download, nothing external.</li>
-<li><strong>Keep the answer-key page</strong> before handing a stack to students; it prints last on purpose.</li>
-</ul>
+<h2 id="what-to-verify-yourself-because-you-should-not-take-a-guides-word-for-it">What to verify yourself, because you should not take a guide's word for it</h2>
+<ol>
+<li>Open the app on a managed device with your standard filtering and confirm it loads and a sample tool runs.</li>
+<li>Watch the network tab during generation with your chosen backend and confirm traffic goes only where this chapter says.</li>
+<li>Review the repository if your process requires code review; the license permits it and the build is reproducible from source.</li>
+</ol>
+<h2 id="the-two-sentence-version-for-a-busy-director">The two-sentence version for a busy director</h2>
+<p>AlloFlow is a static, open source web app with no accounts and no vendor-side data storage; work stays on the device, and AI runs only through the backend the district chooses, including a fully local option. The realistic review effort is the same as approving a website plus, if you choose one, an AI provider you have likely already reviewed.</p>
       </article>
       <nav class="chapter-pager" aria-label="Previous and next chapters">
-        <a class="chapter-pager__previous" href="allobot-assistant.html"><span>Previous</span>AlloBot: the assistant that talks with you</a>
-        <a class="chapter-pager__next" href="troubleshooting.html"><span>Next</span>Troubleshooting</a>
+        <a class="chapter-pager__previous" href="school-rollout-and-coaching.html"><span>Previous</span>School rollout and coaching</a>
+        <a class="chapter-pager__next" href="index.html"><span>Next</span>Guide home</a>
       </nav>
     </main>
   </div>

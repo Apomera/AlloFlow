@@ -154,6 +154,10 @@ A strong AlloFlow lesson should feel like one coherent class task with useful ch
 
 Avoid labeling pathways as “low,” “easy,” or “special.” Use neutral names tied to purpose, such as “audio and glossary,” “visual overview,” “practice with examples,” or “extension.” When possible, offer supports to the whole class while privately directing students to the options most likely to help.
 
+## The smallest possible start: one tool, one link
+
+You do not have to begin with a lesson at all. Every interactive STEAM Lab tool has its own direct web address that opens just that tool, with no sign-in for you or your students. Pasting one such link into whatever you already use (your LMS, a slide, a message home) is the lowest-commitment way to try AlloFlow, share it with a colleague, or give a family one good activity. When you are ready for more than one tool, come back to the fifteen-minute lesson above.
+
 ## If something does not work
 
 Protect instructional time first. Keep a stable fallback ready: the original source, a downloadable handout, or a simple discussion prompt. If a module is still loading, wait briefly, use its retry control if shown, or return to the previous view. If generation fails, preserve your source and directions before refreshing.

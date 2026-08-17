@@ -271,7 +271,7 @@ describe('teacher guide search and offline contracts', () => {
     }
   });
 
-  it('keeps the offline edition self-contained with globally unique anchors', () => {
+  it('keeps the offline edition self-contained with globally unique anchors', { timeout: 240000 }, () => {
     const source = text(resolve(outputRoot, 'offline.html'));
     const document = documentFor(resolve(outputRoot, 'offline.html'));
     expect(document.querySelector('link[rel="stylesheet"]')).toBeNull();

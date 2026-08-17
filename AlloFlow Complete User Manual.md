@@ -15,16 +15,18 @@ This consolidated Markdown edition is generated for repository browsing, review,
 3. [Universal Settings: set it once, not per tool](#universal-settings-set-it-once-not-per-tool) · Set grade level, language, translations, and other shared defaults once for the whole lesson.
 4. [Run a live lesson safely and calmly](#run-a-live-lesson-safely-and-calmly) · Prepare, run, differentiate, and close a live lesson safely.
 5. [Adventure Mode: a story your lesson can carry](#adventure-mode-a-story-your-lesson-can-carry) · When students see Adventure Mode, lesson-scoped resume, and the assignment switch.
-6. [Accessibility and UDL: verify the learner experience](#accessibility-and-udl-verify-the-learner-experience) · Check the real learner experience and remove barriers before sharing.
-7. [Review evidence and plan next steps](#review-evidence-and-plan-next-steps) · Interpret classroom evidence carefully and plan useful follow-up.
-8. [Classroom workflows](#classroom-workflows) · Use practical recipes for common middle-school teaching needs.
-9. [Privacy and responsible AI](#privacy-and-responsible-ai) · Use student data and generated materials with appropriate judgment.
-10. [AlloBot: the assistant that talks with you](#allobot-the-assistant-that-talks-with-you) · Talking with the assistant: conversation first, offers before actions, and what the microphone states mean.
-11. [Documents and printing: from resource to handout](#documents-and-printing-from-resource-to-handout) · The four export formats, the handout reading tools, annotations that stay put, and printing that always comes out light.
-12. [Troubleshooting](#troubleshooting) · Recover work and diagnose common classroom problems.
-13. [Math Fluency: timed practice and CBM probes](#math-fluency-timed-practice-and-cbm-probes) · Where timed math practice and CBM probes live, and the fastest way to open them.
-14. [Specialist and product reference](#specialist-and-product-reference) · Find specialist surfaces, keyboard help, and product terminology.
-15. [School rollout and coaching](#school-rollout-and-coaching) · Introduce AlloFlow as an instructional routine with shared guardrails and coaching.
+6. [Family mode: AlloFlow for a parent at home](#family-mode-alloflow-for-a-parent-at-home) · What a parent authoring at home can reach, what stays school-only, and how teachers hand off cleanly.
+7. [Accessibility and UDL: verify the learner experience](#accessibility-and-udl-verify-the-learner-experience) · Check the real learner experience and remove barriers before sharing.
+8. [Review evidence and plan next steps](#review-evidence-and-plan-next-steps) · Interpret classroom evidence carefully and plan useful follow-up.
+9. [Classroom workflows](#classroom-workflows) · Use practical recipes for common middle-school teaching needs.
+10. [Privacy and responsible AI](#privacy-and-responsible-ai) · Use student data and generated materials with appropriate judgment.
+11. [AlloBot: the assistant that talks with you](#allobot-the-assistant-that-talks-with-you) · Talking with the assistant: conversation first, offers before actions, and what the microphone states mean.
+12. [Documents and printing: from resource to handout](#documents-and-printing-from-resource-to-handout) · The four export formats, the handout reading tools, annotations that stay put, and printing that always comes out light.
+13. [Troubleshooting](#troubleshooting) · Recover work and diagnose common classroom problems.
+14. [Math Fluency: timed practice and CBM probes](#math-fluency-timed-practice-and-cbm-probes) · Where timed math practice and CBM probes live, and the fastest way to open them.
+15. [Specialist and product reference](#specialist-and-product-reference) · Find specialist surfaces, keyboard help, and product terminology.
+16. [School rollout and coaching](#school-rollout-and-coaching) · Introduce AlloFlow as an instructional routine with shared guardrails and coaching.
+17. [For your IT department: the one-page technical brief](#for-your-it-department-the-one-page-technical-brief) · The technical brief: static app, no accounts, on-device data, the three AI backend options, and what to verify.
 
 ---
 
@@ -183,6 +185,10 @@ A strong AlloFlow lesson should feel like one coherent class task with useful ch
 - What happens when they finish.
 
 Avoid labeling pathways as “low,” “easy,” or “special.” Use neutral names tied to purpose, such as “audio and glossary,” “visual overview,” “practice with examples,” or “extension.” When possible, offer supports to the whole class while privately directing students to the options most likely to help.
+
+### The smallest possible start: one tool, one link
+
+You do not have to begin with a lesson at all. Every interactive STEAM Lab tool has its own direct web address that opens just that tool, with no sign-in for you or your students. Pasting one such link into whatever you already use (your LMS, a slide, a message home) is the lowest-commitment way to try AlloFlow, share it with a colleague, or give a family one good activity. When you are ready for more than one tool, come back to the fifteen-minute lesson above.
 
 ### If something does not work
 
@@ -865,6 +871,38 @@ Adventure has its own language control with three settings: the lesson language 
 - **Graded work:** turn the assignment switch off. Adventure is practice and engagement, not assessment.
 - **XP worries:** XP earned in an adventure spends in the same place as all other XP. Removing the adventure does not take away anything a student already earned.
 - **Teachers in family mode** see the Adventure panel pre-expanded in the sidebar rather than the student presentation.
+
+---
+
+## Family mode: AlloFlow for a parent at home
+
+Family mode is the parent-facing way to use AlloFlow: a parent or caregiver authoring support for their own child. It was reviewed and tightened in the August 2026 update, so what a parent can reach is now a decision, not an accident.
+
+If you are a teacher sending work home instead, see [Prepare a lesson](#prepare-a-purposeful-differentiated-lesson); this chapter is about a family running AlloFlow themselves.
+
+### What a parent gets
+
+Family mode is the authoring experience, with home-appropriate language. A parent can build adapted texts, glossaries, quizzes, visuals, and activities for their child, use the STEAM Lab and Learning Hub tools, and manage everything saved on their own device. Several tools introduce themselves in family terms: the glossary presents as a word helper, the lesson plan as a family guide, and the alignment tools in plain language.
+
+Two things are deliberately kept:
+
+- **Class Analytics stays available.** A home-schooling parent tracking their own child's progress is the point of the panel. What changed in August 2026: inside it, a parent sees the practice and progress side only. Class roster import and the research-study suite are school surfaces and no longer render in family mode.
+- **The Adventure panel appears pre-expanded** in the sidebar, since a family lesson often centers on it.
+
+### What a parent cannot do
+
+These are school-role surfaces, closed to family mode by design:
+
+- starting a live class session (all entry points, including the one inside Guided Mode);
+- class rosters, QTI and LMS exports, and the LMS integration section;
+- Family Bridge sending and class-session tooling;
+- the password-gated Educator Tools remain gated as everywhere else.
+
+### Practical guidance
+
+- **Everything lives on the family's own device.** There is no account, so there is also no recovery from another machine; families who invest real time should use Save Project and keep the file somewhere safe.
+- **AI setup is the family's choice**: their own free Gemini key, running AlloFlow inside Gemini Canvas, or a local model. The setup screen walks through all three. See [Troubleshooting](#troubleshooting).
+- **Teachers coordinating with families:** the cleanest handoff is still a delivered assignment or a single-tool link, not asking a family to reproduce your setup. Family mode shines when the family is driving.
 
 ---
 
@@ -2444,7 +2482,11 @@ Keyboard behavior can vary inside simulations and specialized editors. Turn on H
 
 **Codename:** A classroom alias used to reduce the need for student names in a live workflow. A codename still requires careful handling if the teacher can link it to a student.
 
+**Deep link:** A direct web address that opens one interactive tool by itself, with no sign-in (for example, a water cycle link a teacher can put in any assignment or message). Every STEAM Lab tool has one.
+
 **Deployment:** The approved combination of app location, hosting, accounts, AI backend, live-session services, storage, security rules, and retention settings.
+
+**Expert Workbench:** A Document Builder ribbon tab that applies plain-language structural instructions to a document ("make every heading a proper H2"). The same engine the PDF remediation pathway uses.
 
 **Evidence cohort:** A temporary grouping suggested from recorded classroom signals, such as incomplete participation, catch-up need, or revision. The teacher must verify the group and its next move.
 
@@ -2475,6 +2517,8 @@ Keyboard behavior can vary inside simulations and specialized editors. Turn on H
 **UDL:** Universal Design for Learning, a planning framework that anticipates variability through multiple routes for engagement, representation, and action or expression.
 
 **Universal Settings:** The shared defaults every generator inherits, including grade level, output language, translations, standards, interests, Depth of Knowledge, and emoji. They apply to new work only. See [Universal Settings](#universal-settings-set-it-once-not-per-tool).
+
+**Worksheet export:** The export format that produces a blank copy to write on: ruled answer lines, fill-in bubbles, and a Name and Date header. Contrast with Print / Save as PDF, which produces a finished copy to read. See [Documents and printing](#documents-and-printing-from-resource-to-handout).
 
 ### If you cannot find a feature
 
@@ -2661,3 +2705,54 @@ Keep the answers on a single page and write them for this school, not for AlloFl
 Post the page where planning actually happens and revisit it whenever the deployment, provider, accounts, or approved routes change. A teacher who cannot answer question 6 or 7 has been handed a gap in the rollout, not a personal deficiency.
 
 Treat the page as an orientation aid rather than a compliance form. It exists so a teacher joining mid-year, a substitute, or a specialist supporting a single student can act confidently without reading this guide first. If answering all seven questions takes more than a few minutes, the routine is probably too elaborate to sustain, and the more useful response is to narrow the routine rather than expand the page.
+
+---
+
+## For your IT department: the one-page technical brief
+
+When a school pilots AlloFlow, the questions come from IT within a week. This chapter answers them in IT's own terms. It describes the public deployment; if your district self-hosts, verify each answer against your own instance, in the spirit of [Privacy and responsible AI](#privacy-and-responsible-ai): assume nothing until verified.
+
+### What it is, architecturally
+
+A static web application served from a CDN. There is no application server holding user data, no database of students, and no login system. The code is open source (AGPL) and publicly auditable on GitHub, so your security review can read exactly what runs.
+
+### Accounts and authentication
+
+None. Staff and students use it without creating accounts. This removes the usual pilot blockers (rostering, SSO integration, account lifecycle) and also means AlloFlow holds no credential or directory data at all.
+
+### Where data lives
+
+Work product stays in the browser's own storage on the device that created it (localStorage and equivalent browser storage). Nothing is synced to an AlloFlow server, because there is not one. The practical consequences cut both ways:
+
+- Nothing to breach centrally, nothing to subpoena from a vendor, nothing to delete on offboarding.
+- A lost or wiped device loses its local work unless the user exported a project file. Treat exported project files as instructional records under your normal file-handling policy.
+
+The full data-path table, including live sessions, exports, QR codes, and LMS launches, is in [Privacy and responsible AI](#privacy-and-responsible-ai); it is written to be reviewed line by line with a privacy officer.
+
+### The AI question, which is really three options
+
+AI features only work when a backend is configured, and the district controls which:
+
+| Option | What leaves the device | Fits when |
+| --- | --- | --- |
+| **Gemini Canvas or a Gemini API key** | Prompts and source content go to Google under the account or key used | The district already permits Google AI services |
+| **A local model** (LM Studio, Ollama, LocalAI on the device or a district server) | Nothing leaves the machine or the district network | Confidential contexts, strict no-egress requirements |
+| **No backend** | Nothing; AI features hide or disable themselves and everything else keeps working | Evaluation phase, or a deliberate non-AI deployment |
+
+Teachers are instructed throughout this guide to use de-identified content with any cloud backend. The no-backend state is honest by design: the interactive tools, delivery, and documents all work without AI.
+
+### Network requirements
+
+- Allow the application host (for the public deployment, `alloflow-cdn.pages.dev`).
+- If a cloud AI backend is chosen, allow that provider's endpoint (for Gemini, Google's API hosts).
+- Exported HTML handouts are self-contained and work offline; the optional high-legibility web fonts are off by default and clearly labeled "needs internet" when a teacher opts in.
+
+### What to verify yourself, because you should not take a guide's word for it
+
+1. Open the app on a managed device with your standard filtering and confirm it loads and a sample tool runs.
+2. Watch the network tab during generation with your chosen backend and confirm traffic goes only where this chapter says.
+3. Review the repository if your process requires code review; the license permits it and the build is reproducible from source.
+
+### The two-sentence version for a busy director
+
+AlloFlow is a static, open source web app with no accounts and no vendor-side data storage; work stays on the device, and AI runs only through the backend the district chooses, including a fully local option. The realistic review effort is the same as approving a website plus, if you choose one, an AI provider you have likely already reviewed.
