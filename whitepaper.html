@@ -104,6 +104,7 @@
                     <li><a href="#case-studies">Case studies</a></li>
                     <li><a href="#limitations">Limitations</a></li>
                     <li><a href="#recommendations">Adoption guidance</a></li>
+                    <li><a href="#appendix-engineering">Appendix A: Engineering deep dive</a></li>
                     <li><a href="#references">References</a></li>
                 </ol>
             </nav>
@@ -357,6 +358,86 @@ human source comparison and usability review</div>
                         <li><strong>Include disabled users and assistive-technology testing.</strong> Technical checks
                             are necessary but cannot represent the full experience of accessing a document.</li>
                     </ol>
+                </section>
+
+                <section id="appendix-engineering" aria-labelledby="appendix-engineering-heading">
+                    <h2 id="appendix-engineering-heading">Appendix A. Engineering deep dive</h2>
+                    <p>Sections 4 and 5 describe the pipeline at the level a program decision needs. This appendix
+                        is for the reviewer who wants to know how the machine actually works, and it is written to
+                        the same rule as the rest of this paper: no claim without a mechanism behind it.</p>
+
+                    <h3 id="appendix-verifiers-heading">A.1 The verifier stack, and why there are three</h3>
+                    <p>Every candidate output is scored by independent checkers with different failure models:
+                        <strong>axe-core</strong> and <strong>IBM Equal Access</strong> run against the exact HTML
+                        bytes that would ship (never a simplified copy), and <strong>veraPDF</strong> validates the
+                        tagged PDF against PDF/UA-1 as a separate, locally runnable step. Three verifiers matter
+                        because each has blind spots: rule engines disagree at the margins, and a repair that
+                        satisfies one can regress another. The loop below therefore scores against the verifiers
+                        jointly rather than optimizing any single number.</p>
+
+                    <h3 id="appendix-loop-heading">A.2 The keep-best loop, precisely</h3>
+                    <p>The improvement loop maintains a <em>best-so-far</em> record: the best HTML bytes seen and
+                        the verification results that earned them (in the implementation these are literally state
+                        variables named for the role: the best HTML, the best axe result, the best Equal Access
+                        result, the best issue count). Each iteration proposes a repair, re-runs the verifiers on
+                        the candidate, and then makes a conditional decision:</p>
+                    <ul>
+                        <li><strong>Improvement</strong> replaces the best-so-far record.</li>
+                        <li><strong>Regression</strong> is rolled back; the candidate is discarded and the prior
+                            best stands. A repair can never make the shipped output worse than the best already
+                            achieved.</li>
+                        <li><strong>Plateau</strong> ends the loop: when fresh evidence stops improving, the
+                            process stops instead of spending further model calls chasing noise. The plateau rule
+                            is what makes "bounded" a mechanism rather than a promise.</li>
+                    </ul>
+                    <p>Repairs themselves are tiered by invasiveness, and the loop exhausts cheaper tiers first:
+                        deterministic transforms (reproducible, reviewed once, trusted thereafter), then
+                        AI-diagnosed surgical repairs scoped to a named defect, and only lastly rewrites of a
+                        region whose structure cannot be repaired in place.</p>
+
+                    <h3 id="appendix-economy-heading">A.3 Spending model calls honestly</h3>
+                    <p>AI calls are the pipeline's scarcest resource, so their use is instrumented rather than
+                        assumed. The current implementation records the HTTP trail of failed calls, captures
+                        provider <code>Retry-After</code> signals instead of hammering a throttled endpoint, and
+                        skips re-verification passes when a fix round changed nothing, because re-auditing an
+                        unchanged document is three model calls for zero information. These are small rules with a
+                        large cumulative effect: the pipeline degrades gracefully under provider throttling rather
+                        than failing loudly or silently burning quota.</p>
+
+                    <h3 id="appendix-provenance-heading">A.4 Provenance, or why the report can be trusted</h3>
+                    <p>The evidence report is bound to artifacts, not narrated: source digest, output digest,
+                        checker versions, and findings travel together, so a report cannot drift away from the
+                        bytes it describes. The same discipline applies internally, and it is enforced in the
+                        development process itself: the project's own regression gates treat a checker that could
+                        pass vacuously as a defect, and verification steps are required to fail loudly on inputs
+                        designed to trip them before their green results are believed.</p>
+
+                    <h3 id="appendix-local-heading">A.5 The no-egress configuration</h3>
+                    <p>Every stage of the pipeline can run against a locally hosted model (LM Studio, Ollama,
+                        LocalAI and compatible servers) instead of a cloud provider, and the verifier stack is
+                        local by construction: axe-core and Equal Access run in the page, and veraPDF runs from a
+                        local JAR. In this configuration a confidential document is processed end to end with no
+                        content leaving the machine, which is the deployment posture the case-study work in
+                        section 8 used for sensitive material. The tradeoff is stated rather than hidden: smaller
+                        local models diagnose less reliably than frontier cloud models, so the deterministic tier
+                        carries more of the load and the human review pass matters more.</p>
+
+                    <h3 id="appendix-delivery-heading">A.6 The portable implementations</h3>
+                    <p>The same pipeline design ships in portable form for teams that live in other tools: a
+                        Claude Code plugin, an OpenAI-compatible plugin, and an agent skill (v0.2.9 at this
+                        writing, downloadable from this site). These share the rubric, the tiered-repair
+                        philosophy, and the evidence model with the in-app pipeline; they exist because the
+                        district staff member who remediates documents all day often works in an editor or an
+                        agent environment, not in a browser tab. Each portable build discloses its own validation
+                        boundary the same way section 6 does for export formats.</p>
+
+                    <h3 id="appendix-honesty-heading">A.7 What this appendix deliberately does not claim</h3>
+                    <p>No fixed success percentage is quoted for the AI repair tiers, because the honest number
+                        varies with document pathology, model choice, and configuration; section 8's case studies
+                        are offered instead, with their artifacts. "Self-healing," "fully automatic," and
+                        "guaranteed compliant" do not appear in this paper because no such mechanism exists here
+                        or, to our knowledge, anywhere: the pipeline's claim is narrower and checkable — bounded,
+                        evidence-conditional improvement with a human decision at the end.</p>
                 </section>
 
                 <section id="references" aria-labelledby="references-heading">
