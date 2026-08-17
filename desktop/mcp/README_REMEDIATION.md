@@ -231,7 +231,7 @@ worksheets are first-class inputs; magic-byte detection protects against mislabe
 single-file remediation tools take an optional **`page_range`** ("12-18" or "5") to remediate a span
 of a long PDF instead of the whole document.
 
-Since 0.3.3 they additionally accept **text-family files** — `.md`/`.markdown`/`.txt`/`.csv`/`.tsv`
+Since 0.3.4 they additionally accept **text-family files** — `.md`/`.markdown`/`.txt`/`.csv`/`.tsv`
 and spreadsheets (`.xlsx`/`.xls`/`.xlsb`/`.ods`). The driver mirrors the app's own intake: spreadsheets
 convert to markdown tables (first 200 rows per sheet, truncation disclosed), text decodes as UTF-8,
 and both flow through the pipeline's native text payload. Like Office inputs, the deliverable is the

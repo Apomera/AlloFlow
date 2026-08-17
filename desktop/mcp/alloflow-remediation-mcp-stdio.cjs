@@ -336,7 +336,7 @@ function requirePdfPath(args) { return _requireFileOfType(args, /\.pdf$/i, '.pdf
 // (2026-08-17) + first-class image inputs: the pipeline accepts PNG/JPEG/WebP scans natively
 // (magic-byte detection wins over extension, so a mislabeled photo never reaches the wrong
 // decoder). Teachers photograph worksheets; this is the doorway for those photos.
-// (2026-08-17, 0.3.3) + text-family: md/markdown/txt/csv/tsv and spreadsheets (xlsx/xls/xlsb/ods).
+// (2026-08-17, 0.3.4) + text-family: md/markdown/txt/csv/tsv and spreadsheets (xlsx/xls/xlsb/ods).
 // The driver mirrors the browser intake exactly — sheets through convertXlsxToMarkdownTables,
 // text through UTF-8 decode, both into the pipeline-native text payload — so these audit and
 // remediate with the same behavior the app gives them (accessible-HTML deliverable, no tagged PDF).

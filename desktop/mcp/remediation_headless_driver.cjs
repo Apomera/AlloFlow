@@ -1217,7 +1217,7 @@ function createDriver(options) {
     return true;
   }
 
-  // ── Text-family preprocessing (2026-08-17, MCP 0.3.3) ──────────────────────────────────────
+  // ── Text-family preprocessing (2026-08-17, MCP 0.3.4) ──────────────────────────────────────
   // The pipeline's entry sniffs PDF magic, Office zips, and image MIME only. The BROWSER handles
   // md/csv/tsv/spreadsheets by converting them in its intake (view_pdf_audit batch reader):
   // sheets → convertXlsxToMarkdownTables (a pipeline export), text → UTF-8 decode, then BOTH →
