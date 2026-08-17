@@ -11155,6 +11155,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [multTableHidden, setMultTableHidden] = useState(false);
   const [multTableRevealed, setMultTableRevealed] = useState(new Set());
   const [stemLabTab, setStemLabTab] = useState('explore');
+  // Math Studio: the former STEM Lab Create tab, moved home to the math tool
+  // (docs/math_create_migration_plan.md). Its working state (mathInput,
+  // assessmentBlocks, stemLabCreateMode, showAssessmentBuilder) is unchanged
+  // and shared with the sidebar MathPanel.
+  const [showMathCreate, setShowMathCreate] = useState(false);
   const [modulesReady, setModulesReady] = useState(0);
   const [mailboxScriptState, setMailboxScriptState] = useState({ status: 'loading', source: '', origin: '' });
   const [mailboxScriptRetry, setMailboxScriptRetry] = useState(0);
@@ -11711,9 +11716,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazyDisproAnalyzer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DisproAnalyzer', 'https://alloflow-cdn.pages.dev/dispro_analyzer_module.js?v=da080303'); }; })();
     // Leadership Hub (Aug 3 2026) — container shell for the admin suite;
     // Meeting Documentation is its third tool (needs callGemini).
-    window.__alloLazyAdminHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AdminHub', 'https://alloflow-cdn.pages.dev/admin_hub_module.js?v=ah080304'); }; })();
+    window.__alloLazyAdminHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AdminHub', 'https://alloflow-cdn.pages.dev/admin_hub_module.js?v=29e9a817'); }; })();
     // Educator Growth & Evaluation (Aug 13 2026) — Act 13 workflow prototype.
-    window.__alloLazyEducatorEvaluation = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorEvaluation', 'https://alloflow-cdn.pages.dev/educator_evaluation_module.js?v=7e5559135'); }; })();
+    window.__alloLazyEducatorEvaluation = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorEvaluation', 'https://alloflow-cdn.pages.dev/educator_evaluation_module.js?v=65c948b3'); }; })();
+    // Math Studio (Aug 17 2026) — the former STEM Lab Create tab, math-owned.
+    window.__alloLazyMathCreate = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MathCreate', 'https://alloflow-cdn.pages.dev/math_create_module.js?v=mc081701'); }; })();
     window.__alloLazyMeetingDocs = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MeetingDocs', 'https://alloflow-cdn.pages.dev/meeting_docs_module.js?v=md080302'); }; })();
     window.__alloLazySpedTimelines = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SpedTimelines', 'https://alloflow-cdn.pages.dev/sped_timelines_module.js?v=st080301'); }; })();
     window.__alloLazyDiagnosisEligibility = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DiagnosisEligibility', 'https://alloflow-cdn.pages.dev/stem_lab/stem_tool_eligibility.js?v=7e5559135'); }; })();
@@ -17666,6 +17673,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     }
     setIsEducatorEvaluationOpen(true);
   }, [evaluationPortalUrl, addToast]);
+  const openMathCreate = React.useCallback(() => {
+    try { if (typeof window.__alloLazyMathCreate === 'function') window.__alloLazyMathCreate(); } catch (_) {}
+    setShowMathCreate(true);
+  }, []);
   const handleSetShowStudyTimerModalToFalse = React.useCallback(() => setShowStudyTimerModal(false), []);
   const handleSetShowAdventureConfirmationToFalse = React.useCallback(() => setShowAdventureConfirmation(false), []);
   const handleToggleIsFullscreen = React.useCallback(() => setIsFullscreen(prev => !prev), []);
@@ -48580,7 +48591,9 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           setCubeNotch, setCubeRotation, setCubeScale, setCubeShape, setCubeShowLayers,
           setExploreDifficulty, setGeneratedContent, setHistory, setIsMathGraphEnabled, setMathInput,
           setMathMode, setMathQuantity, setMathSubject, setUseMathSourceContext, storageDB,
-          t, useMathSourceContext, autoAttachManipulatives, setAutoAttachManipulatives
+          t, useMathSourceContext, autoAttachManipulatives, setAutoAttachManipulatives,
+          // Primary door to Math Studio (the former STEM Lab Create tab).
+          openMathCreate
                 })}
             </div>
             <div style={{display: isGuidedToolVisible('adventure') ? undefined : 'none'}} id="tour-tool-adventure" data-help-key="tool_adventure" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
@@ -53505,6 +53518,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   // the live Fluency Probes panel, which only renders inside the
                   // sidebar math accordion (expandedTools must include 'math').
                   setExpandedTools,
+                  // The Lab's "Create moved" pointer opens Math Studio.
+                  openMathCreate,
                   // Read-only, so the Create tab's "From My Content" mode can say
                   // truthfully whether the lesson source will be attached (the
                   // attachment itself happens inside handleGenerateMath, gated on
@@ -53531,7 +53546,26 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   activeSessionCode, studentNickname, isTeacherMode
             })}
         </CDNModuleGate>
-        {showEducatorHub && <EducatorHubModal setShowRecentQrShares={setShowRecentQrShares} addToast={addToast} beginPdfDocumentIntake={startNewPdfAudit} handleFileUpload={handleFileUpload} isPdfDocumentIntakeCurrent={isPdfDocumentIntakeCurrent} setPdfBatchSummary={setPdfBatchSummary} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setBridgeSendOpen={setBridgeSendOpen} setShowBehaviorLens={setShowBehaviorLens} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} setIsAdminHubOpen={(v) => { if (v && typeof window.__alloLazyAdminHub === 'function') { try { window.__alloLazyAdminHub(); } catch (_) {} } setIsAdminHubOpen(v); }} setShowCinematicStudio={setShowCinematicStudio} setIsVideoStudioOpen={setIsVideoStudioOpen} setIsAlloStudioOpen={setIsAlloStudioOpen} setShowBrandProfileEditor={setShowBrandProfileEditor} setShowStemLab={setShowStemLab} setShowMindMap={setShowMindMap} setStemLabTool={setStemLabTool} setLabToolData={setLabToolData} openWhiteboard={openWhiteboard} startLessonFlow={() => { try { setIsBotVisible(true); } catch (_) {} try { setShowUDLGuide(true); } catch (_) {} handleAutoFillToggle({ target: { checked: true } }); }} showEducatorHub={showEducatorHub} t={t} />}
+        {/* Math Studio — the former STEM Lab Create tab, math-owned
+            (docs/math_create_migration_plan.md). Shares the same host state the
+            Create tab always used, so nothing about generation changed homes. */}
+        <CDNModuleGate moduleKey="MathCreate.MathCreateModal" isOpen={showMathCreate} onClose={() => setShowMathCreate(false)} icon="🧮" displayName="Math Studio" t={t}>
+            {(MathCreateModal) => React.createElement(MathCreateModal, {
+                  t, addToast, onClose: () => setShowMathCreate(false),
+                  mathInput, setMathInput, mathMode, setMathMode,
+                  mathQuantity, setMathQuantity, mathSubject,
+                  stemLabCreateMode, setStemLabCreateMode,
+                  showAssessmentBuilder, setShowAssessmentBuilder,
+                  assessmentBlocks, setAssessmentBlocks,
+                  handleGenerateMath, setActiveView, setHistory, callGemini,
+                  setExpandedTools, useMathSourceContext, hasSourceOrAnalysis,
+                  gradeLevel,
+                  // For the quick tool chips, which open the STEAM Lab Explore
+                  // tool they name after closing this modal.
+                  setShowStemLab, setStemLabTab, setStemLabTool
+            })}
+        </CDNModuleGate>
+        {showEducatorHub && <EducatorHubModal setShowRecentQrShares={setShowRecentQrShares} addToast={addToast} beginPdfDocumentIntake={startNewPdfAudit} handleFileUpload={handleFileUpload} isPdfDocumentIntakeCurrent={isPdfDocumentIntakeCurrent} setPdfBatchSummary={setPdfBatchSummary} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setBridgeSendOpen={setBridgeSendOpen} setShowBehaviorLens={setShowBehaviorLens} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} setIsAdminHubOpen={(v) => { if (v && typeof window.__alloLazyAdminHub === 'function') { try { window.__alloLazyAdminHub(); } catch (_) {} } setIsAdminHubOpen(v); }} setShowCinematicStudio={setShowCinematicStudio} setIsVideoStudioOpen={setIsVideoStudioOpen} setIsAlloStudioOpen={setIsAlloStudioOpen} setShowBrandProfileEditor={setShowBrandProfileEditor} setShowStemLab={setShowStemLab} setShowMindMap={setShowMindMap} setStemLabTool={setStemLabTool} setLabToolData={setLabToolData} openWhiteboard={openWhiteboard} startLessonFlow={() => { try { setIsBotVisible(true); } catch (_) {} try { setShowUDLGuide(true); } catch (_) {} handleAutoFillToggle({ target: { checked: true } }); }} showEducatorHub={showEducatorHub} t={t} isParentMode={isParentMode} isIndependentMode={isIndependentMode} />}
         {showLearningHub && <LearningHubModal isTeacherMode={isTeacherMode} setBridgeSendOpen={setBridgeSendOpen} setIsAlloHavenOpen={setIsAlloHavenOpen} setIsLinguaPracticeOpen={setIsLinguaPracticeOpen} setIsOpenGrooveOpen={setIsOpenGrooveOpen} setIsTestPrepHubOpen={setIsTestPrepHubOpen} setIsTimelineStudioOpen={setIsTimelineStudioOpen} setIsReadingLibraryOpen={setIsReadingLibraryOpen} setSelHubTab={setSelHubTab} setShowLearningHub={setShowLearningHub} setShowLitLab={setShowLitLab} setShowLearningWebExplorer={setShowLearningWebExplorer} setShowPoetTree={setShowPoetTree} setShowResearchHub={setShowResearchHub} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTool={setStemLabTool} setLabToolData={setLabToolData} setShowStoryForge={setShowStoryForge} setStemLabTab={setStemLabTab} showLearningHub={showLearningHub} t={t} />}
         <CDNModuleGate moduleKey="ReportWriter" isOpen={showReportWriter} onClose={() => setShowReportWriter(false)} icon="📝" displayName="Report Writer" t={t}>
             {(ReportWriter) => React.createElement(ReportWriter, {

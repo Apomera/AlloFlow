@@ -78,7 +78,7 @@ describe('the state of play, pinned so it is not re-argued from memory', () => {
     // an empty screen, and (before the finishMathFluencyProbe guard) a
     // fabricated 0-attempt CBM record when its timer expired. It now opens the
     // live panel: mathMode 'Fluency Probes' plus the sidebar math accordion.
-    const stem = readFileSync('stem_lab/stem_lab_module.js', 'utf8');
+    const stem = readFileSync('math_create_module.js', 'utf8');
     const branch = stem.slice(
       stem.indexOf("const fluencyBlocks = assessmentBlocks.filter(b => b.type === 'fluency');"),
       stem.indexOf("const nonFluencyBlocks = assessmentBlocks.filter(b => b.type !== 'fluency');")
@@ -89,17 +89,17 @@ describe('the state of play, pinned so it is not re-argued from memory', () => {
     // No other live call site remains anywhere in the module (the destructured
     // prop and an explanatory comment are allowed).
     expect(stem).not.toContain('startMathFluencyProbe(false);');
-    // Mirrors carry the fix — three copies, per the STEM three-copies rule.
-    for (const mirror of ['desktop/web-app/public/stem_lab/stem_lab_module.js', 'desktop/web-app/public/stem_lab_module.js']) {
-      expect(readFileSync(mirror, 'utf8')).toBe(stem);
-    }
+    // The branch lives in Math Studio now; its public mirror carries it, and
+    // the STEM Lab module no longer contains the branch at all.
+    expect(readFileSync('desktop/web-app/public/math_create_module.js', 'utf8')).toBe(stem);
+    expect(readFileSync('stem_lab/stem_lab_module.js', 'utf8')).not.toContain("assessmentBlocks.filter(b => b.type === 'fluency')");
   });
 
   it('the Create tab has a visible Fluency Probe launcher, not only the buried builder path', () => {
     // Before 2026-08-17 the Create tab's only route to fluency was: open the
     // Assessment Builder, add blocks, set EVERY one to "fluency", press
     // Generate. This pins the direct button beside Build Assessment.
-    const stem = readFileSync('stem_lab/stem_lab_module.js', 'utf8');
+    const stem = readFileSync('math_create_module.js', 'utf8');
     const launcher = stem.slice(
       stem.indexOf("t('stem.fluency.probe_button_aria')"),
       stem.indexOf('"aria-label": "Open assessment builder"')
@@ -124,7 +124,7 @@ describe('the state of play, pinned so it is not re-argued from memory', () => {
   });
 
   it('a mixed assessment names its dropped fluency blocks instead of silently omitting them', () => {
-    const stem = readFileSync('stem_lab/stem_lab_module.js', 'utf8');
+    const stem = readFileSync('math_create_module.js', 'utf8');
     expect(stem).toContain('if (fluencyBlocks.length > 0) {');
     expect(stem).toContain("t('stem.fluency.mixed_blocks_note')");
   });

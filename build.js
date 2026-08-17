@@ -807,6 +807,13 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        // Math Studio — the former STEM Lab Create tab, math-owned
+        // (docs/math_create_migration_plan.md).
+        name: 'MathCreate',
+        filename: 'math_create_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'UIModalsModule',
         filename: 'ui_modals_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'

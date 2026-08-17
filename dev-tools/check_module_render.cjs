@@ -196,6 +196,22 @@ const CONFIG = [
     },
   },
   {
+    // MathCreateModal — Math Studio, the former STEM Lab Create tab
+    // (docs/math_create_migration_plan.md). Renders both faces: the plain
+    // create surface and the Assessment Builder.
+    file: 'math_create_module.js',
+    key: 'MathCreate',
+    renders: function (Mod) {
+      var M = Mod.MathCreateModal;
+      var base = { t: t, onClose: noop, addToast: noop, mathInput: '2+2', setMathInput: noop, mathMode: 'Problem Set Generator', setMathMode: noop, mathQuantity: 5, setMathQuantity: noop, mathSubject: 'General Math', stemLabCreateMode: 'topic', setStemLabCreateMode: noop, assessmentBlocks: [], setAssessmentBlocks: noop, handleGenerateMath: noop, setActiveView: noop, setHistory: noop, callGemini: noop, setExpandedTools: noop, useMathSourceContext: true, hasSourceOrAnalysis: true, gradeLevel: '5', setShowStemLab: noop, setStemLabTab: noop, setStemLabTool: noop };
+      return [
+        ['plain-create(topic)', React.createElement(M, Object.assign({}, base, { showAssessmentBuilder: false, setShowAssessmentBuilder: noop }))],
+        ['plain-create(content-hint)', React.createElement(M, Object.assign({}, base, { showAssessmentBuilder: false, setShowAssessmentBuilder: noop, stemLabCreateMode: 'content', useMathSourceContext: false }))],
+        ['assessment-builder', React.createElement(M, Object.assign({}, base, { showAssessmentBuilder: true, setShowAssessmentBuilder: noop, assessmentBlocks: [{ id: 'b1', type: 'computation', quantity: 5, directive: '' }, { id: 'b2', type: 'fluency', quantity: 10, directive: '' }] }))],
+      ];
+    },
+  },
+  {
     // SimplifiedView — core-UDL leveled-text reader (props via simplifiedBase above).
     file: 'view_simplified_module.js',
     key: 'SimplifiedView',

@@ -16,11 +16,11 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 
-let stem;
+let stem; // now math_create_module.js — Create moved home (docs/math_create_migration_plan.md)
 let anti;
 
 beforeAll(() => {
-  stem = readFileSync('stem_lab/stem_lab_module.js', 'utf8');
+  stem = readFileSync('math_create_module.js', 'utf8');
   anti = readFileSync('AlloFlowANTI.txt', 'utf8');
 });
 
@@ -49,7 +49,9 @@ describe('the Generate button generates', () => {
   it('closes the modal on generate, and degrades to the old navigation on an older host', () => {
     const click = generateOnClick();
     expect(click).toContain("if (typeof handleGenerateMath === 'function') {");
-    expect(click).toContain('setShowStemLab(false);');
+    // In Math Studio the close is the modal's own onClose (the migration's
+    // setShowStemLab(false) -> onClose() seam).
+    expect(click).toContain('onClose();');
     expect(click).toContain("setActiveView('math');"); // the else branch
   });
 
@@ -85,9 +87,7 @@ describe('"From My Content" tells the truth about source attachment', () => {
 });
 
 describe('mirrors', () => {
-  it('all three stem_lab_module copies are byte-identical', () => {
-    for (const mirror of ['desktop/web-app/public/stem_lab/stem_lab_module.js', 'desktop/web-app/public/stem_lab_module.js']) {
-      expect(readFileSync(mirror, 'utf8')).toBe(stem);
-    }
+  it('the math_create public mirror is byte-identical', () => {
+    expect(readFileSync('desktop/web-app/public/math_create_module.js', 'utf8')).toBe(stem);
   });
 });

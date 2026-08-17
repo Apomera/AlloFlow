@@ -69794,6 +69794,14 @@
       "station_xp_events": "Station XP Events"
     }
   },
+  "math_create": {
+    "title": "Math Studio",
+    "subtitle": "Create math problems, assessments, and fluency practice.",
+    "open_button": "Math Studio: problems & assessments",
+    "open_aria": "Open Math Studio: create problems, assessments, and fluency practice",
+    "pointer": "Create moved: Math Studio",
+    "pointer_aria": "Create moved: open Math Studio"
+  },
   "fab": {
     "visual_supports": "Visual Supports"
   },

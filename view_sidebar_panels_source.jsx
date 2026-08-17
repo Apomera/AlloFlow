@@ -6,6 +6,52 @@
 //
 // 18 components, 2302 source lines extracted.
 
+// ── Keyless-shell AI gating (X6, 2026-08-17 — W7's recorded deferral) ────────
+// On a shell with no AI backend, every generate button used to render enabled
+// and fail with an error toast on click. Disable-with-doorway instead (Aaron's
+// decision): buttons disable, and one shared notice opens AI Backend Settings,
+// where the Canvas-first card leads.
+//
+// The capability is read through window.__alloResolveAiCapability — the SAME
+// resolver the host and backends use, never a parallel copy of the truth.
+// (The panels are 18 separately-mounted components; threading a prop through
+// every mount would mean ~17 prop-bag edits in ANTI per future panel. The
+// window seam keeps one wiring point and FAILS OPEN: an older host without the
+// resolver behaves exactly as before.) Reactivity comes from the same
+// alloflow:ai-config-changed event the host state uses.
+function useAiTextAvailable() {
+  const read = () => {
+    try {
+      const resolve = typeof window !== 'undefined' ? window.__alloResolveAiCapability : null;
+      return typeof resolve === 'function' ? !!resolve().text : true;
+    } catch (_) { return true; }
+  };
+  const [available, setAvailable] = React.useState(read);
+  React.useEffect(() => {
+    const refresh = () => setAvailable(read());
+    window.addEventListener('alloflow:ai-config-changed', refresh);
+    window.addEventListener('storage', refresh);
+    return () => {
+      window.removeEventListener('alloflow:ai-config-changed', refresh);
+      window.removeEventListener('storage', refresh);
+    };
+  }, []);
+  return available;
+}
+// The doorway: rendered directly above a disabled generate button. Clicking
+// opens AI Backend Settings via the host bridge (window.__alloOpenAiSetup,
+// registered beside the aiCapability state in ANTI).
+function AiSetupNotice({ t }) {
+  return (
+    <button type="button" data-help-key="sidebar_ai_setup_notice"
+      onClick={() => { try { if (typeof window.__alloOpenAiSetup === 'function') window.__alloOpenAiSetup(); } catch (_) {} }}
+      className="w-full flex items-center gap-2 border-t border-amber-200 bg-amber-50 px-3.5 py-2 text-left text-xs font-semibold text-amber-900 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">
+      <span aria-hidden="true">{'✨'}</span>
+      <span>{t('sidebar.needs_ai_setup') || 'Needs AI setup'}{' · '}{t('sidebar.needs_ai_setup_cta') || 'Tap to connect an AI, or use AlloFlow inside Gemini Canvas'}</span>
+    </button>
+  );
+}
+
 
 // ── UniversalSettingsPanel: cross-resource settings extracted from SimplifiedPanel (2026-07-28) ──
 // Grade, output language, standards, interests, DoK and emoji support are read
@@ -1109,6 +1155,7 @@ function UniversalSettingsPanel(props) {
 
 // ── AdventurePanel: expandedTools.includes('adventure') panel from L24009-L24524 ──
 function AdventurePanel(props) {
+  const aiTextAvailable = useAiTextAvailable(); // keyless-shell gating (X6)
   const {
     Cloud, CloudOff, Octagon, Package,
     addToast, adventureArtStyle, adventureChanceMode, adventureConsistentCharacters,
@@ -1643,9 +1690,10 @@ function AdventurePanel(props) {
                                     </button>
                                 </div>
                             </div>
+                            {!aiTextAvailable && <AiSetupNotice t={t} />}
                             <button type="button" aria-label={t('common.next')}
                                 data-help-key="adventure_start_btn" onClick={handleStartAdventure}
-                                disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
+                                disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
                                 className={SIDEBAR_PANEL_UI.primaryAction}
                             >
                                 <span className="text-sm text-slate-600 group-hover:text-purple-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('adventure.start')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -1660,6 +1708,7 @@ function AdventurePanel(props) {
 
 // ── SimplifiedPanel: expandedTools.includes('simplified') panel from L22557-L22870 ──
 function SimplifiedPanel(props) {
+  const aiTextAvailable = useAiTextAvailable(); // keyless-shell gating (X6)
   const {
     expandedTools, handleGenerate, hasSourceOrAnalysis,
     includeCharts, isProcessing, keepCitations, leveledTextCustomInstructions,
@@ -1738,10 +1787,11 @@ function SimplifiedPanel(props) {
                         </div>
                         </div>
                 </div>
+                {!aiTextAvailable && <AiSetupNotice t={t} />}
                 <button type="button"
                     aria-label={t('common.generate')}
                     onClick={() => handleGenerate('simplified')}
-                    disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
+                    disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
                     className={SIDEBAR_PANEL_UI.primaryAction}
                 >
                     <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('simplified.rewrite')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -1753,6 +1803,7 @@ function SimplifiedPanel(props) {
 
 // ── MathPanel: expandedTools.includes('math') panel from L23793-L23991 ──
 function MathPanel(props) {
+  const aiTextAvailable = useAiTextAvailable(); // keyless-shell gating (X6)
   const {
     Calculator, addToast, cubeAnswer, cubeChallenge,
     cubeDims, cubeDragRef, cubeFeedback, cubeNotch,
@@ -1766,7 +1817,10 @@ function MathPanel(props) {
     setCubeScale, setCubeShape, setCubeShowLayers, setExploreDifficulty,
     setGeneratedContent, setHistory, setIsMathGraphEnabled, setMathInput,
     setMathMode, setMathQuantity, setMathSubject, setUseMathSourceContext,
-    storageDB, t, useMathSourceContext
+    storageDB, t, useMathSourceContext,
+    // Primary door to Math Studio, the former STEM Lab Create tab
+    // (docs/math_create_migration_plan.md).
+    openMathCreate
   } = props;
   if (!expandedTools || !expandedTools.includes('math')) return null;
   return (
@@ -1820,6 +1874,15 @@ function MathPanel(props) {
                                 </div>
                             </div>
                         </div>
+{typeof openMathCreate === 'function' && (
+                            <button
+                                type="button"
+                                data-help-key="math_open_studio"
+                                onClick={openMathCreate}
+                                className="w-full mt-2 py-2 px-3 rounded-lg border-2 border-indigo-200 bg-white text-indigo-700 text-xs font-bold hover:border-indigo-400 hover:bg-indigo-50 transition-all flex items-center justify-center gap-2"
+                                aria-label={t('math_create.open_aria') || 'Open Math Studio: create problems, assessments, and fluency practice'}
+                            >🧮 {t('math_create.open_button') || 'Math Studio: problems & assessments'}</button>
+                        )}
 {mathMode === 'Fluency Probes' && (() => {
                             const MathFluencyComponent = window.AlloModules && window.AlloModules.MathFluency;
                             if (!MathFluencyComponent) return (
@@ -1967,11 +2030,12 @@ function MathPanel(props) {
                             </label>
                         </div>
                     </div>
+                    {!aiTextAvailable && <AiSetupNotice t={t} />}
                     <button type="button"
                         aria-label={t('common.generate_math_problems')}
                         data-help-key="math_generate_button"
                         onClick={handleGenerateMath}
-                        disabled={!mathInput.trim() || isProcessing || mathMode === 'Fluency Probe'}
+                        disabled={!mathInput.trim() || isProcessing || mathMode === 'Fluency Probe' || !aiTextAvailable}
                         style={mathMode === 'Fluency Probe' ? { display: 'none' } : {}}
                          className={SIDEBAR_PANEL_UI.primaryAction}
                      >
@@ -1984,6 +2048,7 @@ function MathPanel(props) {
 
 // ── DbqPanel: expandedTools.includes('dbq') panel from L23581-L23769 ──
 function DbqPanel(props) {
+  const aiTextAvailable = useAiTextAvailable(); // keyless-shell gating (X6)
   const {
     addToast, callGemini, callGeminiVision, dbqCustomInstructions, expandedTools,
     fetchAndCleanUrl, handleGenerate, hasSourceOrAnalysis, isProcessing,
@@ -2171,11 +2236,12 @@ function DbqPanel(props) {
                             <p className="text-[11px] text-rose-700 italic flex items-center gap-1">{t('dbq.need_source_hint') || '⬆️ Paste a source text above first — the DBQ will be built from it.'}</p>
                         </div>
                     )}
+                    {!aiTextAvailable && <AiSetupNotice t={t} />}
                     <button type="button"
                         aria-label={t('dbq.generate_aria') || 'Generate DBQ'}
                         data-help-key="dbq_generate_button"
                         onClick={() => handleGenerate('dbq')}
-                        disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
+                        disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
                         className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <span className="text-sm text-slate-600 group-hover:text-rose-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('dbq.generate') || 'Generate DBQ Packet'} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -2387,6 +2453,7 @@ function SourceInputPanel(props) {
 
 // ── GlossaryPanel: expandedTools.includes('glossary') panel from L22391-L22541 ──
 function GlossaryPanel(props) {
+  const aiTextAvailable = useAiTextAvailable(); // keyless-shell gating (X6)
   const {
     InfoTooltip, autoRemoveWords, expandedTools,
     glossaryCustomInstructions, glossaryDefinitionLevel, glossaryTier2Count,
@@ -2499,10 +2566,11 @@ function GlossaryPanel(props) {
                         </label>
                     </div>
                 </div>
+                {!aiTextAvailable && <AiSetupNotice t={t} />}
                 <button type="button"
                     aria-label={t('common.generate')}
                     onClick={() => handleGenerate('glossary')}
-                    disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
+                    disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
                     className={SIDEBAR_PANEL_UI.primaryAction}
                 >
                     <span className="text-sm text-slate-600 group-hover:text-sky-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('glossary.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -2533,6 +2601,7 @@ function persistAssessmentPresets(presets) {
 
 // ── QuizPanel: purpose-first assessment builder ──
 function QuizPanel(props) {
+  const aiTextAvailable = useAiTextAvailable(); // keyless-shell gating (X6)
   const {
     InfoTooltip, dokLevel, expandedTools, generatedContent,
     handleGenerate, hasSourceOrAnalysis, history, imageStyle, isProcessing,
@@ -2870,6 +2939,7 @@ function QuizPanel(props) {
           <option value="both">{t('quiz.visuals_both') || 'Question + option images'}</option>
         </select>
       </div>
+      {!aiTextAvailable && <AiSetupNotice t={t} />}
       <button
         type="button"
         aria-label={t('common.generate')}
@@ -2883,7 +2953,7 @@ function QuizPanel(props) {
           imageStyle
         })}
         data-help-key="quiz_generate_button"
-        disabled={!hasSourceOrAnalysis || isProcessing || assessedTotal <= 0}
+        disabled={!hasSourceOrAnalysis || isProcessing || assessedTotal <= 0 || !aiTextAvailable}
         aria-busy={isProcessing}
         className="w-full p-3 text-left hover:bg-slate-50 flex justify-between items-center group disabled:opacity-50 disabled:cursor-not-allowed"
       >
@@ -2896,6 +2966,7 @@ function QuizPanel(props) {
 
 // ── TimelinePanel: expandedTools.includes('timeline') panel from L23355-L23458 ──
 function TimelinePanel(props) {
+  const aiTextAvailable = useAiTextAvailable(); // keyless-shell gating (X6)
   const {
     TIMELINE_MODE_DEFINITIONS, expandedTools, handleGenerate, hasSourceOrAnalysis,
     includeTimelineVisuals, isProcessing, setIncludeTimelineVisuals, setTimelineImageStyle,
@@ -2977,10 +3048,11 @@ function TimelinePanel(props) {
                             </p>
                         </div>
                     </div>
+                    {!aiTextAvailable && <AiSetupNotice t={t} />}
                     <button type="button"
                         aria-label={t('common.generate')}
                         onClick={() => handleGenerate('timeline')}
-                        disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
+                        disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
                         className={SIDEBAR_PANEL_UI.primaryAction}
                         data-help-key="timeline_generate_button"
                     >
@@ -2995,6 +3067,7 @@ function TimelinePanel(props) {
 
 // ── ConceptSortPanel: expandedTools.includes('concept-sort') panel from L23472-L23566 ──
 function ConceptSortPanel(props) {
+  const aiTextAvailable = useAiTextAvailable(); // keyless-shell gating (X6)
   const {
     addConcept, conceptImageMode, conceptInput, conceptItemCount,
     conceptSortCustomInstructions, conceptSortImageStyle, expandedTools, handleConceptKeyDown, handleGenerate, setConceptSortCustomInstructions,
@@ -3077,11 +3150,12 @@ function ConceptSortPanel(props) {
                             value={conceptSortCustomInstructions} onChange={setConceptSortCustomInstructions}
                             placeholderKey="common.custom_instructions_placeholder" />
                     </div>
+                    {!aiTextAvailable && <AiSetupNotice t={t} />}
                     <button type="button"
                         aria-label={t('common.generate')}
                         data-help-key="concept_sort_generate_button"
                         onClick={() => handleGenerate('concept-sort')}
-                        disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
+                        disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
                         className={SIDEBAR_PANEL_UI.primaryAction}
                     >
                         <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('concept_sort.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -3093,6 +3167,7 @@ function ConceptSortPanel(props) {
 
 // ── BrainstormPanel: expandedTools.includes('brainstorm') panel from L23178-L23265 ──
 function BrainstormPanel(props) {
+  const aiTextAvailable = useAiTextAvailable(); // keyless-shell gating (X6)
   const {
     BRIDGE_MODES, Terminal, brainstormCustomInstructions, bridgeSimType,
     bridgeStepCount, expandedTools, handleGenerate, hasSourceOrAnalysis,
@@ -3106,6 +3181,16 @@ function BrainstormPanel(props) {
   // no new host state threads through both ANTI copies. bridgeSimType/StepCount
   // stay host state exactly as before.
   const [activityMode, setActivityMode] = React.useState('ideas');
+  // X6 2026-08-17: voice/palette bridge. activityMode is local state, so the
+  // host's openBrainstormActivity capability hands the requested mode through
+  // this window seam while the panel is mounted. Removal in cleanup keeps the
+  // bridge honest when the accordion collapses.
+  React.useEffect(() => {
+    window.__alloSetBrainstormActivityMode = (mode) => {
+      if (['ideas', 'discussion', 'jigsaw', 'simulation'].includes(mode)) setActivityMode(mode);
+    };
+    return () => { try { delete window.__alloSetBrainstormActivityMode; } catch (_) {} };
+  }, []);
   const [discussionProtocol, setDiscussionProtocol] = React.useState('think-pair-share');
   const [jigsawGroupSize, setJigsawGroupSize] = React.useState(4);
   if (!expandedTools || !expandedTools.includes('brainstorm')) return null;
@@ -3176,11 +3261,12 @@ function BrainstormPanel(props) {
                         )}
                     </div>
                     )}
+                    {activityMode !== 'simulation' && !aiTextAvailable && <AiSetupNotice t={t} />}
                     {activityMode !== 'simulation' && (
                     <button type="button"
                         aria-label={t('common.generate')}
                     onClick={() => handleGenerate('brainstorm', null, false, null, { activityMode, activityConfig: { protocol: discussionProtocol, groupSize: jigsawGroupSize } })}
-                    disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
+                    disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
                     className={SIDEBAR_PANEL_UI.primaryAction}
                     >
                     <span className="text-sm text-slate-700 group-hover:text-violet-700 transition-colors motion-reduce:transition-none flex items-center gap-2 font-semibold">{generateLabel} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -3252,6 +3338,7 @@ function BrainstormPanel(props) {
 
 // ── ImagePanel: expandedTools.includes('image') panel from L22973-L23049 ──
 function ImagePanel(props) {
+  const aiTextAvailable = useAiTextAvailable(); // keyless-shell gating (X6)
   const {
     creativeMode, expandedTools, fillInTheBlank, handleGenerate,
     hasSourceOrAnalysis, isProcessing, noText, setCreativeMode,
@@ -3340,10 +3427,11 @@ function ImagePanel(props) {
                             placeholderKey="visuals.placeholder_instructions" />
                         </div>
                     </div>
+                    {!aiTextAvailable && <AiSetupNotice t={t} />}
                     <button type="button"
                         aria-label={t('common.generate')}
                     onClick={() => handleGenerate('image')}
-                    disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
+                    disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
                     className={SIDEBAR_PANEL_UI.primaryAction}
                     >
                     <span className="text-sm text-slate-600 group-hover:text-cyan-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('visuals.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -3423,6 +3511,7 @@ function PersonaPanel(props) {
 
 // ── OutlinePanel: expandedTools.includes('outline') panel from L22915-L22959 ──
 function OutlinePanel(props) {
+  const aiTextAvailable = useAiTextAvailable(); // keyless-shell gating (X6)
   const {
     expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing,
     outlineCustomInstructions, outlineType, setOutlineCustomInstructions, setOutlineType,
@@ -3463,11 +3552,12 @@ function OutlinePanel(props) {
                         value={outlineCustomInstructions} onChange={setOutlineCustomInstructions}
                         placeholderKey="outline.placeholder_instructions" />
                 </div>
+                {!aiTextAvailable && <AiSetupNotice t={t} />}
                 <button type="button"
                     aria-label={t('common.generate')}
                     data-help-key="outline_generate_button"
                     onClick={() => handleGenerate('outline')}
-                    disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
+                    disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
                     className={SIDEBAR_PANEL_UI.primaryAction}
                 >
                     <span className="text-sm text-slate-600 group-hover:text-cyan-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('outline.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -3482,6 +3572,7 @@ function OutlinePanel(props) {
 // in independent mode) pick a template type (Cornell Notes / Lab Report /
 // Reading Response) and generate a lesson-aware scaffolded template.
 function NoteTakingPanel(props) {
+  const aiTextAvailable = useAiTextAvailable(); // keyless-shell gating (X6)
   const {
     expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing,
     noteTakingCustomInstructions, noteTakingTemplateType, setNoteTakingCustomInstructions, setNoteTakingTemplateType, t
@@ -3515,11 +3606,12 @@ function NoteTakingPanel(props) {
           {t('note_taking.help') || "Each template is scaffolded from today's source text but persists in your history so you can keep adding to it across lessons."}
         </p>
       </div>
+      {!aiTextAvailable && <AiSetupNotice t={t} />}
       <button type="button"
         aria-label={t('common.generate') || 'Generate'}
         data-help-key="note_taking_generate_button"
         onClick={() => handleGenerate('note-taking')}
-        disabled={!hasSourceOrAnalysis || isProcessing}
+        disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable}
         aria-busy={isProcessing}
         className={SIDEBAR_PANEL_UI.primaryAction}
       >
@@ -3536,6 +3628,7 @@ function NoteTakingPanel(props) {
 // initial structure; renderer (anchor_charts_module.js) handles edits + icons
 // + export.
 function AnchorChartPanel(props) {
+  const aiTextAvailable = useAiTextAvailable(); // keyless-shell gating (X6)
   const {
     anchorChartCustomInstructions, anchorChartType, expandedTools, handleGenerate,
     hasSourceOrAnalysis, isProcessing, setAnchorChartCustomInstructions, setAnchorChartType, t
@@ -3575,11 +3668,12 @@ function AnchorChartPanel(props) {
           {t('anchor_chart.help') || "AI drafts a classroom-ready visual reference with hand-drawn icons. Edit the poster anytime, then print or download it."}
         </p>
       </div>
+      {!aiTextAvailable && <AiSetupNotice t={t} />}
       <button type="button"
         aria-label={t('common.generate') || 'Generate'}
         data-help-key="anchor_chart_generate_button"
         onClick={() => handleGenerate('anchor-chart')}
-        disabled={!hasSourceOrAnalysis || isProcessing}
+        disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable}
         aria-busy={isProcessing}
         className={SIDEBAR_PANEL_UI.primaryAction}
       >
@@ -3592,6 +3686,7 @@ function AnchorChartPanel(props) {
 
 // ── FaqPanel: expandedTools.includes('faq') panel from L23062-L23101 ──
 function FaqPanel(props) {
+  const aiTextAvailable = useAiTextAvailable(); // keyless-shell gating (X6)
   const {
     expandedTools, faqCount, faqCustomInstructions, handleGenerate,
     hasSourceOrAnalysis, isProcessing, setFaqCount, setFaqCustomInstructions,
@@ -3620,10 +3715,11 @@ function FaqPanel(props) {
                             value={faqCustomInstructions} onChange={setFaqCustomInstructions}
                             placeholderKey="faq.placeholder_instructions" />
                     </div>
+                    {!aiTextAvailable && <AiSetupNotice t={t} />}
                     <button type="button"
                         aria-label={t('common.generate')}
                     onClick={() => handleGenerate('faq')}
-                    disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
+                    disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
                     className={SIDEBAR_PANEL_UI.primaryAction}
                     >
                     <span className="text-sm text-slate-600 group-hover:text-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('faq.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -3635,6 +3731,7 @@ function FaqPanel(props) {
 
 // ── SentenceFramesPanel: expandedTools.includes('sentence-frames') panel from L23127-L23165 ──
 function SentenceFramesPanel(props) {
+  const aiTextAvailable = useAiTextAvailable(); // keyless-shell gating (X6)
   const {
     expandedTools, frameCustomInstructions, frameType, handleGenerate,
     hasSourceOrAnalysis, isProcessing, setFrameCustomInstructions, setFrameType,
@@ -3663,10 +3760,11 @@ function SentenceFramesPanel(props) {
                             value={frameCustomInstructions} onChange={setFrameCustomInstructions}
                             placeholderKey="scaffolds.placeholder_instructions" />
                     </div>
+                    {!aiTextAvailable && <AiSetupNotice t={t} />}
                     <button type="button"
                         aria-label={t('common.generate')}
                     onClick={() => handleGenerate('sentence-frames')}
-                    disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
+                    disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
                     className={SIDEBAR_PANEL_UI.primaryAction}
                     >
                     <span className="text-sm text-slate-600 group-hover:text-cyan-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('scaffolds.generate')} <Sparkles size={14} className="text-yellow-600"/></span>
@@ -3678,6 +3776,7 @@ function SentenceFramesPanel(props) {
 
 // ── LessonPlanPanel: expandedTools.includes('lesson-plan') panel from L24686-L24716 ──
 function LessonPlanPanel(props) {
+  const aiTextAvailable = useAiTextAvailable(); // keyless-shell gating (X6)
   const {
     activeView, expandedTools, handleGenerateLessonPlan, hasSourceOrAnalysis,
     isProcessing, lessonCustomAdditions, setLessonCustomAdditions, t
@@ -3692,10 +3791,11 @@ function LessonPlanPanel(props) {
                              value={lessonCustomAdditions} onChange={setLessonCustomAdditions}
                              placeholderKey="lesson_plan.placeholder_additions" />
                     </div>
+                    {!aiTextAvailable && <AiSetupNotice t={t} />}
                     <button type="button"
                         aria-label={t('common.generate_lesson_plan')}
                         onClick={handleGenerateLessonPlan}
-                        disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
+                        disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
                         className={SIDEBAR_PANEL_UI.primaryAction}
                     >
                         <span className="text-sm text-slate-600 group-hover:text-cyan-700 transition-colors motion-reduce:transition-none flex items-center gap-2">
@@ -3710,6 +3810,7 @@ function LessonPlanPanel(props) {
 
 // ── AnalysisPanel: expandedTools.includes('analysis') panel from L22349-L22376 ──
 function AnalysisPanel(props) {
+  const aiTextAvailable = useAiTextAvailable(); // keyless-shell gating (X6)
   const {
     checkAccuracyWithSearch, expandedTools, handleGenerate, hasSourceOrAnalysis,
     isProcessing, setCheckAccuracyWithSearch, t
@@ -3731,11 +3832,12 @@ function AnalysisPanel(props) {
                         </label>
                         <p className={`${SIDEBAR_PANEL_UI.help} ml-6`}>{t('analysis.grounding_desc')}</p>
                     </div>
+                    {!aiTextAvailable && <AiSetupNotice t={t} />}
                     <button type="button"
                         aria-label={t('common.generate')}
                         data-help-key="analysis_generate_button"
                         onClick={() => handleGenerate('analysis')}
-                        disabled={!hasSourceOrAnalysis || isProcessing} aria-busy={isProcessing}
+                        disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
                         className={SIDEBAR_PANEL_UI.primaryAction}
                     >
                         <span className="text-sm text-slate-600 group-hover:text-violet-700 transition-colors motion-reduce:transition-none flex items-center gap-2">{t('analysis.run')} <Sparkles size={14} className="text-yellow-600"/></span>

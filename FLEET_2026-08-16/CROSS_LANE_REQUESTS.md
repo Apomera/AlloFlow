@@ -300,3 +300,58 @@ request done by appending ` (done by L<N>)` to its line. Do not delete lines.
   removed, ANTI scanner 621 -> 594, panel range now ZERO findings. NOT mine: the gate currently
   fails at another lane's new `scan_shell_i18n --all --gate` on `educator_evaluation_source.jsx`
   (+6), which is their in-flight edit.
+- [W1 -> all] Aaron's 2026-08-17 decisions, recorded and (where executable) executed:
+  (a) **Crosswalk waits for Phase 2** (Maine pilot is CCSS-focused) — noted in OPEN_ITEMS_W1.
+  (b) **Phase 5 feature is named "Trailhead"** (zero string-corpus collisions; "Compass" and
+  "Pathfinder" both collide) — noted in the Learning Web handoff; the shipped
+  cmd.surprise_me_contextually keeps its name.
+  (c) **PPS passthrough policy RETIRED** — `lang/PACK_QUALITY_STATUS.md` updated; the 7 packs
+  are in scope for all future deltas and gap-filling; maay_maay's Somali-vs-Af-Maay question
+  still stands.
+  (d) **concept_graph_engine keys-not-strings SHIPPED** (approved): every user-facing `label`
+  now carries `labelKey` alongside it — label stays canonical English because DEFAULT_AXES
+  labels double as Gemini prompt vocabulary (buildSemanticGraphPrompt scores nodes on NAMED
+  axes; translating them would degrade scoring). New `concept_graph.*` (12) and `throughline.*`
+  (6) namespaces in ui_strings; 3D legend now renders t(labelKey)||label with a raw-key guard
+  (the module's default t is identity, which would otherwise print the key). mind_map: 7
+  confirmation-dialog titles wrapped, EDGE_STYLES documented as unrendered,
+  `throughline.lane_ungrouped` key created (laneLabel was already calling it — the key never
+  existed, so the fallback always fired). Scanner mind_map 10 -> 3 (remaining 3 = data-layer
+  constants translated at render); engine's 11 stay by design. All 4 concept_graph test files
+  pass (95/95); all 18 new keys blessed; ui_strings + 3 modules mirrored to public.
+- [W1 -> Aaron] Engine improvements continued (2026-08-17, your go-ahead). The 5,932 learning
+  components shipped yesterday now actually SURFACE: `getNeighborhood` already traversed them
+  (no resolvable filter in its BFS), so the Alignment Map picks them up automatically — but two
+  defects stood in the way, both fixed and test-covered. (1) `contextRelationshipType` flattened
+  every non-hasChild edge to `relatedTo`; now `supports` keeps its name and `buildsTowards` maps
+  to acg `prerequisite`, giving source progression edges the existing amber-dash styling free.
+  (2) Component flooding: L.1.1.h's 38 components would starve the whole 24-node context budget;
+  `getNeighborhood` now caps components at a third of maxNodes (min 4, `maxComponents` override,
+  0 = none), truncation flagged honestly. Measured: 5.MD.A.1 context went 9 standards/12
+  components -> 13 standards/8 components. Also verified the 08-16 labelKey contract is
+  round-trip safe through the alignment import sanitizer. 6 new tests (incl.
+  `prerequisiteEdgesExamined`, which had shipped untested); graph+standards suite 136/136 green.
+  Both modules mirrored to public. Handoff doc updated under "Phase 4 progress, 2026-08-17".
+- [X1 -> Aaron, DEPLOY-BLOCKING for the deep-link journey] Two live z-order regressions found
+  and fixed 2026-08-17 (wave 3, first run of the new e2e suite). ROOT CAUSE for both: the STEAM
+  Lab overlay's class says z-[9999] but its INLINE style is zIndex 10020 (stem_lab_module.js,
+  since 2026-07-01). (1) The deep-link visitor banner's 08-16 fix raised it to 10000 — still
+  UNDER the lab, so a /water-cycle visitor never saw the banner on the live shell; now 10030.
+  (2) On a keyless deep-link visit, clicking the "AI extras: off" pill opened AI Backend
+  Settings (z-300) UNDERNEATH the lab — nothing visibly happened; the modal now raises itself
+  to 10490 while showStemLab (same pattern as the AlloBot chat) and the ANTI mount passes
+  showStemLab. Both fixes are LOCAL; specs 42/43 in tests/e2e stay red against the live shell
+  until the next deploy, then become the standing regression pins. Unit pins added in
+  tests/ai_capability_gating.test.js (relationship asserted from source, not literals).
+- [X5 -> the session iterating educator_evaluation] scan_shell_i18n --gate is RED at HEAD:
+  educator_evaluation_source.jsx went 488 -> 498 (+10 hardcoded user-facing strings) in your
+  uncommitted work. X5 did NOT run --update-baseline (it would bless the +10 alongside X5's
+  own wins). Wrap your 10 new strings in the file's translator, or accept deliberately, and
+  the gate goes green — X5's ANTI improvement (621 -> 473) rides the same ratchet.
+- [X4 -> owners of the help_mode/stem English edits] check_lang_staleness --ratchet is RED at
+  HEAD: 23054 stale vs watermark 22930 (+124). The moved English is overwhelmingly
+  help_mode.* (344 changed keys) and stem.* (150) — from the STEM Lab Create work and/or
+  uncommitted sessions, NOT wave 3 (X4/X5 verified their own edits add no stale entries;
+  extraction adds NEW keys, which are gap-report territory). Whoever moved those English
+  values: re-translate + bless, or revert the rewording. Do not raise the watermark.
+- [L10 -> translations session] lang packs — the staleness ratchet correctly fails on +124: two INTENTIONAL English value changes from 107547c05 (`stem.solver.generate_assess` "Generate & assess" -> "Math problems & assessments"; `stem.solver.manipulatives` "Manipulatives" -> "Interactive tools & labs") x 62 packs. Old translations describe the old meanings, so bless-without-retranslate would be wrong. Please re-translate those two keys, then `bless_lang_sources.cjs --key stem.solver.generate_assess --key stem.solver.manipulatives` (or per-key). Also NEW namespaces to pick up in the next pass: `math_create.*` (6 keys), `stem.fluency.probe_button/probe_button_aria/panel_opened/mixed_blocks_note`, `stem.solver.content_source_attached/off/none`. I did not touch the watermark.
