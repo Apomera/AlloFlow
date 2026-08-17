@@ -2282,7 +2282,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "document-Based întrebare",
     "open_stem_lab_explore_aria": "Deschide STEAM Lab Explore",
-    "stem_lab_explore": "Explorează"
+    "stem_lab_explore": "Explorează",
+    "needs_ai_setup": "Necesită configurarea IA",
+    "needs_ai_setup_cta": "Atinge pentru a conecta o IA, sau folosește AlloFlow în Gemini Canvas"
   },
   "history": {
     "load_project": "Încarcă Project",
@@ -6327,7 +6329,8 @@
       "frames_label": "propoziție-frame response gaps",
       "concept_sort_label": "Concept Sortează misplacement patterns"
     },
-    "all_tool_activity": "toate instrumente Activity"
+    "all_tool_activity": "toate instrumente Activity",
+    "title_parent": "Panou de Familie"
   },
   "tools": {
     "source": "sursă Material",
@@ -12748,8 +12751,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Total STEM laborator XP earned across toate activities",
-      "generate_assess": "Generează & assess",
-      "manipulatives": "Materiale manipulative",
+      "generate_assess": "Probleme de matematică și evaluări",
+      "manipulatives": "Instrumente interactive și laboratoare",
       "stepbystep": "pas-by-pas",
       "conceptual": "Conceptual",
       "realworld": "Lumea reală"
@@ -30118,7 +30121,11 @@
     "tts_provider_aria": "text-la-speech provider",
     "local_cascade_label": "Cascadă locală:",
     "image_generation_header": "imagine Generation",
-    "image_provider_aria": "imagine generation provider"
+    "image_provider_aria": "imagine generation provider",
+    "guided_card_canvas_title": "Folosește AlloFlow în interiorul Gemini Canvas",
+    "guided_card_canvas_badge": "Fără instalare",
+    "guided_card_canvas_body": "Cel mai simplu mod de a avea IA: deschide AlloFlow în interiorul Google Gemini. Gratuit cu un cont Google, folosind cota zilnică a planului tău Gemini (planurile personale, de Educație sau plătite funcționează toate). Nimic de instalat și nicio cheie de gestionat.",
+    "guided_card_canvas_req": "Deschide gemini.google.com într-o filă nouă. Detalii despre planuri la google.com/gemini"
   },
   "diff_view": {
     "title": "sursă PDF ↔ Remediated HTML · Diff",
@@ -31477,7 +31484,25 @@
     "surprise_me_contextually_working": "Se citește contextul lecției curente și se alege un pas următor util...",
     "use_contextual_suggestion": "Folosește un pas următor sugerat",
     "use_contextual_suggestion_hint": "Rulează opțiunea 1, 2 sau 3 din ultimele sugestii",
-    "use_contextual_suggestion_working": "Se pornește pasul următor ales..."
+    "use_contextual_suggestion_working": "Se pornește pasul următor ales...",
+    "jump_to_lesson_plan": "Sari la planul meu de lecție",
+    "jump_to_lesson_plan_done": "Cel mai recent plan de lecție deschis.",
+    "jump_to_lesson_plan_hint": "Redeschide cel mai recent plan de lecție",
+    "open_block_suggestions": "Primește sugestii de blocuri pentru document",
+    "open_block_suggestions_done": "Constructorul de documente deschis. Sugestiile de blocuri sunt în panoul evidențiat de sus.",
+    "open_block_suggestions_hint": "Deschide Constructorul de documente, sugestiile sunt sus",
+    "open_brainstorm_modes": "Alege un tip de activitate de brainstorming",
+    "open_brainstorm_modes_done": "Tipurile de activități de brainstorming deschise. Alege idei, discuție, jigsaw sau simulare.",
+    "open_brainstorm_modes_hint": "Rețea de idei, kit de discuții, jigsaw sau simulare",
+    "open_discussion_builder": "Construiește o discuție de clasă",
+    "open_discussion_builder_done": "Constructorul de discuții deschis în instrumentul de brainstorming. Alege un protocol, apoi generează.",
+    "open_discussion_builder_hint": "Un kit de discuții cu protocoale precum gândește-pereche-împărtășește",
+    "open_jigsaw_builder": "Construiește o activitate jigsaw",
+    "open_jigsaw_builder_done": "Constructorul jigsaw deschis în instrumentul de brainstorming. Stabilește mărimea grupului, apoi generează.",
+    "open_jigsaw_builder_hint": "Activitate cu grupuri de experți jigsaw cu o mărime a grupului stabilită de tine",
+    "use_gemini_canvas": "Folosește AlloFlow în interiorul Gemini Canvas",
+    "use_gemini_canvas_done": "Configurarea AI deschisă. Primul card explică folosirea AlloFlow în Gemini Canvas fără nicio instalare.",
+    "use_gemini_canvas_hint": "Deschide configurarea AI, unde opțiunea Canvas fără instalare este prima"
   },
   "palette": {
     "aria": "Paleta de comenzi AlloFlow",
@@ -31881,5 +31906,11 @@
     "toast_opened": "Graful de aliniere a fost deschis doar pentru citire.",
     "toast_invalid": "Nu s-a putut deschide acel graf de aliniere. Exportă un fișier JSON de graf AlloFlow valid.",
     "toast_unreadable": "Nu s-a putut citi acel fișier de graf de aliniere."
+  },
+  "shell_link": {
+    "banner_aria": "Despre acest instrument",
+    "banner_text": "Un instrument de la AlloFlow, o platformă de predare gratuită.",
+    "banner_open": "Explorează aplicația completă",
+    "banner_dismiss": "Închide această notă"
   }
 }

@@ -1070,7 +1070,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Questions basées sur des documents",
     "open_stem_lab_explore_aria": "Ouvrir STEAM Lab Explore",
-    "stem_lab_explore": "Explorer"
+    "stem_lab_explore": "Explorer",
+    "needs_ai_setup": "Configuration de l’IA requise",
+    "needs_ai_setup_cta": "Touchez pour connecter une IA, ou utilisez AlloFlow dans Gemini Canvas"
   },
   "history": {
     "load_project": "Charger un projet",
@@ -7732,7 +7734,8 @@
       "frames_label": "Lacunes de réponses aux cadres de phrase",
       "concept_sort_label": "Schémas de mauvais placement de Classification de concepts"
     },
-    "all_tool_activity": "Activité de tous les outils"
+    "all_tool_activity": "Activité de tous les outils",
+    "title_parent": "Tableau de bord familial"
   },
   "scaffolds": {
     "title": "Étayages d'écriture",
@@ -9385,7 +9388,11 @@
     "tts_provider_aria": "Fournisseur de synthèse vocale",
     "local_cascade_label": "Cascade locale :",
     "image_generation_header": "Génération d'images",
-    "image_provider_aria": "Fournisseur de génération d'images"
+    "image_provider_aria": "Fournisseur de génération d'images",
+    "guided_card_canvas_title": "Utiliser AlloFlow dans Gemini Canvas",
+    "guided_card_canvas_badge": "Sans installation",
+    "guided_card_canvas_body": "Le moyen le plus simple d’avoir l’IA : ouvrez AlloFlow dans Google Gemini. Gratuit avec un compte Google, en utilisant le quota quotidien de votre forfait Gemini (les forfaits personnels, Éducation ou payants fonctionnent tous). Rien à installer et aucune clé à gérer.",
+    "guided_card_canvas_req": "Ouvre gemini.google.com dans un nouvel onglet. Détails des forfaits sur google.com/gemini"
   },
   "mastery": {
     "start_check": "Vérification de maîtrise",
@@ -14652,8 +14659,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "XP total de STEM Lab gagnés à travers toutes les activités",
-      "generate_assess": "Générer et évaluer",
-      "manipulatives": "Manipulables",
+      "generate_assess": "Problèmes de maths et évaluations",
+      "manipulatives": "Outils interactifs et laboratoires",
       "stepbystep": "Étape par étape",
       "conceptual": "Conceptuel",
       "realworld": "Monde réel"
@@ -30964,7 +30971,25 @@
     "surprise_me_contextually_working": "Lecture du contexte de la leçon en cours et choix d’une prochaine étape utile...",
     "use_contextual_suggestion": "Utiliser une prochaine étape proposée",
     "use_contextual_suggestion_hint": "Lance l’option 1, 2 ou 3 des dernières suggestions",
-    "use_contextual_suggestion_working": "Démarrage de la prochaine étape choisie..."
+    "use_contextual_suggestion_working": "Démarrage de la prochaine étape choisie...",
+    "jump_to_lesson_plan": "Aller à mon plan de leçon",
+    "jump_to_lesson_plan_done": "Plan de leçon le plus récent ouvert.",
+    "jump_to_lesson_plan_hint": "Rouvrir le plan de leçon le plus récent",
+    "open_block_suggestions": "Obtenir des suggestions de blocs de document",
+    "open_block_suggestions_done": "Générateur de documents ouvert. Les suggestions de blocs sont dans le panneau mis en évidence en haut.",
+    "open_block_suggestions_hint": "Ouvre le Générateur de documents, où les suggestions sont en haut",
+    "open_brainstorm_modes": "Choisir un type d'activité de remue-méninges",
+    "open_brainstorm_modes_done": "Types d'activités de remue-méninges ouverts. Choisissez idées, discussion, jigsaw ou simulation.",
+    "open_brainstorm_modes_hint": "Toile d'idées, trousse de discussion, jigsaw ou simulation",
+    "open_discussion_builder": "Construire une discussion de classe",
+    "open_discussion_builder_done": "Constructeur de discussion ouvert dans l'outil de remue-méninges. Choisissez un protocole, puis générez.",
+    "open_discussion_builder_hint": "Une trousse de discussion avec des protocoles comme penser-jumeler-partager",
+    "open_jigsaw_builder": "Construire une activité jigsaw",
+    "open_jigsaw_builder_done": "Constructeur jigsaw ouvert dans l'outil de remue-méninges. Définissez la taille des groupes, puis générez.",
+    "open_jigsaw_builder_hint": "Activité en groupes d'experts jigsaw avec une taille de groupe que vous définissez",
+    "use_gemini_canvas": "Utiliser AlloFlow dans Gemini Canvas",
+    "use_gemini_canvas_done": "Configuration de l'IA ouverte. La première carte explique comment utiliser AlloFlow dans Gemini Canvas sans aucune installation.",
+    "use_gemini_canvas_hint": "Ouvre la configuration de l'IA, où l'option Canvas sans installation est mise de l'avant"
   },
   "palette": {
     "aria": "Palette de commandes AlloFlow",
@@ -31553,5 +31578,11 @@
     "toast_opened": "Graphe d’alignement ouvert en lecture seule.",
     "toast_invalid": "Impossible d’ouvrir ce graphe d’alignement. Exportez un fichier JSON de graphe AlloFlow valide.",
     "toast_unreadable": "Impossible de lire ce fichier de graphe d’alignement."
+  },
+  "shell_link": {
+    "banner_aria": "À propos de cet outil",
+    "banner_text": "Un outil d’AlloFlow, une plateforme pédagogique gratuite.",
+    "banner_open": "Explorer l’application complète",
+    "banner_dismiss": "Fermer cette note"
   }
 }

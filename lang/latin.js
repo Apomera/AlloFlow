@@ -2279,7 +2279,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "documentum-Based quaestiō",
     "open_stem_lab_explore_aria": "STEAM Lab Explore aperire",
-    "stem_lab_explore": "Explorare"
+    "stem_lab_explore": "Explorare",
+    "needs_ai_setup": "Apparatu AI eget",
+    "needs_ai_setup_cta": "Tange ut AI conectas, aut AlloFlow intra Gemini Canvas utere"
   },
   "history": {
     "load_project": "Onerā Project",
@@ -6332,7 +6334,8 @@
       "frames_label": "sententia-frame response gaps",
       "concept_sort_label": "Conceptus Dispōne misplacement exempla"
     },
-    "all_tool_activity": "omnia īnstrūmenta Activity"
+    "all_tool_activity": "omnia īnstrūmenta Activity",
+    "title_parent": "Tabula Familiae"
   },
   "tools": {
     "source": "fōns Material",
@@ -12716,8 +12719,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Total STEM officīna XP earned across omnia activities",
-      "generate_assess": "Generā & assess",
-      "manipulatives": "Res Tractabiles",
+      "generate_assess": "Problemata mathematica et aestimationes",
+      "manipulatives": "Instrumenta interactiva et officinae",
       "stepbystep": "gradus-by-gradus",
       "conceptual": "Conceptualis",
       "realworld": "Realis"
@@ -29751,7 +29754,11 @@
     "tts_provider_aria": "textus-ad-speech provider",
     "local_cascade_label": "Cascada localis:",
     "image_generation_header": "imāgō Generātiō",
-    "image_provider_aria": "imāgō generātiō provider"
+    "image_provider_aria": "imāgō generātiō provider",
+    "guided_card_canvas_title": "AlloFlow intra Gemini Canvas utere",
+    "guided_card_canvas_badge": "Sine apparatu",
+    "guided_card_canvas_body": "Via facillima AI obtinendi: aperi AlloFlow intra Google Gemini. Gratuitum cum ratione Google, utens portione cotidiana consilii tui Gemini (consilia privata, educationis, aut soluta omnia valent). Nihil instituendum et nulla clavis administranda.",
+    "guided_card_canvas_req": "Aperit gemini.google.com in nova tabella. Singula consiliorum apud google.com/gemini"
   },
   "diff_view": {
     "title": "fōns PDF ↔ Remediated HTML · Diff",
@@ -30912,7 +30919,25 @@
     "surprise_me_contextually_working": "Contextus lectionis praesentis legitur et gradus proximus utilis eligitur...",
     "use_contextual_suggestion": "Gradu proximo suaso uti",
     "use_contextual_suggestion_hint": "Optionem 1, 2 vel 3 ex suasionibus novissimis exsequitur",
-    "use_contextual_suggestion_working": "Gradus proximus electus incipitur..."
+    "use_contextual_suggestion_working": "Gradus proximus electus incipitur...",
+    "jump_to_lesson_plan": "Ad consilium lectionis meae sali",
+    "jump_to_lesson_plan_done": "Consilium lectionis recentissimum apertum.",
+    "jump_to_lesson_plan_hint": "Consilium lectionis recentissimum iterum aperi",
+    "open_block_suggestions": "Suggestiones partium documenti accipe",
+    "open_block_suggestions_done": "Aedificator Documentorum apertus. Suggestiones partium in tabula insignita supra sunt.",
+    "open_block_suggestions_hint": "Aperit Aedificatorem Documentorum, ubi suggestiones supra sedent",
+    "open_brainstorm_modes": "Genus exercitationis excogitandi elige",
+    "open_brainstorm_modes_done": "Genera exercitationum excogitandi aperta. Elige ideas, disputationem, jigsaw, aut simulationem.",
+    "open_brainstorm_modes_hint": "Rete idearum, apparatus disputationis, jigsaw, aut simulatio",
+    "open_discussion_builder": "Disputationem classis aedifica",
+    "open_discussion_builder_done": "Aedificator disputationis in instrumento excogitandi apertus. Rationem elige, deinde genera.",
+    "open_discussion_builder_hint": "Apparatus disputationis cum rationibus ut cogita-iunge-communica",
+    "open_jigsaw_builder": "Exercitationem jigsaw aedifica",
+    "open_jigsaw_builder_done": "Aedificator jigsaw in instrumento excogitandi apertus. Magnitudinem catervae constitue, deinde genera.",
+    "open_jigsaw_builder_hint": "Exercitatio catervarum peritorum jigsaw cum magnitudine catervae a te constituta",
+    "use_gemini_canvas": "AlloFlow intra Gemini Canvas utere",
+    "use_gemini_canvas_done": "AI apparatus apertus. Prima charta explicat quomodo AlloFlow intra Gemini Canvas sine ulla praeparatione utaris.",
+    "use_gemini_canvas_hint": "Aperit AI apparatum, ubi optio Canvas nulla praeparatione praeposita est"
   },
   "palette": {
     "aria": "AlloFlow tabula mandatorum",
@@ -31298,5 +31323,11 @@
     "toast_opened": "Graphum ordinationis ad legendum tantum apertum est.",
     "toast_invalid": "Illud graphum ordinationis aperiri non potuit. Exporta plicum JSON graphi AlloFlow validum.",
     "toast_unreadable": "Illud plicum graphi ordinationis legi non potuit."
+  },
+  "shell_link": {
+    "banner_aria": "De hoc instrumento",
+    "banner_text": "Unum instrumentum ab AlloFlow, suggestus docendi gratuitus.",
+    "banner_open": "Applicationem totam explora",
+    "banner_dismiss": "Hanc notam dimitte"
   }
 }

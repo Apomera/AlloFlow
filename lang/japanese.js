@@ -654,7 +654,9 @@
     "storyforge_label": "StoryForge。",
     "tool_dbq_aria": "ドキュメントベースの質問",
     "open_stem_lab_explore_aria": "STEAM Lab Explore を開く",
-    "stem_lab_explore": "探索"
+    "stem_lab_explore": "探索",
+    "needs_ai_setup": "AI の設定が必要です",
+    "needs_ai_setup_cta": "タップして AI を接続するか、Gemini Canvas の中で AlloFlow を使ってください"
   },
   "launch_pad": {
     "subtitle": "学習パスウェイを選択",
@@ -4574,7 +4576,8 @@
       "frames_label": "文型応答のギャップ",
       "concept_sort_label": "Concept Sort配置ミスのパターン"
     },
-    "all_tool_activity": "すべてのツールアクティビティ"
+    "all_tool_activity": "すべてのツールアクティビティ",
+    "title_parent": "家庭用ダッシュボード"
   },
   "roster": {
     "title": "クラス名簿キー",
@@ -6568,7 +6571,11 @@
     "tts_provider_aria": "テキスト読み上げプロバイダー",
     "local_cascade_label": "ローカルカスケード：",
     "image_generation_header": "画像生成",
-    "image_provider_aria": "画像生成プロバイダー"
+    "image_provider_aria": "画像生成プロバイダー",
+    "guided_card_canvas_title": "Gemini Canvas の中で AlloFlow を使う",
+    "guided_card_canvas_badge": "設定不要",
+    "guided_card_canvas_body": "AI を使う最も簡単な方法：Google Gemini の中で AlloFlow を開きます。Google アカウントがあれば無料で、お使いの Gemini プランの 1 日の利用枠を使います（個人、教育、有料プランのいずれも利用できます）。インストールも、キーの管理も不要です。",
+    "guided_card_canvas_req": "新しいタブで gemini.google.com を開きます。プランの詳細は google.com/gemini"
   },
   "bot_events": {
     "intro_greeting": "クリックして音声設定を調整できます。進めるごとに役立つヒントを提供します！",
@@ -14877,8 +14884,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "すべてのアクティビティで獲得した総STEM Lab XP",
-      "generate_assess": "生成 & 評価",
-      "manipulatives": "マニピュラティブ",
+      "generate_assess": "数学の問題と評価",
+      "manipulatives": "インタラクティブなツールとラボ",
       "stepbystep": "ステップバイステップ",
       "conceptual": "概念的",
       "realworld": "実世界"
@@ -31369,7 +31376,25 @@
     "surprise_me_contextually_working": "現在のレッスンの状況を読み取り、役に立つ次のステップを選んでいます...",
     "use_contextual_suggestion": "提案された次のステップを使う",
     "use_contextual_suggestion_hint": "最新の提案から選択肢 1、2、3 のいずれかを実行します",
-    "use_contextual_suggestion_working": "選んだ次のステップを開始しています..."
+    "use_contextual_suggestion_working": "選んだ次のステップを開始しています...",
+    "jump_to_lesson_plan": "自分の指導案へ移動",
+    "jump_to_lesson_plan_done": "最新の指導案を開きました。",
+    "jump_to_lesson_plan_hint": "最新の指導案をもう一度開く",
+    "open_block_suggestions": "文書ブロックの提案を受け取る",
+    "open_block_suggestions_done": "ドキュメントビルダーを開きました。ブロックの提案は上部の強調されたパネルにあります。",
+    "open_block_suggestions_hint": "ドキュメントビルダーを開きます。提案は上部にあります",
+    "open_brainstorm_modes": "ブレインストーミングの活動タイプを選ぶ",
+    "open_brainstorm_modes_done": "ブレインストーミングの活動タイプを開きました。アイデア、ディスカッション、ジグソー、シミュレーションから選んでください。",
+    "open_brainstorm_modes_hint": "アイデアの網、ディスカッションキット、ジグソー、またはシミュレーション",
+    "open_discussion_builder": "クラスディスカッションを作る",
+    "open_discussion_builder_done": "ディスカッションビルダーをブレインストーミングツールで開きました。進め方を選んで生成してください。",
+    "open_discussion_builder_hint": "「考える-ペア-共有」などの進め方を含むディスカッションキット",
+    "open_jigsaw_builder": "ジグソー活動を作る",
+    "open_jigsaw_builder_done": "ジグソービルダーをブレインストーミングツールで開きました。グループの人数を決めて生成してください。",
+    "open_jigsaw_builder_hint": "グループの人数を自分で決められるジグソー式エキスパートグループ活動",
+    "use_gemini_canvas": "Gemini Canvas の中で AlloFlow を使う",
+    "use_gemini_canvas_done": "AI 設定を開きました。最初のカードで、設定なしで Gemini Canvas 内で AlloFlow を使う方法を説明しています。",
+    "use_gemini_canvas_hint": "AI 設定を開きます。設定不要の Canvas オプションが最初に表示されます"
   },
   "palette": {
     "aria": "AlloFlow コマンドパレット",
@@ -31765,5 +31790,11 @@
     "toast_opened": "アラインメントグラフを読み取り専用で開きました。",
     "toast_invalid": "そのアラインメントグラフを開けませんでした。有効な AlloFlow グラフ JSON ファイルをエクスポートしてください。",
     "toast_unreadable": "そのアラインメントグラフファイルを読み込めませんでした。"
+  },
+  "shell_link": {
+    "banner_aria": "このツールについて",
+    "banner_text": "AlloFlow のツールのひとつです。無料の授業支援プラットフォームです。",
+    "banner_open": "アプリ全体を見る",
+    "banner_dismiss": "このお知らせを閉じる"
   }
 }

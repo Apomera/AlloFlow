@@ -2283,7 +2283,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "έγγραφο-Βασισμένος ερώτηση",
     "open_stem_lab_explore_aria": "Άνοιγμα STEAM Lab Explore",
-    "stem_lab_explore": "Εξερεύνηση"
+    "stem_lab_explore": "Εξερεύνηση",
+    "needs_ai_setup": "Χρειάζεται ρύθμιση AI",
+    "needs_ai_setup_cta": "Πατήστε για σύνδεση AI, ή χρησιμοποιήστε το AlloFlow μέσα στο Gemini Canvas"
   },
   "history": {
     "load_project": "Φόρτωση Project",
@@ -6338,7 +6340,8 @@
       "frames_label": "Κενά απαντήσεων με πλαίσιο προτάσεων",
       "concept_sort_label": "Έννοια Ταξινόμηση misplacement μοτίβα"
     },
-    "all_tool_activity": "όλα εργαλεία Δραστηριότητα"
+    "all_tool_activity": "όλα εργαλεία Δραστηριότητα",
+    "title_parent": "Οικογενειακός Πίνακας"
   },
   "tools": {
     "source": "πηγή Material",
@@ -12726,8 +12729,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Συνολικά XP του STEM Lab που κερδίθηκαν σε όλες τις δραστηριότητες",
-      "generate_assess": "Δημιουργία & assess",
-      "manipulatives": "Χειραπτικά Υλικά",
+      "generate_assess": "Μαθηματικά προβλήματα και αξιολογήσεις",
+      "manipulatives": "Διαδραστικά εργαλεία και εργαστήρια",
       "stepbystep": "βήμα-by-βήμα",
       "conceptual": "Εννοιολογικό",
       "realworld": "Πραγματικός-World"
@@ -30282,7 +30285,11 @@
     "tts_provider_aria": "κείμενο-σε-speech provider",
     "local_cascade_label": "Τοπική διαδοχή:",
     "image_generation_header": "εικόνα Γενιά",
-    "image_provider_aria": "εικόνα γενιά provider"
+    "image_provider_aria": "εικόνα γενιά provider",
+    "guided_card_canvas_title": "Χρήση του AlloFlow μέσα στο Gemini Canvas",
+    "guided_card_canvas_badge": "Χωρίς εγκατάσταση",
+    "guided_card_canvas_body": "Ο ευκολότερος τρόπος για AI: ανοίξτε το AlloFlow μέσα στο Google Gemini. Δωρεάν με λογαριασμό Google, χρησιμοποιώντας το ημερήσιο όριο του προγράμματος Gemini σας (προσωπικά, εκπαιδευτικά ή επί πληρωμή προγράμματα λειτουργούν όλα). Τίποτα για εγκατάσταση και κανένα κλειδί για διαχείριση.",
+    "guided_card_canvas_req": "Ανοίγει το gemini.google.com σε νέα καρτέλα. Λεπτομέρειες προγραμμάτων στο google.com/gemini"
   },
   "diff_view": {
     "title": "πηγή PDF ↔ Remediated HTML · Diff",
@@ -31641,7 +31648,25 @@
     "surprise_me_contextually_working": "Ανάγνωση του τρέχοντος πλαισίου μαθήματος και επιλογή ενός χρήσιμου επόμενου βήματος...",
     "use_contextual_suggestion": "Χρήση ενός προτεινόμενου επόμενου βήματος",
     "use_contextual_suggestion_hint": "Εκτελεί την επιλογή 1, 2 ή 3 από τις τελευταίες προτάσεις",
-    "use_contextual_suggestion_working": "Έναρξη του επιλεγμένου επόμενου βήματος..."
+    "use_contextual_suggestion_working": "Έναρξη του επιλεγμένου επόμενου βήματος...",
+    "jump_to_lesson_plan": "Μετάβαση στο σχέδιο μαθήματός μου",
+    "jump_to_lesson_plan_done": "Το πιο πρόσφατο σχέδιο μαθήματος άνοιξε.",
+    "jump_to_lesson_plan_hint": "Ξανανοίξτε το πιο πρόσφατο σχέδιο μαθήματος",
+    "open_block_suggestions": "Λάβετε προτάσεις για ενότητες εγγράφου",
+    "open_block_suggestions_done": "Ο Δημιουργός Εγγράφων άνοιξε. Οι προτάσεις ενοτήτων είναι στο επισημασμένο πλαίσιο στην κορυφή.",
+    "open_block_suggestions_hint": "Ανοίγει τον Δημιουργό Εγγράφων, όπου οι προτάσεις είναι στην κορυφή",
+    "open_brainstorm_modes": "Επιλέξτε τύπο δραστηριότητας καταιγισμού ιδεών",
+    "open_brainstorm_modes_done": "Οι τύποι δραστηριοτήτων καταιγισμού ιδεών άνοιξαν. Επιλέξτε ιδέες, συζήτηση, jigsaw ή προσομοίωση.",
+    "open_brainstorm_modes_hint": "Ιστός ιδεών, πακέτο συζήτησης, jigsaw ή προσομοίωση",
+    "open_discussion_builder": "Δημιουργήστε μια συζήτηση τάξης",
+    "open_discussion_builder_done": "Ο δημιουργός συζήτησης άνοιξε στο εργαλείο καταιγισμού ιδεών. Επιλέξτε πρωτόκολλο και δημιουργήστε.",
+    "open_discussion_builder_hint": "Πακέτο συζήτησης με πρωτόκολλα όπως σκέψου-συνεργάσου-μοιράσου",
+    "open_jigsaw_builder": "Δημιουργήστε μια δραστηριότητα jigsaw",
+    "open_jigsaw_builder_done": "Ο δημιουργός jigsaw άνοιξε στο εργαλείο καταιγισμού ιδεών. Ορίστε το μέγεθος ομάδας και δημιουργήστε.",
+    "open_jigsaw_builder_hint": "Δραστηριότητα ομάδων ειδικών jigsaw με μέγεθος ομάδας που ορίζετε εσείς",
+    "use_gemini_canvas": "Χρήση του AlloFlow μέσα στο Gemini Canvas",
+    "use_gemini_canvas_done": "Οι ρυθμίσεις AI άνοιξαν. Η πρώτη κάρτα εξηγεί τη χρήση του AlloFlow στο Gemini Canvas χωρίς καμία εγκατάσταση.",
+    "use_gemini_canvas_hint": "Ανοίγει τις ρυθμίσεις AI, όπου προηγείται η επιλογή Canvas χωρίς εγκατάσταση"
   },
   "palette": {
     "aria": "Παλέτα εντολών AlloFlow",
@@ -32037,5 +32062,11 @@
     "toast_opened": "Το γράφημα ευθυγράμμισης άνοιξε μόνο για ανάγνωση.",
     "toast_invalid": "Δεν ήταν δυνατό το άνοιγμα του γραφήματος ευθυγράμμισης. Εξαγάγετε ένα έγκυρο αρχείο JSON γραφήματος AlloFlow.",
     "toast_unreadable": "Δεν ήταν δυνατή η ανάγνωση του αρχείου γραφήματος ευθυγράμμισης."
+  },
+  "shell_link": {
+    "banner_aria": "Σχετικά με αυτό το εργαλείο",
+    "banner_text": "Ένα εργαλείο από το AlloFlow, μια δωρεάν εκπαιδευτική πλατφόρμα.",
+    "banner_open": "Εξερευνήστε την πλήρη εφαρμογή",
+    "banner_dismiss": "Απόρριψη αυτής της σημείωσης"
   }
 }

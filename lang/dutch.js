@@ -2292,7 +2292,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Documentgebaseerde vragen",
     "open_stem_lab_explore_aria": "STEAM Lab Explore openen",
-    "stem_lab_explore": "Verkennen"
+    "stem_lab_explore": "Verkennen",
+    "needs_ai_setup": "AI-installatie nodig",
+    "needs_ai_setup_cta": "Tik om een AI te koppelen, of gebruik AlloFlow binnen Gemini Canvas"
   },
   "history": {
     "load_project": "Project laden",
@@ -6508,7 +6510,8 @@
       "frames_label": "Hiaten in reacties met zinsstructuren",
       "concept_sort_label": "Patronen van foutplaatsing bij Concept Sort"
     },
-    "all_tool_activity": "Alle toolactiviteit"
+    "all_tool_activity": "Alle toolactiviteit",
+    "title_parent": "Gezinsdashboard"
   },
   "tools": {
     "source": "Bronmateriaal",
@@ -12927,8 +12930,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Totaal verdiende STEM Lab XP over alle activiteiten",
-      "generate_assess": "Genereren & beoordelen",
-      "manipulatives": "Manipulatieven",
+      "generate_assess": "Wiskundeopgaven en toetsen",
+      "manipulatives": "Interactieve tools en labs",
       "stepbystep": "Stap voor stap",
       "conceptual": "Conceptueel",
       "realworld": "Praktijkgericht"
@@ -30181,7 +30184,11 @@
     "tts_provider_aria": "Tekst-naar-spraakaanbieder",
     "local_cascade_label": "Lokale cascade:",
     "image_generation_header": "Afbeeldingsgeneratie",
-    "image_provider_aria": "Aanbieder afbeeldingsgeneratie"
+    "image_provider_aria": "Aanbieder afbeeldingsgeneratie",
+    "guided_card_canvas_title": "Gebruik AlloFlow binnen Gemini Canvas",
+    "guided_card_canvas_badge": "Geen installatie",
+    "guided_card_canvas_body": "De makkelijkste manier om AI te krijgen: open AlloFlow binnen Google Gemini. Gratis met een Google-account, met het dagelijkse quotum van je Gemini-abonnement (persoonlijke, Education- of betaalde abonnementen werken allemaal). Niets te installeren en geen sleutel om te beheren.",
+    "guided_card_canvas_req": "Opent gemini.google.com in een nieuw tabblad. Abonnementsdetails op google.com/gemini"
   },
   "diff_view": {
     "title": "Bron-PDF ↔ Geremedieerde HTML · Verschil",
@@ -31174,7 +31181,25 @@
     "surprise_me_contextually_working": "De huidige lescontext wordt gelezen en een nuttige volgende stap wordt gekozen...",
     "use_contextual_suggestion": "Een voorgestelde volgende stap gebruiken",
     "use_contextual_suggestion_hint": "Voert optie 1, 2 of 3 uit de laatste suggesties uit",
-    "use_contextual_suggestion_working": "De gekozen volgende stap wordt gestart..."
+    "use_contextual_suggestion_working": "De gekozen volgende stap wordt gestart...",
+    "jump_to_lesson_plan": "Spring naar mijn lesplan",
+    "jump_to_lesson_plan_done": "Meest recente lesplan geopend.",
+    "jump_to_lesson_plan_hint": "Open het meest recente lesplan opnieuw",
+    "open_block_suggestions": "Krijg suggesties voor documentblokken",
+    "open_block_suggestions_done": "Documentbouwer geopend. Bloksuggesties staan in het gemarkeerde paneel bovenaan.",
+    "open_block_suggestions_hint": "Open de Documentbouwer, waar de suggesties bovenaan staan",
+    "open_brainstorm_modes": "Kies een type brainstormactiviteit",
+    "open_brainstorm_modes_done": "Brainstormactiviteiten geopend. Kies ideeën, discussie, jigsaw of simulatie.",
+    "open_brainstorm_modes_hint": "Ideeënweb, discussiepakket, jigsaw of simulatie",
+    "open_discussion_builder": "Bouw een klasdiscussie",
+    "open_discussion_builder_done": "Discussiebouwer geopend in het brainstormgereedschap. Kies een werkvorm en genereer.",
+    "open_discussion_builder_hint": "Een discussiepakket met werkvormen zoals denken-delen-uitwisselen",
+    "open_jigsaw_builder": "Bouw een jigsaw-activiteit",
+    "open_jigsaw_builder_done": "Jigsaw-bouwer geopend in het brainstormgereedschap. Stel de groepsgrootte in en genereer.",
+    "open_jigsaw_builder_hint": "Jigsaw-expertgroepenactiviteit met een groepsgrootte die jij instelt",
+    "use_gemini_canvas": "Gebruik AlloFlow binnen Gemini Canvas",
+    "use_gemini_canvas_done": "AI-instellingen geopend. De eerste kaart legt uit hoe je AlloFlow zonder installatie in Gemini Canvas gebruikt.",
+    "use_gemini_canvas_hint": "Open de AI-instellingen, waar de Canvas-optie zonder installatie vooraan staat"
   },
   "palette": {
     "aria": "AlloFlow-opdrachtenpalet",
@@ -31557,5 +31582,11 @@
     "toast_opened": "Uitlijningsgrafiek alleen-lezen geopend.",
     "toast_invalid": "Kon die uitlijningsgrafiek niet openen. Exporteer een geldig AlloFlow-grafiek-JSON-bestand.",
     "toast_unreadable": "Kon dat uitlijningsgrafiekbestand niet lezen."
+  },
+  "shell_link": {
+    "banner_aria": "Over dit hulpmiddel",
+    "banner_text": "Eén hulpmiddel van AlloFlow, een gratis lesplatform.",
+    "banner_open": "Verken de volledige app",
+    "banner_dismiss": "Deze melding sluiten"
   }
 }

@@ -2293,7 +2293,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Document-Based প্রশ্ন",
     "open_stem_lab_explore_aria": "STEAM Lab Explore খুলুন",
-    "stem_lab_explore": "অন্বেষণ"
+    "stem_lab_explore": "অন্বেষণ",
+    "needs_ai_setup": "AI সেটআপ প্রয়োজন",
+    "needs_ai_setup_cta": "AI যুক্ত করতে চাপুন, বা Gemini Canvas এ AlloFlow ব্যবহার করুন"
   },
   "history": {
     "load_project": "লোড করুন Project",
@@ -6339,7 +6341,8 @@
       "frames_label": "পাঠানো sentence-frame প্রতিক্রিয়া gaps",
       "concept_sort_label": "ধারণা সাজান misplacement প্যাটার্ন"
     },
-    "all_tool_activity": "All সরঞ্জাম কার্যকলাপ"
+    "all_tool_activity": "All সরঞ্জাম কার্যকলাপ",
+    "title_parent": "পরিবার ড্যাশবোর্ড"
   },
   "tools": {
     "source": "উৎস উপাদান",
@@ -12738,8 +12741,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "মোট STEM Lab XP earned across all কার্যকলাপগুলি",
-      "generate_assess": "তৈরি করুন & assess",
-      "manipulatives": "হস্তচালিত উপকরণ",
+      "generate_assess": "গণিত সমস্যা ও মূল্যায়ন",
+      "manipulatives": "ইন্টারঅ্যাক্টিভ টুল ও ল্যাব",
       "stepbystep": "ধাপে ধাপে",
       "conceptual": "ধারণাগত",
       "realworld": "বাস্তব-জগত"
@@ -29816,7 +29819,11 @@
     "tts_provider_aria": "text-to-speech provider",
     "local_cascade_label": "স্থানীয় ক্যাসকেড:",
     "image_generation_header": "চিত্র প্রজন্ম",
-    "image_provider_aria": "চিত্র প্রজন্ম provider"
+    "image_provider_aria": "চিত্র প্রজন্ম provider",
+    "guided_card_canvas_title": "Gemini Canvas এর ভিতরে AlloFlow ব্যবহার করুন",
+    "guided_card_canvas_badge": "সেটআপ লাগে না",
+    "guided_card_canvas_body": "AI পাওয়ার সবচেয়ে সহজ উপায়: Google Gemini এর ভিতরে AlloFlow খুলুন। Google অ্যাকাউন্ট দিয়ে বিনামূল্যে, আপনার Gemini প্ল্যানের দৈনিক কোটা ব্যবহার করে (ব্যক্তিগত, শিক্ষা, বা পেইড সব প্ল্যানই কাজ করে)। ইনস্টল করার কিছু নেই, কোনো কী ম্যানেজ করতে হয় না।",
+    "guided_card_canvas_req": "নতুন ট্যাবে gemini.google.com খোলে। প্ল্যানের বিবরণ google.com/gemini এ"
   },
   "diff_view": {
     "title": "উৎস PDF ↔ পুনঃসংশোধিত HTML · ডিফ",
@@ -31175,7 +31182,25 @@
     "surprise_me_contextually_working": "বর্তমান পাঠের প্রসঙ্গ পড়ে একটি কাজের পরবর্তী ধাপ বেছে নেওয়া হচ্ছে...",
     "use_contextual_suggestion": "প্রস্তাবিত একটি পরবর্তী ধাপ ব্যবহার করুন",
     "use_contextual_suggestion_hint": "সাম্প্রতিক পরামর্শ থেকে বিকল্প 1, 2 বা 3 চালায়",
-    "use_contextual_suggestion_working": "নির্বাচিত পরবর্তী ধাপ শুরু করা হচ্ছে..."
+    "use_contextual_suggestion_working": "নির্বাচিত পরবর্তী ধাপ শুরু করা হচ্ছে...",
+    "jump_to_lesson_plan": "আমার পাঠ পরিকল্পনায় যান",
+    "jump_to_lesson_plan_done": "সাম্প্রতিকতম পাঠ পরিকল্পনা খোলা হয়েছে।",
+    "jump_to_lesson_plan_hint": "সাম্প্রতিকতম পাঠ পরিকল্পনা আবার খুলুন",
+    "open_block_suggestions": "নথির ব্লক পরামর্শ পান",
+    "open_block_suggestions_done": "ডকুমেন্ট নির্মাতা খোলা হয়েছে। ব্লক পরামর্শগুলি উপরের হাইলাইট করা প্যানেলে আছে।",
+    "open_block_suggestions_hint": "ডকুমেন্ট নির্মাতা খুলুন, পরামর্শগুলি উপরে থাকে",
+    "open_brainstorm_modes": "ব্রেনস্টর্ম কার্যকলাপের ধরন বেছে নিন",
+    "open_brainstorm_modes_done": "ব্রেনস্টর্ম কার্যকলাপের ধরনগুলি খোলা হয়েছে। ধারণা, আলোচনা, জিগস, বা সিমুলেশন বেছে নিন।",
+    "open_brainstorm_modes_hint": "ধারণা-জাল, আলোচনা কিট, জিগস, বা সিমুলেশন",
+    "open_discussion_builder": "শ্রেণি আলোচনা তৈরি করুন",
+    "open_discussion_builder_done": "আলোচনা নির্মাতা ব্রেনস্টর্ম টুলে খোলা হয়েছে। একটি নিয়ম বেছে নিন, তারপর তৈরি করুন।",
+    "open_discussion_builder_hint": "ভাবো-জোড়-ভাগ করো এর মতো নিয়মসহ একটি আলোচনা কিট",
+    "open_jigsaw_builder": "জিগস কার্যকলাপ তৈরি করুন",
+    "open_jigsaw_builder_done": "জিগস নির্মাতা ব্রেনস্টর্ম টুলে খোলা হয়েছে। দলের আকার ঠিক করুন, তারপর তৈরি করুন।",
+    "open_jigsaw_builder_hint": "আপনার নির্ধারিত দলের আকারসহ জিগস বিশেষজ্ঞ-দল কার্যকলাপ",
+    "use_gemini_canvas": "Gemini Canvas এর ভিতরে AlloFlow ব্যবহার করুন",
+    "use_gemini_canvas_done": "AI সেটআপ খোলা হয়েছে। প্রথম কার্ডটি কোনো সেটআপ ছাড়াই Gemini Canvas এ AlloFlow ব্যবহারের ব্যাখ্যা দেয়।",
+    "use_gemini_canvas_hint": "AI সেটআপ খুলুন, যেখানে সেটআপ ছাড়া Canvas বিকল্পটি প্রথমে আছে"
   },
   "palette": {
     "aria": "AlloFlow কমান্ড প্যালেট",
@@ -31575,5 +31600,11 @@
     "toast_opened": "অ্যালাইনমেন্ট গ্রাফ শুধু পড়ার জন্য খোলা হয়েছে।",
     "toast_invalid": "ওই অ্যালাইনমেন্ট গ্রাফ খোলা গেল না। বৈধ AlloFlow গ্রাফ JSON ফাইল রপ্তানি করুন।",
     "toast_unreadable": "ওই অ্যালাইনমেন্ট গ্রাফ ফাইল পড়া গেল না।"
+  },
+  "shell_link": {
+    "banner_aria": "এই টুল সম্পর্কে",
+    "banner_text": "AlloFlow থেকে একটি টুল, একটি বিনামূল্যের শিক্ষাদান প্ল্যাটফর্ম।",
+    "banner_open": "সম্পূর্ণ অ্যাপ ঘুরে দেখুন",
+    "banner_dismiss": "এই নোটটি বাতিল করুন"
   }
 }

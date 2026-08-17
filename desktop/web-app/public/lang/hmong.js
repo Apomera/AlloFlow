@@ -2281,7 +2281,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "cov ntawv-Raws lo lus nug",
     "open_stem_lab_explore_aria": "Qhib STEAM Lab Explore",
-    "stem_lab_explore": "Tshawb Nrhiav"
+    "stem_lab_explore": "Tshawb Nrhiav",
+    "needs_ai_setup": "Xav tau AI teeb tsa",
+    "needs_ai_setup_cta": "Coj mus rhaub kom txuas AI, lossis siv AlloFlow hauv Gemini Canvas"
   },
   "history": {
     "load_project": "Nqa los Project",
@@ -6329,7 +6331,8 @@
       "frames_label": "kab lus-frame response gaps",
       "concept_sort_label": "Lub tswv yim Muab cais misplacement cov qauv"
     },
-    "all_tool_activity": "tag nrho cov cuab yeej Activity"
+    "all_tool_activity": "tag nrho cov cuab yeej Activity",
+    "title_parent": "Tsev Neeg Dashboard"
   },
   "tools": {
     "source": "qhov chaw Material",
@@ -12711,8 +12714,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Total STEM chav kawm tshawb fawb XP earned across tag nrho activities",
-      "generate_assess": "Tsim & assess",
-      "manipulatives": "Cov Cuab Yeej Tuav",
+      "generate_assess": "Cov teeb meem lej thiab kev ntsuam xyuas",
+      "manipulatives": "Cov cuab yeej siv tau thiab chav kuaj",
       "stepbystep": "cov theem-by-cov theem",
       "conceptual": "Tswv Yim",
       "realworld": "Tiag Tiag"
@@ -29277,7 +29280,11 @@
     "tts_provider_aria": "cov ntawv-mus-speech provider",
     "local_cascade_label": "Cascade hauv zos:",
     "image_generation_header": "duab Tiam",
-    "image_provider_aria": "duab tiam provider"
+    "image_provider_aria": "duab tiam provider",
+    "guided_card_canvas_title": "Siv AlloFlow hauv Gemini Canvas",
+    "guided_card_canvas_badge": "Tsis tas teeb tsa",
+    "guided_card_canvas_body": "Txoj kev yooj yim tshaj kom tau AI: qhib AlloFlow hauv Google Gemini. Dawb nrog Google account, siv koj li Gemini phiaj xwm cov feem txwv txhua hnub (tus kheej, kev kawm, lossis them nyiaj phiaj xwm puavleej ua tau). Tsis muaj dab tsi rau nruab thiab tsis muaj yuam sij saib xyuas.",
+    "guided_card_canvas_req": "Qhib gemini.google.com hauv ib qho tab tshiab. Phiaj xwm ntsiab lus ntawm google.com/gemini"
   },
   "diff_view": {
     "title": "qhov chaw PDF ↔ Remediated HTML · Diff",
@@ -30636,7 +30643,25 @@
     "surprise_me_contextually_working": "Tab tom nyeem cov xwm txheej ntawm zaj kawm thiab xaiv ib kauj ruam tom ntej uas pab tau...",
     "use_contextual_suggestion": "Siv kauj ruam tom ntej uas tau qhia",
     "use_contextual_suggestion_hint": "Khiav kev xaiv 1, 2, lossis 3 los ntawm cov lus qhia tshiab tshaj",
-    "use_contextual_suggestion_working": "Tab tom pib kauj ruam tom ntej uas tau xaiv..."
+    "use_contextual_suggestion_working": "Tab tom pib kauj ruam tom ntej uas tau xaiv...",
+    "jump_to_lesson_plan": "Mus rau kuv txoj kev npaj qhia ntawv",
+    "jump_to_lesson_plan_done": "Txoj kev npaj qhia ntawv tshiab tshaj qhib lawm.",
+    "jump_to_lesson_plan_hint": "Rov qhib txoj kev npaj qhia ntawv tshiab tshaj",
+    "open_block_suggestions": "Tau cov lus pom zoo rau ntu ntawv",
+    "open_block_suggestions_done": "Document Builder qhib lawm. Cov lus pom zoo nyob hauv daim panel ci saum toj.",
+    "open_block_suggestions_hint": "Qhib Document Builder, cov lus pom zoo nyob saum toj",
+    "open_brainstorm_modes": "Xaiv hom kev ua si npaj tswv yim",
+    "open_brainstorm_modes_done": "Cov hom kev npaj tswv yim qhib lawm. Xaiv tswv yim, sib tham, jigsaw, lossis kev ua txwv.",
+    "open_brainstorm_modes_hint": "Ntxaij tswv yim, phau sib tham, jigsaw, lossis kev ua txwv",
+    "open_discussion_builder": "Tsim ib qho kev sib tham hauv chav",
+    "open_discussion_builder_done": "Tus tsim kev sib tham qhib hauv lub cuab yeej npaj tswv yim. Xaiv txheej txheem, ces tsim.",
+    "open_discussion_builder_hint": "Phau sib tham nrog cov txheej txheem xws li xav-ua nkawm-qhia",
+    "open_jigsaw_builder": "Tsim ib qho kev ua si jigsaw",
+    "open_jigsaw_builder_done": "Tus tsim jigsaw qhib hauv lub cuab yeej npaj tswv yim. Teem pab pawg loj me, ces tsim.",
+    "open_jigsaw_builder_hint": "Kev ua si pab pawg tshaj lij jigsaw nrog pab pawg loj me uas koj teem",
+    "use_gemini_canvas": "Siv AlloFlow hauv Gemini Canvas",
+    "use_gemini_canvas_done": "AI kev teeb tsa qhib lawm. Daim npav thawj qhia siv AlloFlow hauv Gemini Canvas tsis tas teeb tsa dab tsi.",
+    "use_gemini_canvas_hint": "Qhib AI kev teeb tsa, qhov Canvas uas tsis tas teeb tsa nyob ua ntej"
   },
   "palette": {
     "aria": "AlloFlow lub khob qhia haujlwm",
@@ -31025,5 +31050,11 @@
     "toast_opened": "Daim duab kev sib haum qhib rau nyeem xwb.",
     "toast_invalid": "Qhib tsis tau daim duab kev sib haum ntawd. Xa ib daim AlloFlow duab JSON uas raug.",
     "toast_unreadable": "Nyeem tsis tau daim duab kev sib haum ntawd."
+  },
+  "shell_link": {
+    "banner_aria": "Hais txog qhov cuab yeej no",
+    "banner_text": "Ib qho cuab yeej los ntawm AlloFlow, ib lub chaw qhia ntawv dawb.",
+    "banner_open": "Saib tag nrho lub app",
+    "banner_dismiss": "Kaw daim ntawv no"
   }
 }

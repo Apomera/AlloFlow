@@ -650,7 +650,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Kesyon Baze sou Dokiman",
     "open_stem_lab_explore_aria": "Ouvri STEAM Lab Explore",
-    "stem_lab_explore": "Eksplore"
+    "stem_lab_explore": "Eksplore",
+    "needs_ai_setup": "Bezwen konfigirasyon AI",
+    "needs_ai_setup_cta": "Tape pou konekte yon AI, oswa sèvi ak AlloFlow anndan Gemini Canvas"
   },
   "toolbar": {
     "show_bot": "Montre Asistan IA",
@@ -2440,7 +2442,11 @@
     "tts_provider_aria": "Founisè tèks-an-vwa",
     "local_cascade_label": "Kaskad lokal:",
     "image_generation_header": "Jenerasyon Imaj",
-    "image_provider_aria": "Founisè jenerasyon imaj"
+    "image_provider_aria": "Founisè jenerasyon imaj",
+    "guided_card_canvas_title": "Sèvi ak AlloFlow anndan Gemini Canvas",
+    "guided_card_canvas_badge": "San enstalasyon",
+    "guided_card_canvas_body": "Fason ki pi fasil pou jwenn AI: ouvri AlloFlow anndan Google Gemini. Gratis ak yon kont Google, li sèvi ak kota chak jou plan Gemini ou a (plan pèsonèl, Edikasyon, oswa peye yo tout mache). Pa gen anyen pou enstale e pa gen kle pou jere.",
+    "guided_card_canvas_req": "Li ouvri gemini.google.com nan yon nouvo tab. Detay plan yo sou google.com/gemini"
   },
   "profiles": {
     "title": "Pwofil Elèv yo",
@@ -4362,7 +4368,8 @@
       "frames_label": "Lakin repons kad fraz",
       "concept_sort_label": "Modèl move plasman Konsèp Sort"
     },
-    "all_tool_activity": "Tout Aktivite Zouti"
+    "all_tool_activity": "Tout Aktivite Zouti",
+    "title_parent": "Tablodbò Fanmi"
   },
   "history": {
     "load_project": "Chaje Pwojè",
@@ -14213,8 +14220,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Total STEM laboratwa XP earned across all activities",
-      "generate_assess": "Jenere & assess",
-      "manipulatives": "Manipilatif",
+      "generate_assess": "Pwoblèm matematik ak evalyasyon",
+      "manipulatives": "Zouti entèaktif ak laboratwa",
       "stepbystep": "etap-by-etap",
       "conceptual": "Konseptyèl",
       "realworld": "Reyèl"
@@ -31526,7 +31533,25 @@
     "surprise_me_contextually_working": "Ap li kontèks leson aktyèl la epi ap chwazi yon pwochen etap ki itil...",
     "use_contextual_suggestion": "Sèvi ak yon pwochen etap yo pwopoze",
     "use_contextual_suggestion_hint": "Lanse opsyon 1, 2 oswa 3 nan dènye sijesyon yo",
-    "use_contextual_suggestion_working": "Ap kòmanse pwochen etap ki chwazi a..."
+    "use_contextual_suggestion_working": "Ap kòmanse pwochen etap ki chwazi a...",
+    "jump_to_lesson_plan": "Ale nan plan leson mwen an",
+    "jump_to_lesson_plan_done": "Plan leson ki pi resan an ouvri.",
+    "jump_to_lesson_plan_hint": "Ouvri plan leson ki pi resan an ankò",
+    "open_block_suggestions": "Jwenn sijesyon blòk dokiman",
+    "open_block_suggestions_done": "Konstriktè Dokiman an ouvri. Sijesyon blòk yo nan panèl ki make anlè a.",
+    "open_block_suggestions_hint": "Ouvri Konstriktè Dokiman an, kote sijesyon yo anlè",
+    "open_brainstorm_modes": "Chwazi yon kalite aktivite brase lide",
+    "open_brainstorm_modes_done": "Kalite aktivite brase lide yo ouvri. Chwazi lide, diskisyon, jigsaw, oswa similasyon.",
+    "open_brainstorm_modes_hint": "Rezo lide, kit diskisyon, jigsaw, oswa similasyon",
+    "open_discussion_builder": "Bati yon diskisyon klas",
+    "open_discussion_builder_done": "Konstriktè diskisyon an ouvri nan zouti brase lide a. Chwazi yon pwotokòl, epi jenere.",
+    "open_discussion_builder_hint": "Yon kit diskisyon ak pwotokòl tankou panse-fè pè-pataje",
+    "open_jigsaw_builder": "Bati yon aktivite jigsaw",
+    "open_jigsaw_builder_done": "Konstriktè jigsaw la ouvri nan zouti brase lide a. Fikse gwosè gwoup la, epi jenere.",
+    "open_jigsaw_builder_hint": "Aktivite gwoup ekspè jigsaw ak yon gwosè gwoup ou menm ou fikse",
+    "use_gemini_canvas": "Sèvi ak AlloFlow anndan Gemini Canvas",
+    "use_gemini_canvas_done": "Konfigirasyon AI ouvri. Premye kat la eksplike kijan pou sèvi ak AlloFlow anndan Gemini Canvas san okenn enstalasyon.",
+    "use_gemini_canvas_hint": "Ouvri konfigirasyon AI a, kote opsyon Canvas san enstalasyon an devan"
   },
   "palette": {
     "aria": "Palèt kòmand AlloFlow",
@@ -31926,5 +31951,11 @@
     "toast_opened": "Graf aliyman an ouvri pou lekti sèlman.",
     "toast_invalid": "Nou pa t ka ouvri graf aliyman sa a. Ekspòte yon fichye JSON graf AlloFlow ki valab.",
     "toast_unreadable": "Nou pa t ka li fichye graf aliyman sa a."
+  },
+  "shell_link": {
+    "banner_aria": "Konsènan zouti sa a",
+    "banner_text": "Yon zouti ki soti nan AlloFlow, yon platfòm ansèyman gratis.",
+    "banner_open": "Eksplore tout aplikasyon an",
+    "banner_dismiss": "Fèmen nòt sa a"
   }
 }

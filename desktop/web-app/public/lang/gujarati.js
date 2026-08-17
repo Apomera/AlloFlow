@@ -2288,7 +2288,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "દસ્તાવેજ-આધારિત પ્રશ્નો",
     "open_stem_lab_explore_aria": "STEAM Lab Explore ખોલો",
-    "stem_lab_explore": "અન્વેષણ કરો"
+    "stem_lab_explore": "અન્વેષણ કરો",
+    "needs_ai_setup": "AI સેટઅપ જરૂરી છે",
+    "needs_ai_setup_cta": "AI જોડવા ટૅપ કરો, અથવા Gemini Canvas માં AlloFlow વાપરો"
   },
   "history": {
     "load_project": "પ્રોજેક્ટ લોડ કરો",
@@ -6504,7 +6506,8 @@
       "frames_label": "વાક્ય-ફ્રેમ પ્રતિસાદ ખામીઓ",
       "concept_sort_label": "Concept Sort ખોટી-ગોઠવણી પેટર્નો"
     },
-    "all_tool_activity": "તમામ સાધન પ્રવૃત્તિ"
+    "all_tool_activity": "તમામ સાધન પ્રવૃત્તિ",
+    "title_parent": "કુટુંબ ડેશબોર્ડ"
   },
   "tools": {
     "source": "સ્રોત સામગ્રી",
@@ -12927,8 +12930,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "બધી પ્રવૃત્તિઓમાં મેળવેલ કુલ STEM Lab XP",
-      "generate_assess": "બનાવો અને મૂલ્યાંકન કરો",
-      "manipulatives": "મેનિપ્યુલેટિવ્સ",
+      "generate_assess": "ગણિતના પ્રશ્નો અને મૂલ્યાંકન",
+      "manipulatives": "ઇન્ટરેક્ટિવ સાધનો અને લેબ",
       "stepbystep": "ક્રમશઃ",
       "conceptual": "વૈચારિક",
       "realworld": "વાસ્તવિક-જગત"
@@ -30001,7 +30004,11 @@
     "tts_provider_aria": "ટેક્સ્ટ-ટુ-સ્પીચ પ્રદાતા",
     "local_cascade_label": "સ્થાનિક કાસ્કેડ:",
     "image_generation_header": "છબી જનરેશન",
-    "image_provider_aria": "છબી જનરેશન પ્રદાતા"
+    "image_provider_aria": "છબી જનરેશન પ્રદાતા",
+    "guided_card_canvas_title": "Gemini Canvas ની અંદર AlloFlow વાપરો",
+    "guided_card_canvas_badge": "સેટઅપ નહીં",
+    "guided_card_canvas_body": "AI મેળવવાનો સૌથી સરળ રસ્તો: Google Gemini ની અંદર AlloFlow ખોલો. Google એકાઉન્ટ સાથે મફત, તમારા Gemini પ્લાનનો દૈનિક ક્વોટા વાપરીને (વ્યક્તિગત, શિક્ષણ, અથવા પેઇડ પ્લાન બધા કામ કરે છે). ઇન્સ્ટોલ કરવાનું કંઈ નથી અને મેનેજ કરવાની કોઈ કી નથી.",
+    "guided_card_canvas_req": "નવા ટૅબમાં gemini.google.com ખોલે છે. પ્લાનની વિગતો google.com/gemini પર"
   },
   "diff_view": {
     "title": "સ્રોત PDF ↔ સુધારેલ HTML · Diff",
@@ -30994,7 +31001,25 @@
     "surprise_me_contextually_working": "હાલના પાઠનો સંદર્ભ વાંચીને ઉપયોગી આગળનું પગલું પસંદ કરી રહ્યા છીએ...",
     "use_contextual_suggestion": "સૂચવેલું આગળનું પગલું વાપરો",
     "use_contextual_suggestion_hint": "છેલ્લાં સૂચનોમાંથી વિકલ્પ 1, 2 કે 3 ચલાવે છે",
-    "use_contextual_suggestion_working": "પસંદ કરેલું આગળનું પગલું શરૂ કરી રહ્યા છીએ..."
+    "use_contextual_suggestion_working": "પસંદ કરેલું આગળનું પગલું શરૂ કરી રહ્યા છીએ...",
+    "jump_to_lesson_plan": "મારી પાઠ યોજના પર જાઓ",
+    "jump_to_lesson_plan_done": "સૌથી તાજેતરની પાઠ યોજના ખૂલી.",
+    "jump_to_lesson_plan_hint": "સૌથી તાજેતરની પાઠ યોજના ફરી ખોલો",
+    "open_block_suggestions": "દસ્તાવેજ બ્લોક સૂચનો મેળવો",
+    "open_block_suggestions_done": "ડોક્યુમેન્ટ બિલ્ડર ખૂલ્યું. બ્લોક સૂચનો ટોચના હાઈલાઈટ કરેલા પેનલમાં છે.",
+    "open_block_suggestions_hint": "ડોક્યુમેન્ટ બિલ્ડર ખોલો, સૂચનો ટોચ પર છે",
+    "open_brainstorm_modes": "બ્રેઈનસ્ટોર્મ પ્રવૃત્તિનો પ્રકાર પસંદ કરો",
+    "open_brainstorm_modes_done": "બ્રેઈનસ્ટોર્મ પ્રવૃત્તિના પ્રકારો ખૂલ્યા. વિચારો, ચર્ચા, જિગ્સૉ, અથવા સિમ્યુલેશન પસંદ કરો.",
+    "open_brainstorm_modes_hint": "વિચાર-જાળ, ચર્ચા કિટ, જિગ્સૉ, અથવા સિમ્યુલેશન",
+    "open_discussion_builder": "વર્ગ ચર્ચા બનાવો",
+    "open_discussion_builder_done": "ચર્ચા બિલ્ડર બ્રેઈનસ્ટોર્મ સાધનમાં ખૂલ્યું. પદ્ધતિ પસંદ કરો, પછી બનાવો.",
+    "open_discussion_builder_hint": "વિચારો-જોડી બનાવો-વહેંચો જેવી પદ્ધતિઓ સાથેની ચર્ચા કિટ",
+    "open_jigsaw_builder": "જિગ્સૉ પ્રવૃત્તિ બનાવો",
+    "open_jigsaw_builder_done": "જિગ્સૉ બિલ્ડર બ્રેઈનસ્ટોર્મ સાધનમાં ખૂલ્યું. જૂથનું કદ નક્કી કરો, પછી બનાવો.",
+    "open_jigsaw_builder_hint": "તમે નક્કી કરેલા જૂથ કદ સાથે જિગ્સૉ નિષ્ણાત-જૂથ પ્રવૃત્તિ",
+    "use_gemini_canvas": "Gemini Canvas ની અંદર AlloFlow વાપરો",
+    "use_gemini_canvas_done": "AI સેટઅપ ખૂલ્યું. પહેલું કાર્ડ કોઈ સેટઅપ વગર Gemini Canvas માં AlloFlow વાપરવાનું સમજાવે છે.",
+    "use_gemini_canvas_hint": "AI સેટઅપ ખોલો, જ્યાં સેટઅપ વગરનો Canvas વિકલ્પ આગળ છે"
   },
   "palette": {
     "aria": "AlloFlow આદેશ પેલેટ",
@@ -31371,5 +31396,11 @@
     "toast_opened": "ગોઠવણી ગ્રાફ ફક્ત વાંચવા માટે ખૂલ્યો.",
     "toast_invalid": "એ ગોઠવણી ગ્રાફ ખોલી શકાયો નહીં. માન્ય AlloFlow ગ્રાફ JSON ફાઇલ નિકાસ કરો.",
     "toast_unreadable": "એ ગોઠવણી ગ્રાફ ફાઇલ વાંચી શકાઈ નહીં."
+  },
+  "shell_link": {
+    "banner_aria": "આ સાધન વિશે",
+    "banner_text": "AlloFlow તરફથી એક સાધન, એક મફત શિક્ષણ પ્લેટફોર્મ.",
+    "banner_open": "સંપૂર્ણ એપ્લિકેશન જુઓ",
+    "banner_dismiss": "આ નોંધ કાઢી નાખો"
   }
 }

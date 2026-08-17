@@ -2283,7 +2283,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "hati-Kulingana maswali",
     "open_stem_lab_explore_aria": "Fungua STEAM Lab Explore",
-    "stem_lab_explore": "Chunguza"
+    "stem_lab_explore": "Chunguza",
+    "needs_ai_setup": "Inahitaji usanidi wa AI",
+    "needs_ai_setup_cta": "Gusa kuunganisha AI, au tumia AlloFlow ndani ya Gemini Canvas"
   },
   "history": {
     "load_project": "Pakia Project",
@@ -6330,7 +6332,8 @@
       "frames_label": "sentensi-frame jibu gaps",
       "concept_sort_label": "Dhana Panga misplacement mifumo"
     },
-    "all_tool_activity": "yote zana Shughuli"
+    "all_tool_activity": "yote zana Shughuli",
+    "title_parent": "Dashibodi ya Familia"
   },
   "tools": {
     "source": "nyenzo ya chanzo",
@@ -12719,8 +12722,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Total STEM maabara XP earned kuvuka yote shughuli",
-      "generate_assess": "Tengeneza & assess",
-      "manipulatives": "Vifaa vya Kushikika",
+      "generate_assess": "Maswali ya hisabati na tathmini",
+      "manipulatives": "Zana shirikishi na maabara",
       "stepbystep": "hatua-by-hatua",
       "conceptual": "Dhana",
       "realworld": "Halisi"
@@ -29965,7 +29968,11 @@
     "tts_provider_aria": "maandishi-kwa-speech provider",
     "local_cascade_label": "Mfululizo wa ndani:",
     "image_generation_header": "picha Kizazi",
-    "image_provider_aria": "picha kizazi provider"
+    "image_provider_aria": "picha kizazi provider",
+    "guided_card_canvas_title": "Tumia AlloFlow ndani ya Gemini Canvas",
+    "guided_card_canvas_badge": "Bila usanidi",
+    "guided_card_canvas_body": "Njia rahisi zaidi ya kupata AI: fungua AlloFlow ndani ya Google Gemini. Bure kwa akaunti ya Google, ukitumia mgawo wa kila siku wa mpango wako wa Gemini (mipango ya binafsi, ya Elimu, au ya kulipiwa yote inafanya kazi). Hakuna cha kusakinisha wala ufunguo wa kusimamia.",
+    "guided_card_canvas_req": "Inafungua gemini.google.com katika kichupo kipya. Maelezo ya mipango yako google.com/gemini"
   },
   "diff_view": {
     "title": "chanzo PDF ↔ Remediated HTML · Diff",
@@ -31324,7 +31331,25 @@
     "surprise_me_contextually_working": "Inasoma muktadha wa somo la sasa na kuchagua hatua inayofuata yenye manufaa...",
     "use_contextual_suggestion": "Tumia hatua inayofuata iliyopendekezwa",
     "use_contextual_suggestion_hint": "Huendesha chaguo 1, 2, au 3 kutoka mapendekezo ya hivi karibuni",
-    "use_contextual_suggestion_working": "Inaanza hatua inayofuata iliyochaguliwa..."
+    "use_contextual_suggestion_working": "Inaanza hatua inayofuata iliyochaguliwa...",
+    "jump_to_lesson_plan": "Nenda kwenye mpango wangu wa somo",
+    "jump_to_lesson_plan_done": "Mpango wa somo wa hivi karibuni zaidi umefunguliwa.",
+    "jump_to_lesson_plan_hint": "Fungua tena mpango wa somo wa hivi karibuni zaidi",
+    "open_block_suggestions": "Pata mapendekezo ya vizuizi vya hati",
+    "open_block_suggestions_done": "Mjenzi wa Hati amefunguliwa. Mapendekezo ya vizuizi yako kwenye paneli iliyoangaziwa juu.",
+    "open_block_suggestions_hint": "Fungua Mjenzi wa Hati, mapendekezo yako juu",
+    "open_brainstorm_modes": "Chagua aina ya shughuli ya kubuni mawazo",
+    "open_brainstorm_modes_done": "Aina za shughuli za kubuni mawazo zimefunguliwa. Chagua mawazo, majadiliano, jigsaw, au uigaji.",
+    "open_brainstorm_modes_hint": "Mtandao wa mawazo, kifurushi cha majadiliano, jigsaw, au uigaji",
+    "open_discussion_builder": "Jenga majadiliano ya darasa",
+    "open_discussion_builder_done": "Mjenzi wa majadiliano amefunguliwa katika zana ya kubuni mawazo. Chagua utaratibu, kisha tengeneza.",
+    "open_discussion_builder_hint": "Kifurushi cha majadiliano chenye taratibu kama fikiri-wawili-shiriki",
+    "open_jigsaw_builder": "Jenga shughuli ya jigsaw",
+    "open_jigsaw_builder_done": "Mjenzi wa jigsaw amefunguliwa katika zana ya kubuni mawazo. Weka ukubwa wa kikundi, kisha tengeneza.",
+    "open_jigsaw_builder_hint": "Shughuli ya vikundi vya wataalamu vya jigsaw yenye ukubwa wa kikundi unaoweka wewe",
+    "use_gemini_canvas": "Tumia AlloFlow ndani ya Gemini Canvas",
+    "use_gemini_canvas_done": "Mipangilio ya AI imefunguliwa. Kadi ya kwanza inaeleza kutumia AlloFlow ndani ya Gemini Canvas bila usanidi wowote.",
+    "use_gemini_canvas_hint": "Fungua mipangilio ya AI, ambapo chaguo la Canvas lisilohitaji usanidi liko mbele"
   },
   "palette": {
     "aria": "Paleti ya amri ya AlloFlow",
@@ -31726,5 +31751,11 @@
     "toast_opened": "Grafu ya ulinganifu imefunguliwa kwa kusoma tu.",
     "toast_invalid": "Haikuwezekana kufungua grafu hiyo ya ulinganifu. Hamisha faili sahihi ya JSON ya grafu ya AlloFlow.",
     "toast_unreadable": "Haikuwezekana kusoma faili hiyo ya grafu ya ulinganifu."
+  },
+  "shell_link": {
+    "banner_aria": "Kuhusu zana hii",
+    "banner_text": "Zana moja kutoka AlloFlow, jukwaa la kufundishia lisilolipiwa.",
+    "banner_open": "Chunguza programu nzima",
+    "banner_dismiss": "Ondoa dokezo hili"
   }
 }

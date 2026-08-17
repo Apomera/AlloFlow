@@ -2282,7 +2282,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "akwụkwọ-Dabere ajụjụ",
     "open_stem_lab_explore_aria": "Mepee STEAM Lab Explore",
-    "stem_lab_explore": "Nyochaa"
+    "stem_lab_explore": "Nyochaa",
+    "needs_ai_setup": "Chọrọ ntọala AI",
+    "needs_ai_setup_cta": "Pịa ka ijikọ AI, ma ọ bụ jiri AlloFlow n’ime Gemini Canvas"
   },
   "history": {
     "load_project": "Bulite Project",
@@ -6337,7 +6339,8 @@
       "frames_label": "ahịrịokwu-frame response gaps",
       "concept_sort_label": "Concept Hazie misplacement patterns"
     },
-    "all_tool_activity": "niile ngwa Activity"
+    "all_tool_activity": "niile ngwa Activity",
+    "title_parent": "Dashboard Ezinụlọ"
   },
   "tools": {
     "source": "ebe sitere Material",
@@ -12721,8 +12724,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Total STEM ụlọ nyocha XP earned across niile activities",
-      "generate_assess": "Mepụta & assess",
-      "manipulatives": "Ngwá Aka",
+      "generate_assess": "Nsogbu mgbakọ na ntule",
+      "manipulatives": "Ngwaọrụ mmekọrịta na ụlọ nyocha",
       "stepbystep": "nzọụkwụ-by-nzọụkwụ",
       "conceptual": "Echiche",
       "realworld": "Ụwa"
@@ -29462,7 +29465,11 @@
     "tts_provider_aria": "ederede-na-speech provider",
     "local_cascade_label": "Ụsọrọ ime ụlọ:",
     "image_generation_header": "foto Generation",
-    "image_provider_aria": "foto generation provider"
+    "image_provider_aria": "foto generation provider",
+    "guided_card_canvas_title": "Jiri AlloFlow n’ime Gemini Canvas",
+    "guided_card_canvas_badge": "Enweghị ntọala",
+    "guided_card_canvas_body": "Ụzọ kachasị mfe iji nweta AI: mepee AlloFlow n’ime Google Gemini. N’efu site na akaụntụ Google, na-eji oke kwa ụbọchị nke atụmatụ Gemini gị (atụmatụ onwe, agụmakwụkwọ, ma ọ bụ ndị a na-akwụ ụgwọ niile na-arụ ọrụ). Ọ dịghị ihe a ga-etinye, ọ dịghịkwa igodo a ga-elekọta.",
+    "guided_card_canvas_req": "Na-emepe gemini.google.com na taabụ ọhụrụ. Nkọwa atụmatụ dị na google.com/gemini"
   },
   "diff_view": {
     "title": "ebe sitere PDF ↔ Remediated HTML · Diff",
@@ -30821,7 +30828,25 @@
     "surprise_me_contextually_working": "Na-agụ ọnọdụ nke ihe ọmụmụ dị ugbu a ma na-ahọrọ nzọụkwụ na-esote bara uru...",
     "use_contextual_suggestion": "Jiri nzọụkwụ na-esote a tụrụ aro",
     "use_contextual_suggestion_hint": "Na-eme nhọrọ 1, 2, ma ọ bụ 3 site na aro kacha ọhụrụ",
-    "use_contextual_suggestion_working": "Na-amalite nzọụkwụ na-esote a họrọrọ..."
+    "use_contextual_suggestion_working": "Na-amalite nzọụkwụ na-esote a họrọrọ...",
+    "jump_to_lesson_plan": "Gaa na atụmatụ nkuzi m",
+    "jump_to_lesson_plan_done": "Emepeela atụmatụ nkuzi kacha ọhụrụ.",
+    "jump_to_lesson_plan_hint": "Mepee atụmatụ nkuzi kacha ọhụrụ ọzọ",
+    "open_block_suggestions": "Nweta ntụnye maka ngalaba akwụkwọ",
+    "open_block_suggestions_done": "Emepeela Document Builder. Ntụnye ngalaba nọ na panel a mere ka ọ pụta ìhè n’elu.",
+    "open_block_suggestions_hint": "Mepee Document Builder, ebe ntụnye ndị ahụ nọ n’elu",
+    "open_brainstorm_modes": "Họrọ ụdị ọrụ nchepụta echiche",
+    "open_brainstorm_modes_done": "Emepeela ụdị ọrụ nchepụta echiche. Họrọ echiche, mkparịta ụka, jigsaw, ma ọ bụ ime anwansị.",
+    "open_brainstorm_modes_hint": "Ntanetị echiche, ngwungwu mkparịta ụka, jigsaw, ma ọ bụ ime anwansị",
+    "open_discussion_builder": "Wuo mkparịta ụka klaasị",
+    "open_discussion_builder_done": "Emepeela onye nrụpụta mkparịta ụka na ngwá ọrụ nchepụta echiche. Họrọ usoro, wee mepụta.",
+    "open_discussion_builder_hint": "Ngwungwu mkparịta ụka nwere usoro dịka chee echiche-jikọọ abụọ-kesaa",
+    "open_jigsaw_builder": "Wuo ọrụ jigsaw",
+    "open_jigsaw_builder_done": "Emepeela onye nrụpụta jigsaw na ngwá ọrụ nchepụta echiche. Dozie ogo otu, wee mepụta.",
+    "open_jigsaw_builder_hint": "Ọrụ otu ndị ọkachamara jigsaw nwere ogo otu ị na-edozi",
+    "use_gemini_canvas": "Jiri AlloFlow n’ime Gemini Canvas",
+    "use_gemini_canvas_done": "Emepeela ntọala AI. Kaadị mbụ na-akọwa iji AlloFlow n’ime Gemini Canvas na-enweghị ntọala ọ bụla.",
+    "use_gemini_canvas_hint": "Mepee ntọala AI, ebe nhọrọ Canvas nke na-achọghị ntọala bu ụzọ"
   },
   "palette": {
     "aria": "Palette iwu AlloFlow",
@@ -31217,5 +31242,11 @@
     "toast_opened": "E meghere eserese ndakọrịta naanị maka ọgụgụ.",
     "toast_invalid": "Enweghị ike imepe eserese ndakọrịta ahụ. Bupụta ezigbo faịlụ JSON eserese AlloFlow.",
     "toast_unreadable": "Enweghị ike ịgụ faịlụ eserese ndakọrịta ahụ."
+  },
+  "shell_link": {
+    "banner_aria": "Gbasara ngwá ọrụ a",
+    "banner_text": "Otu ngwá ọrụ sitere na AlloFlow, ikpo okwu nkuzi efu.",
+    "banner_open": "Nyochaa ngwa ahụ dum",
+    "banner_dismiss": "Wepụ ndetu a"
   }
 }

@@ -2283,7 +2283,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "документи-На основі питання",
     "open_stem_lab_explore_aria": "Відкрити STEAM Lab Explore",
-    "stem_lab_explore": "Дослідити"
+    "stem_lab_explore": "Дослідити",
+    "needs_ai_setup": "Потрібне налаштування ШІ",
+    "needs_ai_setup_cta": "Торкніться, щоб підключити ШІ, або використовуйте AlloFlow у Gemini Canvas"
   },
   "history": {
     "load_project": "Завантажити Project",
@@ -6330,7 +6332,8 @@
       "frames_label": "Прогалини у відповідях на каркаси речень",
       "concept_sort_label": "Концепція Сортувати misplacement шаблони"
     },
-    "all_tool_activity": "всі інструмент Діяльність"
+    "all_tool_activity": "всі інструмент Діяльність",
+    "title_parent": "Сімейна панель"
   },
   "tools": {
     "source": "вихідний матеріал",
@@ -12716,8 +12719,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Загальний XP STEM Lab, зароблений у всіх активностях",
-      "generate_assess": "Створити & assess",
-      "manipulatives": "Маніпулятиви",
+      "generate_assess": "Математичні задачі та оцінювання",
+      "manipulatives": "Інтерактивні інструменти та лабораторії",
       "stepbystep": "step-by-step",
       "conceptual": "Концепт.",
       "realworld": "Реальний світ"
@@ -30245,7 +30248,11 @@
     "tts_provider_aria": "Постачальник перетворення тексту в мовлення",
     "local_cascade_label": "Локальний каскад:",
     "image_generation_header": "зображення Генерація",
-    "image_provider_aria": "зображення генерація provider"
+    "image_provider_aria": "зображення генерація provider",
+    "guided_card_canvas_title": "Використовувати AlloFlow всередині Gemini Canvas",
+    "guided_card_canvas_badge": "Без налаштування",
+    "guided_card_canvas_body": "Найпростіший спосіб отримати ШІ: відкрийте AlloFlow всередині Google Gemini. Безкоштовно з обліковим записом Google, використовується денна квота вашого тарифу Gemini (особисті, освітні та платні тарифи підходять усі). Нічого не треба встановлювати, і немає ключа, яким треба керувати.",
+    "guided_card_canvas_req": "Відкриває gemini.google.com у новій вкладці. Деталі тарифів на google.com/gemini"
   },
   "diff_view": {
     "title": "джерело PDF ↔ Remediated HTML · Diff",
@@ -31604,7 +31611,25 @@
     "surprise_me_contextually_working": "Читається контекст поточного уроку та обирається корисний наступний крок...",
     "use_contextual_suggestion": "Використати запропонований наступний крок",
     "use_contextual_suggestion_hint": "Запускає варіант 1, 2 або 3 з останніх пропозицій",
-    "use_contextual_suggestion_working": "Запускається обраний наступний крок..."
+    "use_contextual_suggestion_working": "Запускається обраний наступний крок...",
+    "jump_to_lesson_plan": "Перейти до мого плану уроку",
+    "jump_to_lesson_plan_done": "Найсвіжіший план уроку відкрито.",
+    "jump_to_lesson_plan_hint": "Знову відкрити найсвіжіший план уроку",
+    "open_block_suggestions": "Отримати пропозиції блоків документа",
+    "open_block_suggestions_done": "Конструктор документів відкрито. Пропозиції блоків у виділеній панелі вгорі.",
+    "open_block_suggestions_hint": "Відкриває Конструктор документів, пропозиції розташовані вгорі",
+    "open_brainstorm_modes": "Виберіть тип активності мозкового штурму",
+    "open_brainstorm_modes_done": "Типи активностей мозкового штурму відкрито. Виберіть ідеї, дискусію, джиґсо або симуляцію.",
+    "open_brainstorm_modes_hint": "Мережа ідей, набір для дискусії, джиґсо або симуляція",
+    "open_discussion_builder": "Створити класну дискусію",
+    "open_discussion_builder_done": "Конструктор дискусій відкрито в інструменті мозкового штурму. Виберіть метод, потім створіть.",
+    "open_discussion_builder_hint": "Набір для дискусії з методами на кшталт подумай-у парі-поділись",
+    "open_jigsaw_builder": "Створити активність джиґсо",
+    "open_jigsaw_builder_done": "Конструктор джиґсо відкрито в інструменті мозкового штурму. Задайте розмір групи, потім створіть.",
+    "open_jigsaw_builder_hint": "Активність експертних груп джиґсо з розміром групи, який задаєте ви",
+    "use_gemini_canvas": "Використовувати AlloFlow всередині Gemini Canvas",
+    "use_gemini_canvas_done": "Налаштування ШІ відкрито. Перша картка пояснює, як використовувати AlloFlow у Gemini Canvas без жодного налаштування.",
+    "use_gemini_canvas_hint": "Відкриває налаштування ШІ, де варіант Canvas без налаштування стоїть першим"
   },
   "palette": {
     "aria": "Командна палітра AlloFlow",
@@ -32001,5 +32026,11 @@
     "toast_opened": "Граф відповідності відкрито лише для читання.",
     "toast_invalid": "Не вдалося відкрити цей граф відповідності. Експортуйте коректний файл JSON графа AlloFlow.",
     "toast_unreadable": "Не вдалося прочитати цей файл графа відповідності."
+  },
+  "shell_link": {
+    "banner_aria": "Про цей інструмент",
+    "banner_text": "Один інструмент від AlloFlow, безкоштовної навчальної платформи.",
+    "banner_open": "Дослідити весь застосунок",
+    "banner_dismiss": "Закрити цю примітку"
   }
 }

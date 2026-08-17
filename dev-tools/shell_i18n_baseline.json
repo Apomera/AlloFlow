@@ -5,7 +5,7 @@
   "dynamic_assessment_module.js": 852,
   "view_pdf_audit_source.jsx": 816,
   "symbol_studio_module.js": 717,
-  "AlloFlowANTI.txt": 621,
+  "AlloFlowANTI.txt": 397,
   "educator_evaluation_source.jsx": 488,
   "test_prep_hub_source.jsx": 423,
   "story_forge_source.jsx": 351,
@@ -366,5 +366,6 @@
   "_build_view_xp_modal_module.js": 0,
   "_build_visual_panel_module.js": 0,
   "_build_walkthrough_copilot_module.js": 0,
-  "_build_word_sounds_setup_module.js": 0
+  "_build_word_sounds_setup_module.js": 0,
+  "math_create_module.js": 16
 }

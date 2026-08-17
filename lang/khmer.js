@@ -2285,7 +2285,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "ឯកសារ-ផ្អែកលើ សំណួរ",
     "open_stem_lab_explore_aria": "បើក STEAM Lab Explore",
-    "stem_lab_explore": "ស្វែងរក"
+    "stem_lab_explore": "ស្វែងរក",
+    "needs_ai_setup": "ត្រូវការការកំណត់ AI",
+    "needs_ai_setup_cta": "ចុចដើម្បីភ្ជាប់ AI ឬប្រើ AlloFlow នៅក្នុង Gemini Canvas"
   },
   "history": {
     "load_project": "ផ្ទុក Project",
@@ -6339,7 +6341,8 @@
       "frames_label": "ចន្លោះប្រហោងការឆ្លើយតបស៊ុមប្រយោគ",
       "concept_sort_label": "គំនិត តម្រៀប misplacement លំនាំ"
     },
-    "all_tool_activity": "ទាំងអស់ ឧបករណ៍ សកម្មភាព"
+    "all_tool_activity": "ទាំងអស់ ឧបករណ៍ សកម្មភាព",
+    "title_parent": "ផ្ទាំងគ្រួសារ"
   },
   "tools": {
     "source": "ប្រភព Material",
@@ -12729,8 +12732,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "XP សរុបនៃ STEM Lab ដែលរកបានឆ្លងកាត់សកម្មភាពទាំងអស់",
-      "generate_assess": "បង្កើត & assess",
-      "manipulatives": "ឧបករណ៍គ្រប់គ្រងបាន",
+      "generate_assess": "លំហាត់គណិតវិទ្យា និងការវាយតម្លៃ",
+      "manipulatives": "ឧបករណ៍អន្តរកម្ម និងបន្ទប់ពិសោធន៍",
       "stepbystep": "step-by-step",
       "conceptual": "គំនិត",
       "realworld": "ពិភពលោកពិត"
@@ -28126,7 +28129,11 @@
     "tts_provider_aria": "អ្នកផ្តល់សេវាបំប្លែងអត្ថបទទៅសំឡេង",
     "local_cascade_label": "ការតភ្ជាប់មូលដ្ឋាន៖",
     "image_generation_header": "រូបភាព ជំនាន់",
-    "image_provider_aria": "រូបភាព ជំនាន់ provider"
+    "image_provider_aria": "រូបភាព ជំនាន់ provider",
+    "guided_card_canvas_title": "ប្រើ AlloFlow នៅក្នុង Gemini Canvas",
+    "guided_card_canvas_badge": "មិនចាំបាច់ដំឡើង",
+    "guided_card_canvas_body": "វិធីងាយស្រួលបំផុតដើម្បីទទួលបាន AI៖ បើក AlloFlow នៅក្នុង Google Gemini។ ឥតគិតថ្លៃជាមួយគណនី Google ដោយប្រើកូតាប្រចាំថ្ងៃនៃគម្រោង Gemini របស់អ្នក (គម្រោងផ្ទាល់ខ្លួន អប់រំ ឬបង់ប្រាក់ សុទ្ធតែដំណើរការ)។ គ្មានអ្វីត្រូវដំឡើង ហើយគ្មានកូនសោត្រូវគ្រប់គ្រង។",
+    "guided_card_canvas_req": "បើក gemini.google.com ក្នុងផ្ទាំងថ្មី។ ព័ត៌មានគម្រោងនៅ google.com/gemini"
   },
   "diff_view": {
     "title": "ប្រភព PDF ↔ Remediated HTML · Diff",
@@ -29485,7 +29492,25 @@
     "surprise_me_contextually_working": "កំពុងអានបរិបទមេរៀនបច្ចុប្បន្ន និងជ្រើសជំហានបន្ទាប់ដ៏មានប្រយោជន៍...",
     "use_contextual_suggestion": "ប្រើជំហានបន្ទាប់ដែលបានស្នើ",
     "use_contextual_suggestion_hint": "ដំណើរការជម្រើស 1, 2 ឬ 3 ពីការស្នើចុងក្រោយ",
-    "use_contextual_suggestion_working": "កំពុងចាប់ផ្តើមជំហានបន្ទាប់ដែលបានជ្រើស..."
+    "use_contextual_suggestion_working": "កំពុងចាប់ផ្តើមជំហានបន្ទាប់ដែលបានជ្រើស...",
+    "jump_to_lesson_plan": "ទៅកាន់ផែនការបង្រៀនរបស់ខ្ញុំ",
+    "jump_to_lesson_plan_done": "ផែនការបង្រៀនថ្មីបំផុតបានបើក។",
+    "jump_to_lesson_plan_hint": "បើកផែនការបង្រៀនថ្មីបំផុតឡើងវិញ",
+    "open_block_suggestions": "ទទួលការណែនាំប្លុកឯកសារ",
+    "open_block_suggestions_done": "កម្មវិធីបង្កើតឯកសារបានបើក។ ការណែនាំប្លុកនៅក្នុងផ្ទាំងសម្គាល់នៅខាងលើ។",
+    "open_block_suggestions_hint": "បើកកម្មវិធីបង្កើតឯកសារ ការណែនាំនៅផ្នែកខាងលើ",
+    "open_brainstorm_modes": "ជ្រើសរើសប្រភេទសកម្មភាពបញ្ចេញគំនិត",
+    "open_brainstorm_modes_done": "ប្រភេទសកម្មភាពបញ្ចេញគំនិតបានបើក។ ជ្រើសរើសគំនិត ពិភាក្សា jigsaw ឬការក្លែងធ្វើ។",
+    "open_brainstorm_modes_hint": "បណ្ដាញគំនិត ឈុតពិភាក្សា jigsaw ឬការក្លែងធ្វើ",
+    "open_discussion_builder": "បង្កើតការពិភាក្សាក្នុងថ្នាក់",
+    "open_discussion_builder_done": "កម្មវិធីបង្កើតការពិភាក្សាបានបើកនៅក្នុងឧបករណ៍បញ្ចេញគំនិត។ ជ្រើសរើសវិធីសាស្ត្រ បន្ទាប់មកបង្កើត។",
+    "open_discussion_builder_hint": "ឈុតពិភាក្សាមានវិធីសាស្ត្រដូចជា គិត-ផ្គូផ្គង-ចែករំលែក",
+    "open_jigsaw_builder": "បង្កើតសកម្មភាព jigsaw",
+    "open_jigsaw_builder_done": "កម្មវិធីបង្កើត jigsaw បានបើកនៅក្នុងឧបករណ៍បញ្ចេញគំនិត។ កំណត់ទំហំក្រុម បន្ទាប់មកបង្កើត។",
+    "open_jigsaw_builder_hint": "សកម្មភាពក្រុមអ្នកជំនាញ jigsaw ដែលទំហំក្រុមកំណត់ដោយអ្នក",
+    "use_gemini_canvas": "ប្រើ AlloFlow នៅក្នុង Gemini Canvas",
+    "use_gemini_canvas_done": "ការកំណត់ AI បានបើក។ កាតទីមួយពន្យល់ពីការប្រើ AlloFlow នៅក្នុង Gemini Canvas ដោយមិនចាំបាច់ដំឡើងអ្វីទាំងអស់។",
+    "use_gemini_canvas_hint": "បើកការកំណត់ AI ដែលជម្រើស Canvas មិនត្រូវការការដំឡើងនៅខាងមុខ"
   },
   "palette": {
     "aria": "ផ្ទាំងពាក្យបញ្ជា AlloFlow",
@@ -29891,5 +29916,11 @@
     "toast_opened": "បានបើកក្រាហ្វតម្រឹមសម្រាប់អានតែប៉ុណ្ណោះ។",
     "toast_invalid": "មិនអាចបើកក្រាហ្វតម្រឹមនោះទេ។ នាំចេញឯកសារ JSON ក្រាហ្វ AlloFlow ត្រឹមត្រូវ។",
     "toast_unreadable": "មិនអាចអានឯកសារក្រាហ្វតម្រឹមនោះទេ។"
+  },
+  "shell_link": {
+    "banner_aria": "អំពីឧបករណ៍នេះ",
+    "banner_text": "ឧបករណ៍មួយពី AlloFlow ដែលជាវេទិកាបង្រៀនឥតគិតថ្លៃ។",
+    "banner_open": "រុករកកម្មវិធីពេញលេញ",
+    "banner_dismiss": "បិទកំណត់ចំណាំនេះ"
   }
 }

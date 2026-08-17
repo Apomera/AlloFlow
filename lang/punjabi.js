@@ -2283,7 +2283,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "ਦਸਤਾਵੇਜ਼-ਆਧਾਰਿਤ ਸਵਾਲ",
     "open_stem_lab_explore_aria": "STEAM Lab Explore ਖੋਲ੍ਹੋ",
-    "stem_lab_explore": "ਪੜਚੋਲ ਕਰੋ"
+    "stem_lab_explore": "ਪੜਚੋਲ ਕਰੋ",
+    "needs_ai_setup": "AI ਸੈੱਟਅੱਪ ਚਾਹੀਦਾ ਹੈ",
+    "needs_ai_setup_cta": "AI ਜੋੜਨ ਲਈ ਟੈਪ ਕਰੋ, ਜਾਂ Gemini Canvas ਵਿੱਚ AlloFlow ਵਰਤੋ"
   },
   "history": {
     "load_project": "ਲੋਡ ਕਰੋ Project",
@@ -6330,7 +6332,8 @@
       "frames_label": "Sentence-frame ਜਵਾਬ ਖਾਮੀਆਂ",
       "concept_sort_label": "ਸੰਕਲਪ ਕ੍ਰਮਬੱਧ ਕਰੋ misplacement ਪੈਟਰਨ"
     },
-    "all_tool_activity": "ਸਾਰੇ ਔਜ਼ਾਰ ਗਤੀਵਿਧੀ"
+    "all_tool_activity": "ਸਾਰੇ ਔਜ਼ਾਰ ਗਤੀਵਿਧੀ",
+    "title_parent": "ਪਰਿਵਾਰ ਡੈਸ਼ਬੋਰਡ"
   },
   "tools": {
     "source": "ਸਰੋਤ ਸਮੱਗਰੀ",
@@ -12719,8 +12722,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Total STEM ਪ੍ਰਯੋਗਸ਼ਾਲਾ XP earned ਪਾਰ ਸਾਰੇ ਗਤੀਵਿਧੀਆਂ",
-      "generate_assess": "ਤਿਆਰ ਕਰੋ & assess",
-      "manipulatives": "ਮੈਨੀਪੁਲੇਟਿਵਜ਼",
+      "generate_assess": "ਗਣਿਤ ਦੇ ਸਵਾਲ ਅਤੇ ਮੁਲਾਂਕਣ",
+      "manipulatives": "ਇੰਟਰਐਕਟਿਵ ਟੂਲ ਅਤੇ ਲੈਬ",
       "stepbystep": "step-by-step",
       "conceptual": "ਸੰਕਲਪੀ",
       "realworld": "ਅਸਲ-ਸੰਸਾਰ"
@@ -29917,7 +29920,11 @@
     "tts_provider_aria": "Text-to-speech ਪ੍ਰਦਾਤਾ",
     "local_cascade_label": "ਲੋਕਲ ਕੈਸਕੇਡ:",
     "image_generation_header": "ਚਿੱਤਰ ਪੀੜ੍ਹੀ",
-    "image_provider_aria": "ਚਿੱਤਰ ਪੀੜ੍ਹੀ provider"
+    "image_provider_aria": "ਚਿੱਤਰ ਪੀੜ੍ਹੀ provider",
+    "guided_card_canvas_title": "Gemini Canvas ਦੇ ਅੰਦਰ AlloFlow ਵਰਤੋ",
+    "guided_card_canvas_badge": "ਬਿਨਾਂ ਸੈੱਟਅੱਪ",
+    "guided_card_canvas_body": "AI ਪਾਉਣ ਦਾ ਸਭ ਤੋਂ ਸੌਖਾ ਤਰੀਕਾ: Google Gemini ਦੇ ਅੰਦਰ AlloFlow ਖੋਲ੍ਹੋ। Google ਖਾਤੇ ਨਾਲ ਮੁਫ਼ਤ, ਤੁਹਾਡੀ Gemini ਯੋਜਨਾ ਦੇ ਰੋਜ਼ਾਨਾ ਕੋਟੇ ਦੀ ਵਰਤੋਂ ਕਰਦੇ ਹੋਏ (ਨਿੱਜੀ, ਸਿੱਖਿਆ, ਜਾਂ ਭੁਗਤਾਨ ਵਾਲੀਆਂ ਯੋਜਨਾਵਾਂ ਸਭ ਕੰਮ ਕਰਦੀਆਂ ਹਨ)। ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਕੁਝ ਨਹੀਂ ਅਤੇ ਸੰਭਾਲਣ ਲਈ ਕੋਈ ਕੁੰਜੀ ਨਹੀਂ।",
+    "guided_card_canvas_req": "ਨਵੀਂ ਟੈਬ ਵਿੱਚ gemini.google.com ਖੋਲ੍ਹਦਾ ਹੈ। ਯੋਜਨਾ ਵੇਰਵੇ google.com/gemini ਤੇ"
   },
   "diff_view": {
     "title": "ਸਰੋਤ PDF ↔ Remediated HTML · Diff",
@@ -31276,7 +31283,25 @@
     "surprise_me_contextually_working": "ਮੌਜੂਦਾ ਪਾਠ ਦਾ ਸੰਦਰਭ ਪੜ੍ਹ ਕੇ ਲਾਭਦਾਇਕ ਅਗਲਾ ਕਦਮ ਚੁਣਿਆ ਜਾ ਰਿਹਾ ਹੈ...",
     "use_contextual_suggestion": "ਸੁਝਾਇਆ ਅਗਲਾ ਕਦਮ ਵਰਤੋ",
     "use_contextual_suggestion_hint": "ਤਾਜ਼ਾ ਸੁਝਾਵਾਂ ਵਿੱਚੋਂ ਵਿਕਲਪ 1, 2 ਜਾਂ 3 ਚਲਾਉਂਦਾ ਹੈ",
-    "use_contextual_suggestion_working": "ਚੁਣਿਆ ਅਗਲਾ ਕਦਮ ਸ਼ੁਰੂ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ..."
+    "use_contextual_suggestion_working": "ਚੁਣਿਆ ਅਗਲਾ ਕਦਮ ਸ਼ੁਰੂ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ...",
+    "jump_to_lesson_plan": "ਮੇਰੀ ਪਾਠ ਯੋਜਨਾ ਤੇ ਜਾਓ",
+    "jump_to_lesson_plan_done": "ਸਭ ਤੋਂ ਤਾਜ਼ਾ ਪਾਠ ਯੋਜਨਾ ਖੁੱਲ੍ਹ ਗਈ।",
+    "jump_to_lesson_plan_hint": "ਸਭ ਤੋਂ ਤਾਜ਼ਾ ਪਾਠ ਯੋਜਨਾ ਮੁੜ ਖੋਲ੍ਹੋ",
+    "open_block_suggestions": "ਦਸਤਾਵੇਜ਼ ਬਲਾਕ ਸੁਝਾਅ ਲਵੋ",
+    "open_block_suggestions_done": "ਡੌਕੂਮੈਂਟ ਬਿਲਡਰ ਖੁੱਲ੍ਹ ਗਿਆ। ਬਲਾਕ ਸੁਝਾਅ ਉੱਪਰ ਉਭਾਰੇ ਗਏ ਪੈਨਲ ਵਿੱਚ ਹਨ।",
+    "open_block_suggestions_hint": "ਡੌਕੂਮੈਂਟ ਬਿਲਡਰ ਖੋਲ੍ਹੋ, ਸੁਝਾਅ ਉੱਪਰ ਹਨ",
+    "open_brainstorm_modes": "ਬ੍ਰੇਨਸਟਾਰਮ ਗਤੀਵਿਧੀ ਦੀ ਕਿਸਮ ਚੁਣੋ",
+    "open_brainstorm_modes_done": "ਬ੍ਰੇਨਸਟਾਰਮ ਗਤੀਵਿਧੀ ਦੀਆਂ ਕਿਸਮਾਂ ਖੁੱਲ੍ਹ ਗਈਆਂ। ਵਿਚਾਰ, ਚਰਚਾ, ਜਿਗਸਾ, ਜਾਂ ਸਿਮੂਲੇਸ਼ਨ ਚੁਣੋ।",
+    "open_brainstorm_modes_hint": "ਵਿਚਾਰ-ਜਾਲ, ਚਰਚਾ ਕਿੱਟ, ਜਿਗਸਾ, ਜਾਂ ਸਿਮੂਲੇਸ਼ਨ",
+    "open_discussion_builder": "ਕਲਾਸ ਚਰਚਾ ਬਣਾਓ",
+    "open_discussion_builder_done": "ਚਰਚਾ ਬਿਲਡਰ ਬ੍ਰੇਨਸਟਾਰਮ ਟੂਲ ਵਿੱਚ ਖੁੱਲ੍ਹ ਗਿਆ। ਇੱਕ ਤਰੀਕਾ ਚੁਣੋ, ਫਿਰ ਬਣਾਓ।",
+    "open_discussion_builder_hint": "ਸੋਚੋ-ਜੋੜੀ ਬਣਾਓ-ਸਾਂਝਾ ਕਰੋ ਵਰਗੇ ਤਰੀਕਿਆਂ ਵਾਲੀ ਚਰਚਾ ਕਿੱਟ",
+    "open_jigsaw_builder": "ਜਿਗਸਾ ਗਤੀਵਿਧੀ ਬਣਾਓ",
+    "open_jigsaw_builder_done": "ਜਿਗਸਾ ਬਿਲਡਰ ਬ੍ਰੇਨਸਟਾਰਮ ਟੂਲ ਵਿੱਚ ਖੁੱਲ੍ਹ ਗਿਆ। ਗਰੁੱਪ ਦਾ ਆਕਾਰ ਤੈਅ ਕਰੋ, ਫਿਰ ਬਣਾਓ।",
+    "open_jigsaw_builder_hint": "ਤੁਹਾਡੇ ਵੱਲੋਂ ਤੈਅ ਕੀਤੇ ਗਰੁੱਪ ਆਕਾਰ ਨਾਲ ਜਿਗਸਾ ਮਾਹਰ-ਗਰੁੱਪ ਗਤੀਵਿਧੀ",
+    "use_gemini_canvas": "Gemini Canvas ਦੇ ਅੰਦਰ AlloFlow ਵਰਤੋ",
+    "use_gemini_canvas_done": "AI ਸੈੱਟਅੱਪ ਖੁੱਲ੍ਹ ਗਿਆ। ਪਹਿਲਾ ਕਾਰਡ ਦੱਸਦਾ ਹੈ ਕਿ ਬਿਨਾਂ ਕਿਸੇ ਸੈੱਟਅੱਪ ਦੇ Gemini Canvas ਵਿੱਚ AlloFlow ਕਿਵੇਂ ਵਰਤਣਾ ਹੈ।",
+    "use_gemini_canvas_hint": "AI ਸੈੱਟਅੱਪ ਖੋਲ੍ਹੋ, ਜਿੱਥੇ ਬਿਨਾਂ ਸੈੱਟਅੱਪ ਵਾਲਾ Canvas ਵਿਕਲਪ ਅੱਗੇ ਹੈ"
   },
   "palette": {
     "aria": "AlloFlow ਕਮਾਂਡ ਪੈਲੇਟ",
@@ -31685,5 +31710,11 @@
     "toast_opened": "ਇਕਸਾਰਤਾ ਗ੍ਰਾਫ ਸਿਰਫ਼ ਪੜ੍ਹਨ ਲਈ ਖੁੱਲ੍ਹਿਆ।",
     "toast_invalid": "ਉਹ ਇਕਸਾਰਤਾ ਗ੍ਰਾਫ ਖੋਲ੍ਹਿਆ ਨਹੀਂ ਜਾ ਸਕਿਆ। ਮਾਨਤਾ ਵਾਲੀ AlloFlow ਗ੍ਰਾਫ JSON ਫਾਈਲ ਨਿਰਯਾਤ ਕਰੋ।",
     "toast_unreadable": "ਉਹ ਇਕਸਾਰਤਾ ਗ੍ਰਾਫ ਫਾਈਲ ਪੜ੍ਹੀ ਨਹੀਂ ਜਾ ਸਕੀ।"
+  },
+  "shell_link": {
+    "banner_aria": "ਇਸ ਟੂਲ ਬਾਰੇ",
+    "banner_text": "AlloFlow ਤੋਂ ਇੱਕ ਟੂਲ, ਇੱਕ ਮੁਫ਼ਤ ਸਿੱਖਿਆ ਪਲੇਟਫਾਰਮ।",
+    "banner_open": "ਪੂਰੀ ਐਪ ਵੇਖੋ",
+    "banner_dismiss": "ਇਹ ਨੋਟ ਹਟਾਓ"
   }
 }

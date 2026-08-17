@@ -2289,7 +2289,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Câu hỏi dựa trên tài liệu",
     "open_stem_lab_explore_aria": "Mở STEAM Lab Explore",
-    "stem_lab_explore": "Khám phá"
+    "stem_lab_explore": "Khám phá",
+    "needs_ai_setup": "Cần thiết lập AI",
+    "needs_ai_setup_cta": "Chạm để kết nối AI, hoặc dùng AlloFlow trong Gemini Canvas"
   },
   "history": {
     "load_project": "Tải dự án",
@@ -6335,7 +6337,8 @@
       "frames_label": "Lỗ hổng phản hồi khung câu",
       "concept_sort_label": "Mẫu sai vị trí trong Tri ý phân loại"
     },
-    "all_tool_activity": "Tất cả hoạt động công cụ"
+    "all_tool_activity": "Tất cả hoạt động công cụ",
+    "title_parent": "Bảng điều khiển Gia đình"
   },
   "tools": {
     "source": "Tài liệu Nguồn",
@@ -13301,8 +13304,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Tổng XP Phòng STEM kiếm được qua tất cả các hoạt động",
-      "generate_assess": "Tạo & đánh giá",
-      "manipulatives": "Học cụ Vật chất",
+      "generate_assess": "Bài toán và bài đánh giá",
+      "manipulatives": "Công cụ tương tác và phòng thí nghiệm",
       "stepbystep": "Từng bước",
       "conceptual": "Khái niệm",
       "realworld": "Thế giới Thực"
@@ -29064,7 +29067,11 @@
     "tts_provider_aria": "Nhà cung cấp chuyển văn bản thành giọng nói",
     "local_cascade_label": "Thác cục bộ:",
     "image_generation_header": "Tạo Hình ảnh",
-    "image_provider_aria": "Nhà cung cấp tạo hình ảnh"
+    "image_provider_aria": "Nhà cung cấp tạo hình ảnh",
+    "guided_card_canvas_title": "Dùng AlloFlow bên trong Gemini Canvas",
+    "guided_card_canvas_badge": "Không cần thiết lập",
+    "guided_card_canvas_body": "Cách dễ nhất để có AI: mở AlloFlow bên trong Google Gemini. Miễn phí với tài khoản Google, dùng hạn mức hằng ngày của gói Gemini của bạn (gói cá nhân, Giáo dục, hoặc trả phí đều dùng được). Không phải cài gì và không có khóa nào phải quản lý.",
+    "guided_card_canvas_req": "Mở gemini.google.com trong thẻ mới. Chi tiết các gói tại google.com/gemini"
   },
   "diff_view": {
     "title": "PDF Nguồn ↔ HTML Đã sửa · Khác biệt",
@@ -31071,7 +31078,25 @@
     "surprise_me_contextually_working": "Đang đọc ngữ cảnh bài học hiện tại và chọn một bước tiếp theo hữu ích...",
     "use_contextual_suggestion": "Dùng bước tiếp theo được gợi ý",
     "use_contextual_suggestion_hint": "Chạy lựa chọn 1, 2 hoặc 3 từ các gợi ý mới nhất",
-    "use_contextual_suggestion_working": "Đang bắt đầu bước tiếp theo đã chọn..."
+    "use_contextual_suggestion_working": "Đang bắt đầu bước tiếp theo đã chọn...",
+    "jump_to_lesson_plan": "Chuyển đến giáo án của tôi",
+    "jump_to_lesson_plan_done": "Đã mở giáo án gần đây nhất.",
+    "jump_to_lesson_plan_hint": "Mở lại giáo án gần đây nhất",
+    "open_block_suggestions": "Nhận gợi ý khối tài liệu",
+    "open_block_suggestions_done": "Đã mở Trình tạo Tài liệu. Gợi ý khối nằm trong bảng được đánh dấu ở trên cùng.",
+    "open_block_suggestions_hint": "Mở Trình tạo Tài liệu, các gợi ý nằm ở trên cùng",
+    "open_brainstorm_modes": "Chọn loại hoạt động động não",
+    "open_brainstorm_modes_done": "Đã mở các loại hoạt động động não. Chọn ý tưởng, thảo luận, jigsaw, hoặc mô phỏng.",
+    "open_brainstorm_modes_hint": "Mạng ý tưởng, bộ thảo luận, jigsaw, hoặc mô phỏng",
+    "open_discussion_builder": "Xây dựng một cuộc thảo luận lớp học",
+    "open_discussion_builder_done": "Đã mở trình tạo thảo luận trong công cụ động não. Chọn quy trình, rồi tạo.",
+    "open_discussion_builder_hint": "Bộ thảo luận với các quy trình như nghĩ-ghép đôi-chia sẻ",
+    "open_jigsaw_builder": "Xây dựng hoạt động jigsaw",
+    "open_jigsaw_builder_done": "Đã mở trình tạo jigsaw trong công cụ động não. Đặt quy mô nhóm, rồi tạo.",
+    "open_jigsaw_builder_hint": "Hoạt động nhóm chuyên gia jigsaw với quy mô nhóm do bạn đặt",
+    "use_gemini_canvas": "Dùng AlloFlow bên trong Gemini Canvas",
+    "use_gemini_canvas_done": "Đã mở thiết lập AI. Thẻ đầu tiên giải thích cách dùng AlloFlow trong Gemini Canvas mà không cần thiết lập gì.",
+    "use_gemini_canvas_hint": "Mở phần thiết lập AI, nơi tùy chọn Canvas không cần thiết lập đứng đầu"
   },
   "palette": {
     "aria": "Bảng lệnh AlloFlow",
@@ -31484,5 +31509,11 @@
     "toast_opened": "Đồ thị căn chỉnh đã mở ở chế độ chỉ đọc.",
     "toast_invalid": "Không thể mở đồ thị căn chỉnh đó. Hãy xuất tệp JSON đồ thị AlloFlow hợp lệ.",
     "toast_unreadable": "Không thể đọc tệp đồ thị căn chỉnh đó."
+  },
+  "shell_link": {
+    "banner_aria": "Về công cụ này",
+    "banner_text": "Một công cụ từ AlloFlow, một nền tảng giảng dạy miễn phí.",
+    "banner_open": "Khám phá ứng dụng đầy đủ",
+    "banner_dismiss": "Bỏ qua ghi chú này"
   }
 }

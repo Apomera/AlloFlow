@@ -651,7 +651,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "คำถามอิงเอกสาร",
     "open_stem_lab_explore_aria": "เปิด STEAM Lab Explore",
-    "stem_lab_explore": "สำรวจ"
+    "stem_lab_explore": "สำรวจ",
+    "needs_ai_setup": "ต้องตั้งค่า AI",
+    "needs_ai_setup_cta": "แตะเพื่อเชื่อมต่อ AI หรือใช้ AlloFlow ใน Gemini Canvas"
   },
   "meta": {
     "engagement_ideas": "ไอเดียการมีส่วนร่วม",
@@ -1427,7 +1429,11 @@
     "tts_provider_aria": "ผู้ให้บริการ text-to-speech",
     "local_cascade_label": "ลำดับการใช้ในเครื่อง:",
     "image_generation_header": "การสร้างภาพ",
-    "image_provider_aria": "ผู้ให้บริการสร้างภาพ"
+    "image_provider_aria": "ผู้ให้บริการสร้างภาพ",
+    "guided_card_canvas_title": "ใช้ AlloFlow ภายใน Gemini Canvas",
+    "guided_card_canvas_badge": "ไม่ต้องตั้งค่า",
+    "guided_card_canvas_body": "วิธีที่ง่ายที่สุดในการได้ AI: เปิด AlloFlow ภายใน Google Gemini ฟรีด้วยบัญชี Google โดยใช้โควตารายวันของแผน Gemini ของคุณ (แผนส่วนตัว การศึกษา หรือแบบชำระเงินใช้ได้ทั้งหมด) ไม่มีอะไรต้องติดตั้งและไม่มีคีย์ต้องจัดการ",
+    "guided_card_canvas_req": "เปิด gemini.google.com ในแท็บใหม่ รายละเอียดแผนที่ google.com/gemini"
   },
   "profiles": {
     "title": "โปรไฟล์นักเรียน",
@@ -4702,7 +4708,8 @@
       "frames_label": "ช่องว่างของการตอบในกรอบประโยค",
       "concept_sort_label": "รูปแบบการวางผิดใน Concept Sort"
     },
-    "all_tool_activity": "กิจกรรมเครื่องมือทั้งหมด"
+    "all_tool_activity": "กิจกรรมเครื่องมือทั้งหมด",
+    "title_parent": "แดชบอร์ดครอบครัว"
   },
   "student": {
     "save_banner_title": "บันทึกความก้าวหน้าของคุณ",
@@ -13555,8 +13562,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "XP รวมที่ได้รับจาก STEM Lab ทุกกิจกรรม",
-      "generate_assess": "สร้างและประเมิน",
-      "manipulatives": "สื่อจับต้อง",
+      "generate_assess": "โจทย์คณิตศาสตร์และการประเมิน",
+      "manipulatives": "เครื่องมือแบบโต้ตอบและห้องทดลอง",
       "stepbystep": "ทีละขั้นตอน",
       "conceptual": "แนวคิด",
       "realworld": "โลกจริง"
@@ -31985,7 +31992,25 @@
     "surprise_me_contextually_working": "กำลังอ่านบริบทของบทเรียนปัจจุบันและเลือกขั้นตอนถัดไปที่เป็นประโยชน์...",
     "use_contextual_suggestion": "ใช้ขั้นตอนถัดไปที่แนะนำ",
     "use_contextual_suggestion_hint": "เรียกใช้ตัวเลือก 1, 2 หรือ 3 จากคำแนะนำล่าสุด",
-    "use_contextual_suggestion_working": "กำลังเริ่มขั้นตอนถัดไปที่เลือก..."
+    "use_contextual_suggestion_working": "กำลังเริ่มขั้นตอนถัดไปที่เลือก...",
+    "jump_to_lesson_plan": "ไปที่แผนการสอนของฉัน",
+    "jump_to_lesson_plan_done": "เปิดแผนการสอนล่าสุดแล้ว",
+    "jump_to_lesson_plan_hint": "เปิดแผนการสอนล่าสุดอีกครั้ง",
+    "open_block_suggestions": "รับคำแนะนำบล็อกเอกสาร",
+    "open_block_suggestions_done": "เปิดตัวสร้างเอกสารแล้ว คำแนะนำบล็อกอยู่ในแผงที่เน้นไว้ด้านบน",
+    "open_block_suggestions_hint": "เปิดตัวสร้างเอกสาร คำแนะนำอยู่ด้านบน",
+    "open_brainstorm_modes": "เลือกประเภทกิจกรรมระดมสมอง",
+    "open_brainstorm_modes_done": "เปิดประเภทกิจกรรมระดมสมองแล้ว เลือกความคิด อภิปราย jigsaw หรือการจำลอง",
+    "open_brainstorm_modes_hint": "ใยแมงมุมความคิด ชุดอภิปราย jigsaw หรือการจำลอง",
+    "open_discussion_builder": "สร้างการอภิปรายในชั้นเรียน",
+    "open_discussion_builder_done": "เปิดตัวสร้างการอภิปรายในเครื่องมือระดมสมองแล้ว เลือกวิธีการ แล้วสร้าง",
+    "open_discussion_builder_hint": "ชุดอภิปรายพร้อมวิธีการอย่าง คิด-จับคู่-แบ่งปัน",
+    "open_jigsaw_builder": "สร้างกิจกรรม jigsaw",
+    "open_jigsaw_builder_done": "เปิดตัวสร้าง jigsaw ในเครื่องมือระดมสมองแล้ว กำหนดขนาดกลุ่ม แล้วสร้าง",
+    "open_jigsaw_builder_hint": "กิจกรรมกลุ่มผู้เชี่ยวชาญแบบ jigsaw ด้วยขนาดกลุ่มที่คุณกำหนด",
+    "use_gemini_canvas": "ใช้ AlloFlow ภายใน Gemini Canvas",
+    "use_gemini_canvas_done": "เปิดการตั้งค่า AI แล้ว การ์ดแรกอธิบายการใช้ AlloFlow ใน Gemini Canvas โดยไม่ต้องตั้งค่าใดๆ",
+    "use_gemini_canvas_hint": "เปิดการตั้งค่า AI ซึ่งตัวเลือก Canvas แบบไม่ต้องตั้งค่าอยู่ด้านหน้า"
   },
   "palette": {
     "aria": "แผงคำสั่ง AlloFlow",
@@ -32395,5 +32420,11 @@
     "toast_opened": "เปิดกราฟการจัดแนวแบบอ่านอย่างเดียวแล้ว",
     "toast_invalid": "เปิดกราฟการจัดแนวนั้นไม่ได้ ส่งออกไฟล์ JSON กราฟ AlloFlow ที่ถูกต้อง",
     "toast_unreadable": "อ่านไฟล์กราฟการจัดแนวนั้นไม่ได้"
+  },
+  "shell_link": {
+    "banner_aria": "เกี่ยวกับเครื่องมือนี้",
+    "banner_text": "เครื่องมือหนึ่งจาก AlloFlow แพลตฟอร์มการสอนฟรี",
+    "banner_open": "สำรวจแอปเต็มรูปแบบ",
+    "banner_dismiss": "ปิดข้อความนี้"
   }
 }

@@ -2283,7 +2283,9 @@
     "storyforge_label": "स्टोरीफोर्ज",
     "tool_dbq_aria": "दस्तावेज़-आधारित प्रश्न",
     "open_stem_lab_explore_aria": "STEAM Lab Explore खोलें",
-    "stem_lab_explore": "अन्वेषण करें"
+    "stem_lab_explore": "अन्वेषण करें",
+    "needs_ai_setup": "AI सेटअप चाहिए",
+    "needs_ai_setup_cta": "AI जोड़ने के लिए टैप करें, या Gemini Canvas में AlloFlow उपयोग करें"
   },
   "history": {
     "load_project": "लोड करें Project",
@@ -6329,7 +6331,8 @@
       "frames_label": "वाक्य-फ्रेम प्रतिक्रिया अंतराल",
       "concept_sort_label": "अवधारणा क्रमबद्ध करें misplacement पैटर्न"
     },
-    "all_tool_activity": "सभी उपकरण गतिविधि"
+    "all_tool_activity": "सभी उपकरण गतिविधि",
+    "title_parent": "परिवार डैशबोर्ड"
   },
   "tools": {
     "source": "स्रोत सामग्री",
@@ -12718,8 +12721,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Total STEM प्रयोगशाला XP अर्जित करें के पार सभी गतिविधियां",
-      "generate_assess": "उत्पन्न करें & assess",
-      "manipulatives": "मैनिपुलेटिव्स",
+      "generate_assess": "गणित के प्रश्न और आकलन",
+      "manipulatives": "इंटरैक्टिव उपकरण और लैब",
       "stepbystep": "step-by-step",
       "conceptual": "वैचारिक",
       "realworld": "वास्तविक-दुनिया"
@@ -30049,7 +30052,11 @@
     "tts_provider_aria": "text-to-speech provider",
     "local_cascade_label": "स्थानीय कैस्केड:",
     "image_generation_header": "छवि पीढ़ी",
-    "image_provider_aria": "छवि पीढ़ी provider"
+    "image_provider_aria": "छवि पीढ़ी provider",
+    "guided_card_canvas_title": "Gemini Canvas के अंदर AlloFlow का उपयोग करें",
+    "guided_card_canvas_badge": "बिना सेटअप",
+    "guided_card_canvas_body": "AI पाने का सबसे आसान तरीका: Google Gemini के अंदर AlloFlow खोलें। Google खाते के साथ मुफ़्त, आपके Gemini प्लान के दैनिक कोटा का उपयोग करते हुए (व्यक्तिगत, शिक्षा, या पेड प्लान सभी काम करते हैं)। कुछ इंस्टॉल नहीं करना और कोई कुंजी प्रबंधित नहीं करनी।",
+    "guided_card_canvas_req": "नए टैब में gemini.google.com खोलता है। प्लान विवरण google.com/gemini पर"
   },
   "diff_view": {
     "title": "स्रोत PDF ↔ Remediated HTML · Diff",
@@ -31199,7 +31206,25 @@
     "surprise_me_contextually_working": "मौजूदा पाठ का संदर्भ पढ़कर एक उपयोगी अगला कदम चुना जा रहा है...",
     "use_contextual_suggestion": "सुझाया गया अगला कदम इस्तेमाल करें",
     "use_contextual_suggestion_hint": "हाल के सुझावों में से विकल्प 1, 2 या 3 चलाता है",
-    "use_contextual_suggestion_working": "चुना गया अगला कदम शुरू किया जा रहा है..."
+    "use_contextual_suggestion_working": "चुना गया अगला कदम शुरू किया जा रहा है...",
+    "jump_to_lesson_plan": "मेरी पाठ योजना पर जाएँ",
+    "jump_to_lesson_plan_done": "सबसे हाल की पाठ योजना खुल गई।",
+    "jump_to_lesson_plan_hint": "सबसे हाल की पाठ योजना फिर से खोलें",
+    "open_block_suggestions": "दस्तावेज़ ब्लॉक सुझाव पाएँ",
+    "open_block_suggestions_done": "डॉक्यूमेंट बिल्डर खुल गया। ब्लॉक सुझाव ऊपर हाइलाइट किए गए पैनल में हैं।",
+    "open_block_suggestions_hint": "डॉक्यूमेंट बिल्डर खोलें, सुझाव सबसे ऊपर हैं",
+    "open_brainstorm_modes": "ब्रेनस्टॉर्म गतिविधि का प्रकार चुनें",
+    "open_brainstorm_modes_done": "ब्रेनस्टॉर्म गतिविधि के प्रकार खुल गए। विचार, चर्चा, जिगसॉ, या सिमुलेशन चुनें।",
+    "open_brainstorm_modes_hint": "विचार-जाल, चर्चा किट, जिगसॉ, या सिमुलेशन",
+    "open_discussion_builder": "कक्षा चर्चा बनाएँ",
+    "open_discussion_builder_done": "चर्चा निर्माता ब्रेनस्टॉर्म टूल में खुल गया। एक विधि चुनें, फिर बनाएँ।",
+    "open_discussion_builder_hint": "सोचो-जोड़ी बनाओ-साझा करो जैसी विधियों वाली चर्चा किट",
+    "open_jigsaw_builder": "जिगसॉ गतिविधि बनाएँ",
+    "open_jigsaw_builder_done": "जिगसॉ निर्माता ब्रेनस्टॉर्म टूल में खुल गया। समूह का आकार तय करें, फिर बनाएँ।",
+    "open_jigsaw_builder_hint": "आपके तय किए समूह आकार के साथ जिगसॉ विशेषज्ञ-समूह गतिविधि",
+    "use_gemini_canvas": "Gemini Canvas के अंदर AlloFlow का उपयोग करें",
+    "use_gemini_canvas_done": "AI सेटअप खुल गया। पहला कार्ड बताता है कि बिना किसी सेटअप के Gemini Canvas में AlloFlow कैसे उपयोग करें।",
+    "use_gemini_canvas_hint": "AI सेटअप खोलें, जहाँ बिना सेटअप वाला Canvas विकल्प सबसे आगे है"
   },
   "palette": {
     "aria": "AlloFlow कमांड पैलेट",
@@ -31608,5 +31633,11 @@
     "toast_opened": "संरेखण ग्राफ़ केवल पढ़ने के लिए खुला।",
     "toast_invalid": "वह संरेखण ग्राफ़ नहीं खुल सका। मान्य AlloFlow ग्राफ़ JSON फ़ाइल निर्यात करें।",
     "toast_unreadable": "वह संरेखण ग्राफ़ फ़ाइल पढ़ी नहीं जा सकी।"
+  },
+  "shell_link": {
+    "banner_aria": "इस टूल के बारे में",
+    "banner_text": "AlloFlow का एक टूल, एक मुफ़्त शिक्षण मंच।",
+    "banner_open": "पूरा ऐप देखें",
+    "banner_dismiss": "यह नोट हटाएँ"
   }
 }

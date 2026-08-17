@@ -2278,7 +2278,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "ሰነድ-መሰረት ሕቶ",
     "open_stem_lab_explore_aria": "STEAM Lab Explore ክፈት",
-    "stem_lab_explore": "ኣናድ"
+    "stem_lab_explore": "ኣናድ",
+    "needs_ai_setup": "ናይ AI ምድላው የድሊ",
+    "needs_ai_setup_cta": "AI ንምትእስሳር ጠውቕ፣ ወይ AlloFlow ኣብ Gemini Canvas ተጠቐም"
   },
   "history": {
     "load_project": "ጽዓን Project",
@@ -6324,7 +6326,8 @@
       "frames_label": "ናይ ሓረግ-ቅርጺ ምላሽ ጋባታት",
       "concept_sort_label": "ሓሳብ ኣሰናዲ misplacement ቅርፂ"
     },
-    "all_tool_activity": "ኩሉ መሳርሒታት ንጥፈት"
+    "all_tool_activity": "ኩሉ መሳርሒታት ንጥፈት",
+    "title_parent": "ናይ ስድራቤት ዳሽቦርድ"
   },
   "tools": {
     "source": "ምንጪ ጽሑፍ",
@@ -12388,8 +12391,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Total STEM ላቦራቶሪ XP earned ኣብ ኩሉ ኩሉ ንጥፈታት",
-      "generate_assess": "ፍጠር & assess",
-      "manipulatives": "መግናዘቢ መሳርሒታት",
+      "generate_assess": "ሕቶታት ሒሳብን ገምጋማትን",
+      "manipulatives": "ተሳታፍነት ዘለዎም መሳርሒታትን ላብራቶሪታትን",
       "stepbystep": "step-by-step",
       "conceptual": "ሓሳባዊ",
       "realworld": "ሓቅነታዊ-ዓለም"
@@ -27731,7 +27734,11 @@
     "tts_provider_aria": "ናይ ጽሑፍ-ናብ-ዘረባ ኣቕራቢ",
     "local_cascade_label": "ኣካባቢያዊ ካስኬድ፡",
     "image_generation_header": "ስእሊ ወለዶ",
-    "image_provider_aria": "ስእሊ ወለዶ provider"
+    "image_provider_aria": "ስእሊ ወለዶ provider",
+    "guided_card_canvas_title": "ኣብ ውሽጢ Gemini Canvas AlloFlow ተጠቐም",
+    "guided_card_canvas_badge": "ምድላው ኣየድልን",
+    "guided_card_canvas_body": "AI ንምርካብ ዝቐለለ መንገዲ፦ AlloFlow ኣብ ውሽጢ Google Gemini ክፈት። ብናይ Google ሕሳብ ናጻ እዩ፣ ናይ Gemini መደብካ ዕለታዊ ዓቐን ይጥቀም (ውልቃዊ፣ ትምህርታዊ፣ ወይ ዝኽፈሎም መደባት ኩሎም ይሰርሑ)። ዝጽዓን የለን፣ ዝመሓደር መፍትሕ እውን የለን።",
+    "guided_card_canvas_req": "gemini.google.com ኣብ ሓድሽ ትር ይኸፍት። ዝርዝር መደባት ኣብ google.com/gemini"
   },
   "diff_view": {
     "title": "ምንጪ PDF ↔ Remediated HTML · Diff",
@@ -29090,7 +29097,25 @@
     "surprise_me_contextually_working": "ናይ ሕጂ ትምህርቲ ኩነታት እናንበበ ጠቓሚ ዝቕጽል ስጉምቲ ይመርጽ ኣሎ...",
     "use_contextual_suggestion": "እተሓበረ ዝቕጽል ስጉምቲ ተጠቐም",
     "use_contextual_suggestion_hint": "ካብ ናይ መወዳእታ ሓሳባት ኣማራጺ 1፣ 2 ወይ 3 የሰርሕ",
-    "use_contextual_suggestion_working": "እተመርጸ ዝቕጽል ስጉምቲ ይጅምር ኣሎ..."
+    "use_contextual_suggestion_working": "እተመርጸ ዝቕጽል ስጉምቲ ይጅምር ኣሎ...",
+    "jump_to_lesson_plan": "ናብ ናይ ትምህርተይ መደብ ኪድ",
+    "jump_to_lesson_plan_done": "እቲ ዝሓደሸ ናይ ትምህርቲ መደብ ተኸፊቱ።",
+    "jump_to_lesson_plan_hint": "እቲ ዝሓደሸ ናይ ትምህርቲ መደብ ደጊምካ ክፈት",
+    "open_block_suggestions": "ናይ ሰነድ ክፋላት ርእይቶታት ርኸብ",
+    "open_block_suggestions_done": "Document Builder ተኸፊቱ። ናይ ክፋላት ርእይቶታት ኣብቲ ኣብ ላዕሊ ዝጎልሐ ሰሌዳ ኣለዉ።",
+    "open_block_suggestions_hint": "Document Builder ክፈት፣ ርእይቶታት ኣብ ላዕሊ ኣለዉ",
+    "open_brainstorm_modes": "ዓይነት ናይ ሓሳብ ምፍልፋል ንጥፈት ምረጽ",
+    "open_brainstorm_modes_done": "ዓይነታት ናይ ሓሳብ ምፍልፋል ንጥፈታት ተኸፊቶም። ሓሳባት፣ ዘተ፣ jigsaw፣ ወይ ምምሳል ምረጽ።",
+    "open_brainstorm_modes_hint": "መርበብ ሓሳባት፣ ናይ ዘተ ኪት፣ jigsaw፣ ወይ ምምሳል",
+    "open_discussion_builder": "ናይ ክፍሊ ዘተ ስራሕ",
+    "open_discussion_builder_done": "ናይ ዘተ ሃናጺ ኣብ መሳርሒ ሓሳብ ምፍልፋል ተኸፊቱ። ኣገባብ ምረጽ፣ ድሓር ፍጠር።",
+    "open_discussion_builder_hint": "ከም ሕሰብ-ተጻመድ-ኣካፍል ዝኣመሰሉ ኣገባባት ዘለዉዎ ናይ ዘተ ኪት",
+    "open_jigsaw_builder": "ናይ jigsaw ንጥፈት ስራሕ",
+    "open_jigsaw_builder_done": "ናይ jigsaw ሃናጺ ኣብ መሳርሒ ሓሳብ ምፍልፋል ተኸፊቱ። ዓቐን ጉጅለ ውሰን፣ ድሓር ፍጠር።",
+    "open_jigsaw_builder_hint": "ንስኻ እትውስኖ ዓቐን ጉጅለ ዘለዎ ናይ jigsaw ክኢላታት-ጉጅለ ንጥፈት",
+    "use_gemini_canvas": "ኣብ ውሽጢ Gemini Canvas AlloFlow ተጠቐም",
+    "use_gemini_canvas_done": "ናይ AI ምድላው ተኸፊቱ። እታ ቀዳመይቲ ካርድ ብዘይ ዝኾነ ምድላው ኣብ Gemini Canvas AlloFlow ምጥቃም ትገልጽ።",
+    "use_gemini_canvas_hint": "ናይ AI ምድላው ክፈት፣ ምድላው ዘየድልዮ ናይ Canvas ምርጫ ኣብ ቅድሚት ኣሎ"
   },
   "palette": {
     "aria": "ናይ AlloFlow ናይ ትእዛዝ ፓለት",
@@ -29482,5 +29507,11 @@
     "toast_opened": "ናይ ምትእስሳር ግራፍ ንንባብ ጥራይ ተኸፊቱ።",
     "toast_invalid": "ነቲ ናይ ምትእስሳር ግራፍ ምኽፋት ኣይተኻእለን። ቅቡል ናይ AlloFlow ግራፍ JSON ፋይል ኣውጽእ።",
     "toast_unreadable": "ነቲ ናይ ምትእስሳር ግራፍ ፋይል ምንባብ ኣይተኻእለን።"
+  },
+  "shell_link": {
+    "banner_aria": "ብዛዕባ እዚ መሳርሒ",
+    "banner_text": "ሓደ መሳርሒ ካብ AlloFlow፣ ናጻ ናይ ምምህርና መድረኽ።",
+    "banner_open": "ምሉእ መተግበሪ ርአ",
+    "banner_dismiss": "እዚ መዘኻኸሪ ኣወግድ"
   }
 }

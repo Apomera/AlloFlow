@@ -2283,7 +2283,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Udokumentowane-zorientowane pytania",
     "open_stem_lab_explore_aria": "Otwórz STEAM Lab Explore",
-    "stem_lab_explore": "Odkrywaj"
+    "stem_lab_explore": "Odkrywaj",
+    "needs_ai_setup": "Wymaga konfiguracji AI",
+    "needs_ai_setup_cta": "Dotknij, aby podłączyć AI, albo używaj AlloFlow w Gemini Canvas"
   },
   "history": {
     "load_project": "Załaduj projekt",
@@ -6330,7 +6332,8 @@
       "frames_label": "Luki w odpowiedziach z ramami zdań",
       "concept_sort_label": "Wzorce błędnego umieszczania w Concept Sort"
     },
-    "all_tool_activity": "Aktywność wszystkich narzędzi"
+    "all_tool_activity": "Aktywność wszystkich narzędzi",
+    "title_parent": "Panel Rodzinny"
   },
   "tools": {
     "source": "Materiał źródłowy",
@@ -12735,8 +12738,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Łączne XP zdobyte w STEM Lab we wszystkich aktywnościach",
-      "generate_assess": "Utwórz i ocenić",
-      "manipulatives": "Manipulatywy",
+      "generate_assess": "Zadania matematyczne i sprawdziany",
+      "manipulatives": "Interaktywne narzędzia i laboratoria",
       "stepbystep": "Krok po kroku",
       "conceptual": "Konceptualnie",
       "realworld": "Świat rzeczywisty"
@@ -30080,7 +30083,11 @@
     "tts_provider_aria": "Dostawca TTS",
     "local_cascade_label": "Kaskada lokalna:",
     "image_generation_header": "Generowanie obrazów",
-    "image_provider_aria": "Dostawca generowania obrazów"
+    "image_provider_aria": "Dostawca generowania obrazów",
+    "guided_card_canvas_title": "Używaj AlloFlow wewnątrz Gemini Canvas",
+    "guided_card_canvas_badge": "Bez konfiguracji",
+    "guided_card_canvas_body": "Najprostszy sposób na AI: otwórz AlloFlow wewnątrz Google Gemini. Bezpłatnie z kontem Google, w ramach dziennego limitu Twojego planu Gemini (plany osobiste, edukacyjne i płatne działają wszystkie). Nic do instalowania i żadnego klucza do zarządzania.",
+    "guided_card_canvas_req": "Otwiera gemini.google.com w nowej karcie. Szczegóły planów na google.com/gemini"
   },
   "diff_view": {
     "title": "Źródłowy PDF ↔ Poprawiony HTML · Różnice",
@@ -31439,7 +31446,25 @@
     "surprise_me_contextually_working": "Odczytywanie kontekstu bieżącej lekcji i wybieranie przydatnego następnego kroku...",
     "use_contextual_suggestion": "Użyj proponowanego następnego kroku",
     "use_contextual_suggestion_hint": "Uruchamia opcję 1, 2 lub 3 z ostatnich propozycji",
-    "use_contextual_suggestion_working": "Uruchamianie wybranego następnego kroku..."
+    "use_contextual_suggestion_working": "Uruchamianie wybranego następnego kroku...",
+    "jump_to_lesson_plan": "Przejdź do mojego planu lekcji",
+    "jump_to_lesson_plan_done": "Najnowszy plan lekcji otwarty.",
+    "jump_to_lesson_plan_hint": "Otwórz ponownie najnowszy plan lekcji",
+    "open_block_suggestions": "Uzyskaj sugestie bloków dokumentu",
+    "open_block_suggestions_done": "Kreator dokumentów otwarty. Sugestie bloków są w wyróżnionym panelu u góry.",
+    "open_block_suggestions_hint": "Otwiera Kreator dokumentów, sugestie są na górze",
+    "open_brainstorm_modes": "Wybierz typ aktywności burzy mózgów",
+    "open_brainstorm_modes_done": "Typy aktywności burzy mózgów otwarte. Wybierz pomysły, dyskusję, jigsaw lub symulację.",
+    "open_brainstorm_modes_hint": "Sieć pomysłów, zestaw dyskusyjny, jigsaw lub symulacja",
+    "open_discussion_builder": "Zbuduj dyskusję klasową",
+    "open_discussion_builder_done": "Kreator dyskusji otwarty w narzędziu burzy mózgów. Wybierz protokół, potem wygeneruj.",
+    "open_discussion_builder_hint": "Zestaw dyskusyjny z protokołami takimi jak pomyśl-w parze-podziel się",
+    "open_jigsaw_builder": "Zbuduj aktywność jigsaw",
+    "open_jigsaw_builder_done": "Kreator jigsaw otwarty w narzędziu burzy mózgów. Ustal liczebność grup, potem wygeneruj.",
+    "open_jigsaw_builder_hint": "Aktywność grup eksperckich jigsaw z liczebnością grup, którą ustalasz",
+    "use_gemini_canvas": "Używaj AlloFlow wewnątrz Gemini Canvas",
+    "use_gemini_canvas_done": "Ustawienia AI otwarte. Pierwsza karta wyjaśnia, jak używać AlloFlow w Gemini Canvas bez żadnej konfiguracji.",
+    "use_gemini_canvas_hint": "Otwiera ustawienia AI, gdzie opcja Canvas bez konfiguracji jest na początku"
   },
   "palette": {
     "aria": "Paleta poleceń AlloFlow",
@@ -31849,5 +31874,11 @@
     "toast_opened": "Graf dopasowania otwarty tylko do odczytu.",
     "toast_invalid": "Nie udało się otworzyć tego grafu dopasowania. Wyeksportuj prawidłowy plik JSON grafu AlloFlow.",
     "toast_unreadable": "Nie udało się odczytać tego pliku grafu dopasowania."
+  },
+  "shell_link": {
+    "banner_aria": "O tym narzędziu",
+    "banner_text": "Jedno narzędzie z AlloFlow, bezpłatnej platformy dydaktycznej.",
+    "banner_open": "Poznaj pełną aplikację",
+    "banner_dismiss": "Zamknij tę notatkę"
   }
 }

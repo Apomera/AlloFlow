@@ -2279,7 +2279,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "စာရွက်စာတမ်း-အပေါ်အခြေခံ မေးခွန်း",
     "open_stem_lab_explore_aria": "STEAM Lab Explore ကို ဖွင့်ပါ",
-    "stem_lab_explore": "ရှာဖွေပါ"
+    "stem_lab_explore": "ရှာဖွေပါ",
+    "needs_ai_setup": "AI ပြင်ဆင်မှု လိုအပ်သည်",
+    "needs_ai_setup_cta": "AI ချိတ်ဆက်ရန် နှိပ်ပါ၊ သို့မဟုတ် Gemini Canvas ထဲတွင် AlloFlow ကို အသုံးပြုပါ"
   },
   "history": {
     "load_project": "တင်ပါ Project",
@@ -6324,7 +6326,8 @@
       "frames_label": "Sentence-frame တုံ့ပြန်မှု ကွာဟမှုများ",
       "concept_sort_label": "အယူအဆ စီစဉ်ပါ misplacement ပုံစံများ"
     },
-    "all_tool_activity": "အားလုံး ကိရိယာများ လှုပ်ရှားမှု"
+    "all_tool_activity": "အားလုံး ကိရိယာများ လှုပ်ရှားမှု",
+    "title_parent": "မိသားစု ဒက်ရှ်ဘုတ်"
   },
   "tools": {
     "source": "အရင်းအမြစ်ပစ္စည်း",
@@ -12714,8 +12717,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Total STEM ဓာတ်ခွဲခန်း XP earned တစ်လျှောက် အားလုံး လှုပ်ရှားမှုများ",
-      "generate_assess": "ထုတ်လုပ်ပါ & assess",
-      "manipulatives": "ကိုင်တွယ်လုပ်ဆောင်ပစ္စည်းများ",
+      "generate_assess": "သင်္ချာပုစ္ဆာများနှင့် အကဲဖြတ်မှုများ",
+      "manipulatives": "အပြန်အလှန်တုံ့ပြန် ကိရိယာများနှင့် ဓာတ်ခွဲခန်းများ",
       "stepbystep": "step-by-step",
       "conceptual": "အယူအဆ",
       "realworld": "လက်တွေ့ကမ္ဘာ"
@@ -27956,7 +27959,11 @@
     "tts_provider_aria": "Text-to-speech ပံ့ပိုးပေးသူ",
     "local_cascade_label": "ဒေသတွင်း အဆင့်ဆင့်-",
     "image_generation_header": "ပုံ မျိုးဆက်",
-    "image_provider_aria": "ပုံ မျိုးဆက် provider"
+    "image_provider_aria": "ပုံ မျိုးဆက် provider",
+    "guided_card_canvas_title": "Gemini Canvas ထဲတွင် AlloFlow ကို အသုံးပြုပါ",
+    "guided_card_canvas_badge": "ပြင်ဆင်စရာမလို",
+    "guided_card_canvas_body": "AI ရရှိရန် အလွယ်ဆုံးနည်း- AlloFlow ကို Google Gemini ထဲတွင် ဖွင့်ပါ။ Google အကောင့်ဖြင့် အခမဲ့ဖြစ်ပြီး သင့် Gemini အစီအစဉ်၏ နေ့စဉ်ခွဲတမ်းကို အသုံးပြုသည် (ကိုယ်ပိုင်၊ ပညာရေး၊ သို့မဟုတ် အခကြေးငွေပေး အစီအစဉ်များ အားလုံး အလုပ်လုပ်သည်)။ ထည့်သွင်းစရာမရှိ၊ စီမံရမည့်ကီးလည်း မရှိပါ။",
+    "guided_card_canvas_req": "gemini.google.com ကို တက်ဘ်အသစ်တွင် ဖွင့်သည်။ အစီအစဉ်အသေးစိတ်ကို google.com/gemini တွင် ကြည့်ပါ"
   },
   "diff_view": {
     "title": "အရင်းအမြစ် PDF ↔ Remediated HTML · Diff",
@@ -29315,7 +29322,25 @@
     "surprise_me_contextually_working": "လက်ရှိ သင်ခန်းစာ အခြေအနေကို ဖတ်ပြီး အသုံးဝင်သော နောက်တစ်ဆင့်ကို ရွေးနေသည်...",
     "use_contextual_suggestion": "အကြံပြုထားသော နောက်တစ်ဆင့်ကို သုံးပါ",
     "use_contextual_suggestion_hint": "နောက်ဆုံး အကြံပြုချက်များမှ ရွေးချယ်စရာ 1၊ 2 သို့မဟုတ် 3 ကို လုပ်ဆောင်သည်",
-    "use_contextual_suggestion_working": "ရွေးချယ်ထားသော နောက်တစ်ဆင့်ကို စတင်နေသည်..."
+    "use_contextual_suggestion_working": "ရွေးချယ်ထားသော နောက်တစ်ဆင့်ကို စတင်နေသည်...",
+    "jump_to_lesson_plan": "ကျွန်ုပ်၏ သင်ခန်းစာအစီအစဉ်သို့ သွားပါ",
+    "jump_to_lesson_plan_done": "နောက်ဆုံး သင်ခန်းစာအစီအစဉ် ဖွင့်ပြီးပါပြီ။",
+    "jump_to_lesson_plan_hint": "နောက်ဆုံး သင်ခန်းစာအစီအစဉ်ကို ပြန်ဖွင့်ပါ",
+    "open_block_suggestions": "စာရွက်စာတမ်း အပိုင်းအကြံပြုချက်များ ရယူပါ",
+    "open_block_suggestions_done": "Document Builder ဖွင့်ပြီးပါပြီ။ အပိုင်းအကြံပြုချက်များသည် ထိပ်ရှိ အရောင်ပြထားသော အကွက်ထဲတွင် ရှိသည်။",
+    "open_block_suggestions_hint": "Document Builder ကို ဖွင့်ပါ၊ အကြံပြုချက်များသည် ထိပ်တွင်ရှိသည်",
+    "open_brainstorm_modes": "စိတ်ကူးထုတ် လှုပ်ရှားမှုအမျိုးအစား ရွေးပါ",
+    "open_brainstorm_modes_done": "စိတ်ကူးထုတ် လှုပ်ရှားမှုအမျိုးအစားများ ဖွင့်ပြီးပါပြီ။ စိတ်ကူး၊ ဆွေးနွေးမှု၊ jigsaw သို့မဟုတ် သရုပ်တူ ရွေးပါ။",
+    "open_brainstorm_modes_hint": "စိတ်ကူးကွန်ရက်၊ ဆွေးနွေးမှုအစုံ၊ jigsaw သို့မဟုတ် သရုပ်တူပြုလုပ်မှု",
+    "open_discussion_builder": "အတန်းဆွေးနွေးမှု တည်ဆောက်ပါ",
+    "open_discussion_builder_done": "ဆွေးနွေးမှုတည်ဆောက်ကိရိယာကို စိတ်ကူးထုတ်ကိရိယာထဲတွင် ဖွင့်ပြီးပါပြီ။ နည်းစနစ်ရွေးပြီး ထုတ်လုပ်ပါ။",
+    "open_discussion_builder_hint": "စဉ်းစား-တွဲ-မျှဝေ ကဲ့သို့သော နည်းစနစ်များပါသည့် ဆွေးနွေးမှုအစုံ",
+    "open_jigsaw_builder": "jigsaw လှုပ်ရှားမှု တည်ဆောက်ပါ",
+    "open_jigsaw_builder_done": "jigsaw တည်ဆောက်ကိရိယာကို စိတ်ကူးထုတ်ကိရိယာထဲတွင် ဖွင့်ပြီးပါပြီ။ အဖွဲ့အရွယ်အစား သတ်မှတ်ပြီး ထုတ်လုပ်ပါ။",
+    "open_jigsaw_builder_hint": "သင်သတ်မှတ်သော အဖွဲ့အရွယ်အစားဖြင့် jigsaw ကျွမ်းကျင်အဖွဲ့ လှုပ်ရှားမှု",
+    "use_gemini_canvas": "Gemini Canvas ထဲတွင် AlloFlow ကို အသုံးပြုပါ",
+    "use_gemini_canvas_done": "AI ပြင်ဆင်မှု ဖွင့်ပြီးပါပြီ။ ပထမကတ်က ပြင်ဆင်စရာမလိုဘဲ Gemini Canvas ထဲတွင် AlloFlow အသုံးပြုနည်းကို ရှင်းပြသည်။",
+    "use_gemini_canvas_hint": "AI ပြင်ဆင်မှုကို ဖွင့်ပါ၊ ပြင်ဆင်စရာမလိုသော Canvas ရွေးချယ်မှုက ရှေ့ဆုံးတွင်ရှိသည်"
   },
   "palette": {
     "aria": "AlloFlow အမိန့်ပေး ပါးလက်",
@@ -29709,5 +29734,11 @@
     "toast_opened": "ချိန်ညှိမှုဂရပ်ကို ဖတ်ရန်သာ ဖွင့်ထားသည်။",
     "toast_invalid": "ထိုချိန်ညှိမှုဂရပ်ကို ဖွင့်၍မရပါ။ မှန်ကန်သော AlloFlow ဂရပ် JSON ဖိုင်ကို ထုတ်ပါ။",
     "toast_unreadable": "ထိုချိန်ညှိမှုဂရပ်ဖိုင်ကို ဖတ်၍မရပါ။"
+  },
+  "shell_link": {
+    "banner_aria": "ဤကိရိယာအကြောင်း",
+    "banner_text": "AlloFlow မှ ကိရိယာတစ်ခု၊ အခမဲ့ သင်ကြားရေးပလက်ဖောင်း။",
+    "banner_open": "အက်ပ်တစ်ခုလုံးကို လေ့လာပါ",
+    "banner_dismiss": "ဤမှတ်စုကို ပယ်ပါ"
   }
 }

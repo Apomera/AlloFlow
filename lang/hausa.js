@@ -2280,7 +2280,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "takarda-Bisa tambaya",
     "open_stem_lab_explore_aria": "Buɗe STEAM Lab Explore",
-    "stem_lab_explore": "Bincika"
+    "stem_lab_explore": "Bincika",
+    "needs_ai_setup": "Yana bukatar saitin AI",
+    "needs_ai_setup_cta": "Danna don hada AI, ko yi amfani da AlloFlow a cikin Gemini Canvas"
   },
   "history": {
     "load_project": "Ɗora Project",
@@ -6335,7 +6337,8 @@
       "frames_label": "jimla-frame response gaps",
       "concept_sort_label": "Concept Tsara misplacement patterns"
     },
-    "all_tool_activity": "duka kayan aiki Activity"
+    "all_tool_activity": "duka kayan aiki Activity",
+    "title_parent": "Dashbodin Iyali"
   },
   "tools": {
     "source": "tushe Material",
@@ -12719,8 +12722,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Total STEM lab XP earned across duka activities",
-      "generate_assess": "Samar da & assess",
-      "manipulatives": "Kayan Sarrafawa",
+      "generate_assess": "Matsalolin lissafi da kimantawa",
+      "manipulatives": "Kayan aiki na muʼamala da dakunan gwaje-gwaje",
       "stepbystep": "mataki-by-mataki",
       "conceptual": "Tunani",
       "realworld": "Na Gaske"
@@ -29322,7 +29325,11 @@
     "tts_provider_aria": "rubutu-zuwa-speech provider",
     "local_cascade_label": "Jerin gida:",
     "image_generation_header": "hoto Generation",
-    "image_provider_aria": "hoto generation provider"
+    "image_provider_aria": "hoto generation provider",
+    "guided_card_canvas_title": "Yi amfani da AlloFlow a cikin Gemini Canvas",
+    "guided_card_canvas_badge": "Ba saiti",
+    "guided_card_canvas_body": "Hanya mafi sauki ta samun AI: bude AlloFlow a cikin Google Gemini. Kyauta da asusun Google, yana amfani da adadin yau da kullum na shirin Gemini naka (shirye-shiryen kai, na ilimi, ko na biya duk suna aiki). Babu abin da za a shigar kuma babu makullin da za a kula.",
+    "guided_card_canvas_req": "Yana bude gemini.google.com a sabon shafi. Bayanan shirye-shirye a google.com/gemini"
   },
   "diff_view": {
     "title": "tushe PDF ↔ Remediated HTML · Diff",
@@ -30681,7 +30688,25 @@
     "surprise_me_contextually_working": "Ana karanta yanayin darasin yanzu ana kuma zaɓar mataki na gaba mai amfani...",
     "use_contextual_suggestion": "Yi amfani da matakin gaba da aka ba da shawara",
     "use_contextual_suggestion_hint": "Yana gudanar da zaɓi 1, 2, ko 3 daga sabbin shawarwari",
-    "use_contextual_suggestion_working": "Ana fara matakin gaba da aka zaɓa..."
+    "use_contextual_suggestion_working": "Ana fara matakin gaba da aka zaɓa...",
+    "jump_to_lesson_plan": "Tafi zuwa shirin darasi na",
+    "jump_to_lesson_plan_done": "An bude shirin darasi na baya-bayan nan.",
+    "jump_to_lesson_plan_hint": "Sake bude shirin darasi na baya-bayan nan",
+    "open_block_suggestions": "Samu shawarwarin sassan takarda",
+    "open_block_suggestions_done": "An bude Mai Gina Takardu. Shawarwarin sassa suna cikin fallen da aka haskaka a sama.",
+    "open_block_suggestions_hint": "Bude Mai Gina Takardu, inda shawarwari suke sama",
+    "open_brainstorm_modes": "Zabi irin aikin tunkarar tunani",
+    "open_brainstorm_modes_done": "An bude irin ayyukan tunkarar tunani. Zabi tunani, tattaunawa, jigsaw, ko kwaikwayo.",
+    "open_brainstorm_modes_hint": "Yanar tunani, kayan tattaunawa, jigsaw, ko kwaikwayo",
+    "open_discussion_builder": "Gina tattaunawar aji",
+    "open_discussion_builder_done": "An bude mai gina tattaunawa a cikin kayan tunkarar tunani. Zabi hanya, sannan ka samar.",
+    "open_discussion_builder_hint": "Kayan tattaunawa mai hanyoyi kamar yi tunani-hada biyu-raba",
+    "open_jigsaw_builder": "Gina aikin jigsaw",
+    "open_jigsaw_builder_done": "An bude mai gina jigsaw a cikin kayan tunkarar tunani. Saita girman kungiya, sannan ka samar.",
+    "open_jigsaw_builder_hint": "Aikin kungiyoyin kwararru na jigsaw da girman kungiya da kake tsarawa",
+    "use_gemini_canvas": "Yi amfani da AlloFlow a cikin Gemini Canvas",
+    "use_gemini_canvas_done": "An bude saitin AI. Kati na farko yana bayanin yadda ake amfani da AlloFlow a cikin Gemini Canvas ba tare da wani saiti ba.",
+    "use_gemini_canvas_hint": "Bude saitin AI, inda zabin Canvas maras saiti yake gaba"
   },
   "palette": {
     "aria": "Panel ɗin umarni na AlloFlow",
@@ -31077,5 +31102,11 @@
     "toast_opened": "An buɗe jadawalin daidaitawa don karatu kawai.",
     "toast_invalid": "Ba a iya buɗe wannan jadawalin daidaitawa ba. Fitar da ingantaccen fayil ɗin JSON na jadawalin AlloFlow.",
     "toast_unreadable": "Ba a iya karanta wannan fayil ɗin jadawalin daidaitawa ba."
+  },
+  "shell_link": {
+    "banner_aria": "Game da wannan kayan aiki",
+    "banner_text": "Kayan aiki daya daga AlloFlow, dandalin koyarwa na kyauta.",
+    "banner_open": "Bincika cikakken manhajar",
+    "banner_dismiss": "Rufe wannan bayanin"
   }
 }

@@ -2290,7 +2290,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "ഡോക്യുമെന്റ് അധിഷ്ഠിത ചോദ്യങ്ങൾ",
     "open_stem_lab_explore_aria": "STEAM Lab Explore തുറക്കുക",
-    "stem_lab_explore": "പര്യവേക്ഷണം ചെയ്യുക"
+    "stem_lab_explore": "പര്യവേക്ഷണം ചെയ്യുക",
+    "needs_ai_setup": "AI സജ്ജീകരണം ആവശ്യമാണ്",
+    "needs_ai_setup_cta": "AI ബന്ധിപ്പിക്കാൻ ടാപ്പ് ചെയ്യുക, അല്ലെങ്കിൽ Gemini Canvas ൽ AlloFlow ഉപയോഗിക്കുക"
   },
   "history": {
     "load_project": "പ്രോജക്റ്റ് ലോഡ് ചെയ്യുക",
@@ -6507,7 +6509,8 @@
       "frames_label": "വാക്യ-ഫ്രെയിം പ്രതികരണ വിടവുകൾ",
       "concept_sort_label": "Concept Sort തെറ്റായ സ്ഥാനനിർണയ പാറ്റേണുകൾ"
     },
-    "all_tool_activity": "എല്ലാ ടൂൾ പ്രവർത്തനങ്ങളും"
+    "all_tool_activity": "എല്ലാ ടൂൾ പ്രവർത്തനങ്ങളും",
+    "title_parent": "കുടുംബ ഡാഷ്ബോർഡ്"
   },
   "tools": {
     "source": "ഉറവിട സാമഗ്രി",
@@ -12930,8 +12933,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "എല്ലാ പ്രവർത്തനങ്ങളിലുമായി നേടിയ മൊത്തം STEM Lab XP",
-      "generate_assess": "സൃഷ്ടിക്കുക & വിലയിരുത്തുക",
-      "manipulatives": "കൈകൊണ്ടു ചെയ്യാവുന്ന ഉപകരണങ്ങൾ",
+      "generate_assess": "ഗണിത പ്രശ്നങ്ങളും വിലയിരുത്തലുകളും",
+      "manipulatives": "ഇന്ററാക്ടീവ് ഉപകരണങ്ങളും ലാബുകളും",
       "stepbystep": "ഘട്ടം ഘട്ടമായി",
       "conceptual": "സങ്കൽപ്പപരം",
       "realworld": "യഥാർത്ഥ ലോകം"
@@ -30180,7 +30183,11 @@
     "tts_provider_aria": "ടെക്സ്റ്റ്-ടു-സ്പീച്ച് ദാതാവ്",
     "local_cascade_label": "ലോക്കൽ കാസ്കേഡ്:",
     "image_generation_header": "ഇമേജ് ജനറേഷൻ",
-    "image_provider_aria": "ഇമേജ് ജനറേഷൻ ദാതാവ്"
+    "image_provider_aria": "ഇമേജ് ജനറേഷൻ ദാതാവ്",
+    "guided_card_canvas_title": "Gemini Canvas നുള്ളിൽ AlloFlow ഉപയോഗിക്കുക",
+    "guided_card_canvas_badge": "സജ്ജീകരണം വേണ്ട",
+    "guided_card_canvas_body": "AI ലഭിക്കാനുള്ള ഏറ്റവും എളുപ്പവഴി: Google Gemini നുള്ളിൽ AlloFlow തുറക്കുക. Google അക്കൗണ്ട് ഉപയോഗിച്ച് സൗജന്യം, നിങ്ങളുടെ Gemini പ്ലാനിന്റെ ദൈനംദിന ക്വോട്ട ഉപയോഗിക്കുന്നു (വ്യക്തിഗത, വിദ്യാഭ്യാസ, അല്ലെങ്കിൽ പണമടച്ച പ്ലാനുകൾ എല്ലാം പ്രവർത്തിക്കും). ഇൻസ്റ്റാൾ ചെയ്യാൻ ഒന്നുമില്ല, കൈകാര്യം ചെയ്യാൻ കീയുമില്ല.",
+    "guided_card_canvas_req": "പുതിയ ടാബിൽ gemini.google.com തുറക്കുന്നു. പ്ലാൻ വിശദാംശങ്ങൾ google.com/gemini ൽ"
   },
   "diff_view": {
     "title": "ഉറവിട PDF ↔ പരിഹരിച്ച HTML · Diff",
@@ -31173,7 +31180,25 @@
     "surprise_me_contextually_working": "നിലവിലെ പാഠത്തിന്റെ സന്ദർഭം വായിച്ച് ഉപകാരപ്രദമായ ഒരു അടുത്ത ചുവട് തിരഞ്ഞെടുക്കുന്നു...",
     "use_contextual_suggestion": "നിർദ്ദേശിച്ച അടുത്ത ചുവട് ഉപയോഗിക്കുക",
     "use_contextual_suggestion_hint": "ഏറ്റവും പുതിയ നിർദ്ദേശങ്ങളിൽ നിന്ന് ഓപ്ഷൻ 1, 2 അല്ലെങ്കിൽ 3 പ്രവർത്തിപ്പിക്കുന്നു",
-    "use_contextual_suggestion_working": "തിരഞ്ഞെടുത്ത അടുത്ത ചുവട് ആരംഭിക്കുന്നു..."
+    "use_contextual_suggestion_working": "തിരഞ്ഞെടുത്ത അടുത്ത ചുവട് ആരംഭിക്കുന്നു...",
+    "jump_to_lesson_plan": "എന്റെ പാഠ പദ്ധതിയിലേക്ക് പോകുക",
+    "jump_to_lesson_plan_done": "ഏറ്റവും പുതിയ പാഠ പദ്ധതി തുറന്നു.",
+    "jump_to_lesson_plan_hint": "ഏറ്റവും പുതിയ പാഠ പദ്ധതി വീണ്ടും തുറക്കുക",
+    "open_block_suggestions": "ഡോക്യുമെന്റ് ബ്ലോക്ക് നിർദ്ദേശങ്ങൾ നേടുക",
+    "open_block_suggestions_done": "ഡോക്യുമെന്റ് ബിൽഡർ തുറന്നു. ബ്ലോക്ക് നിർദ്ദേശങ്ങൾ മുകളിലെ ഹൈലൈറ്റ് ചെയ്ത പാനലിലുണ്ട്.",
+    "open_block_suggestions_hint": "ഡോക്യുമെന്റ് ബിൽഡർ തുറക്കുക, നിർദ്ദേശങ്ങൾ മുകളിലുണ്ട്",
+    "open_brainstorm_modes": "ബ്രെയിൻസ്റ്റോം പ്രവർത്തന തരം തിരഞ്ഞെടുക്കുക",
+    "open_brainstorm_modes_done": "ബ്രെയിൻസ്റ്റോം പ്രവർത്തന തരങ്ങൾ തുറന്നു. ആശയങ്ങൾ, ചർച്ച, ജിഗ്സോ, അല്ലെങ്കിൽ സിമുലേഷൻ തിരഞ്ഞെടുക്കുക.",
+    "open_brainstorm_modes_hint": "ആശയവല, ചർച്ചാ കിറ്റ്, ജിഗ്സോ, അല്ലെങ്കിൽ സിമുലേഷൻ",
+    "open_discussion_builder": "ക്ലാസ് ചർച്ച നിർമ്മിക്കുക",
+    "open_discussion_builder_done": "ചർച്ചാ നിർമ്മാതാവ് ബ്രെയിൻസ്റ്റോം ഉപകരണത്തിൽ തുറന്നു. ഒരു രീതി തിരഞ്ഞെടുത്ത് സൃഷ്ടിക്കുക.",
+    "open_discussion_builder_hint": "ചിന്തിക്കുക-ജോടിയാകുക-പങ്കിടുക പോലുള്ള രീതികളുള്ള ചർച്ചാ കിറ്റ്",
+    "open_jigsaw_builder": "ജിഗ്സോ പ്രവർത്തനം നിർമ്മിക്കുക",
+    "open_jigsaw_builder_done": "ജിഗ്സോ നിർമ്മാതാവ് ബ്രെയിൻസ്റ്റോം ഉപകരണത്തിൽ തുറന്നു. ഗ്രൂപ്പ് വലുപ്പം നിശ്ചയിച്ച് സൃഷ്ടിക്കുക.",
+    "open_jigsaw_builder_hint": "നിങ്ങൾ നിശ്ചയിക്കുന്ന ഗ്രൂപ്പ് വലുപ്പത്തോടെ ജിഗ്സോ വിദഗ്ധ-ഗ്രൂപ്പ് പ്രവർത്തനം",
+    "use_gemini_canvas": "Gemini Canvas നുള്ളിൽ AlloFlow ഉപയോഗിക്കുക",
+    "use_gemini_canvas_done": "AI സജ്ജീകരണം തുറന്നു. ആദ്യ കാർഡ് ഒരു സജ്ജീകരണവുമില്ലാതെ Gemini Canvas ൽ AlloFlow ഉപയോഗിക്കുന്നത് വിശദീകരിക്കുന്നു.",
+    "use_gemini_canvas_hint": "AI സജ്ജീകരണം തുറക്കുക, സജ്ജീകരണം വേണ്ടാത്ത Canvas ഓപ്ഷൻ മുന്നിലുണ്ട്"
   },
   "palette": {
     "aria": "AlloFlow കമാൻഡ് പാലറ്റ്",
@@ -31548,5 +31573,11 @@
     "toast_opened": "വിന്യാസ ഗ്രാഫ് വായനയ്ക്ക് മാത്രമായി തുറന്നു.",
     "toast_invalid": "ആ വിന്യാസ ഗ്രാഫ് തുറക്കാനായില്ല. സാധുവായ AlloFlow ഗ്രാഫ് JSON ഫയൽ കയറ്റുമതി ചെയ്യുക.",
     "toast_unreadable": "ആ വിന്യാസ ഗ്രാഫ് ഫയൽ വായിക്കാനായില്ല."
+  },
+  "shell_link": {
+    "banner_aria": "ഈ ഉപകരണത്തെക്കുറിച്ച്",
+    "banner_text": "AlloFlow ൽ നിന്നുള്ള ഒരു ഉപകരണം, ഒരു സൗജന്യ അധ്യാപന പ്ലാറ്റ്ഫോം.",
+    "banner_open": "മുഴുവൻ ആപ്പും പര്യവേക്ഷണം ചെയ്യുക",
+    "banner_dismiss": "ഈ കുറിപ്പ് നിരസിക്കുക"
   }
 }

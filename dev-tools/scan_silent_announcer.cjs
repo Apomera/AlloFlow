@@ -141,7 +141,20 @@ for (const { label: tool, full } of collectFiles()) {
     const delegatesToSibling = names.some((other) => other !== localName
       && new RegExp('\\b' + other.replace(/\$/g, '\\$') + '\\s*\\(').test(body));
 
-    if (touchesDom || delegatesToHost || delegatesToSibling) fine.push({ tool, localName, callCount });
+    // ★ REACT-STATE live region (math_create, 2026-08-17): the announcer only
+    // calls a state setter (setSrMsg / setA11yAnnouncement), and the component
+    // renders that state into a role="status" aria-live element. The DOM write
+    // happens in the render, so none of the tests above can see it. Accept the
+    // shape only when BOTH halves are present in the file: the body calls a
+    // set*(…) whose name suggests an announcement, and the file renders an
+    // aria-live attribute. A setter with no live region stays broken — that is
+    // precisely the original lifeskills defect.
+    const setterMatch = body.match(/\bset([A-Z]\w*)\s*\(/);
+    const reactStateLiveRegion = !!setterMatch
+      && /sr|announce|a11y|status|live/i.test(setterMatch[1])
+      && /["']aria-live["']|aria-live=/.test(src);
+
+    if (touchesDom || delegatesToHost || delegatesToSibling || reactStateLiveRegion) fine.push({ tool, localName, callCount });
     else broken.push({ tool, localName, callCount, body: body.replace(/\s+/g, ' ').slice(0, 110) });
   }
 }

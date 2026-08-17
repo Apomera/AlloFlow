@@ -662,7 +662,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "ساوانهت لیست په انهوثائق",
     "open_stem_lab_explore_aria": "STEAM Lab Explore پرانیزئ",
-    "stem_lab_explore": "سپړنه"
+    "stem_lab_explore": "سپړنه",
+    "needs_ai_setup": "د AI تنظیم ته اړتیا لري",
+    "needs_ai_setup_cta": "د AI د نښلولو لپاره ټک ووهئ، یا په Gemini Canvas کې AlloFlow وکاروئ"
   },
   "toolbar": {
     "show_bot": "د AI مرستندوی وښیئ",
@@ -1518,7 +1520,11 @@
     "tts_provider_aria": "مزاود تحاویل متن پورې کنهم",
     "local_cascade_label": "تریبشپړ شوی محلی:",
     "image_generation_header": "جوړونه تصاویر",
-    "image_provider_aria": "مزاود جوړونه تصاویر"
+    "image_provider_aria": "مزاود جوړونه تصاویر",
+    "guided_card_canvas_title": "په Gemini Canvas کې AlloFlow وکاروئ",
+    "guided_card_canvas_badge": "تنظیم ته اړتیا نشته",
+    "guided_card_canvas_body": "د AI ترلاسه کولو تر ټولو اسانه لار: AlloFlow د Google Gemini دننه پرانیزئ. د Google حساب سره وړیا، ستاسو د Gemini پلان ورځنۍ ونډه کاروي (شخصي، ښوونیز، یا تادیه شوي پلانونه ټول کار کوي). د نصبولو هیڅ شی نشته او د مدیریت لپاره کومه کیلي نشته.",
+    "guided_card_canvas_req": "gemini.google.com په نوي ټب کې پرانیزي. د پلان جزئیات په google.com/gemini کې"
   },
   "profiles": {
     "title": "فاینهت تعریف ساحه",
@@ -4197,7 +4203,8 @@
       "frames_label": "د جملې چوکاټ غبرګون تشې",
       "concept_sort_label": "أنماط ساوء اوضع ترتیب مفاهیم"
     },
-    "all_tool_activity": "فعالیت ټول وسایل"
+    "all_tool_activity": "فعالیت ټول وسایل",
+    "title_parent": "د کورنۍ ډشبورډ"
   },
   "session": {
     "start": "شراوع کړئ ټولګی مباشر",
@@ -12743,8 +12750,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "د ټولو فعالیتونو په اوږدو کې د STEM Lab ګټل شوي ټول XP",
-      "generate_assess": "جوړونه اوتشخیص",
-      "manipulatives": "وسایل تنهعب",
+      "generate_assess": "د ریاضي مسئلې او ارزونې",
+      "manipulatives": "متقابل وسایل او لابراتوارونه",
       "stepbystep": "ګام په ګام",
       "conceptual": "مفاهیمی",
       "realworld": "اواقعی"
@@ -31010,7 +31017,25 @@
     "surprise_me_contextually_working": "د اوسني لوست حالت لوستل کیږي او یو ګټور راتلونکی ګام غوره کیږي...",
     "use_contextual_suggestion": "وړاندیز شوی راتلونکی ګام وکاروه",
     "use_contextual_suggestion_hint": "له وروستیو وړاندیزونو څخه انتخاب 1، 2 یا 3 پرانیزي",
-    "use_contextual_suggestion_working": "ټاکل شوی راتلونکی ګام پیل کیږي..."
+    "use_contextual_suggestion_working": "ټاکل شوی راتلونکی ګام پیل کیږي...",
+    "jump_to_lesson_plan": "زما د درس پلان ته لاړ شئ",
+    "jump_to_lesson_plan_done": "وروستی د درس پلان پرانیستل شو.",
+    "jump_to_lesson_plan_hint": "وروستی د درس پلان بیا پرانیزئ",
+    "open_block_suggestions": "د سند د برخو وړاندیزونه ترلاسه کړئ",
+    "open_block_suggestions_done": "د سند جوړوونکی پرانیستل شو. د برخو وړاندیزونه پورته په روښانه شوي پینل کې دي.",
+    "open_block_suggestions_hint": "د سند جوړوونکی پرانیزئ، وړاندیزونه پورته دي",
+    "open_brainstorm_modes": "د فکري توپان د فعالیت ډول وټاکئ",
+    "open_brainstorm_modes_done": "د فکري توپان د فعالیتونو ډولونه پرانیستل شول. نظرونه، بحث، جیګسا، یا سمولیشن وټاکئ.",
+    "open_brainstorm_modes_hint": "د نظرونو جال، د بحث کڅوړه، جیګسا، یا سمولیشن",
+    "open_discussion_builder": "د ټولګي بحث جوړ کړئ",
+    "open_discussion_builder_done": "د بحث جوړوونکی د فکري توپان په وسیله کې پرانیستل شو. یوه طریقه وټاکئ، بیا جوړ کړئ.",
+    "open_discussion_builder_hint": "د بحث کڅوړه د داسې طریقو سره لکه فکر وکړه-جوړه شه-شریک کړه",
+    "open_jigsaw_builder": "د جیګسا فعالیت جوړ کړئ",
+    "open_jigsaw_builder_done": "د جیګسا جوړوونکی د فکري توپان په وسیله کې پرانیستل شو. د ډلې کچه وټاکئ، بیا جوړ کړئ.",
+    "open_jigsaw_builder_hint": "د جیګسا د متخصصینو ډلو فعالیت د هغه ډلې کچې سره چې تاسو یې ټاکئ",
+    "use_gemini_canvas": "په Gemini Canvas کې AlloFlow وکاروئ",
+    "use_gemini_canvas_done": "د AI تنظیمات پرانیستل شول. لومړی کارت تشریح کوي چې څنګه پرته له کوم تنظیم څخه په Gemini Canvas کې AlloFlow وکاروئ.",
+    "use_gemini_canvas_hint": "د AI تنظیمات پرانیزئ، هلته د Canvas هغه انتخاب چې تنظیم ته اړتیا نه لري مخکې دی"
   },
   "palette": {
     "aria": "د AlloFlow د امر پالیټ",
@@ -31398,5 +31423,11 @@
     "toast_opened": "د سمون ګراف یوازې د لوستلو لپاره پرانیستل شو.",
     "toast_invalid": "هغه د سمون ګراف پرانیستل ونشو. یو باوري د AlloFlow ګراف JSON فایل صادر کړئ.",
     "toast_unreadable": "هغه د سمون ګراف فایل لوستل ونشو."
+  },
+  "shell_link": {
+    "banner_aria": "د دې وسیلې په اړه",
+    "banner_text": "د AlloFlow یوه وسیله، یو وړیا د ښوونې پلیټ فارم.",
+    "banner_open": "بشپړه اپلیکیشن وګورئ",
+    "banner_dismiss": "دا یادښت لرې کړئ"
   }
 }

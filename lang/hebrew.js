@@ -670,7 +670,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "שאלות מבוססות מסמך",
     "open_stem_lab_explore_aria": "פתיחת STEAM Lab Explore",
-    "stem_lab_explore": "חקור"
+    "stem_lab_explore": "חקור",
+    "needs_ai_setup": "נדרשת הגדרת AI",
+    "needs_ai_setup_cta": "הקישו לחיבור AI, או השתמשו ב-AlloFlow בתוך Gemini Canvas"
   },
   "toolbar": {
     "show_bot": "הצג סייען AI",
@@ -1526,7 +1528,11 @@
     "tts_provider_aria": "ספק טקסט-לדיבור",
     "local_cascade_label": "מפל מקומי:",
     "image_generation_header": "ייצור תמונות",
-    "image_provider_aria": "ספק ייצור תמונות"
+    "image_provider_aria": "ספק ייצור תמונות",
+    "guided_card_canvas_title": "שימוש ב-AlloFlow בתוך Gemini Canvas",
+    "guided_card_canvas_badge": "ללא התקנה",
+    "guided_card_canvas_body": "הדרך הקלה ביותר לקבל AI: פתחו את AlloFlow בתוך Google Gemini. חינם עם חשבון Google, תוך שימוש במכסה היומית של תוכנית ה-Gemini שלכם (תוכניות אישיות, חינוך או בתשלום כולן עובדות). אין מה להתקין ואין מפתח לנהל.",
+    "guided_card_canvas_req": "פותח את gemini.google.com בכרטיסייה חדשה. פרטי התוכניות ב-google.com/gemini"
   },
   "profiles": {
     "title": "פרופילי תלמידים",
@@ -4205,7 +4211,8 @@
       "frames_label": "פערים בתגובות למסגרת משפט",
       "concept_sort_label": "דפוסי מיקום שגוי במיון מושגים"
     },
-    "all_tool_activity": "כל פעילות הכלים"
+    "all_tool_activity": "כל פעילות הכלים",
+    "title_parent": "לוח משפחה"
   },
   "session": {
     "start": "התחל כיתה חיה",
@@ -11402,8 +11409,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "סה\"כ XP של STEM Lab שנצבר בכל הפעילויות",
-      "generate_assess": "ייצר והערך",
-      "manipulatives": "מניפולטיבים",
+      "generate_assess": "בעיות מתמטיקה והערכות",
+      "manipulatives": "כלים ומעבדות אינטראקטיביים",
       "stepbystep": "שלב-אחר-שלב",
       "conceptual": "מושגי",
       "realworld": "עולם אמיתי"
@@ -31452,7 +31459,25 @@
     "surprise_me_contextually_working": "קורא את הקשר השיעור הנוכחי ובוחר צעד הבא מועיל...",
     "use_contextual_suggestion": "שימוש בצעד הבא שהוצע",
     "use_contextual_suggestion_hint": "מפעיל אפשרות 1, 2 או 3 מתוך ההצעות האחרונות",
-    "use_contextual_suggestion_working": "מתחיל את הצעד הבא שנבחר..."
+    "use_contextual_suggestion_working": "מתחיל את הצעד הבא שנבחר...",
+    "jump_to_lesson_plan": "קפיצה למערך השיעור שלי",
+    "jump_to_lesson_plan_done": "מערך השיעור העדכני ביותר נפתח.",
+    "jump_to_lesson_plan_hint": "פתיחה מחדש של מערך השיעור העדכני ביותר",
+    "open_block_suggestions": "קבלת הצעות לבלוקים במסמך",
+    "open_block_suggestions_done": "בונה המסמכים נפתח. הצעות הבלוקים נמצאות בלוח המודגש למעלה.",
+    "open_block_suggestions_hint": "פותח את בונה המסמכים, שם ההצעות נמצאות למעלה",
+    "open_brainstorm_modes": "בחרו סוג פעילות סיעור מוחות",
+    "open_brainstorm_modes_done": "סוגי פעילויות סיעור מוחות נפתחו. בחרו רעיונות, דיון, ג׳יגסו או סימולציה.",
+    "open_brainstorm_modes_hint": "רשת רעיונות, ערכת דיון, ג׳יגסו או סימולציה",
+    "open_discussion_builder": "בנו דיון כיתתי",
+    "open_discussion_builder_done": "בונה הדיונים נפתח בכלי סיעור המוחות. בחרו שיטה, ואז צרו.",
+    "open_discussion_builder_hint": "ערכת דיון עם שיטות כמו חשוב-זוג-שתף",
+    "open_jigsaw_builder": "בנו פעילות ג׳יגסו",
+    "open_jigsaw_builder_done": "בונה הג׳יגסו נפתח בכלי סיעור המוחות. קבעו את גודל הקבוצה, ואז צרו.",
+    "open_jigsaw_builder_hint": "פעילות קבוצות מומחים בשיטת ג׳יגסו עם גודל קבוצה שאתם קובעים",
+    "use_gemini_canvas": "שימוש ב-AlloFlow בתוך Gemini Canvas",
+    "use_gemini_canvas_done": "הגדרות ה-AI נפתחו. הכרטיס הראשון מסביר איך להשתמש ב-AlloFlow בתוך Gemini Canvas ללא שום התקנה.",
+    "use_gemini_canvas_hint": "פותח את הגדרות ה-AI, שם אפשרות Canvas ללא התקנה מובילה"
   },
   "palette": {
     "aria": "לוח הפקודות של AlloFlow",
@@ -31855,5 +31880,11 @@
     "toast_opened": "גרף היישור נפתח לקריאה בלבד.",
     "toast_invalid": "לא ניתן לפתוח את גרף היישור הזה. ייצאו קובץ JSON תקין של גרף AlloFlow.",
     "toast_unreadable": "לא ניתן לקרוא את קובץ גרף היישור הזה."
+  },
+  "shell_link": {
+    "banner_aria": "על הכלי הזה",
+    "banner_text": "כלי אחד מ-AlloFlow, פלטפורמת הוראה חינמית.",
+    "banner_open": "גלו את האפליקציה המלאה",
+    "banner_dismiss": "סגירת ההערה הזו"
   }
 }

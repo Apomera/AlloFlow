@@ -29,9 +29,13 @@ A multi-session i18n wave brought all 56 packs to high completeness. Headline wo
   worker `/submitTranslation` → `dev-tools/i18n/ingest_translation_feedback.cjs`
   (manual review gate before any change is applied).
 
-PPS cluster (acholi, karen, chin_hakha, chin_falam, marshallese, lao, maay_maay) is
-intentional English passthrough; `maay_maay` is a pending human decision (the current
-pack is Standard Somali, not Af-Maay).
+PPS cluster: **the intentional-English-passthrough policy was RETIRED on 2026-08-17 (Aaron).**
+These packs (acholi, karen, chin_hakha, chin_falam, marshallese, lao, maay_maay) have carried
+substantial native content since the June wave, and every 2026-08-16/17 delta batch
+(cmd palette, Translations control, storage, alignment graph, stale-key fixes) hand-translated
+all 63 packs including these seven. Going forward: new-key deltas include them, and gap-filling
+is in scope. Still standing from the old note: `maay_maay` remains a pending human decision
+(the current pack is Standard Somali, not Af-Maay), so treat its values as provisional.
 
 ## 2026-05-26 session 4 — Second wave of UI additions + bug fixes
 

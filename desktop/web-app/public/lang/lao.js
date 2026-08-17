@@ -657,7 +657,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "ຄຳຖາມອີງເອກະສານ",
     "open_stem_lab_explore_aria": "ເປີດ STEAM Lab Explore",
-    "stem_lab_explore": "ສຳຫຼວດ"
+    "stem_lab_explore": "ສຳຫຼວດ",
+    "needs_ai_setup": "ຕ້ອງການການຕັ້ງຄ່າ AI",
+    "needs_ai_setup_cta": "ແຕະເພື່ອເຊື່ອມຕໍ່ AI, ຫຼືໃຊ້ AlloFlow ໃນ Gemini Canvas"
   },
   "meta": {
     "engagement_ideas": "ໄອເດຍການມີສ່ວນຮ່ວມ",
@@ -1429,7 +1431,11 @@
     "tts_provider_aria": "ຜູ້ໃຫ້ບໍລິການ text-to-speech",
     "local_cascade_label": "ລຳດັບການໃຊ້ໃນເຄື່ອງ:",
     "image_generation_header": "ການສ້າງຮູບ",
-    "image_provider_aria": "ຜູ້ໃຫ້ບໍລິການສ້າງຮູບ"
+    "image_provider_aria": "ຜູ້ໃຫ້ບໍລິການສ້າງຮູບ",
+    "guided_card_canvas_title": "ໃຊ້ AlloFlow ຢູ່ໃນ Gemini Canvas",
+    "guided_card_canvas_badge": "ບໍ່ຕ້ອງຕັ້ງຄ່າ",
+    "guided_card_canvas_body": "ວິທີງ່າຍທີ່ສຸດທີ່ຈະໄດ້ AI: ເປີດ AlloFlow ຢູ່ໃນ Google Gemini. ຟຣີດ້ວຍບັນຊີ Google, ໃຊ້ໂຄຕາປະຈຳວັນຂອງແຜນ Gemini ຂອງທ່ານ (ແຜນສ່ວນຕົວ, ການສຶກສາ, ຫຼືແຜນເສຍເງິນລ້ວນໃຊ້ໄດ້). ບໍ່ມີຫຍັງຕ້ອງຕິດຕັ້ງ ແລະບໍ່ມີກະແຈຕ້ອງຈັດການ.",
+    "guided_card_canvas_req": "ເປີດ gemini.google.com ໃນແທັບໃໝ່. ລາຍລະອຽດແຜນຢູ່ google.com/gemini"
   },
   "profiles": {
     "title": "ໂປຣໄຟລ໌ນັກຮຽນ",
@@ -7465,7 +7471,8 @@
       "frames_label": "Sentence-frame response gaps",
       "concept_sort_label": "Concept Sort misplacement patterns"
     },
-    "all_tool_activity": "All Tool Activity"
+    "all_tool_activity": "All Tool Activity",
+    "title_parent": "ແດັດບອດຄອບຄົວ"
   },
   "modals": {
     "student_welcome": "Student Workspace",
@@ -12769,8 +12776,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Total STEM Lab XP earned across all activities",
-      "generate_assess": "Generate & assess",
-      "manipulatives": "ສື່ການສອນ",
+      "generate_assess": "ບົດເລກ ແລະ ການປະເມີນ",
+      "manipulatives": "ເຄື່ອງມືໂຕ້ຕອບ ແລະ ຫ້ອງທົດລອງ",
       "stepbystep": "Step-by-Step",
       "conceptual": "Conceptual",
       "realworld": "Real-World"
@@ -28975,7 +28982,25 @@
     "surprise_me_contextually_working": "ກຳລັງອ່ານສະພາບບົດຮຽນປັດຈຸບັນ ແລະ ເລືອກຂັ້ນຕອນຕໍ່ໄປທີ່ເປັນປະໂຫຍດ...",
     "use_contextual_suggestion": "ໃຊ້ຂັ້ນຕອນຕໍ່ໄປທີ່ແນະນຳ",
     "use_contextual_suggestion_hint": "ດຳເນີນທາງເລືອກ 1, 2 ຫຼື 3 ຈາກຄຳແນະນຳລ່າສຸດ",
-    "use_contextual_suggestion_working": "ກຳລັງເລີ່ມຂັ້ນຕອນຕໍ່ໄປທີ່ເລືອກ..."
+    "use_contextual_suggestion_working": "ກຳລັງເລີ່ມຂັ້ນຕອນຕໍ່ໄປທີ່ເລືອກ...",
+    "jump_to_lesson_plan": "ໄປທີ່ແຜນການສອນຂອງຂ້ອຍ",
+    "jump_to_lesson_plan_done": "ເປີດແຜນການສອນລ່າສຸດແລ້ວ.",
+    "jump_to_lesson_plan_hint": "ເປີດແຜນການສອນລ່າສຸດຄືນໃໝ່",
+    "open_block_suggestions": "ຮັບຄຳແນະນຳບລັອກເອກະສານ",
+    "open_block_suggestions_done": "ເປີດ Document Builder ແລ້ວ. ຄຳແນະນຳບລັອກຢູ່ໃນແຜງທີ່ເນັ້ນໄວ້ທາງເທິງ.",
+    "open_block_suggestions_hint": "ເປີດ Document Builder, ຄຳແນະນຳຢູ່ທາງເທິງ",
+    "open_brainstorm_modes": "ເລືອກປະເພດກິດຈະກຳລະດົມສະໝອງ",
+    "open_brainstorm_modes_done": "ເປີດປະເພດກິດຈະກຳລະດົມສະໝອງແລ້ວ. ເລືອກຄວາມຄິດ, ສົນທະນາ, jigsaw, ຫຼືການຈຳລອງ.",
+    "open_brainstorm_modes_hint": "ຕາໜ່າງຄວາມຄິດ, ຊຸດສົນທະນາ, jigsaw, ຫຼືການຈຳລອງ",
+    "open_discussion_builder": "ສ້າງການສົນທະນາໃນຫ້ອງຮຽນ",
+    "open_discussion_builder_done": "ເປີດຕົວສ້າງການສົນທະນາໃນເຄື່ອງມືລະດົມສະໝອງແລ້ວ. ເລືອກວິທີການ ແລ້ວສ້າງ.",
+    "open_discussion_builder_hint": "ຊຸດສົນທະນາທີ່ມີວິທີການເຊັ່ນ ຄິດ-ຈັບຄູ່-ແບ່ງປັນ",
+    "open_jigsaw_builder": "ສ້າງກິດຈະກຳ jigsaw",
+    "open_jigsaw_builder_done": "ເປີດຕົວສ້າງ jigsaw ໃນເຄື່ອງມືລະດົມສະໝອງແລ້ວ. ກຳນົດຂະໜາດກຸ່ມ ແລ້ວສ້າງ.",
+    "open_jigsaw_builder_hint": "ກິດຈະກຳກຸ່ມຜູ້ຊ່ຽວຊານ jigsaw ດ້ວຍຂະໜາດກຸ່ມທີ່ທ່ານກຳນົດ",
+    "use_gemini_canvas": "ໃຊ້ AlloFlow ຢູ່ໃນ Gemini Canvas",
+    "use_gemini_canvas_done": "ເປີດການຕັ້ງຄ່າ AI ແລ້ວ. ບັດທຳອິດອະທິບາຍການໃຊ້ AlloFlow ໃນ Gemini Canvas ໂດຍບໍ່ຕ້ອງຕັ້ງຄ່າຫຍັງ.",
+    "use_gemini_canvas_hint": "ເປີດການຕັ້ງຄ່າ AI, ບ່ອນທີ່ຕົວເລືອກ Canvas ທີ່ບໍ່ຕ້ອງຕັ້ງຄ່າຢູ່ທາງໜ້າ"
   },
   "palette": {
     "aria": "ແຜງຄຳສັ່ງ AlloFlow",
@@ -29373,5 +29398,11 @@
     "toast_opened": "ເປີດກຣາຟການຈັດລຽນແບບອ່ານຢ່າງດຽວແລ້ວ.",
     "toast_invalid": "ເປີດກຣາຟການຈັດລຽນນັ້ນບໍ່ໄດ້. ສົ່ງອອກໄຟລ໌ JSON ກຣາຟ AlloFlow ທີ່ຖືກຕ້ອງ.",
     "toast_unreadable": "ອ່ານໄຟລ໌ກຣາຟການຈັດລຽນນັ້ນບໍ່ໄດ້."
+  },
+  "shell_link": {
+    "banner_aria": "ກ່ຽວກັບເຄື່ອງມືນີ້",
+    "banner_text": "ເຄື່ອງມືໜຶ່ງຈາກ AlloFlow, ແພລດຟອມການສອນຟຣີ.",
+    "banner_open": "ສຳຫຼວດແອັບເຕັມ",
+    "banner_dismiss": "ປິດບັນທຶກນີ້"
   }
 }

@@ -2284,7 +2284,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "documenti-Basato domande",
     "open_stem_lab_explore_aria": "Apri STEAM Lab Explore",
-    "stem_lab_explore": "Esplora"
+    "stem_lab_explore": "Esplora",
+    "needs_ai_setup": "Serve la configurazione dell’IA",
+    "needs_ai_setup_cta": "Tocca per collegare un’IA, oppure usa AlloFlow dentro Gemini Canvas"
   },
   "history": {
     "load_project": "Carica Project",
@@ -6331,7 +6333,8 @@
       "frames_label": "frasi-frame risposta gaps",
       "concept_sort_label": "Concetto Ordina misplacement modelli"
     },
-    "all_tool_activity": "tutti strumento Attività"
+    "all_tool_activity": "tutti strumento Attività",
+    "title_parent": "Pannello Famiglia"
   },
   "tools": {
     "source": "materiale di origine",
@@ -12758,8 +12761,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Total STEM laboratorio XP earned attraverso tutti attività",
-      "generate_assess": "Genera & assess",
-      "manipulatives": "Materiali manipolativi",
+      "generate_assess": "Problemi di matematica e valutazioni",
+      "manipulatives": "Strumenti interattivi e laboratori",
       "stepbystep": "passi-by-passi",
       "conceptual": "Concettuale",
       "realworld": "Reale-World"
@@ -30052,7 +30055,11 @@
     "tts_provider_aria": "testo-un-speech fornirer",
     "local_cascade_label": "Cascata locale:",
     "image_generation_header": "immagini Generazione",
-    "image_provider_aria": "immagini generazione fornirer"
+    "image_provider_aria": "immagini generazione fornirer",
+    "guided_card_canvas_title": "Usa AlloFlow dentro Gemini Canvas",
+    "guided_card_canvas_badge": "Nessuna installazione",
+    "guided_card_canvas_body": "Il modo più semplice per avere l’IA: apri AlloFlow dentro Google Gemini. Gratis con un account Google, usando la quota giornaliera del tuo piano Gemini (i piani personali, Education o a pagamento funzionano tutti). Niente da installare e nessuna chiave da gestire.",
+    "guided_card_canvas_req": "Apre gemini.google.com in una nuova scheda. Dettagli dei piani su google.com/gemini"
   },
   "diff_view": {
     "title": "origine PDF ↔ Remediated HTML · Diff",
@@ -31202,7 +31209,25 @@
     "surprise_me_contextually_working": "Lettura del contesto della lezione attuale e scelta di un passo successivo utile...",
     "use_contextual_suggestion": "Usa un passo successivo suggerito",
     "use_contextual_suggestion_hint": "Avvia l’opzione 1, 2 o 3 degli ultimi suggerimenti",
-    "use_contextual_suggestion_working": "Avvio del passo successivo scelto..."
+    "use_contextual_suggestion_working": "Avvio del passo successivo scelto...",
+    "jump_to_lesson_plan": "Vai al mio piano di lezione",
+    "jump_to_lesson_plan_done": "Piano di lezione più recente aperto.",
+    "jump_to_lesson_plan_hint": "Riapri il piano di lezione più recente",
+    "open_block_suggestions": "Ottieni suggerimenti per i blocchi del documento",
+    "open_block_suggestions_done": "Costruttore di documenti aperto. I suggerimenti dei blocchi sono nel pannello evidenziato in alto.",
+    "open_block_suggestions_hint": "Apre il Costruttore di documenti, con i suggerimenti in alto",
+    "open_brainstorm_modes": "Scegli un tipo di attività di brainstorming",
+    "open_brainstorm_modes_done": "Tipi di attività di brainstorming aperti. Scegli idee, discussione, jigsaw o simulazione.",
+    "open_brainstorm_modes_hint": "Rete di idee, kit di discussione, jigsaw o simulazione",
+    "open_discussion_builder": "Costruisci una discussione di classe",
+    "open_discussion_builder_done": "Costruttore di discussioni aperto nello strumento di brainstorming. Scegli un protocollo, poi genera.",
+    "open_discussion_builder_hint": "Un kit di discussione con protocolli come pensa-coppia-condividi",
+    "open_jigsaw_builder": "Costruisci un'attività jigsaw",
+    "open_jigsaw_builder_done": "Costruttore jigsaw aperto nello strumento di brainstorming. Imposta la dimensione dei gruppi, poi genera.",
+    "open_jigsaw_builder_hint": "Attività a gruppi di esperti jigsaw con una dimensione dei gruppi decisa da te",
+    "use_gemini_canvas": "Usa AlloFlow dentro Gemini Canvas",
+    "use_gemini_canvas_done": "Configurazione dell'IA aperta. La prima scheda spiega come usare AlloFlow dentro Gemini Canvas senza alcuna installazione.",
+    "use_gemini_canvas_hint": "Apre la configurazione dell'IA, dove l'opzione Canvas senza installazione è in primo piano"
   },
   "palette": {
     "aria": "Tavolozza dei comandi di AlloFlow",
@@ -31603,5 +31628,11 @@
     "toast_opened": "Grafo di allineamento aperto in sola lettura.",
     "toast_invalid": "Impossibile aprire quel grafo di allineamento. Esporta un file JSON di grafo AlloFlow valido.",
     "toast_unreadable": "Impossibile leggere quel file di grafo di allineamento."
+  },
+  "shell_link": {
+    "banner_aria": "Informazioni su questo strumento",
+    "banner_text": "Uno strumento di AlloFlow, una piattaforma didattica gratuita.",
+    "banner_open": "Esplora l’app completa",
+    "banner_dismiss": "Chiudi questa nota"
   }
 }

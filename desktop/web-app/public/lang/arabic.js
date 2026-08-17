@@ -650,7 +650,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "أسئلة قائمة على الوثائق",
     "open_stem_lab_explore_aria": "فتح STEAM Lab Explore",
-    "stem_lab_explore": "استكشاف"
+    "stem_lab_explore": "استكشاف",
+    "needs_ai_setup": "يحتاج إلى إعداد الذكاء الاصطناعي",
+    "needs_ai_setup_cta": "انقر لتوصيل ذكاء اصطناعي، أو استخدم AlloFlow داخل Gemini Canvas"
   },
   "toolbar": {
     "show_bot": "إظهار مساعد الذكاء الاصطناعي",
@@ -1509,7 +1511,11 @@
     "tts_provider_aria": "مزود تحويل النص إلى كلام",
     "local_cascade_label": "التتالي المحلي:",
     "image_generation_header": "إنشاء الصور",
-    "image_provider_aria": "مزود إنشاء الصور"
+    "image_provider_aria": "مزود إنشاء الصور",
+    "guided_card_canvas_title": "استخدم AlloFlow داخل Gemini Canvas",
+    "guided_card_canvas_badge": "بدون إعداد",
+    "guided_card_canvas_body": "أسهل طريقة للحصول على الذكاء الاصطناعي: افتح AlloFlow داخل Google Gemini. مجاني بحساب Google، ويستخدم الحصة اليومية لخطة Gemini الخاصة بك (الخطط الشخصية والتعليمية والمدفوعة كلها تعمل). لا شيء للتثبيت ولا مفتاح لإدارته.",
+    "guided_card_canvas_req": "يفتح gemini.google.com في علامة تبويب جديدة. تفاصيل الخطط على google.com/gemini"
   },
   "profiles": {
     "title": "ملفات تعريف الطلاب",
@@ -4188,7 +4194,8 @@
       "frames_label": "ثغرات استجابة إطارات الجمل",
       "concept_sort_label": "أنماط سوء وضع ترتيب المفاهيم"
     },
-    "all_tool_activity": "نشاط جميع الأدوات"
+    "all_tool_activity": "نشاط جميع الأدوات",
+    "title_parent": "لوحة العائلة"
   },
   "session": {
     "start": "ابدأ الصف المباشر",
@@ -12736,8 +12743,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "إجمالي XP مكتسبة في مختبر STEM عبر جميع الأنشطة",
-      "generate_assess": "إنشاء وتقييم",
-      "manipulatives": "أدوات تلاعب",
+      "generate_assess": "مسائل رياضيات وتقييمات",
+      "manipulatives": "أدوات ومختبرات تفاعلية",
       "stepbystep": "خطوة بخطوة",
       "conceptual": "مفاهيمي",
       "realworld": "واقعي"
@@ -31106,7 +31113,25 @@
     "surprise_me_contextually_working": "قراءة سياق الدرس الحالي واختيار خطوة تالية مفيدة...",
     "use_contextual_suggestion": "استخدام خطوة تالية مقترحة",
     "use_contextual_suggestion_hint": "يشغل الخيار 1 أو 2 أو 3 من أحدث الاقتراحات",
-    "use_contextual_suggestion_working": "بدء الخطوة التالية المحددة..."
+    "use_contextual_suggestion_working": "بدء الخطوة التالية المحددة...",
+    "jump_to_lesson_plan": "انتقل إلى خطة درسي",
+    "jump_to_lesson_plan_done": "تم فتح أحدث خطة درس.",
+    "jump_to_lesson_plan_hint": "أعد فتح أحدث خطة درس",
+    "open_block_suggestions": "احصل على اقتراحات أقسام المستند",
+    "open_block_suggestions_done": "تم فتح منشئ المستندات. اقتراحات الأقسام في اللوحة المميزة في الأعلى.",
+    "open_block_suggestions_hint": "افتح منشئ المستندات، حيث تظهر الاقتراحات في الأعلى",
+    "open_brainstorm_modes": "اختر نوع نشاط العصف الذهني",
+    "open_brainstorm_modes_done": "تم فتح أنواع أنشطة العصف الذهني. اختر الأفكار أو النقاش أو جيغسو أو المحاكاة.",
+    "open_brainstorm_modes_hint": "شبكة أفكار، أو حزمة نقاش، أو أحجية جيغسو، أو محاكاة",
+    "open_discussion_builder": "أنشئ نقاشًا صفّيًا",
+    "open_discussion_builder_done": "تم فتح منشئ النقاش في أداة العصف الذهني. اختر أسلوبًا ثم أنشئ.",
+    "open_discussion_builder_hint": "حزمة نقاش تتضمن أساليب مثل فكّر-زاوج-شارك",
+    "open_jigsaw_builder": "أنشئ نشاط جيغسو",
+    "open_jigsaw_builder_done": "تم فتح منشئ جيغسو في أداة العصف الذهني. حدّد حجم المجموعة ثم أنشئ.",
+    "open_jigsaw_builder_hint": "نشاط مجموعات الخبراء بنمط جيغسو بحجم مجموعات تحدده أنت",
+    "use_gemini_canvas": "استخدم AlloFlow داخل Gemini Canvas",
+    "use_gemini_canvas_done": "تم فتح إعدادات الذكاء الاصطناعي. تشرح البطاقة الأولى استخدام AlloFlow داخل Gemini Canvas بدون أي إعداد.",
+    "use_gemini_canvas_hint": "افتح إعدادات الذكاء الاصطناعي، حيث يظهر خيار Canvas الذي لا يحتاج إلى إعداد"
   },
   "palette": {
     "aria": "لوحة أوامر AlloFlow",
@@ -31514,5 +31539,11 @@
     "toast_opened": "فتح رسم المحاذاة للقراءة فقط.",
     "toast_invalid": "تعذر فتح رسم المحاذاة هذا. صدر ملف JSON صالحا لرسم AlloFlow.",
     "toast_unreadable": "تعذرت قراءة ملف رسم المحاذاة هذا."
+  },
+  "shell_link": {
+    "banner_aria": "حول هذه الأداة",
+    "banner_text": "أداة واحدة من AlloFlow، منصة تعليمية مجانية.",
+    "banner_open": "استكشف التطبيق الكامل",
+    "banner_dismiss": "إغلاق هذه الملاحظة"
   }
 }

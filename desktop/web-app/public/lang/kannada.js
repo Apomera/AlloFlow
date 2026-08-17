@@ -2287,7 +2287,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "ದಾಖಲೆ-ಆಧಾರಿತ ಪ್ರಶ್ನೆಗಳು",
     "open_stem_lab_explore_aria": "STEAM Lab Explore ತೆರೆಯಿರಿ",
-    "stem_lab_explore": "ಅನ್ವೇಷಿಸಿ"
+    "stem_lab_explore": "ಅನ್ವೇಷಿಸಿ",
+    "needs_ai_setup": "AI ಸೆಟಪ್ ಅಗತ್ಯವಿದೆ",
+    "needs_ai_setup_cta": "AI ಸಂಪರ್ಕಿಸಲು ಟ್ಯಾಪ್ ಮಾಡಿ, ಅಥವಾ Gemini Canvas ನಲ್ಲಿ AlloFlow ಬಳಸಿ"
   },
   "history": {
     "load_project": "ಪ್ರಾಜೆಕ್ಟ್ ಲೋಡ್ ಮಾಡಿ",
@@ -6503,7 +6505,8 @@
       "frames_label": "ವಾಕ್ಯ-ಚೌಕಟ್ಟು ಪ್ರತಿಕ್ರಿಯೆ ಕೊರತೆಗಳು",
       "concept_sort_label": "Concept Sort ತಪ್ಪು-ಸ್ಥಾನ ಮಾದರಿಗಳು"
     },
-    "all_tool_activity": "ಎಲ್ಲಾ ಸಾಧನ ಚಟುವಟಿಕೆ"
+    "all_tool_activity": "ಎಲ್ಲಾ ಸಾಧನ ಚಟುವಟಿಕೆ",
+    "title_parent": "ಕುಟುಂಬ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್"
   },
   "tools": {
     "source": "ಮೂಲ ಸಾಮಗ್ರಿ",
@@ -12923,8 +12926,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "ಎಲ್ಲಾ ಚಟುವಟಿಕೆಗಳಲ್ಲಿ ಗಳಿಸಿದ ಒಟ್ಟು STEM Lab XP",
-      "generate_assess": "ರಚಿಸಿ ಮತ್ತು ಮೌಲ್ಯಮಾಪನ ಮಾಡಿ",
-      "manipulatives": "ಕೈಯಾಡಿಸಬಲ್ಲ ಸಾಧನಗಳು",
+      "generate_assess": "ಗಣಿತದ ಸಮಸ್ಯೆಗಳು ಮತ್ತು ಮೌಲ್ಯಮಾಪನಗಳು",
+      "manipulatives": "ಸಂವಾದಾತ್ಮಕ ಸಾಧನಗಳು ಮತ್ತು ಲ್ಯಾಬ್‌ಗಳು",
       "stepbystep": "ಹಂತ-ಹಂತವಾಗಿ",
       "conceptual": "ಪರಿಕಲ್ಪನಾತ್ಮಕ",
       "realworld": "ನೈಜ-ಜಗತ್ತು"
@@ -30140,7 +30143,11 @@
     "tts_provider_aria": "ಪಠ್ಯದಿಂದ ಧ್ವನಿ ಪೂರೈಕೆದಾರ",
     "local_cascade_label": "ಸ್ಥಳೀಯ ಕ್ಯಾಸ್ಕೇಡ್:",
     "image_generation_header": "ಚಿತ್ರ ರಚನೆ",
-    "image_provider_aria": "ಚಿತ್ರ ರಚನೆ ಪೂರೈಕೆದಾರ"
+    "image_provider_aria": "ಚಿತ್ರ ರಚನೆ ಪೂರೈಕೆದಾರ",
+    "guided_card_canvas_title": "Gemini Canvas ಒಳಗೆ AlloFlow ಬಳಸಿ",
+    "guided_card_canvas_badge": "ಸೆಟಪ್ ಬೇಡ",
+    "guided_card_canvas_body": "AI ಪಡೆಯುವ ಸುಲಭ ದಾರಿ: Google Gemini ಒಳಗೆ AlloFlow ತೆರೆಯಿರಿ. Google ಖಾತೆಯೊಂದಿಗೆ ಉಚಿತ, ನಿಮ್ಮ Gemini ಯೋಜನೆಯ ದೈನಂದಿನ ಕೋಟಾ ಬಳಸುತ್ತದೆ (ವೈಯಕ್ತಿಕ, ಶಿಕ್ಷಣ, ಅಥವಾ ಪಾವತಿ ಯೋಜನೆಗಳೆಲ್ಲ ಕೆಲಸ ಮಾಡುತ್ತವೆ). ಸ್ಥಾಪಿಸಲು ಏನೂ ಇಲ್ಲ, ನಿರ್ವಹಿಸಲು ಕೀ ಇಲ್ಲ.",
+    "guided_card_canvas_req": "ಹೊಸ ಟ್ಯಾಬ್‌ನಲ್ಲಿ gemini.google.com ತೆರೆಯುತ್ತದೆ. ಯೋಜನೆ ವಿವರಗಳು google.com/gemini ನಲ್ಲಿ"
   },
   "diff_view": {
     "title": "ಮೂಲ PDF ↔ ಸರಿಪಡಿಸಿದ HTML · ಡಿಫ್",
@@ -31133,7 +31140,25 @@
     "surprise_me_contextually_working": "ಪ್ರಸ್ತುತ ಪಾಠದ ಸಂದರ್ಭವನ್ನು ಓದಿ ಉಪಯುಕ್ತ ಮುಂದಿನ ಹೆಜ್ಜೆಯನ್ನು ಆರಿಸಲಾಗುತ್ತಿದೆ...",
     "use_contextual_suggestion": "ಸೂಚಿಸಿದ ಮುಂದಿನ ಹೆಜ್ಜೆಯನ್ನು ಬಳಸಿ",
     "use_contextual_suggestion_hint": "ಇತ್ತೀಚಿನ ಸಲಹೆಗಳಿಂದ ಆಯ್ಕೆ 1, 2 ಅಥವಾ 3 ಅನ್ನು ನಡೆಸುತ್ತದೆ",
-    "use_contextual_suggestion_working": "ಆರಿಸಿದ ಮುಂದಿನ ಹೆಜ್ಜೆಯನ್ನು ಪ್ರಾರಂಭಿಸಲಾಗುತ್ತಿದೆ..."
+    "use_contextual_suggestion_working": "ಆರಿಸಿದ ಮುಂದಿನ ಹೆಜ್ಜೆಯನ್ನು ಪ್ರಾರಂಭಿಸಲಾಗುತ್ತಿದೆ...",
+    "jump_to_lesson_plan": "ನನ್ನ ಪಾಠ ಯೋಜನೆಗೆ ಹೋಗಿ",
+    "jump_to_lesson_plan_done": "ಇತ್ತೀಚಿನ ಪಾಠ ಯೋಜನೆ ತೆರೆದಿದೆ.",
+    "jump_to_lesson_plan_hint": "ಇತ್ತೀಚಿನ ಪಾಠ ಯೋಜನೆಯನ್ನು ಮತ್ತೆ ತೆರೆಯಿರಿ",
+    "open_block_suggestions": "ದಾಖಲೆ ಬ್ಲಾಕ್ ಸಲಹೆಗಳನ್ನು ಪಡೆಯಿರಿ",
+    "open_block_suggestions_done": "ಡಾಕ್ಯುಮೆಂಟ್ ಬಿಲ್ಡರ್ ತೆರೆದಿದೆ. ಬ್ಲಾಕ್ ಸಲಹೆಗಳು ಮೇಲಿನ ಹೈಲೈಟ್ ಮಾಡಿದ ಫಲಕದಲ್ಲಿವೆ.",
+    "open_block_suggestions_hint": "ಡಾಕ್ಯುಮೆಂಟ್ ಬಿಲ್ಡರ್ ತೆರೆಯಿರಿ, ಸಲಹೆಗಳು ಮೇಲ್ಭಾಗದಲ್ಲಿವೆ",
+    "open_brainstorm_modes": "ಬ್ರೇನ್‌ಸ್ಟಾರ್ಮ್ ಚಟುವಟಿಕೆಯ ಪ್ರಕಾರ ಆಯ್ಕೆಮಾಡಿ",
+    "open_brainstorm_modes_done": "ಬ್ರೇನ್‌ಸ್ಟಾರ್ಮ್ ಚಟುವಟಿಕೆಯ ಪ್ರಕಾರಗಳು ತೆರೆದಿವೆ. ಆಲೋಚನೆ, ಚರ್ಚೆ, ಜಿಗ್ಸಾ, ಅಥವಾ ಸಿಮ್ಯುಲೇಶನ್ ಆರಿಸಿ.",
+    "open_brainstorm_modes_hint": "ಆಲೋಚನೆಗಳ ಜಾಲ, ಚರ್ಚಾ ಕಿಟ್, ಜಿಗ್ಸಾ, ಅಥವಾ ಸಿಮ್ಯುಲೇಶನ್",
+    "open_discussion_builder": "ತರಗತಿ ಚರ್ಚೆ ರಚಿಸಿ",
+    "open_discussion_builder_done": "ಚರ್ಚಾ ರಚನಾಕಾರ ಬ್ರೇನ್‌ಸ್ಟಾರ್ಮ್ ಸಾಧನದಲ್ಲಿ ತೆರೆದಿದೆ. ವಿಧಾನ ಆರಿಸಿ, ನಂತರ ರಚಿಸಿ.",
+    "open_discussion_builder_hint": "ಯೋಚಿಸಿ-ಜೋಡಿ-ಹಂಚಿಕೊಳ್ಳಿ ನಂತಹ ವಿಧಾನಗಳಿರುವ ಚರ್ಚಾ ಕಿಟ್",
+    "open_jigsaw_builder": "ಜಿಗ್ಸಾ ಚಟುವಟಿಕೆ ರಚಿಸಿ",
+    "open_jigsaw_builder_done": "ಜಿಗ್ಸಾ ರಚನಾಕಾರ ಬ್ರೇನ್‌ಸ್ಟಾರ್ಮ್ ಸಾಧನದಲ್ಲಿ ತೆರೆದಿದೆ. ಗುಂಪಿನ ಗಾತ್ರ ನಿಗದಿಪಡಿಸಿ, ನಂತರ ರಚಿಸಿ.",
+    "open_jigsaw_builder_hint": "ನೀವು ನಿಗದಿಪಡಿಸುವ ಗುಂಪಿನ ಗಾತ್ರದೊಂದಿಗೆ ಜಿಗ್ಸಾ ತಜ್ಞ-ಗುಂಪು ಚಟುವಟಿಕೆ",
+    "use_gemini_canvas": "Gemini Canvas ಒಳಗೆ AlloFlow ಬಳಸಿ",
+    "use_gemini_canvas_done": "AI ಸೆಟಪ್ ತೆರೆದಿದೆ. ಮೊದಲ ಕಾರ್ಡ್ ಯಾವುದೇ ಸೆಟಪ್ ಇಲ್ಲದೆ Gemini Canvas ನಲ್ಲಿ AlloFlow ಬಳಸುವುದನ್ನು ವಿವರಿಸುತ್ತದೆ.",
+    "use_gemini_canvas_hint": "AI ಸೆಟಪ್ ತೆರೆಯಿರಿ, ಸೆಟಪ್ ಅಗತ್ಯವಿಲ್ಲದ Canvas ಆಯ್ಕೆ ಮುಂದಿದೆ"
   },
   "palette": {
     "aria": "AlloFlow ಆದೇಶ ಪ್ಯಾಲೆಟ್",
@@ -31510,5 +31535,11 @@
     "toast_opened": "ಹೊಂದಾಣಿಕೆ ಗ್ರಾಫ್ ಓದಲು ಮಾತ್ರ ತೆರೆಯಲಾಗಿದೆ.",
     "toast_invalid": "ಆ ಹೊಂದಾಣಿಕೆ ಗ್ರಾಫ್ ತೆರೆಯಲಾಗಲಿಲ್ಲ. ಮಾನ್ಯ AlloFlow ಗ್ರಾಫ್ JSON ಫೈಲ್ ರಫ್ತು ಮಾಡಿ.",
     "toast_unreadable": "ಆ ಹೊಂದಾಣಿಕೆ ಗ್ರಾಫ್ ಫೈಲ್ ಓದಲಾಗಲಿಲ್ಲ."
+  },
+  "shell_link": {
+    "banner_aria": "ಈ ಸಾಧನದ ಬಗ್ಗೆ",
+    "banner_text": "AlloFlow ನಿಂದ ಒಂದು ಸಾಧನ, ಉಚಿತ ಬೋಧನಾ ವೇದಿಕೆ.",
+    "banner_open": "ಪೂರ್ಣ ಅಪ್ಲಿಕೇಶನ್ ಅನ್ವೇಷಿಸಿ",
+    "banner_dismiss": "ಈ ಟಿಪ್ಪಣಿಯನ್ನು ವಜಾಗೊಳಿಸಿ"
   }
 }

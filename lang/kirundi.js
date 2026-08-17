@@ -2279,7 +2279,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "inyandiko-Bishingiye ikibazo",
     "open_stem_lab_explore_aria": "Ugurura STEAM Lab Explore",
-    "stem_lab_explore": "Shakashaka"
+    "stem_lab_explore": "Shakashaka",
+    "needs_ai_setup": "Bisaba itunganywa rya AI",
+    "needs_ai_setup_cta": "Fyonda kugira uhuze AI, canke ukoreshe AlloFlow muri Gemini Canvas"
   },
   "history": {
     "load_project": "Pakira Project",
@@ -6325,7 +6327,8 @@
       "frames_label": "umurongo w'amajambo-frame response gaps",
       "concept_sort_label": "Igitekerezo Shira mu rutonde misplacement imiterere"
     },
-    "all_tool_activity": "vyose ibikoresho Activity"
+    "all_tool_activity": "vyose ibikoresho Activity",
+    "title_parent": "Ikibaho c’Umuryango"
   },
   "tools": {
     "source": "imvo Material",
@@ -12704,8 +12707,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Total STEM laboratwari XP earned across vyose activities",
-      "generate_assess": "Kora & assess",
-      "manipulatives": "Ibikoresho vyo Gukoresha",
+      "generate_assess": "Ibibazo vy'imibare n'isuzuma",
+      "manipulatives": "Ibikoresho bikorana na laboratware",
       "stepbystep": "intambwe-by-intambwe",
       "conceptual": "Iciyumviro",
       "realworld": "Isi-Nyezina"
@@ -29422,7 +29425,11 @@
     "tts_provider_aria": "inyandiko-ku-speech provider",
     "local_cascade_label": "Uruhamagaro rwo hafi:",
     "image_generation_header": "ifoto Igisekuru",
-    "image_provider_aria": "ifoto igisekuru provider"
+    "image_provider_aria": "ifoto igisekuru provider",
+    "guided_card_canvas_title": "Koresha AlloFlow imbere muri Gemini Canvas",
+    "guided_card_canvas_badge": "Nta tunganywa",
+    "guided_card_canvas_body": "Inzira yoroshe yo kuronka AI: ugurura AlloFlow imbere muri Google Gemini. Ku buntu ukoresheje konti ya Google, hakoreshwa igitigiri ca buri musi c’umugambi wa Gemini wawe (imigambi y’umuntu ku giti ciwe, iy’indero, canke iriha vyose birakora). Nta co gushiramwo kandi nta rupfunguruzo rwo kwitwararika.",
+    "guided_card_canvas_req": "Yugurura gemini.google.com mu gafishi gasha. Ibisobanuro vy’imigambi kuri google.com/gemini"
   },
   "diff_view": {
     "title": "imvo PDF ↔ Remediated HTML · Diff",
@@ -30781,7 +30788,25 @@
     "surprise_me_contextually_working": "Gusoma aho isomo rigeze no guhitamwo intambwe ikurikira ifise akamaro...",
     "use_contextual_suggestion": "Koresha intambwe ikurikira yatanzwe",
     "use_contextual_suggestion_hint": "Ikoresha ihitamwo rya 1, 2, canke 3 mu vyatanzwe vuba",
-    "use_contextual_suggestion_working": "Gutangura intambwe ikurikira yatowe..."
+    "use_contextual_suggestion_working": "Gutangura intambwe ikurikira yatowe...",
+    "jump_to_lesson_plan": "Ja ku mugambi w’icigwa canje",
+    "jump_to_lesson_plan_done": "Umugambi w’icigwa uheruka wuguruwe.",
+    "jump_to_lesson_plan_hint": "Subira wugurure umugambi w’icigwa uheruka",
+    "open_block_suggestions": "Ronka ivyifuzo vy’ibice vy’icandiko",
+    "open_block_suggestions_done": "Document Builder yuguruwe. Ivyifuzo vy’ibice biri mu gace kerekanywe hejuru.",
+    "open_block_suggestions_hint": "Ugurura Document Builder, ivyifuzo biri hejuru",
+    "open_brainstorm_modes": "Hitamwo ubwoko bw’umwimenyerezo wo gutanga ivyiyumviro",
+    "open_brainstorm_modes_done": "Ubwoko bw’imyimenyerezo yo gutanga ivyiyumviro bwuguruwe. Hitamwo ivyiyumviro, ikiyago, jigsaw, canke ikigereranyo.",
+    "open_brainstorm_modes_hint": "Urusobe rw’ivyiyumviro, agasandugu k’ikiyago, jigsaw, canke ikigereranyo",
+    "open_discussion_builder": "Kora ikiyago c’ishure",
+    "open_discussion_builder_done": "Igikoresho co gukora ibiyago cuguruwe mu gikoresho co gutanga ivyiyumviro. Hitamwo uburyo, hanyuma ukore.",
+    "open_discussion_builder_hint": "Agasandugu k’ikiyago gafise uburyo nka iyumvira-shira hamwe-sangira",
+    "open_jigsaw_builder": "Kora umwimenyerezo wa jigsaw",
+    "open_jigsaw_builder_done": "Igikoresho co gukora jigsaw cuguruwe mu gikoresho co gutanga ivyiyumviro. Shiraho ubunini bw’umurwi, hanyuma ukore.",
+    "open_jigsaw_builder_hint": "Umwimenyerezo w’imirwi y’abahinga ba jigsaw ufise ubunini bw’umurwi ushiraho",
+    "use_gemini_canvas": "Koresha AlloFlow imbere muri Gemini Canvas",
+    "use_gemini_canvas_done": "Itunganywa rya AI ryuguruwe. Ikarata ya mbere isigura gukoresha AlloFlow muri Gemini Canvas ata tunganywa na rimwe.",
+    "use_gemini_canvas_hint": "Ugurura itunganywa rya AI, aho uburyo bwa Canvas budasaba itunganywa buza imbere"
   },
   "palette": {
     "aria": "Urutonde rw'amategeko rwa AlloFlow",
@@ -31170,5 +31195,11 @@
     "toast_opened": "Igishushanyo c’ihuza cuguruwe gusomwa gusa.",
     "toast_invalid": "Ntivyashobotse kugurura ico gishushanyo c’ihuza. Sohora dosiye ya JSON y’igishushanyo ca AlloFlow yemewe.",
     "toast_unreadable": "Ntivyashobotse gusoma iyo dosiye y’igishushanyo c’ihuza."
+  },
+  "shell_link": {
+    "banner_aria": "Ivyerekeye iki gikoresho",
+    "banner_text": "Igikoresho kimwe ca AlloFlow, urubuga rw’ukwigisha ku buntu.",
+    "banner_open": "Raba porogarama yose",
+    "banner_dismiss": "Kuraho iyi nyandiko"
   }
 }

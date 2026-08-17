@@ -650,7 +650,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Su'aalo ku Saleysan Dukumeentiga",
     "open_stem_lab_explore_aria": "Fur STEAM Lab Explore",
-    "stem_lab_explore": "Sahmin"
+    "stem_lab_explore": "Sahmin",
+    "needs_ai_setup": "Wuxuu u baahan yahay dejinta AI",
+    "needs_ai_setup_cta": "Taabo si aad ugu xirto AI, ama isticmaal AlloFlow gudaha Gemini Canvas"
   },
   "toolbar": {
     "show_bot": "Tus Kaalmiyaha AI",
@@ -1506,7 +1508,11 @@
     "tts_provider_aria": "Bixiyaha qoraal-ku-cisbi",
     "local_cascade_label": "Taxan maxalli ah:",
     "image_generation_header": "Samaynta Sawirka",
-    "image_provider_aria": "Bixiyaha samaynta sawirka"
+    "image_provider_aria": "Bixiyaha samaynta sawirka",
+    "guided_card_canvas_title": "Isticmaal AlloFlow gudaha Gemini Canvas",
+    "guided_card_canvas_badge": "Dejin la’aan",
+    "guided_card_canvas_body": "Habka ugu fudud ee AI lagu helo: fur AlloFlow gudaha Google Gemini. Bilaash akoon Google ah, isagoo isticmaalaya qoondada maalinlaha ah ee qorshahaaga Gemini (qorshayaasha shakhsiga, waxbarashada, ama lacag-bixinta dhammaan way shaqeeyaan). Wax la rakibo ma jiraan, furena lama maamulayo.",
+    "guided_card_canvas_req": "Wuxuu ku furayaa gemini.google.com tab cusub. Faahfaahinta qorshayaasha waxay ku taal google.com/gemini"
   },
   "profiles": {
     "title": "Astaamaha Ardayda",
@@ -4098,7 +4104,8 @@
       "frames_label": "Marin-habooyin jawaab-qaabka jumlada",
       "concept_sort_label": "Qaababka khaldan ee Habayn Fikradeed"
     },
-    "all_tool_activity": "Hawsha Dhammaan Aaladaha"
+    "all_tool_activity": "Hawsha Dhammaan Aaladaha",
+    "title_parent": "Dashboardka Qoyska"
   },
   "session": {
     "start": "Bilow Fasal Toos ah",
@@ -12128,8 +12135,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Wadarta XP STEM Lab ee la kasbaday dhammaan hawlaha",
-      "generate_assess": "Samee & qiimee",
-      "manipulatives": "Manipulatives",
+      "generate_assess": "Su'aalaha xisaabta iyo qiimeynta",
+      "manipulatives": "Qalab is-dhexgal ah iyo shaybaaro",
       "stepbystep": "Tallaabo-Tallaabo",
       "conceptual": "Fikradeed",
       "realworld": "Dunida-Dhabta-ah"
@@ -30878,7 +30885,25 @@
     "surprise_me_contextually_working": "Waxaa la akhrinayaa xaaladda casharka hadda waxaana la dooranayaa tallaabo xigta oo faa’iido leh...",
     "use_contextual_suggestion": "Isticmaal tallaabada xigta ee la soo jeediyay",
     "use_contextual_suggestion_hint": "Waxay socodsiisaa ikhtiyaarka 1, 2, ama 3 ee soo jeedinta ugu dambaysay",
-    "use_contextual_suggestion_working": "Waxaa la bilaabayaa tallaabada xigta ee la doortay..."
+    "use_contextual_suggestion_working": "Waxaa la bilaabayaa tallaabada xigta ee la doortay...",
+    "jump_to_lesson_plan": "U bood qorshaha casharkayga",
+    "jump_to_lesson_plan_done": "Qorshaha casharka ee ugu dambeeyay waa la furay.",
+    "jump_to_lesson_plan_hint": "Dib u fur qorshaha casharka ee ugu dambeeyay",
+    "open_block_suggestions": "Hel soo-jeedinno qaybaha dokumentiga",
+    "open_block_suggestions_done": "Dhisaha Dokumentiga waa la furay. Soo-jeedinnada qaybuhu waxay ku jiraan guddiga la iftiimiyay ee sare.",
+    "open_block_suggestions_hint": "Fur Dhisaha Dokumentiga, soo-jeedinnadu waxay yaalliin xagga sare",
+    "open_brainstorm_modes": "Dooro nooca hawsha fikir-abuurka",
+    "open_brainstorm_modes_done": "Noocyada hawlaha fikir-abuurka waa la furay. Dooro fikrado, dood, jigsaw, ama jilitaan.",
+    "open_brainstorm_modes_hint": "Shabakada fikradaha, xirmada doodda, jigsaw, ama jilitaan",
+    "open_discussion_builder": "Dhis dood fasal",
+    "open_discussion_builder_done": "Dhisaha doodda ayaa laga furay qalabka fikir-abuurka. Dooro hab, kadibna abuur.",
+    "open_discussion_builder_hint": "Xirmo dood leh habab sida ka-fikir-labo noqda-wadaag",
+    "open_jigsaw_builder": "Dhis hawl jigsaw ah",
+    "open_jigsaw_builder_done": "Dhisaha jigsaw ayaa laga furay qalabka fikir-abuurka. Deji cabbirka kooxda, kadibna abuur.",
+    "open_jigsaw_builder_hint": "Hawl kooxo khubaro jigsaw ah oo cabbirka kooxda aad adigu dejiso",
+    "use_gemini_canvas": "Isticmaal AlloFlow gudaha Gemini Canvas",
+    "use_gemini_canvas_done": "Dejinta AI waa la furay. Kaadhka koowaad wuxuu sharxayaa isticmaalka AlloFlow gudaha Gemini Canvas iyada oo aan wax dejin ah la samayn.",
+    "use_gemini_canvas_hint": "Fur dejinta AI, halkaas oo doorashada Canvas ee aan dejin u baahnayn ay hor timaado"
   },
   "palette": {
     "aria": "Liiska amarrada AlloFlow",
@@ -31283,5 +31308,11 @@
     "toast_opened": "Garaafka isku-toosinta waxaa loo furay akhris kaliya.",
     "toast_invalid": "Lama furi karin garaafkaas isku-toosinta. Soo saar fayl JSON garaaf AlloFlow oo sax ah.",
     "toast_unreadable": "Lama akhrin karin faylkaas garaafka isku-toosinta."
+  },
+  "shell_link": {
+    "banner_aria": "Ku saabsan qalabkan",
+    "banner_text": "Hal qalab oo ka socda AlloFlow, madal wax-barid oo bilaash ah.",
+    "banner_open": "Sahamin abka oo dhan",
+    "banner_dismiss": "Xir qoraalkan"
   }
 }

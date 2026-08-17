@@ -2285,7 +2285,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Документально-ориентированные вопросы",
     "open_stem_lab_explore_aria": "Открыть STEAM Lab Explore",
-    "stem_lab_explore": "Исследовать"
+    "stem_lab_explore": "Исследовать",
+    "needs_ai_setup": "Нужна настройка ИИ",
+    "needs_ai_setup_cta": "Нажмите, чтобы подключить ИИ, или используйте AlloFlow внутри Gemini Canvas"
   },
   "history": {
     "load_project": "Загрузить проект",
@@ -6331,7 +6333,8 @@
       "frames_label": "Пробелы в ответах с рамками предложений",
       "concept_sort_label": "Паттерны неправильного размещения в сортировке понятий"
     },
-    "all_tool_activity": "Активность всех инструментов"
+    "all_tool_activity": "Активность всех инструментов",
+    "title_parent": "Семейная панель"
   },
   "tools": {
     "source": "Исходный материал",
@@ -12735,8 +12738,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Всего заработанного XP STEM Lab по всем активностям",
-      "generate_assess": "Создать и оценить",
-      "manipulatives": "Манипулятивы",
+      "generate_assess": "Математические задачи и оценивание",
+      "manipulatives": "Интерактивные инструменты и лаборатории",
       "stepbystep": "Пошагово",
       "conceptual": "Концептуально",
       "realworld": "Реальный мир"
@@ -30337,7 +30340,11 @@
     "tts_provider_aria": "Провайдер преобразования текста в речь",
     "local_cascade_label": "Локальный каскад:",
     "image_generation_header": "Генерация изображений",
-    "image_provider_aria": "Провайдер генерации изображений"
+    "image_provider_aria": "Провайдер генерации изображений",
+    "guided_card_canvas_title": "Использовать AlloFlow внутри Gemini Canvas",
+    "guided_card_canvas_badge": "Без настройки",
+    "guided_card_canvas_body": "Самый простой способ получить ИИ: откройте AlloFlow внутри Google Gemini. Бесплатно с аккаунтом Google, используется дневная квота вашего тарифа Gemini (личные, образовательные и платные тарифы подходят все). Ничего не нужно устанавливать, и нет ключа, которым нужно управлять.",
+    "guided_card_canvas_req": "Открывает gemini.google.com в новой вкладке. Подробности о тарифах на google.com/gemini"
   },
   "diff_view": {
     "title": "Исходный PDF ↔ Исправленный HTML · Diff",
@@ -31487,7 +31494,25 @@
     "surprise_me_contextually_working": "Читается контекст текущего урока, выбирается полезный следующий шаг...",
     "use_contextual_suggestion": "Использовать предложенный следующий шаг",
     "use_contextual_suggestion_hint": "Запускает вариант 1, 2 или 3 из последних предложений",
-    "use_contextual_suggestion_working": "Запускается выбранный следующий шаг..."
+    "use_contextual_suggestion_working": "Запускается выбранный следующий шаг...",
+    "jump_to_lesson_plan": "Перейти к моему плану урока",
+    "jump_to_lesson_plan_done": "Самый свежий план урока открыт.",
+    "jump_to_lesson_plan_hint": "Снова открыть самый свежий план урока",
+    "open_block_suggestions": "Получить предложения блоков документа",
+    "open_block_suggestions_done": "Конструктор документов открыт. Предложения блоков находятся в выделенной панели сверху.",
+    "open_block_suggestions_hint": "Открывает Конструктор документов, предложения находятся сверху",
+    "open_brainstorm_modes": "Выберите тип мозгового штурма",
+    "open_brainstorm_modes_done": "Типы мозгового штурма открыты. Выберите идеи, дискуссию, джигсо или симуляцию.",
+    "open_brainstorm_modes_hint": "Сеть идей, набор для дискуссии, джигсо или симуляция",
+    "open_discussion_builder": "Создать классную дискуссию",
+    "open_discussion_builder_done": "Конструктор дискуссий открыт в инструменте мозгового штурма. Выберите приём, затем создайте.",
+    "open_discussion_builder_hint": "Набор для дискуссии с приёмами вроде подумай-в паре-поделись",
+    "open_jigsaw_builder": "Создать активность джигсо",
+    "open_jigsaw_builder_done": "Конструктор джигсо открыт в инструменте мозгового штурма. Задайте размер группы, затем создайте.",
+    "open_jigsaw_builder_hint": "Активность экспертных групп джигсо с размером группы, который задаёте вы",
+    "use_gemini_canvas": "Использовать AlloFlow внутри Gemini Canvas",
+    "use_gemini_canvas_done": "Настройки ИИ открыты. Первая карточка объясняет, как использовать AlloFlow в Gemini Canvas без какой-либо настройки.",
+    "use_gemini_canvas_hint": "Открывает настройки ИИ, где вариант Canvas без настройки стоит первым"
   },
   "palette": {
     "aria": "Командная палитра AlloFlow",
@@ -31891,5 +31916,11 @@
     "toast_opened": "Граф соответствия открыт только для чтения.",
     "toast_invalid": "Не удалось открыть этот граф соответствия. Экспортируйте корректный файл JSON графа AlloFlow.",
     "toast_unreadable": "Не удалось прочитать этот файл графа соответствия."
+  },
+  "shell_link": {
+    "banner_aria": "Об этом инструменте",
+    "banner_text": "Один инструмент из AlloFlow, бесплатной обучающей платформы.",
+    "banner_open": "Изучить всё приложение",
+    "banner_dismiss": "Закрыть эту заметку"
   }
 }

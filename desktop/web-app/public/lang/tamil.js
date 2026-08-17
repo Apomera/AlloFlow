@@ -2285,7 +2285,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "ஆவணம்-அடிப்படையிலான கேள்வி",
     "open_stem_lab_explore_aria": "STEAM Lab Explore திறக்கவும்",
-    "stem_lab_explore": "ஆராய்"
+    "stem_lab_explore": "ஆராய்",
+    "needs_ai_setup": "AI அமைப்பு தேவை",
+    "needs_ai_setup_cta": "AI இணைக்க தட்டவும், அல்லது Gemini Canvas இல் AlloFlow பயன்படுத்தவும்"
   },
   "history": {
     "load_project": "ஏற்று Project",
@@ -6340,7 +6342,8 @@
       "frames_label": "வாக்கிய-சட்டக பதில் இடைவெளிகள்",
       "concept_sort_label": "Concept வரிசைப்படுத்து misplacement patterns"
     },
-    "all_tool_activity": "எல்லாம் கருவிகள் Activity"
+    "all_tool_activity": "எல்லாம் கருவிகள் Activity",
+    "title_parent": "குடும்ப டாஷ்போர்டு"
   },
   "tools": {
     "source": "மூலம் Material",
@@ -12726,8 +12729,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Total STEM ஆய்வகம் XP earned across எல்லாம் activities",
-      "generate_assess": "உருவாக்கு & assess",
-      "manipulatives": "கையாளும் கருவிகள்",
+      "generate_assess": "கணிதக் கணக்குகளும் மதிப்பீடுகளும்",
+      "manipulatives": "ஊடாடும் கருவிகளும் ஆய்வகங்களும்",
       "stepbystep": "step-by-step",
       "conceptual": "கருத்து",
       "realworld": "நிஜ-உலகு"
@@ -29984,7 +29987,11 @@
     "tts_provider_aria": "உரை-முதல்-பேச்சு வழங்குநர்",
     "local_cascade_label": "உள்ளூர் அடுக்கு:",
     "image_generation_header": "படம் Generation",
-    "image_provider_aria": "படம் generation provider"
+    "image_provider_aria": "படம் generation provider",
+    "guided_card_canvas_title": "Gemini Canvas க்குள் AlloFlow ஐப் பயன்படுத்துங்கள்",
+    "guided_card_canvas_badge": "அமைப்பு தேவையில்லை",
+    "guided_card_canvas_body": "AI பெற எளிதான வழி: Google Gemini க்குள் AlloFlow ஐத் திறக்கவும். Google கணக்குடன் இலவசம், உங்கள் Gemini திட்டத்தின் தினசரி ஒதுக்கீட்டைப் பயன்படுத்துகிறது (தனிப்பட்ட, கல்வி, அல்லது கட்டண திட்டங்கள் அனைத்தும் வேலை செய்யும்). நிறுவ எதுவும் இல்லை, நிர்வகிக்க சாவியும் இல்லை.",
+    "guided_card_canvas_req": "புதிய தாவலில் gemini.google.com ஐத் திறக்கிறது. திட்ட விவரங்கள் google.com/gemini இல்"
   },
   "diff_view": {
     "title": "மூலம் PDF ↔ Remediated HTML · Diff",
@@ -31343,7 +31350,25 @@
     "surprise_me_contextually_working": "தற்போதைய பாடச் சூழலைப் படித்து பயனுள்ள அடுத்த படி தேர்வு செய்யப்படுகிறது...",
     "use_contextual_suggestion": "பரிந்துரைக்கப்பட்ட அடுத்த படியைப் பயன்படுத்தவும்",
     "use_contextual_suggestion_hint": "சமீபத்திய பரிந்துரைகளில் இருந்து விருப்பம் 1, 2 அல்லது 3 ஐ இயக்குகிறது",
-    "use_contextual_suggestion_working": "தேர்ந்தெடுத்த அடுத்த படி தொடங்கப்படுகிறது..."
+    "use_contextual_suggestion_working": "தேர்ந்தெடுத்த அடுத்த படி தொடங்கப்படுகிறது...",
+    "jump_to_lesson_plan": "என் பாடத் திட்டத்திற்குச் செல்லுங்கள்",
+    "jump_to_lesson_plan_done": "மிக சமீபத்திய பாடத் திட்டம் திறக்கப்பட்டது.",
+    "jump_to_lesson_plan_hint": "மிக சமீபத்திய பாடத் திட்டத்தை மீண்டும் திறக்கவும்",
+    "open_block_suggestions": "ஆவணத் தொகுதி பரிந்துரைகளைப் பெறுங்கள்",
+    "open_block_suggestions_done": "ஆவண உருவாக்கி திறக்கப்பட்டது. தொகுதி பரிந்துரைகள் மேலே சிறப்பிக்கப்பட்ட பலகையில் உள்ளன.",
+    "open_block_suggestions_hint": "ஆவண உருவாக்கியைத் திறக்கவும், பரிந்துரைகள் மேலே உள்ளன",
+    "open_brainstorm_modes": "மூளைப்புயல் செயல்பாட்டு வகையைத் தேர்ந்தெடுங்கள்",
+    "open_brainstorm_modes_done": "மூளைப்புயல் செயல்பாட்டு வகைகள் திறக்கப்பட்டன. யோசனைகள், கலந்துரையாடல், ஜிக்சா, அல்லது உருவகப்படுத்துதல் தேர்ந்தெடுங்கள்.",
+    "open_brainstorm_modes_hint": "யோசனை வலை, கலந்துரையாடல் தொகுப்பு, ஜிக்சா, அல்லது உருவகப்படுத்துதல்",
+    "open_discussion_builder": "வகுப்பு கலந்துரையாடலை உருவாக்குங்கள்",
+    "open_discussion_builder_done": "கலந்துரையாடல் உருவாக்கி மூளைப்புயல் கருவியில் திறக்கப்பட்டது. ஒரு முறையைத் தேர்ந்தெடுத்து, பின் உருவாக்குங்கள்.",
+    "open_discussion_builder_hint": "சிந்தி-இணை-பகிர் போன்ற முறைகளுடன் கூடிய கலந்துரையாடல் தொகுப்பு",
+    "open_jigsaw_builder": "ஜிக்சா செயல்பாட்டை உருவாக்குங்கள்",
+    "open_jigsaw_builder_done": "ஜிக்சா உருவாக்கி மூளைப்புயல் கருவியில் திறக்கப்பட்டது. குழு அளவை நிர்ணயித்து, பின் உருவாக்குங்கள்.",
+    "open_jigsaw_builder_hint": "நீங்கள் நிர்ணயிக்கும் குழு அளவுடன் ஜிக்சா நிபுணர்-குழு செயல்பாடு",
+    "use_gemini_canvas": "Gemini Canvas க்குள் AlloFlow ஐப் பயன்படுத்துங்கள்",
+    "use_gemini_canvas_done": "AI அமைப்பு திறக்கப்பட்டது. முதல் அட்டை எந்த அமைப்பும் இல்லாமல் Gemini Canvas இல் AlloFlow பயன்படுத்துவதை விளக்குகிறது.",
+    "use_gemini_canvas_hint": "AI அமைப்பைத் திறக்கவும், அமைப்பு தேவையில்லாத Canvas விருப்பம் முன்னால் உள்ளது"
   },
   "palette": {
     "aria": "AlloFlow கட்டளைப் பலகை",
@@ -31750,5 +31775,11 @@
     "toast_opened": "சீரமைப்பு வரைபடம் வாசிப்பதற்காக மட்டும் திறக்கப்பட்டது.",
     "toast_invalid": "அந்தச் சீரமைப்பு வரைபடத்தைத் திறக்க முடியவில்லை. செல்லுபடியான AlloFlow வரைபட JSON கோப்பை ஏற்றுமதி செய்யவும்.",
     "toast_unreadable": "அந்தச் சீரமைப்பு வரைபடக் கோப்பை வாசிக்க முடியவில்லை."
+  },
+  "shell_link": {
+    "banner_aria": "இந்தக் கருவி பற்றி",
+    "banner_text": "AlloFlow இலிருந்து ஒரு கருவி, ஒரு இலவச கற்பித்தல் தளம்.",
+    "banner_open": "முழு செயலியையும் பாருங்கள்",
+    "banner_dismiss": "இந்தக் குறிப்பை நீக்கு"
   }
 }

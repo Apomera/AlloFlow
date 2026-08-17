@@ -2284,7 +2284,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "ሰነድ-መሠረት ያደረገ ጥያቄ",
     "open_stem_lab_explore_aria": "STEAM Lab Explore ክፈት",
-    "stem_lab_explore": "ዳስስ"
+    "stem_lab_explore": "ዳስስ",
+    "needs_ai_setup": "የ AI ማዋቀር ያስፈልጋል",
+    "needs_ai_setup_cta": "AI ለማገናኘት ይንኩ፣ ወይም AlloFlow ን በ Gemini Canvas ውስጥ ይጠቀሙ"
   },
   "history": {
     "load_project": "ጫን Project",
@@ -6329,7 +6331,8 @@
       "frames_label": "የዓረፍተ ነገር-ፍሬም ምላሽ ክፍተቶች",
       "concept_sort_label": "ጽንሰ-ሐሳብ ደርድር misplacement ቅጦች"
     },
-    "all_tool_activity": "ሁሉም መሳሪያዎች ተግባር"
+    "all_tool_activity": "ሁሉም መሳሪያዎች ተግባር",
+    "title_parent": "የቤተሰብ ዳሽቦርድ"
   },
   "tools": {
     "source": "የምንጭ ቁሳቁስ",
@@ -12394,8 +12397,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Total STEM ላቦራቶሪ XP earned ሁሉንም ሁሉም ተግባራት",
-      "generate_assess": "አመንጭ & assess",
-      "manipulatives": "የእጅ መሣሪያዎች",
+      "generate_assess": "የሒሳብ ጥያቄዎች እና ምዘናዎች",
+      "manipulatives": "መስተጋብራዊ መሣሪያዎች እና ላቦራቶሪዎች",
       "stepbystep": "step-by-step",
       "conceptual": "ጽንሰ-ሀሳብ",
       "realworld": "እውነተኛ-ዓለም"
@@ -27827,7 +27830,11 @@
     "tts_provider_aria": "የጽሑፍ-ወደ-ንግግር አቅራቢ",
     "local_cascade_label": "የአካባቢ ሰንሰለት፡",
     "image_generation_header": "ምስል ትውልድ",
-    "image_provider_aria": "ምስል ትውልድ provider"
+    "image_provider_aria": "ምስል ትውልድ provider",
+    "guided_card_canvas_title": "AlloFlow ን በ Gemini Canvas ውስጥ ይጠቀሙ",
+    "guided_card_canvas_badge": "ማዋቀር አያስፈልግም",
+    "guided_card_canvas_body": "AI ለማግኘት ቀላሉ መንገድ፦ AlloFlow ን በ Google Gemini ውስጥ ይክፈቱ። በ Google መለያ ነፃ ነው፣ የእርስዎን የ Gemini ዕቅድ ዕለታዊ ኮታ ይጠቀማል (የግል፣ የትምህርት፣ ወይም የሚከፈልባቸው ዕቅዶች ሁሉ ይሠራሉ)። የሚጫን ነገር የለም፣ የሚያዙት ቁልፍም የለም።",
+    "guided_card_canvas_req": "gemini.google.com ን በአዲስ ትር ይከፍታል። የዕቅድ ዝርዝሮች በ google.com/gemini"
   },
   "diff_view": {
     "title": "ምንጭ PDF ↔ Remediated HTML · Diff",
@@ -29186,7 +29193,25 @@
     "surprise_me_contextually_working": "የአሁኑን የትምህርት ሁኔታ እያነበበ ጠቃሚ ቀጣይ እርምጃ እየመረጠ ነው...",
     "use_contextual_suggestion": "የተጠቆመ ቀጣይ እርምጃ ተጠቀም",
     "use_contextual_suggestion_hint": "ከቅርብ ጊዜው ጥቆማዎች አማራጭ 1፣ 2 ወይም 3 ያስኬዳል",
-    "use_contextual_suggestion_working": "የተመረጠውን ቀጣይ እርምጃ እየጀመረ ነው..."
+    "use_contextual_suggestion_working": "የተመረጠውን ቀጣይ እርምጃ እየጀመረ ነው...",
+    "jump_to_lesson_plan": "ወደ የትምህርት ዕቅዴ ዝለል",
+    "jump_to_lesson_plan_done": "የቅርብ ጊዜው የትምህርት ዕቅድ ተከፍቷል።",
+    "jump_to_lesson_plan_hint": "የቅርብ ጊዜውን የትምህርት ዕቅድ እንደገና ይክፈቱ",
+    "open_block_suggestions": "የሰነድ ክፍል ጥቆማዎችን ያግኙ",
+    "open_block_suggestions_done": "የሰነድ ገንቢ ተከፍቷል። የክፍል ጥቆማዎች ከላይ ባለው ጎላ ያለ ፓነል ውስጥ ናቸው።",
+    "open_block_suggestions_hint": "የሰነድ ገንቢን ይክፈቱ፣ ጥቆማዎች ከላይ ይገኛሉ",
+    "open_brainstorm_modes": "የሐሳብ ማፍለቅ እንቅስቃሴ ዓይነት ይምረጡ",
+    "open_brainstorm_modes_done": "የሐሳብ ማፍለቅ እንቅስቃሴ ዓይነቶች ተከፍተዋል። ሐሳቦች፣ ውይይት፣ ጂግሶ፣ ወይም ማስመሰል ይምረጡ።",
+    "open_brainstorm_modes_hint": "የሐሳብ ድር፣ የውይይት ስብስብ፣ ጂግሶ፣ ወይም ማስመሰል",
+    "open_discussion_builder": "የክፍል ውይይት ይገንቡ",
+    "open_discussion_builder_done": "የውይይት ገንቢ በሐሳብ ማፍለቂያ መሣሪያ ውስጥ ተከፍቷል። ሥርዓት ይምረጡ፣ ከዚያ ያመንጩ።",
+    "open_discussion_builder_hint": "እንደ አስብ-ጣመር-አካፍል ያሉ ሥርዓቶች ያሉት የውይይት ስብስብ",
+    "open_jigsaw_builder": "የጂግሶ እንቅስቃሴ ይገንቡ",
+    "open_jigsaw_builder_done": "የጂግሶ ገንቢ በሐሳብ ማፍለቂያ መሣሪያ ውስጥ ተከፍቷል። የቡድን መጠን ያስቀምጡ፣ ከዚያ ያመንጩ።",
+    "open_jigsaw_builder_hint": "እርስዎ በሚወስኑት የቡድን መጠን የጂግሶ የባለሙያ-ቡድን እንቅስቃሴ",
+    "use_gemini_canvas": "AlloFlow ን በ Gemini Canvas ውስጥ ይጠቀሙ",
+    "use_gemini_canvas_done": "የ AI ማዋቀሪያ ተከፍቷል። የመጀመሪያው ካርድ AlloFlow ን በ Gemini Canvas ውስጥ ያለ ማዋቀር መጠቀምን ያብራራል።",
+    "use_gemini_canvas_hint": "የ AI ማዋቀሪያን ይክፈቱ፣ ማዋቀር የማይፈልገው የ Canvas አማራጭ እዚያ ይመራል"
   },
   "palette": {
     "aria": "የAlloFlow ትዕዛዝ ፓሌት",
@@ -29585,5 +29610,11 @@
     "toast_opened": "የአሰላለፍ ግራፍ ለንባብ ብቻ ተከፍቷል።",
     "toast_invalid": "ያንን የአሰላለፍ ግራፍ መክፈት አልተቻለም። ትክክለኛ የ AlloFlow ግራፍ JSON ፋይል አውጣ።",
     "toast_unreadable": "ያንን የአሰላለፍ ግራፍ ፋይል ማንበብ አልተቻለም።"
+  },
+  "shell_link": {
+    "banner_aria": "ስለዚህ መሣሪያ",
+    "banner_text": "ከ AlloFlow አንድ መሣሪያ፣ ነፃ የማስተማሪያ መድረክ።",
+    "banner_open": "ሙሉውን መተግበሪያ ያስሱ",
+    "banner_dismiss": "ይህን ማስታወሻ አሰናብት"
   }
 }

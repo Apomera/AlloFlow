@@ -2281,7 +2281,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "పత్రం-ఆధారిత ప్రశ్న",
     "open_stem_lab_explore_aria": "STEAM Lab Explore తెరవండి",
-    "stem_lab_explore": "అన్వేషించు"
+    "stem_lab_explore": "అన్వేషించు",
+    "needs_ai_setup": "AI సెటప్ అవసరం",
+    "needs_ai_setup_cta": "AI అనుసంధానించడానికి నొక్కండి, లేదా Gemini Canvas లో AlloFlow వాడండి"
   },
   "history": {
     "load_project": "లోడ్ చేయి Project",
@@ -6335,7 +6337,8 @@
       "frames_label": "వాక్య-చట్రం ప్రతిస్పందన అంతరాలు",
       "concept_sort_label": "Concept క్రమబద్ధీకరించు misplacement patterns"
     },
-    "all_tool_activity": "అన్నీ సాధనాలు Activity"
+    "all_tool_activity": "అన్నీ సాధనాలు Activity",
+    "title_parent": "కుటుంబ డాష్‌బోర్డ్"
   },
   "tools": {
     "source": "మూలం Material",
@@ -12720,8 +12723,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Total STEM ప్రయోగశాల XP earned across అన్నీ activities",
-      "generate_assess": "రూపొందించు & assess",
-      "manipulatives": "తారుమార్చదగిన వస్తువులు",
+      "generate_assess": "గణిత సమస్యలు మరియు మూల్యాంకనాలు",
+      "manipulatives": "ఇంటరాక్టివ్ సాధనాలు మరియు ల్యాబ్‌లు",
       "stepbystep": "step-by-step",
       "conceptual": "భావనాత్మక",
       "realworld": "నిజ-ప్రపంచ"
@@ -29860,7 +29863,11 @@
     "tts_provider_aria": "టెక్స్ట్-టు-స్పీచ్ ప్రొవైడర్",
     "local_cascade_label": "స్థానిక క్యాస్కేడ్:",
     "image_generation_header": "చిత్రం Generation",
-    "image_provider_aria": "చిత్రం generation provider"
+    "image_provider_aria": "చిత్రం generation provider",
+    "guided_card_canvas_title": "Gemini Canvas లోపల AlloFlow వాడండి",
+    "guided_card_canvas_badge": "సెటప్ అవసరం లేదు",
+    "guided_card_canvas_body": "AI పొందడానికి సులభమైన మార్గం: Google Gemini లోపల AlloFlow తెరవండి. Google ఖాతాతో ఉచితం, మీ Gemini ప్లాన్ రోజువారీ కోటాను వాడుతుంది (వ్యక్తిగత, విద్యా, లేదా చెల్లింపు ప్లాన్‌లు అన్నీ పనిచేస్తాయి). ఇన్‌స్టాల్ చేయడానికి ఏమీ లేదు, నిర్వహించడానికి కీ లేదు.",
+    "guided_card_canvas_req": "కొత్త ట్యాబ్‌లో gemini.google.com తెరుస్తుంది. ప్లాన్ వివరాలు google.com/gemini లో"
   },
   "diff_view": {
     "title": "మూలం PDF ↔ Remediated HTML · Diff",
@@ -31219,7 +31226,25 @@
     "surprise_me_contextually_working": "ప్రస్తుత పాఠ సందర్భాన్ని చదివి ఉపయోగకరమైన తదుపరి అడుగును ఎంచుకుంటోంది...",
     "use_contextual_suggestion": "సూచించిన తదుపరి అడుగును ఉపయోగించండి",
     "use_contextual_suggestion_hint": "ఇటీవలి సూచనల నుండి ఎంపిక 1, 2 లేదా 3 ను నడుపుతుంది",
-    "use_contextual_suggestion_working": "ఎంచుకున్న తదుపరి అడుగు ప్రారంభమవుతోంది..."
+    "use_contextual_suggestion_working": "ఎంచుకున్న తదుపరి అడుగు ప్రారంభమవుతోంది...",
+    "jump_to_lesson_plan": "నా పాఠ ప్రణాళికకు వెళ్ళండి",
+    "jump_to_lesson_plan_done": "అత్యంత ఇటీవలి పాఠ ప్రణాళిక తెరుచుకుంది.",
+    "jump_to_lesson_plan_hint": "అత్యంత ఇటీవలి పాఠ ప్రణాళికను మళ్ళీ తెరవండి",
+    "open_block_suggestions": "పత్రం బ్లాక్ సూచనలు పొందండి",
+    "open_block_suggestions_done": "డాక్యుమెంట్ బిల్డర్ తెరుచుకుంది. బ్లాక్ సూచనలు పైన హైలైట్ చేసిన ప్యానెల్‌లో ఉన్నాయి.",
+    "open_block_suggestions_hint": "డాక్యుమెంట్ బిల్డర్ తెరవండి, సూచనలు పైన ఉన్నాయి",
+    "open_brainstorm_modes": "బ్రెయిన్‌స్టార్మ్ కార్యకలాప రకాన్ని ఎంచుకోండి",
+    "open_brainstorm_modes_done": "బ్రెయిన్‌స్టార్మ్ కార్యకలాప రకాలు తెరుచుకున్నాయి. ఆలోచనలు, చర్చ, జిగ్సా, లేదా సిమ్యులేషన్ ఎంచుకోండి.",
+    "open_brainstorm_modes_hint": "ఆలోచనల వల, చర్చా కిట్, జిగ్సా, లేదా సిమ్యులేషన్",
+    "open_discussion_builder": "తరగతి చర్చను నిర్మించండి",
+    "open_discussion_builder_done": "చర్చా నిర్మాత బ్రెయిన్‌స్టార్మ్ సాధనంలో తెరుచుకుంది. ఒక పద్ధతిని ఎంచుకుని, తరువాత సృష్టించండి.",
+    "open_discussion_builder_hint": "ఆలోచించు-జత కట్టు-పంచుకో వంటి పద్ధతులున్న చర్చా కిట్",
+    "open_jigsaw_builder": "జిగ్సా కార్యకలాపాన్ని నిర్మించండి",
+    "open_jigsaw_builder_done": "జిగ్సా నిర్మాత బ్రెయిన్‌స్టార్మ్ సాధనంలో తెరుచుకుంది. గుంపు పరిమాణాన్ని నిర్ణయించి, తరువాత సృష్టించండి.",
+    "open_jigsaw_builder_hint": "మీరు నిర్ణయించే గుంపు పరిమాణంతో జిగ్సా నిపుణుల-గుంపు కార్యకలాపం",
+    "use_gemini_canvas": "Gemini Canvas లోపల AlloFlow వాడండి",
+    "use_gemini_canvas_done": "AI సెటప్ తెరుచుకుంది. మొదటి కార్డు ఎలాంటి సెటప్ లేకుండా Gemini Canvas లో AlloFlow వాడటాన్ని వివరిస్తుంది.",
+    "use_gemini_canvas_hint": "AI సెటప్ తెరవండి, సెటప్ అవసరం లేని Canvas ఎంపిక ముందుంది"
   },
   "palette": {
     "aria": "AlloFlow కమాండ్ పాలెట్",
@@ -31614,5 +31639,11 @@
     "toast_opened": "అమరిక గ్రాఫ్ చదవడానికి మాత్రమే తెరిచారు.",
     "toast_invalid": "ఆ అమరిక గ్రాఫ్ తెరవలేకపోయాం. చెల్లుబాటు అయ్యే AlloFlow గ్రాఫ్ JSON ఫైల్ ఎగుమతి చేయండి.",
     "toast_unreadable": "ఆ అమరిక గ్రాఫ్ ఫైల్ చదవలేకపోయాం."
+  },
+  "shell_link": {
+    "banner_aria": "ఈ సాధనం గురించి",
+    "banner_text": "AlloFlow నుండి ఒక సాధనం, ఉచిత బోధనా వేదిక.",
+    "banner_open": "పూర్తి యాప్ చూడండి",
+    "banner_dismiss": "ఈ గమనికను తీసివేయండి"
   }
 }

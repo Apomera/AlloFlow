@@ -2289,7 +2289,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "दस्तऐवज-आधारित प्रश्न",
     "open_stem_lab_explore_aria": "STEAM Lab Explore उघडा",
-    "stem_lab_explore": "एक्सप्लोर करा"
+    "stem_lab_explore": "एक्सप्लोर करा",
+    "needs_ai_setup": "AI सेटअप आवश्यक",
+    "needs_ai_setup_cta": "AI जोडण्यासाठी टॅप करा, किंवा Gemini Canvas मध्ये AlloFlow वापरा"
   },
   "history": {
     "load_project": "प्रकल्प लोड करा",
@@ -6506,7 +6508,8 @@
       "frames_label": "वाक्य-चौकट प्रतिसादातील त्रुटी",
       "concept_sort_label": "Concept Sort चुकीच्या जागी ठेवण्याचे नमुने"
     },
-    "all_tool_activity": "सर्व साधन क्रियाकलाप"
+    "all_tool_activity": "सर्व साधन क्रियाकलाप",
+    "title_parent": "कुटुंब डॅशबोर्ड"
   },
   "tools": {
     "source": "मूळ साहित्य",
@@ -12925,8 +12928,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "सर्व उपक्रमांमध्ये मिळवलेले एकूण STEM Lab XP",
-      "generate_assess": "तयार करा आणि मूल्यांकन करा",
-      "manipulatives": "हाताळणी साधने",
+      "generate_assess": "गणिताचे प्रश्न आणि मूल्यमापन",
+      "manipulatives": "परस्परसंवादी साधने आणि प्रयोगशाळा",
       "stepbystep": "टप्प्याटप्प्याने",
       "conceptual": "संकल्पनात्मक",
       "realworld": "वास्तविक जगातील"
@@ -30154,7 +30157,11 @@
     "tts_provider_aria": "मजकूर-ते-भाषण प्रदाता",
     "local_cascade_label": "स्थानिक कॅस्केड:",
     "image_generation_header": "प्रतिमा निर्मिती",
-    "image_provider_aria": "प्रतिमा निर्मिती प्रदाता"
+    "image_provider_aria": "प्रतिमा निर्मिती प्रदाता",
+    "guided_card_canvas_title": "Gemini Canvas मध्ये AlloFlow वापरा",
+    "guided_card_canvas_badge": "सेटअप नाही",
+    "guided_card_canvas_body": "AI मिळवण्याचा सर्वात सोपा मार्ग: Google Gemini मध्ये AlloFlow उघडा. Google खात्यासह मोफत, तुमच्या Gemini योजनेचा दैनिक कोटा वापरून (वैयक्तिक, शिक्षण, किंवा सशुल्क योजना सर्व चालतात). इंस्टॉल करण्यासारखे काही नाही आणि व्यवस्थापित करण्याची की नाही.",
+    "guided_card_canvas_req": "नवीन टॅबमध्ये gemini.google.com उघडते. योजना तपशील google.com/gemini वर"
   },
   "diff_view": {
     "title": "स्रोत PDF ↔ सुधारित HTML · Diff",
@@ -31147,7 +31154,25 @@
     "surprise_me_contextually_working": "सध्याच्या धड्याचा संदर्भ वाचून उपयोगी पुढचे पाऊल निवडत आहे...",
     "use_contextual_suggestion": "सुचवलेले पुढचे पाऊल वापरा",
     "use_contextual_suggestion_hint": "अलीकडील सूचनांमधून पर्याय 1, 2 किंवा 3 चालवते",
-    "use_contextual_suggestion_working": "निवडलेले पुढचे पाऊल सुरू करत आहे..."
+    "use_contextual_suggestion_working": "निवडलेले पुढचे पाऊल सुरू करत आहे...",
+    "jump_to_lesson_plan": "माझ्या पाठ नियोजनाकडे जा",
+    "jump_to_lesson_plan_done": "सर्वात अलीकडील पाठ नियोजन उघडले.",
+    "jump_to_lesson_plan_hint": "सर्वात अलीकडील पाठ नियोजन पुन्हा उघडा",
+    "open_block_suggestions": "दस्तऐवज ब्लॉक सूचना मिळवा",
+    "open_block_suggestions_done": "डॉक्युमेंट बिल्डर उघडला. ब्लॉक सूचना वरच्या ठळक पॅनेलमध्ये आहेत.",
+    "open_block_suggestions_hint": "डॉक्युमेंट बिल्डर उघडा, सूचना वर आहेत",
+    "open_brainstorm_modes": "ब्रेनस्टॉर्म उपक्रमाचा प्रकार निवडा",
+    "open_brainstorm_modes_done": "ब्रेनस्टॉर्म उपक्रमांचे प्रकार उघडले. कल्पना, चर्चा, जिगसॉ, किंवा सिम्युलेशन निवडा.",
+    "open_brainstorm_modes_hint": "कल्पनांचे जाळे, चर्चा किट, जिगसॉ, किंवा सिम्युलेशन",
+    "open_discussion_builder": "वर्ग चर्चा तयार करा",
+    "open_discussion_builder_done": "चर्चा निर्माता ब्रेनस्टॉर्म साधनात उघडला. पद्धत निवडा, मग तयार करा.",
+    "open_discussion_builder_hint": "विचार करा-जोडी करा-सामायिक करा यांसारख्या पद्धतींसह चर्चा किट",
+    "open_jigsaw_builder": "जिगसॉ उपक्रम तयार करा",
+    "open_jigsaw_builder_done": "जिगसॉ निर्माता ब्रेनस्टॉर्म साधनात उघडला. गटाचा आकार ठरवा, मग तयार करा.",
+    "open_jigsaw_builder_hint": "तुम्ही ठरवलेल्या गट आकारासह जिगसॉ तज्ज्ञ-गट उपक्रम",
+    "use_gemini_canvas": "Gemini Canvas मध्ये AlloFlow वापरा",
+    "use_gemini_canvas_done": "AI सेटअप उघडले. पहिले कार्ड कोणत्याही सेटअपशिवाय Gemini Canvas मध्ये AlloFlow वापरणे समजावते.",
+    "use_gemini_canvas_hint": "AI सेटअप उघडा, जिथे सेटअप नसलेला Canvas पर्याय पुढे आहे"
   },
   "palette": {
     "aria": "AlloFlow कमांड पॅलेट",
@@ -31527,5 +31552,11 @@
     "toast_opened": "संरेखन आलेख फक्त वाचण्यासाठी उघडला.",
     "toast_invalid": "तो संरेखन आलेख उघडता आला नाही. वैध AlloFlow आलेख JSON फाइल निर्यात करा.",
     "toast_unreadable": "ती संरेखन आलेख फाइल वाचता आली नाही."
+  },
+  "shell_link": {
+    "banner_aria": "या साधनाबद्दल",
+    "banner_text": "AlloFlow कडून एक साधन, एक मोफत अध्यापन मंच.",
+    "banner_open": "संपूर्ण अ‍ॅप पाहा",
+    "banner_dismiss": "ही सूचना काढून टाका"
   }
 }

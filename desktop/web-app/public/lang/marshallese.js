@@ -2260,7 +2260,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Document-Based kajjitōk",
     "open_stem_lab_explore_aria": "Kepeḷḷọk STEAM Lab Explore",
-    "stem_lab_explore": "Etale"
+    "stem_lab_explore": "Etale",
+    "needs_ai_setup": "Ej aikuj karok in AI",
+    "needs_ai_setup_cta": "Junuk nan kobaik juon AI, ak kojerbal AlloFlow ilowaan Gemini Canvas"
   },
   "history": {
     "load_project": "Load Project",
@@ -6311,7 +6313,8 @@
       "frames_label": "Sentence-frame response gaps",
       "concept_sort_label": "Concept Sort misplacement patterns"
     },
-    "all_tool_activity": "aolep Tool Activity"
+    "all_tool_activity": "aolep Tool Activity",
+    "title_parent": "Dashboard an Baamle"
   },
   "tools": {
     "source": "Source Material",
@@ -12200,8 +12203,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Total STEM Lab XP earned across aolep activities",
-      "generate_assess": "Generate & assess",
-      "manipulatives": "Manipulatives",
+      "generate_assess": "Math problems & assessments",
+      "manipulatives": "Interactive tools & labs",
       "stepbystep": "Step-by-Step",
       "conceptual": "Conceptual",
       "realworld": "Real-World"
@@ -22241,7 +22244,11 @@
     "tts_provider_aria": "Text-ñan-speech provider",
     "local_cascade_label": "Local cascade:",
     "image_generation_header": "pija Epepen",
-    "image_provider_aria": "pija epepen provider"
+    "image_provider_aria": "pija epepen provider",
+    "guided_card_canvas_title": "Kojerbal AlloFlow ilowaan Gemini Canvas",
+    "guided_card_canvas_badge": "Ejjelok karok",
+    "guided_card_canvas_body": "Ial eo epidodo tata nan bok AI: kapelloke AlloFlow ilowaan Google Gemini. Ejjelok wonen kin juon akaunt in Google, ej kojerbal jonan raan otemjej an karok in Gemini eo am (karok ko an armej, jikuul, ak kollaan aolep rej jerbal). Ejjelok men in kakobaik im ejjelok ki nan lale.",
+    "guided_card_canvas_req": "Ej kapelloke gemini.google.com ilo juon tab ekaal. Melele ko kin karok ko ilo google.com/gemini"
   },
   "diff_view": {
     "title": "Source PDF ↔ Remediated HTML · Diff",
@@ -23402,7 +23409,25 @@
     "surprise_me_contextually_working": "Ej riiti wāween katak in kiiō im kālet juon buñten neen tokālik eṃṃan...",
     "use_contextual_suggestion": "Kōjerbal juon buñten neen tokālik eṃōj kwaḷọke",
     "use_contextual_suggestion_hint": "Ej jino kālet 1, 2, ak 3 jān naan in kakapilōklōk ko rej āliktata",
-    "use_contextual_suggestion_working": "Ej jino buñten neen tokālik eo eṃōj kālete..."
+    "use_contextual_suggestion_working": "Ej jino buñten neen tokālik eo eṃōj kālete...",
+    "jump_to_lesson_plan": "Etal nan karok in katak eo ao",
+    "jump_to_lesson_plan_done": "Emoj kapelloke karok in katak eo ekaal tata.",
+    "jump_to_lesson_plan_hint": "Bar kapelloke karok in katak eo ekaal tata",
+    "open_block_suggestions": "Bok nan in jiban ko kin mottan peba",
+    "open_block_suggestions_done": "Emoj kapelloke Document Builder. Nan in jiban ko kin mottan rej pad ilo panel eo ej alikkar ilon.",
+    "open_block_suggestions_hint": "Kapelloke Document Builder, nan in jiban ko rej pad ilon",
+    "open_brainstorm_modes": "Kalet kain jerbal in kwalok lolatat",
+    "open_brainstorm_modes_done": "Emoj kapelloke kain jerbal in kwalok lolatat ko. Kalet lolatat, bwebwenato, jigsaw, ak kajjion.",
+    "open_brainstorm_modes_hint": "Ok in lolatat, kein bwebwenato, jigsaw, ak kajjion",
+    "open_discussion_builder": "Kalok juon bwebwenato in kilaaj",
+    "open_discussion_builder_done": "Emoj kapelloke ri-kalok bwebwenato ilo kein jerbal in kwalok lolatat. Kalet juon wawen, innem komman.",
+    "open_discussion_builder_hint": "Kein bwebwenato ippan wawen ko einwot lomnak-koba ruo-ajej",
+    "open_jigsaw_builder": "Kalok juon jerbal in jigsaw",
+    "open_jigsaw_builder_done": "Emoj kapelloke ri-kalok jigsaw ilo kein jerbal in kwalok lolatat. Karok jonan kumi, innem komman.",
+    "open_jigsaw_builder_hint": "Jerbal in kumi in ri-kapeel jigsaw ippan jonan kumi eo kwoj karoke",
+    "use_gemini_canvas": "Kojerbal AlloFlow ilowaan Gemini Canvas",
+    "use_gemini_canvas_done": "Emoj kapelloke karok in AI. Kaat eo moktata ej kamelele kojerbal AlloFlow ilowaan Gemini Canvas ilo ejjelok karok.",
+    "use_gemini_canvas_hint": "Kapelloke karok in AI, ijo kalet in Canvas eo ejjab aikuj karok ej pad iman"
   },
   "palette": {
     "aria": "AlloFlow command palette",
@@ -23777,5 +23802,11 @@
     "toast_opened": "Graph in kōllaajrak epeḷḷọk ñan riit wōt.",
     "toast_invalid": "Jab maroñ kepeḷḷọk graph in kōllaajrak eo. Kwaḷọk juon file JSON in graph an AlloFlow ejiṃwe.",
     "toast_unreadable": "Jab maroñ riiti file in graph in kōllaajrak eo."
+  },
+  "shell_link": {
+    "banner_aria": "Kin kein jerbal in",
+    "banner_text": "Juon kein jerbal jen AlloFlow, juon jikin katakin ejjelok wonen.",
+    "banner_open": "Etale aolepen app eo",
+    "banner_dismiss": "Kilok kemelele in"
   }
 }

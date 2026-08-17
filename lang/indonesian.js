@@ -2282,7 +2282,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "dokumen-Berdasarkan pertanyaan",
     "open_stem_lab_explore_aria": "Buka STEAM Lab Explore",
-    "stem_lab_explore": "Jelajahi"
+    "stem_lab_explore": "Jelajahi",
+    "needs_ai_setup": "Perlu penyiapan AI",
+    "needs_ai_setup_cta": "Ketuk untuk menghubungkan AI, atau gunakan AlloFlow di Gemini Canvas"
   },
   "history": {
     "load_project": "Muat Project",
@@ -6337,7 +6339,8 @@
       "frames_label": "kalimat-frame tanggapan gaps",
       "concept_sort_label": "Konsep Urutkan misplacement pola"
     },
-    "all_tool_activity": "semua alat Aktivitas"
+    "all_tool_activity": "semua alat Aktivitas",
+    "title_parent": "Dasbor Keluarga"
   },
   "tools": {
     "source": "sumber Material",
@@ -12727,8 +12730,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Total STEM laboratorium XP earned di seluruh semua aktivitas",
-      "generate_assess": "Hasilkan & assess",
-      "manipulatives": "Manipulatif",
+      "generate_assess": "Soal matematika dan penilaian",
+      "manipulatives": "Alat interaktif dan lab",
       "stepbystep": "langkah-by-langkah",
       "conceptual": "Konseptual",
       "realworld": "Nyata-World"
@@ -29829,7 +29832,11 @@
     "tts_provider_aria": "teks-ke-speech provider",
     "local_cascade_label": "Kaskade lokal:",
     "image_generation_header": "gambar Generasi",
-    "image_provider_aria": "gambar generasi provider"
+    "image_provider_aria": "gambar generasi provider",
+    "guided_card_canvas_title": "Gunakan AlloFlow di dalam Gemini Canvas",
+    "guided_card_canvas_badge": "Tanpa penyiapan",
+    "guided_card_canvas_body": "Cara termudah mendapatkan AI: buka AlloFlow di dalam Google Gemini. Gratis dengan akun Google, memakai kuota harian paket Gemini Anda (paket pribadi, Pendidikan, atau berbayar semuanya bisa). Tidak ada yang diinstal dan tidak ada kunci yang dikelola.",
+    "guided_card_canvas_req": "Membuka gemini.google.com di tab baru. Detail paket di google.com/gemini"
   },
   "diff_view": {
     "title": "sumber PDF ↔ Remediated HTML · Diff",
@@ -31188,7 +31195,25 @@
     "surprise_me_contextually_working": "Membaca konteks pelajaran saat ini dan memilih langkah berikutnya yang berguna...",
     "use_contextual_suggestion": "Gunakan langkah berikutnya yang disarankan",
     "use_contextual_suggestion_hint": "Menjalankan pilihan 1, 2, atau 3 dari saran terbaru",
-    "use_contextual_suggestion_working": "Memulai langkah berikutnya yang dipilih..."
+    "use_contextual_suggestion_working": "Memulai langkah berikutnya yang dipilih...",
+    "jump_to_lesson_plan": "Lompat ke rencana pembelajaran saya",
+    "jump_to_lesson_plan_done": "Rencana pembelajaran terbaru dibuka.",
+    "jump_to_lesson_plan_hint": "Buka kembali rencana pembelajaran terbaru",
+    "open_block_suggestions": "Dapatkan saran blok dokumen",
+    "open_block_suggestions_done": "Pembuat Dokumen dibuka. Saran blok ada di panel yang disorot di bagian atas.",
+    "open_block_suggestions_hint": "Buka Pembuat Dokumen, saran ada di bagian atas",
+    "open_brainstorm_modes": "Pilih jenis kegiatan curah pendapat",
+    "open_brainstorm_modes_done": "Jenis kegiatan curah pendapat dibuka. Pilih ide, diskusi, jigsaw, atau simulasi.",
+    "open_brainstorm_modes_hint": "Jaring ide, kit diskusi, jigsaw, atau simulasi",
+    "open_discussion_builder": "Bangun diskusi kelas",
+    "open_discussion_builder_done": "Pembangun diskusi dibuka di alat curah pendapat. Pilih protokol, lalu buat.",
+    "open_discussion_builder_hint": "Kit diskusi dengan protokol seperti pikir-pasangan-bagikan",
+    "open_jigsaw_builder": "Bangun kegiatan jigsaw",
+    "open_jigsaw_builder_done": "Pembangun jigsaw dibuka di alat curah pendapat. Tentukan ukuran kelompok, lalu buat.",
+    "open_jigsaw_builder_hint": "Kegiatan kelompok ahli jigsaw dengan ukuran kelompok yang Anda tentukan",
+    "use_gemini_canvas": "Gunakan AlloFlow di dalam Gemini Canvas",
+    "use_gemini_canvas_done": "Pengaturan AI dibuka. Kartu pertama menjelaskan penggunaan AlloFlow di Gemini Canvas tanpa penyiapan apa pun.",
+    "use_gemini_canvas_hint": "Buka pengaturan AI, tempat opsi Canvas tanpa penyiapan berada paling depan"
   },
   "palette": {
     "aria": "Palet perintah AlloFlow",
@@ -31584,5 +31609,11 @@
     "toast_opened": "Grafik penyelarasan dibuka hanya-baca.",
     "toast_invalid": "Tidak bisa membuka grafik penyelarasan itu. Ekspor berkas JSON grafik AlloFlow yang valid.",
     "toast_unreadable": "Tidak bisa membaca berkas grafik penyelarasan itu."
+  },
+  "shell_link": {
+    "banner_aria": "Tentang alat ini",
+    "banner_text": "Satu alat dari AlloFlow, platform pengajaran gratis.",
+    "banner_open": "Jelajahi aplikasi lengkap",
+    "banner_dismiss": "Tutup catatan ini"
   }
 }

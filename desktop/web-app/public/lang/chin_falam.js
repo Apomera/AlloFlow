@@ -657,7 +657,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Document-Based Biahalnak hna",
     "open_stem_lab_explore_aria": "STEAM Lab Explore hung",
-    "stem_lab_explore": "Kawl"
+    "stem_lab_explore": "Kawl",
+    "needs_ai_setup": "AI sersiamnak a herh",
+    "needs_ai_setup_cta": "AI pehtlaihnak caah hnet, asiloah Gemini Canvas chungah AlloFlow hman"
   },
   "meta": {
     "engagement_ideas": "Engagement Idea hna",
@@ -1397,7 +1399,11 @@
     "tts_provider_aria": "Text-to-speech provider",
     "local_cascade_label": "Local cascade:",
     "image_generation_header": "Image Generation",
-    "image_provider_aria": "Image generation provider"
+    "image_provider_aria": "Image generation provider",
+    "guided_card_canvas_title": "Gemini Canvas chungah AlloFlow hman",
+    "guided_card_canvas_badge": "Sersiam a herh lo",
+    "guided_card_canvas_body": "AI hmuhnak lam a fawi bik: AlloFlow kha Google Gemini chungah hun. Google account he a man lo, na Gemini timhmi nifate chanvo hmangin (mimal, cawnnak, asiloah man pekmi timhmi vialte an tuah khawh). Sanh ding a um lo, cawlcanghnak key zong a um lo.",
+    "guided_card_canvas_req": "gemini.google.com kha tab thar ah a hun. Timhmi kong tlamtlinnak cu google.com/gemini ah"
   },
   "profiles": {
     "title": "Sianginn Profile hna",
@@ -7432,7 +7438,8 @@
       "frames_label": "Sentence-frame response gaps",
       "concept_sort_label": "Concept Sort misplacement patterns"
     },
-    "all_tool_activity": "All Tool Activity"
+    "all_tool_activity": "All Tool Activity",
+    "title_parent": "Chungkhar Dashboard"
   },
   "modals": {
     "student_welcome": "Student Workspace",
@@ -12146,8 +12153,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Total STEM Lab XP earned across all activities",
-      "generate_assess": "Generate & assess",
-      "manipulatives": "Manipulatives",
+      "generate_assess": "Math problems & assessments",
+      "manipulatives": "Interactive tools & labs",
       "stepbystep": "Step-by-Step",
       "conceptual": "Conceptual",
       "realworld": "Real-World"
@@ -23161,7 +23168,25 @@
     "surprise_me_contextually_working": "Atu cawnnak a chungtel ka rel i a ṭhami a hnu tuahding ka thim...",
     "use_contextual_suggestion": "Chimmi a hnu tuahding hman",
     "use_contextual_suggestion_hint": "A hnu bik chimnak ah thimding 1, 2, asiloah 3 a tuah",
-    "use_contextual_suggestion_working": "Thimmi a hnu tuahding ka thawk..."
+    "use_contextual_suggestion_working": "Thimmi a hnu tuahding ka thawk...",
+    "jump_to_lesson_plan": "Ka cawnnak khua ruahnak ah kal",
+    "jump_to_lesson_plan_done": "A hnu bik cawnnak khua ruahnak a hun cang.",
+    "jump_to_lesson_plan_hint": "A hnu bik cawnnak khua ruahnak hun than",
+    "open_block_suggestions": "Cazin bu ruahnak pekmi hmu",
+    "open_block_suggestions_done": "Document Builder a hun cang. Bu ruahnak pekmi cu a cunglei langhternak chungah an um.",
+    "open_block_suggestions_hint": "Document Builder hun, ruahnak pekmi cu a cunglei ah an um",
+    "open_brainstorm_modes": "Ruahnak chuahnak tuahmi phun thim",
+    "open_brainstorm_modes_done": "Ruahnak chuahnak tuahmi phun a hun cang. Ruahnak, i ruahnak, jigsaw, asiloah tuahchunhnak thim.",
+    "open_brainstorm_modes_hint": "Ruahnak rang, i ruahnak bawm, jigsaw, asiloah tuahchunhnak",
+    "open_discussion_builder": "Sianginn i ruahnak ser",
+    "open_discussion_builder_done": "I ruahnak sernak cu ruahnak chuahnak hriamnak chungah a hun cang. Phunglam pakhat thim law, chuahter.",
+    "open_discussion_builder_hint": "Ruat-kawmh-hrawm bantuk phunglam a ummi i ruahnak bawm",
+    "open_jigsaw_builder": "Jigsaw tuahmi ser",
+    "open_jigsaw_builder_done": "Jigsaw sernak cu ruahnak chuahnak hriamnak chungah a hun cang. Bu tam te khiah law, chuahter.",
+    "open_jigsaw_builder_hint": "Nangmah nih na khiahmi bu tam te in jigsaw thiamnak-bu tuahmi",
+    "use_gemini_canvas": "Gemini Canvas chungah AlloFlow hman",
+    "use_gemini_canvas_done": "AI sersiamnak a hun cang. A hmasa bik card nih sersiam loin Gemini Canvas chungah AlloFlow hmannak a fianter.",
+    "use_gemini_canvas_hint": "AI sersiamnak hun, sersiam a herh lomi Canvas thimnak cu a hmasa bik a si"
   },
   "palette": {
     "aria": "AlloFlow command palette",
@@ -23526,5 +23551,11 @@
     "toast_opened": "Pehtlaihnak graph cu rel lawng in a hung.",
     "toast_invalid": "Mah pehtlaihnak graph kha hun khawh a si lo. AlloFlow graph JSON file hmaan kha chuah.",
     "toast_unreadable": "Mah pehtlaihnak graph file kha rel khawh a si lo."
+  },
+  "shell_link": {
+    "banner_aria": "Hi hriamnak kong",
+    "banner_text": "AlloFlow in hriamnak pakhat, a man loin cawnpiaknak hmun.",
+    "banner_open": "App dihlak kha zoh",
+    "banner_dismiss": "Hi catlangbu hi hlonh"
   }
 }

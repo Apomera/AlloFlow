@@ -2281,7 +2281,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "mokanda-Na motuna",
     "open_stem_lab_explore_aria": "Fungola STEAM Lab Explore",
-    "stem_lab_explore": "Koluka"
+    "stem_lab_explore": "Koluka",
+    "needs_ai_setup": "Esengeli na bobongisi ya AI",
+    "needs_ai_setup_cta": "Finá mpo na kokangisa AI, to salela AlloFlow na Gemini Canvas"
   },
   "history": {
     "load_project": "Tiyá Project",
@@ -6328,7 +6330,8 @@
       "frames_label": "fraze-frame response gaps",
       "concept_sort_label": "Likanisi Tia na molongo misplacement bilembo"
     },
-    "all_tool_activity": "nyonso biloko ya mosala Activity"
+    "all_tool_activity": "nyonso biloko ya mosala Activity",
+    "title_parent": "Etando ya Libota"
   },
   "tools": {
     "source": "esika ya kobimisa Material",
@@ -12712,8 +12715,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Total STEM laboratoire XP earned across nyonso activities",
-      "generate_assess": "Sala & assess",
-      "manipulatives": "Bisaleli ya Maboko",
+      "generate_assess": "Mituna ya mituya mpe bomeki",
+      "manipulatives": "Bisaleli ya kosalela mpe balaboratware",
       "stepbystep": "litambe-by-litambe",
       "conceptual": "Likanisi",
       "realworld": "Ya solo"
@@ -29211,7 +29214,11 @@
     "tts_provider_aria": "makomi-na-speech provider",
     "local_cascade_label": "Cascade ya esika:",
     "image_generation_header": "elilingi Ekeke",
-    "image_provider_aria": "elilingi ekeke provider"
+    "image_provider_aria": "elilingi ekeke provider",
+    "guided_card_canvas_title": "Salela AlloFlow na kati ya Gemini Canvas",
+    "guided_card_canvas_badge": "Bobongisi te",
+    "guided_card_canvas_body": "Nzela ya pete koleka mpo na kozwa AI: fungola AlloFlow na kati ya Google Gemini. Ofele na konti ya Google, esalelaka ndelo ya mokolo na mokolo ya mwango ya Gemini na yo (mwango ya moto ye moko, ya boyekoli, to ya kofuta nyonso esalaka). Eloko ya kotia ezali te mpe fungola ya kobatela ezali te.",
+    "guided_card_canvas_req": "Efungolaka gemini.google.com na lininisa ya sika. Makambo ya mwango na google.com/gemini"
   },
   "diff_view": {
     "title": "esika ya kobimisa PDF ↔ Remediated HTML · Diff",
@@ -30570,7 +30577,25 @@
     "surprise_me_contextually_working": "Kotanga esika liteya ezali mpe kopona litambe ya malamu oyo elandi...",
     "use_contextual_suggestion": "Salela litambe oyo epesami",
     "use_contextual_suggestion_hint": "Esalaka poni 1, 2, to 3 uta na batoli ya suka",
-    "use_contextual_suggestion_working": "Kobanda litambe oyo eponami..."
+    "use_contextual_suggestion_working": "Kobanda litambe oyo eponami...",
+    "jump_to_lesson_plan": "Kende na mwango ya liteya na ngai",
+    "jump_to_lesson_plan_done": "Mwango ya liteya ya sika koleka efungwami.",
+    "jump_to_lesson_plan_hint": "Fungola lisusu mwango ya liteya ya sika koleka",
+    "open_block_suggestions": "Zwa makanisi mpo na biteni ya mokanda",
+    "open_block_suggestions_done": "Document Builder efungwami. Makanisi ya biteni ezali na etando oyo emonisami na likolo.",
+    "open_block_suggestions_hint": "Fungola Document Builder, makanisi ezali na likolo",
+    "open_brainstorm_modes": "Pona lolenge ya mosala ya kobimisa makanisi",
+    "open_brainstorm_modes_done": "Balolenge ya misala ya kobimisa makanisi efungwami. Pona makanisi, lisolo, jigsaw, to bomekoli.",
+    "open_brainstorm_modes_hint": "Monyama ya makanisi, esika ya lisolo, jigsaw, to bomekoli",
+    "open_discussion_builder": "Tonga lisolo ya kelasi",
+    "open_discussion_builder_done": "Motongi ya lisolo efungwami na esaleli ya kobimisa makanisi. Pona nzela, sima sala.",
+    "open_discussion_builder_hint": "Esika ya lisolo na banzela lokola kanisa-sangana mibale-kabola",
+    "open_jigsaw_builder": "Tonga mosala ya jigsaw",
+    "open_jigsaw_builder_done": "Motongi ya jigsaw efungwami na esaleli ya kobimisa makanisi. Tia bonene ya etuluku, sima sala.",
+    "open_jigsaw_builder_hint": "Mosala ya bituluku ya bato ya mayele ya jigsaw na bonene ya etuluku oyo yo otie",
+    "use_gemini_canvas": "Salela AlloFlow na kati ya Gemini Canvas",
+    "use_gemini_canvas_done": "Bobongisi ya AI efungwami. Karte ya liboso elimboli ndenge ya kosalela AlloFlow na Gemini Canvas kozanga bobongisi ata moko.",
+    "use_gemini_canvas_hint": "Fungola bobongisi ya AI, esika likoki ya Canvas oyo esengaka bobongisi te ezali liboso"
   },
   "palette": {
     "aria": "Palette ya mitindo ya AlloFlow",
@@ -30957,5 +30982,11 @@
     "toast_opened": "Graphique ya boyokani efungwami mpo na kotanga kaka.",
     "toast_invalid": "Ekokaki te kofungola graphique ya boyokani wana. Bimisa fichier JSON ya graphique ya AlloFlow oyo ezali malamu.",
     "toast_unreadable": "Ekokaki te kotanga fichier ya graphique ya boyokani wana."
+  },
+  "shell_link": {
+    "banner_aria": "Mpo na esaleli oyo",
+    "banner_text": "Esaleli moko ya AlloFlow, esika ya koteya ya ofele.",
+    "banner_open": "Tala aplikasyo mobimba",
+    "banner_dismiss": "Longola maloba oyo"
   }
 }

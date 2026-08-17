@@ -2244,7 +2244,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Document-Based တၢ်သံကွၢ်",
     "open_stem_lab_explore_aria": "အိးထီၣ် STEAM Lab Explore",
-    "stem_lab_explore": "ဃုသ့ၣ်ညါ"
+    "stem_lab_explore": "ဃုသ့ၣ်ညါ",
+    "needs_ai_setup": "လိၣ်ဘၣ် AI တၢ်ရဲၣ်ကျဲၤ",
+    "needs_ai_setup_cta": "တီၢ်လၢကဘျးစဲ AI, မ့တမ့ၢ် သူ AlloFlow လၢ Gemini Canvas အပူၤ"
   },
   "history": {
     "load_project": "Load Project",
@@ -6290,7 +6292,8 @@
       "frames_label": "တၢ်ကတိၤထူ-frame response gaps",
       "concept_sort_label": "တၢ်ဆိကမိၣ် Sort misplacement အသနိ"
     },
-    "all_tool_activity": "All Tool Activity"
+    "all_tool_activity": "All Tool Activity",
+    "title_parent": "ဟံၣ်ဖိဃီဖိ Dashboard"
   },
   "tools": {
     "source": "Source Material",
@@ -10038,8 +10041,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Total STEM Lab XP earned across all activities",
-      "generate_assess": "Generate & assess",
-      "manipulatives": "Manipulatives",
+      "generate_assess": "Math problems & assessments",
+      "manipulatives": "Interactive tools & labs",
       "stepbystep": "Step-by-Step",
       "conceptual": "Conceptual",
       "realworld": "Real-World"
@@ -14549,7 +14552,11 @@
     "tts_provider_aria": "Text-ဆူ-speech provider",
     "local_cascade_label": "Local cascade:",
     "image_generation_header": "တၢ်ဂီၤ ဆၢကတၢၢ်",
-    "image_provider_aria": "တၢ်ဂီၤ ဆၢကတၢၢ် provider"
+    "image_provider_aria": "တၢ်ဂီၤ ဆၢကတၢၢ် provider",
+    "guided_card_canvas_title": "Gemini Canvas အပူၤ AlloFlow သူ",
+    "guided_card_canvas_badge": "တလိၣ်ရဲၣ်ကျဲၤ",
+    "guided_card_canvas_body": "ကျဲလၢအညီကတၢၢ်လၢကဒိးန့ၢ် AI: အိးထီၣ် AlloFlow လၢ Google Gemini အပူၤ. ကလီဒီး Google စရီ, သူနတၢ်ရဲၣ်ကျဲၤ Gemini အနံၤတနံၤတၢ်ဟ့ၣ်နီၤ (နီၢ်ကစၢ်, ကၠိ, မ့တမ့ၢ် တၢ်ဟ့ၣ်ဘူးလဲတၢ်ရဲၣ်ကျဲၤခဲလၢာ်မၤတၢ်သ့). တအိၣ်ဒီးတၢ်လၢကထၢနုာ်ဘၣ်ဒီးတအိၣ်ဒီးစးထံလၢကပၢဆှၢ.",
+    "guided_card_canvas_req": "အိးထီၣ် gemini.google.com လၢ tab အသီ. တၢ်ရဲၣ်ကျဲၤအဂ့ၢ်လၢ google.com/gemini"
   },
   "diff_view": {
     "title": "Source PDF ↔ Remediated HTML · Diff",
@@ -15712,7 +15719,25 @@
     "surprise_me_contextually_working": "ဖးဝဲတၢ်မၤလိအတၢ်အိၣ်သးခဲအံၤ ဒီးဃုထၢတၢ်ခီၣ်ထံးလၢအခံလၢအဘျုးအိၣ်...",
     "use_contextual_suggestion": "သူတၢ်ခီၣ်ထံးလၢအခံလၢတၢ်ဟ့ၣ်ကူၣ်ဝဲ",
     "use_contextual_suggestion_hint": "မၤဝဲတၢ်ဃုထၢ 1, 2, မ့တမ့ၢ် 3 လၢတၢ်ဟ့ၣ်ကူၣ်လၢခံကတၢၢ်အပူၤ",
-    "use_contextual_suggestion_working": "စးထီၣ်ဝဲတၢ်ခီၣ်ထံးလၢအခံလၢတၢ်ဃုထၢဝဲ..."
+    "use_contextual_suggestion_working": "စးထီၣ်ဝဲတၢ်ခီၣ်ထံးလၢအခံလၢတၢ်ဃုထၢဝဲ...",
+    "jump_to_lesson_plan": "လဲၤဆူယတၢ်သိၣ်လိတၢ်ရဲၣ်တၢ်ကျဲၤ",
+    "jump_to_lesson_plan_done": "တၢ်သိၣ်လိတၢ်ရဲၣ်တၢ်ကျဲၤလၢခံကတၢၢ်အိးထီၣ်သး.",
+    "jump_to_lesson_plan_hint": "အိးထီၣ်ကဒါတၢ်သိၣ်လိတၢ်ရဲၣ်တၢ်ကျဲၤလၢခံကတၢၢ်",
+    "open_block_suggestions": "ဒိးန့ၢ်လံာ်တီလံာ်မီအကူာ်တၢ်ဟ့ၣ်ကူၣ်",
+    "open_block_suggestions_done": "Document Builder အိးထီၣ်သး. အကူာ်တၢ်ဟ့ၣ်ကူၣ်အိၣ်လၢထးခီတၢ်ဒုးနဲၣ်အလီၢ်.",
+    "open_block_suggestions_hint": "အိးထီၣ် Document Builder, တၢ်ဟ့ၣ်ကူၣ်အိၣ်လၢထးခီ",
+    "open_brainstorm_modes": "ဃုထၢတၢ်ဆိကမိၣ်ထုးထီၣ်တၢ်ဟူးတၢ်ဂဲၤအကလုာ်",
+    "open_brainstorm_modes_done": "တၢ်ဆိကမိၣ်ထုးထီၣ်တၢ်ဟူးတၢ်ဂဲၤအကလုာ်အိးထီၣ်သး. ဃုထၢတၢ်ဆိကမိၣ်, တၢ်တၢၣ်ပီၣ်, jigsaw, မ့တမ့ၢ် တၢ်မၤဒိ.",
+    "open_brainstorm_modes_hint": "တၢ်ဆိကမိၣ်ပှာ်, တၢ်တၢၣ်ပီၣ်တဲသကိးအပီးအလီ, jigsaw, မ့တမ့ၢ် တၢ်မၤဒိမၤတဲာ်",
+    "open_discussion_builder": "တ့ထီၣ်တီၤဒၢးတၢ်တၢၣ်ပီၣ်တဲသကိး",
+    "open_discussion_builder_done": "တၢ်တၢၣ်ပီၣ်တ့ထီၣ်နီၢ်အိးထီၣ်သးလၢတၢ်ဆိကမိၣ်ထုးထီၣ်ပီးလီအပူၤ. ဃုထၢကျဲသနူ, ဒီးထုးထီၣ်.",
+    "open_discussion_builder_hint": "တၢ်တၢၣ်ပီၣ်အပီးအလီလၢအိၣ်ဒီးကျဲသနူဒ်သိး ဆိကမိၣ်-ခံဂၤ-ဟ့ၣ်နီၤ",
+    "open_jigsaw_builder": "တ့ထီၣ် jigsaw တၢ်ဟူးတၢ်ဂဲၤ",
+    "open_jigsaw_builder_done": "jigsaw တ့ထီၣ်နီၢ်အိးထီၣ်သးလၢတၢ်ဆိကမိၣ်ထုးထီၣ်ပီးလီအပူၤ. ပာ်လီၤကရူၢ်အနီၣ်ဂံၢ်, ဒီးထုးထီၣ်.",
+    "open_jigsaw_builder_hint": "jigsaw ပှၤစဲၣ်နီၤကရူၢ်တၢ်ဟူးတၢ်ဂဲၤဒီးကရူၢ်အနီၣ်ဂံၢ်လၢနပာ်လီၤ",
+    "use_gemini_canvas": "Gemini Canvas အပူၤ AlloFlow သူ",
+    "use_gemini_canvas_done": "AI တၢ်ရဲၣ်တၢ်ကျဲၤအိးထီၣ်သး. ခးမိၢ်ပှၢ်တခါဒုးနဲၣ် AlloFlow သူအကျိၤလၢ Gemini Canvas အပူၤလၢတလိၣ်ရဲၣ်ကျဲၤနီတမံၤ.",
+    "use_gemini_canvas_hint": "အိးထီၣ် AI တၢ်ရဲၣ်တၢ်ကျဲၤ, Canvas တၢ်ဃုထၢလၢတလိၣ်ရဲၣ်ကျဲၤအိၣ်လၢညါ"
   },
   "palette": {
     "aria": "AlloFlow တၢ်ပၢအလီၢ်",
@@ -16074,5 +16099,11 @@
     "toast_opened": "တၢ်ရ့လိၥ်အဂီၤအိးထီၣ်သးလၢတၢ်ဖးအဂီၢ်ဧိၤ.",
     "toast_invalid": "အိးထီၣ်တၢ်ရ့လိၥ်အဂီၤန့ၣ်တသ့ဘၣ်. ထုးထီၣ် AlloFlow ဂီၤ JSON ဖၢၤလၢအဘၣ်.",
     "toast_unreadable": "ဖးတၢ်ရ့လိၥ်အဂီၤအဖၢၤန့ၣ်တသ့ဘၣ်."
+  },
+  "shell_link": {
+    "banner_aria": "ဘၣ်ဃးဒီးပီးလီအံၤ",
+    "banner_text": "ပီးလီတခါလၢ AlloFlow, တၢ်သိၣ်လိအလီၢ်လၢတလိၣ်ဘူးလဲ.",
+    "banner_open": "ကွၢ်ဃုသ့ၣ်ညါ app ဒီတခါ",
+    "banner_dismiss": "ကးတံာ်တၢ်ကွဲးနီၣ်အံၤ"
   }
 }

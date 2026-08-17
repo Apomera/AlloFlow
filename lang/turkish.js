@@ -2288,7 +2288,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Belge Temelli Sorular",
     "open_stem_lab_explore_aria": "STEAM Lab Explore’u aç",
-    "stem_lab_explore": "Keşfet"
+    "stem_lab_explore": "Keşfet",
+    "needs_ai_setup": "AI kurulumu gerekli",
+    "needs_ai_setup_cta": "Bir AI bağlamak için dokunun veya AlloFlow’u Gemini Canvas içinde kullanın"
   },
   "history": {
     "load_project": "Projeyi Yükle",
@@ -6504,7 +6506,8 @@
       "frames_label": "Cümle kalıbı yanıt boşlukları",
       "concept_sort_label": "Kavram Sıralama yerleştirme hatası örüntüleri"
     },
-    "all_tool_activity": "Tüm Araç Etkinliği"
+    "all_tool_activity": "Tüm Araç Etkinliği",
+    "title_parent": "Aile Panosu"
   },
   "tools": {
     "source": "Kaynak Materyal",
@@ -12924,8 +12927,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Tüm etkinliklerde kazanılan toplam STEM Lab XP",
-      "generate_assess": "Oluştur ve değerlendir",
-      "manipulatives": "Manipülatifler",
+      "generate_assess": "Matematik soruları ve değerlendirmeler",
+      "manipulatives": "Etkileşimli araçlar ve laboratuvarlar",
       "stepbystep": "Adım Adım",
       "conceptual": "Kavramsal",
       "realworld": "Gerçek Dünya"
@@ -30386,7 +30389,11 @@
     "tts_provider_aria": "Metin okuma sağlayıcısı",
     "local_cascade_label": "Yerel basamaklama:",
     "image_generation_header": "Görsel Oluşturma",
-    "image_provider_aria": "Görsel oluşturma sağlayıcısı"
+    "image_provider_aria": "Görsel oluşturma sağlayıcısı",
+    "guided_card_canvas_title": "AlloFlow uygulamasını Gemini Canvas içinde kullan",
+    "guided_card_canvas_badge": "Kurulum yok",
+    "guided_card_canvas_body": "AI edinmenin en kolay yolu: AlloFlow’u Google Gemini içinde açın. Google hesabıyla ücretsizdir ve Gemini planınızın günlük kotasını kullanır (kişisel, Eğitim veya ücretli planların hepsi çalışır). Kurulacak bir şey ve yönetilecek bir anahtar yok.",
+    "guided_card_canvas_req": "gemini.google.com yeni sekmede açılır. Plan ayrıntıları google.com/gemini adresinde"
   },
   "diff_view": {
     "title": "Kaynak PDF ↔ Düzeltilmiş HTML · Fark",
@@ -31379,7 +31386,25 @@
     "surprise_me_contextually_working": "Geçerli ders bağlamı okunuyor ve yararlı bir sonraki adım seçiliyor...",
     "use_contextual_suggestion": "Önerilen bir sonraki adımı kullan",
     "use_contextual_suggestion_hint": "Son önerilerden 1, 2 veya 3 numaralı seçeneği çalıştırır",
-    "use_contextual_suggestion_working": "Seçilen sonraki adım başlatılıyor..."
+    "use_contextual_suggestion_working": "Seçilen sonraki adım başlatılıyor...",
+    "jump_to_lesson_plan": "Ders planıma git",
+    "jump_to_lesson_plan_done": "En son ders planı açıldı.",
+    "jump_to_lesson_plan_hint": "En son ders planını yeniden aç",
+    "open_block_suggestions": "Belge bloğu önerileri al",
+    "open_block_suggestions_done": "Belge Oluşturucu açıldı. Blok önerileri üstteki vurgulanan panelde.",
+    "open_block_suggestions_hint": "Belge Oluşturucuyu açar; öneriler en üstte",
+    "open_brainstorm_modes": "Beyin fırtınası etkinlik türünü seç",
+    "open_brainstorm_modes_done": "Beyin fırtınası etkinlik türleri açıldı. Fikirler, tartışma, jigsaw veya simülasyon seçin.",
+    "open_brainstorm_modes_hint": "Fikir ağı, tartışma kiti, jigsaw veya simülasyon",
+    "open_discussion_builder": "Bir sınıf tartışması oluştur",
+    "open_discussion_builder_done": "Tartışma oluşturucu beyin fırtınası aracında açıldı. Bir yöntem seçin, sonra oluşturun.",
+    "open_discussion_builder_hint": "Düşün-eşleş-paylaş gibi yöntemler içeren bir tartışma kiti",
+    "open_jigsaw_builder": "Bir jigsaw etkinliği oluştur",
+    "open_jigsaw_builder_done": "Jigsaw oluşturucu beyin fırtınası aracında açıldı. Grup büyüklüğünü belirleyin, sonra oluşturun.",
+    "open_jigsaw_builder_hint": "Grup büyüklüğünü sizin belirlediğiniz jigsaw uzman grubu etkinliği",
+    "use_gemini_canvas": "AlloFlow uygulamasını Gemini Canvas içinde kullan",
+    "use_gemini_canvas_done": "AI kurulumu açıldı. İlk kart, hiçbir kurulum olmadan Gemini Canvas içinde AlloFlow kullanmayı açıklıyor.",
+    "use_gemini_canvas_hint": "AI kurulumunu açar; kurulum gerektirmeyen Canvas seçeneği en önde"
   },
   "palette": {
     "aria": "AlloFlow komut paleti",
@@ -31757,5 +31782,11 @@
     "toast_opened": "Hizalama grafiği salt okunur açıldı.",
     "toast_invalid": "Bu hizalama grafiği açılamadı. Geçerli bir AlloFlow grafik JSON dosyası dışa aktarın.",
     "toast_unreadable": "Bu hizalama grafiği dosyası okunamadı."
+  },
+  "shell_link": {
+    "banner_aria": "Bu araç hakkında",
+    "banner_text": "AlloFlow’dan bir araç; ücretsiz bir öğretim platformu.",
+    "banner_open": "Uygulamanın tamamını keşfet",
+    "banner_dismiss": "Bu notu kapat"
   }
 }

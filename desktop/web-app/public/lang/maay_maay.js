@@ -2258,7 +2258,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Document-Based su'aalo",
     "open_stem_lab_explore_aria": "Fur STEAM Lab Explore",
-    "stem_lab_explore": "Sahmin"
+    "stem_lab_explore": "Sahmin",
+    "needs_ai_setup": "Wuxuu u baahan yahay habaynta AI",
+    "needs_ai_setup_cta": "Taabo si aad ugu xirto AI, ama isticmaal AlloFlow gudaha Gemini Canvas"
   },
   "history": {
     "load_project": "Load Project",
@@ -6274,7 +6276,8 @@
       "frames_label": "Sentence-frame response gaps",
       "concept_sort_label": "Concept Sort misplacement patterns"
     },
-    "all_tool_activity": "dhammaan Tool Activity"
+    "all_tool_activity": "dhammaan Tool Activity",
+    "title_parent": "Dashboardka Qoyska"
   },
   "tools": {
     "source": "Source Material",
@@ -12477,8 +12480,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Total STEM Lab XP earned across dhammaan activities",
-      "generate_assess": "Generate & assess",
-      "manipulatives": "Manipulatives",
+      "generate_assess": "Su'aalaha xisaabta iyo qiimeynta",
+      "manipulatives": "Qalabka wada-shaqeynta iyo shaybaarada",
       "stepbystep": "Step-by-Step",
       "conceptual": "Conceptual",
       "realworld": "Real-World"
@@ -22587,7 +22590,11 @@
     "tts_provider_aria": "Text-ku-speech provider",
     "local_cascade_label": "Local cascade:",
     "image_generation_header": "sawir Qarni",
-    "image_provider_aria": "sawir qarni provider"
+    "image_provider_aria": "sawir qarni provider",
+    "guided_card_canvas_title": "Isticmaal AlloFlow gudaha Gemini Canvas",
+    "guided_card_canvas_badge": "Habayn malaha",
+    "guided_card_canvas_body": "Sida ugu fudud ee AI lagu helo: fur AlloFlow gudaha Google Gemini. Bilaash akoon Google ah, isticmaalaya qoondada maalinlaha ah ee qorshaha Gemini kaaga (qorshayaasha shakhsiga, waxbarashada, ama lacag bixinta dhammaan way shaqeeyaan). Wax la rakibo malaha, furena lama maamulo.",
+    "guided_card_canvas_req": "Wuxuu ku furaa gemini.google.com tab cusub. Faahfaahinta qorshayaasha google.com/gemini"
   },
   "diff_view": {
     "title": "Source PDF ↔ Remediated HTML · Diff",
@@ -23748,7 +23755,25 @@
     "surprise_me_contextually_working": "Waxaa la akhrinayaa xaaladda casharka hadda waxaana la dooranayaa tallaabo xigta oo faa’iido leh...",
     "use_contextual_suggestion": "Isticmaal tallaabada xigta ee la soo jeediyay",
     "use_contextual_suggestion_hint": "Waxay socodsiisaa ikhtiyaarka 1, 2, ama 3 ee soo jeedinta ugu dambaysay",
-    "use_contextual_suggestion_working": "Waxaa la bilaabayaa tallaabada xigta ee la doortay..."
+    "use_contextual_suggestion_working": "Waxaa la bilaabayaa tallaabada xigta ee la doortay...",
+    "jump_to_lesson_plan": "U bood qorshaha casharkayga",
+    "jump_to_lesson_plan_done": "Qorshaha casharka ugu dambeeyay waa la furay.",
+    "jump_to_lesson_plan_hint": "Dib u fur qorshaha casharka ugu dambeeyay",
+    "open_block_suggestions": "Hel talooyin qaybaha dokumentiga",
+    "open_block_suggestions_done": "Document Builder waa la furay. Talooyinka qaybuhu waxay ku jiraan guddiga la muujiyay ee sare.",
+    "open_block_suggestions_hint": "Fur Document Builder, talooyinku waxay yaalliin xagga sare",
+    "open_brainstorm_modes": "Dooro nooca hawsha fikir-soo-saarka",
+    "open_brainstorm_modes_done": "Noocyada hawlaha fikir-soo-saarka waa la furay. Dooro fikirro, dood, jigsaw, ama jilitaan.",
+    "open_brainstorm_modes_hint": "Shabakada fikirrada, xirmada doodda, jigsaw, ama jilitaan",
+    "open_discussion_builder": "Samee dood fasalka ah",
+    "open_discussion_builder_done": "Sameeyaha doodda waxaa laga furay qalabka fikir-soo-saarka. Dooro hab, kadibna samee.",
+    "open_discussion_builder_hint": "Xirmo dood leh habab sida feker-labo-wadaag",
+    "open_jigsaw_builder": "Samee hawl jigsaw ah",
+    "open_jigsaw_builder_done": "Sameeyaha jigsaw waxaa laga furay qalabka fikir-soo-saarka. Go’aami cabbirka kooxda, kadibna samee.",
+    "open_jigsaw_builder_hint": "Hawl kooxo khubaro jigsaw ah oo cabbirka kooxda aad adigu go’aamiso",
+    "use_gemini_canvas": "Isticmaal AlloFlow gudaha Gemini Canvas",
+    "use_gemini_canvas_done": "Habaynta AI waa la furay. Kaadhka koowaad wuxuu sharxayaa isticmaalka AlloFlow gudaha Gemini Canvas iyada oo aan habayn la samayn.",
+    "use_gemini_canvas_hint": "Fur habaynta AI, meesha doorashada Canvas ee aan habayn u baahnayn ay hore u taal"
   },
   "palette": {
     "aria": "Liiska amarrada AlloFlow",
@@ -24127,5 +24152,11 @@
     "toast_opened": "Garaafka isku-toosinta waxaa loo furay akhris kaliya.",
     "toast_invalid": "Lama furi karin garaafkaas isku-toosinta. Soo saar fayl JSON garaaf AlloFlow oo sax ah.",
     "toast_unreadable": "Lama akhrin karin faylkaas garaafka isku-toosinta."
+  },
+  "shell_link": {
+    "banner_aria": "Ku saabsan qalabkan",
+    "banner_text": "Hal qalab oo ka yimid AlloFlow, goob wax-barid oo bilaash ah.",
+    "banner_open": "Baadh abka oo dhan",
+    "banner_dismiss": "Xir qoraalkan"
   }
 }

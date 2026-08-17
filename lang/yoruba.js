@@ -2280,7 +2280,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "iwe ṣẹ-Ti o da lori ibeere",
     "open_stem_lab_explore_aria": "Ṣí STEAM Lab Explore",
-    "stem_lab_explore": "Ṣàwárí"
+    "stem_lab_explore": "Ṣàwárí",
+    "needs_ai_setup": "Ó nílò ìṣètò AI",
+    "needs_ai_setup_cta": "Tẹ láti so AI pọ̀, tàbí lo AlloFlow nínú Gemini Canvas"
   },
   "history": {
     "load_project": "Ko Project",
@@ -6335,7 +6337,8 @@
       "frames_label": "gbolohun-frame response gaps",
       "concept_sort_label": "Concept Si misplacement patterns"
     },
-    "all_tool_activity": "gbogbo irinṣẹ Activity"
+    "all_tool_activity": "gbogbo irinṣẹ Activity",
+    "title_parent": "Dasibodu Ìdílé"
   },
   "tools": {
     "source": "orisun Material",
@@ -12719,8 +12722,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Total STEM iwadi XP earned across gbogbo activities",
-      "generate_assess": "Ṣẹda & assess",
-      "manipulatives": "Àwọn Ohun-ìmúṣiṣẹ́",
+      "generate_assess": "Àwọn ìṣòro ìṣirò àti àyẹ̀wò",
+      "manipulatives": "Àwọn irinṣẹ́ oníbáṣepọ̀ àti ilé ìdánwò",
       "stepbystep": "igbesẹ-by-igbesẹ",
       "conceptual": "Èrò",
       "realworld": "Ayé Gidi"
@@ -29617,7 +29620,11 @@
     "tts_provider_aria": "ọrọ-si-speech provider",
     "local_cascade_label": "Ìṣàn agbègbè:",
     "image_generation_header": "aworan Generation",
-    "image_provider_aria": "aworan generation provider"
+    "image_provider_aria": "aworan generation provider",
+    "guided_card_canvas_title": "Lo AlloFlow nínú Gemini Canvas",
+    "guided_card_canvas_badge": "Kò nílò ìṣètò",
+    "guided_card_canvas_body": "Ọ̀nà tó rọrùn jùlọ láti ní AI: ṣí AlloFlow nínú Google Gemini. Ọ̀fẹ́ pẹ̀lú àkántì Google, ó ń lo ìpín ojoojúmọ́ ti ètò Gemini rẹ (ètò aládàáni, ti ẹ̀kọ́, tàbí tí a ń sanwó fún gbogbo wọn ń ṣiṣẹ́). Kò sí ohun tí a ó fi sórí ẹ̀rọ, kò sì sí kọ́kọ́rọ́ tí a ó ṣàkóso.",
+    "guided_card_canvas_req": "Ó ń ṣí gemini.google.com nínú taabu tuntun. Àlàyé àwọn ètò wà ní google.com/gemini"
   },
   "diff_view": {
     "title": "orisun PDF ↔ Remediated HTML · Diff",
@@ -30976,7 +30983,25 @@
     "surprise_me_contextually_working": "Ń ka ipò ẹ̀kọ́ tó wà nísinsìnyí, ó sì ń yan ìgbésẹ̀ tó tẹ̀lé tó wúlò...",
     "use_contextual_suggestion": "Lo ìgbésẹ̀ tó tẹ̀lé tí a dábàá",
     "use_contextual_suggestion_hint": "Ó ń ṣiṣẹ́ àṣàyàn 1, 2, tàbí 3 láti inú àwọn àbá tuntun",
-    "use_contextual_suggestion_working": "Ń bẹ̀rẹ̀ ìgbésẹ̀ tó tẹ̀lé tí a yàn..."
+    "use_contextual_suggestion_working": "Ń bẹ̀rẹ̀ ìgbésẹ̀ tó tẹ̀lé tí a yàn...",
+    "jump_to_lesson_plan": "Lọ sí ètò ẹ̀kọ́ mi",
+    "jump_to_lesson_plan_done": "Ètò ẹ̀kọ́ tuntun jùlọ ti ṣí.",
+    "jump_to_lesson_plan_hint": "Tún ètò ẹ̀kọ́ tuntun jùlọ ṣí",
+    "open_block_suggestions": "Gba àwọn ìmọ̀ràn ẹ̀ka ìwé",
+    "open_block_suggestions_done": "Document Builder ti ṣí. Àwọn ìmọ̀ràn ẹ̀ka wà nínú pánẹ́ẹ̀lì tí a samisi lókè.",
+    "open_block_suggestions_hint": "Ṣí Document Builder, àwọn ìmọ̀ràn wà lókè",
+    "open_brainstorm_modes": "Yan irú iṣẹ́ ìdámọ̀ràn èrò",
+    "open_brainstorm_modes_done": "Àwọn irú iṣẹ́ ìdámọ̀ràn èrò ti ṣí. Yan èrò, ìjíròrò, jigsaw, tàbí àfarawé.",
+    "open_brainstorm_modes_hint": "Àwọ̀n èrò, àpò ìjíròrò, jigsaw, tàbí àfarawé",
+    "open_discussion_builder": "Kọ́ ìjíròrò kíláàsì",
+    "open_discussion_builder_done": "Olùkọ́ ìjíròrò ti ṣí nínú irinṣẹ́ ìdámọ̀ràn èrò. Yan ọ̀nà kan, lẹ́yìn náà ṣẹ̀dá.",
+    "open_discussion_builder_hint": "Àpò ìjíròrò pẹ̀lú àwọn ọ̀nà bíi ronú-so pọ̀-pín",
+    "open_jigsaw_builder": "Kọ́ iṣẹ́ jigsaw",
+    "open_jigsaw_builder_done": "Olùkọ́ jigsaw ti ṣí nínú irinṣẹ́ ìdámọ̀ràn èrò. Ṣètò ìwọ̀n àwùjọ, lẹ́yìn náà ṣẹ̀dá.",
+    "open_jigsaw_builder_hint": "Iṣẹ́ àwùjọ àwọn amòye jigsaw pẹ̀lú ìwọ̀n àwùjọ tí ìwọ ṣètò",
+    "use_gemini_canvas": "Lo AlloFlow ninu Gemini Canvas",
+    "use_gemini_canvas_done": "Ìṣètò AI ti ṣí. Káàdì àkọ́kọ́ ṣàlàyé bí a ṣe ń lo AlloFlow nínú Gemini Canvas láìsí ìṣètò kankan.",
+    "use_gemini_canvas_hint": "Ṣí ìṣètò AI, níbi tí àṣàyàn Canvas tí kò nílò ìṣètò wà níwájú"
   },
   "palette": {
     "aria": "Pátákó àṣẹ AlloFlow",
@@ -31362,5 +31387,11 @@
     "toast_opened": "A ṣí àwòrán ìbámu fún kíkà nìkan.",
     "toast_invalid": "A kò lè ṣí àwòrán ìbámu yẹn. Gbé fáìlì JSON àwòrán AlloFlow tó tọ́ jáde.",
     "toast_unreadable": "A kò lè ka fáìlì àwòrán ìbámu yẹn."
+  },
+  "shell_link": {
+    "banner_aria": "Nípa irinṣẹ́ yìí",
+    "banner_text": "Irinṣẹ́ kan láti AlloFlow, pẹpẹ ìkọ́ni ọ̀fẹ́.",
+    "banner_open": "Ṣàwárí gbogbo app náà",
+    "banner_dismiss": "Pa àkọsílẹ̀ yìí rẹ́"
   }
 }

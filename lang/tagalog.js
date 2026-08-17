@@ -2282,7 +2282,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "dokumento-Batay mga tanong",
     "open_stem_lab_explore_aria": "Buksan ang STEAM Lab Explore",
-    "stem_lab_explore": "Tuklasin"
+    "stem_lab_explore": "Tuklasin",
+    "needs_ai_setup": "Kailangan ng AI setup",
+    "needs_ai_setup_cta": "I-tap para ikonekta ang AI, o gamitin ang AlloFlow sa Gemini Canvas"
   },
   "history": {
     "load_project": "I-load Project",
@@ -6329,7 +6331,8 @@
       "frames_label": "pangungusap-frame tugon gaps",
       "concept_sort_label": "Konsepto Ayusin misplacement mga pattern"
     },
-    "all_tool_activity": "lahat mga kasangkapan Aktibidad"
+    "all_tool_activity": "lahat mga kasangkapan Aktibidad",
+    "title_parent": "Dashboard ng Pamilya"
   },
   "tools": {
     "source": "pinagkunang materyal",
@@ -12717,8 +12720,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Total STEM lab XP earned sa kabila lahat mga aktibidad",
-      "generate_assess": "Bumuo & assess",
-      "manipulatives": "Mga Manipulative",
+      "generate_assess": "Mga problema sa math at pagtatasa",
+      "manipulatives": "Mga interactive na tool at lab",
       "stepbystep": "hakbang-by-hakbang",
       "conceptual": "Konseptwal",
       "realworld": "Totoong Buhay"
@@ -29457,7 +29460,11 @@
     "tts_provider_aria": "teksto-sa-speech provider",
     "local_cascade_label": "Lokal na cascade:",
     "image_generation_header": "imahe Henerasyon",
-    "image_provider_aria": "imahe henerasyon provider"
+    "image_provider_aria": "imahe henerasyon provider",
+    "guided_card_canvas_title": "Gamitin ang AlloFlow sa loob ng Gemini Canvas",
+    "guided_card_canvas_badge": "Walang setup",
+    "guided_card_canvas_body": "Ang pinakamadaling paraan para magka-AI: buksan ang AlloFlow sa loob ng Google Gemini. Libre gamit ang Google account, ginagamit ang pang-araw-araw na quota ng iyong Gemini plan (gumagana ang personal, Education, o bayad na mga plan). Walang i-i-install at walang key na pamamahalaan.",
+    "guided_card_canvas_req": "Binubuksan ang gemini.google.com sa bagong tab. Mga detalye ng plan sa google.com/gemini"
   },
   "diff_view": {
     "title": "pinagkunan PDF ↔ Remediated HTML · Diff",
@@ -30816,7 +30823,25 @@
     "surprise_me_contextually_working": "Binabasa ang konteksto ng kasalukuyang aralin at pumipili ng kapaki-pakinabang na susunod na hakbang...",
     "use_contextual_suggestion": "Gamitin ang iminungkahing susunod na hakbang",
     "use_contextual_suggestion_hint": "Pinapatakbo ang opsyon 1, 2, o 3 mula sa pinakabagong mga mungkahi",
-    "use_contextual_suggestion_working": "Sinisimulan ang napiling susunod na hakbang..."
+    "use_contextual_suggestion_working": "Sinisimulan ang napiling susunod na hakbang...",
+    "jump_to_lesson_plan": "Pumunta sa aking lesson plan",
+    "jump_to_lesson_plan_done": "Nabuksan ang pinakabagong lesson plan.",
+    "jump_to_lesson_plan_hint": "Muling buksan ang pinakabagong lesson plan",
+    "open_block_suggestions": "Kumuha ng mga mungkahi sa block ng dokumento",
+    "open_block_suggestions_done": "Nabuksan ang Document Builder. Ang mga mungkahi sa block ay nasa naka-highlight na panel sa itaas.",
+    "open_block_suggestions_hint": "Buksan ang Document Builder, nasa itaas ang mga mungkahi",
+    "open_brainstorm_modes": "Pumili ng uri ng aktibidad ng brainstorm",
+    "open_brainstorm_modes_done": "Nabuksan ang mga uri ng aktibidad ng brainstorm. Pumili ng mga ideya, diskusyon, jigsaw, o simulation.",
+    "open_brainstorm_modes_hint": "Sapot ng mga ideya, discussion kit, jigsaw, o simulation",
+    "open_discussion_builder": "Bumuo ng diskusyon ng klase",
+    "open_discussion_builder_done": "Nabuksan ang tagabuo ng diskusyon sa brainstorm tool. Pumili ng protocol, pagkatapos ay bumuo.",
+    "open_discussion_builder_hint": "Isang discussion kit na may mga protocol tulad ng isip-pares-bahagi",
+    "open_jigsaw_builder": "Bumuo ng aktibidad na jigsaw",
+    "open_jigsaw_builder_done": "Nabuksan ang tagabuo ng jigsaw sa brainstorm tool. Itakda ang laki ng grupo, pagkatapos ay bumuo.",
+    "open_jigsaw_builder_hint": "Aktibidad ng mga expert group na jigsaw na may laki ng grupo na itinatakda mo",
+    "use_gemini_canvas": "Gamitin ang AlloFlow sa loob ng Gemini Canvas",
+    "use_gemini_canvas_done": "Nabuksan ang setup ng AI. Ipinapaliwanag ng unang card kung paano gamitin ang AlloFlow sa loob ng Gemini Canvas nang walang anumang setup.",
+    "use_gemini_canvas_hint": "Buksan ang setup ng AI, kung saan nangunguna ang opsyon ng Canvas na walang setup"
   },
   "palette": {
     "aria": "AlloFlow command palette",
@@ -31210,5 +31235,11 @@
     "toast_opened": "Binuksan ang alignment graph nang read-only.",
     "toast_invalid": "Hindi mabuksan ang alignment graph na iyon. Mag-export ng wastong AlloFlow graph JSON file.",
     "toast_unreadable": "Hindi mabasa ang file ng alignment graph na iyon."
+  },
+  "shell_link": {
+    "banner_aria": "Tungkol sa tool na ito",
+    "banner_text": "Isang tool mula sa AlloFlow, isang libreng platform sa pagtuturo.",
+    "banner_open": "Galugarin ang buong app",
+    "banner_dismiss": "I-dismiss ang tala na ito"
   }
 }

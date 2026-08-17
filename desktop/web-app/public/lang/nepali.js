@@ -2283,7 +2283,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "कागजात-आधारित प्रश्न",
     "open_stem_lab_explore_aria": "STEAM Lab Explore खोल्नुहोस्",
-    "stem_lab_explore": "अन्वेषण गर्नुहोस्"
+    "stem_lab_explore": "अन्वेषण गर्नुहोस्",
+    "needs_ai_setup": "AI सेटअप चाहिन्छ",
+    "needs_ai_setup_cta": "AI जोड्न ट्याप गर्नुहोस्, वा Gemini Canvas मा AlloFlow प्रयोग गर्नुहोस्"
   },
   "history": {
     "load_project": "लोड गर्नुहोस् Project",
@@ -6329,7 +6331,8 @@
       "frames_label": "वाक्य-फ्रेम प्रतिक्रिया अन्तरहरू",
       "concept_sort_label": "अवधारणा क्रमबद्ध गर्नुहोस् misplacement ढाँचाहरू"
     },
-    "all_tool_activity": "सबै उपकरणहरू गतिविधि"
+    "all_tool_activity": "सबै उपकरणहरू गतिविधि",
+    "title_parent": "परिवार ड्यासबोर्ड"
   },
   "tools": {
     "source": "स्रोत सामग्री",
@@ -12718,8 +12721,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Total STEM प्रयोगशाला XP earned पारि सबै गतिविधिहरू",
-      "generate_assess": "उत्पन्न गर्नुहोस् & assess",
-      "manipulatives": "म्यानिप्युलेटिभ्स (हातले चलाउने सामग्री)",
+      "generate_assess": "गणितका समस्या र मूल्याङ्कन",
+      "manipulatives": "अन्तरक्रियात्मक उपकरण र प्रयोगशाला",
       "stepbystep": "step-by-step",
       "conceptual": "अवधारणात्मक",
       "realworld": "वास्तविक-संसार"
@@ -29804,7 +29807,11 @@
     "tts_provider_aria": "text-to-speech provider",
     "local_cascade_label": "स्थानीय क्यास्केड:",
     "image_generation_header": "तस्वीर पुस्ता",
-    "image_provider_aria": "तस्वीर पुस्ता provider"
+    "image_provider_aria": "तस्वीर पुस्ता provider",
+    "guided_card_canvas_title": "Gemini Canvas भित्र AlloFlow प्रयोग गर्नुहोस्",
+    "guided_card_canvas_badge": "सेटअप चाहिँदैन",
+    "guided_card_canvas_body": "AI पाउने सबैभन्दा सजिलो तरिका: Google Gemini भित्र AlloFlow खोल्नुहोस्। Google खातासँग निःशुल्क, तपाईंको Gemini योजनाको दैनिक कोटा प्रयोग गर्दै (व्यक्तिगत, शिक्षा, वा सशुल्क योजना सबै चल्छन्)। केही इन्स्टल गर्नुपर्दैन र कुनै कुञ्जी व्यवस्थापन गर्नुपर्दैन।",
+    "guided_card_canvas_req": "नयाँ ट्याबमा gemini.google.com खोल्छ। योजना विवरण google.com/gemini मा"
   },
   "diff_view": {
     "title": "स्रोत PDF ↔ Remediated HTML · Diff",
@@ -31163,7 +31170,25 @@
     "surprise_me_contextually_working": "हालको पाठको सन्दर्भ पढेर उपयोगी अर्को कदम छान्दै...",
     "use_contextual_suggestion": "सुझाइएको अर्को कदम प्रयोग गर्नुहोस्",
     "use_contextual_suggestion_hint": "भर्खरका सुझावबाट विकल्प 1, 2 वा 3 चलाउँछ",
-    "use_contextual_suggestion_working": "छानिएको अर्को कदम सुरु गर्दै..."
+    "use_contextual_suggestion_working": "छानिएको अर्को कदम सुरु गर्दै...",
+    "jump_to_lesson_plan": "मेरो पाठ योजनामा जानुहोस्",
+    "jump_to_lesson_plan_done": "सबैभन्दा पछिल्लो पाठ योजना खुल्यो।",
+    "jump_to_lesson_plan_hint": "सबैभन्दा पछिल्लो पाठ योजना फेरि खोल्नुहोस्",
+    "open_block_suggestions": "कागजात ब्लक सुझावहरू पाउनुहोस्",
+    "open_block_suggestions_done": "डकुमेन्ट बिल्डर खुल्यो। ब्लक सुझावहरू माथिको हाइलाइट गरिएको प्यानलमा छन्।",
+    "open_block_suggestions_hint": "डकुमेन्ट बिल्डर खोल्नुहोस्, सुझावहरू माथि छन्",
+    "open_brainstorm_modes": "बुद्धिमन्थन गतिविधिको प्रकार छान्नुहोस्",
+    "open_brainstorm_modes_done": "बुद्धिमन्थन गतिविधिका प्रकारहरू खुले। विचार, छलफल, जिग्सअ, वा सिमुलेशन छान्नुहोस्।",
+    "open_brainstorm_modes_hint": "विचार-जालो, छलफल किट, जिग्सअ, वा सिमुलेशन",
+    "open_discussion_builder": "कक्षा छलफल बनाउनुहोस्",
+    "open_discussion_builder_done": "छलफल निर्माता बुद्धिमन्थन उपकरणमा खुल्यो। विधि छान्नुहोस्, अनि बनाउनुहोस्।",
+    "open_discussion_builder_hint": "सोच्नुहोस्-जोडी बनाउनुहोस्-बाँड्नुहोस् जस्ता विधिसहितको छलफल किट",
+    "open_jigsaw_builder": "जिग्सअ गतिविधि बनाउनुहोस्",
+    "open_jigsaw_builder_done": "जिग्सअ निर्माता बुद्धिमन्थन उपकरणमा खुल्यो। समूहको आकार तोक्नुहोस्, अनि बनाउनुहोस्।",
+    "open_jigsaw_builder_hint": "तपाईंले तोक्ने समूह आकारसहितको जिग्सअ विशेषज्ञ-समूह गतिविधि",
+    "use_gemini_canvas": "Gemini Canvas भित्र AlloFlow प्रयोग गर्नुहोस्",
+    "use_gemini_canvas_done": "AI सेटअप खुल्यो। पहिलो कार्डले कुनै सेटअप बिना Gemini Canvas मा AlloFlow प्रयोग गर्ने तरिका बताउँछ।",
+    "use_gemini_canvas_hint": "AI सेटअप खोल्नुहोस्, जहाँ सेटअप नचाहिने Canvas विकल्प अगाडि छ"
   },
   "palette": {
     "aria": "AlloFlow कमाण्ड प्यालेट",
@@ -31568,5 +31593,11 @@
     "toast_opened": "पङ्क्तिबद्धता ग्राफ पढ्नका लागि मात्र खुल्यो।",
     "toast_invalid": "त्यो पङ्क्तिबद्धता ग्राफ खोल्न सकिएन। मान्य AlloFlow ग्राफ JSON फाइल निर्यात गर्नुहोस्।",
     "toast_unreadable": "त्यो पङ्क्तिबद्धता ग्राफ फाइल पढ्न सकिएन।"
+  },
+  "shell_link": {
+    "banner_aria": "यस उपकरणबारे",
+    "banner_text": "AlloFlow बाट एउटा उपकरण, एक निःशुल्क शिक्षण मञ्च।",
+    "banner_open": "पूरा एप हेर्नुहोस्",
+    "banner_dismiss": "यो नोट हटाउनुहोस्"
   }
 }

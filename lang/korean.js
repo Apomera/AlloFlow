@@ -2286,7 +2286,9 @@
     "storyforge_label": "스토리포지",
     "tool_dbq_aria": "문서-기반 질문",
     "open_stem_lab_explore_aria": "STEAM Lab Explore 열기",
-    "stem_lab_explore": "탐색"
+    "stem_lab_explore": "탐색",
+    "needs_ai_setup": "AI 설정 필요",
+    "needs_ai_setup_cta": "탭하여 AI를 연결하거나, Gemini Canvas 안에서 AlloFlow를 사용하세요"
   },
   "history": {
     "load_project": "프로젝트 불러오기",
@@ -6332,7 +6334,8 @@
       "frames_label": "문장 프레임 응답 격차",
       "concept_sort_label": "개념 정렬 misplacement 패턴"
     },
-    "all_tool_activity": "모든 도구 활동"
+    "all_tool_activity": "모든 도구 활동",
+    "title_parent": "가족 대시보드"
   },
   "tools": {
     "source": "소스 자료",
@@ -12722,8 +12725,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Total STEM 실험실 XP earned 걸쳐 모든 활동",
-      "generate_assess": "생성 & assess",
-      "manipulatives": "조작 교구",
+      "generate_assess": "수학 문제와 평가",
+      "manipulatives": "인터랙티브 도구와 실험실",
       "stepbystep": "step-by-step",
       "conceptual": "개념적",
       "realworld": "실제 세계"
@@ -30167,7 +30170,11 @@
     "tts_provider_aria": "텍스트 음성 변환 제공업체",
     "local_cascade_label": "로컬 캐스케이드:",
     "image_generation_header": "이미지 생성",
-    "image_provider_aria": "이미지 생성 provider"
+    "image_provider_aria": "이미지 생성 provider",
+    "guided_card_canvas_title": "Gemini Canvas 안에서 AlloFlow 사용하기",
+    "guided_card_canvas_badge": "설정 불필요",
+    "guided_card_canvas_body": "AI를 쓰는 가장 쉬운 방법: Google Gemini 안에서 AlloFlow를 여세요. Google 계정으로 무료이며, 사용 중인 Gemini 요금제의 일일 한도를 사용합니다(개인, 교육, 유료 요금제 모두 가능). 설치할 것도, 관리할 키도 없습니다.",
+    "guided_card_canvas_req": "새 탭에서 gemini.google.com을 엽니다. 요금제 정보는 google.com/gemini"
   },
   "diff_view": {
     "title": "소스 PDF ↔ Remediated HTML · Diff",
@@ -31317,7 +31324,25 @@
     "surprise_me_contextually_working": "현재 수업 상황을 읽고 도움이 되는 다음 단계를 고르는 중...",
     "use_contextual_suggestion": "제안된 다음 단계 사용",
     "use_contextual_suggestion_hint": "최근 제안 중 선택지 1, 2, 3을 실행합니다",
-    "use_contextual_suggestion_working": "선택한 다음 단계를 시작하는 중..."
+    "use_contextual_suggestion_working": "선택한 다음 단계를 시작하는 중...",
+    "jump_to_lesson_plan": "내 수업 지도안으로 이동",
+    "jump_to_lesson_plan_done": "가장 최근 수업 지도안이 열렸습니다.",
+    "jump_to_lesson_plan_hint": "가장 최근 수업 지도안 다시 열기",
+    "open_block_suggestions": "문서 블록 제안 받기",
+    "open_block_suggestions_done": "문서 빌더가 열렸습니다. 블록 제안은 상단의 강조된 패널에 있습니다.",
+    "open_block_suggestions_hint": "문서 빌더를 엽니다. 제안은 상단에 있습니다",
+    "open_brainstorm_modes": "브레인스토밍 활동 유형 선택",
+    "open_brainstorm_modes_done": "브레인스토밍 활동 유형이 열렸습니다. 아이디어, 토론, 직소, 시뮬레이션 중에서 선택하세요.",
+    "open_brainstorm_modes_hint": "아이디어 망, 토론 키트, 직소, 또는 시뮬레이션",
+    "open_discussion_builder": "학급 토론 만들기",
+    "open_discussion_builder_done": "토론 빌더가 브레인스토밍 도구에서 열렸습니다. 방식을 선택한 다음 생성하세요.",
+    "open_discussion_builder_hint": "생각하기-짝짓기-공유하기 같은 방식이 포함된 토론 키트",
+    "open_jigsaw_builder": "직소 활동 만들기",
+    "open_jigsaw_builder_done": "직소 빌더가 브레인스토밍 도구에서 열렸습니다. 모둠 크기를 정한 다음 생성하세요.",
+    "open_jigsaw_builder_hint": "모둠 크기를 직접 정하는 직소 전문가 모둠 활동",
+    "use_gemini_canvas": "Gemini Canvas 안에서 AlloFlow 사용하기",
+    "use_gemini_canvas_done": "AI 설정이 열렸습니다. 첫 번째 카드에서 설정 없이 Gemini Canvas 안에서 AlloFlow를 사용하는 방법을 설명합니다.",
+    "use_gemini_canvas_hint": "AI 설정을 엽니다. 설정이 필요 없는 Canvas 옵션이 맨 앞에 있습니다"
   },
   "palette": {
     "aria": "AlloFlow 명령 팔레트",
@@ -31720,5 +31745,11 @@
     "toast_opened": "정렬 그래프를 읽기 전용으로 열었습니다.",
     "toast_invalid": "해당 정렬 그래프를 열 수 없습니다. 유효한 AlloFlow 그래프 JSON 파일을 내보내세요.",
     "toast_unreadable": "해당 정렬 그래프 파일을 읽을 수 없습니다."
+  },
+  "shell_link": {
+    "banner_aria": "이 도구 소개",
+    "banner_text": "AlloFlow의 도구 하나입니다. 무료 수업 플랫폼입니다.",
+    "banner_open": "전체 앱 살펴보기",
+    "banner_dismiss": "이 알림 닫기"
   }
 }

@@ -662,7 +662,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "ساورانہیںت فہرست پر انہیںورثائق",
     "open_stem_lab_explore_aria": "STEAM Lab Explore کھولیں",
-    "stem_lab_explore": "دریافت کریں"
+    "stem_lab_explore": "دریافت کریں",
+    "needs_ai_setup": "AI سیٹ اپ درکار ہے",
+    "needs_ai_setup_cta": "AI جوڑنے کے لیے تھپتھپائیں، یا Gemini Canvas میں AlloFlow استعمال کریں"
   },
   "toolbar": {
     "show_bot": "AI اسسٹنٹ دکھائیں",
@@ -1518,7 +1520,11 @@
     "tts_provider_aria": "مزاورد تحاوریل متن تک کنہیںم",
     "local_cascade_label": "تتالی محلی:",
     "image_generation_header": "تخلیق تصااوریر",
-    "image_provider_aria": "مزاورد تخلیق تصااوریر"
+    "image_provider_aria": "مزاورد تخلیق تصااوریر",
+    "guided_card_canvas_title": "Gemini Canvas کے اندر AlloFlow استعمال کریں",
+    "guided_card_canvas_badge": "بغیر سیٹ اپ",
+    "guided_card_canvas_body": "AI حاصل کرنے کا سب سے آسان طریقہ: Google Gemini کے اندر AlloFlow کھولیں۔ Google اکاؤنٹ کے ساتھ مفت، آپ کے Gemini پلان کے روزانہ کوٹے کو استعمال کرتے ہوئے (ذاتی، تعلیمی، یا ادا شدہ پلان سب کام کرتے ہیں)۔ انسٹال کرنے کو کچھ نہیں اور سنبھالنے کے لیے کوئی کلید نہیں۔",
+    "guided_card_canvas_req": "نئے ٹیب میں gemini.google.com کھولتا ہے۔ پلان کی تفصیلات google.com/gemini پر"
   },
   "profiles": {
     "title": "فائنہیںت تعریف طنہیںب",
@@ -4197,7 +4203,8 @@
       "frames_label": "جملے کے ڈھانچے کے جواب میں خلا",
       "concept_sort_label": "أنماط ساورء وضع ترتیب مفاهیم"
     },
-    "all_tool_activity": "سرگرمی مکمنہیںم آنہیںت"
+    "all_tool_activity": "سرگرمی مکمنہیںم آنہیںت",
+    "title_parent": "خاندانی ڈیش بورڈ"
   },
   "session": {
     "start": "شراورع کریں جماعت مباشر",
@@ -12740,8 +12747,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "تمام سرگرمیوں میں STEM Lab میں حاصل کردہ کل XP",
-      "generate_assess": "تخلیق اورتشخیص",
-      "manipulatives": "آنہیںت تنہیںعب",
+      "generate_assess": "ریاضی کے سوالات اور جائزے",
+      "manipulatives": "انٹرایکٹو ٹولز اور لیبز",
       "stepbystep": "قدم بہ قدم",
       "conceptual": "مفاهیمی",
       "realworld": "اوراقعی"
@@ -30990,7 +30997,25 @@
     "surprise_me_contextually_working": "موجودہ سبق کا سیاق پڑھ کر ایک مفید اگلا قدم منتخب کیا جا رہا ہے...",
     "use_contextual_suggestion": "تجویز کردہ اگلا قدم استعمال کریں",
     "use_contextual_suggestion_hint": "حالیہ تجاویز میں سے اختیار 1، 2 یا 3 چلاتا ہے",
-    "use_contextual_suggestion_working": "منتخب اگلا قدم شروع کیا جا رہا ہے..."
+    "use_contextual_suggestion_working": "منتخب اگلا قدم شروع کیا جا رہا ہے...",
+    "jump_to_lesson_plan": "میرے سبق کے منصوبے پر جائیں",
+    "jump_to_lesson_plan_done": "تازہ ترین سبق کا منصوبہ کھل گیا۔",
+    "jump_to_lesson_plan_hint": "تازہ ترین سبق کا منصوبہ دوبارہ کھولیں",
+    "open_block_suggestions": "دستاویز بلاک تجاویز حاصل کریں",
+    "open_block_suggestions_done": "ڈاکومنٹ بلڈر کھل گیا۔ بلاک تجاویز اوپر نمایاں پینل میں ہیں۔",
+    "open_block_suggestions_hint": "ڈاکومنٹ بلڈر کھولیں، تجاویز اوپر ہیں",
+    "open_brainstorm_modes": "برین سٹارم سرگرمی کی قسم منتخب کریں",
+    "open_brainstorm_modes_done": "برین سٹارم سرگرمیوں کی اقسام کھل گئیں۔ خیالات، مباحثہ، جیگسا، یا سمولیشن منتخب کریں۔",
+    "open_brainstorm_modes_hint": "خیالات کا جال، مباحثہ کٹ، جیگسا، یا سمولیشن",
+    "open_discussion_builder": "کلاس مباحثہ بنائیں",
+    "open_discussion_builder_done": "مباحثہ بلڈر برین سٹارم ٹول میں کھل گیا۔ ایک طریقہ منتخب کریں، پھر بنائیں۔",
+    "open_discussion_builder_hint": "سوچو-جوڑی بناؤ-بانٹو جیسے طریقوں والی مباحثہ کٹ",
+    "open_jigsaw_builder": "جیگسا سرگرمی بنائیں",
+    "open_jigsaw_builder_done": "جیگسا بلڈر برین سٹارم ٹول میں کھل گیا۔ گروپ کا سائز مقرر کریں، پھر بنائیں۔",
+    "open_jigsaw_builder_hint": "آپ کے مقرر کردہ گروپ سائز کے ساتھ جیگسا ماہر-گروپ سرگرمی",
+    "use_gemini_canvas": "Gemini Canvas کے اندر AlloFlow استعمال کریں",
+    "use_gemini_canvas_done": "AI سیٹ اپ کھل گیا۔ پہلا کارڈ بغیر کسی سیٹ اپ کے Gemini Canvas میں AlloFlow استعمال کرنے کی وضاحت کرتا ہے۔",
+    "use_gemini_canvas_hint": "AI سیٹ اپ کھولیں، جہاں بغیر سیٹ اپ والا Canvas آپشن آگے ہے"
   },
   "palette": {
     "aria": "AlloFlow کمانڈ پیلیٹ",
@@ -31383,5 +31408,11 @@
     "toast_opened": "ہم آہنگی گراف صرف پڑھنے کے لیے کھلا۔",
     "toast_invalid": "وہ ہم آہنگی گراف نہیں کھل سکا۔ درست AlloFlow گراف JSON فائل برآمد کریں۔",
     "toast_unreadable": "وہ ہم آہنگی گراف فائل پڑھی نہیں جا سکی۔"
+  },
+  "shell_link": {
+    "banner_aria": "اس ٹول کے بارے میں",
+    "banner_text": "AlloFlow کا ایک ٹول، ایک مفت تدریسی پلیٹ فارم۔",
+    "banner_open": "پوری ایپ دیکھیں",
+    "banner_dismiss": "یہ نوٹ ہٹائیں"
   }
 }

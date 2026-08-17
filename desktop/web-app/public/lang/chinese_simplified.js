@@ -650,7 +650,9 @@
     "storyforge_label": "StoryForge 故事工坊",
     "tool_dbq_aria": "基于文档的问题",
     "open_stem_lab_explore_aria": "打开 STEAM Lab Explore",
-    "stem_lab_explore": "探索"
+    "stem_lab_explore": "探索",
+    "needs_ai_setup": "需要设置 AI",
+    "needs_ai_setup_cta": "点按以连接 AI，或在 Gemini Canvas 中使用 AlloFlow"
   },
   "toolbar": {
     "show_bot": "显示 AI 助手",
@@ -1509,7 +1511,11 @@
     "tts_provider_aria": "文本到语音提供商",
     "local_cascade_label": "本地级联：",
     "image_generation_header": "图像生成",
-    "image_provider_aria": "图像生成提供商"
+    "image_provider_aria": "图像生成提供商",
+    "guided_card_canvas_title": "在 Gemini Canvas 中使用 AlloFlow",
+    "guided_card_canvas_badge": "免配置",
+    "guided_card_canvas_body": "获得 AI 的最简单方式：在 Google Gemini 中打开 AlloFlow。使用 Google 账号免费，用的是你 Gemini 方案的每日额度（个人、教育或付费方案均可）。无需安装，也没有密钥要管理。",
+    "guided_card_canvas_req": "在新标签页中打开 gemini.google.com。方案详情见 google.com/gemini"
   },
   "profiles": {
     "title": "学生档案",
@@ -7837,7 +7843,8 @@
       "frames_label": "句型框架回答差距",
       "concept_sort_label": "概念分类错位模式"
     },
-    "all_tool_activity": "所有工具活动"
+    "all_tool_activity": "所有工具活动",
+    "title_parent": "家庭仪表板"
   },
   "session": {
     "start": "开始实时课程",
@@ -12998,8 +13005,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "所有活动中获得的 STEM 实验室总经验",
-      "generate_assess": "生成并评估",
-      "manipulatives": "操作教具",
+      "generate_assess": "数学题与测评",
+      "manipulatives": "互动工具与实验室",
       "stepbystep": "逐步",
       "conceptual": "概念性",
       "realworld": "现实世界"
@@ -31350,7 +31357,25 @@
     "surprise_me_contextually_working": "正在读取当前课程情境并挑选一个有用的下一步...",
     "use_contextual_suggestion": "使用建议的下一步",
     "use_contextual_suggestion_hint": "执行最近建议中的选项 1、2 或 3",
-    "use_contextual_suggestion_working": "正在启动所选的下一步..."
+    "use_contextual_suggestion_working": "正在启动所选的下一步...",
+    "jump_to_lesson_plan": "跳转到我的教案",
+    "jump_to_lesson_plan_done": "最近的教案已打开。",
+    "jump_to_lesson_plan_hint": "重新打开最近的教案",
+    "open_block_suggestions": "获取文档板块建议",
+    "open_block_suggestions_done": "文档构建器已打开。板块建议在顶部高亮面板中。",
+    "open_block_suggestions_hint": "打开文档构建器，建议就在顶部",
+    "open_brainstorm_modes": "选择头脑风暴活动类型",
+    "open_brainstorm_modes_done": "头脑风暴活动类型已打开。请选择想法、讨论、拼图协作或情境模拟。",
+    "open_brainstorm_modes_hint": "想法网络、讨论套件、拼图协作或情境模拟",
+    "open_discussion_builder": "创建课堂讨论",
+    "open_discussion_builder_done": "讨论构建器已在头脑风暴工具中打开。选择一个流程，然后生成。",
+    "open_discussion_builder_hint": "包含\"思考-配对-分享\"等流程的讨论套件",
+    "open_jigsaw_builder": "创建拼图协作活动",
+    "open_jigsaw_builder_done": "拼图构建器已在头脑风暴工具中打开。设置小组人数，然后生成。",
+    "open_jigsaw_builder_hint": "按你设定的小组人数进行的拼图式专家小组活动",
+    "use_gemini_canvas": "在 Gemini Canvas 中使用 AlloFlow",
+    "use_gemini_canvas_done": "AI 设置已打开。第一张卡片说明如何在 Gemini Canvas 中免配置使用 AlloFlow。",
+    "use_gemini_canvas_hint": "打开 AI 设置，无需配置的 Canvas 选项就在最前面"
   },
   "palette": {
     "aria": "AlloFlow 命令面板",
@@ -31758,5 +31783,11 @@
     "toast_opened": "对齐图谱已以只读方式打开。",
     "toast_invalid": "无法打开该对齐图谱。请导出有效的 AlloFlow 图谱 JSON 文件。",
     "toast_unreadable": "无法读取该对齐图谱文件。"
+  },
+  "shell_link": {
+    "banner_aria": "关于此工具",
+    "banner_text": "来自 AlloFlow 的一款工具，一个免费的教学平台。",
+    "banner_open": "探索完整应用",
+    "banner_dismiss": "关闭此提示"
   }
 }

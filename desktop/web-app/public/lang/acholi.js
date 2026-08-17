@@ -2256,7 +2256,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Document-Based lapeny",
     "open_stem_lab_explore_aria": "Yab STEAM Lab Explore",
-    "stem_lab_explore": "Yeny"
+    "stem_lab_explore": "Yeny",
+    "needs_ai_setup": "Mito ter me AI",
+    "needs_ai_setup_cta": "Dii me kubo AI, onyo tii ki AlloFlow i Gemini Canvas"
   },
   "history": {
     "load_project": "Load Project",
@@ -6302,7 +6304,8 @@
       "frames_label": "lok madwong-frame response gaps",
       "concept_sort_label": "Tam Sort misplacement kit"
     },
-    "all_tool_activity": "ducu Tool Activity"
+    "all_tool_activity": "ducu Tool Activity",
+    "title_parent": "Pot me Ot"
   },
   "tools": {
     "source": "Source Material",
@@ -12515,8 +12518,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Total STEM Lab XP earned across ducu activities",
-      "generate_assess": "Generate & assess",
-      "manipulatives": "Manipulatives",
+      "generate_assess": "Math problems & assessments",
+      "manipulatives": "Interactive tools & labs",
       "stepbystep": "Step-by-Step",
       "conceptual": "Conceptual",
       "realworld": "Real-World"
@@ -22548,7 +22551,11 @@
     "tts_provider_aria": "Text-i-speech provider",
     "local_cascade_label": "Local cascade:",
     "image_generation_header": "cal Kwo",
-    "image_provider_aria": "cal kwo provider"
+    "image_provider_aria": "cal kwo provider",
+    "guided_card_canvas_title": "Tii ki AlloFlow i Gemini Canvas",
+    "guided_card_canvas_badge": "Pe mito ter",
+    "guided_card_canvas_body": "Yo ma yot loyo me nongo AI: yab AlloFlow i Google Gemini. Nono ki akaunt me Google, kun tiyo ki wel me nino me yub me Gemini mamegi (yub me dano, me pwony, onyo ma wilgi ducu tiyo). Pe tye gin me keto ki lagony me gwoko.",
+    "guided_card_canvas_req": "Yabo gemini.google.com i pot ayaba manyen. Lok i kom yub tye i google.com/gemini"
   },
   "diff_view": {
     "title": "Source PDF ↔ Remediated HTML · Diff",
@@ -23718,7 +23725,25 @@
     "surprise_me_contextually_working": "Kwano kit ma pwony tye kwede dok yero gin mabeco me tim...",
     "use_contextual_suggestion": "Tii ki gin ma kimiyo me tim malubo",
     "use_contextual_suggestion_hint": "Cako yoo 1, 2, onyo 3 ki i tam ma kimiyo cen",
-    "use_contextual_suggestion_working": "Cako gin ma iyero..."
+    "use_contextual_suggestion_working": "Cako gin ma iyero...",
+    "jump_to_lesson_plan": "Cit i yub me pwony mera",
+    "jump_to_lesson_plan_done": "Yub me pwony ma lakare oyabe.",
+    "jump_to_lesson_plan_hint": "Yab yub me pwony ma lakare",
+    "open_block_suggestions": "Nong tam me dul me buk",
+    "open_block_suggestions_done": "Layub Buk oyabe. Tam me dul tye i pok ma nen malo.",
+    "open_block_suggestions_hint": "Yab Layub Buk, kama tam tye malo iye",
+    "open_brainstorm_modes": "Yer kit tic me miyo tam",
+    "open_brainstorm_modes_done": "Kit tic me miyo tam oyabe. Yer tam, lok, jigsaw, onyo por.",
+    "open_brainstorm_modes_hint": "Wang tam, jami me lok, jigsaw, onyo por",
+    "open_discussion_builder": "Yub lok me klas",
+    "open_discussion_builder_done": "Jami me lok oyabe i jami me tam. Yer yo, ka ilubi iket.",
+    "open_discussion_builder_hint": "Jami me lok ki yo calo tam-aria-nywak",
+    "open_jigsaw_builder": "Yub tic me jigsaw",
+    "open_jigsaw_builder_done": "Jami me jigsaw oyabe i jami me tam. Ket wel dul, ka ilubi iket.",
+    "open_jigsaw_builder_hint": "Tic me jigsaw ki dul me lunyodo ma in iketo welle",
+    "use_gemini_canvas": "Tii ki AlloFlow i Gemini Canvas",
+    "use_gemini_canvas_done": "Ter me AI oyabe. Kad mukwongo tito kit me tic ki AlloFlow i Gemini Canvas labongo ter mo.",
+    "use_gemini_canvas_hint": "Yab ter me AI, kama yo me Canvas ma pe mito ter tye iye"
   },
   "palette": {
     "aria": "Palette me cik me AlloFlow",
@@ -24089,5 +24114,11 @@
     "toast_opened": "Graf me ribbe oyabbe me kwan keken.",
     "toast_invalid": "Pe romo yabo graf me ribbe meno. Kel pwail me graf pa AlloFlow ma tye kakare.",
     "toast_unreadable": "Pe romo kwano pwail me graf me ribbe meno."
+  },
+  "shell_link": {
+    "banner_aria": "Lok i kom jami man",
+    "banner_text": "Jami acel me AlloFlow, dul me pwony ma nono.",
+    "banner_open": "Nen jami ducu",
+    "banner_dismiss": "Juk lok man"
   }
 }

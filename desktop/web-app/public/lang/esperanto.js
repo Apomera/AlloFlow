@@ -2287,7 +2287,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "Dokumentbazitaj demandoj",
     "open_stem_lab_explore_aria": "Malfermi STEAM Lab Explore",
-    "stem_lab_explore": "Esplori"
+    "stem_lab_explore": "Esplori",
+    "needs_ai_setup": "Bezonas AI-agordon",
+    "needs_ai_setup_cta": "Tuŝetu por konekti AI, aŭ uzu AlloFlow ene de Gemini Canvas"
   },
   "history": {
     "load_project": "Ŝargi projekton",
@@ -6504,7 +6506,8 @@
       "frames_label": "Mankoj en respondoj per fraz-kadroj",
       "concept_sort_label": "Ŝablonoj de mismeto en Koncept-Ordigo"
     },
-    "all_tool_activity": "Tuta Ila Aktiveco"
+    "all_tool_activity": "Tuta Ila Aktiveco",
+    "title_parent": "Familia Panelo"
   },
   "tools": {
     "source": "Fontmaterialo",
@@ -12926,8 +12929,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "Suma STEM Lab XP gajnita tra ĉiuj agadoj",
-      "generate_assess": "Generi kaj taksi",
-      "manipulatives": "Manipulaĵoj",
+      "generate_assess": "Matematikaj problemoj kaj taksadoj",
+      "manipulatives": "Interagaj iloj kaj laboratorioj",
       "stepbystep": "Paŝo-post-paŝo",
       "conceptual": "Koncepta",
       "realworld": "Reala mondo"
@@ -30292,7 +30295,11 @@
     "tts_provider_aria": "Provizanto de teksto-al-parolo",
     "local_cascade_label": "Loka kaskado:",
     "image_generation_header": "Bilda Generado",
-    "image_provider_aria": "Provizanto de bilda generado"
+    "image_provider_aria": "Provizanto de bilda generado",
+    "guided_card_canvas_title": "Uzu AlloFlow ene de Gemini Canvas",
+    "guided_card_canvas_badge": "Sen agordo",
+    "guided_card_canvas_body": "La plej facila vojo akiri AI: malfermu AlloFlow ene de Google Gemini. Senpage kun Google-konto, uzante la ĉiutagan kvoton de via Gemini-plano (personaj, edukaj, aŭ pagataj planoj ĉiuj funkcias). Nenio instalenda kaj neniu ŝlosilo administrenda.",
+    "guided_card_canvas_req": "Malfermas gemini.google.com en nova langeto. Plandetaloj ĉe google.com/gemini"
   },
   "diff_view": {
     "title": "Fonta PDF ↔ Riparita HTML · Diferenco",
@@ -31285,7 +31292,25 @@
     "surprise_me_contextually_working": "Legante la nunan lecionan kuntekston kaj elektante utilan sekvan paŝon...",
     "use_contextual_suggestion": "Uzi proponitan sekvan paŝon",
     "use_contextual_suggestion_hint": "Plenumas elekton 1, 2 aŭ 3 el la lastaj proponoj",
-    "use_contextual_suggestion_working": "Komencante la elektitan sekvan paŝon..."
+    "use_contextual_suggestion_working": "Komencante la elektitan sekvan paŝon...",
+    "jump_to_lesson_plan": "Saltu al mia lecionplano",
+    "jump_to_lesson_plan_done": "Plej freŝa lecionplano malfermita.",
+    "jump_to_lesson_plan_hint": "Remalfermu la plej freŝan lecionplanon",
+    "open_block_suggestions": "Ricevu sugestojn pri dokumentblokoj",
+    "open_block_suggestions_done": "Dokumentkonstruilo malfermita. Bloksugestoj estas en la elstarigita panelo supre.",
+    "open_block_suggestions_hint": "Malfermu la Dokumentkonstruilon, kie sugestoj sidas supre",
+    "open_brainstorm_modes": "Elektu tipon de ideopluva aktivaĵo",
+    "open_brainstorm_modes_done": "Ideopluvaj aktivaĵtipoj malfermitaj. Elektu ideojn, diskuton, puzlon, aŭ simuladon.",
+    "open_brainstorm_modes_hint": "Idea reto, diskuta kompleto, puzla kunlaboro, aŭ simulado",
+    "open_discussion_builder": "Konstruu klasan diskuton",
+    "open_discussion_builder_done": "Diskutkonstruilo malfermita en la ideopluva ilo. Elektu protokolon, poste generu.",
+    "open_discussion_builder_hint": "Diskuta kompleto kun protokoloj kiel pensu-paru-dividu",
+    "open_jigsaw_builder": "Konstruu puzlan aktivaĵon",
+    "open_jigsaw_builder_done": "Puzlokonstruilo malfermita en la ideopluva ilo. Fiksu la grupgrandecon, poste generu.",
+    "open_jigsaw_builder_hint": "Puzla spertula-grupa aktivaĵo kun grupgrandeco kiun vi fiksas",
+    "use_gemini_canvas": "Uzu AlloFlow ene de Gemini Canvas",
+    "use_gemini_canvas_done": "AI-agordo malfermita. La unua karto klarigas uzi AlloFlow ene de Gemini Canvas sen agordo.",
+    "use_gemini_canvas_hint": "Malfermu la AI-agordon, kie la senagorda Canvas-opcio gvidas"
   },
   "palette": {
     "aria": "AlloFlow komandopaletro",
@@ -31657,5 +31682,11 @@
     "toast_opened": "Viciga grafeo malfermita nur por legado.",
     "toast_invalid": "Ne eblis malfermi tiun vicigan grafeon. Eksportu validan AlloFlow-grafean JSON-dosieron.",
     "toast_unreadable": "Ne eblis legi tiun vicigan grafean dosieron."
+  },
+  "shell_link": {
+    "banner_aria": "Pri ĉi tiu ilo",
+    "banner_text": "Unu ilo de AlloFlow, senpaga instruplatformo.",
+    "banner_open": "Esploru la tutan aplikaĵon",
+    "banner_dismiss": "Forsendi ĉi tiun noton"
   }
 }

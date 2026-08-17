@@ -670,7 +670,9 @@
     "storyforge_label": "StoryForge",
     "tool_dbq_aria": "سؤانهت لیست روی وثائق",
     "open_stem_lab_explore_aria": "باز کردن STEAM Lab Explore",
-    "stem_lab_explore": "کاوش"
+    "stem_lab_explore": "کاوش",
+    "needs_ai_setup": "به راه‌اندازی هوش مصنوعی نیاز دارد",
+    "needs_ai_setup_cta": "برای اتصال هوش مصنوعی بزنید، یا از AlloFlow در Gemini Canvas استفاده کنید"
   },
   "toolbar": {
     "show_bot": "نمایش دستیار اوش مصنوعی",
@@ -1526,7 +1528,11 @@
     "tts_provider_aria": "مزود تحویل متن به کخیرم",
     "local_cascade_label": "تتالی محلی:",
     "image_generation_header": "ایجاد تصاویر",
-    "image_provider_aria": "مزود ایجاد تصاویر"
+    "image_provider_aria": "مزود ایجاد تصاویر",
+    "guided_card_canvas_title": "از AlloFlow در داخل Gemini Canvas استفاده کنید",
+    "guided_card_canvas_badge": "بدون راه‌اندازی",
+    "guided_card_canvas_body": "آسان‌ترین راه دریافت هوش مصنوعی: AlloFlow را در داخل Google Gemini باز کنید. با حساب Google رایگان است و از سهمیه روزانه طرح Gemini شما استفاده می‌کند (طرح‌های شخصی، آموزشی، یا پولی همگی کار می‌کنند). چیزی برای نصب نیست و کلیدی برای مدیریت وجود ندارد.",
+    "guided_card_canvas_req": "gemini.google.com را در برگه جدید باز می‌کند. جزئیات طرح‌ها در google.com/gemini"
   },
   "profiles": {
     "title": "فاینهت تعریف فیلد",
@@ -4205,7 +4211,8 @@
       "frames_label": "شکاف‌های پاسخ به قالب‌های جمله",
       "concept_sort_label": "أنماط سوء وضع ترتیب مفاهیم"
     },
-    "all_tool_activity": "فعالیت همه ابزارها"
+    "all_tool_activity": "فعالیت همه ابزارها",
+    "title_parent": "داشبورد خانواده"
   },
   "session": {
     "start": "شروع کنید پایه مباشر",
@@ -12755,8 +12762,8 @@
     },
     "solver": {
       "total_stem_lab_xp_earned": "مجموع XP کسب‌شده در STEM Lab در تمام فعالیت‌ها",
-      "generate_assess": "ایجاد وارزیابی",
-      "manipulatives": "ابزارها تخیرعب",
+      "generate_assess": "مسائل ریاضی و ارزیابی‌ها",
+      "manipulatives": "ابزارها و آزمایشگاه‌های تعاملی",
       "stepbystep": "گام به گام",
       "conceptual": "مفااومی",
       "realworld": "واقعی"
@@ -31270,7 +31277,25 @@
     "surprise_me_contextually_working": "در حال خواندن زمینه درس فعلی و انتخاب یک گام بعدی مفید...",
     "use_contextual_suggestion": "استفاده از گام بعدی پیشنهادی",
     "use_contextual_suggestion_hint": "گزینه 1، 2 یا 3 را از آخرین پیشنهادها اجرا می‌کند",
-    "use_contextual_suggestion_working": "در حال شروع گام بعدی انتخاب‌شده..."
+    "use_contextual_suggestion_working": "در حال شروع گام بعدی انتخاب‌شده...",
+    "jump_to_lesson_plan": "به طرح درس من برو",
+    "jump_to_lesson_plan_done": "جدیدترین طرح درس باز شد.",
+    "jump_to_lesson_plan_hint": "جدیدترین طرح درس را دوباره باز کنید",
+    "open_block_suggestions": "پیشنهادهای بخش‌های سند را دریافت کنید",
+    "open_block_suggestions_done": "سازنده سند باز شد. پیشنهادهای بخش‌ها در پنل برجسته بالا هستند.",
+    "open_block_suggestions_hint": "سازنده سند را باز کنید؛ پیشنهادها در بالا قرار دارند",
+    "open_brainstorm_modes": "نوع فعالیت بارش فکری را انتخاب کنید",
+    "open_brainstorm_modes_done": "انواع فعالیت بارش فکری باز شد. ایده‌ها، گفتگو، جیگ‌ساو، یا شبیه‌سازی را انتخاب کنید.",
+    "open_brainstorm_modes_hint": "شبکه ایده‌ها، بسته گفتگو، جیگ‌ساو، یا شبیه‌سازی",
+    "open_discussion_builder": "یک گفتگوی کلاسی بسازید",
+    "open_discussion_builder_done": "سازنده گفتگو در ابزار بارش فکری باز شد. یک روش انتخاب کنید، سپس تولید کنید.",
+    "open_discussion_builder_hint": "بسته گفتگو با روش‌هایی مانند فکر کن-جفت شو-به اشتراک بگذار",
+    "open_jigsaw_builder": "یک فعالیت جیگ‌ساو بسازید",
+    "open_jigsaw_builder_done": "سازنده جیگ‌ساو در ابزار بارش فکری باز شد. اندازه گروه را تعیین کنید، سپس تولید کنید.",
+    "open_jigsaw_builder_hint": "فعالیت گروه‌های متخصص جیگ‌ساو با اندازه گروهی که شما تعیین می‌کنید",
+    "use_gemini_canvas": "از AlloFlow در داخل Gemini Canvas استفاده کنید",
+    "use_gemini_canvas_done": "تنظیمات هوش مصنوعی باز شد. کارت اول استفاده از AlloFlow در Gemini Canvas را بدون هیچ راه‌اندازی توضیح می‌دهد.",
+    "use_gemini_canvas_hint": "تنظیمات هوش مصنوعی را باز کنید؛ گزینه بدون راه‌اندازی Canvas در ابتدا قرار دارد"
   },
   "palette": {
     "aria": "پنل فرمان AlloFlow",
@@ -31672,5 +31697,11 @@
     "toast_opened": "گراف هم‌ترازی فقط خواندنی باز شد.",
     "toast_invalid": "باز کردن آن گراف هم‌ترازی ممکن نشد. یک فایل JSON معتبر گراف AlloFlow صادر کنید.",
     "toast_unreadable": "خواندن آن فایل گراف هم‌ترازی ممکن نشد."
+  },
+  "shell_link": {
+    "banner_aria": "درباره این ابزار",
+    "banner_text": "یک ابزار از AlloFlow، یک پلتفرم آموزشی رایگان.",
+    "banner_open": "کل برنامه را ببینید",
+    "banner_dismiss": "بستن این یادداشت"
   }
 }
