@@ -53502,6 +53502,10 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   setNlAnswer, setNlChallenge, nlChallenge, setNlFeedback,
                   setNumberLineMarkers, setNumberLineRange,
                   setShowAssessmentBuilder, setShowStemLab, setStemLabCreateMode,
+                  // Lets the Assessment Builder's all-fluency path land the user on
+                  // the live Fluency Probes panel, which only renders inside the
+                  // sidebar math accordion (expandedTools must include 'math').
+                  setExpandedTools,
                   setStemLabTab, setStemLabTool, setToolSnapshots,
                   showAssessmentBuilder, showStemLab, startMathFluencyProbe,
                   stemLabCreateMode, stemLabTab, stemLabTool, submitExploreScore,
