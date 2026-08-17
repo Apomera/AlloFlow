@@ -31,7 +31,7 @@ test.describe('Sidebar tool categories', () => {
   ];
 
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await page.waitForTimeout(3500);
   });
 

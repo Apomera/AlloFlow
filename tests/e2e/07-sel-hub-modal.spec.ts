@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('SEL Hub modal lifecycle', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await page.waitForTimeout(3000);
     await page.locator('[role="button"][aria-label^="Learning Tools."]').first().click({ force: true });
     await page.waitForTimeout(2500);
@@ -28,7 +28,7 @@ test.describe('SEL Hub modal lifecycle', () => {
 
 test.describe('StoryForge module', () => {
   test('StoryForge module loads when tile clicked', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await page.waitForTimeout(3000);
     await page.locator('[role="button"][aria-label^="Learning Tools."]').first().click({ force: true });
     await page.waitForTimeout(2500);
@@ -42,7 +42,7 @@ test.describe('StoryForge module', () => {
 
 test.describe('AlloHaven module', () => {
   test('AlloHaven module loads when tile clicked', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await page.waitForTimeout(3000);
     await page.locator('[role="button"][aria-label^="Learning Tools."]').first().click({ force: true });
     await page.waitForTimeout(2500);

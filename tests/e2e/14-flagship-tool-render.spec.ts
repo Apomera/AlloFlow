@@ -17,7 +17,7 @@ const FLAGSHIP = [
 
 test.describe('Flagship tools — render without throwing', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await page.waitForTimeout(2000);
   });
 

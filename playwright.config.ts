@@ -18,11 +18,27 @@ import { defineConfig, devices } from '@playwright/test';
  * Fewer local workers matters too: parallel cold boots contend for the same CDN
  * and make every one of them slower.
  *
- * NOTE ON baseURL: it has no path, so specs use `page.goto('/')`. If you point
- * PW_BASE_URL at a URL that HAS a path (e.g. .../app/), `goto('/')` resolves
- * against the ORIGIN and silently drops that path — loading the wrong page.
- * Use a path-less origin here, or switch the specs to `goto('./')`.
+ * NOTE ON baseURL (2026-08-16): the default is the live Cloudflare shell at
+ * .../app/. The old default, https://prismflow-911fe.web.app, still answers 200
+ * but serves a FROZEN pre-migration bundle (main.0b2144c6.js vs the repo's
+ * main.bf002dda.js), so the whole suite silently "passed" against months-old
+ * code. The Prismflow production-path cleanup (AGENT_HANDOFF.md, 2026-07-09)
+ * moved serving to the CDN; nothing repointed this file until now.
+ *
+ * Because the base now carries a path, URL resolution matters:
+ *   - App-shell specs navigate with `page.goto('./')`, which resolves INTO the
+ *     base directory (.../app/). A bare '/' would resolve against the ORIGIN
+ *     and silently drop /app/, landing on the marketing site.
+ *   - Origin-root pages (catalog.html, contribute.html, admin-submissions.html)
+ *     keep absolute paths like `goto('/catalog.html')` — on this CDN those
+ *     genuinely live at the origin root, so origin resolution is what they want.
+ *   - PW_BASE_URL overrides still work, and a trailing slash is appended below
+ *     when missing, because `new URL('./', '.../app')` (no slash) drops the
+ *     last segment and would land on the origin.
  */
+const rawBase = process.env.PW_BASE_URL || 'https://alloflow-cdn.pages.dev/app/';
+const baseURL = rawBase.endsWith('/') ? rawBase : rawBase + '/';
+
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,
@@ -32,7 +48,7 @@ export default defineConfig({
   timeout: 120000,
   reporter: [['list'], ['html', { open: 'never', outputFolder: 'playwright-report' }]],
   use: {
-    baseURL: process.env.PW_BASE_URL || 'https://prismflow-911fe.web.app',
+    baseURL,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',

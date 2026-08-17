@@ -35,7 +35,7 @@ test.describe('Flagship STEM Lab tools — CDN load + registry contract', () => 
 
     test(`${tool.id}: registers in window.StemLab._registry when loaded`, async ({ page }) => {
       // Set up StemLab namespace BEFORE loading the script
-      await page.goto('/');
+      await page.goto('./');
       await page.waitForTimeout(1500);
 
       await page.evaluate((url) => {

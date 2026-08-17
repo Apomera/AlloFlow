@@ -7,7 +7,7 @@ import { test, expect } from '@playwright/test';
  */
 test.describe('STEM Lab modal lifecycle', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await page.waitForTimeout(3000);
     await page.locator('[role="button"][aria-label^="Learning Tools."]').first().click({ force: true });
     await page.waitForTimeout(2500);

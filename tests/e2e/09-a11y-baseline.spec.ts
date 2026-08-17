@@ -2,19 +2,19 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Accessibility baseline (manual checks, no axe)', () => {
   test('home page has lang attribute', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     const lang = await page.locator('html').getAttribute('lang');
     expect(lang).toBeTruthy();
   });
 
   test('home page has page title', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     const title = await page.title();
     expect(title.length).toBeGreaterThan(5);
   });
 
   test('home page has main landmark', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await page.waitForTimeout(3000);
     const main = page.locator('main, [role="main"]').first();
     // Some apps don't have explicit main; accept skip-to-content link as substitute
@@ -24,7 +24,7 @@ test.describe('Accessibility baseline (manual checks, no axe)', () => {
   });
 
   test('mode picker cards have aria-labels', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await page.waitForTimeout(2500);
     const cards = await page.locator('[role="button"]').all();
     let withAria = 0;
@@ -36,7 +36,7 @@ test.describe('Accessibility baseline (manual checks, no axe)', () => {
   });
 
   test('all images have alt or are decorative', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await page.waitForTimeout(4000);
     const images = await page.locator('img').all();
     let missingAlt = 0;
@@ -50,7 +50,7 @@ test.describe('Accessibility baseline (manual checks, no axe)', () => {
   });
 
   test('color theme toggle changes html data attribute or class', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await page.waitForTimeout(3000);
     const before = await page.evaluate(() => document.documentElement.className + ' ' + (document.documentElement.dataset.theme || ''));
     const toggle = page.getByRole('button', { name: /toggle color theme/i }).first();
@@ -65,7 +65,7 @@ test.describe('Accessibility baseline (manual checks, no axe)', () => {
   });
 
   test('keyboard navigation: Tab moves focus', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await page.waitForTimeout(3000);
     await page.keyboard.press('Tab');
     const active = await page.evaluate(() => document.activeElement?.tagName);

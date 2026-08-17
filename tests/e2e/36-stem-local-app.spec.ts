@@ -32,7 +32,7 @@ for (const viewport of viewports) {
     }
 
     await test.step('Open STEAM Lab from Learning Tools', async () => {
-      await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 120000 });
+      await page.goto('./', { waitUntil: 'domcontentloaded', timeout: 120000 });
       const pathwayChooser = page.getByRole('region', { name: 'Choose how to use AlloFlow' });
       await expect(pathwayChooser).toBeVisible({ timeout: 120000 });
       const learningTools = pathwayChooser.getByRole('button', { name: 'Learning Tools', exact: true });

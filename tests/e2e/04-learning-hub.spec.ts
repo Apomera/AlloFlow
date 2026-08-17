@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Learning Hub modal', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await page.waitForTimeout(2500);
     await page.locator('[role="button"][aria-label^="Learning Tools."]').first().click({ force: true });
     await page.waitForTimeout(2500);

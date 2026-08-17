@@ -266,7 +266,7 @@ test.describe('local voice-only navigation journey', () => {
     });
     await installDeterministicVoiceBrowser(page);
     await routeTestPrepAssetsLocally(page);
-    await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 120_000 });
+    await page.goto('./', { waitUntil: 'domcontentloaded', timeout: 120_000 });
 
     const launchPad = page.getByRole('region', { name: 'Choose how to use AlloFlow' });
     await expect.poll(async () => {

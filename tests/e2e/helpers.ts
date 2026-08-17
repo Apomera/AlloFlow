@@ -6,7 +6,7 @@ import { Page, expect } from '@playwright/test';
  * The mode picker uses <div role="button"> so we use getByRole or aria-label.
  */
 export async function bootAlloFlow(page: Page, mode: 'learning' | 'full' = 'learning'): Promise<void> {
-  await page.goto('/');
+  await page.goto('./');
   await page.waitForLoadState('domcontentloaded');
   await page.waitForFunction(() => document.body.innerHTML.length > 5000, null, { timeout: 30000 });
 

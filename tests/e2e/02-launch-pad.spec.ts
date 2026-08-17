@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Launch Pad mode picker', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await page.waitForLoadState('domcontentloaded');
     await page.waitForFunction(() => document.body.innerHTML.length > 5000, null, { timeout: 30000 });
   });

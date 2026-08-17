@@ -14,7 +14,7 @@ async function enterGuidedAnalysis(page: Page): Promise<void> {
       createdHistoryIds: [],
     }));
   });
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await page.goto('./', { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => document.body.innerHTML.length > 5000, null, { timeout: 30000 });
 
   const guidedCard = page.getByRole('button', { name: 'Guided Mode', exact: true }).first();

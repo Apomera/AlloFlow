@@ -2,14 +2,14 @@ import { test, expect } from '@playwright/test';
 
 test.describe('CDN module loading', () => {
   test('AlloModules object is populated after boot', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await page.waitForTimeout(8000);
     const has = await page.evaluate(() => !!(window as any).AlloModules);
     expect(has).toBeTruthy();
   });
 
   test('lazy-load triggers AFTER Learning Tools click', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await page.waitForTimeout(3000);
     const before = await page.evaluate(() => {
       const w = window as any;
@@ -34,7 +34,7 @@ test.describe('CDN module loading', () => {
   });
 
   test('STEM Lab module lazy-loads after STEM Lab tile click', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await page.waitForTimeout(3000);
     await page.locator('[role="button"][aria-label^="Learning Tools."]').first().click({ force: true });
     await page.waitForTimeout(2500);
@@ -46,7 +46,7 @@ test.describe('CDN module loading', () => {
   });
 
   test('window.StemLab._registry exists for tool registration', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await page.waitForTimeout(3000);
     await page.locator('[role="button"][aria-label^="Learning Tools."]').first().click({ force: true });
     await page.waitForTimeout(2500);

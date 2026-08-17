@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Sidebar + global UI controls', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await page.goto('./');
     await page.waitForTimeout(3500);
   });
 

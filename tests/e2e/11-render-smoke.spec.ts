@@ -45,7 +45,7 @@ function captureFatals(page: Page): string[] {
 }
 
 async function openLearningTools(page: Page) {
-  await page.goto('/');
+  await page.goto('./');
   await page.waitForTimeout(3000);
   await page.locator('[role="button"][aria-label^="Learning Tools."]').first().click({ force: true });
   await page.waitForTimeout(2500);
@@ -54,7 +54,7 @@ async function openLearningTools(page: Page) {
 test.describe('Render smoke — surfaces mount without a fatal error', () => {
   test('app boots without a fatal error', async ({ page }) => {
     const fatals = captureFatals(page);
-    await page.goto('/');
+    await page.goto('./');
     await page.waitForTimeout(6000);
     expect(fatals, fatals.join('\n')).toEqual([]);
   });
