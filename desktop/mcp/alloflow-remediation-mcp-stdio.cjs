@@ -336,7 +336,11 @@ function requirePdfPath(args) { return _requireFileOfType(args, /\.pdf$/i, '.pdf
 // (2026-08-17) + first-class image inputs: the pipeline accepts PNG/JPEG/WebP scans natively
 // (magic-byte detection wins over extension, so a mislabeled photo never reaches the wrong
 // decoder). Teachers photograph worksheets; this is the doorway for those photos.
-function requireDocPath(args) { return _requireFileOfType(args, /\.(pdf|docx|pptx|png|jpe?g|webp)$/i, '.pdf, .docx, .pptx, or a .png/.jpg/.webp image'); }
+// (2026-08-17, 0.3.3) + text-family: md/markdown/txt/csv/tsv and spreadsheets (xlsx/xls/xlsb/ods).
+// The driver mirrors the browser intake exactly — sheets through convertXlsxToMarkdownTables,
+// text through UTF-8 decode, both into the pipeline-native text payload — so these audit and
+// remediate with the same behavior the app gives them (accessible-HTML deliverable, no tagged PDF).
+function requireDocPath(args) { return _requireFileOfType(args, /\.(pdf|docx|pptx|png|jpe?g|webp|md|markdown|txt|csv|tsv|xlsx|xls|xlsb|ods)$/i, '.pdf, .docx, .pptx, an image (.png/.jpg/.webp), a text file (.md/.txt/.csv/.tsv), or a spreadsheet (.xlsx/.xls/.xlsb/.ods)'); }
 
 function requireGeminiKey() {
   if (!Driver.resolveGeminiApiKey().key) {
@@ -2505,12 +2509,12 @@ const TOOLS = [
   {
     name: 'pdf_audit',
     title: 'Audit a PDF for accessibility',
-    description: 'Run the AlloFlow accessibility audit on a local PDF, DOCX, PPTX, or PNG/JPEG/WebP image scan: overall score, per-severity issue list, scanned/searchable detection, page count, detected language. Sends document content to the Gemini API; core browser libraries are bundled locally. Writes no files. Office files are audited deterministically from extracted text (no Vision pass). Typically 1-3 minutes.',
+    description: 'Run the AlloFlow accessibility audit on a local PDF, DOCX, PPTX, PNG/JPEG/WebP image, markdown/text/CSV file, or spreadsheet: overall score, per-severity issue list, scanned/searchable detection, page count, detected language. Sends document content to the Gemini API; core browser libraries are bundled locally. Writes no files. Office files are audited deterministically from extracted text (no Vision pass). Typically 1-3 minutes.',
     inputSchema: {
       type: 'object',
       required: ['file_path'],
       properties: {
-        file_path: { type: 'string', description: 'Absolute path to a local .pdf, .docx, .pptx, or .png/.jpg/.webp file (max 200MB)' },
+        file_path: { type: 'string', description: 'Absolute path to a local .pdf, .docx, .pptx, image (.png/.jpg/.webp), text (.md/.txt/.csv/.tsv), or spreadsheet (.xlsx/.xls/.xlsb/.ods) file (max 200MB)' },
         ocr_language: OCR_LANGUAGE_INPUT_SCHEMA,
       },
       additionalProperties: false,
@@ -2563,7 +2567,7 @@ const TOOLS = [
         description: 'Run the full AlloFlow remediation pipeline on a local PDF: audit, rebuild as accessible HTML, iterative AI fix passes to the target score, honesty-checked verification, and a tagged PDF export. ' + RESULT_DOC + ' SYNCHRONOUS: blocks 5-30 minutes — if your client enforces a tool timeout, use pdf_remediate_start + remediation_job_status instead.',
         inputSchema: {
           type: 'object', required: ['file_path'],
-          properties: Object.assign({ file_path: { type: 'string', description: 'Absolute path to a local .pdf, .docx, .pptx, or .png/.jpg/.webp file (max 200MB)' } }, REMEDIATE_OPTION_PROPS),
+          properties: Object.assign({ file_path: { type: 'string', description: 'Absolute path to a local .pdf, .docx, .pptx, image (.png/.jpg/.webp), text (.md/.txt/.csv/.tsv), or spreadsheet (.xlsx/.xls/.xlsb/.ods) file (max 200MB)' } }, REMEDIATE_OPTION_PROPS),
           additionalProperties: false,
         },
         annotations: { title: 'Remediate a PDF (synchronous)', readOnlyHint: false, destructiveHint: false, openWorldHint: true },
@@ -2574,7 +2578,7 @@ const TOOLS = [
         description: 'Start the same remediation as pdf_remediate as a BACKGROUND JOB and return a job_id immediately. Jobs run one at a time in start order. Poll remediation_job_status (every 30-60s is plenty; runs take 5-30 minutes), then fetch remediation_job_result. ' + RESULT_DOC,
         inputSchema: {
           type: 'object', required: ['file_path'],
-          properties: Object.assign({ file_path: { type: 'string', description: 'Absolute path to a local .pdf, .docx, .pptx, or .png/.jpg/.webp file (max 200MB)' } }, REMEDIATE_OPTION_PROPS),
+          properties: Object.assign({ file_path: { type: 'string', description: 'Absolute path to a local .pdf, .docx, .pptx, image (.png/.jpg/.webp), text (.md/.txt/.csv/.tsv), or spreadsheet (.xlsx/.xls/.xlsb/.ods) file (max 200MB)' } }, REMEDIATE_OPTION_PROPS),
           additionalProperties: false,
         },
         annotations: { title: 'Start a remediation job', readOnlyHint: false, destructiveHint: false, openWorldHint: true },

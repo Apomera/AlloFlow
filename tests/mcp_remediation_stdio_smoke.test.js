@@ -286,13 +286,13 @@ describe('remediation MCP: protocol + tool registry', () => {
     const registry = requireCjs(resolve(process.cwd(), 'desktop/mcp/build_registry_metadata.cjs'));
     const artifact = join(tmp, 'registry-fixture.mcpb');
     writeFileSync(artifact, Buffer.alloc(2048, 0x41));
-    const metadata = registry.buildRegistryMetadata({ artifactPath: artifact, tag: 'mcpb-v0.3.2' });
+    const metadata = registry.buildRegistryMetadata({ artifactPath: artifact, tag: 'mcpb-v0.3.3' });
     expect(metadata.$schema).toBe('https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json');
     expect(metadata.name).toBe('io.github.apomera/alloflow-remediation');
-    expect(metadata.version).toBe('0.3.2');
+    expect(metadata.version).toBe('0.3.3');
     expect(metadata.packages).toHaveLength(1);
     expect(metadata.packages[0].registryType).toBe('mcpb');
-    expect(metadata.packages[0].identifier).toBe('https://github.com/Apomera/AlloFlow/releases/download/mcpb-v0.3.2/alloflow-remediation.mcpb');
+    expect(metadata.packages[0].identifier).toBe('https://github.com/Apomera/AlloFlow/releases/download/mcpb-v0.3.3/alloflow-remediation.mcpb');
     expect(metadata.packages[0].fileSha256).toBe('3a34c8dc4aec1554c04e0d0e61179d08362b329029db4632f5f086c37be74caa');
     expect(metadata.packages[0].transport.type).toBe('stdio');
   });
@@ -673,10 +673,13 @@ describe('remediation MCP: validation fires BEFORE any browser/quota spend', () 
     expect(Date.now() - t0).toBeLessThan(3000); // validation, not a browser boot
   });
 
-  it('pdf_remediate on a non-.pdf path → clean invalid-params', async () => {
-    const txt = join(tmp, 'notes.txt');
-    writeFileSync(txt, 'not a pdf');
-    const msg = await request('tools/call', { name: 'pdf_remediate', arguments: { file_path: txt } });
+  it('pdf_remediate on an unsupported file type → clean invalid-params', async () => {
+    // 0.3.3: .txt is now a SUPPORTED text-family input, so the unsupported example moved to a
+    // .zip — the intent (unsupported types rejected cleanly, naming what IS accepted) is
+    // unchanged.
+    const zip = join(tmp, 'archive.zip');
+    writeFileSync(zip, 'not a document');
+    const msg = await request('tools/call', { name: 'pdf_remediate', arguments: { file_path: zip } });
     expect(msg.error.code).toBe(-32602);
     expect(msg.error.message).toContain('.pdf');
   });

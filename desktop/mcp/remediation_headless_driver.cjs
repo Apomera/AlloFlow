@@ -1217,13 +1217,45 @@ function createDriver(options) {
     return true;
   }
 
+  // ── Text-family preprocessing (2026-08-17, MCP 0.3.3) ──────────────────────────────────────
+  // The pipeline's entry sniffs PDF magic, Office zips, and image MIME only. The BROWSER handles
+  // md/csv/tsv/spreadsheets by converting them in its intake (view_pdf_audit batch reader):
+  // sheets → convertXlsxToMarkdownTables (a pipeline export), text → UTF-8 decode, then BOTH →
+  // transcribeMediaToPayload(null, 'text/plain', { preText }) which produces the pipeline-native
+  // payload. The driver replicates those exact steps IN THE PAGE with the same exported
+  // functions, so behavior parity with the app is by construction, not by reimplementation.
+  // (.txt rides the text branch — a strict superset of the browser's list.)
+  function textFamilyKind(fileName) {
+    if (/\.(xlsx|xls|xlsb|ods)$/i.test(fileName || '')) return 'sheet';
+    if (/\.(md|markdown|csv|tsv|txt)$/i.test(fileName || '')) return 'text';
+    return null;
+  }
+  // The conversion itself is inlined in each run evaluate (page.evaluate serializes the whole
+  // callback, so an inlined helper is the robust form; a shared snippet string is not).
   async function audit(opts) {
     const fileName = path.basename(opts.filePath);
     const b64 = readDocBase64(opts.filePath);
     (opts.onLog || log)('audit: ' + fileName + ' (' + Math.round(b64.length * 0.75 / 1024) + ' KB)');
     return withRunPage(Object.assign({ fileName, base64ForRender: b64 }, opts), (page) =>
-      page.evaluate(async ({ b64, fileName, auditorCount }) => {
-        const a = await window.__mcpPipeline.runPdfAccessibilityAudit(b64, { skipUiUpdates: true, skipCache: true, fileName, auditorCount });
+      page.evaluate(async ({ b64, fileName, auditorCount, textFamily }) => {
+        let effB64 = b64;
+        if (textFamily) {
+          // Mirror of the browser intake (view_pdf_audit batch reader): sheet → markdown tables,
+          // text → UTF-8 decode, both → the pipeline-native text/plain payload.
+          const p0 = window.__mcpPipeline;
+          let textValue;
+          if (textFamily === 'sheet') {
+            const cs = await p0.convertXlsxToMarkdownTables(b64, { fileName });
+            textValue = '# ' + String(fileName || 'Spreadsheet').replace(/\.(xlsx|xls|xlsb|ods)$/i, '') + '\n\n' + ((cs && cs.text) || '')
+              + ((cs && cs.truncatedRows) ? ('\n\n*Note: ' + cs.truncatedRows + ' row(s) beyond the first 200 per sheet were omitted.*') : '');
+          } else {
+            textValue = new TextDecoder().decode(Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)));
+          }
+          if (!textValue || !textValue.trim()) throw new Error('The file contains no extractable text.');
+          const converted = await p0.transcribeMediaToPayload(null, 'text/plain', { preText: textValue, file: { name: fileName } });
+          effB64 = (converted && converted.payload) || b64;
+        }
+        const a = await window.__mcpPipeline.runPdfAccessibilityAudit(effB64, { skipUiUpdates: true, skipCache: true, fileName, auditorCount });
         return {
           score: a && typeof a.score === 'number' ? a.score : null,
           summary: (a && a.summary) || '',
@@ -1248,7 +1280,7 @@ function createDriver(options) {
           },
           _fullAudit: a,
         };
-      }, { b64, fileName, auditorCount: HEADLESS_AUDITOR_COUNT })
+      }, { b64, fileName, auditorCount: HEADLESS_AUDITOR_COUNT, textFamily: textFamilyKind(fileName) })
     );
   }
 
@@ -1259,8 +1291,23 @@ function createDriver(options) {
     const _isPdfInput = /\.pdf$/i.test(fileName);
     (opts.onLog || log)('remediate: ' + fileName + ' (' + Math.round(b64.length * 0.75 / 1024) + ' KB, target ' + (opts.targetScore || 95) + ')');
     return withRunPage(Object.assign({ fileName, base64ForRender: b64 }, opts), (page) =>
-      page.evaluate(async ({ b64, fileName, targetScore, fixPasses, polishPasses, wantTaggedPdf, wantAutoContinue, autoContinueRounds, pdfLibCdn, auditorCount, resumeCheckpoint, pageRange }) => {
+      page.evaluate(async ({ b64: _rawB64, fileName, targetScore, fixPasses, polishPasses, wantTaggedPdf, wantAutoContinue, autoContinueRounds, pdfLibCdn, auditorCount, resumeCheckpoint, pageRange, textFamily }) => {
         const pipeline = window.__mcpPipeline;
+        // Text-family conversion — same mirror of the browser intake as audit()'s evaluate.
+        let b64 = _rawB64;
+        if (textFamily) {
+          let textValue;
+          if (textFamily === 'sheet') {
+            const cs = await pipeline.convertXlsxToMarkdownTables(_rawB64, { fileName });
+            textValue = '# ' + String(fileName || 'Spreadsheet').replace(/\.(xlsx|xls|xlsb|ods)$/i, '') + '\n\n' + ((cs && cs.text) || '')
+              + ((cs && cs.truncatedRows) ? ('\n\n*Note: ' + cs.truncatedRows + ' row(s) beyond the first 200 per sheet were omitted.*') : '');
+          } else {
+            textValue = new TextDecoder().decode(Uint8Array.from(atob(_rawB64), (c) => c.charCodeAt(0)));
+          }
+          if (!textValue || !textValue.trim()) throw new Error('The file contains no extractable text.');
+          const converted = await pipeline.transcribeMediaToPayload(null, 'text/plain', { preText: textValue, file: { name: fileName } });
+          b64 = (converted && converted.payload) || _rawB64;
+        }
         const progress = (stage, msg) => { try { window.__mcpProgress(stage + ' — ' + msg); } catch (_) {} };
         const loopPolicy = window.AlloModules
           && window.AlloModules.createDocPipeline
@@ -1664,6 +1711,7 @@ function createDriver(options) {
         pageRange: (Array.isArray(opts.pageRange) && opts.pageRange.length === 2)
           ? [Math.max(1, Number(opts.pageRange[0]) || 1), Math.max(1, Number(opts.pageRange[1]) || 1)]
           : null,
+        textFamily: textFamilyKind(fileName),
         // Tagged-PDF export is a PDF-in → PDF-out artifact; for DOCX/PPTX inputs the
         // accessible HTML is the deliverable (matches the app).
         wantTaggedPdf: opts.taggedPdf !== false && _isPdfInput,
