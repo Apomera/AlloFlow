@@ -1,3 +1,9 @@
+// MEMORY NOTE (2026-08-16): this suite jsdom-parses every generated page,
+// including offline.html, which inlines ALL chapters. At 18 chapters that sits
+// right at Node's default ~4GB worker heap and the fork can die with a V8 OOM
+// that vitest reports as "Worker exited unexpectedly" (28 passed, rest never
+// ran, zero assertion failures). If you see that signature, run with:
+//   NODE_OPTIONS=--max-old-space-size=6144 npx vitest run tests/teacher_guide_build.test.js --maxWorkers=1
 import { beforeAll, describe, expect, it } from 'vitest';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';

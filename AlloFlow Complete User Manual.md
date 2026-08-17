@@ -191,6 +191,10 @@ Avoid labeling pathways as “low,” “easy,” or “special.” Use neutral 
 
 You do not have to begin with a lesson at all. Every interactive STEAM Lab tool has its own direct web address that opens just that tool, with no sign-in for you or your students. Pasting one such link into whatever you already use (your LMS, a slide, a message home) is the lowest-commitment way to try AlloFlow, share it with a colleague, or give a family one good activity. When you are ready for more than one tool, come back to the fifteen-minute lesson above.
 
+![The Water Cycle tool opened directly from its own link, ready to use with no sign-in](docs/teacher-guide/assets/screenshots/08-single-tool-link.png)
+
+*A direct tool link, captured August 16, 2026. The "AI extras: off" note in the header means no AI backend is set up on that device; the tool itself is fully usable either way. See [Troubleshooting](#troubleshooting).*
+
 ### If something does not work
 
 Protect instructional time first. Keep a stable fallback ready: the original source, a downloadable handout, or a simple discussion prompt. If a module is still loading, wait briefly, use its retry control if shown, or return to the previous view. If generation fails, preserve your source and directions before refreshing.
