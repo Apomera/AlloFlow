@@ -227,7 +227,8 @@ human source comparison and usability review</div>
                         evidence.</p>
                     <h3>4.4 Output and PDF validation</h3>
                     <p>The application can produce accessible HTML, an audit/evidence report, and native tagged PDF for
-                        PDF inputs. Office inputs in the local connector produce accessible HTML rather than pretending
+                        PDF inputs. Office, image, and text-family inputs (markdown, plain text, CSV/TSV, and
+                        spreadsheets) in the local connector produce accessible HTML rather than pretending
                         that a generic HTML-to-PDF step reconstructs an editable Office source. Editable and alternate
                         exports include DOCX, ODT, EPUB 3, DAISY 3, and uncontracted Grade-1 BRF, each with its own
                         disclosed validation boundary.</p>
@@ -342,7 +343,9 @@ human source comparison and usability review</div>
                         <li>EPUB checking is structural and is not an epubcheck result.</li>
                         <li>DAISY output is not currently backed by a contracted DAISY validator.</li>
                         <li>BRF output is uncontracted Grade 1 and requires qualified review; Grade 2 UEB is not claimed.</li>
-                        <li>The public MCPB connector release is pending a clean, reproducible release gate.</li>
+                        <li>AI-assisted runs depend on the operator's own provider key and quota. Under provider
+                            rate limiting, a run can apply and verify repairs yet still fail to produce a final
+                            whole-document score.</li>
                         <li>The remote institutional MCP is code for a pilot architecture, not a live public service.</li>
                     </ul>
                 </section>
