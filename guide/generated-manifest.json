@@ -7,7 +7,7 @@
   "outputs": [
     {
       "path": "AlloFlow Complete User Manual.md",
-      "sha256": "45706327309c737d7d4206bf51bc7d179f2bea17aaf6ed1bb701c96d982b40a4"
+      "sha256": "af184f2cbe3fdf57148c3bf36ee406400b08c6cba7499f3205b2d65925040148"
     },
     {
       "path": "guide/accessibility-and-udl.html",
@@ -39,7 +39,7 @@
     },
     {
       "path": "guide/for-your-it-department.html",
-      "sha256": "f499a8a070396c276c236decb60de5a657c9c8a6223e10160113da6470923943"
+      "sha256": "8703347f370a82716e09d53579f6938f73551cbd0cf6e04a536304a4bd83d2b9"
     },
     {
       "path": "guide/guide-search.js",
@@ -67,7 +67,7 @@
     },
     {
       "path": "guide/offline.html",
-      "sha256": "5386035cb7c0596c640d361ccc5c371a54a0fa8a0467bdc5fa578e462afcc187"
+      "sha256": "1ad69e2f564d50e428a4d1097b8edd3a594a892a71a8ed1d453e62f14b2d3fa4"
     },
     {
       "path": "guide/prepare-a-lesson.html",
@@ -95,7 +95,7 @@
     },
     {
       "path": "guide/search-index.json",
-      "sha256": "1ed284b5f35c9151c6e3bb2325b597f867d41d0ee31323b9b108ce66e0326ebe"
+      "sha256": "73c78d404f5bfed3f2b0fe043d2d72142b07e1a25fee0cea5748483e5b5b8d4a"
     },
     {
       "path": "guide/settings-and-help.html",
@@ -111,7 +111,7 @@
     },
     {
       "path": "guide/steam-lab.html",
-      "sha256": "90ea4078b6a86cd222cf8c5f4e38ef0c70eb9452967b6065b97de694e938e5c0"
+      "sha256": "6f6618bb5f3f4ea879fa6ec869aac4bccd43dfa5f5b0d8363ded32cc37b184b5"
     },
     {
       "path": "guide/the-workspace.html",

@@ -3323,7 +3323,7 @@ Browser storage is the default, not the only destination. These are the paths an
 
 Two consequences worth stating to a leadership team. Browser storage means a wiped device or a cleared profile destroys unexported work, so "save the project file" is an operational instruction, not a nicety. And "local" is not the same as "safe": a shared Windows profile, a synced Downloads folder, or a copied project file moves instructional content exactly as far as any other file would.
 
-The full teacher-facing data-path table is in [Privacy and responsible AI](#privacy-and-responsible-ai); it is written to be reviewed line by line with a privacy officer. The teacher-side mechanics of saving, exporting, storage presets and recovery are in [Saving and storage](#saving-loading-and-managing-storage).
+The full teacher-facing data-path table is in [Privacy and responsible AI](#privacy-and-responsible-ai); it is written to be reviewed line by line with a privacy officer. The teacher-side mechanics of saving, exporting, storage presets and recovery are in [Saving, loading, and managing storage](#saving-loading-and-managing-storage).
 
 #### The Google Drive option: services you deploy in your own tenant
 
@@ -3508,13 +3508,15 @@ The STEAM Lab is the largest thing in AlloFlow: **142 interactive tools** across
 | Human body and safety · data and statistics | 5 each |
 | Strategy games · sports and movement science | 4 each |
 
-Browse the live list at [the tool catalog](https://alloflow-cdn.pages.dev/tools.html), which groups every tool by area and includes a one-line description of each.
+**Where the live list is.** All 142 live inside the STEAM Lab itself: open it from **Learning Tools** on the Launch Pad, or from the STEAM Lab entry in the tool list, and search or browse by area there. That is the only always-current list, which is why this chapter does not reproduce it.
+
+Do not confuse this with [Find a tool](https://alloflow-cdn.pages.dev/tools.html) on the AlloFlow website. That page is a finder for the **lesson-building tools**, the ones that turn source material into glossaries, adaptations and quizzes, and it usefully filters by whether a tool needs a source, needs AI, or runs in Gemini Canvas. It does not list the STEAM Lab's simulations, so searching it for "titration" or "solar system" finds nothing.
 
 ### Finding a tool: three routes
 
 **Search, if you know roughly what you want.** Open the STEAM Lab and type in its search box. It matches tool names, descriptions, topics, and hand-written aliases — so "photosynthesis" finds the tree lab even though that word is not in its title.
 
-**Browse by area, if you are planning a unit.** The catalog's subject groupings are the fastest way to see everything available for a topic you are about to teach.
+**Browse by area, if you are planning a unit.** The lab's own subject groupings are the fastest way to see everything available for a topic you are about to teach.
 
 **Ask by voice or the command palette**, if your hands are busy: press Ctrl+K and type the tool name, or say it aloud with voice control on.
 

@@ -34,7 +34,7 @@ Browser storage is the default, not the only destination. These are the paths an
 
 Two consequences worth stating to a leadership team. Browser storage means a wiped device or a cleared profile destroys unexported work, so "save the project file" is an operational instruction, not a nicety. And "local" is not the same as "safe": a shared Windows profile, a synced Downloads folder, or a copied project file moves instructional content exactly as far as any other file would.
 
-The full teacher-facing data-path table is in [Privacy and responsible AI](07-privacy-and-responsible-ai.md); it is written to be reviewed line by line with a privacy officer. The teacher-side mechanics of saving, exporting, storage presets and recovery are in [Saving and storage](24-saving-and-storage.md).
+The full teacher-facing data-path table is in [Privacy and responsible AI](07-privacy-and-responsible-ai.md); it is written to be reviewed line by line with a privacy officer. The teacher-side mechanics of saving, exporting, storage presets and recovery are in [Saving, loading, and managing storage](24-saving-and-storage.md).
 
 ### The Google Drive option: services you deploy in your own tenant
 

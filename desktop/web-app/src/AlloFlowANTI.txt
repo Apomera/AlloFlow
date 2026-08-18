@@ -52849,7 +52849,15 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         </div>
       )}
       {(pdfAuditResult || pdfAuditLoading) && window.AlloModules && window.AlloModules.PdfAuditView && React.createElement(window.AlloModules.PdfAuditView, {
-          key: 'pdf-audit-document-' + pdfDocumentSelectionEpochRef.current,
+          // (2026-08-18, the modal-vanishes-mid-audit bug) This key MUST come from the same
+          // source as the pdfDocumentEpoch prop below. It used to read the REF while the prop
+          // read the state mirror: the ref bumps synchronously at intake, the mirror lands on a
+          // later render, so any render in between produced a NEW key (forcing a remount) while
+          // the remounted modal still received the OLD epoch. That is the 'audit modal OPENED
+          // docEpoch:1' then 'OPENED docEpoch:0' with no CLOSED between them - the ownership gate
+          // then dropped the run and only a re-upload resynced them. Keying off the mirror makes
+          // key and prop change in the same commit, so they can never disagree.
+          key: 'pdf-audit-document-' + pdfDocumentEpochLive,
           STYLE_SEEDS, _buildMissingList, _closePdfAuditModal, _discardAndCloseAudit, _docPipeline, recomputeIssueResolution,
           _ensureDiffLib, _ensurePdfLib, _saveAndCloseAudit, addToast, agentActivityLog, applyingRemarkup,
           agentLogFullView, applyWordRestorationInPlace, auditOutputAccessibility, autoFixAxeViolations, autoRestoreSummary,

@@ -86,7 +86,7 @@
     '.rh-flight-metric:last-child{border-right:0;}.rh-flight-metric-label{display:block;color:#a5f3fc;font:800 9px/1.1 ui-sans-serif,system-ui;text-transform:uppercase;letter-spacing:.08em;}.rh-flight-metric-value{display:block;margin-top:3px;color:#fff;font:800 13px/1.1 ui-monospace,Menlo,monospace;white-space:nowrap;}',
     '.rh-flight-settings{position:relative;}.rh-flight-settings>summary{list-style:none;}.rh-flight-settings>summary::-webkit-details-marker{display:none;}.rh-flight-settings-panel{position:absolute;right:0;bottom:calc(100% + 10px);z-index:30;display:flex;flex-wrap:wrap;gap:8px;width:min(330px,calc(100vw - 24px));padding:10px;border:1px solid #67e8f9;border-radius:11px;background:rgba(2,6,23,.98);box-shadow:0 18px 50px rgba(0,0,0,.45);}.rh-flight-quality{display:flex;align-items:center;justify-content:space-between;gap:10px;flex:1 1 100%;color:#cffafe;font:800 11px/1.2 ui-sans-serif,system-ui;}.rh-flight-quality select{min-height:44px;border:1px solid #67e8f9;border-radius:9px;background:#0f172a;padding:8px 30px 8px 10px;color:#fff;font:800 12px/1.2 ui-sans-serif,system-ui;}',
     '.rh-flight-result{position:absolute;inset:0;z-index:25;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(2,6,23,.66);backdrop-filter:blur(4px);}.rh-flight-result-card{max-width:460px;border:2px solid #fbbf24;border-radius:16px;background:rgba(15,23,42,.98);padding:22px;color:#f8fafc;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.5);}',
-    '.rh-flight-coach{position:absolute;left:10px;bottom:12px;z-index:18;width:min(330px,calc(100% - 20px));border:2px solid #67e8f9;border-radius:12px;background:rgba(2,6,23,.95);padding:12px;color:#f8fafc;box-shadow:0 14px 40px rgba(0,0,0,.4);}.rh-flight-coach-head{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#a5f3fc;font:800 11px/1.2 ui-sans-serif,system-ui;text-transform:uppercase;letter-spacing:.06em;}.rh-flight-coach-title{margin-top:5px;color:#fff;font:800 15px/1.25 ui-sans-serif,system-ui;}.rh-flight-coach-copy{margin-top:4px;color:#dbeafe;font:600 12px/1.4 ui-sans-serif,system-ui;}.rh-flight-coach-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:9px;}.rh-flight-target-cue{position:absolute;left:50%;top:58px;z-index:14;transform:translateX(-50%);max-width:calc(100% - 24px);border:1px solid #fca5a5;border-radius:9px;background:rgba(15,23,42,.9);padding:6px 10px;color:#fee2e2;font:800 11px/1.25 ui-sans-serif,system-ui;text-align:center;pointer-events:none;}.rh-flight-target-cue[data-target-state="ready"]{border-color:#86efac;color:#dcfce7;background:rgba(20,83,45,.94);}.rh-flight-target-cue[data-target-state="close"]{border-color:#fde047;color:#fef9c3;}',
+    '.rh-flight-coach{position:absolute;left:10px;bottom:12px;z-index:18;width:min(330px,calc(100% - 20px));border:2px solid #67e8f9;border-radius:12px;background:rgba(2,6,23,.95);padding:12px;color:#f8fafc;box-shadow:0 14px 40px rgba(0,0,0,.4);}.rh-flight-coach-head{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#a5f3fc;font:800 11px/1.2 ui-sans-serif,system-ui;text-transform:uppercase;letter-spacing:.06em;}.rh-flight-coach-title{margin-top:5px;color:#fff;font:800 15px/1.25 ui-sans-serif,system-ui;}.rh-flight-coach-copy{margin-top:4px;color:#dbeafe;font:600 12px/1.4 ui-sans-serif,system-ui;}.rh-flight-coach-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:9px;}.rh-flight-target-cue{position:absolute;left:50%;top:58px;z-index:14;transform:translateX(-50%);max-width:calc(100% - 24px);border:1px solid #fca5a5;border-radius:9px;background:rgba(15,23,42,.9);padding:6px 10px;color:#fee2e2;font:800 11px/1.25 ui-sans-serif,system-ui;text-align:center;pointer-events:none;}.rh-flight-target-cue[data-target-state="ready"]{border-color:#86efac;color:#dcfce7;background:rgba(20,83,45,.94);}.rh-flight-target-cue[data-target-state="close"]{border-color:#fde047;color:#fef9c3;}.rh-flight-target-cue[data-target-state="stoop"]{border-color:#67e8f9;color:#cffafe;background:rgba(8,51,68,.94);}.rh-flight-lock-meters{position:absolute;left:50%;top:106px;z-index:14;transform:translateX(-50%);display:flex;flex-direction:column;gap:3px;width:min(190px,calc(100% - 28px));pointer-events:none;}.rh-lock-meter{display:flex;align-items:center;gap:6px;}.rh-lock-meter-label{flex:0 0 40px;color:#e2e8f0;font:800 9px/1 ui-sans-serif,system-ui;letter-spacing:.08em;text-shadow:0 1px 3px rgba(0,0,0,.9);}.rh-lock-meter-track{position:relative;flex:1 1 auto;height:6px;border-radius:999px;background:rgba(15,23,42,.85);border:1px solid rgba(148,163,184,.55);overflow:hidden;}.rh-lock-meter-fill{display:block;height:100%;border-radius:999px;background:#fbbf24;transition:width .12s linear;}.rh-lock-meter-fill[data-full="true"]{background:#4ade80;}.rh-flight-reticle{position:absolute;left:50%;top:50%;z-index:13;width:74px;height:74px;transform:translate(-50%,-50%);pointer-events:none;opacity:.78;transition:opacity .15s linear,transform .15s ease-out;filter:drop-shadow(0 0 1.5px rgba(0,0,0,.95)) drop-shadow(0 0 3px rgba(0,0,0,.5));}.rh-flight-reticle[data-target-state="ready"]{opacity:1;transform:translate(-50%,-50%) scale(.86);}.rh-flight-reticle[data-target-state="off"]{opacity:.28;}.rh-reticle-ring{position:absolute;inset:12px;border:2px solid rgba(248,250,252,.92);border-radius:50%;box-shadow:0 0 6px rgba(0,0,0,.65);}.rh-reticle-dot{position:absolute;left:50%;top:50%;width:4px;height:4px;margin:-2px 0 0 -2px;border-radius:50%;background:rgba(226,232,240,.95);box-shadow:0 0 4px rgba(0,0,0,.8);}.rh-reticle-tick{position:absolute;background:rgba(248,250,252,.92);box-shadow:0 0 4px rgba(0,0,0,.75);}.rh-reticle-tick-n,.rh-reticle-tick-s{left:50%;width:2px;height:9px;margin-left:-1px;}.rh-reticle-tick-n{top:0;}.rh-reticle-tick-s{bottom:0;}.rh-reticle-tick-e,.rh-reticle-tick-w{top:50%;height:2px;width:9px;margin-top:-1px;}.rh-reticle-tick-w{left:0;}.rh-reticle-tick-e{right:0;}.rh-flight-reticle[data-target-state="stoop"] .rh-reticle-ring{border-color:#67e8f9;box-shadow:0 0 10px rgba(103,232,249,.55);}.rh-flight-reticle[data-target-state="stoop"] .rh-reticle-tick{background:#67e8f9;}.rh-flight-reticle[data-target-state="stoop"] .rh-reticle-dot{background:#67e8f9;}.rh-flight-reticle[data-target-state="close"] .rh-reticle-ring,.rh-flight-reticle[data-target-state="align"] .rh-reticle-ring{border-color:#fbbf24;}.rh-flight-reticle[data-target-state="close"] .rh-reticle-tick,.rh-flight-reticle[data-target-state="align"] .rh-reticle-tick{background:#fbbf24;}.rh-flight-reticle[data-target-state="ready"] .rh-reticle-ring{border-color:#4ade80;box-shadow:0 0 12px rgba(74,222,128,.65);}.rh-flight-reticle[data-target-state="ready"] .rh-reticle-tick{background:#4ade80;}.rh-flight-reticle[data-target-state="ready"] .rh-reticle-dot{background:#4ade80;}.rh-flight-acuity{position:absolute;inset:0;z-index:12;pointer-events:none;}.rh-acuity-vignette{position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 38%,rgba(0,0,0,.34) 72%,rgba(0,0,0,.62) 100%);}.rh-acuity-bracket{position:absolute;width:26px;height:26px;border:2px solid rgba(125,211,252,.85);}.rh-acuity-bracket-tl{top:14px;left:14px;border-right:0;border-bottom:0;}.rh-acuity-bracket-tr{top:14px;right:14px;border-left:0;border-bottom:0;}.rh-acuity-bracket-bl{bottom:14px;left:14px;border-right:0;border-top:0;}.rh-acuity-bracket-br{bottom:14px;right:14px;border-left:0;border-top:0;}.rh-acuity-badge{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);color:#e0f2fe;background:rgba(8,47,73,.82);border:1px solid rgba(125,211,252,.7);border-radius:999px;padding:3px 10px;font:800 10px/1.2 ui-sans-serif,system-ui;letter-spacing:.08em;}',
     '.rh-flight-marker{position:absolute;left:50%;top:50%;z-index:7;width:88px;height:32px;transform:translate(-50%,-50%);pointer-events:none;}',
     '.rh-flight-marker::before{content:"";position:absolute;left:0;right:0;top:15px;border-top:2px solid rgba(254,240,138,.9);box-shadow:0 1px 3px rgba(0,0,0,.8);}',
     '.rh-flight-marker::after{content:"";position:absolute;left:43px;top:5px;height:20px;border-left:2px solid rgba(254,240,138,.95);}',
@@ -98,7 +98,7 @@
     '[data-raptor-flight-stage="true"]:fullscreen canvas,[data-raptor-flight-stage="true"]:-webkit-full-screen canvas,[data-raptor-flight-stage="true"][data-allo-fullscreen-active="true"] canvas{width:100%!important;height:100%!important;}',
     '@media(max-width:760px){[data-raptor-flight-stage="true"]{height:58vh;min-height:390px;}.rh-flight-controls{display:grid;grid-template-columns:1fr;align-items:stretch;gap:8px;max-height:42vh;overflow-y:auto;overscroll-behavior:contain;}.rh-flight-controls-group{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));width:100%;gap:7px;}.rh-flight-controls-run{grid-template-columns:repeat(3,minmax(0,1fr));}.rh-flight-control-label{grid-column:1/-1;}.rh-flight-btn{width:100%;min-width:0;padding-left:6px;padding-right:6px;}.rh-flight-mission-hud{top:104px;left:auto;right:8px;bottom:auto;max-width:min(280px,calc(100% - 16px));}.rh-flight-coach{left:8px;right:8px;bottom:8px;width:auto;}}',
     '@media(max-width:760px){.rh-flight-telemetry-strip{top:8px;}.rh-flight-metric{min-width:68px;padding:6px 7px;}.rh-flight-metric:nth-child(6){display:none;}.rh-flight-settings{width:100%;}.rh-flight-settings>summary{width:100%;}.rh-flight-settings-panel{position:static;width:100%;margin-top:8px;}.rh-active-flight-bar{align-items:flex-start;}}',
-    '@media(max-width:430px){[data-raptor-flight-stage="true"]{height:54vh;min-height:350px;}.rh-flight-btn{font-size:11px;padding:8px 4px;}.rh-flight-target-cue{top:54px;font-size:10px;}.rh-flight-mission-hud{top:91px;font-size:10px;}.rh-flight-coach-copy{font-size:11px;}.rh-flight-coach-actions .rh-flight-btn{width:auto;min-width:68px;}}',
+    '@media(prefers-reduced-motion:reduce){.rh-flight-reticle{transition:none;}.rh-flight-reticle[data-target-state="ready"]{transform:translate(-50%,-50%);}}@media(max-width:430px){[data-raptor-flight-stage="true"]{height:54vh;min-height:350px;}.rh-flight-btn{font-size:11px;padding:8px 4px;}.rh-flight-target-cue{top:54px;font-size:10px;}.rh-flight-lock-meters{top:98px;width:min(160px,calc(100% - 24px));}.rh-flight-mission-hud{top:91px;font-size:10px;}.rh-flight-coach-copy{font-size:11px;}.rh-flight-coach-actions .rh-flight-btn{width:auto;min-width:68px;}}',
     '@media(max-width:430px){.rh-flight-metric{min-width:61px}.rh-flight-metric:nth-child(4),.rh-flight-metric:nth-child(6){display:none;}.rh-flight-metric-value{font-size:12px;}}',
     '@media(prefers-reduced-motion:reduce){.rh-flight-btn{transition:none;}.rh-flight-pause{backdrop-filter:none;}}'
   ].join('');
@@ -6914,7 +6914,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         strikeReady: true,
         tutorialSignals: {},
         targetState: 'search',
-        targetHint: 'Scan ahead for prey'
+        targetHint: 'Scan ahead for prey',
+        targetAlign: 0,
+        targetRange: 0
       });
       var simUI = simUIState[0];
       var setSimUI = simUIState[1];
@@ -8330,7 +8332,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('summary', { className: 'font-bold text-cyan-200 cursor-pointer' }, 'Controls and science'),
                 h('div', { id: 'rh-flight-instructions', className: 'mt-2 leading-relaxed' },
                   h('div', { className: 'font-mono text-amber-200 mb-1' }, 'W/S pitch - A/D turn - Q/E altitude trim'),
-                  h('div', { className: 'font-mono text-amber-200 mb-2' }, 'Shift dive - Space pull up - F strike - P pause'),
+                  h('div', { className: 'font-mono text-amber-200 mb-2' }, 'WASD fly - Shift dive - Space pull up - F STRIKE - T target assist - V camera - P pause'),
                   h('div', { className: 'text-slate-300' }, mission.pedagogy)
                 )
               )
@@ -8412,12 +8414,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                       tabIndex: 0,
                       style: { width: '100%', height: '100%', display: 'block', cursor: 'crosshair' }
                     }),
+                    // Aim reticle. The coaching copy already told players to "bring the
+                    // target down into the reticle" - there was no reticle. It reads the
+                    // same lock state as the meters, so the centre of the screen shows
+                    // whether the gate is open without moving your eyes to the text.
+                    h('div', {
+                      className: 'rh-flight-reticle',
+                      'data-target-state': simUI.targetState || 'search',
+                      'data-raptor-reticle': 'true',
+                      'aria-hidden': 'true'
+                    },
+                      h('span', { className: 'rh-reticle-ring' }),
+                      h('span', { className: 'rh-reticle-dot' }),
+                      ['n', 'e', 's', 'w'].map(function(side) {
+                        return h('span', { key: side, className: 'rh-reticle-tick rh-reticle-tick-' + side });
+                      })
+                    ),
+                    // Acuity zoom had no visual at all: FOV dropped 70 -> 25 and the only
+                    // signal was a screen-reader announcement. Vignette + brackets make
+                    // the focused state obvious, and name the magnification.
+                    simUI.zoom && h('div', {
+                      className: 'rh-flight-acuity',
+                      'data-raptor-acuity': 'true',
+                      'aria-hidden': 'true'
+                    },
+                      h('span', { className: 'rh-acuity-vignette' }),
+                      ['tl', 'tr', 'bl', 'br'].map(function(corner) {
+                        return h('span', { key: corner, className: 'rh-acuity-bracket rh-acuity-bracket-' + corner });
+                      }),
+                      h('span', { className: 'rh-acuity-badge' }, 'RAPTOR ACUITY 8x')
+                    ),
                     simUI.targetHint && h('div', {
                       className: 'rh-flight-target-cue',
                       'data-target-state': simUI.targetState,
                       'data-raptor-target-guidance': 'true',
                       'aria-label': 'Target guidance: ' + simUI.targetHint
                     }, simUI.targetHint),
+                    // Two-bar lock readout. The strike gate needs BOTH alignment and
+                    // range, and the text alone could not show which half was missing.
+                    (simUI.targetState === 'align' || simUI.targetState === 'close' || simUI.targetState === 'stoop' || simUI.targetState === 'ready') && h('div', {
+                      className: 'rh-flight-lock-meters',
+                      'data-raptor-lock-meters': 'true',
+                      'aria-hidden': 'true'
+                    },
+                      ['align', 'range'].map(function(kind) {
+                        var value = kind === 'align' ? (simUI.targetAlign || 0) : (simUI.targetRange || 0);
+                        return h('div', { key: kind, className: 'rh-lock-meter' },
+                          h('span', { className: 'rh-lock-meter-label' }, kind === 'align' ? 'AIM' : 'RANGE'),
+                          h('span', { className: 'rh-lock-meter-track' },
+                            h('span', {
+                              className: 'rh-lock-meter-fill',
+                              'data-full': value >= 1 ? 'true' : 'false',
+                              style: { width: Math.round(value * 100) + '%' }
+                            })
+                          )
+                        );
+                      })
+                    ),
                     tutorialStep >= 0 && HUNT_TUTORIAL[tutorialStep] && h('aside', {
                       className: 'rh-flight-coach',
                       'data-raptor-flight-tutorial': HUNT_TUTORIAL[tutorialStep].signal,
@@ -8512,15 +8565,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                       h('span', { className: 'rh-flight-control-label' }, 'Flight'),
                       holdFlightButton('\u2193 Alt', 'q', '', 'Hold to descend'),
                       holdFlightButton('\u2191 Alt', 'e', '', 'Hold to climb'),
-                      holdFlightButton('Dive', 'shift', 'rh-flight-btn-primary', 'Hold to dive and accelerate'),
-                      holdFlightButton('Pull up', ' ', '', 'Hold to pull up'),
+                      holdFlightButton('Dive (Shift)', 'shift', 'rh-flight-btn-primary', 'Hold to dive and accelerate - keyboard Shift'),
+                      holdFlightButton('Pull up (Space)', ' ', '', 'Hold to pull up - keyboard Space'),
                       h('button', {
                         type: 'button',
                         className: 'rh-flight-btn rh-flight-btn-strike',
                         onClick: function(event) { sendHuntCommandFromControl(event, 'strike'); },
                         disabled: simUI.strikeReady === false,
-                        'aria-label': simUI.strikeReady === false ? 'Strike recovering' : 'Strike target'
-                      }, simUI.strikeReady === false ? 'Recovering' : 'Strike')
+                        'aria-label': simUI.strikeReady === false ? 'Strike recovering' : 'Strike target - keyboard F'
+                      }, simUI.strikeReady === false ? 'Recovering' : 'Strike (F)')
                     )
                   )
                 )
@@ -10491,6 +10544,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var cameraTargetBlend = 0;
         var cameraLateralLead = 0;
         var cameraFloorClearance = 0;
+        // (2026-08-18) Camera-jerk fixes.
+        // chaseLead used to be read straight off diveKey (3.5 -> 9 the instant Shift
+        // went down) and fed directly into camera.lookAt, so every dive snapped the
+        // view forward by 5.5 units in one frame. Damped here instead.
+        var cameraChaseLead = 3.5;
+        // The terrain floor was applied as a hard clamp on camera.position.y every
+        // frame. Flying low - which is exactly when you are lining up a strike - the
+        // clamp fought the damped follow and re-clamped to a different terrain height
+        // each frame, which reads as stutter. Smooth the FLOOR, keep a hard safety
+        // margin so the camera still cannot sink into the ground.
+        var cameraFloorSmoothed = null;
         var cameraTrackedPrey = null;
         // Start the chase camera behind the actual flight heading. This avoids
         // the first-frame sweep from the world origin and makes depth readable
@@ -10749,6 +10813,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var tutorialSignals = {};
         var lastTargetState = '';
         var lastTargetHint = '';
+        var lastTargetAlign = -1;
+        var lastTargetRange = -1;
         var targetProbe = null;
         var targetProjectionState = 'none';
         var targetNdcX = 0;
@@ -11857,7 +11923,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             );
             var fpTerrainFloor =
               terrainHeightAt(camera.position.x, camera.position.z) + 0.72;
-            if (camera.position.y < fpTerrainFloor) camera.position.y = fpTerrainFloor;
+            if (cameraFloorSmoothed === null) cameraFloorSmoothed = fpTerrainFloor;
+            cameraFloorSmoothed += (fpTerrainFloor - cameraFloorSmoothed) * dampingAlpha(14, dt);
+            if (cameraFloorSmoothed < fpTerrainFloor - 0.5) cameraFloorSmoothed = fpTerrainFloor - 0.5;
+            if (camera.position.y < cameraFloorSmoothed) camera.position.y = cameraFloorSmoothed;
             var lookAhead = 30;
             camera.up.set(0, 1, 0);
             camera.lookAt(
@@ -11882,7 +11951,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             camera.position.x += (camTargetX - camera.position.x) * cameraFollowAlpha;
             camera.position.y += (camTargetY - camera.position.y) * cameraFollowAlpha;
             camera.position.z += (camTargetZ - camera.position.z) * cameraFollowAlpha;
-            var chaseLead = diveKey ? 9 : 3.5;
+            cameraChaseLead += ((diveKey ? 9 : 3.5) - cameraChaseLead) * dampingAlpha(6, dt);
+            var chaseLead = cameraChaseLead;
             var chaseLookX = raptor.x + flightForward.x * chaseLead;
             var chaseLookY = raptor.y + flightForward.y * chaseLead + 0.3;
             var chaseLookZ = raptor.z + flightForward.z * chaseLead;
@@ -11905,7 +11975,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             }
             var cameraTerrainFloor =
               terrainHeightAt(camera.position.x, camera.position.z) + 1.05;
-            if (camera.position.y < cameraTerrainFloor) camera.position.y = cameraTerrainFloor;
+            if (cameraFloorSmoothed === null) cameraFloorSmoothed = cameraTerrainFloor;
+            cameraFloorSmoothed += (cameraTerrainFloor - cameraFloorSmoothed) * dampingAlpha(14, dt);
+            if (cameraFloorSmoothed < cameraTerrainFloor - 0.6) cameraFloorSmoothed = cameraTerrainFloor - 0.6;
+            if (camera.position.y < cameraFloorSmoothed) camera.position.y = cameraFloorSmoothed;
             cameraFloorClearance = camera.position.y - cameraTerrainFloor + 1.05;
             var rollTarget = _rmFX ? 0 : Math.max(-0.28, Math.min(0.28, -visualTurnRate * 0.20));
             raptor.cameraRoll = raptor.cameraRoll || 0;
@@ -11926,12 +11999,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             : 0;
           if (targetInfo) markTutorialSignal('target');
           var targetDistanceDisplay = targetInfo ? Math.max(1, Math.round(targetInfo.distance / 5) * 5) : 0;
+          // Positioned to stoop: prey meaningfully below, roughly ahead, and not
+          // already diving. verticalOffset is prey-minus-bird, so below is negative.
+          var _stoopReady = !!(targetInfo && !raptor.diving
+            && targetInfo.verticalOffset < -8
+            && targetInfo.dot >= 0.45);
           var nextTargetState = strikeFeedbackActive ? strikeFeedback.kind :
             !targetLockOn ? 'off' :
             !targetInfo ? 'search' :
             targetInfo.canStrike && !strikeReady ? 'recovering' :
             targetInfo.canStrike ? 'ready' :
-            targetInfo.distance > targetInfo.reach ? 'close' : 'align';
+            targetInfo.distance > targetInfo.reach ? (_stoopReady ? 'stoop' : 'close') : 'align';
           var highlightedPrey = targetInfo ? targetInfo.prey : null;
           preyMeshes.forEach(function(pm2) {
             var selected = !!(targetLockOn && highlightedPrey === pm2);
@@ -11943,17 +12021,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               pm2.beaconCap.visible = selected;
               if (selected) pm2.beaconCap.material.color.setHex(nextTargetState === 'ready' ? 0x4ade80 : nextTargetState === 'close' ? 0xfde047 : 0xfca5a5);
             }
-          });          var nextTargetHint = nextTargetState === 'hit' || nextTargetState === 'miss' ? strikeFeedback.message :
+          });          // Continuous lock feedback. canStrike is a hard gate (dot >= 0.7 AND inside
+          // reach) so the HUD used to jump straight from "align" to "ready" with nothing
+          // in between: the player could not tell whether they were nearly on line or
+          // hopelessly off. These two report HOW CLOSE each half of the gate is, so the
+          // meters fill as you settle onto the target.
+          var _alignGate = 0.7;
+          var nextTargetAlign = targetInfo
+            ? Math.max(0, Math.min(1, (targetInfo.dot - 0.2) / (_alignGate - 0.2)))
+            : 0;
+          var nextTargetRange = targetInfo
+            ? Math.max(0, Math.min(1, targetInfo.reach / Math.max(targetInfo.reach, targetInfo.distance)))
+            : 0;
+          // Quantised: the meters must not push a React update every frame.
+          nextTargetAlign = Math.round(nextTargetAlign * 20) / 20;
+          nextTargetRange = Math.round(nextTargetRange * 20) / 20;
+          var _alignPct = Math.round(nextTargetAlign * 100);
+          var nextTargetHint = nextTargetState === 'hit' || nextTargetState === 'miss' ? strikeFeedback.message :
             nextTargetState === 'off' ? 'Target assist is off' :
             nextTargetState === 'search' ? 'SEARCH - scan ahead for prey' :
             nextTargetState === 'recovering' ? 'RECOVERING - talons resetting' :
-            nextTargetState === 'ready' ? 'READY - press Strike' :
-            nextTargetState === 'close' ? 'CLOSE - ' + targetDistanceDisplay + ' m' :
-            (targetInfo.verticalOffset > 0 ? 'ALIGN - pull up' : 'ALIGN - dive lower');
-          if (nextTargetState !== lastTargetState || nextTargetHint !== lastTargetHint) {
+            nextTargetState === 'ready' ? 'READY - press F to strike' :
+            nextTargetState === 'stoop' ? 'STOOP - hold Shift (' + Math.round(-targetInfo.verticalOffset) + ' m below)' :
+            nextTargetState === 'close' ? 'CLOSE - ' + targetDistanceDisplay + ' m (need ' + Math.round(targetInfo.reach) + ' m)' :
+            (targetInfo.verticalOffset > 0 ? 'ALIGN ' + _alignPct + '% - pull up' : 'ALIGN ' + _alignPct + '% - dive lower');
+          if (nextTargetState !== lastTargetState || nextTargetHint !== lastTargetHint
+              || nextTargetAlign !== lastTargetAlign || nextTargetRange !== lastTargetRange) {
             lastTargetState = nextTargetState;
             lastTargetHint = nextTargetHint;
-            notifyUI({ targetState: nextTargetState, targetHint: nextTargetHint });
+            lastTargetAlign = nextTargetAlign;
+            lastTargetRange = nextTargetRange;
+            notifyUI({ targetState: nextTargetState, targetHint: nextTargetHint,
+                       targetAlign: nextTargetAlign, targetRange: nextTargetRange });
           }
           var hasTargetProjection = false;
           var projectedX = 0;

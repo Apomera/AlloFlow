@@ -224,11 +224,20 @@ describe('teacher guide HTML accessibility', () => {
       expect(document.querySelector('[role="status"][aria-live="polite"]')).not.toBeNull();
       expect(document.querySelector('.guide-search__results[aria-labelledby]')).toBeNull();
       expect(document.querySelector('noscript')).not.toBeNull();
+      // Landmark names must be UNIQUE per page (69f75103b): two regions both
+      // called "Scrollable table" are indistinguishable in a screen reader's
+      // landmark list, which is the defect that change fixed. Assert the shape
+      // and the uniqueness rather than one frozen string.
+      const tableLabels = new Set();
       for (const table of document.querySelectorAll('table')) {
         const wrapper = table.closest('.table-scroll');
         expect(wrapper).not.toBeNull();
         expect(wrapper.getAttribute('role')).toBe('region');
-        expect(wrapper.getAttribute('aria-label')).toBe('Scrollable table');
+        const tableLabel = wrapper.getAttribute('aria-label');
+        expect(tableLabel, 'table region needs an accessible name').toBeTruthy();
+        expect(tableLabel).toMatch(/ table(?: [0-9]+)?$/);
+        expect(tableLabels.has(tableLabel), 'duplicate table landmark: ' + tableLabel).toBe(false);
+        tableLabels.add(tableLabel);
         expect(wrapper.getAttribute('tabindex')).toBe('0');
         for (const header of table.querySelectorAll('th')) {
           expect(header.getAttribute('scope')).toBe('col');
