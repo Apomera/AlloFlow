@@ -227,6 +227,36 @@ describe('Consciousness Lab registration and grade adaptation', () => {
     // A false flag must not be read as the object form.
     expect(count({ checkComplete: false })).toBe(0);
   });
+
+  // Restored 2026-08-17. VOCAB_GLOSSARY and the .cns-glossary-detail styles
+  // shipped in the "Consciousness merge" with no code reading them, so ~20
+  // authored terms sat dead in the bundle. This pins the reader AND the render,
+  // because the data being present is exactly what did NOT prove it was live.
+  it('turns each grade path vocabulary into an interactive, example-based glossary', () => {
+    expect(config.testHooks.glossaryFor('clue')).toMatchObject({
+      term: 'clue',
+      definition: expect.stringMatching(/observed or measured/i),
+      example: expect.stringMatching(/brain signal|report/i),
+    });
+    expect(config.testHooks.glossaryFor('causal identifiability')).toMatchObject({
+      definition: expect.stringMatching(/distinguish the causal effect/i),
+    });
+    // An unknown term returns null rather than a half-built entry.
+    expect(config.testHooks.glossaryFor('not-a-term')).toBeNull();
+
+    const early = renderView('Kindergarten', 'learn');
+    const graduate = renderView('Graduate Level', 'learn', { selectedVocab: 'causal identifiability' });
+
+    // The terms are real controls, not inert text: they carry pressed state and
+    // are keyboard-operable because they are buttons.
+    expect(early).toContain('aria-pressed');
+    expect(early).toContain('WORD EXPLORER');
+    expect(early).toContain('A state in which a person is usually ready to have experiences and respond.');
+
+    // Graduate level gets the same mechanism with its own vocabulary.
+    expect(graduate).toContain('INTERACTIVE GLOSSARY');
+    expect(graduate).toContain('distinguish the causal effect');
+  });
 });
 
 describe('Consciousness Lab epistemic neutrality and frontier cases', () => {

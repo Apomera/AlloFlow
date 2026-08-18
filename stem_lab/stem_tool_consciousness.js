@@ -92,6 +92,15 @@
     'adversarial collaboration': ['Researchers with competing views jointly specify predictions, analyses, and revision conditions before seeing results.', 'The collaboration is informative when both sides agree what outcomes would count against their expectations.']
   };
 
+  // Restored 2026-08-17. VOCAB_GLOSSARY above shipped in the "Consciousness
+  // merge" with no reader at all: the data and its .cns-glossary-detail styles
+  // came across, the twelve lines that use them did not, so ~20 authored terms
+  // sat dead in the bundle. This is the reader.
+  function glossaryFor(term) {
+    var entry = VOCAB_GLOSSARY[term];
+    return entry ? { term: term, definition: entry[0], example: entry[1] } : null;
+  }
+
   var EVIDENCE_KINDS = {
     'mask-result': 'evidence', 'broadcast-proof': 'claim', 'other-minds': 'question', 'pci-result': 'evidence',
     'rpt-sufficient': 'claim', 'no-report': 'question', 'cogitate': 'evidence', 'jspace-interpretation': 'claim',
@@ -1190,6 +1199,7 @@
       evidenceKinds: Object.assign({}, EVIDENCE_KINDS),
       evidenceLadderRungs: Object.assign({}, EVIDENCE_LADDER_RUNGS),
       completedCheckCount: completedCheckCount,
+      glossaryFor: glossaryFor,
       simCrosscheckDone: simCrosscheckDone,
       normalizeSimConfig: normalizeSimConfig,
       runWorkspaceSim: runWorkspaceSim,
@@ -1376,6 +1386,11 @@
     function renderLearn() {
       var selected = THEORIES[selectedId];
       var copy = mergeLevelCopy(selected, profile.id);
+      // Fall back to the first term so the panel always shows one definition
+      // rather than an empty slot, and so a stale selection from another grade
+      // path cannot leak into this one.
+      var selectedVocab = profile.vocabulary.indexOf(d.selectedVocab) !== -1 ? d.selectedVocab : profile.vocabulary[0];
+      var selectedGlossary = glossaryFor(selectedVocab);
       return panel(h(React.Fragment, null,
         h('section', { 'aria-labelledby': 'cns-foundations-title' },
           h('div', { className: 'cns-section-heading' },
@@ -1391,7 +1406,23 @@
           })),
           h('div', { className: 'cns-vocab', 'aria-label': 'Vocabulary for this grade path' },
             h('strong', null, 'Vocabulary: '),
-            profile.vocabulary.map(function (word) { return h('span', { key: word, style: { borderColor: C.border, background: C.raised } }, word); })
+            // Buttons, not spans: selecting a term reveals its definition and
+            // example below. A real <button> also gets keyboard operation and
+            // focus for free, which an inert <span> never had.
+            profile.vocabulary.map(function (word) {
+              var active = word === selectedVocab;
+              return h('button', {
+                key: word, type: 'button', 'aria-pressed': active ? 'true' : 'false',
+                onClick: function () { patchState({ selectedVocab: word }, word + ' definition selected'); },
+                style: { borderColor: active ? C.accent : C.border, background: active ? C.accent : C.raised, color: active ? C.accentText : C.text }
+              }, word);
+            })
+          ),
+          selectedGlossary && h('article', { className: 'cns-glossary-detail', style: { background: C.raised, borderColor: C.accent }, 'aria-live': 'polite' },
+            h('span', { className: 'cns-step' }, profile.id === 'early' ? 'WORD EXPLORER' : 'INTERACTIVE GLOSSARY'),
+            h('h3', null, selectedGlossary.term),
+            h('p', null, selectedGlossary.definition),
+            h('p', { className: 'cns-glossary-example' }, h('strong', null, 'Example: '), selectedGlossary.example)
           ),
           epistemicBox('caution', 'Important distinction', levelAtLeast(profile.id, 'middle')
             ? 'Attention, intelligence, report, responsiveness, and consciousness are related, but none is simply a synonym for another. Behavioral unresponsiveness does not prove absence of experience.'
@@ -3064,7 +3095,7 @@
       '.cns-view{padding:clamp(16px,3vw,28px);border:1px solid;border-radius:16px;box-shadow:0 8px 26px rgba(15,23,42,.08)}',
       '.cns-view h2{margin:2px 0 0;font-size:clamp(20px,3vw,28px);line-height:1.2}.cns-view h3{line-height:1.3}.cns-lead{max-width:900px;margin:10px 0 18px;color:var(--cns-muted);font-size:15px}.cns-section-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}.cns-step{font-size:10px;font-weight:950;letter-spacing:.14em;color:var(--cns-step)}.cns-count,.cns-score{font-size:12px;font-weight:850;color:var(--cns-muted)}',
       '.cns-pill{display:inline-flex;align-items:center;width:max-content;padding:3px 8px;border:1px solid;border-radius:999px;font-size:9px;font-weight:950;letter-spacing:.06em;text-transform:uppercase}.cns-target-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.cns-target{position:relative;padding:14px 14px 14px 48px;border:1px solid;border-radius:12px}.cns-target h3{margin:0 0 3px;font-size:14px}.cns-target p{margin:0;color:var(--cns-muted);font-size:12px}.cns-target-number{position:absolute;left:13px;top:14px;display:grid;place-items:center;width:25px;height:25px;border-radius:50%;background:#7c3aed;color:#fff;font-size:11px;font-weight:900}',
-      '.cns-vocab{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:12px 0;font-size:12px}.cns-vocab>span{padding:3px 8px;border:1px solid;border-radius:999px}.cns-epistemic{padding:11px 13px;border-left:4px solid;border-radius:8px}.cns-epistemic-label{font-size:9px;font-weight:950;letter-spacing:.13em}.cns-epistemic strong{display:block;margin:1px 0 3px;font-size:13px}.cns-epistemic p{margin:0;font-size:12px;line-height:1.5}.cns-epistemic-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}',
+      '.cns-vocab{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:12px 0;font-size:12px}.cns-vocab>span{padding:3px 8px;border:1px solid;border-radius:999px}.cns-vocab button{padding:5px 9px;border:1px solid;border-radius:999px;font-size:11px;font-weight:800;cursor:pointer}.cns-epistemic{padding:11px 13px;border-left:4px solid;border-radius:8px}.cns-epistemic-label{font-size:9px;font-weight:950;letter-spacing:.13em}.cns-epistemic strong{display:block;margin:1px 0 3px;font-size:13px}.cns-epistemic p{margin:0;font-size:12px;line-height:1.5}.cns-epistemic-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}',
       '.cns-view hr{margin:26px 0;border:0;border-top:1px solid}.cns-scope-note{margin:8px 0 14px;padding:10px 12px;border-left:3px solid #7c3aed;color:var(--cns-muted);font-size:12px}.cns-theory-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}.cns-theory-card{display:flex;align-items:flex-start;gap:6px;flex-direction:column;padding:14px;border:1px solid;border-radius:12px;text-align:left;transition:transform .15s ease,box-shadow .15s ease}.cns-theory-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(15,23,42,.12)}.cns-theory-icon{font-size:24px}.cns-theory-name{font-size:13px;font-weight:900}.cns-theory-summary{font-size:11px;line-height:1.45;color:var(--cns-muted)}',
       '.cns-detail{margin-top:14px;padding:18px;border:2px solid;border-radius:14px}.cns-detail-title{display:flex;align-items:center;gap:12px}.cns-detail-title>span{font-size:32px}.cns-detail-title h3{margin:2px 0;font-size:20px}.cns-detail-summary{font-size:15px;font-weight:650}.cns-misconception{margin:12px 0 0;padding:8px 10px;border-radius:8px;background:rgba(217,119,6,.1);font-size:12px}',
       '.cns-journey{display:grid;grid-template-columns:repeat(6,minmax(125px,1fr));gap:8px;margin:0;padding:0;list-style:none}.cns-journey li{position:relative;padding:12px;border:1px solid;border-radius:10px}.cns-journey li:not(:last-child):after{content:"\u2192";position:absolute;right:-9px;top:50%;z-index:2;font-weight:900}.cns-journey strong,.cns-journey span{display:block}.cns-journey strong{font-size:11px}.cns-journey-plain{margin-top:3px;color:var(--cns-muted);font-size:10px}.cns-focus-tag{margin-top:8px;padding:3px 6px;border-radius:5px;font-size:10px;font-weight:850}.cns-journey-note{margin:12px 0 0;padding:10px 12px;border:1px solid;border-left-width:4px;border-radius:9px;font-size:12px}',
