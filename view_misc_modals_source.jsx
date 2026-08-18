@@ -1411,7 +1411,7 @@ function AIBackendModalBody(props) {
         : !!(typeof navigator !== 'undefined' && navigator.gpu && await navigator.gpu.requestAdapter());
     } catch (_) { adapterOk = false; }
     if (!adapterOk) {
-      setLine(t('ai_backend.sd_no_gpu') || 'Not available on this computer (no WebGPU graphics adapter). Cloud image AI still works with an API key.', SD_SLATE);
+      setLine(t('ai_backend.sd_no_gpu') || 'Not available on this computer (no WebGPU graphics adapter). Cloud image AI needs Gemini Canvas or a billing-enabled key; the free API tier does not generate images.', SD_SLATE);
       btn.hidden = true;
       return;
     }
@@ -1650,7 +1650,55 @@ function AIBackendModalBody(props) {
             <li>{t('ai_backend.guided_gemini_step3') || 'Press "Create API key" and copy it.'}</li>
             <li>{t('ai_backend.guided_gemini_step4') || 'Paste the key below.'}</li>
         </ol>
+        {/* What a free key does NOT do. resolveAiCapability() reports images:true for
+            ANY api-key backend because it cannot tell a free key from a billed one,
+            so the picture tools appear available and then fail at generation time.
+            Saying it here is the only honest place: before the teacher commits to
+            this route and builds a lesson around an image tool. */}
+        <div className="mt-3 rounded-xl border-2 border-amber-200 bg-amber-50/70 p-3">
+            <p className="text-[11px] font-black uppercase tracking-wider text-amber-800">
+                {t('ai_backend.gemini_images_kicker') || 'Text yes, pictures no'}
+            </p>
+            <p className="mt-1 text-xs leading-relaxed text-amber-900">
+                {t('ai_backend.gemini_images_note')
+                    || 'The free Google API tier does not include image generation. Every text tool works: lessons, questions, translation, levelling, glossaries. The tools that DRAW something will not, on a free key.'}
+            </p>
+            <p className="mt-1.5 text-xs leading-relaxed text-amber-900">
+                {t('ai_backend.gemini_images_fix')
+                    || 'For pictures, run AlloFlow in Gemini Canvas instead, or enable billing on this key. Neither is needed for anything else.'}
+            </p>
+        </div>
         {renderApiKeyField(t('ai_backend.guided_gemini_key_label') || 'Your Gemini API key', ' ')}
+        {/* The Gemini API is a developer product. A teacher using a developer key is
+            stepping into that role, so this is where we ask for something back. It is
+            a pledge, not a licence condition: it does not gate the key, because a
+            classroom that cannot generate a lesson is a worse outcome than a pledge
+            nobody honours. */}
+        <label className="mt-3 flex items-start gap-2.5 rounded-xl border-2 border-violet-200 bg-violet-50/60 p-3 cursor-pointer">
+            <input
+                type="checkbox"
+                className="mt-0.5 h-4 w-4 shrink-0 accent-violet-600"
+                defaultChecked={!!readAIBackendConfig().contributePledge}
+                onChange={(e) => {
+                    const current = readAIBackendConfig();
+                    writeAIBackendConfig({ ...current, contributePledge: e.target.checked });
+                }}
+            />
+            <span className="text-xs leading-relaxed text-violet-900">
+                <span className="font-black">
+                    {t('ai_backend.pledge_title') || 'I will help make AlloFlow better.'}
+                </span>{' '}
+                {t('ai_backend.pledge_body')
+                    || 'A developer key is a developer tool. If something breaks I will report it, and if I build a lesson, pack or tool worth sharing I will offer it back to other teachers.'}{' '}
+                <a href="https://github.com/Apomera/AlloFlow/issues/new" target="_blank" rel="noopener noreferrer" className="font-bold underline">
+                    {t('ai_backend.pledge_report') || 'Report something ↗'}
+                </a>
+                {' · '}
+                <a href="https://apomera.github.io/AlloFlow/feedback.html" target="_blank" rel="noopener noreferrer" className="font-bold underline">
+                    {t('ai_backend.pledge_share') || 'Share what you made ↗'}
+                </a>
+            </span>
+        </label>
         <p className="text-[11px] text-slate-500">{t('ai_backend.guided_gemini_key_note') || 'Stored only on this device. The free tier covers everyday classroom use.'}</p>
         {guidedBackBtn('choose')}
       </div>
