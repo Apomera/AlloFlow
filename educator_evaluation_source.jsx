@@ -65,6 +65,43 @@ function aePacketExtract(text) {
 }
 
 
+// Runs inside the emailed attachment, not in AlloFlow. It reads the embedded packet, collects
+// the educator's own words, and downloads a response file. No network, no storage, no account.
+const AE_PACKET_FORM_JS = [
+  '(function(){',
+  'var node=document.getElementById("allo-evaluation-packet");',
+  'if(!node)return;',
+  'var packet=JSON.parse(node.textContent);',
+  'var status=document.getElementById("ae-status");',
+  'document.getElementById("ae-send").addEventListener("click",function(){',
+  '  var now=new Date().toISOString();',
+  '  var statement=(document.getElementById("ae-statement").value||"").trim();',
+  '  var ack=document.getElementById("ae-ack").checked;',
+  '  var records=[];',
+  '  var areas=document.querySelectorAll("textarea[data-record]");',
+  '  for(var i=0;i<areas.length;i++){',
+  '    var text=(areas[i].value||"").trim();',
+  '    if(!text&&!ack)continue;',
+  '    var entry={collection:"observations",recordId:areas[i].getAttribute("data-record")};',
+  '    var src=null;',
+  '    for(var j=0;j<(packet.observations||[]).length;j++){if(packet.observations[j].id===entry.recordId){src=packet.observations[j];}}',
+  '    entry.sourceUpdatedAt=src&&src.sourceUpdatedAt?src.sourceUpdatedAt:null;',
+  '    if(text){entry.reflection=text;entry.reflectionSubmittedAt=now;}',
+  '    if(ack){entry.teacherAcknowledgedAt=now;}',
+  '    records.push(entry);',
+  '  }',
+  '  if(!statement&&!records.length){status.textContent="Add a statement, a reflection, or tick the acknowledgement first.";return;}',
+  '  var response={kind:packet.kind,version:1,packetType:"response",packetId:"packet-"+Date.now(),sourcePacketId:packet.packetId||"",issuedAt:now,teacherId:packet.teacherId,educatorStatement:statement?{text:statement,updatedAt:now}:null,records:records,comments:[]};',
+  '  var blob=new Blob([JSON.stringify(response,null,2)],{type:"application/json"});',
+  '  var url=URL.createObjectURL(blob);',
+  '  var link=document.createElement("a");',
+  '  link.href=url;link.download="evaluation-response-"+(packet.teacherId||"educator")+".json";',
+  '  document.body.appendChild(link);link.click();document.body.removeChild(link);',
+  '  setTimeout(function(){URL.revokeObjectURL(url);},1000);',
+  '  status.textContent="Response downloaded. Send that file back to your evaluator as an email attachment.";',
+  '});',
+  '})();',
+].join('');
 function aeEducatorPacket(workspace, teacherId, options) {
   const opts = options || {};
   const source = workspace || {};
@@ -2174,16 +2211,43 @@ function EducatorEvaluationPanel(props) {
     const packet = aeEducatorPacket(workspace, selectedTeacher.id, { includeNames: packetIncludeNames });
     if (!packet) { addToast('Export failed: no record for that educator.', 'error'); return; }
     const who = packetIncludeNames ? selectedTeacher.name : selectedTeacher.code;
-    const readable = '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Your evaluation packet</title>'
-      + '<style>body{font:15px system-ui;color:#172033;max-width:820px;margin:40px auto;padding:0 24px;line-height:1.6}'
-      + 'h1{color:#173e70}.notice{padding:12px;background:#eef6ff;border:1px solid #93b8e8;border-radius:6px}</style></head><body>'
+    // The attachment is self-contained: an educator reads it, types a response, and downloads a
+    // reply file without installing anything, signing in, or opening AlloFlow. That is the whole
+    // point of the packet -- asking a teacher to learn a tool in order to write two paragraphs is
+    // worse than the Google Form it replaces.
+    const obsRows = (packet.observations || []).map((item, index) => '<section class="rec"><h3>Observation '
+      + aeEsc(aeDate(item.date || item.publishedAt || packet.issuedAt)) + '</h3>'
+      + '<label class="lbl" for="ae-refl-' + index + '">Your reflection on this observation (optional)</label>'
+      + '<textarea id="ae-refl-' + index + '" data-record="' + aeEsc(item.id) + '" rows="4"></textarea></section>').join('');
+    const readable = '<!doctype html><html lang="en"><head><meta charset="utf-8">'
+      + '<meta name="viewport" content="width=device-width, initial-scale=1">'
+      + '<title>Your evaluation</title>'
+      + '<style>body{font:16px/1.6 system-ui,sans-serif;color:#172033;background:#f6f8fb;max-width:780px;margin:0 auto;padding:24px}'
+      + 'h1{color:#173e70;font-size:1.6rem}h2{color:#173e70;font-size:1.15rem;margin-top:28px}h3{font-size:1rem;margin:0 0 8px}'
+      + '.card{background:#fff;border:1px solid #d7dee8;border-radius:10px;padding:18px;margin:16px 0}'
+      + '.notice{background:#eef6ff;border:1px solid #93b8e8}'
+      + '.lbl{display:block;font-weight:600;margin:12px 0 6px}'
+      + 'textarea{width:100%;font:inherit;padding:10px;border:1px solid #94a3b8;border-radius:8px;min-height:96px}'
+      + '.ackrow{display:flex;align-items:flex-start;gap:12px;margin:14px 0}'
+      + '.ackrow input{width:24px;height:24px;flex:0 0 auto;margin:0}'
+      + 'button{font:inherit;font-weight:700;min-height:48px;padding:12px 20px;border:0;border-radius:10px;background:#1d4ed8;color:#fff;cursor:pointer}'
+      + 'button:focus-visible,textarea:focus-visible,input:focus-visible{outline:3px solid #b45309;outline-offset:2px}'
+      + '.done{margin-top:12px;font-weight:600;color:#14532d}</style></head><body>'
       + '<h1>Your evaluation</h1>'
       + '<p><strong>' + aeEsc(who) + '</strong> · ' + aeEsc(packet.config.organization) + ' · ' + aeEsc(packet.config.academicYear) + '</p>'
-      + '<p class="notice">You can read this file as it is. To add your statement, a reflection, or an acknowledgement, '
-      + 'open AlloFlow Educator Evaluation, switch to the Teacher role, and import this same file. '
-      + 'Your response exports as a second file to send back.</p>'
-      + '<p>Issued ' + aeEsc(aeDateTime(packet.issuedAt)) + '. This packet contains only your own records.</p>'
-      + '<script type="application/json" id="' + AE_PACKET_SCRIPT_ID + '">' + aePacketEmbed(JSON.stringify(packet)) + '<\/script>'
+      + '<p class="card notice">This file contains only your own records. You can read it as it is. '
+      + 'If you would like to respond, use the form below and send the file it downloads back to your evaluator. '
+      + 'Nothing is uploaded from this page, and no account is needed.</p>'
+      + '<h2>Add your response</h2>'
+      + '<div class="card"><label class="lbl" for="ae-statement">Your statement (in your own words)</label>'
+      + '<textarea id="ae-statement" rows="6"></textarea>'
+      + obsRows
+      + '<div class="ackrow"><input type="checkbox" id="ae-ack"><label for="ae-ack">I have received and reviewed this evaluation.</label></div>'
+      + '<button type="button" id="ae-send">Download my response</button>'
+      + '<p class="done" id="ae-status" role="status"></p></div>'
+      + '<p>Issued ' + aeEsc(aeDateTime(packet.issuedAt)) + '.</p>'
+      + '<' + 'script type="application/json" id="' + AE_PACKET_SCRIPT_ID + '">' + aePacketEmbed(JSON.stringify(packet)) + '<' + '/script>'
+      + '<' + 'script>' + AE_PACKET_FORM_JS + '<' + '/script>'
       + '</body></html>';
     aeDownload('evaluation-packet-' + selectedTeacher.code + '-' + aeToday() + '.html', 'text/html;charset=utf-8', readable);
     commit(() => {}, { teacherId: selectedTeacher.id, event: 'EXPORTED', summary: 'Educator packet issued' + (packetIncludeNames ? '' : ' (names withheld)'), entityType: 'evaluation', entityId: selectedTeacher.id }, 'Educator packet created');

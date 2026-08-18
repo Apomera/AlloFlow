@@ -123,3 +123,31 @@ describe('educator response merge', () => {
     expect(api.aeMergeResponsePacket(workspace(), response).ok).toBe(false);
   });
 });
+
+describe('packet attachment responds without the tool', () => {
+  const formJs = src.slice(src.indexOf('const AE_PACKET_FORM_JS = ['), src.indexOf("].join('');", src.indexOf('const AE_PACKET_FORM_JS = [')));
+
+  it('ships a self-contained response form in the emitted HTML', () => {
+    expect(src).toContain('AE_PACKET_FORM_JS');
+    expect(src).toContain('id="ae-statement"');
+    expect(src).toContain('id="ae-send"');
+    expect(formJs).toContain('packetType:');
+    expect(formJs).toContain('URL.createObjectURL');
+  });
+
+  it('never sends anything anywhere from the attachment', () => {
+    // The only fetch it may perform is of its own blob URL, which is same-document.
+    expect(formJs).not.toContain('XMLHttpRequest');
+    expect(formJs).not.toContain('navigator.sendBeacon');
+    expect(formJs).not.toMatch(/https?:\/\//);
+  });
+
+  it('collects only educator-owned fields', () => {
+    ['reflection', 'reflectionSubmittedAt', 'teacherAcknowledgedAt', 'educatorStatement'].forEach((field) => {
+      expect(formJs).toContain(field);
+    });
+    ['rating', 'evidence'].forEach((field) => {
+      expect(formJs).not.toContain(field + ':');
+    });
+  });
+});
