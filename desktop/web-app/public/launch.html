@@ -121,6 +121,15 @@
       flex-wrap: wrap;
       justify-content: center;
     }
+    /* The nav landmark wrapping the two secondary links must not change the row layout,
+       so it carries the same flex behaviour its children had as direct .actions items. */
+    .secondary-nav {
+      display: flex;
+      flex: 1 1 auto;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: center;
+    }
     .secondary-btn, .secondary-link {
       flex: 1 1 auto;
       min-width: 9rem;
@@ -250,11 +259,13 @@
               aria-label="Copy current AlloFlow Canvas link to clipboard">
         Copy Canvas link
       </button>
-      <a id="changelog-link" class="secondary-link" href="changelog.html"
-         aria-label="View AlloFlow changelog">
-        View changelog
-      </a>
-      <a class="secondary-link" href="index.html" aria-label="Learn about AlloFlow">About AlloFlow</a>
+      <nav class="secondary-nav" aria-label="AlloFlow pages">
+        <a id="changelog-link" class="secondary-link" href="changelog.html"
+           aria-label="View AlloFlow changelog">
+          View changelog
+        </a>
+        <a class="secondary-link" href="index.html" aria-label="Learn about AlloFlow">About AlloFlow</a>
+      </nav>
     </div>
     <div id="copy-feedback" class="copy-feedback" role="status" aria-live="polite"></div>
 
