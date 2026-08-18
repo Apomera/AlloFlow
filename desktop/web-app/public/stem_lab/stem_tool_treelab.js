@@ -3782,10 +3782,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       var sceneSelection = d.selectedPart || null;
       if ((sceneSelection === 'clones' && cloneCount <= 0) ||
           (sceneSelection === 'crown' && !crownSelectable)) sceneSelection = null;
-      // Geometry rebuilds destroy and recreate a WebGL renderer. During playback one
-      // age bucket per real second is enough to show growth, while pause immediately
+      // Growth cadence: how many simulated years pass between scene updates.
+      //
+      // This used to be 25 / 5 / 1 because "geometry rebuilds destroy and recreate a
+      // WebGL renderer", so one update per real second was all the budget allowed.
+      // That premise is gone: the shared viewer now swaps scene content in place and
+      // keeps the renderer, so an update costs a geometry rebuild rather than a GPU
+      // context. Bucketing by 25 years was what made fast-forward read as a slideshow
+      // of snapshots instead of a tree growing.
+      //
+      // Now targeted in REAL time rather than sim years. Measured cost of one
+      // buildTreeScene for a mature 81-year oak (16.5 m, 52.7 cm DBH) on a desktop:
+      // 29 ms, cheap because the foliage is InstancedMesh. Three a second is ~9% of
+      // one core there and leaves headroom on a school Chromebook, which is the
+      // machine that decides this number. Reduced motion drops to one, matching the
+      // rest of the tool's motion budget.
+      //
+      // At 1 yr/s that is every year, the finest the yearly biology can offer; at
+      // 25 yr/s it is every eighth year rather than every twenty-fifth. Pause still
       // restores the exact height/DBH/canopy/root bands for close inspection.
-      var growthCadence = speed.yps >= 20 ? 25 : (speed.yps >= 5 ? 5 : 1);
+      var growthUpdatesPerSecond = reduceMotion ? 1 : 3;
+      var growthCadence = Math.max(1, Math.round(speed.yps / growthUpdatesPerSecond));
       var sceneGrowthKey = playing
         ? 'age:' + Math.floor(Math.max(0, tree.age) / growthCadence)
         : [
