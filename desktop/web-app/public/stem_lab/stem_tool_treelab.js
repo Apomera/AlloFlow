@@ -3188,12 +3188,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
     }
   ];
 
-  // Playback speeds in simulated years per real second. The slowest is deliberately
-  // sub-year so the seasons actually cycle on screen; above that they would only
-  // strobe, so the scene pins to summer and the speed buys decades instead.
+  // Playback speeds in simulated years per real second.
+  //
+  // "Above that they would only strobe" used to be the reason every speed past the
+  // slowest pinned the scene to summer. That strobe was the shared viewer tearing
+  // down and rebuilding its WebGL renderer on each key change, and it is fixed:
+  // content now swaps in place. Seasons therefore run at 1 yr/s too, where a season
+  // lasts a quarter second and the canopy cycle is brisk but legible.
+  //
+  // 5 and 25 yr/s stay pinned to summer, and that is now a READABILITY judgement
+  // rather than a technical limit: twenty season changes a second is a flicker no
+  // student can read, flash or no flash.
   var SPEEDS = [
     { id: 'seasons', label: 'Seasons', yps: 0.5, seasonal: true, hint: 'One year every two seconds. Watch the canopy come and go.' },
-    { id: 'slow', label: '1 yr/s', yps: 1, seasonal: false, hint: 'A ring a second.' },
+    { id: 'slow', label: '1 yr/s', yps: 1, seasonal: true, hint: 'A ring a second, seasons and all.' },
     { id: 'fast', label: '5 yr/s', yps: 5, seasonal: false, hint: 'A decade every two seconds.' },
     { id: 'century', label: '25 yr/s', yps: 25, seasonal: false, hint: 'A century every four seconds.' }
   ];
@@ -3696,6 +3704,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           st = simulateYear(st, sp, env, alloc);
         }
         var patch = { tree: st, limitsSeen: seen, yearPhase: phase - whole };
+        // Goal completion is detected HERE rather than in the render body, so the
+        // award fires once, on the year it is actually earned. Same two model-owned
+        // targets the card draws: the renderer's own maturity height, and the
+        // cheapest strategy this species has.
+        if (!d.goalReached && st.alive) {
+          var gh = Math.max(0.5, (sp.maxHeight || 30) * 0.6);
+          var gcheap = null;
+          for (var gi = 0; gi < STRATEGIES.length; gi++) {
+            if (sp.modes.indexOf(STRATEGIES[gi].id) < 0) continue;
+            if (!gcheap || STRATEGIES[gi].cost < gcheap.cost) gcheap = STRATEGIES[gi];
+          }
+          if (st.heightM >= gh && (st.seedsBanked || 0) >= (gcheap ? gcheap.cost : 0.6)) {
+            patch.goalReached = st.age;
+            xp(8);
+            sfxGrow();
+            srSay(__alloT('stem.treelab.goal_reached_say', 'Goal reached at age ') + st.age +
+              __alloT('stem.treelab.goal_reached_say2', '. This tree is full grown and can reproduce.'));
+            if (addToast) addToast('🎯 ' + __alloT('stem.treelab.goal_toast', 'A tree that made it'), 'success');
+          }
+        }
         if (!st.alive) {
           patch.playing = false;
           sfxBad();
@@ -4424,6 +4452,67 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           modelNote(__alloT('stem.treelab.model_note',
             'Qualitative teaching model, not a forest growth model or a measurement. The shapes are real (saturating light response, a smallest-factor gate, respiration that scales with living tissue) and the magnitudes are the right order for a temperate tree, but no figure here should be quoted as data.'))
         ]), 'grow-budget');
+
+        // ── The objective ───────────────────────────────────────────────────
+        //
+        // The tool had no stated goal, so "am I doing well?" had no answer and the
+        // allocation sliders were a guess with no destination.
+        //
+        // Both targets are the MODEL'S own, not numbers picked for a game. Maturity
+        // is the same clamp(heightM / (maxHeight * 0.6)) the renderer already uses to
+        // decide when a tree looks mature and starts carrying cones, so the goal is
+        // met exactly when the tree on screen looks grown. The reproduction target is
+        // the cheapest strategy THIS species actually has in sp.modes, read from
+        // STRATEGIES, so an aspen (root sucker, 0.45) and an oak (animal seed, 1.4)
+        // are asked for different things because their biology differs.
+        //
+        // Framed as "a tree that made it" rather than a score: no timer, no par age,
+        // nothing to lose. Reaching it late is still reaching it.
+        var goalHeightM = Math.max(0.5, (sp.maxHeight || 30) * 0.6);
+        var cheapestMode = null;
+        for (var gm = 0; gm < STRATEGIES.length; gm++) {
+          if (sp.modes.indexOf(STRATEGIES[gm].id) < 0) continue;
+          if (!cheapestMode || STRATEGIES[gm].cost < cheapestMode.cost) cheapestMode = STRATEGIES[gm];
+        }
+        var goalSeedCost = cheapestMode ? cheapestMode.cost : 0.6;
+        var grownFrac = clamp(tree.heightM / goalHeightM, 0, 1);
+        var seedFrac = clamp((tree.seedsBanked || 0) / goalSeedCost, 0, 1);
+        // Derived for display only. The award and the state write happen in tick(),
+        // NOT here: a set*/upd() in a render body is the documented host-update
+        // crash class, and this tool cannot use an effect to escape it because its
+        // views live inside a switch, so any hook here would be conditional.
+        var goalMet = grownFrac >= 1 && seedFrac >= 1;
+        if (tree.alive) {
+          function goalRow(label, frac, detail) {
+            var tone = frac >= 1 ? T.good : (frac >= 0.5 ? T.warn : T.dim);
+            return h('div', { key: label, style: { marginBottom: 8 } }, [
+              h('div', { key: 'l', style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, color: T.dim, marginBottom: 3 } }, [
+                h('span', { key: 'a' }, (frac >= 1 ? '✓ ' : '') + label),
+                h('span', { key: 'b', style: { color: tone, fontWeight: 700 } }, detail)
+              ]),
+              h('div', { key: 'bar', role: 'img', 'aria-label': label + ': ' + detail,
+                style: { height: 8, borderRadius: 999, background: T.cardAlt, border: '1px solid ' + T.border, overflow: 'hidden' } },
+                h('div', { key: 'f', style: { width: Math.round(frac * 100) + '%', height: '100%', background: tone } }))
+            ]);
+          }
+          pushKeyed(kids, card([
+            heading('🎯 ' + __alloT('stem.treelab.goal', 'A tree that made it'),
+              __alloT('stem.treelab.goal_sub', 'Grow to full size and bank enough carbon to make the next generation. There is no clock: reaching it late still counts.')),
+            goalRow(__alloT('stem.treelab.goal_grown', 'Grown to full size'), grownFrac,
+              round(tree.heightM, 1) + ' / ' + round(goalHeightM, 1) + ' m'),
+            goalRow(__alloT('stem.treelab.goal_seed', 'Banked enough to reproduce') +
+              (cheapestMode ? ' (' + __alloT('stem.treelab.strategy_' + cheapestMode.id, cheapestMode.name) + ')' : ''),
+              seedFrac, round(tree.seedsBanked || 0, 2) + ' / ' + round(goalSeedCost, 2)),
+            h('div', { key: 'msg', style: { fontSize: 12, color: goalMet ? T.good : T.dim, lineHeight: 1.5, marginTop: 6 } },
+              goalMet
+                ? __alloT('stem.treelab.goal_done', 'Done. This tree reached full size and can seed the next generation. Open Spread to send it out.')
+                : (grownFrac >= 1
+                  ? __alloT('stem.treelab.goal_need_seed', 'Full size. Move some carbon into reproduction to finish it.')
+                  : (seedFrac >= 1
+                    ? __alloT('stem.treelab.goal_need_height', 'Enough banked to reproduce. It still has growing to do.')
+                    : __alloT('stem.treelab.goal_hint', 'Leaves earn the carbon, wood buys height, roots buy water. The split is yours.'))))
+          ]), 'grow-goal');
+        }
 
         // ── Survival margin ─────────────────────────────────────────────────
         //

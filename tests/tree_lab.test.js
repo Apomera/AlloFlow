@@ -1880,3 +1880,45 @@ describe('Survival margin: the death rule, made visible', () => {
     expect(t.deficitYears).toBe(0);
   });
 });
+
+describe('The objective: targets come from the model, not from a score', () => {
+  it('uses the maturity height the renderer uses, and a strategy the species has', () => {
+    const E = window.__alloTreeLabEngine;
+    const S = E.STRATEGIES;
+    for (const sp of Object.values(E.SPECIES)) {
+      // Same definition the renderer uses to decide a tree looks mature.
+      const goalH = Math.max(0.5, (sp.maxHeight || 30) * 0.6);
+      expect(goalH).toBeGreaterThan(0);
+      expect(goalH).toBeLessThan(sp.maxHeight);
+      // The reproduction target must be a strategy this species actually has.
+      let cheap = null;
+      for (const st of S) { if (sp.modes.indexOf(st.id) < 0) continue; if (!cheap || st.cost < cheap.cost) cheap = st; }
+      expect(cheap, sp.id + ' has no legal strategy').toBeTruthy();
+      expect(sp.modes).toContain(cheap.id);
+    }
+  });
+
+  it('is reachable for every species, at an age that reflects its biology', () => {
+    const E = window.__alloTreeLabEngine;
+    const S = E.STRATEGIES;
+    const alloc = E.normaliseAlloc({ leaf: 0.3, wood: 0.4, root: 0.2, repro: 0.1 });
+    const env = { tempC: 20, light: 0.8, co2ppm: 420, soilWater: 0.7 };
+    const ages = {};
+    for (const sp of Object.values(E.SPECIES)) {
+      const goalH = Math.max(0.5, (sp.maxHeight || 30) * 0.6);
+      let cheap = null;
+      for (const st of S) { if (sp.modes.indexOf(st.id) < 0) continue; if (!cheap || st.cost < cheap.cost) cheap = st; }
+      let t = E.newTree(sp.id), reached = null;
+      for (let y = 0; y < (sp.maxAgeYears || 300) && t.alive; y++) {
+        t = E.simulateYear(t, sp, env, alloc);
+        if (!reached && t.heightM >= goalH && (t.seedsBanked || 0) >= cheap.cost) reached = t.age;
+      }
+      expect(reached, sp.id + ' can never reach the goal').toBeTruthy();
+      expect(reached).toBeLessThan(sp.maxAgeYears);
+      ages[sp.id] = reached;
+    }
+    // A pioneer aspen must get there sooner than a redwood, or the goal is not
+    // teaching anything about the species the student picked.
+    expect(ages.aspen).toBeLessThan(ages.redwood);
+  });
+});
