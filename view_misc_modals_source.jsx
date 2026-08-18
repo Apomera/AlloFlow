@@ -1689,7 +1689,7 @@ function AIBackendModalBody(props) {
                     {t('ai_backend.pledge_title') || 'I will help make AlloFlow better.'}
                 </span>{' '}
                 {t('ai_backend.pledge_body')
-                    || 'A developer key is a developer tool. If something breaks I will report it, and if I build a lesson, pack or tool worth sharing I will offer it back to other teachers.'}{' '}
+                    || 'A developer key is a developer tool. If something breaks I will report it, and if I build a lesson or tool worth sharing I will send it to the Community Catalog from my history so other teachers get it too.'}{' '}
                 <a href="https://github.com/Apomera/AlloFlow/issues/new" target="_blank" rel="noopener noreferrer" className="font-bold underline">
                     {t('ai_backend.pledge_report') || 'Report something ↗'}
                 </a>
