@@ -109,3 +109,76 @@ no standing access. The trust model equals emailing a PDF, which is current prac
 is strictly better than the whole-workspace export it replaces. What you accept: no
 revocation once sent, and no record of who opened it. Encryption (item 4) is the mitigation
 for a misdirected or forwarded message.
+
+---
+
+# Addendum, 2026-08-18: PPS policy findings, path three, and custom rubrics
+
+## What the district guidebook actually says
+
+From the Portland Educator Evaluation Guidebook (NCTQ copy of V6), two provisions govern
+this work:
+
+- The conference forms carry an explicit **"Educator's Comments/Input"** column beside
+  "Evaluator's Rationale/Comments". The educator's written input is a designed field on the
+  district's own instrument, and `educatorStatement` maps onto it directly.
+- Those same forms end with **"Educator's Signature: ___ Evaluator's Signature: ___ Date
+  reviewed: ___"**, inside a conference-based process (Mid-Year Conference, End of Year
+  Summative Conference).
+
+**Consequence:** the packet's acknowledgement checkbox is NOT the district's acknowledgement
+mechanism. The guidebook expects a signature at a meeting. Relabel the checkbox so it does not
+imply otherwise ("I have read this evaluation"), and frame all three paths as ways to collect
+Educator's Comments/Input around the conference rather than to replace the signature.
+
+The same block appears on the Progress on Professional Growth Plan form, so the packet is
+arguably more useful mid-year than at the summative.
+
+Still unverified, and worth checking before building path three: whether the PPS Workspace
+edition supports expiring share permissions, whether principals may deploy Apps Script, and
+whether the Portland Association of Teachers contract adds response or rebuttal language
+beyond the guidebook. The contract is the most likely source of a binding requirement.
+
+## Path three: the share helper (Aaron's design, and the custody objection withdrawn)
+
+An Apps Script the **principal** deploys in their own district account. Not the district
+portal: no roster, no assignments, no roles, no repository. It does three things -- put this
+educator's document in my Drive, share it to that educator, optionally set an expiry.
+
+An earlier objection here was that a principal's Drive is a weak custodian because the account
+is suspended when they leave. That objection is withdrawn. The point of the path is
+**automated aggregation and consistent labelling into one location**: the script files every
+evaluation into a predictable folder structure, and at the end of a cycle the principal copies
+or transfers that folder wherever the district wants it. Drive supports both folder transfer
+and admin-side transfer of a departing user's contents. Treat the folder as the working store
+with a defined handoff step, not as the system of record, and the design is simple and strong.
+
+This is the only path that gets **revocation**, via expiring share permissions, and the only
+one where the artifact sits inside district-controlled Workspace from the start.
+
+## Custom rubrics (the adoption blocker for non-PPS districts)
+
+Current state, verified in `educator_evaluation_source.jsx`:
+
+- `AE_FRAMEWORKS` (~line 240) already holds **two** frameworks, `pa_act13` and `portland_me`,
+  each with `name`, `versionTag`, `practiceLabel`, `bands[]` (rating scale) and
+  `domainWeighted`. So the tool is not PPS-only today.
+- But `AE_DOMAINS` (~line 334) is a **single module-level constant**, not framework-scoped:
+  four Danielson domains with `id`, `code`, `label`, `weight`, `color` and a `components` list.
+  Both frameworks share it. A district on a non-Danielson rubric cannot be represented at all.
+
+So the framework layer is pluggable and the rubric layer is hardcoded. That is exactly the gap.
+
+**Shape of the work:** move `AE_DOMAINS` from a constant into workspace config, add an editor
+for domains, components, weights and band labels, and update the ~20 read sites plus the
+export and summary builders to read the workspace copy.
+
+**The hazard to design around:** ratings are keyed by domain id (`ratings.domains[domain.id]`).
+Editing or removing a domain after ratings exist orphans that data silently. Rules needed:
+free editing before any rating exists, and after that either block destructive edits or
+migrate explicitly with a visible record of what changed.
+
+**Do not skip `versionTag`.** Every framework carries one, and records should say which rubric
+version produced them. A custom rubric needs a generated tag for the same reason: a rating is
+only interpretable against the rubric that produced it, which matters more, not less, once
+districts can edit the rubric themselves.
