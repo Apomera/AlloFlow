@@ -234,6 +234,8 @@ const AE_FRAMEWORKS = {
     versionTag: "me-portland-pepg-guidebook-v1",
     practiceLabel: "Educator Practice",
     practiceShort: "EP",
+    // Guidebook: at least nine pieces per cycle across the full range of practice.
+    evidenceTarget: 9,
     // Verified from the district's Educator Evaluation Gradual Implementation
     // Guidebook v1.0 (Portland Framework for Teaching): four levels —
     // Excellent / Proficient / Novice-Needs Improvement / Unsatisfactory.
@@ -420,6 +422,84 @@ function aeNormalizeRubric(raw) {
     bands: bands.length ? bands : null,
     domains
   };
+}
+function aeEvidenceSufficiency(workspace, teacherId, options) {
+  const opts = options || {};
+  const adverseBelow = Number.isFinite(Number(opts.adverseBelow)) ? Number(opts.adverseBelow) : 2;
+  const thinBelow = Number.isFinite(Number(opts.thinBelow)) ? Number(opts.thinBelow) : 2;
+  const expectedPieces = Number.isFinite(Number(opts.expectedPieces)) ? Number(opts.expectedPieces) : 0;
+  const domains = Array.isArray(opts.domains) ? opts.domains : [];
+  const source = workspace || {};
+  const teacher = (source.teachers || []).filter(function(item) {
+    return item && item.id === teacherId;
+  })[0];
+  const findings = [];
+  if (!teacher) return findings;
+  const componentDomain = {};
+  domains.forEach(function(domain) {
+    (opts.componentsByDomain && opts.componentsByDomain[domain.id] || domain.components || []).forEach(function(pair) {
+      componentDomain[String(pair[0]).toLowerCase()] = domain.id;
+    });
+  });
+  const published = [].concat((source.walkthroughs || []).filter(function(item) {
+    return item && item.teacherId === teacherId && item.publishedAt;
+  })).concat((source.observations || []).filter(function(item) {
+    return item && item.teacherId === teacherId && item.publishedAt;
+  }));
+  const perDomain = {};
+  domains.forEach(function(domain) {
+    perDomain[domain.id] = 0;
+  });
+  published.forEach(function(record) {
+    (record.componentTags || []).forEach(function(code) {
+      const domainId = componentDomain[String(code).toLowerCase()];
+      if (domainId && perDomain[domainId] != null) perDomain[domainId] += 1;
+    });
+  });
+  const rated = teacher.ratings && teacher.ratings.domains || {};
+  domains.forEach(function(domain) {
+    const value = rated[domain.id];
+    if (value == null || value === "") return;
+    const numeric = Number(value);
+    const count = perDomain[domain.id] || 0;
+    if (count === 0) {
+      findings.push({
+        severity: "high",
+        domainId: domain.id,
+        code: "rated-without-evidence",
+        message: domain.label + " carries a rating but no evidence is tagged to it."
+      });
+      return;
+    }
+    if (Number.isFinite(numeric) && numeric < adverseBelow && count < thinBelow) {
+      findings.push({
+        severity: "high",
+        domainId: domain.id,
+        code: "adverse-on-thin-evidence",
+        message: domain.label + " is rated below proficient on " + count + " tagged piece" + (count === 1 ? "" : "s") + " of evidence."
+      });
+    }
+  });
+  const untouched = domains.filter(function(domain) {
+    return (perDomain[domain.id] || 0) === 0;
+  });
+  if (untouched.length && published.length) {
+    findings.push({
+      severity: "medium",
+      code: "range-gap",
+      message: "No evidence is tagged to " + untouched.map(function(d) {
+        return d.label;
+      }).join(", ") + "."
+    });
+  }
+  if (expectedPieces > 0 && published.length < expectedPieces) {
+    findings.push({
+      severity: "medium",
+      code: "below-expected-volume",
+      message: published.length + " published piece" + (published.length === 1 ? "" : "s") + " of evidence so far; this plan looks for " + expectedPieces + " across the cycle."
+    });
+  }
+  return findings;
 }
 function aeRubricOrphans(workspace, domains) {
   const keep = {};
@@ -1338,7 +1418,7 @@ function AeThread({ workspace, recordType, recordId, teacherId, role, onAdd }) {
 function AeFrameworkReference() {
   return /* @__PURE__ */ React.createElement("div", { className: "ae-card" }, /* @__PURE__ */ React.createElement("h3", null, AE_ACTIVE_FW.id === "pa_act13" ? "Evidence map · Pennsylvania classroom-teacher framework" : "Evidence map · rubric domains (as adapted by your district’s PEPG plan)"), /* @__PURE__ */ React.createElement("p", { className: "ae-sub" }, "Component names organize evidence. Rubric-level performance descriptors are not reproduced in this workspace.", AE_ACTIVE_FW.id === "pa_act13" ? "" : " Confirm domain and component names against your district’s adapted rubric."), AE_DOMAINS.map((domain) => /* @__PURE__ */ React.createElement("details", { className: "ae-domain", key: domain.id }, /* @__PURE__ */ React.createElement("summary", null, "Domain ", domain.code, " · ", domain.label, " ", /* @__PURE__ */ React.createElement("span", { className: "ae-chip ae-chip-neutral" }, domain.weight, "% of O&P")), /* @__PURE__ */ React.createElement("div", { className: "ae-domain-body" }, (AE_ACTIVE_FW.components && AE_ACTIVE_FW.components[domain.id] || domain.components).map(([code, label]) => /* @__PURE__ */ React.createElement("div", { className: "ae-domain-component", key: code }, /* @__PURE__ */ React.createElement("strong", null, code), /* @__PURE__ */ React.createElement("span", null, label)))))));
 }
-function AeRatingComposer({ teacher, role, updateTeacher }) {
+function AeRatingComposer({ teacher, role, updateTeacher, evidenceFindings }) {
   const [releaseChecked, setReleaseChecked] = React.useState(false);
   React.useEffect(() => {
     setReleaseChecked(false);
@@ -1367,7 +1447,7 @@ function AeRatingComposer({ teacher, role, updateTeacher }) {
     draft.weightSnapshot = profile.map((part) => ({ id: part.id, label: part.label, weight: part.weight }));
     draft.frameworkVersion = AE_ACTIVE_FW.versionTag;
   }, "RELEASED", "Final rating release recorded");
-  return /* @__PURE__ */ React.createElement("div", { className: "ae-card" }, /* @__PURE__ */ React.createElement("div", { className: "ae-record-head" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", null, role === "evaluator" ? "Annual summative calculation preview" : "How your final rating is calculated"), /* @__PURE__ */ React.createElement("p", { className: "ae-sub" }, role === "evaluator" ? "Enter cycle-level domain judgments after reviewing all relevant observations, walkthroughs, artifacts, and professional-practice evidence. Observation-specific ratings stay separate; the system performs arithmetic only." : "Full transparency into the arithmetic: these are the only inputs that enter your final rating, entered by your evaluator after reviewing your evidence. Nothing else affects the math.")), /* @__PURE__ */ React.createElement("div", null, overall === null ? /* @__PURE__ */ React.createElement("span", { className: "ae-chip " + (role === "evaluator" ? "ae-chip-amber" : "ae-chip-neutral") }, role === "evaluator" ? "Draft · " + missing.length + " input" + (missing.length === 1 ? "" : "s") + " missing" : "In progress · " + missing.length + " component" + (missing.length === 1 ? "" : "s") + " still ahead in your cycle") : AE_ACTIVE_FW.id === "portland_me" ? /* @__PURE__ */ React.createElement("span", { className: "ae-chip ae-chip-blue" }, (aePortlandPracticeRating(teacher.ratings.domains) || {}).label) : /* @__PURE__ */ React.createElement("span", { className: "ae-chip ae-chip-blue" }, aeRoundedScore(overall).toFixed(2), " · ", aeBand(overall)))), /* @__PURE__ */ React.createElement("div", { className: "ae-rating-grid", style: { marginTop: 12 } }, AE_DOMAINS.map((domain) => /* @__PURE__ */ React.createElement("div", { className: "ae-rating-card", key: domain.id, style: { borderTop: "4px solid " + domain.color } }, /* @__PURE__ */ React.createElement("h4", null, domain.code, ". ", domain.label, " ", /* @__PURE__ */ React.createElement("span", { className: "ae-chip ae-chip-neutral" }, domain.weight, "% of O&P")), /* @__PURE__ */ React.createElement("label", { className: "ae-field" }, /* @__PURE__ */ React.createElement("span", null, "Human-selected rating"), /* @__PURE__ */ React.createElement("select", { className: "ae-select", value: teacher.ratings.domains[domain.id] == null ? "" : teacher.ratings.domains[domain.id], disabled: role !== "evaluator" || !!teacher.finalizedAt, onChange: (event) => setRating(domain.id, event.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Not rated"), AE_RATINGS.map((rating) => /* @__PURE__ */ React.createElement("option", { key: rating.value, value: rating.value }, rating.value, " · ", AE_ACTIVE_FW.ratingLabels && AE_ACTIVE_FW.ratingLabels[rating.value] || rating.label))))))), /* @__PURE__ */ React.createElement("div", { className: "ae-form-grid", style: { marginTop: 12 } }, profile.filter((part) => part.id !== "observation").map((part) => /* @__PURE__ */ React.createElement("label", { className: "ae-field", key: part.id }, /* @__PURE__ */ React.createElement("span", null, part.label, " · ", part.weight, "%"), /* @__PURE__ */ React.createElement("input", { className: "ae-input", type: "number", min: "0", max: "3", step: "0.01", value: teacher.ratings[part.id] == null ? "" : teacher.ratings[part.id], disabled: role !== "evaluator" || !!teacher.finalizedAt, onChange: (event) => setRating(part.id, event.target.value), placeholder: "0.00–3.00" })))), AE_ACTIVE_FW.id === "portland_me" && (() => {
+  return /* @__PURE__ */ React.createElement("div", { className: "ae-card" }, /* @__PURE__ */ React.createElement("div", { className: "ae-record-head" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", null, role === "evaluator" ? "Annual summative calculation preview" : "How your final rating is calculated"), /* @__PURE__ */ React.createElement("p", { className: "ae-sub" }, role === "evaluator" ? "Enter cycle-level domain judgments after reviewing all relevant observations, walkthroughs, artifacts, and professional-practice evidence. Observation-specific ratings stay separate; the system performs arithmetic only." : "Full transparency into the arithmetic: these are the only inputs that enter your final rating, entered by your evaluator after reviewing your evidence. Nothing else affects the math.")), /* @__PURE__ */ React.createElement("div", null, overall === null ? /* @__PURE__ */ React.createElement("span", { className: "ae-chip " + (role === "evaluator" ? "ae-chip-amber" : "ae-chip-neutral") }, role === "evaluator" ? "Draft · " + missing.length + " input" + (missing.length === 1 ? "" : "s") + " missing" : "In progress · " + missing.length + " component" + (missing.length === 1 ? "" : "s") + " still ahead in your cycle") : AE_ACTIVE_FW.id === "portland_me" ? /* @__PURE__ */ React.createElement("span", { className: "ae-chip ae-chip-blue" }, (aePortlandPracticeRating(teacher.ratings.domains) || {}).label) : /* @__PURE__ */ React.createElement("span", { className: "ae-chip ae-chip-blue" }, aeRoundedScore(overall).toFixed(2), " · ", aeBand(overall)))), evidenceFindings && evidenceFindings.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "ae-note " + (evidenceFindings.some((item) => item.severity === "high") ? "ae-warn" : "ae-info"), style: { marginTop: 12 } }, /* @__PURE__ */ React.createElement("strong", null, role === "evaluator" ? "Check the evidence before you finalise" : "What the documentation shows"), /* @__PURE__ */ React.createElement("ul", { style: { margin: "8px 0 0", paddingLeft: 20 } }, evidenceFindings.map((item, index) => /* @__PURE__ */ React.createElement("li", { key: item.code + "-" + (item.domainId || index) }, item.message))), /* @__PURE__ */ React.createElement("p", { className: "ae-help", style: { marginTop: 8 } }, role === "evaluator" ? "Counted from the evidence you tagged, on this device. A rating resting on little documented evidence is the one most likely to be overturned, so this is a prompt to add evidence or revisit the rating, not a judgment about the educator." : "Counted from the evidence tagged to your record. You can raise any of these with your evaluator.")), /* @__PURE__ */ React.createElement("div", { className: "ae-rating-grid", style: { marginTop: 12 } }, AE_DOMAINS.map((domain) => /* @__PURE__ */ React.createElement("div", { className: "ae-rating-card", key: domain.id, style: { borderTop: "4px solid " + domain.color } }, /* @__PURE__ */ React.createElement("h4", null, domain.code, ". ", domain.label, " ", /* @__PURE__ */ React.createElement("span", { className: "ae-chip ae-chip-neutral" }, domain.weight, "% of O&P")), /* @__PURE__ */ React.createElement("label", { className: "ae-field" }, /* @__PURE__ */ React.createElement("span", null, "Human-selected rating"), /* @__PURE__ */ React.createElement("select", { className: "ae-select", value: teacher.ratings.domains[domain.id] == null ? "" : teacher.ratings.domains[domain.id], disabled: role !== "evaluator" || !!teacher.finalizedAt, onChange: (event) => setRating(domain.id, event.target.value) }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Not rated"), AE_RATINGS.map((rating) => /* @__PURE__ */ React.createElement("option", { key: rating.value, value: rating.value }, rating.value, " · ", AE_ACTIVE_FW.ratingLabels && AE_ACTIVE_FW.ratingLabels[rating.value] || rating.label))))))), /* @__PURE__ */ React.createElement("div", { className: "ae-form-grid", style: { marginTop: 12 } }, profile.filter((part) => part.id !== "observation").map((part) => /* @__PURE__ */ React.createElement("label", { className: "ae-field", key: part.id }, /* @__PURE__ */ React.createElement("span", null, part.label, " · ", part.weight, "%"), /* @__PURE__ */ React.createElement("input", { className: "ae-input", type: "number", min: "0", max: "3", step: "0.01", value: teacher.ratings[part.id] == null ? "" : teacher.ratings[part.id], disabled: role !== "evaluator" || !!teacher.finalizedAt, onChange: (event) => setRating(part.id, event.target.value), placeholder: "0.00–3.00" })))), AE_ACTIVE_FW.id === "portland_me" && (() => {
     const rollup = aePortlandPracticeRating(teacher.ratings.domains);
     return rollup ? /* @__PURE__ */ React.createElement("div", { className: "ae-note", style: { marginTop: 10 } }, /* @__PURE__ */ React.createElement("strong", null, "Practice rating (guidebook roll-up): ", rollup.label), " — ", rollup.rule, ". The guidebook derives this rating from the four domain ratings by rule, not by averaging; the numeric average never appears on official Portland forms. Student growth combines per the district’s current plan documents. Confirm against the current PEPG plan — this mirrors guidebook v1.0.") : null;
   })(), /* @__PURE__ */ React.createElement("div", { className: "ae-note ae-warn" }, AE_ACTIVE_FW.id === "pa_act13" ? "This is a planning preview, not an official PDE 13-1 form. Follow your LEA’s approved process and enter/release the official summative form in PEERS or the district’s authorized record system." : "This is a planning preview, not an official PEPG summative form. Your district’s PEPG plan (developed with its teacher-majority steering committee) governs the official process, rating levels, and forms — record the official summative rating in the district-authorized system."), teacher.finalizedAt && /* @__PURE__ */ React.createElement("div", { className: "ae-note ae-ok", style: { marginTop: 10 } }, /* @__PURE__ */ React.createElement("strong", null, "Final release recorded · ", Number(teacher.finalScore == null ? aeRoundedScore(overall) : teacher.finalScore).toFixed(2)), /* @__PURE__ */ React.createElement("br", null), "Released ", aeDateTime(teacher.finalizedAt), ". This local receipt does not replace the official record."), !teacher.finalizedAt && role === "evaluator" && overall !== null && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 12 } }, /* @__PURE__ */ React.createElement("label", { className: "ae-check" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: releaseChecked, onChange: (event) => setReleaseChecked(event.target.checked) }), /* @__PURE__ */ React.createElement("span", null, AE_ACTIVE_FW.id === "pa_act13" ? "I confirm the official final rating form has already been released in PEERS or the LEA-authorized record system." : "I confirm the official summative rating has already been recorded through the district-authorized PEPG process.")), /* @__PURE__ */ React.createElement("button", { type: "button", className: "ae-btn ae-btn-primary", disabled: !releaseChecked, onClick: recordFinalRelease }, "Record final release"), /* @__PURE__ */ React.createElement("p", { className: "ae-help" }, "This locks the local cycle and advances the “teachers evaluated” completion pie.")));
@@ -1387,6 +1467,7 @@ function AeEducatorStatement({ teacher, role, updateTeacher }) {
   }, "STATEMENT_SAVED", "Educator statement updated") }, saved ? "Update statement" : "Save statement"), saved && /* @__PURE__ */ React.createElement("span", { className: "ae-sub" }, "Last saved ", aeDateTime(teacher.educatorStatement.updatedAt)))) : saved ? /* @__PURE__ */ React.createElement("div", { className: "ae-evidence" }, saved) : /* @__PURE__ */ React.createElement("div", { className: "ae-empty" }, "No statement recorded before finalization."));
 }
 function AeOverview({ workspace, selectedTeacher, setSelectedTeacherId, role, updateTeacher, setTab }) {
+  const evidenceFindings = React.useMemo(() => selectedTeacher ? aeEvidenceSufficiency(workspace, selectedTeacher.id, { domains: AE_DOMAINS, componentsByDomain: AE_ACTIVE_FW.components || null, expectedPieces: AE_ACTIVE_FW.evidenceTarget || 0 }) : [], [workspace, selectedTeacher]);
   const isEvaluator = role === "evaluator";
   const visibleTeachers = isEvaluator ? workspace.teachers : selectedTeacher ? [selectedTeacher] : [];
   const summary = aeCompletionSummary(visibleTeachers);
@@ -1419,7 +1500,7 @@ function AeOverview({ workspace, selectedTeacher, setSelectedTeacherId, role, up
     const observed = workspace.observations.filter((item) => item.teacherId === selectedTeacher.id && item.evidencePublishedAt).length;
     const pieces = published + observed;
     return /* @__PURE__ */ React.createElement("section", { className: "ae-card ae-span-12", "aria-labelledby": "ae-evidence-count-title" }, /* @__PURE__ */ React.createElement("h3", { id: "ae-evidence-count-title" }, "Evidence collected this cycle"), /* @__PURE__ */ React.createElement("div", { className: "ae-grid", style: { marginTop: 10 } }, /* @__PURE__ */ React.createElement("div", { className: "ae-span-4 ae-stat" }, /* @__PURE__ */ React.createElement("strong", null, pieces), /* @__PURE__ */ React.createElement("span", null, "portal-tracked evidence pieces")), /* @__PURE__ */ React.createElement("div", { className: "ae-span-8" }, /* @__PURE__ */ React.createElement("p", { className: "ae-sub" }, "The guidebook calls for at least nine pieces of evidence per cycle across the full range of practice — including an observation cycle, and possibly walk-throughs, student materials, parent communication, surveys, and team-meeting performance. This counter sees only what lives in this portal (", published, " published walkthrough", published === 1 ? "" : "s", " + ", observed, " observation", observed === 1 ? "" : "s", " with published evidence); evidence gathered outside it counts toward the nine as well."))));
-  })(), selectedTeacher && /* @__PURE__ */ React.createElement(AeEducatorStatement, { teacher: selectedTeacher, role, updateTeacher }), selectedTeacher && /* @__PURE__ */ React.createElement("section", { className: "ae-span-12" }, /* @__PURE__ */ React.createElement(AeRatingComposer, { teacher: selectedTeacher, role, updateTeacher }))));
+  })(), selectedTeacher && /* @__PURE__ */ React.createElement(AeEducatorStatement, { teacher: selectedTeacher, role, updateTeacher }), selectedTeacher && /* @__PURE__ */ React.createElement("section", { className: "ae-span-12" }, /* @__PURE__ */ React.createElement(AeRatingComposer, { teacher: selectedTeacher, role, updateTeacher, evidenceFindings }))));
 }
 function AeTrendChart({ points, metric, label }) {
   const values = points.map((point) => ({ point, value: aeTrendPointMetric(point, metric) })).filter((item) => item.value !== null);

@@ -258,6 +258,8 @@ const AE_FRAMEWORKS = {
     versionTag: 'me-portland-pepg-guidebook-v1',
     practiceLabel: 'Educator Practice',
     practiceShort: 'EP',
+    // Guidebook: at least nine pieces per cycle across the full range of practice.
+    evidenceTarget: 9,
     // Verified from the district's Educator Evaluation Gradual Implementation
     // Guidebook v1.0 (Portland Framework for Teaching): four levels —
     // Excellent / Proficient / Novice-Needs Improvement / Unsatisfactory.
@@ -453,6 +455,82 @@ function aeNormalizeRubric(raw) {
 }
 
 // Ratings are keyed by domain id, so a rubric swap can orphan them. Report before writing.
+// Evidence sufficiency. Deliberately deterministic and offline: it counts what the evaluator
+// documented and compares it against the rating they assigned. It never judges teaching, and it
+// never sends a personnel record anywhere. "The tool counted three walkthroughs" is defensible to
+// both an educator and an association in a way that "the model thinks" is not.
+//
+// The union-protective case is the one that matters most: an adverse rating resting on little or
+// no documented evidence is exactly what a grievance overturns, so flagging it before the record
+// is finalised serves the educator and the evaluator at the same time.
+function aeEvidenceSufficiency(workspace, teacherId, options) {
+  const opts = options || {};
+  const adverseBelow = Number.isFinite(Number(opts.adverseBelow)) ? Number(opts.adverseBelow) : 2;
+  const thinBelow = Number.isFinite(Number(opts.thinBelow)) ? Number(opts.thinBelow) : 2;
+  const expectedPieces = Number.isFinite(Number(opts.expectedPieces)) ? Number(opts.expectedPieces) : 0;
+  const domains = Array.isArray(opts.domains) ? opts.domains : [];
+  const source = workspace || {};
+  const teacher = (source.teachers || []).filter(function (item) { return item && item.id === teacherId; })[0];
+  const findings = [];
+  if (!teacher) return findings;
+
+  const componentDomain = {};
+  domains.forEach(function (domain) {
+    ((opts.componentsByDomain && opts.componentsByDomain[domain.id]) || domain.components || [])
+      .forEach(function (pair) { componentDomain[String(pair[0]).toLowerCase()] = domain.id; });
+  });
+
+  const published = []
+    .concat((source.walkthroughs || []).filter(function (item) { return item && item.teacherId === teacherId && item.publishedAt; }))
+    .concat((source.observations || []).filter(function (item) { return item && item.teacherId === teacherId && item.publishedAt; }));
+  const perDomain = {};
+  domains.forEach(function (domain) { perDomain[domain.id] = 0; });
+  published.forEach(function (record) {
+    (record.componentTags || []).forEach(function (code) {
+      const domainId = componentDomain[String(code).toLowerCase()];
+      if (domainId && perDomain[domainId] != null) perDomain[domainId] += 1;
+    });
+  });
+
+  const rated = (teacher.ratings && teacher.ratings.domains) || {};
+  domains.forEach(function (domain) {
+    const value = rated[domain.id];
+    if (value == null || value === '') return;
+    const numeric = Number(value);
+    const count = perDomain[domain.id] || 0;
+    if (count === 0) {
+      findings.push({
+        severity: 'high', domainId: domain.id, code: 'rated-without-evidence',
+        message: domain.label + ' carries a rating but no evidence is tagged to it.',
+      });
+      return;
+    }
+    if (Number.isFinite(numeric) && numeric < adverseBelow && count < thinBelow) {
+      findings.push({
+        severity: 'high', domainId: domain.id, code: 'adverse-on-thin-evidence',
+        message: domain.label + ' is rated below proficient on ' + count + ' tagged piece'
+          + (count === 1 ? '' : 's') + ' of evidence.',
+      });
+    }
+  });
+
+  const untouched = domains.filter(function (domain) { return (perDomain[domain.id] || 0) === 0; });
+  if (untouched.length && published.length) {
+    findings.push({
+      severity: 'medium', code: 'range-gap',
+      message: 'No evidence is tagged to ' + untouched.map(function (d) { return d.label; }).join(', ') + '.',
+    });
+  }
+  if (expectedPieces > 0 && published.length < expectedPieces) {
+    findings.push({
+      severity: 'medium', code: 'below-expected-volume',
+      message: published.length + ' published piece' + (published.length === 1 ? '' : 's')
+        + ' of evidence so far; this plan looks for ' + expectedPieces + ' across the cycle.',
+    });
+  }
+  return findings;
+}
+
 function aeRubricOrphans(workspace, domains) {
   const keep = {};
   (domains || []).forEach((domain) => { keep[domain.id] = true; });
@@ -1298,7 +1376,7 @@ function AeFrameworkReference() {
   </div>;
 }
 
-function AeRatingComposer({ teacher, role, updateTeacher }) {
+function AeRatingComposer({ teacher, role, updateTeacher, evidenceFindings }) {
   const [releaseChecked, setReleaseChecked] = React.useState(false);
   React.useEffect(() => { setReleaseChecked(false); }, [teacher.id]);
   const profile = aeWeightProfile(teacher);
@@ -1331,6 +1409,7 @@ function AeRatingComposer({ teacher, role, updateTeacher }) {
       : 'Full transparency into the arithmetic: these are the only inputs that enter your final rating, entered by your evaluator after reviewing your evidence. Nothing else affects the math.'}</p></div>
       <div>{overall === null ? <span className={'ae-chip ' + (role === 'evaluator' ? 'ae-chip-amber' : 'ae-chip-neutral')}>{role === 'evaluator' ? 'Draft · ' + missing.length + ' input' + (missing.length === 1 ? '' : 's') + ' missing' : 'In progress · ' + missing.length + ' component' + (missing.length === 1 ? '' : 's') + ' still ahead in your cycle'}</span> : (AE_ACTIVE_FW.id === 'portland_me' ? <span className="ae-chip ae-chip-blue">{(aePortlandPracticeRating(teacher.ratings.domains) || {}).label}</span> : <span className="ae-chip ae-chip-blue">{aeRoundedScore(overall).toFixed(2)} · {aeBand(overall)}</span>)}</div>
     </div>
+    {evidenceFindings && evidenceFindings.length > 0 && <div className={'ae-note ' + (evidenceFindings.some((item) => item.severity === 'high') ? 'ae-warn' : 'ae-info')} style={{ marginTop: 12 }}><strong>{role === 'evaluator' ? 'Check the evidence before you finalise' : 'What the documentation shows'}</strong><ul style={{ margin: '8px 0 0', paddingLeft: 20 }}>{evidenceFindings.map((item, index) => <li key={item.code + '-' + (item.domainId || index)}>{item.message}</li>)}</ul><p className="ae-help" style={{ marginTop: 8 }}>{role === 'evaluator' ? 'Counted from the evidence you tagged, on this device. A rating resting on little documented evidence is the one most likely to be overturned, so this is a prompt to add evidence or revisit the rating, not a judgment about the educator.' : 'Counted from the evidence tagged to your record. You can raise any of these with your evaluator.'}</p></div>}
     <div className="ae-rating-grid" style={{ marginTop: 12 }}>
       {AE_DOMAINS.map((domain) => <div className="ae-rating-card" key={domain.id} style={{ borderTop: '4px solid ' + domain.color }}>
         <h4>{domain.code}. {domain.label} <span className="ae-chip ae-chip-neutral">{domain.weight}% of O&amp;P</span></h4>
@@ -1371,6 +1450,7 @@ function AeEducatorStatement({ teacher, role, updateTeacher }) {
 }
 
 function AeOverview({ workspace, selectedTeacher, setSelectedTeacherId, role, updateTeacher, setTab }) {
+  const evidenceFindings = React.useMemo(() => (selectedTeacher ? aeEvidenceSufficiency(workspace, selectedTeacher.id, { domains: AE_DOMAINS, componentsByDomain: AE_ACTIVE_FW.components || null, expectedPieces: AE_ACTIVE_FW.evidenceTarget || 0 }) : []), [workspace, selectedTeacher]);
   const isEvaluator = role === 'evaluator';
   const visibleTeachers = isEvaluator ? workspace.teachers : (selectedTeacher ? [selectedTeacher] : []);
   const summary = aeCompletionSummary(visibleTeachers);
@@ -1438,7 +1518,7 @@ function AeOverview({ workspace, selectedTeacher, setSelectedTeacherId, role, up
         return <section className="ae-card ae-span-12" aria-labelledby="ae-evidence-count-title"><h3 id="ae-evidence-count-title">Evidence collected this cycle</h3><div className="ae-grid" style={{ marginTop: 10 }}><div className="ae-span-4 ae-stat"><strong>{pieces}</strong><span>portal-tracked evidence pieces</span></div><div className="ae-span-8"><p className="ae-sub">The guidebook calls for at least nine pieces of evidence per cycle across the full range of practice — including an observation cycle, and possibly walk-throughs, student materials, parent communication, surveys, and team-meeting performance. This counter sees only what lives in this portal ({published} published walkthrough{published === 1 ? '' : 's'} + {observed} observation{observed === 1 ? '' : 's'} with published evidence); evidence gathered outside it counts toward the nine as well.</p></div></div></section>;
       })()}
       {selectedTeacher && <AeEducatorStatement teacher={selectedTeacher} role={role} updateTeacher={updateTeacher} />}
-      {selectedTeacher && <section className="ae-span-12"><AeRatingComposer teacher={selectedTeacher} role={role} updateTeacher={updateTeacher} /></section>}
+      {selectedTeacher && <section className="ae-span-12"><AeRatingComposer teacher={selectedTeacher} role={role} updateTeacher={updateTeacher} evidenceFindings={evidenceFindings} /></section>}
     </div>
   </div>;
 }
