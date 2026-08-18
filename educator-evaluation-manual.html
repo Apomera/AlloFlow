@@ -219,6 +219,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <li><a href="#packet">Sending an evaluation to an educator by email</a></li>
 <li><a href="#rubric">Using your district’s own rubric</a></li>
 <li><a href="#evidence-check">Evidence checks and the optional AI second read</a></li>
+<li><a href="#share-helper">Sharing through your own Drive (optional)</a></li>
 <li><a href="#glossary">Glossary</a></li>
 <li><a href="#troubleshooting">Troubleshooting</a></li>
 </ol>
@@ -573,7 +574,31 @@ And enabling it does send that educator's evidence notes and ratings to your con
 is opt-in, per workspace, and why the educator's name is not included in what is sent. If your district or contract
 does not permit AI in evaluation, leave it off and everything else works unchanged.</p>
 
-<h2 id="glossary">19. Glossary</h2>
+<h2 id="share-helper">19. Sharing Through Your Own Drive (Optional)</h2>
+<p>Section 16 sends the packet as an email attachment, which needs nothing from anyone. This section
+is the optional upgrade: the same packet delivered through <em>your</em> Google Drive, so the share
+can be withdrawn on a date and every evaluation you send lands in one organised place.</p>
+<p>It needs a small Apps Script that <strong>you</strong> deploy in your own district account. It is
+not the district portal: it has no roster, no roles, and no repository, and only you can open it.
+The setup steps are in <code>apps_script/educator_evaluation_share/README.md</code>.</p>
+<p>Once deployed, you paste an exported packet into it along with the educator's email. It files the
+packet under <em>AlloFlow Evaluations / academic year / educator</em>, shares it with that educator
+as a commenter, and can end that access on a date you choose. A listing view shows everything filed
+for the year, so at the end of a cycle you move or copy one folder to wherever your district keeps
+evaluation records.</p>
+<p><strong>What it gives you that email cannot.</strong> An emailed attachment cannot be recalled.
+A Drive share can be withdrawn, and can expire on its own.</p>
+<p><strong>What to check before relying on expiry.</strong> Google only expires viewer and commenter
+access, only on some Workspace editions, and only within about a year. The helper has a check button
+that tells you whether expiry is available to your account before you depend on it, and after each
+share it says plainly whether the expiry was applied or whether the file is shared with no timer
+running.</p>
+<p><strong>What it does not do.</strong> It sends no email of its own, it cannot tell one person from
+another beyond you, and the folder lives in your account, so treat it as a working store and hand it
+over at the end of a cycle. Whether you may deploy Apps Script at all, and whether personnel records
+may be shared this way, are district policy questions rather than technical ones.</p>
+
+<h2 id="glossary">20. Glossary</h2>
 <dl>
 <dt>Walkthrough</dt><dd>A short, frequent, low-stakes classroom visit that captures evidence. It does not score a rubric.</dd>
 <dt>Formal observation</dt><dd>The full ten-step cycle with prework, conferences, evidence, reflection, ratings, acknowledgment, and finalization.</dd>
@@ -588,7 +613,7 @@ does not permit AI in evaluation, leave it off and everything else works unchang
 <dt>Cohort suppression</dt><dd>Withholding peer comparisons until enough peers contribute, so no individual can be identified from an aggregate.</dd>
 </dl>
 
-<h2 id="troubleshooting">20. Troubleshooting</h2>
+<h2 id="troubleshooting">21. Troubleshooting</h2>
 <ul>
 <li><strong>"This page must be opened from the district Apps Script web-app URL":</strong> the portal bundle was opened outside its deployment. Use the <code>/exec</code> link from your district administrator.</li>
 <li><strong>"The secure workspace could not be opened":</strong> this is the portal refusing to show anything, which is the design rather than a fault. The line underneath names the reason: an account that is not a member, a repository that was never set up, or the page opened outside its Apps Script address. Access is granted by the district, so the fix is with the administrator who deployed the portal, not on the page.</li>

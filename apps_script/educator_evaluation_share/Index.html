@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <title>AlloFlow evaluation share helper</title>
+  <style>
+    body { font: 16px/1.6 system-ui, sans-serif; color: #172033; background: #f6f8fb; margin: 0; padding: 24px; }
+    main { max-width: 720px; margin: 0 auto; }
+    h1 { font-size: 1.5rem; color: #173e70; }
+    .card { background: #fff; border: 1px solid #d7dee8; border-radius: 10px; padding: 18px; margin: 16px 0; }
+    label { display: block; font-weight: 600; margin: 14px 0 6px; }
+    input[type="text"], input[type="email"], input[type="date"], select, textarea {
+      width: 100%; font: inherit; padding: 10px; border: 1px solid #94a3b8; border-radius: 8px; box-sizing: border-box;
+    }
+    textarea { min-height: 120px; }
+    button { font: inherit; font-weight: 700; min-height: 48px; padding: 12px 20px; border: 0; border-radius: 10px;
+      background: #1d4ed8; color: #fff; cursor: pointer; }
+    button[disabled] { background: #94a3b8; cursor: progress; }
+    button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline: 3px solid #b45309; outline-offset: 2px;
+    }
+    .help { font-size: .9rem; color: #475569; }
+    .ok { color: #14532d; font-weight: 600; }
+    .warn { color: #9a3412; font-weight: 600; }
+    ul { padding-left: 20px; }
+  </style>
+</head>
+
+<body>
+  <main>
+    <h1>Evaluation share helper</h1>
+    <p class="help">Files one educator's evaluation packet into your own Drive, shares it with them, and can end that
+      access on a date. Only you can open this page. Nothing here is sent to AlloFlow.</p>
+
+    <div class="card">
+      <h2>Share a packet</h2>
+      <label for="year">Academic year</label>
+      <input type="text" id="year" value="2026-27">
+
+      <label for="who">Educator name or code (used as the folder name)</label>
+      <input type="text" id="who" placeholder="T-01">
+
+      <label for="email">Educator email</label>
+      <input type="email" id="email" placeholder="educator@district.org">
+
+      <label for="role">They can</label>
+      <select id="role">
+        <option value="comment">Comment on it</option>
+        <option value="view">View it only</option>
+      </select>
+
+      <label for="expires">Access ends on (optional)</label>
+      <input type="date" id="expires">
+      <p class="help">Leave blank for no expiry. Drive only expires viewer and commenter access, and only on some
+        Workspace editions. Run the check below first if you have not.</p>
+
+      <label for="packet">Packet file contents</label>
+      <p class="help">Export the educator packet from AlloFlow, open the downloaded .html file in a text editor, and
+        paste all of it here.</p>
+      <textarea id="packet" spellcheck="false"></textarea>
+
+      <p><button type="button" id="share">File and share</button></p>
+      <p id="result" role="status"></p>
+    </div>
+
+    <div class="card">
+      <h2>Check this deployment</h2>
+      <p class="help">Confirms which account this runs as, and whether share expiry is available to you.</p>
+      <p><button type="button" id="verify">Run the check</button></p>
+      <p id="verified" role="status"></p>
+    </div>
+
+    <div class="card">
+      <h2>What has been filed</h2>
+      <p><button type="button" id="list">List this year</button></p>
+      <div id="listing"></div>
+    </div>
+  </main>
+
+  <script>
+    function byId(id) { return document.getElementById(id); }
+    function busy(button, on, label) { button.disabled = on; button.textContent = on ? 'Working…' : label; }
+
+    byId('share').addEventListener('click', function () {
+      var button = byId('share');
+      var out = byId('result');
+      out.textContent = '';
+      busy(button, true, 'File and share');
+      google.script.run
+        .withSuccessHandler(function (info) {
+          busy(button, false, 'File and share');
+          var lines = ['Filed under ' + info.folderPath + ' and shared with ' + info.sharedWith + '.'];
+          if (info.expiresOn && info.expiryApplied) lines.push('Access ends ' + info.expiresOn + '.');
+          else if (info.expiresOn) lines.push('Expiry was NOT applied. ' + (info.expiryNote || ''));
+          out.className = info.expiresOn && !info.expiryApplied ? 'warn' : 'ok';
+          out.textContent = lines.join(' ');
+        })
+        .withFailureHandler(function (error) {
+          busy(button, false, 'File and share');
+          out.className = 'warn';
+          out.textContent = (error && error.message) || 'That did not work.';
+        })
+        .shareEvaluationPacket({
+          academicYear: byId('year').value,
+          educatorLabel: byId('who').value,
+          educatorEmail: byId('email').value,
+          role: byId('role').value,
+          expiresOn: byId('expires').value,
+          html: byId('packet').value
+        });
+    });
+
+    byId('verify').addEventListener('click', function () {
+      var button = byId('verify');
+      var out = byId('verified');
+      busy(button, true, 'Run the check');
+      google.script.run
+        .withSuccessHandler(function (info) {
+          busy(button, false, 'Run the check');
+          out.className = info.expirySupported ? 'ok' : 'warn';
+          out.textContent = 'Runs as ' + info.deployerEmail + '. ' + info.note;
+        })
+        .withFailureHandler(function (error) {
+          busy(button, false, 'Run the check');
+          out.className = 'warn';
+          out.textContent = (error && error.message) || 'That did not work.';
+        })
+        .verifyShareHelper();
+    });
+
+    byId('list').addEventListener('click', function () {
+      var button = byId('list');
+      var out = byId('listing');
+      busy(button, true, 'List this year');
+      google.script.run
+        .withSuccessHandler(function (info) {
+          busy(button, false, 'List this year');
+          if (!info.educators.length) { out.textContent = 'Nothing filed for ' + info.academicYear + ' yet.'; return; }
+          var html = '<p class="help">Folder: <a href="' + info.folderUrl + '">' + info.academicYear + '</a></p><ul>';
+          info.educators.forEach(function (entry) {
+            html += '<li><a href="' + entry.url + '">' + entry.educator + '</a> — '
+              + entry.packets.length + ' packet' + (entry.packets.length === 1 ? '' : 's') + '</li>';
+          });
+          out.innerHTML = html + '</ul>';
+        })
+        .withFailureHandler(function (error) {
+          busy(button, false, 'List this year');
+          out.textContent = (error && error.message) || 'That did not work.';
+        })
+        .listSharedEvaluations(byId('year').value);
+    });
+  </script>
+</body>
+
+</html>
