@@ -327,11 +327,30 @@ function aeSetActiveFramework(config) {
   const profile = AE_FRAMEWORKS[config && config.frameworkProfile] || AE_FRAMEWORKS.pa_act13;
   const rawWeight = config && config.pepgPracticeWeight;
   const weight = rawWeight != null && String(rawWeight) !== '' && Number.isFinite(Number(rawWeight)) && Number(rawWeight) >= 0 && Number(rawWeight) <= 100 ? Math.round(Number(rawWeight)) : null;
-  AE_ACTIVE_FW = { ...profile, practiceWeight: profile.id === 'maine_pepg' ? weight : null };
+  const custom = aeNormalizeRubric(config && config.customRubric);
+  if (custom) {
+    AE_ACTIVE_FW = {
+      ...profile,
+      id: 'custom',
+      name: custom.name,
+      versionTag: custom.versionTag,
+      practiceLabel: custom.practiceLabel,
+      practiceShort: custom.practiceShort,
+      domainWeighted: custom.domainWeighted,
+      bands: custom.bands || profile.bands,
+      components: null,
+      practiceWeight: null,
+    };
+    AE_DOMAINS = custom.domains;
+  } else {
+    AE_ACTIVE_FW = { ...profile, practiceWeight: profile.id === 'maine_pepg' ? weight : null };
+    AE_DOMAINS = Array.isArray(profile.domains) && profile.domains.length ? profile.domains : AE_DEFAULT_DOMAINS;
+  }
+  AE_COMPONENTS = aeBuildComponents(AE_DOMAINS);
   return AE_ACTIVE_FW;
 }
 
-const AE_DOMAINS = [
+const AE_DEFAULT_DOMAINS = [
   {
     id: 'd1', code: '1', label: 'Planning and Preparation', weight: 20, color: '#2563eb',
     components: [
@@ -376,9 +395,75 @@ const AE_DOMAINS = [
   },
 ];
 
-const AE_COMPONENTS = AE_DOMAINS.flatMap((domain) => domain.components.map(([code, label]) => ({
-  code, label, domainId: domain.id, domainLabel: domain.label,
-})));
+// AE_DOMAINS is swappable module state for the same reason AE_ACTIVE_FW is: a district on a
+// non-Danielson instrument has to be able to supply its own domains, and every read site should
+// keep working without being rewritten. aeSetActiveFramework is the single writer.
+let AE_DOMAINS = AE_DEFAULT_DOMAINS;
+function aeBuildComponents(domains) {
+  return (domains || []).flatMap((domain) => (domain.components || []).map(([code, label]) => ({
+    code, label, domainId: domain.id, domainLabel: domain.label,
+  })));
+}
+let AE_COMPONENTS = aeBuildComponents(AE_DEFAULT_DOMAINS);
+
+// Validates a district-supplied rubric. Returns null when it cannot be trusted, because a
+// half-valid rubric would silently mis-score every educator rated against it.
+function aeNormalizeRubric(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const domainsRaw = Array.isArray(raw.domains) ? raw.domains : null;
+  if (!domainsRaw || !domainsRaw.length) return null;
+  const seen = {};
+  const domains = [];
+  for (let i = 0; i < domainsRaw.length; i++) {
+    const entry = domainsRaw[i] || {};
+    const id = String(entry.id == null ? '' : entry.id).trim();
+    const label = String(entry.label == null ? '' : entry.label).trim();
+    if (!id || !label || seen[id]) return null;
+    seen[id] = true;
+    const weightNumber = Number(entry.weight);
+    const components = Array.isArray(entry.components)
+      ? entry.components.filter((pair) => Array.isArray(pair) && pair.length >= 2)
+        .map((pair) => [String(pair[0]), String(pair[1])])
+      : [];
+    domains.push({
+      id,
+      code: String(entry.code == null ? String(i + 1) : entry.code),
+      label,
+      weight: Number.isFinite(weightNumber) && weightNumber >= 0 ? weightNumber : 0,
+      color: /^#[0-9a-fA-F]{3,8}$/.test(String(entry.color || '')) ? String(entry.color) : '#2563eb',
+      components,
+    });
+  }
+  const bands = Array.isArray(raw.bands)
+    ? raw.bands.filter((band) => band && Number.isFinite(Number(band.min)) && String(band.label || '').trim())
+      .map((band) => ({ min: Number(band.min), label: String(band.label).trim() }))
+      .sort((a, b) => b.min - a.min)
+    : [];
+  const name = String(raw.name == null ? '' : raw.name).trim() || 'Custom rubric';
+  return {
+    name,
+    versionTag: String(raw.versionTag == null ? '' : raw.versionTag).trim()
+      || ('custom-' + name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')),
+    practiceLabel: String(raw.practiceLabel == null ? '' : raw.practiceLabel).trim() || 'Professional Practice',
+    practiceShort: String(raw.practiceShort == null ? '' : raw.practiceShort).trim() || 'PP',
+    domainWeighted: !!raw.domainWeighted,
+    bands: bands.length ? bands : null,
+    domains,
+  };
+}
+
+// Ratings are keyed by domain id, so a rubric swap can orphan them. Report before writing.
+function aeRubricOrphans(workspace, domains) {
+  const keep = {};
+  (domains || []).forEach((domain) => { keep[domain.id] = true; });
+  const casualties = [];
+  ((workspace && workspace.teachers) || []).forEach((teacher) => {
+    const rated = (teacher && teacher.ratings && teacher.ratings.domains) || {};
+    const lost = Object.keys(rated).filter((id) => !keep[id] && rated[id] != null);
+    if (lost.length) casualties.push({ teacherId: teacher.id, name: teacher.name || teacher.code || teacher.id, domainIds: lost });
+  });
+  return casualties;
+}
 
 const AE_RATINGS = [
   { value: 0, label: 'Failing' },
@@ -1694,7 +1779,7 @@ function AeSetupHealth({ repository }) {
   </section>;
 }
 
-function AeAbout({ workspace, updateConfig, role, isRemote = false, currentUser = null, repository = null, standalone = false, portalUrl = '' }) {
+function AeAbout({ workspace, updateConfig, role, isRemote = false, currentUser = null, repository = null, standalone = false, portalUrl = '', exportRubric, importRubric, clearRubric }) {
   const set = (field, value) => updateConfig(field, value);
   return <div className="ae-page">
     {/* One panel serves both roles, but the tab that opens it is labelled
@@ -1703,6 +1788,7 @@ function AeAbout({ workspace, updateConfig, role, isRemote = false, currentUser 
         (caught demoing the teacher view, 2026-08-17). */}
     <div className="ae-heading"><div><h2>{role === 'teacher' ? 'About this workspace' : ('Setup, sources, and ' + (isRemote ? 'district records' : 'sharing'))}</h2><p>{role === 'teacher' ? 'Where your records live, who can see them, and how to reach the full manual.' : (isRemote ? 'Review the authenticated repository boundary and the approvals that still belong to your district.' : 'Configure this on-device workspace and see what the district portal adds for shared records.')}</p><p><a className="ae-link" target="_blank" rel="noopener noreferrer" href="https://alloflow-cdn.pages.dev/educator-evaluation-manual">User manual: how to use both versions</a></p></div></div>
     <div className="ae-grid">
+{/* Custom rubric: a district on a non-Danielson instrument cannot use the built-in domain set, which is the single thing blocking adoption outside Portland and Pennsylvania. */}<div className="ae-field ae-field-wide"><span>Rubric</span><p className="ae-help">Using <strong>{aeEsc ? AE_ACTIVE_FW.name : AE_ACTIVE_FW.name}</strong> <code>{AE_ACTIVE_FW.versionTag}</code>. Load your district's own domains and components as JSON, or download the current rubric as a starting point.</p><div className="ae-btn-row"><button type="button" className="ae-btn" onClick={exportRubric}>Download current rubric</button><label className="ae-btn" style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44 }}>Load a custom rubric<input type="file" accept="application/json,.json" style={{ display: 'none' }} onChange={(event) => { const file = event.target.files && event.target.files[0]; if (file) importRubric(file); event.target.value = ''; }} /></label>{workspace.config.customRubric && <button type="button" className="ae-btn" onClick={clearRubric}>Restore the built-in rubric</button>}</div></div>
       <section className="ae-card ae-span-6"><h3>Workspace setup</h3><fieldset disabled={isRemote || role !== 'evaluator'} style={{ border: 0, padding: 0, margin: 0 }}><label className="ae-field"><span>Organization / LEA</span><input className="ae-input" value={workspace.config.organization} onChange={(event) => set('organization', event.target.value)}/></label><div className="ae-form-grid"><label className="ae-field"><span>Building</span><input className="ae-input" value={workspace.config.building} onChange={(event) => set('building', event.target.value)}/></label><label className="ae-field"><span>Academic year</span><input className="ae-input" value={workspace.config.academicYear} onChange={(event) => set('academicYear', event.target.value)}/></label><label className="ae-field"><span>Evaluator name</span><input className="ae-input" value={workspace.config.evaluatorName} onChange={(event) => set('evaluatorName', event.target.value)}/></label><label className="ae-field"><span>Evaluator initials</span><input className="ae-input" value={workspace.config.evaluatorInitials} onChange={(event) => set('evaluatorInitials', event.target.value)}/></label><label className="ae-field ae-field-wide"><span>Evaluation framework</span><select className="ae-select" value={workspace.config.frameworkProfile || 'pa_act13'} onChange={(event) => set('frameworkProfile', event.target.value)}>{Object.keys(AE_FRAMEWORKS).map((id) => <option key={id} value={id}>{AE_FRAMEWORKS[id].name}</option>)}</select></label>{workspace.config.frameworkProfile === 'maine_pepg' && <label className="ae-field ae-field-wide"><span>Professional Practice weight (%) — optional; SLG measures are a district choice under the 2019 amendments</span><input className="ae-input" type="number" min="0" max="100" step="1" value={workspace.config.pepgPracticeWeight == null ? '' : workspace.config.pepgPracticeWeight} onChange={(event) => set('pepgPracticeWeight', event.target.value)} placeholder="e.g. 75 — Student Learning & Growth gets the rest"/></label>}</div></fieldset>{isRemote && <div className="ae-note ae-warn" style={{ marginBottom: 12 }}>Portal configuration is read-only. An authorized district administrator or IT must use the reviewed setup process to change repository configuration.</div>}<div className="ae-note">{AE_ACTIVE_FW.id === 'pa_act13' ? 'Framework snapshot: Pennsylvania Act 13 classroom-teacher framework, June 2021. Full performance-level rubric text is not bundled.' : 'Framework: Maine PEPG — the district plan governs. Rating-level labels shown are Maine State Model defaults; confirm labels, cut points, and category weights against your district’s PEPG plan. Full rubric text is not bundled.'}</div></section>
       <section className="ae-card ae-span-6"><h3>Official references</h3>{AE_ACTIVE_FW.id === 'pa_act13' ? <ul><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://www.pa.gov/agencies/education/programs-and-services/educators/educator-effectiveness">Pennsylvania Department of Education · Educator Effectiveness</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://www.pacodeandbulletin.gov/secure/pacode/data/022/chapter19/s19.2a.html">22 Pa. Code § 19.2a · Classroom teachers</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://www.pdesas.org/Page/Viewer/ViewPage/75">PDE/SAS Act 13 Toolkit</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://danielsongroup.org/the-framework-for-teaching/">Danielson Group · Framework access and licensing</a></li></ul> : <ul><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://www.maine.gov/doe/educators/educatoreval/educator">Maine DOE · Educator Effectiveness (PEPG)</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://legislature.maine.gov/statutes/20-A/title20-Ach508sec0.html">20-A M.R.S.A. ch. 508 · Educator Effectiveness</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://www.law.cornell.edu/regulations/maine/department-05/division-071/chapter-180">DOE Rule Chapter 180 · PEPG Systems</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://danielsongroup.org/the-framework-for-teaching/">Danielson Group · Framework access and licensing</a></li></ul>}{AE_ACTIVE_FW.id === 'pa_act13' ? <div className="ae-note ae-warn">The older 50% observation model is not the default current Act 13 classroom-teacher composition. This workspace uses assignment-aware 70/10/10/10, 80% O&amp;P where Building Level Data is unavailable, and 100% O&amp;P for temporary classroom teachers.</div> : <div className="ae-note ae-warn">Maine PEPG systems are LOCAL: the district plan — built with a steering committee that must have a teacher majority chosen by the bargaining unit, revising by consensus — defines the rubric, rating levels, category weights, and process. Since the 2019 amendments, student learning &amp; growth measures are a district choice, not a state mandate. This workspace mirrors that plan; it never substitutes for it. Enter the plan’s Professional Practice / Student Learning &amp; Growth split above.</div>}</section>
       {!isRemote && <section className="ae-card ae-span-12"><h3>Connecting the district portal, step by step</h3><div className="ae-note">This on-device workspace keeps records on this device. Two-way evaluation records — including sharing released summaries to educators' Drive — need the district-hosted portal. It is a separate deployment from the Class Mailbox: the mailbox is deliberately open ("anyone with the link" + tokens) for homework; the evaluation portal is the opposite — district-domain accounts only, and it fails closed without one.</div><ol className="ae-sub" style={{ margin: '10px 0 0 18px', display: 'grid', gap: 6 }}><li>A district administrator copies <code>apps_script/educator_evaluation/</code> (Code.gs, Portal.html, appsscript.json) into a district-owned Apps Script project — never a personal account.</li><li>They run the one-time <code>setupEvaluationRepository</code> with the district domain, bootstrap admin, educators, members, and evaluator assignments (the README shows the exact call).</li><li>They deploy as a Web app with <strong>Execute as: Me</strong> and <strong>Who has access: users in your domain</strong>, then verify with <code>verifyDeploymentIdentity()</code>.</li><li>Each user pastes the deployment's <code>/macros/s/…/exec</code> link into AlloFlow's Project Settings (or bookmarks it directly). Opening it signs them in with their district Google account; the server — not the link — decides their role and which records they see.</li></ol></section>}
@@ -2260,6 +2346,60 @@ function EducatorEvaluationPanel(props) {
     aeDownload('evaluation-response-' + selectedTeacher.code + '-' + aeToday() + '.json', 'application/json', JSON.stringify(packet, null, 2));
     commit(() => {}, { teacherId: selectedTeacher.id, event: 'EXPORTED', summary: 'Educator response packet created', entityType: 'evaluation', entityId: selectedTeacher.id }, 'Response packet created');
   };
+  const exportRubric = () => {
+    aeDownload('evaluation-rubric-' + (AE_ACTIVE_FW.versionTag || 'current') + '.json', 'application/json',
+      JSON.stringify({
+        name: AE_ACTIVE_FW.name, versionTag: AE_ACTIVE_FW.versionTag,
+        practiceLabel: AE_ACTIVE_FW.practiceLabel, practiceShort: AE_ACTIVE_FW.practiceShort,
+        domainWeighted: !!AE_ACTIVE_FW.domainWeighted, bands: AE_ACTIVE_FW.bands || null,
+        domains: AE_DOMAINS.map((domain) => ({
+          id: domain.id, code: domain.code, label: domain.label, weight: domain.weight, color: domain.color,
+          components: (AE_ACTIVE_FW.components && AE_ACTIVE_FW.components[domain.id]) || domain.components || [],
+        })),
+      }, null, 2));
+    addToast('Rubric downloaded', 'success');
+  };
+  const applyRubric = (rubric, label) => {
+    // Ratings are keyed by domain id, so say exactly whose scores would be stranded before writing.
+    const orphans = aeRubricOrphans(workspaceRef.current, rubric ? rubric.domains : AE_DEFAULT_DOMAINS);
+    if (orphans.length) {
+      const names = orphans.map((entry) => entry.name).join(', ');
+      const ok = typeof window !== 'undefined' && window.confirm
+        ? window.confirm('This rubric does not include every domain that already carries a rating. '
+          + 'Existing ratings for ' + names + ' would no longer be shown or scored, though nothing is '
+          + 'deleted and restoring the previous rubric brings them back. Apply it anyway?')
+        : true;
+      if (!ok) return;
+    }
+    commit((next) => {
+      next.config = Object.assign({}, next.config, { customRubric: rubric || null });
+      aeSetActiveFramework(next.config);
+    }, {
+      event: 'CONFIG_UPDATED',
+      summary: rubric
+        ? ('Rubric changed to ' + rubric.name + ' (' + rubric.versionTag + ')'
+          + (orphans.length ? '; ' + orphans.length + ' educator record(s) hold ratings outside it' : ''))
+        : 'Rubric restored to the built-in set',
+      entityType: 'workspace', entityId: 'workspace',
+    }, label);
+  };
+  const clearRubric = () => applyRubric(null, 'Built-in rubric restored');
+  const importRubric = (file) => {
+    if (!file || file.size > 1024 * 1024) { addToast('Rubric import failed: choose a JSON file under 1 MB.', 'error'); return; }
+    const reader = new FileReader();
+    reader.onerror = () => addToast('Rubric import failed: the file could not be read.', 'error');
+    reader.onload = () => {
+      let rubric = null;
+      try { rubric = aeNormalizeRubric(JSON.parse(String(reader.result || ''))); }
+      catch (error) { addToast('Rubric import failed: that file is not valid JSON.', 'error'); return; }
+      if (!rubric) {
+        addToast('Rubric import failed: every domain needs a unique id and a label.', 'error');
+        return;
+      }
+      applyRubric(rubric, 'Rubric loaded: ' + rubric.name);
+    };
+    reader.readAsText(file);
+  };
   const importWorkspace = (file) => {
     if (!file || file.size > 5 * 1024 * 1024) { addToast('Import failed: choose an export or packet smaller than 5 MB.', 'error'); return; }
     const reader = new FileReader();
@@ -2360,7 +2500,7 @@ href="https://alloflow-cdn.pages.dev/educator-evaluation-manual" target="_blank"
       {tab === 'formal' && <AeFormalObservations workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} createObservation={createObservation} updateObservation={updateObservation} updateTeacher={updateTeacher} addComment={addComment}/>}
       {tab === 'spm' && <AeSpm workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} createSpm={createSpm} updateSpm={updateSpm} updateTeacher={updateTeacher} addComment={addComment}/>}
       {tab === 'audit' && <AeAuditExport workspace={workspace} selectedTeacher={selectedTeacher} exportWorkspace={exportWorkspace} exportCsv={exportCsv} exportSummary={exportSummary} exportEducatorPacket={exportEducatorPacket} exportResponsePacket={exportResponsePacket} packetIncludeNames={packetIncludeNames} setPacketIncludeNames={setPacketIncludeNames} exportGrowthSnapshot={exportGrowthSnapshot} importWorkspace={importWorkspace} resetWorkspace={resetWorkspace} role={role} isRemote={isRemote}/>}
-      {tab === 'about' && <AeAbout workspace={workspace} updateConfig={updateConfig} role={role} isRemote={isRemote} currentUser={remoteState.currentUser} repository={repository} standalone={standalone} portalUrl={(remoteState.deployment && remoteState.deployment.portalUrl) || ''}/>}
+      {tab === 'about' && <AeAbout workspace={workspace} updateConfig={updateConfig} role={role} isRemote={isRemote} exportRubric={exportRubric} importRubric={importRubric} clearRubric={clearRubric} currentUser={remoteState.currentUser} repository={repository} standalone={standalone} portalUrl={(remoteState.deployment && remoteState.deployment.portalUrl) || ''}/>}
     </main>
     <footer className="ae-footer"><span>No AI scoring · evidence and judgments stay separate · published records are append-only in the workflow model</span><span>{AE_ACTIVE_FW.id === 'pa_act13' ? <><a href="https://www.pa.gov/agencies/education/programs-and-services/educators/educator-effectiveness" target="_blank" rel="noreferrer">PDE Educator Effectiveness</a> · <a href="https://www.pdesas.org/Page/Viewer/ViewPage/75" target="_blank" rel="noreferrer">Act 13 Toolkit</a></> : <><a href="https://www.maine.gov/doe/educators/educatoreval/educator" target="_blank" rel="noreferrer">Maine DOE Educator Effectiveness</a> · <a href="https://www.law.cornell.edu/regulations/maine/department-05/division-071/chapter-180" target="_blank" rel="noreferrer">PEPG Rule Ch. 180</a></>}</span></footer><div className="ae-live" aria-live="polite" aria-atomic="true"><span key={liveMessage.id}>{liveMessage.text}</span></div>
   </div>;
