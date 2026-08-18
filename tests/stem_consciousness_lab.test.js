@@ -157,6 +157,76 @@ describe('Consciousness Lab registration and grade adaptation', () => {
     expect(html).toContain('GNWT asks whether the green representation');
     expect(html).toContain('This is the theory’s interpretation, not an extra observation.');
   });
+
+  // Recovered 2026-08-17 from an abandoned Codex worktree (.codex/worktrees/92da,
+  // Aug 3). The portfolio shipped and then lost its only test when this file was
+  // rewritten: 30 references in the tool and zero coverage here.
+  // The original asserted through config.testHooks.portfolioMinimumFor /
+  // portfolioCompleteFor. Neither is on testHooks in the shipped tool (the
+  // surviving analogues are debateMinimumFor/debateReadyFor, and the portfolio
+  // equivalent is a local portfolioMinimumForProfile), so this drives the render
+  // path instead. That is the better seam anyway: it asserts what a learner sees
+  // and needs no production change to make the tool testable.
+  it('collects grade-isolated artifacts into a claim-evidence-uncertainty portfolio', () => {
+    const middleSynthesis = {
+      claim: 'C'.repeat(28),
+      evidence: 'E'.repeat(28),
+      uncertainty: 'U'.repeat(28),
+    };
+    const portfolioState = {
+      selectedTheory: 'gnw',
+      mapSessions: {
+        middle: { interactions: 2, reflection: 'Two theories overlap on access but differ in proposed mechanism.' },
+      },
+      portfolioSynthesis: { middle: middleSynthesis },
+    };
+
+    const empty = renderView('Kindergarten', 'portfolio');
+    const middle = renderView('8th Grade', 'portfolio', portfolioState);
+    const graduate = renderView('Graduate Level', 'portfolio');
+
+    // The early-grades folder speaks plainly and starts at zero.
+    expect(empty).toContain('My consciousness learning folder');
+    expect(empty).toContain('Your folder shows your thinking today.');
+
+    // Artifacts accumulate per grade profile rather than globally.
+    expect(middle).toContain('Consciousness Learning Portfolio');
+    expect(middle).toContain('artifacts ready');
+    expect(middle).toContain('Portfolio synthesis complete');
+
+    // The epistemic framing has to survive: a learner portfolio is not a
+    // scientific finding, and the tool says so on the artifact itself.
+    expect(middle).toContain('Learner-authored, not scientific consensus');
+    expect(middle).toContain('provisional and evidence-calibrated');
+
+    // Graduate level asks for a stricter, identification-aware account, and the
+    // same synthesis that satisfies 8th grade does not satisfy it.
+    expect(graduate).toContain('Current model-relative position');
+    expect(graduate).toContain('Evidential chain and identification limits');
+    expect(graduate).not.toContain('Portfolio synthesis complete');
+  });
+
+  // Also from the abandoned worktree, which tested knowledge-check completion
+  // through a knowledgeCheckCompleteFor hook that is no longer exported and a
+  // completedChecks state key that no longer exists. completedCheckCount IS on
+  // testHooks and had no coverage at all, so this tests the shipped contract
+  // rather than resurrecting the old one. It gates progress, so a silent change
+  // here would over- or under-credit a learner.
+  it('counts completed knowledge checks from either the flag or the per-view map', () => {
+    const count = config.testHooks.completedCheckCount;
+    // Legacy shape: a single boolean means one completed check.
+    expect(count({ checkComplete: true })).toBe(1);
+    // Per-view shape: only truthy entries count.
+    expect(count({ checkComplete: { early: true, middle: true, graduate: false } })).toBe(2);
+    expect(count({ checkComplete: { early: false } })).toBe(0);
+    // Nothing recorded is zero, not a crash, on every empty-ish shape.
+    expect(count({ checkComplete: {} })).toBe(0);
+    expect(count({})).toBe(0);
+    expect(count(null)).toBe(0);
+    expect(count(undefined)).toBe(0);
+    // A false flag must not be read as the object form.
+    expect(count({ checkComplete: false })).toBe(0);
+  });
 });
 
 describe('Consciousness Lab epistemic neutrality and frontier cases', () => {
