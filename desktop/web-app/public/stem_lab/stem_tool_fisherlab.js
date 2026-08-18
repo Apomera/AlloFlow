@@ -764,7 +764,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var windowMs = Math.max(100, Number(data.biteWindowMs) || 900) * (data.assistMode ? 1.5 : 1);
     var reaction = Math.max(0, Number(data.reactionMs) || 0);
     var success = reaction <= windowMs;
-    return { success: success, outcome: success ? 'hooked' : 'missed-bite', assisted: !!data.assistMode, feedback: success ? 'The hook loaded against the fish.' : 'The bite window closed before the hookset.' };
+    return {
+      success: success, outcome: success ? 'hooked' : 'missed-bite', assisted: !!data.assistMode,
+      // ★ Published: the window is the authored one stretched by assist mode,
+      // and the diagram must draw the window the attempt was judged against.
+      windowMs: windowMs, reactionMs: reaction, lateBy: Math.max(0, reaction - windowMs),
+      feedback: success ? 'The hook loaded against the fish.' : 'The bite window closed before the hookset.'
+    };
   }
   function getFishingTensionProfile(assistMode, tension) {
     var lower = assistMode ? 0.18 : 0.3;
@@ -3035,6 +3041,1003 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
   }
 
   // ═══════════════════════════════════════════════════════════════════
+  // HARBOUR PROFILES, AND SERVICE INTERVALS
+  // Two more reference sections whose numbers were written as prose. The
+  // harbours each state a channel depth and a tidal range; the engine systems
+  // each state how often they need attention. In both cases the interesting
+  // question is comparative — which harbour is shallowest, which system comes
+  // round soonest — and a list of cards answers neither.
+  // ═══════════════════════════════════════════════════════════════════
+
+  // "20-40 ft main channel" → 20-40. "~9 ft mean" → a single value.
+  function getCoreFeetRange(text) {
+    var str = String(text || '');
+    var range = str.match(/(\d+(?:\.\d+)?)\s*[-–]\s*(\d+(?:\.\d+)?)\s*ft/i);
+    if (range) return { from: Number(range[1]), to: Number(range[2]) };
+    var one = str.match(/(\d+(?:\.\d+)?)\s*ft/i);
+    return one ? { from: Number(one[1]), to: Number(one[1]) } : null;
+  }
+
+  function flHarborProfileSvg(h, harbors) {
+    var all = (harbors || []).map(function(hb) {
+      return {
+        name: String(hb && hb.name || '').replace(/\s+Harbou?r$/i, ''),
+        depth: getCoreFeetRange(hb && hb.depths),
+        tide: getCoreFeetRange(hb && hb.tidal_range)
+      };
+    });
+    var rows = all.filter(function(r) { return r.depth || r.tide; });
+    var missing = all.length - rows.length;
+    if (!rows.length) return null;
+
+    var W = 460, HEAD = 46, ROW = 28, NAMEW = 108, X0 = NAMEW + 8, X1 = W - 40;
+    var H = HEAD + (rows.length + (missing ? 1 : 0)) * ROW + 20;
+    // ★ One harbour is a 300 ft deep bay. Scaled to it, the fifteen-to-forty
+    // foot channels most boats actually use are squeezed into a tenth of the
+    // width and stop comparing to anything. Scale to the bulk, mark the rest.
+    var bounds = [];
+    rows.forEach(function(r) {
+      if (r.depth) bounds.push(r.depth.to);
+      if (r.tide) bounds.push(r.tide.to);
+    });
+    bounds.sort(function(a, b) { return a - b; });
+    var p80 = bounds[Math.floor(0.8 * (bounds.length - 1))];
+    var axisMax = Math.max(10, Math.ceil((p80 * 1.35) / 10) * 10);
+    var at = function(ft) { return X0 + (X1 - X0) * Math.min(1, ft / axisMax); };
+    var clipped = 0;
+    var kids = [];
+
+    kids.push(h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, rx: 8, fill: '#0b1b28' }));
+    kids.push(h('text', { key: 't', x: 10, y: 15, fontSize: 11, fontWeight: 900, fill: '#bae6fd', letterSpacing: '0.04em' }, 'CHANNEL DEPTH AND TIDAL RANGE'));
+    kids.push(h('text', { key: 'u', x: W - 10, y: 15, textAnchor: 'end', fontSize: 9, fontWeight: 700, fill: '#64748b' }, 'feet'));
+    // Legend: two different quantities on one axis need naming, not guessing.
+    kids.push(h('rect', { key: 'k1', x: 10, y: 23, width: 16, height: 7, rx: 2, fill: 'rgba(56,189,248,0.6)' }));
+    kids.push(h('text', { key: 'k1t', x: 30, y: 30, fontSize: 8.5, fontWeight: 700, fill: '#94a3b8' }, 'charted channel depth'));
+    kids.push(h('rect', { key: 'k2', x: 158, y: 23, width: 16, height: 7, rx: 2, fill: 'rgba(52,211,153,0.75)' }));
+    kids.push(h('text', { key: 'k2t', x: 178, y: 30, fontSize: 8.5, fontWeight: 700, fill: '#94a3b8' }, 'tidal range'));
+
+    for (var v = 0; v <= axisMax; v += 10) {
+      kids.push(h('line', { key: 'g' + v, x1: at(v), y1: HEAD - 6, x2: at(v), y2: H - 18,
+        stroke: v === 0 ? 'rgba(148,163,184,0.5)' : 'rgba(148,163,184,0.14)', strokeWidth: 1 }));
+      kids.push(h('text', { key: 'gl' + v, x: at(v), y: H - 6, textAnchor: 'middle', fontSize: 8, fontWeight: 700, fill: '#64748b' }, v));
+    }
+
+    rows.forEach(function(r, i) {
+      var y = HEAD + i * ROW;
+      kids.push(h('text', { key: 'n' + i, x: NAMEW, y: y + 14, textAnchor: 'end', fontSize: 9.5, fontWeight: 800, fill: '#e2e8f0' },
+        r.name.length > 17 ? r.name.slice(0, 16) + '…' : r.name));
+      if (r.depth) {
+        var dl = at(r.depth.from), dr = at(r.depth.to);
+        var dOff = r.depth.to > axisMax;
+        if (dOff) clipped++;
+        kids.push(h('rect', { key: 'd' + i, x: dl, y: y + 4, width: Math.max(3, dr - dl), height: 9, rx: 2, fill: 'rgba(56,189,248,0.6)' }));
+        if (dOff) {
+          kids.push(h('polygon', { key: 'da' + i, points: X1 + ',' + (y + 3) + ' ' + (X1 + 8) + ',' + (y + 8.5) + ' ' + X1 + ',' + (y + 14), fill: 'rgba(56,189,248,0.6)' }));
+        }
+        kids.push(h('text', { key: 'dt' + i, x: (dOff ? X1 + 11 : dr + 4), y: y + 12, fontSize: 8, fontWeight: 800, fill: '#7dd3fc' },
+          r.depth.from === r.depth.to ? r.depth.from + '′' : r.depth.from + '–' + r.depth.to + '′'));
+      }
+      if (r.tide) {
+        if (r.tide.to > axisMax) clipped++;
+        var tr = at(r.tide.to);
+        kids.push(h('rect', { key: 'ti' + i, x: X0, y: y + 15, width: Math.max(3, tr - X0), height: 6, rx: 2, fill: 'rgba(52,211,153,0.75)' }));
+        kids.push(h('text', { key: 'tt' + i, x: tr + 4, y: y + 21, fontSize: 8, fontWeight: 800, fill: '#6ee7b7' }, r.tide.to + '′'));
+      }
+    });
+
+    if (missing) {
+      var my = HEAD + rows.length * ROW;
+      kids.push(h('text', { key: 'mn', x: NAMEW, y: my + 14, textAnchor: 'end', fontSize: 9.5, fontWeight: 800, fill: '#64748b' }, '+' + missing + ' more'));
+      kids.push(h('line', { key: 'ms', x1: X0, y1: my + 11, x2: X1, y2: my + 11, stroke: 'rgba(100,116,139,0.4)', strokeWidth: 1, strokeDasharray: '3 4' }));
+      kids.push(h('text', { key: 'ml', x: (X0 + X1) / 2, y: my + 22, textAnchor: 'middle', fontSize: 8.5, fontWeight: 700, fill: '#64748b' }, 'no figures given — see the cards'));
+    }
+
+    if (clipped) {
+      kids.push(h('text', { key: 'cl', x: W - 10, y: 30, textAnchor: 'end', fontSize: 8, fontWeight: 700, fill: '#7dd3fc' },
+        '≫ ' + clipped + ' beyond ' + axisMax + '′'));
+    }
+
+    return h('svg', {
+      viewBox: '0 0 ' + W + ' ' + H,
+      // Each harbour's chart number, depths, tide and hazards are listed below.
+      'aria-hidden': 'true', focusable: 'false',
+      style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.28)', margin: '4px 0 12px' }
+    }, kids);
+  }
+
+  // How soon a system comes round again. A schedule may quote several figures
+  // ("Every 100 hr or annually … impeller every 2 yr or 200 hr"); the one that
+  // matters is the SHORTEST, because that is when you are next under the cowl.
+  function getCoreServiceHours(schedule) {
+    var text = String(schedule || '');
+    var re = /(\d+)\s*hr/gi;
+    var best = null, m;
+    while ((m = re.exec(text))) {
+      var v = Number(m[1]);
+      if (isFinite(v) && v > 0 && (best == null || v < best)) best = v;
+    }
+    return best;
+  }
+
+  function flServiceIntervalSvg(h, systems) {
+    var all = (systems || []).map(function(e) {
+      return { name: String(e && e.system || ''), hours: getCoreServiceHours(e && e.schedule) };
+    });
+    var timed = all.filter(function(r) { return r.hours != null; }).sort(function(a, b) { return a.hours - b.hours; });
+    var calendarOnly = all.length - timed.length;
+    if (!timed.length) return null;
+
+    var W = 460, HEAD = 32, ROW = 24, NAMEW = 150, X0 = NAMEW + 8, X1 = W - 44;
+    var H = HEAD + (timed.length + (calendarOnly ? 1 : 0)) * ROW + 20;
+    var maxHr = 0;
+    timed.forEach(function(r) { maxHr = Math.max(maxHr, r.hours); });
+    var axisMax = Math.ceil((maxHr * 1.1) / 50) * 50;
+    var at = function(hr) { return X0 + (X1 - X0) * Math.min(1, hr / axisMax); };
+    var kids = [];
+
+    kids.push(h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, rx: 8, fill: '#1a1206' }));
+    kids.push(h('text', { key: 't', x: 10, y: 15, fontSize: 11, fontWeight: 900, fill: '#fdba74', letterSpacing: '0.04em' }, 'HOW SOON IT COMES ROUND AGAIN'));
+    kids.push(h('text', { key: 'u', x: W - 10, y: 15, textAnchor: 'end', fontSize: 9, fontWeight: 700, fill: '#94a3b8' }, 'engine hours'));
+
+    for (var v = 0; v <= axisMax; v += 50) {
+      kids.push(h('line', { key: 'g' + v, x1: at(v), y1: HEAD - 6, x2: at(v), y2: H - 18,
+        stroke: v === 0 ? 'rgba(148,163,184,0.5)' : 'rgba(148,163,184,0.16)', strokeWidth: 1 }));
+      kids.push(h('text', { key: 'gl' + v, x: at(v), y: H - 6, textAnchor: 'middle', fontSize: 8, fontWeight: 700, fill: '#94a3b8' }, v));
+    }
+
+    timed.forEach(function(r, i) {
+      var y = HEAD + i * ROW, mid = y + ROW / 2;
+      var right = at(r.hours);
+      kids.push(h('text', { key: 'n' + i, x: NAMEW, y: mid + 3.5, textAnchor: 'end', fontSize: 9, fontWeight: 800, fill: '#fed7aa' },
+        r.name.length > 25 ? r.name.slice(0, 24) + '…' : r.name));
+      kids.push(h('rect', { key: 'b' + i, x: X0, y: y + 5, width: Math.max(3, right - X0), height: ROW - 11, rx: 2,
+        fill: r.hours <= 50 ? 'rgba(248,113,113,0.7)' : r.hours <= 100 ? 'rgba(251,191,36,0.7)' : 'rgba(52,211,153,0.6)' }));
+      kids.push(h('text', { key: 'l' + i, x: right + 4, y: mid + 3.5, fontSize: 8.5, fontWeight: 900, fill: '#fdba74' }, r.hours + ' hr'));
+    });
+
+    if (calendarOnly) {
+      // ★ Engine hours and calendar time are different clocks. A system serviced
+      // "annually" has no place on an hours axis, and putting it at zero would
+      // read as the most demanding item on the list.
+      var cy = HEAD + timed.length * ROW, cmid = cy + ROW / 2;
+      kids.push(h('text', { key: 'cn', x: NAMEW, y: cmid + 3.5, textAnchor: 'end', fontSize: 9, fontWeight: 800, fill: '#94a3b8' }, '+' + calendarOnly + ' more'));
+      kids.push(h('line', { key: 'cs', x1: X0, y1: cmid, x2: X1, y2: cmid, stroke: 'rgba(148,163,184,0.4)', strokeWidth: 1, strokeDasharray: '3 4' }));
+      kids.push(h('text', { key: 'cl', x: (X0 + X1) / 2, y: cmid + 3.5, textAnchor: 'middle', fontSize: 8.5, fontWeight: 700, fill: '#94a3b8' }, 'on the calendar, not the hour meter'));
+    }
+
+    return h('svg', {
+      viewBox: '0 0 ' + W + ' ' + H,
+      // Each system's full schedule, failures and tooling are listed below.
+      'aria-hidden': 'true', focusable: 'false',
+      style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(251,146,60,0.45)', margin: '4px 0 12px' }
+    }, kids);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // WHERE THESE PLACES ACTUALLY ARE
+  // Two sections list places and then leave you to picture them: eight ports
+  // "each with its own character", and the famous grounds, "some inshore, some
+  // offshore". Both already carry real coordinates in their data, so the map
+  // is sitting there unplotted — and where a port sits relative to the others
+  // is most of what distinguishes it.
+  //
+  // ★ This plots POSITIONS. No coastline is drawn, because none is in the data
+  // and inventing one would put land where the tool has no idea whether there
+  // is any. A dotted run connects the places west to east — that is an ordering
+  // of the same points, not a route and not a shore.
+  // ═══════════════════════════════════════════════════════════════════
+
+  // "43°39′N 70°15′W" and "~42°55' N, 68°40' W (offshore)" are the same fact
+  // written two ways — prime versus apostrophe, with or without commas.
+  function getCoreLatLon(coords) {
+    var text = String(coords || '');
+    var lat = text.match(/(\d+)\s*°\s*(\d+)\s*['′’]?\s*([NS])/);
+    var lon = text.match(/(\d+)\s*°\s*(\d+)\s*['′’]?\s*([EW])/);
+    if (!lat || !lon) return null;
+    var dm = function(m) { return Number(m[1]) + Number(m[2]) / 60; };
+    return {
+      lat: dm(lat) * (lat[3] === 'S' ? -1 : 1),
+      lon: dm(lon) * (lon[3] === 'W' ? -1 : 1)
+    };
+  }
+
+  function flCoastMapSvg(h, places, title, ink) {
+    var pts = (places || []).map(function(pl) {
+      var at = getCoreLatLon(pl && pl.coords);
+      if (!at) return null;
+      // Long compound names ("Camden / Rockport / Rockland") do not fit a pin.
+      return { name: String(pl.name || '').split(' / ')[0], lat: at.lat, lon: at.lon };
+    }).filter(Boolean);
+    var missing = (places || []).length - pts.length;
+    if (pts.length < 2) return null;
+
+    var W = 460, TOP = 34, BOT = 24, PAD = 34;
+    var minLat = Infinity, maxLat = -Infinity, minLon = Infinity, maxLon = -Infinity;
+    pts.forEach(function(q) {
+      minLat = Math.min(minLat, q.lat); maxLat = Math.max(maxLat, q.lat);
+      minLon = Math.min(minLon, q.lon); maxLon = Math.max(maxLon, q.lon);
+    });
+    var padLat = Math.max(0.12, (maxLat - minLat) * 0.16);
+    var padLon = Math.max(0.12, (maxLon - minLon) * 0.1);
+    minLat -= padLat; maxLat += padLat; minLon -= padLon; maxLon += padLon;
+
+    // ★ A degree of longitude is shorter than a degree of latitude, by cos(lat).
+    // Plotted one-for-one the coast comes out stretched sideways, which is a
+    // false shape rather than a stylistic choice.
+    var midLat = (minLat + maxLat) / 2;
+    var squeeze = Math.cos(midLat * Math.PI / 180);
+    var spanX = (maxLon - minLon) * squeeze, spanY = maxLat - minLat;
+    var plotW = W - PAD * 2;
+    var plotH = Math.max(120, Math.min(230, plotW * (spanY / spanX)));
+    var H = TOP + plotH + BOT;
+    var x = function(lon) { return PAD + plotW * ((lon - minLon) * squeeze) / spanX; };
+    var y = function(lat) { return TOP + plotH - plotH * ((lat - minLat) / spanY); };
+
+    var kids = [];
+    kids.push(h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, rx: 8, fill: '#08283d' }));
+    kids.push(h('rect', { key: 'sea', x: PAD, y: TOP, width: plotW, height: plotH, fill: 'rgba(13,52,80,0.85)', stroke: 'rgba(125,211,252,0.35)', strokeWidth: 1 }));
+    kids.push(h('text', { key: 't', x: 10, y: 15, fontSize: 11, fontWeight: 900, fill: '#bae6fd', letterSpacing: '0.04em' }, title));
+    kids.push(h('text', { key: 'd', x: 10, y: 27, fontSize: 8, fontWeight: 700, fill: '#64748b' }, 'positions only — no coastline, not for navigation'));
+
+    // Whole-degree graticule, labelled.
+    for (var la = Math.ceil(minLat); la <= maxLat; la++) {
+      kids.push(h('line', { key: 'la' + la, x1: PAD, y1: y(la), x2: PAD + plotW, y2: y(la), stroke: 'rgba(125,211,252,0.16)', strokeWidth: 1 }));
+      kids.push(h('text', { key: 'lat' + la, x: PAD - 4, y: y(la) + 3, textAnchor: 'end', fontSize: 8, fontWeight: 700, fill: '#64748b' }, la + '°N'));
+    }
+    for (var lo = Math.ceil(minLon); lo <= maxLon; lo++) {
+      kids.push(h('line', { key: 'lo' + lo, x1: x(lo), y1: TOP, x2: x(lo), y2: TOP + plotH, stroke: 'rgba(125,211,252,0.16)', strokeWidth: 1 }));
+      kids.push(h('text', { key: 'lot' + lo, x: x(lo), y: TOP + plotH + 11, textAnchor: 'middle', fontSize: 8, fontWeight: 700, fill: '#64748b' }, Math.abs(lo) + '°W'));
+    }
+    // North, so the orientation is stated rather than assumed.
+    kids.push(h('polygon', { key: 'n', points: (W - 16) + ',' + (TOP + 6) + ' ' + (W - 20) + ',' + (TOP + 16) + ' ' + (W - 12) + ',' + (TOP + 16), fill: '#7dd3fc' }));
+    kids.push(h('text', { key: 'nt', x: W - 16, y: TOP + 25, textAnchor: 'middle', fontSize: 8, fontWeight: 900, fill: '#7dd3fc' }, 'N'));
+
+    var run = pts.slice().sort(function(a, b) { return a.lon - b.lon; });
+    kids.push(h('path', { key: 'run', d: run.map(function(q, i) { return (i ? 'L' : 'M') + x(q.lon).toFixed(1) + ' ' + y(q.lat).toFixed(1); }).join(' '),
+      fill: 'none', stroke: 'rgba(125,211,252,0.4)', strokeWidth: 1.2, strokeDasharray: '4 4' }));
+
+    run.forEach(function(q, i) {
+      var px = x(q.lon), py = y(q.lat);
+      kids.push(h('circle', { key: 'p' + i, cx: px, cy: py, r: 4.2, fill: ink, stroke: '#04121d', strokeWidth: 1.2 }));
+      // ★ Side is chosen by POSITION, not by index: a pin in the right-hand
+      // third with its label anchored 'start' runs straight off the plot and
+      // gets clipped by the viewBox. Vertical offset still alternates, which is
+      // what keeps neighbouring labels apart.
+      var right = px < PAD + plotW * 0.62;
+      var lx = px + (right ? 7 : -7);
+      kids.push(h('text', { key: 'pl' + i, x: lx, y: py + (i % 4 < 2 ? -6 : 11), textAnchor: right ? 'start' : 'end',
+        fontSize: 8.5, fontWeight: 800, fill: '#e0f2fe', stroke: 'rgba(8,40,61,0.9)', strokeWidth: 2.4, paintOrder: 'stroke' },
+        q.name.length > 16 ? q.name.slice(0, 15) + '…' : q.name));
+    });
+
+    kids.push(h('text', { key: 'run2', x: PAD, y: H - 6, fontSize: 8, fontWeight: 700, fill: '#64748b' },
+      'dotted line orders the ' + pts.length + ' places west to east — it is not a route'
+      + (missing ? ' · ' + missing + ' without coordinates omitted' : '')));
+
+    return h('svg', {
+      viewBox: '0 0 ' + W + ' ' + H,
+      // Every place is described in full below, with its own coordinates.
+      'aria-hidden': 'true', focusable: 'false',
+      style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.28)', margin: '4px 0 12px' }
+    }, kids);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // THE LICENSE LADDER, AND THE FLEET
+  // The lobster licence section opens by promising "below is the ladder" and
+  // then renders a flat list of six cards. The ladder is the thing worth
+  // seeing: which tier you can hold at what age, and how the trap limit jumps
+  // from ten to eight hundred when you cross eighteen.
+  //
+  // The boat section says the fleet runs "from open skiffs to 90-ft draggers",
+  // which is a sixfold spread that six equally-sized cards flatten completely.
+  // ═══════════════════════════════════════════════════════════════════
+
+  // "Under 18 (typically 8-17)" → 8-17. "~16+ (varies)" → 16 and up.
+  // "Any (Maine resident)" is not an age gate at all.
+  function getCoreAgeGate(age) {
+    var text = String(age || '');
+    var range = text.match(/(\d+)\s*[-–]\s*(\d+)/);
+    if (range) return { from: Number(range[1]), to: Number(range[2]) };
+    var floor = text.match(/(\d+)\s*\+/);
+    if (floor) return { from: Number(floor[1]), to: null };
+    var under = text.match(/under\s+(\d+)/i);
+    if (under) return { from: null, to: Number(under[1]) };
+    return null;
+  }
+
+  function flLicenseLadderSvg(h, tiers, inkFor) {
+    var all = (tiers || []).filter(Boolean).map(function(t) {
+      return { tier: String(t.tier || ''), traps: t.traps, gate: getCoreAgeGate(t.age) };
+    });
+    // A tier with an age gate belongs on the ladder, ordered by when you can
+    // first hold it. One without a gate is a separate track, not a rung.
+    var gated = all.filter(function(r) { return r.gate; }).sort(function(a, b) {
+      return (a.gate.from == null ? 0 : a.gate.from) - (b.gate.from == null ? 0 : b.gate.from);
+    });
+    var ungated = all.filter(function(r) { return !r.gate; });
+    if (!gated.length) return null;
+
+    var W = 460, HEAD = 32, ROW = 26, NAMEW = 96, X0 = NAMEW + 8, X1 = W - 62;
+    var H = HEAD + (gated.length + ungated.length) * ROW + 26;
+    var lo = 6, hi = 24;
+    gated.forEach(function(r) {
+      if (r.gate.from != null) lo = Math.min(lo, r.gate.from - 2);
+      if (r.gate.to != null) hi = Math.max(hi, r.gate.to + 2);
+    });
+    var at = function(age) { return X0 + (X1 - X0) * Math.min(1, Math.max(0, (age - lo) / (hi - lo))); };
+    var kids = [];
+
+    kids.push(h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, rx: 8, fill: '#0b1b28' }));
+    kids.push(h('text', { key: 't', x: 10, y: 15, fontSize: 11, fontWeight: 900, fill: '#bae6fd', letterSpacing: '0.04em' }, 'THE LADDER, BY AGE'));
+    kids.push(h('text', { key: 'u', x: W - 10, y: 15, textAnchor: 'end', fontSize: 9, fontWeight: 700, fill: '#64748b' }, 'trap limit'));
+
+    for (var a = Math.ceil(lo / 2) * 2; a <= hi; a += 2) {
+      kids.push(h('line', { key: 'g' + a, x1: at(a), y1: HEAD - 6, x2: at(a), y2: H - 22, stroke: 'rgba(148,163,184,0.14)', strokeWidth: 1 }));
+      kids.push(h('text', { key: 'gl' + a, x: at(a), y: H - 9, textAnchor: 'middle', fontSize: 8, fontWeight: 700, fill: '#64748b' }, a));
+    }
+    // Eighteen is where the fishery actually opens up.
+    kids.push(h('line', { key: 'adult', x1: at(18), y1: HEAD - 8, x2: at(18), y2: H - 22, stroke: 'rgba(56,189,248,0.55)', strokeWidth: 1.4, strokeDasharray: '4 3' }));
+
+    var draw = function(r, y, faded) {
+      var mid = y + ROW / 2;
+      var ink = inkFor(r.tier);
+      var left = r.gate && r.gate.from != null ? at(r.gate.from) : X0;
+      var open = !r.gate || r.gate.to == null;
+      var right = open ? X1 : at(r.gate.to);
+      kids.push(h('text', { key: 'n' + y, x: NAMEW, y: mid + 3.5, textAnchor: 'end', fontSize: 9.5, fontWeight: 800, fill: faded ? '#94a3b8' : '#e2e8f0' },
+        r.tier.length > 15 ? r.tier.slice(0, 14) + '…' : r.tier));
+      kids.push(h('rect', { key: 'b' + y, x: left, y: y + 6, width: Math.max(4, right - left), height: ROW - 13, rx: 3,
+        fill: ink, opacity: faded ? 0.45 : 1 }));
+      if (open) {
+        kids.push(h('polygon', { key: 'ar' + y, points: X1 + ',' + (y + 5) + ' ' + (X1 + 9) + ',' + mid + ' ' + X1 + ',' + (y + ROW - 5), fill: ink, opacity: faded ? 0.45 : 1 }));
+      }
+      // Trap limit as a number: 0, 5, 10 and 800 share no usable scale, and a
+      // bar that tried would make the first three invisible.
+      var traps = r.traps == null ? '—' : String(r.traps);
+      kids.push(h('text', { key: 'tr' + y, x: W - 10, y: mid + 3.5, textAnchor: 'end', fontSize: 9.5, fontWeight: 900,
+        fill: r.traps === 0 ? '#94a3b8' : '#fbbf24' }, traps));
+    };
+
+    gated.forEach(function(r, i) { draw(r, HEAD + i * ROW, false); });
+    ungated.forEach(function(r, i) {
+      var y = HEAD + (gated.length + i) * ROW;
+      draw(r, y, true);
+      kids.push(h('text', { key: 'any' + i, x: (X0 + X1) / 2, y: y + ROW / 2 + 3.5, textAnchor: 'middle', fontSize: 8.5, fontWeight: 800, fill: '#04121d' }, 'any age — separate track'));
+    });
+
+    return h('svg', {
+      viewBox: '0 0 ' + W + ' ' + H,
+      // Every tier is written out below with its age, requirements and role.
+      'aria-hidden': 'true', focusable: 'false',
+      style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.28)', margin: '4px 0 12px' }
+    }, kids);
+  }
+
+  // "Open Skiff (14-18 ft)" → 14-18. Two of the six carry no length at all.
+  function getCoreHullLength(name) {
+    var m = String(name || '').match(/(\d+)\s*[-–]\s*(\d+)\s*ft/i);
+    if (m) return { from: Number(m[1]), to: Number(m[2]) };
+    var one = String(name || '').match(/(\d+)\s*ft/i);
+    return one ? { from: Number(one[1]), to: Number(one[1]) } : null;
+  }
+
+  function flFleetScaleSvg(h, boats) {
+    var all = (boats || []).filter(Boolean).map(function(b) {
+      return { name: String(b.name || '').replace(/\s*\([^)]*\)\s*$/, ''), len: getCoreHullLength(b.name) };
+    });
+    var sized = all.filter(function(r) { return r.len; }).sort(function(a, b) { return a.len.from - b.len.from; });
+    var unsized = all.length - sized.length;
+    if (!sized.length) return null;
+
+    var W = 460, HEAD = 32, ROW = 30, NAMEW = 116, X0 = NAMEW + 8, X1 = W - 46;
+    var H = HEAD + (sized.length + (unsized ? 1 : 0)) * ROW + 22;
+    var maxFt = 0;
+    sized.forEach(function(r) { maxFt = Math.max(maxFt, r.len.to); });
+    var axisMax = Math.ceil((maxFt * 1.08) / 10) * 10;
+    var at = function(ft) { return X0 + (X1 - X0) * Math.min(1, ft / axisMax); };
+    var kids = [];
+
+    kids.push(h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, rx: 8, fill: '#0b1b28' }));
+    kids.push(h('text', { key: 't', x: 10, y: 15, fontSize: 11, fontWeight: 900, fill: '#bae6fd', letterSpacing: '0.04em' }, 'THE FLEET, TO SCALE'));
+    kids.push(h('text', { key: 'u', x: W - 10, y: 15, textAnchor: 'end', fontSize: 9, fontWeight: 700, fill: '#64748b' }, 'feet'));
+
+    for (var v = 0; v <= axisMax; v += 10) {
+      kids.push(h('line', { key: 'g' + v, x1: at(v), y1: HEAD - 6, x2: at(v), y2: H - 20, stroke: v === 0 ? 'rgba(148,163,184,0.5)' : 'rgba(148,163,184,0.14)', strokeWidth: 1 }));
+      kids.push(h('text', { key: 'gl' + v, x: at(v), y: H - 7, textAnchor: 'middle', fontSize: 8, fontWeight: 700, fill: '#64748b' }, v));
+    }
+
+    sized.forEach(function(r, i) {
+      var y = HEAD + i * ROW, mid = y + ROW / 2;
+      var left = at(0), right = at(r.len.to), bow = at(r.len.from);
+      var top = y + 6, bot = y + ROW - 10;
+      kids.push(h('text', { key: 'n' + i, x: NAMEW, y: mid + 2, textAnchor: 'end', fontSize: 9.5, fontWeight: 800, fill: '#e2e8f0' },
+        r.name.length > 20 ? r.name.slice(0, 19) + '…' : r.name));
+      // The bar IS the hull: a transom aft, a run forward, a bow at the top of
+      // the range. The shaded head is the span between the smallest and the
+      // largest boat of the type.
+      kids.push(h('path', { key: 'h' + i, d: 'M' + left + ' ' + top + ' L' + (right - 14) + ' ' + top + ' L' + right + ' ' + ((top + bot) / 2) + ' L' + (right - 14) + ' ' + bot + ' L' + left + ' ' + bot + ' Z',
+        fill: 'rgba(56,189,248,0.45)', stroke: 'rgba(125,211,252,0.8)', strokeWidth: 1 }));
+      if (bow < right) {
+        kids.push(h('rect', { key: 'sp' + i, x: bow, y: top, width: Math.max(1, right - 14 - bow), height: bot - top, fill: 'rgba(2,6,23,0.32)' }));
+      }
+      kids.push(h('text', { key: 'l' + i, x: right + 4, y: mid + 2, fontSize: 8.5, fontWeight: 900, fill: '#7dd3fc' },
+        r.len.from === r.len.to ? r.len.from + '′' : r.len.from + '–' + r.len.to + '′'));
+    });
+
+    if (unsized) {
+      var uy = HEAD + sized.length * ROW, umid = uy + ROW / 2;
+      kids.push(h('line', { key: 'us', x1: X0, y1: umid, x2: X1, y2: umid, stroke: 'rgba(100,116,139,0.4)', strokeWidth: 1, strokeDasharray: '3 4' }));
+      kids.push(h('text', { key: 'un', x: NAMEW, y: umid + 3.5, textAnchor: 'end', fontSize: 9.5, fontWeight: 800, fill: '#64748b' }, '+' + unsized + ' more'));
+      kids.push(h('text', { key: 'ul', x: (X0 + X1) / 2, y: umid + 3.5, textAnchor: 'middle', fontSize: 8.5, fontWeight: 700, fill: '#64748b' }, 'no length given — see the cards'));
+    }
+
+    return h('svg', {
+      viewBox: '0 0 ' + W + ' ' + H,
+      // Every type is described in full below, sized or not.
+      'aria-hidden': 'true', focusable: 'false',
+      style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.28)', margin: '4px 0 12px' }
+    }, kids);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // THE VHF CALL TRIAGE
+  // Mayday, Pan-Pan, Sécurité and a routine hail were four cards in a list,
+  // and choosing between them under pressure is the entire skill. The four are
+  // not four topics — they are one decision taken in order of severity, and
+  // read top to bottom that decision is a ladder you step down until a rung
+  // matches.
+  //
+  // Conditions and channels come from the same VHF_SCRIPTS entries the cards
+  // below are built from, so the flow cannot describe a call the scripts do
+  // not define.
+  // ═══════════════════════════════════════════════════════════════════
+
+  // "MAYDAY (distress — life-threatening)" → "MAYDAY". The parenthetical is a
+  // gloss for the card heading and too long for a badge.
+  function getCoreCallName(type) {
+    return String(type || '').split(' (')[0].trim();
+  }
+  // "Imminent threat to life: fire, sinking, …" → the test, then the examples.
+  function getCoreCallTest(when) {
+    var text = String(when || '');
+    var i = text.indexOf(':');
+    return i < 0
+      ? { test: text.trim(), examples: '' }
+      : { test: text.slice(0, i).trim(), examples: text.slice(i + 1).trim() };
+  }
+
+  function flVhfTriageSvg(h, scripts, inkFor) {
+    var order = ['mayday', 'panpan', 'securite', 'general-hail'];
+    var steps = order.map(function(id) {
+      var found = (scripts || []).filter(function(v) { return v && v.id === id; })[0];
+      if (!found) return null;
+      var parsed = getCoreCallTest(found.when);
+      return { id: id, name: getCoreCallName(found.type), channel: String(found.channel || ''), test: parsed.test, examples: parsed.examples };
+    }).filter(Boolean);
+    if (!steps.length) return null;
+
+    var W = 460, TOP = 46, ROW = 54, PAD = 14, QW = 250;
+    var H = TOP + steps.length * ROW + 22;
+    var kids = [];
+    kids.push(h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, rx: 8, fill: '#0b1b28' }));
+    kids.push(h('text', { key: 't', x: 10, y: 16, fontSize: 11, fontWeight: 900, fill: '#bae6fd', letterSpacing: '0.04em' }, 'WHICH CALL?  WORK DOWN UNTIL ONE FITS'));
+    kids.push(h('rect', { key: 'ch16', x: 10, y: 24, width: W - 20, height: 15, rx: 3, fill: 'rgba(56,189,248,0.18)' }));
+    kids.push(h('text', { key: 'ch16t', x: W / 2, y: 35, textAnchor: 'middle', fontSize: 9, fontWeight: 900, fill: '#7dd3fc' }, 'EVERY CALL OPENS ON CHANNEL 16'));
+
+    steps.forEach(function(st, i) {
+      var y = TOP + i * ROW;
+      var ink = inkFor(st.id);
+      var last = i === steps.length - 1;
+      // The condition to test at this rung.
+      kids.push(h('rect', { key: 'q' + i, x: PAD, y: y, width: QW, height: ROW - 12, rx: 5, fill: 'rgba(15,23,42,0.8)', stroke: 'rgba(148,163,184,0.3)', strokeWidth: 1 }));
+      kids.push(h('text', { key: 'qt' + i, x: PAD + 9, y: y + 16, fontSize: 9.5, fontWeight: 800, fill: '#e2e8f0' },
+        (last ? '' : 'Is it ') + (st.test.length > 46 ? st.test.slice(0, 45) + '…' : st.test) + (last ? '' : '?')));
+      if (st.examples) {
+        kids.push(h('text', { key: 'qe' + i, x: PAD + 9, y: y + 29, fontSize: 8, fontWeight: 600, fill: '#94a3b8' },
+          st.examples.length > 52 ? st.examples.slice(0, 51) + '…' : st.examples));
+      }
+      // Arrow across to the call it selects.
+      var ax = PAD + QW;
+      kids.push(h('line', { key: 'a' + i, x1: ax + 2, y1: y + (ROW - 12) / 2, x2: ax + 20, y2: y + (ROW - 12) / 2, stroke: ink, strokeWidth: 1.6 }));
+      kids.push(h('polygon', { key: 'ah' + i, points: (ax + 26) + ',' + (y + (ROW - 12) / 2) + ' ' + (ax + 18) + ',' + (y + (ROW - 12) / 2 - 4) + ' ' + (ax + 18) + ',' + (y + (ROW - 12) / 2 + 4), fill: ink }));
+      // The call itself.
+      var bx = ax + 30, bw = W - PAD - bx;
+      kids.push(h('rect', { key: 'b' + i, x: bx, y: y, width: bw, height: ROW - 12, rx: 5, fill: ink }));
+      kids.push(h('text', { key: 'bt' + i, x: bx + bw / 2, y: y + 16, textAnchor: 'middle', fontSize: 10.5, fontWeight: 900, fill: '#04121d' }, st.name));
+      kids.push(h('text', { key: 'bc' + i, x: bx + bw / 2, y: y + 29, textAnchor: 'middle', fontSize: 8, fontWeight: 800, fill: 'rgba(4,18,29,0.75)' },
+        'Ch ' + (st.channel.length > 14 ? st.channel.slice(0, 13) + '…' : st.channel)));
+      // Fall through to the next rung.
+      if (!last) {
+        kids.push(h('line', { key: 'd' + i, x1: PAD + 18, y1: y + ROW - 12, x2: PAD + 18, y2: y + ROW, stroke: 'rgba(148,163,184,0.5)', strokeWidth: 1.4 }));
+        kids.push(h('text', { key: 'dn' + i, x: PAD + 26, y: y + ROW - 1, fontSize: 8, fontWeight: 800, fill: '#64748b' }, 'no'));
+      }
+    });
+
+    var uncovered = (scripts || []).filter(function(v) {
+      return v && order.indexOf(v.id) < 0;
+    }).length;
+    if (uncovered) {
+      kids.push(h('text', { key: 'unc', x: W / 2, y: H - 4, textAnchor: 'middle', fontSize: 8, fontWeight: 700, fill: '#64748b' },
+        '+' + uncovered + ' further call type' + (uncovered === 1 ? '' : 's') + ' below — not part of this severity ladder'));
+    }
+
+    return h('svg', {
+      viewBox: '0 0 ' + W + ' ' + H,
+      // Each call is written out below with its full script and follow-up.
+      'aria-hidden': 'true', focusable: 'false',
+      style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.28)', margin: '4px 0 12px' }
+    }, kids);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // THE WIND WARNING LADDER
+  // Small Craft Advisory, Gale, Storm — three warnings that mean three
+  // different days on the water, listed as three paragraphs with their wind
+  // ranges buried mid-sentence. Stacked on one knot axis the ladder is obvious:
+  // where each one starts, how wide it is, and how close the top of one sits to
+  // the bottom of the next.
+  //
+  // ★ Only some scenarios are wind-defined at all — fog is a visibility rule,
+  // a thunderstorm is a cloud, a nor'easter is a pressure pattern. Those are
+  // counted and named rather than given invented wind bands.
+  // ═══════════════════════════════════════════════════════════════════
+
+  function getCoreWindBand(trigger) {
+    var text = String(trigger || '');
+    // "Sustained winds 21-33 kt" and "48-63 kt" both state a closed range; a
+    // bare "64+ kt" states a floor. Anything else is not a wind rule.
+    var range = text.match(/(\d+)\s*[-–]\s*(\d+)\s*kt/i);
+    if (range) return { from: Number(range[1]), to: Number(range[2]) };
+    var floor = text.match(/(\d+)\s*\+\s*kt/i);
+    if (floor) return { from: Number(floor[1]), to: null };
+    return null;
+  }
+
+  function flWindLadderSvg(h, scenarios, riskInk) {
+    var all = (scenarios || []).filter(Boolean).map(function(w) {
+      return { name: String(w.name || ''), risk: String(w.risk || ''), band: getCoreWindBand(w.trigger) };
+    });
+    var banded = all.filter(function(r) { return r.band; })
+      .sort(function(a, b) { return a.band.from - b.band.from; });
+    if (!banded.length) return null;
+    var other = all.length - banded.length;
+
+    var W = 460, HEAD = 34, ROW = 26, NAMEW = 128, X0 = NAMEW + 8, X1 = W - 16;
+    var H = HEAD + (banded.length + (other ? 1 : 0)) * ROW + 22;
+    var maxKt = 0;
+    banded.forEach(function(r) { maxKt = Math.max(maxKt, r.band.to == null ? r.band.from : r.band.to); });
+    var axisMax = Math.ceil((maxKt * 1.16) / 10) * 10;
+    var at = function(kt) { return X0 + (X1 - X0) * Math.min(1, kt / axisMax); };
+    var kids = [];
+
+    kids.push(h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, rx: 8, fill: '#0b1b28' }));
+    kids.push(h('text', { key: 't', x: 10, y: 15, fontSize: 11, fontWeight: 900, fill: '#bae6fd', letterSpacing: '0.04em' }, 'WIND WARNING LADDER'));
+    kids.push(h('text', { key: 'u', x: W - 10, y: 15, textAnchor: 'end', fontSize: 9, fontWeight: 700, fill: '#64748b' }, 'knots, sustained'));
+
+    for (var v = 0; v <= axisMax; v += 10) {
+      kids.push(h('line', { key: 'g' + v, x1: at(v), y1: HEAD - 6, x2: at(v), y2: H - 20,
+        stroke: v === 0 ? 'rgba(148,163,184,0.5)' : 'rgba(148,163,184,0.16)', strokeWidth: 1 }));
+      kids.push(h('text', { key: 'gl' + v, x: at(v), y: H - 7, textAnchor: 'middle', fontSize: 8.5, fontWeight: 700, fill: '#64748b' }, v));
+    }
+
+    banded.forEach(function(r, i) {
+      var y = HEAD + i * ROW, mid = y + ROW / 2;
+      var ink = riskInk(r.risk);
+      var left = at(r.band.from);
+      var open = r.band.to == null;
+      var right = open ? X1 - 10 : at(r.band.to);
+      kids.push(h('text', { key: 'n' + i, x: NAMEW, y: mid + 3.5, textAnchor: 'end', fontSize: 9.5, fontWeight: 800, fill: '#e2e8f0' },
+        r.name.length > 21 ? r.name.slice(0, 20) + '…' : r.name));
+      kids.push(h('rect', { key: 'b' + i, x: left, y: y + 6, width: Math.max(3, right - left), height: ROW - 13, rx: 2, fill: ink }));
+      if (open) {
+        kids.push(h('polygon', { key: 'ar' + i, points: (X1 - 10) + ',' + (y + 5) + ' ' + X1 + ',' + mid + ' ' + (X1 - 10) + ',' + (y + ROW - 5), fill: ink }));
+      }
+      var label = r.band.from + (open ? '+' : '–' + r.band.to);
+      var roomy = (right - left) >= 42;
+      kids.push(h('text', { key: 'l' + i, x: roomy ? (left + right) / 2 : right + 5, y: mid + 3.5,
+        textAnchor: roomy ? 'middle' : 'start', fontSize: 9, fontWeight: 900, fill: roomy ? '#04121d' : ink }, label));
+    });
+
+    if (other) {
+      var oy = HEAD + banded.length * ROW, omid = oy + ROW / 2;
+      kids.push(h('line', { key: 'os', x1: X0, y1: omid, x2: X1, y2: omid, stroke: 'rgba(100,116,139,0.4)', strokeWidth: 1, strokeDasharray: '3 4' }));
+      kids.push(h('text', { key: 'on', x: NAMEW, y: omid + 3.5, textAnchor: 'end', fontSize: 9.5, fontWeight: 800, fill: '#64748b' }, '+' + other + ' more'));
+      kids.push(h('text', { key: 'ol', x: (X0 + X1) / 2, y: omid + 3.5, textAnchor: 'middle', fontSize: 8.5, fontWeight: 700, fill: '#64748b' },
+        'not defined by wind speed — fog, lightning, pressure'));
+    }
+
+    return h('svg', {
+      viewBox: '0 0 ' + W + ' ' + H,
+      // Every scenario is written out in full below, wind-defined or not.
+      'aria-hidden': 'true', focusable: 'false',
+      style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.28)', margin: '4px 0 12px' }
+    }, kids);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // COLD WATER — THE FIRST HOUR
+  // 1-10-1 is the whole lesson and it is a lesson about PROPORTION: one minute
+  // to get your breathing under control, ten minutes of hands that still work,
+  // one hour before the cold has you. Written as three numbers in a sentence
+  // they look like three comparable amounts of time. Drawn to scale, the minute
+  // that drowns people is a sliver — and that is the point.
+  //
+  // Spans are read from the phase titles, which already state them ("first 1
+  // minute", "minutes 1-10", "10 min - 1 hr"), so the diagram and the prose
+  // cannot drift apart.
+  // ═══════════════════════════════════════════════════════════════════
+
+  function getCoreColdWaterSpan(phaseTitle) {
+    var text = String(phaseTitle || '').toLowerCase();
+    var tokens = [];
+    // Number followed by its unit word, anywhere in the title.
+    var re = /(\d+(?:\.\d+)?)\s*(minute|minutes|min|hour|hours|hr|hrs)?/g;
+    var m;
+    var unitAfter = /(minute|minutes|min|hour|hours|hr|hrs)/;
+    while ((m = re.exec(text))) {
+      if (!m[1]) continue;
+      var unit = m[2];
+      if (!unit) {
+        // "minutes 1-10" states the unit BEFORE the numbers, and "1." is the
+        // list index rather than a duration — so look both ways before trusting
+        // a bare number.
+        var before = text.slice(0, m.index);
+        var afterChar = text.charAt(m.index + m[1].length);
+        if (afterChar === '.') continue;          // "1." is the phase number
+        var pre = before.match(new RegExp(unitAfter.source + '[^a-z]*$'));
+        if (!pre) continue;
+        unit = pre[1];
+      }
+      tokens.push({ value: Number(m[1]), minutes: /h/.test(unit) ? Number(m[1]) * 60 : Number(m[1]) });
+    }
+    if (!tokens.length) return null;
+    if (tokens.length === 1) {
+      // "first 1 minute" runs from zero; anything else single-valued is a
+      // duration we cannot place on the axis.
+      return /first|within/.test(text) ? { from: 0, to: tokens[0].minutes } : null;
+    }
+    var a = tokens[0].minutes, b = tokens[tokens.length - 1].minutes;
+    return b > a ? { from: a, to: b } : null;
+  }
+
+  // A single scale, plus a magnified view of the part that matters most. One
+  // linear axis alone would render the first minute seven pixels wide and
+  // unlabellable; a magnifier alone would hide how short it really is.
+  function flColdWaterTimelineSvg(h, phases) {
+    var rows = (phases || []).map(function(p) {
+      return { title: String(p.phase || ''), span: getCoreColdWaterSpan(p.phase) };
+    });
+    var timed = rows.filter(function(r) { return r.span; });
+    if (!timed.length) return null;
+    var untimed = rows.length - timed.length;
+    var total = 0;
+    timed.forEach(function(r) { total = Math.max(total, r.span.to); });
+    if (!(total > 0)) return null;
+
+    var W = 460, H = 178, X0 = 14, X1 = W - 14, BAR = 46, BAR2 = 116, BH = 24;
+    var TINT = ['#dc2626', '#f97316', '#fbbf24', '#38bdf8'];
+    var at = function(min, lo, hi) { return X0 + (X1 - X0) * ((min - lo) / (hi - lo)); };
+    var zoomTo = timed.length > 1 ? timed[1].span.to : total;   // magnify through phase 2
+    var kids = [];
+
+    kids.push(h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, rx: 8, fill: '#1a1206' }));
+    kids.push(h('text', { key: 't', x: 10, y: 16, fontSize: 12, fontWeight: 900, fill: '#fdba74', letterSpacing: '0.04em' }, 'THE FIRST HOUR, TO SCALE'));
+    kids.push(h('text', { key: 'st', x: 10, y: 30, fontSize: 9, fontWeight: 700, fill: '#94a3b8' }, 'the minute that drowns people is the narrow one'));
+
+    // Full scale.
+    timed.forEach(function(r, i) {
+      var x = at(r.span.from, 0, total), w = Math.max(2, at(r.span.to, 0, total) - x);
+      kids.push(h('rect', { key: 'f' + i, x: x, y: BAR, width: w, height: BH, fill: TINT[i % TINT.length] }));
+      if (w > 42) {
+        kids.push(h('text', { key: 'fl' + i, x: x + w / 2, y: BAR + 16, textAnchor: 'middle', fontSize: 9.5, fontWeight: 900, fill: '#1a1206' },
+          r.title.replace(/^\d+\.\s*/, '').replace(/\s*\(.*$/, '')));
+      }
+    });
+    [0, total / 4, total / 2, (total * 3) / 4, total].forEach(function(mk, i) {
+      kids.push(h('text', { key: 'ft' + i, x: at(mk, 0, total), y: BAR + BH + 11, textAnchor: i === 0 ? 'start' : i === 4 ? 'end' : 'middle',
+        fontSize: 8.5, fontWeight: 700, fill: '#94a3b8' }, Math.round(mk) + ' min'));
+    });
+
+    // The bracket that says which slice is being blown up.
+    var zx = at(zoomTo, 0, total);
+    kids.push(h('path', { key: 'br', d: 'M' + X0 + ' ' + (BAR + BH + 17) + ' L' + X0 + ' ' + (BAR + BH + 22) + ' L' + zx + ' ' + (BAR + BH + 22) + ' L' + zx + ' ' + (BAR + BH + 17),
+      fill: 'none', stroke: '#fdba74', strokeWidth: 1.4 }));
+    kids.push(h('path', { key: 'l1', d: 'M' + X0 + ' ' + (BAR + BH + 22) + ' L' + X0 + ' ' + (BAR2 - 6),
+      fill: 'none', stroke: 'rgba(253,186,116,0.5)', strokeWidth: 1, strokeDasharray: '3 3' }));
+    kids.push(h('path', { key: 'l2', d: 'M' + zx + ' ' + (BAR + BH + 22) + ' L' + X1 + ' ' + (BAR2 - 6),
+      fill: 'none', stroke: 'rgba(253,186,116,0.5)', strokeWidth: 1, strokeDasharray: '3 3' }));
+
+    // Magnified head of the timeline.
+    timed.forEach(function(r, i) {
+      if (r.span.from >= zoomTo) return;
+      var to = Math.min(r.span.to, zoomTo);
+      var x = at(r.span.from, 0, zoomTo), w = Math.max(2, at(to, 0, zoomTo) - x);
+      kids.push(h('rect', { key: 'z' + i, x: x, y: BAR2, width: w, height: BH, fill: TINT[i % TINT.length] }));
+      kids.push(h('text', { key: 'zl' + i, x: x + w / 2, y: BAR2 + 16, textAnchor: 'middle', fontSize: 9.5, fontWeight: 900, fill: '#1a1206' },
+        r.title.replace(/^\d+\.\s*/, '').replace(/\s*\(.*$/, '')));
+    });
+    [0, zoomTo / 2, zoomTo].forEach(function(mk, i) {
+      kids.push(h('text', { key: 'zt' + i, x: at(mk, 0, zoomTo), y: BAR2 + BH + 11, textAnchor: i === 0 ? 'start' : i === 2 ? 'end' : 'middle',
+        fontSize: 8.5, fontWeight: 700, fill: '#94a3b8' }, mk + ' min'));
+    });
+    // Centred inside the funnel: at either end it sits on a leader line.
+    kids.push(h('text', { key: 'zh', x: W / 2, y: BAR2 - 12, textAnchor: 'middle', fontSize: 8.5, fontWeight: 800, fill: '#fdba74' }, 'first ' + zoomTo + ' minutes, magnified'));
+
+    if (untimed) {
+      kids.push(h('text', { key: 'un', x: 10, y: H - 5, fontSize: 8.5, fontWeight: 700, fill: '#94a3b8' },
+        '+' + untimed + ' phase' + (untimed === 1 ? '' : 's') + ' that happen after rescue — not on this clock'));
+    }
+    return h('svg', {
+      viewBox: '0 0 ' + W + ' ' + H,
+      // Each phase is written out in full underneath, with its own timing.
+      'aria-hidden': 'true', focusable: 'false',
+      style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(251,146,60,0.45)', margin: '10px 0' }
+    }, kids);
+  }
+
+  // HELP and HUDDLE. Two body positions described in prose that a person in
+  // cold water has to reproduce from memory — the exact case for a picture.
+  function flHelpHuddleSvg(h) {
+    var W = 460, H = 150;
+    var kids = [];
+    kids.push(h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, rx: 8, fill: '#0b2c44' }));
+    kids.push(h('rect', { key: 'water', x: 0, y: 44, width: W, height: H - 44, fill: 'rgba(24,74,110,0.7)' }));
+    kids.push(h('line', { key: 'surf', x1: 0, y1: 44, x2: W, y2: 44, stroke: 'rgba(186,230,253,0.7)', strokeWidth: 1.6 }));
+    kids.push(h('line', { key: 'div', x1: W / 2, y1: 8, x2: W / 2, y2: H - 8, stroke: 'rgba(148,163,184,0.3)', strokeWidth: 1 }));
+
+    // HELP: one person, knees up, arms crossed, PFD on.
+    kids.push(h('text', { key: 'h1', x: 14, y: 22, fontSize: 12, fontWeight: 900, fill: '#bae6fd' }, 'HELP — alone'));
+    kids.push(h('text', { key: 'h1s', x: 14, y: 35, fontSize: 8.5, fontWeight: 700, fill: '#94a3b8' }, 'knees up, arms crossed, stay still'));
+    kids.push(h('g', { key: 'help', transform: 'translate(112,96)' },
+      h('ellipse', { rx: 30, ry: 9, fill: 'rgba(186,230,253,0.25)' }),
+      h('path', { d: 'M-16 -2 q0 -22 16 -22 q16 0 16 22 q0 12 -16 12 q-16 0 -16 -12 Z', fill: '#f97316', stroke: '#0b1a29', strokeWidth: 1.4 }),
+      h('circle', { cx: 0, cy: -34, r: 10, fill: '#f5d0a9', stroke: '#0b1a29', strokeWidth: 1.4 }),
+      // Knees drawn up to the chest.
+      h('path', { d: 'M-14 6 q-10 16 4 22 q10 4 14 -6', fill: 'none', stroke: '#f5d0a9', strokeWidth: 6, strokeLinecap: 'round' }),
+      h('path', { d: 'M14 6 q10 16 -4 22 q-10 4 -14 -6', fill: 'none', stroke: '#f5d0a9', strokeWidth: 6, strokeLinecap: 'round' }),
+      // Arms crossed over the chest.
+      h('path', { d: 'M-15 -12 L13 -2 M15 -12 L-13 -2', stroke: '#f5d0a9', strokeWidth: 5, strokeLinecap: 'round' })));
+
+    // HUDDLE: seen from above, a tight ring with the smallest at the centre.
+    kids.push(h('text', { key: 'h2', x: W / 2 + 14, y: 22, fontSize: 12, fontWeight: 900, fill: '#bae6fd' }, 'HUDDLE — together'));
+    kids.push(h('text', { key: 'h2s', x: W / 2 + 14, y: 35, fontSize: 8.5, fontWeight: 700, fill: '#94a3b8' }, 'chest to chest; children and injured inside'));
+    var cx = W * 0.75, cy = 96;
+    kids.push(h('ellipse', { key: 'hw', cx: cx, cy: cy, rx: 62, ry: 30, fill: 'rgba(186,230,253,0.22)' }));
+    [0, 72, 144, 216, 288].forEach(function(deg, i) {
+      var a = (deg - 90) * Math.PI / 180;
+      var px = cx + Math.cos(a) * 34, py = cy + Math.sin(a) * 17;
+      kids.push(h('g', { key: 'hd' + i, transform: 'translate(' + px.toFixed(1) + ',' + py.toFixed(1) + ')' },
+        h('circle', { r: 12, fill: '#f97316', stroke: '#0b1a29', strokeWidth: 1.4 }),
+        h('circle', { r: 6, fill: '#f5d0a9', stroke: '#0b1a29', strokeWidth: 1 })));
+    });
+    kids.push(h('circle', { key: 'kid', cx: cx, cy: cy, r: 9, fill: '#fbbf24', stroke: '#0b1a29', strokeWidth: 1.4 }));
+    kids.push(h('text', { key: 'kidt', x: cx, y: cy + 3, textAnchor: 'middle', fontSize: 7.5, fontWeight: 900, fill: '#1a1206' }, 'IN'));
+
+    return h('svg', {
+      viewBox: '0 0 ' + W + ' ' + H,
+      // Both positions are described in full in the text beneath.
+      'aria-hidden': 'true', focusable: 'false',
+      style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.3)', marginTop: 8 }
+    }, kids);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // THE SIZE-LIMIT CHART
+  // The regulations lookup is the largest section in the tool with nothing to
+  // look at: a five-column table where every size rule is a string you parse in
+  // your head, and comparing two species means reading down a column.
+  //
+  // Drawn on a shared axis the same rules answer at a glance the questions the
+  // table makes you compute — which species have a slot rather than a floor,
+  // which minimum is the biggest, how much room a keeper actually has.
+  //
+  // ★ Bounds come from getCoreFishRuleEvidence, the same parser the simulator
+  // scores catches with. Where that parser sees no number, the chart says so
+  // rather than drawing an unrestricted bar — a species whose rule is written
+  // as prose ("17\" tail length") is one the sim cannot score, and hiding that
+  // behind a full-width bar would state the opposite.
+  // ═══════════════════════════════════════════════════════════════════
+
+  // Carapace width is not total length. Charting them on one axis would imply
+  // a 5" crab and a 5" fish are the same measurement.
+  function isCoreCarapaceRule(species) {
+    var sp = species || {};
+    return /carapace/i.test(String(sp.slot || '') + ' ' + String(sp.minSize || ''));
+  }
+
+  function flSizeLimitChartSvg(h, rows, title, unitLabel) {
+    var all = (rows || []).filter(Boolean);
+    if (!all.length) return null;
+    var scored = all.filter(function(r) { return r.min != null; });
+    var unscored = all.length - scored.length;
+    if (!scored.length && !unscored) return null;
+
+    var W = 460, HEAD = 34, ROW = 22, NAMEW = 116, X0 = NAMEW + 8, X1 = W - 16;
+    var summaryRows = unscored ? 1 : 0;
+    var H = HEAD + (scored.length + summaryRows) * ROW + 20;
+
+    // ★ Axis range. One outlier ruins the chart for everything else: bluefin
+    // tuna's 73–81 inch slot pushed every groundfish into the left third, so a
+    // 9 inch redfish and a 24 inch dogfish looked the same length. Scale to the
+    // bulk of the data and mark whatever runs off the end — clipping and SAYING
+    // so beats a technically-complete axis nobody can read.
+    var bounds = [];
+    scored.forEach(function(r) { bounds.push(r.min); if (r.max != null) bounds.push(r.max); });
+    bounds.sort(function(a, b) { return a - b; });
+    var p80 = bounds[Math.floor(0.8 * (bounds.length - 1))];
+    var step = p80 > 20 ? 5 : p80 > 8 ? 2 : 1;
+    var axisMax = Math.max(step * 2, Math.ceil((p80 * 1.35) / step) * step);
+    var at = function(v) { return X0 + (X1 - X0) * Math.min(1, v / axisMax); };
+    var clipped = scored.filter(function(r) { return r.min > axisMax || (r.max != null && r.max > axisMax); }).length;
+    var kids = [];
+
+    kids.push(h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, rx: 8, fill: '#0b1b28' }));
+    kids.push(h('text', { key: 't', x: 10, y: 15, fontSize: 11, fontWeight: 900, fill: '#bae6fd', letterSpacing: '0.04em' }, title));
+    kids.push(h('text', { key: 'u', x: W - 10, y: 15, textAnchor: 'end', fontSize: 9, fontWeight: 700, fill: '#64748b' }, unitLabel));
+
+    for (var v = 0; v <= axisMax; v += step) {
+      kids.push(h('line', { key: 'g' + v, x1: at(v), y1: HEAD - 6, x2: at(v), y2: H - 18,
+        stroke: v === 0 ? 'rgba(148,163,184,0.5)' : 'rgba(148,163,184,0.16)', strokeWidth: 1 }));
+      kids.push(h('text', { key: 'gl' + v, x: at(v), y: H - 6, textAnchor: 'middle', fontSize: 8.5, fontWeight: 700, fill: '#64748b' }, v));
+    }
+
+    scored.forEach(function(r, i) {
+      var y = HEAD + i * ROW, mid = y + ROW / 2;
+      kids.push(h('text', { key: 'n' + i, x: NAMEW, y: mid + 3.5, textAnchor: 'end', fontSize: 9.5, fontWeight: 800, fill: '#e2e8f0' },
+        r.name.length > 19 ? r.name.slice(0, 18) + '…' : r.name));
+
+      var slot = r.max != null;
+      var offScale = r.min > axisMax;
+      if (offScale) {
+        // Entirely past the axis. A bar would have to lie about where it sits,
+        // so show a stub at the edge carrying the real numbers.
+        kids.push(h('line', { key: 'oc' + i, x1: X0, y1: mid, x2: X1 - 62, y2: mid, stroke: 'rgba(148,163,184,0.2)', strokeWidth: 1, strokeDasharray: '2 4' }));
+        kids.push(h('text', { key: 'ot' + i, x: X1, y: mid + 3.5, textAnchor: 'end', fontSize: 9, fontWeight: 900, fill: '#7dd3fc' },
+          '≫ ' + r.min + (slot ? '–' + r.max : '+') + '"'));
+        return;
+      }
+      var left = at(r.min);
+      var runsOff = slot && r.max > axisMax;
+      var right = slot && !runsOff ? at(r.max) : X1 - 10;
+      kids.push(h('rect', { key: 'b' + i, x: left, y: y + 5, width: Math.max(3, right - left), height: ROW - 11, rx: 2,
+        fill: slot && !runsOff ? 'rgba(56,189,248,0.6)' : 'rgba(52,211,153,0.5)' }));
+      if (!slot || runsOff) {
+        kids.push(h('polygon', { key: 'ar' + i, points: (X1 - 10) + ',' + (y + 4) + ' ' + X1 + ',' + mid + ' ' + (X1 - 10) + ',' + (y + ROW - 4),
+          fill: slot ? 'rgba(56,189,248,0.6)' : 'rgba(52,211,153,0.5)' }));
+      }
+      kids.push(h('line', { key: 'lo' + i, x1: left, y1: y + 3, x2: left, y2: y + ROW - 3, stroke: '#f8fafc', strokeWidth: 1.6 }));
+
+      // ★ A narrow slot cannot hold its own labels. The striped bass window is
+      // three inches wide and its two numbers overprinted into nonsense, so
+      // below a usable width they move outside the bar.
+      var roomy = (right - left) >= 46;
+      kids.push(h('text', { key: 'lt' + i, x: roomy ? left + 4 : left - 4, y: mid + 3.5,
+        textAnchor: roomy ? 'start' : 'end', fontSize: 8.5, fontWeight: 900,
+        fill: roomy ? '#04121d' : '#bae6fd' }, r.min + '"'));
+      if (slot && !runsOff) {
+        kids.push(h('line', { key: 'hi' + i, x1: right, y1: y + 3, x2: right, y2: y + ROW - 3, stroke: '#f8fafc', strokeWidth: 1.6 }));
+        kids.push(h('text', { key: 'ht' + i, x: roomy ? right - 4 : right + 4, y: mid + 3.5,
+          textAnchor: roomy ? 'end' : 'start', fontSize: 8.5, fontWeight: 900,
+          fill: roomy ? '#04121d' : '#bae6fd' }, r.max + '"'));
+      }
+    });
+
+    // ★ One line for every species with no scored number, instead of one row
+    // each. Fifteen identical "see table" rows took two thirds of the chart
+    // and pushed the actual data off the top of the card.
+    if (unscored) {
+      var uy = HEAD + scored.length * ROW, umid = uy + ROW / 2;
+      kids.push(h('line', { key: 'us', x1: X0, y1: umid, x2: X1, y2: umid, stroke: 'rgba(100,116,139,0.4)', strokeWidth: 1, strokeDasharray: '3 4' }));
+      kids.push(h('text', { key: 'ut', x: NAMEW, y: umid + 3.5, textAnchor: 'end', fontSize: 9.5, fontWeight: 800, fill: '#64748b' },
+        '+' + unscored + ' more'));
+      kids.push(h('text', { key: 'ul', x: (X0 + X1) / 2, y: umid + 3.5, textAnchor: 'middle', fontSize: 8.5, fontWeight: 700, fill: '#64748b' },
+        'no size limit the simulator scores — see the table'));
+    }
+    if (clipped) {
+      kids.push(h('text', { key: 'cl', x: W - 10, y: HEAD - 10, textAnchor: 'end', fontSize: 8, fontWeight: 700, fill: '#7dd3fc' },
+        '≫ ' + clipped + ' beyond ' + axisMax + '"'));
+    }
+
+    return h('svg', {
+      viewBox: '0 0 ' + W + ' ' + H,
+      // The table below states every rule in full, including the ones this
+      // chart deliberately declines to draw and the ones it clips.
+      'aria-hidden': 'true', focusable: 'false',
+      style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.28)', marginBottom: 10 }
+    }, kids);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  // LOSING THE FISH
+  // Four different things can go wrong — the cast falls outside the water you
+  // picked, the strike comes after the window shuts, the line parts under load,
+  // or it goes slack and the hook works free. All four produced the same
+  // screen: a paragraph of evidence and two buttons.
+  //
+  // Failure is where the learning is, and these four failures teach four
+  // different lessons. Each now shows the number it actually turned on.
+  // ═══════════════════════════════════════════════════════════════════
+
+  // The bite window, and where the strike landed relative to it.
+  function flHooksetTimingSvg(h, hookset) {
+    var hk = hookset || {};
+    var win = Math.max(1, Number(hk.windowMs) || 0);
+    var react = Math.max(0, Number(hk.reactionMs) || 0);
+    var W = 420, H = 112, X0 = 14, X1 = 406, BAR = 58;
+    // Range to whichever is longer, so a very late strike still lands on scale.
+    var span = Math.max(win * 1.35, react * 1.12, 200);
+    var at = function(ms) { return X0 + (X1 - X0) * Math.min(1, ms / span); };
+    var kids = [];
+    kids.push(h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, rx: 8, fill: '#1a1206' }));
+    kids.push(h('rect', { key: 'trk', x: X0, y: BAR, width: X1 - X0, height: 16, rx: 4, fill: '#334155' }));
+    // The window you had.
+    kids.push(h('rect', { key: 'win', x: X0, y: BAR, width: at(win) - X0, height: 16, rx: 4, fill: 'rgba(52,211,153,0.55)' }));
+    kids.push(h('line', { key: 'shut', x1: at(win), y1: BAR - 12, x2: at(win), y2: BAR + 28, stroke: '#34d399', strokeWidth: 2 }));
+    kids.push(h('text', { key: 'shutt', x: at(win), y: BAR - 17, textAnchor: 'middle', fontSize: 9, fontWeight: 900, fill: '#6ee7b7' }, 'WINDOW SHUTS'));
+    kids.push(h('text', { key: 'winv', x: at(win) / 2 + X0 / 2, y: BAR + 12, textAnchor: 'middle', fontSize: 9.5, fontWeight: 800, fill: '#04121d' }, (win / 1000).toFixed(1) + ' s'));
+    // Where you actually struck.
+    var rx = at(react);
+    kids.push(h('polygon', { key: 'strike', points: rx + ',' + (BAR - 4) + ' ' + (rx - 6) + ',' + (BAR - 16) + ' ' + (rx + 6) + ',' + (BAR - 16),
+      fill: '#f87171' }));
+    kids.push(h('line', { key: 'sl', x1: rx, y1: BAR - 4, x2: rx, y2: BAR + 28, stroke: '#f87171', strokeWidth: 2 }));
+    kids.push(h('text', { key: 'st', x: Math.min(W - 40, rx), y: BAR + 40, textAnchor: 'middle', fontSize: 10, fontWeight: 900, fill: '#fca5a5' }, 'you struck ' + (react / 1000).toFixed(1) + ' s'));
+    kids.push(h('text', { key: 'h', x: 10, y: 15, fontSize: 12, fontWeight: 900, fill: '#fca5a5' }, 'TOO SLOW ON THE STRIKE'));
+    kids.push(h('text', { key: 'd', x: 10, y: 28, fontSize: 9.5, fontWeight: 700, fill: '#94a3b8' },
+      'late by ' + ((Number(hk.lateBy) || Math.max(0, react - win)) / 1000).toFixed(1) + ' s — the rod loads and unloads fast'));
+    return h('svg', { viewBox: '0 0 ' + W + ' ' + H, 'aria-hidden': 'true', focusable: 'false',
+      style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(248,113,113,0.45)', margin: '8px 0' } }, kids);
+  }
+
+  // The tension you actually held, turn by turn, against the band you were
+  // asked to hold it in. Both fight losses are the same graph read at opposite
+  // ends: one went over the top, the other fell out of the bottom.
+  function flTensionTraceSvg(h, samples, profile, reason) {
+    var pts = (samples || []).map(Number).filter(isFinite);
+    if (pts.length < 1) return null;
+    var pr = profile || {};
+    var lower = Number(pr.lower) || 0.3, upper = Number(pr.upper) || 0.72;
+    var hardLow = Number(pr.hardLow) || 0.12, hardHigh = Number(pr.hardHigh) || 0.9;
+    var broke = reason === 'line-break';
+    var W = 420, H = 150, X0 = 30, X1 = 406, Y0 = 24, Y1 = 118;
+    var y = function(v) { return Y1 - (Y1 - Y0) * Math.max(0, Math.min(1, v)); };
+    var x = function(i) { return pts.length < 2 ? (X0 + X1) / 2 : X0 + (X1 - X0) * (i / (pts.length - 1)); };
+    var ink = broke ? '#f87171' : '#94a3b8';
+    var kids = [];
+    kids.push(h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, rx: 8, fill: '#0b1b28' }));
+    // The danger zones and the working band, drawn ON the graph.
+    kids.push(h('rect', { key: 'hz', x: X0, y: y(1), width: X1 - X0, height: y(hardHigh) - y(1), fill: 'rgba(248,113,113,0.28)' }));
+    kids.push(h('rect', { key: 'lz', x: X0, y: y(hardLow), width: X1 - X0, height: Y1 - y(hardLow), fill: 'rgba(148,163,184,0.26)' }));
+    kids.push(h('rect', { key: 'band', x: X0, y: y(upper), width: X1 - X0, height: y(lower) - y(upper), fill: 'rgba(52,211,153,0.2)' }));
+    kids.push(h('text', { key: 'bt', x: X1 - 4, y: (y(upper) + y(lower)) / 2 + 3, textAnchor: 'end', fontSize: 8.5, fontWeight: 800, fill: '#6ee7b7' }, 'WORKING BAND'));
+    // Number the band edges. "Hold it in the green" is only actionable if the
+    // green has values, and the two edges move with assist mode.
+    [[upper, '#6ee7b7'], [lower, '#6ee7b7']].forEach(function(e, i) {
+      kids.push(h('text', { key: 'be' + i, x: X0 - 4, y: y(e[0]) + 3, textAnchor: 'end', fontSize: 8.5, fontWeight: 800, fill: e[1] }, Math.round(e[0] * 100) + '%'));
+      kids.push(h('line', { key: 'bl' + i, x1: X0 - 2, y1: y(e[0]), x2: X1, y2: y(e[0]), stroke: 'rgba(52,211,153,0.5)', strokeWidth: 1 }));
+    });
+    kids.push(h('text', { key: 'ht', x: X0 + 4, y: y(hardHigh) - 4, fontSize: 8.5, fontWeight: 800, fill: '#fca5a5' }, 'LINE PARTS'));
+    kids.push(h('text', { key: 'lt', x: X0 + 4, y: Y1 - 4, fontSize: 8.5, fontWeight: 800, fill: '#cbd5e1' }, 'HOOK WORKS FREE'));
+    // Axis.
+    kids.push(h('line', { key: 'ax', x1: X0, y1: Y1, x2: X1, y2: Y1, stroke: 'rgba(148,163,184,0.4)', strokeWidth: 1 }));
+    kids.push(h('line', { key: 'ay', x1: X0, y1: Y0, x2: X0, y2: Y1, stroke: 'rgba(148,163,184,0.4)', strokeWidth: 1 }));
+    // The trace.
+    var d = pts.map(function(v, i) { return (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1); }).join(' ');
+    kids.push(h('path', { key: 'tr', d: d, fill: 'none', stroke: '#e2e8f0', strokeWidth: 2, strokeLinejoin: 'round' }));
+    pts.forEach(function(v, i) {
+      var last = i === pts.length - 1;
+      kids.push(h('circle', { key: 'p' + i, cx: x(i), cy: y(v), r: last ? 5 : 2.6,
+        fill: last ? ink : '#e2e8f0', stroke: last ? '#0b1b28' : 'none', strokeWidth: 1.5 }));
+    });
+    kids.push(h('text', { key: 'h', x: 10, y: 16, fontSize: 12, fontWeight: 900, fill: ink },
+      broke ? 'LINE PARTED' : 'HOOK THREW'));
+    kids.push(h('text', { key: 'xl', x: (X0 + X1) / 2, y: H - 5, textAnchor: 'middle', fontSize: 8.5, fontWeight: 700, fill: '#64748b' },
+      pts.length + ' turn' + (pts.length === 1 ? '' : 's') + ' of the fight · ' + (broke ? 'give line sooner when it rises' : 'reel sooner when it falls')));
+    return h('svg', { viewBox: '0 0 ' + W + ' ' + H, 'aria-hidden': 'true', focusable: 'false',
+      style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid ' + (broke ? 'rgba(248,113,113,0.45)' : 'rgba(148,163,184,0.4)'), margin: '8px 0' } }, kids);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
   // PLACING THE CAST, AND WORKING IT
   // These two beats sit between choosing your rig and the fish taking it, and
   // they were the flattest thing left in the chain: a range slider over a
@@ -3927,6 +4930,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     getCoreCastPlacement: getCoreCastPlacement,
     flCastArcSvg: flCastArcSvg,
     flPresentationSvg: flPresentationSvg,
+    flHooksetTimingSvg: flHooksetTimingSvg,
+    flTensionTraceSvg: flTensionTraceSvg,
+    isCoreCarapaceRule: isCoreCarapaceRule,
+    flSizeLimitChartSvg: flSizeLimitChartSvg,
+    getCoreFeetRange: getCoreFeetRange,
+    flHarborProfileSvg: flHarborProfileSvg,
+    getCoreServiceHours: getCoreServiceHours,
+    flServiceIntervalSvg: flServiceIntervalSvg,
+    getCoreLatLon: getCoreLatLon,
+    flCoastMapSvg: flCoastMapSvg,
+    getCoreAgeGate: getCoreAgeGate,
+    flLicenseLadderSvg: flLicenseLadderSvg,
+    getCoreHullLength: getCoreHullLength,
+    flFleetScaleSvg: flFleetScaleSvg,
+    getCoreCallName: getCoreCallName,
+    getCoreCallTest: getCoreCallTest,
+    flVhfTriageSvg: flVhfTriageSvg,
+    getCoreWindBand: getCoreWindBand,
+    flWindLadderSvg: flWindLadderSvg,
+    getCoreColdWaterSpan: getCoreColdWaterSpan,
+    flColdWaterTimelineSvg: flColdWaterTimelineSvg,
+    flHelpHuddleSvg: flHelpHuddleSvg,
     flRadarSvg: flRadarSvg
   };
 
@@ -15617,6 +16642,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                   ) : null,
                   activeFishing.phase === 'landed' ? h('div', null, flLandedSvg(h), h('div', { role: 'status', style: { padding: 15, borderRadius: 7, background: 'rgba(6,78,59,0.55)', color: '#a7f3d0', fontSize: 15, fontWeight: 900, textAlign: 'center' } }, 'Fish alongside — opening catch inspection…')) : null,
                   activeFishing.phase === 'lost' || activeFishing.phase === 'no-bite' ? h('div', null,
+                    // ★ Four failures, four lessons. They all used to look the
+                    // same, so the one thing a student most needs from a loss —
+                    // WHICH number went wrong — was the thing not shown.
+                    // Each diagram is the one the attempt was actually judged on.
+                    (function() {
+                      var why = activeFishing.lossReason;
+                      if (why === 'off-target') return flCastArcSvg(h, activeFishing.castMeter);
+                      if (why === 'missed-bite') return flHooksetTimingSvg(h, activeFishing.hookset);
+                      if (why === 'line-break' || why === 'slack-line') {
+                        return flTensionTraceSvg(h, activeFishing.tensionSamples,
+                          getFishingTensionProfile(activeFishing.assistMode, activeFishing.tension), why);
+                      }
+                      // No bite at all: nothing went wrong in the handling, so
+                      // the answer is in the choices that put the rig there.
+                      if (activeFishing.setupScore) return flSetupScoreBarsSvg(h, activeFishing.setupScore.components);
+                      return null;
+                    })(),
                     activeFishing.setupScore ? h('div', { style: { marginBottom: 10, padding: 9, borderRadius: 6, background: 'rgba(2,6,23,0.42)', color: '#dbeafe', fontSize: 10, lineHeight: 1.45 } },
                       h('strong', { style: { color: '#bae6fd' } }, 'Evidence from this cast: '), activeFishing.setupScore.evidence.join(' ')) : null,
                     h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
@@ -16526,6 +17568,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           h('div', { style: headerStyle }, currentTitle),
           h('p', { style: { fontSize: 11, color: '#fb923c', marginBottom: 12, fontStyle: 'italic' } },
             '⚠ Live rules change. Treat in-tool numbers as instructional. Always confirm with ' + currentAuthority + ' before fishing.'),
+          // ★ The same rules on a shared axis. Bounds come from the parser the
+          // simulator scores catches with, so the picture cannot show a limit
+          // the sim does not enforce — or hide one it does.
+          (function() {
+            var charted = currentSpeciesList.map(function(sp) {
+              var ev = getCoreFishRuleEvidence(0, sp, {});
+              return { name: sp.name, min: ev.minInches, max: ev.maxInches, carapace: isCoreCarapaceRule(sp) };
+            });
+            // Sorted smallest floor first: ordering by size is the whole reason
+            // to draw this. Species with no scored number sit at the end.
+            var order = function(a, b) {
+              if ((a.min == null) !== (b.min == null)) return a.min == null ? 1 : -1;
+              return (a.min || 0) - (b.min || 0);
+            };
+            // Carapace width and total length are different measurements, so
+            // they get their own axis rather than sharing one and implying a
+            // 5 inch crab and a 5 inch fish are comparable.
+            var byLength = charted.filter(function(r) { return !r.carapace; }).sort(order);
+            var byCarapace = charted.filter(function(r) { return r.carapace; }).sort(order);
+            return h('div', { style: { marginBottom: 12 } },
+              flSizeLimitChartSvg(h, byLength, 'LEGAL SIZE WINDOW', 'inches, total length'),
+              byCarapace.length ? flSizeLimitChartSvg(h, byCarapace, 'SHELLFISH GAUGE', 'inches, carapace') : null,
+              h('p', { style: { margin: '2px 0 0', fontSize: 10, color: '#64748b', lineHeight: 1.45 } },
+                'Bars run from the minimum; a slot closes at its maximum. Species the simulator scores no number for are marked — the table below carries every rule in full.'));
+          })(),
           h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' } },
             h('thead', null,
               h('tr', { style: { background: 'rgba(56,189,248,0.15)' } },
@@ -16627,6 +17694,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           h('div', { style: headerStyle }, '🦞 Maine Lobster License Ladder'),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12, lineHeight: 1.5 } },
             'Maine\'s commercial lobster fishery is limited-entry. You can\'t walk in off the street + buy a license. Even kids growing up around the industry follow a structured tier system. Below is the ladder:'),
+          // The section promises a ladder; this draws it, in the same colours
+          // the cards below use for each tier.
+          flLicenseLadderSvg(h, LOBSTER_LICENSE, function(tier) {
+            return tier === 'Apprentice' ? '#fbbf24' : tier === 'Non-commercial' ? '#86efac' : '#38bdf8';
+          }),
           LOBSTER_LICENSE.map(function(l, i) {
             return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid ' + (l.tier === 'Apprentice' ? '#fbbf24' : (l.tier === 'Non-commercial' ? '#86efac' : '#38bdf8')) } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', alignItems: 'baseline', marginBottom: 4 } },
@@ -16734,6 +17806,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           h('div', { style: headerStyle }, '🌦 Marine Weather Scenarios'),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
             'Maine weather changes fast. NOAA marine forecasts use Beaufort wind scale + sea state + visibility. The most-used categories below:'),
+          // The same risk colour the cards use, so the ladder and the list
+          // cannot disagree about how serious a warning is.
+          flWindLadderSvg(h, WEATHER_SCENARIOS, function(risk) {
+            return risk === 'Extreme' ? '#dc2626' : risk === 'Very High' ? '#fb923c' : risk === 'High' ? '#fbbf24' : '#86efac';
+          }),
           WEATHER_SCENARIOS.map(function(w, i) {
             return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid ' + (w.risk === 'Extreme' ? '#dc2626' : (w.risk === 'Very High' ? '#fb923c' : (w.risk === 'High' ? '#fbbf24' : '#86efac'))) } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', marginBottom: 4 } },
@@ -16761,6 +17838,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           h('div', { style: headerStyle }, '📻 VHF Radio — The Mariner\'s Phone'),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
             'Marine VHF Channel 16 is the international distress + hailing channel. ALWAYS monitored when underway. Below are the standard call types every boater must know.'),
+          // Same per-call colour the cards use below, so the flow and the list
+          // cannot disagree about which call is the serious one.
+          flVhfTriageSvg(h, VHF_SCRIPTS, function(id) {
+            return id === 'mayday' ? '#f87171' : id === 'panpan' ? '#fbbf24' : id === 'securite' ? '#7dd3fc' : '#94a3b8';
+          }),
           VHF_SCRIPTS.map(function(v, i) {
             return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid ' + (v.id === 'mayday' ? '#dc2626' : (v.id === 'panpan' ? '#fbbf24' : '#38bdf8')) } },
               h('div', { style: { fontSize: 13, fontWeight: 900, color: v.id === 'mayday' ? '#fca5a5' : (v.id === 'panpan' ? '#fde047' : '#bae6fd'), marginBottom: 4 } }, v.type),
@@ -16818,6 +17900,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '🚤 Maine Boat Types'),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } }, 'Maine\'s working fleet is unusually diverse — from open skiffs to 90-ft draggers. Each has different physics, capabilities, and economics.'),
+          // "From open skiffs to 90-ft draggers" is a sixfold spread that six
+          // equally-sized cards flatten completely.
+          flFleetScaleSvg(h, BOAT_TYPES),
           BOAT_TYPES.map(function(bt, i) {
             return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
               h('div', { style: { fontSize: 14, fontWeight: 900, color: '#bae6fd', marginBottom: 6 } }, bt.emoji + ' ' + bt.name),
@@ -16835,6 +17920,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '⚓ Maine Working Ports'),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } }, 'Eight major Maine ports — each with its own character, primary fishery, and navigation challenges.'),
+          // Where a port sits relative to the others is most of what
+          // distinguishes it, and the coordinates were already in the data.
+          flCoastMapSvg(h, MAINE_PORTS, 'THE EIGHT PORTS', '#7dd3fc'),
           MAINE_PORTS.map(function(p, i) {
             return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', alignItems: 'baseline', marginBottom: 6 } },
@@ -16929,6 +18017,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
             'Memorize ', h('b', { style: { color: '#fbbf24' } }, '1 minute / 10 minutes / 1 hour: '),
             ' 1 minute to control your breathing after the cold-shock gasp; 10 minutes of meaningful muscle function; 1 hour before hypothermia takes you. Below: the 4 phases in detail.'),
+          flColdWaterTimelineSvg(h, COLD_WATER),
           COLD_WATER.map(function(p, i) {
             return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #fb923c' } },
               h('div', { style: { fontSize: 13, fontWeight: 900, color: '#fdba74', marginBottom: 6 } }, p.phase),
@@ -16940,7 +18029,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fdba74', marginBottom: 6 } }, 'HELP / HUDDLE positions'),
             h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
               h('p', null, h('b', null, 'HELP (Heat Escape Lessening Posture): '), 'Alone in water? Knees to chest, arms across chest, PFD on. Reduces heat loss ~50%.'),
-              h('p', null, h('b', null, 'HUDDLE: '), 'Multiple people in water? Form a tight chest-to-chest cluster. Conserves heat. Place children + injured at center.')))));
+              h('p', null, h('b', null, 'HUDDLE: '), 'Multiple people in water? Form a tight chest-to-chest cluster. Conserves heat. Place children + injured at center.'),
+              flHelpHuddleSvg(h)))));
     }
 
     // ─── ACHIEVEMENTS tab
@@ -17199,6 +18289,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('div', { style: headerStyle }, '📌 Famous Maine Fishing Spots'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Iconic Maine fishing waters — some inshore, some offshore. All with stories.'),
+          // "Some inshore, some offshore" is a claim about position; plotted,
+          // it is visible instead of asserted.
+          flCoastMapSvg(h, FISHING_SPOTS, 'THE GROUNDS', '#6ee7b7'),
         FISHING_SPOTS.map(function(s, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', alignItems: 'baseline', marginBottom: 4 } },
@@ -17343,6 +18436,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('div', { style: headerStyle }, '⚙️ Engine + Boat Maintenance Reference'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Maintenance schedules, daily checks, common failures, DIY vs shop, tools, and most-common mistakes for the major boat-engine systems Maine boaters encounter. The boat is only as reliable as the maintenance behind it.'),
+        flServiceIntervalSvg(h, ENGINE_MAINT),
         ENGINE_MAINT.map(function(e, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '5px solid #fb923c' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#fb923c', marginBottom: 6 } }, '⚙️ ' + e.system),
@@ -18227,6 +19321,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('div', { style: headerStyle }, '⚓ Maine Harbor Details'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
           'Practical chart + facility info for Maine\'s major working harbors.'),
+        flHarborProfileSvg(h, HARBOR_DETAILS),
         HARBOR_DETAILS.map(function(hh, i) {
           return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
             h('div', { style: { display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', alignItems: 'baseline', marginBottom: 4 } },

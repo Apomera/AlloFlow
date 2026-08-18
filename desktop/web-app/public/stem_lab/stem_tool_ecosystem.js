@@ -506,62 +506,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
   var QUIZ_QUESTIONS = [
     {
       q: 'In this simplified predator-prey model, what commonly happens after prey availability increases?',
-      choices: ['Predators decrease', 'Predators increase after a lag', 'Predators stay the same', 'Predators immediately double'],
-      answer: 1,
+      choices: ['Predators stay the same', 'Predators immediately double', 'Predators decrease', 'Predators increase after a lag'],
+      answer: 3,
       concept: 'Lotka-Volterra cycle',
       wrongFeedback: [
-        'Incorrect. More prey provides more food, which allows predator populations to grow, not shrink.',
-        'Correct! As prey numbers grow, there is more food for predators. After a slight lag (time to reproduce), the predator population rises.',
         'Incorrect. Predator numbers are directly influenced by the availability of their food source.',
-        'Incorrect. Predator growth is not instant; it requires time for gestation and birth.'
+        'Incorrect. Predator growth is not instant; it requires time for gestation and birth.',
+        'Incorrect. More prey provides more food, which allows predator populations to grow, not shrink.',
+        'Correct! As prey numbers grow, there is more food for predators. After a slight lag (time to reproduce), the predator population rises.'
       ]
     },
     {
       q: 'What does the Lotka-Volterra model describe?',
-      choices: ['Rock formation', 'Predator-prey population dynamics', 'Weather patterns', 'Ocean currents'],
-      answer: 1,
+      choices: ['Predator-prey population dynamics', 'Weather patterns', 'Ocean currents', 'Rock formation'],
+      answer: 0,
       concept: 'Lotka-Volterra cycle',
       wrongFeedback: [
-        'Incorrect. Geology studies rock formation, not biology.',
         'Correct! The Lotka-Volterra model uses differential equations to represent how predator and prey numbers oscillate over time.',
         'Incorrect. Weather modeling uses fluid dynamics and thermodynamics, not population models.',
-        'Incorrect. Ocean currents are driven by wind and salinity, not predator-prey interactions.'
+        'Incorrect. Ocean currents are driven by wind and salinity, not predator-prey interactions.',
+        'Incorrect. Geology studies rock formation, not biology.'
       ]
     },
     {
       q: 'Which term best describes a fox eating a rabbit?',
-      choices: ['Mutualism', 'Parasitism', 'Predation', 'Commensalism'],
-      answer: 2,
+      choices: ['Parasitism', 'Predation', 'Commensalism', 'Mutualism'],
+      answer: 1,
       concept: 'Predation',
       wrongFeedback: [
-        'Incorrect. Mutualism is a symbiotic relationship where both species benefit.',
         'Incorrect. Parasites feed on hosts but usually do not kill them immediately.',
         'Correct! Predation is the act of one organism hunting, killing, and consuming another.',
-        'Incorrect. Commensalism benefits one species while leaving the other unaffected.'
+        'Incorrect. Commensalism benefits one species while leaving the other unaffected.',
+        'Incorrect. Mutualism is a symbiotic relationship where both species benefit.'
       ]
     },
     {
       q: 'In a population model, what does carrying capacity (K) represent?',
-      choices: ['The weight an animal can lift', 'A limiting population level under specified environmental conditions', 'The speed of population growth', 'The number of species in an area'],
-      answer: 1,
+      choices: ['The number of species in an area', 'The weight an animal can lift', 'A limiting population level under specified environmental conditions', 'The speed of population growth'],
+      answer: 2,
       concept: 'Carrying capacity',
       wrongFeedback: [
+        'Incorrect. The number of species in an area is biodiversity or species richness.',
         'Incorrect. That is physical strength, not an ecological metric.',
         'Correct! K represents a limiting population level under a specified set of environmental conditions. Real carrying capacity can change as resources, habitat, climate, and species interactions change.',
-        'Incorrect. Population growth rate is a separate parameter (r).',
-        'Incorrect. The number of species in an area is biodiversity or species richness.'
+        'Incorrect. Population growth rate is a separate parameter (r).'
       ]
     },
     {
       q: 'In a food web, which organisms are primary producers?',
-      choices: ['Foxes', 'Rabbits', 'Plants', 'Decomposers'],
-      answer: 2,
+      choices: ['Decomposers', 'Foxes', 'Rabbits', 'Plants'],
+      answer: 3,
       concept: 'Primary producers',
       wrongFeedback: [
+        'Incorrect. Decomposers break down dead matter rather than creating new organic matter from sunlight.',
         'Incorrect. Foxes are tertiary or secondary consumers (carnivores).',
         'Incorrect. Rabbits are primary consumers (herbivores).',
-        'Correct! Plants produce their own food using sunlight via photosynthesis, making them primary producers.',
-        'Incorrect. Decomposers break down dead matter rather than creating new organic matter from sunlight.'
+        'Correct! Plants produce their own food using sunlight via photosynthesis, making them primary producers.'
       ]
     },
     {
@@ -2573,6 +2573,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           canvas.removeEventListener('mousedown', onMouseDown);
           canvas.removeEventListener('mouseup', onMouseUp);
           canvas.removeEventListener('click', onClick);
+          canvas.removeEventListener('keydown', onCanvasKey);
           canvas.removeEventListener('touchstart', onTouchStart);
           canvas.removeEventListener('touchmove', onTouchMove);
           canvas.removeEventListener('touchend', onMouseUp);
@@ -2660,10 +2661,85 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           canvas._pendingClickY = e.clientY - rect.top;
         };
 
+        // Keyboard parity for the sandbox tools (WCAG 2.1.1). Arrow keys drive the same
+        // cursor the pointer sets, so the ghost preview follows for free; Enter or Space
+        // raises the same pending click the draw loop already consumes.
+        var KB_STEP = 0.04;   // fraction of the canvas moved per press
+        var onCanvasKey = function (e) {
+          if (e.altKey || e.ctrlKey || e.metaKey) return;
+          var tool = canvas.dataset.sandboxTool || '';
+          // With no tool selected there is nothing to aim, so arrows stay with the page.
+          if (!tool) return;
+          var rect = canvas.getBoundingClientRect();
+          var w = rect.width || canvas.width;
+          var hgt = rect.height || canvas.height;
+          var centred = false;
+          if (canvas._mouseX < 0 || canvas._mouseY < 0) {
+            canvas._mouseX = w / 2;
+            canvas._mouseY = hgt / 2;
+            centred = true;
+          }
+          var step = (e.shiftKey ? 3 : 1) * KB_STEP;
+          var dx = 0, dy = 0;
+          if (e.key === 'ArrowLeft') dx = -1;
+          else if (e.key === 'ArrowRight') dx = 1;
+          else if (e.key === 'ArrowUp') dy = -1;
+          else if (e.key === 'ArrowDown') dy = 1;
+          else if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+            // The 'move' tool never used the click path — it picks up on mousedown and
+            // drops on mouseup — so a pending click would silently do nothing. Delegate
+            // to the pointer handlers with synthesized coordinates, exactly as the touch
+            // parity code above does. Once held, the entity tracks _mouseX/_mouseY, so
+            // the arrow keys already carry it.
+            if (tool === 'move') {
+              e.preventDefault();
+              if (canvas._dragging) {
+                onMouseUp();
+                if (announceToSR) announceToSR(__alloT('stem.ecosystem.kb_dropped', 'Dropped.'));
+              } else {
+                onMouseDown({ clientX: rect.left + canvas._mouseX, clientY: rect.top + canvas._mouseY });
+                if (announceToSR) {
+                  announceToSR(canvas._dragging
+                    ? __alloT('stem.ecosystem.kb_picked_up', 'Picked up. Use the arrow keys to move it, then press Enter to drop it.')
+                    : __alloT('stem.ecosystem.kb_nothing_here', 'Nothing close enough to pick up here.'));
+                }
+              }
+              return;
+            }
+            canvas._pendingClick = true;
+            canvas._pendingClickX = canvas._mouseX;
+            canvas._pendingClickY = canvas._mouseY;
+            e.preventDefault();
+            if (announceToSR) {
+              announceToSR(
+                __alloT('stem.ecosystem.kb_applied', 'Applied at ') +
+                Math.round((canvas._mouseX / Math.max(1, w)) * 100) + '% ' +
+                __alloT('stem.ecosystem.kb_across', 'across') + ', ' +
+                Math.round((canvas._mouseY / Math.max(1, hgt)) * 100) + '% ' +
+                __alloT('stem.ecosystem.kb_down', 'down') + '.'
+              );
+            }
+            return;
+          } else if (e.key === 'Escape') {
+            canvas._mouseX = -1;
+            canvas._mouseY = -1;
+            e.preventDefault();
+            return;
+          } else return;
+          // The first arrow press only reveals the cursor at centre; it does not also
+          // jump, so the student can see where they are starting from.
+          if (!centred) {
+            canvas._mouseX = Math.max(0, Math.min(w, canvas._mouseX + dx * step * w));
+            canvas._mouseY = Math.max(0, Math.min(hgt, canvas._mouseY + dy * step * hgt));
+          }
+          e.preventDefault();
+        };
+
         canvas.addEventListener('mousemove', onMouseMove);
         canvas.addEventListener('mousedown', onMouseDown);
         canvas.addEventListener('mouseup', onMouseUp);
         canvas.addEventListener('click', onClick);
+        canvas.addEventListener('keydown', onCanvasKey);
 
         // Touch parity for the sandbox 'Move' (drag-to-reposition) tool on the
         // pilot's touchscreen Chromebooks — placement tools already work via the
@@ -2997,16 +3073,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             playSound('pause');
           }          var ticksThisFrame = paused ? 0 : speed;
 
+          // ── Sandbox: handle drag ──
+          // Outside the tick loop on purpose. This assigns a position rather than
+          // integrating one, so running it once per frame is both sufficient and
+          // idempotent — inside the loop it ran `speed` times writing the same value,
+          // and at speed 0 (paused) it did not run at all, which meant dragging an
+          // animal while the simulation was paused silently did nothing. Pausing to
+          // arrange the scene is exactly when a student reaches for the move tool.
+          if (canvas._dragging && canvas._dragEntity) {
+            canvas._dragEntity.x = canvas._mouseX;
+            canvas._dragEntity.y = canvas._mouseY;
+            canvas._dragEntity.vx = 0;
+            canvas._dragEntity.vy = 0;
+          }
+
           for (var speedIter = 0; speedIter < ticksThisFrame; speedIter++) {
             tick++;
-
-            // ── Sandbox: handle drag ──
-            if (canvas._dragging && canvas._dragEntity) {
-              canvas._dragEntity.x = canvas._mouseX;
-              canvas._dragEntity.y = canvas._mouseY;
-              canvas._dragEntity.vx = 0;
-              canvas._dragEntity.vy = 0;
-            }
 
             // ── Sandbox: handle click placement ──
             if (canvas._pendingClick && sandboxToolVal) {
@@ -4328,7 +4410,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
           // ── Sandbox tool indicator in HUD ──
           if (sandboxToolVal) {
-            ctxC.fillStyle = 'rgba(16,185,129,0.85)';
+            // Measured against the HUD panel composited over the brightest point of the
+            // day cycle (rgb(56,69,92)): emerald-500 at 0.85 alpha gave 3.17:1, well under
+            // the 4.5 this bold 9px label needs. emerald-400 at full opacity gives 5.02:1
+            // and keeps the same green identity as the sandbox tool chips.
+            ctxC.fillStyle = '#34d399';
             ctxC.font = 'bold 9px sans-serif';
             ctxC.fillText('Tool: ' + sandboxToolVal.toUpperCase(), 14, 62);
           }
@@ -5104,7 +5190,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               ref: canvasRef,
               role: 'img',
               'aria-label': activeScenario.name + ' animated teaching simulation. Initial ' + activeScenario.prey.plural + ' (prey): ' + prey0 + '; initial ' + activeScenario.predator.plural + ' (predators): ' + pred0 + '. ' + (simPaused ? __alloT('stem.ecosystem.paused_dot', 'Paused.') : __alloT('stem.ecosystem.running_dot', 'Running.')),
-              'aria-describedby': 'eco-live-phase-status eco-live-telemetry',
+              'aria-describedby': 'eco-live-phase-status eco-live-telemetry eco-canvas-keys',
+              'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight Enter Escape',
               tabIndex: 0,
               'data-eco-canvas': 'true',
               'data-biome': biome,
@@ -5117,6 +5204,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               'data-sandbox-tool': '',
               style: { width: '100%', height: '100%', display: 'block' }
             }),
+            // Keyboard instructions for the sandbox tools. Referenced by the canvas's
+            // aria-describedby, so a screen-reader user hears how to drive it on focus.
+            h('span', { id: 'eco-canvas-keys', className: 'sr-only' },
+              __alloT('stem.ecosystem.canvas_keyboard_instructions',
+                'With a sandbox tool selected, use the arrow keys to move the placement cursor, '
+                + 'hold Shift for larger steps, press Enter or Space to apply the tool, and press '
+                + 'Escape to hide the cursor.')),
             // Bottom info bar
             h('div', { className: 'absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent px-3 py-1.5 flex items-center gap-2' },
               h('span', { className: 'text-[11px] text-white/90' }, activeScenario.prey.emoji + ' ' + activeScenario.prey.label + ': ' + prey0 + ' start'),
@@ -6120,7 +6214,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               ref: canvasRef,
               role: 'img',
               'aria-label': activeScenario.name + ' ecosystem sandbox. Place ' + activeScenario.prey.plural + ' as prey, ' + activeScenario.predator.plural + ' as predators, or ' + activeScenario.producer.plural + ' as resource context. ' + (simPaused ? __alloT('stem.ecosystem.paused_dot', 'Paused.') : __alloT('stem.ecosystem.running_dot', 'Running.')),
-              'aria-describedby': 'eco-live-phase-status eco-sandbox-telemetry',
+              'aria-describedby': 'eco-live-phase-status eco-sandbox-telemetry eco-canvas-keys',
+              'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight Enter Escape',
               tabIndex: 0,
               'data-eco-canvas': 'true',
               'data-scenario': scenarioId,
@@ -6134,6 +6229,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               'data-place-count': sandboxPlaceCount.toString(),
               style: { width: '100%', height: '100%', display: 'block', cursor: sandboxTool === 'erase' ? 'crosshair' : sandboxTool === 'move' ? 'grab' : 'pointer' }
             }),
+            h('span', { id: 'eco-canvas-keys', className: 'sr-only' },
+              __alloT('stem.ecosystem.canvas_keyboard_instructions',
+                'With a sandbox tool selected, use the arrow keys to move the placement cursor, '
+                + 'hold Shift for larger steps, press Enter or Space to apply the tool, and press '
+                + 'Escape to hide the cursor.')),
             // Bottom info bar
             h('div', { className: 'absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent px-3 py-1.5 flex items-center gap-2' },
               h('span', { className: 'text-[11px] text-white/90 font-bold' }, activeScenario.emoji + ' ' + activeScenario.name + ' Sandbox'),
@@ -6923,7 +7023,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                     h('button', { onClick: function() { openConservDeepDive(s.id); },
                       'aria-label': __alloT('stem.ecosystem.aria_open_deepdive_pre', 'Open deep-dive for ') + s.name,
                       className: 'eco-accent',
-                      style: { width: '100%', padding: '6px 10px', borderRadius: 8, border: '1px solid ' + s.color + '88', background: s.color + '22', '--eco-acc-light': s.color, '--eco-acc-dark': ecoAccentOnDark(s.color), cursor: 'pointer', fontWeight: 700, fontSize: 11.5 }
+                      style: { width: '100%', padding: '6px 10px', borderRadius: 8, border: '1px solid currentColor', background: s.color + '22', '--eco-acc-light': s.color, '--eco-acc-dark': ecoAccentOnDark(s.color), cursor: 'pointer', fontWeight: 700, fontSize: 11.5 }
                     }, '📚 ' + __alloT('stem.ecosystem.species_deepdive', 'Species deep-dive') + ' →')
                   );
                 })
@@ -6939,7 +7039,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                     return h('button', { key: dkey,
                       onClick: function() { setConserve({ difficulty: dkey }); },
                       'aria-pressed': picked,
-                      style: { background: picked ? 'rgba(21,128,61,0.20)' : '#1e293b', border: '1px solid ' + (picked ? '#15803d' : '#334155'), color: picked ? '#86efac' : '#cbd5e1', borderRadius: 8, padding: '8px 12px', cursor: 'pointer', textAlign: 'left' }
+                      style: { background: picked ? 'rgba(21,128,61,0.20)' : '#1e293b', // The unpicked border was slate-700, 1.72:1 against this panel's hardcoded
+                        // #0f172a. slate-500 gives 3.75:1. The picked green already passed at 3.56.
+                        border: '1px solid ' + (picked ? '#15803d' : '#64748b'), color: picked ? '#86efac' : '#cbd5e1', borderRadius: 8, padding: '8px 12px', cursor: 'pointer', textAlign: 'left' }
                     },
                       h('div', { style: { fontWeight: 800, fontSize: 13 } }, df.label),
                       h('div', { style: { fontSize: 11, color: picked ? '#a7f3d0' : '#94a3b8', marginTop: 2, lineHeight: 1.4 } }, __alloT('stem.ecosystem.' + (dkey) + '_desc', df.desc))
@@ -6981,7 +7083,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                     h('div', { style: { fontWeight: 700, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6, '--eco-acc-light': def.color, '--eco-acc-dark': ecoAccentOnDark(def.color) }, className: 'eco-accent' },
                       h('span', null, def.icon + ' ' + def.name + (hit ? ' ✓' : '')),
                       def.deepDive ? h('button', { onClick: function() { openConservDeepDive(s.id); }, 'aria-label': __alloT('stem.ecosystem.aria_deepdive', 'Deep-dive'), title: __alloT('stem.ecosystem.species_deepdive', 'Species deep-dive'),
-                        className: 'eco-accent', style: { marginLeft: 'auto', background: 'transparent', border: '1px solid ' + def.color + '66', '--eco-acc-light': def.color, '--eco-acc-dark': ecoAccentOnDark(def.color), cursor: 'pointer', borderRadius: 6, padding: '0 6px', fontSize: 11 } }, '📚') : null
+                        className: 'eco-accent', style: { marginLeft: 'auto', background: 'transparent', border: '1px solid currentColor', '--eco-acc-light': def.color, '--eco-acc-dark': ecoAccentOnDark(def.color), cursor: 'pointer', borderRadius: 6, padding: '0 6px', fontSize: 11 } }, '📚') : null
                     ),
                     h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
                       __alloT('stem.ecosystem.population_colon', 'Population: ') + Math.round(s.pop) + ' / ' + targets.pop,
@@ -7151,7 +7253,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                       h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, def.role)
                     ),
                     def.deepDive ? h('button', { onClick: function() { openConservDeepDive(s.id); }, 'aria-label': __alloT('stem.ecosystem.aria_deepdive_for_pre', 'Deep-dive for ') + def.name, title: __alloT('stem.ecosystem.species_deepdive', 'Species deep-dive'),
-                      className: 'eco-accent', style: { background: 'transparent', border: '1px solid ' + def.color + '66', '--eco-acc-light': def.color, '--eco-acc-dark': ecoAccentOnDark(def.color), cursor: 'pointer', borderRadius: 6, padding: '2px 8px', fontSize: 11, fontWeight: 700 } }, '📚') : null
+                      className: 'eco-accent', style: { background: 'transparent', border: '1px solid currentColor', '--eco-acc-light': def.color, '--eco-acc-dark': ecoAccentOnDark(def.color), cursor: 'pointer', borderRadius: 6, padding: '2px 8px', fontSize: 11, fontWeight: 700 } }, '📚') : null
                   ),
                   h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 8 } },
                     [[__alloT('stem.ecosystem.delta_pop', 'Pop'), Math.round(s.pop), s.pop < 25 ? '#ef4444' : s.pop < 50 ? '#f59e0b' : '#22c55e', def.targets.pop],
@@ -7301,9 +7403,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               ),
               // Log + reset
               h('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },
-                h('button', { onClick: logObs, className: 'transition-colors px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-[11px] font-bold text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 active:scale-[0.97]' }, '📋 ' + __alloT('stem.ecosystem.log_observation', 'Log observation')),
+                h('button', { onClick: logObs, className: 'transition-colors px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-[11px] font-bold text-slate-700 dark:text-slate-300 border border-slate-500 dark:border-slate-600 active:scale-[0.97]' }, '📋 ' + __alloT('stem.ecosystem.log_observation', 'Log observation')),
                 h('button', { onClick: function() { setIQ({ predBirth: 50, preyLife: 50, resScarcity: 30, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
-                  className: 'transition-colors px-2 py-1 rounded bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-[11px] font-semibold text-slate-600 dark:text-slate-400 border border-slate-300 dark:border-slate-600 active:scale-[0.97]' }, '↺ ' + __alloT('stem.ecosystem.reset', 'Reset')),
+                  className: 'transition-colors px-2 py-1 rounded bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-[11px] font-semibold text-slate-600 dark:text-slate-400 border border-slate-500 dark:border-slate-600 active:scale-[0.97]' }, '↺ ' + __alloT('stem.ecosystem.reset', 'Reset')),
                 (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + __alloT('stem.ecosystem.observations_logged_suffix', ' observations logged'))
               ),
               // Log table
@@ -7334,7 +7436,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               // Opt-in
               h('div', { className: 'mb-3' },
                 !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
-                  className: 'transition-colors px-2 py-1 rounded bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900 text-[11px] font-bold text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700 active:scale-[0.97]' },
+                  className: 'transition-colors px-2 py-1 rounded bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900 text-[11px] font-bold text-amber-800 dark:text-amber-300 border border-amber-700 dark:border-amber-700 active:scale-[0.97]' },
                   '🤔 ' + __alloT('stem.ecosystem.iq_stuck_btn', 'I\'m stuck — show me questions to think about (no answers)')),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 text-[11px] text-slate-700 dark:text-slate-300 leading-relaxed' },
                   h('div', { className: 'font-bold text-amber-900 dark:text-amber-300 mb-1' }, __alloT('stem.ecosystem.open_questions', 'Open questions — investigate by manipulating:')),
@@ -7406,7 +7508,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 var isSelected = quizAnswer === idx;
                 var isCorrectChoice = idx === currentQ.answer;
                 var showResult = quizAnswer !== -1;
-                var bgClass = 'transition-colors border-slate-200 dark:border-slate-600 hover:border-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 active:scale-[0.97]';
+                var bgClass = 'transition-colors border-slate-500 dark:border-slate-600 hover:border-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 active:scale-[0.97]';
                 if (showResult && isSelected && isCorrectChoice) {
                   bgClass = 'border-green-500 bg-green-50 dark:bg-green-900/30';
                 } else if (showResult && isSelected && !isCorrectChoice) {

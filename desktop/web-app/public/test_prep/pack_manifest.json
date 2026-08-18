@@ -524,13 +524,13 @@
       ],
       "examModes": [],
       "packUrl": "./test_prep/early_childhood_5025_pack.json",
-      "sha256": "d6069d125f43ae852be4d9a9811d3354fe30353d19585739ff8a32fa2b2cb7bc",
+      "sha256": "aad848ddb8ce901b0469c9a58e9572a0cc44d3a6863c052d14383818c12ab1bd",
       "learningLibraryUrl": "./test_prep/early_childhood_5025_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/early_childhood_5025_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/early_childhood_5025_native_qa.json",
       "learningLibrarySha256": "fc24eed89a1c287c3adf72c9cd548ba1eb4acff99a07aac71dc9565c63523a0e",
-      "learningLibraryQaSha256": "22d4393b4e58fb2710e697f1a04e3db76ff9771a99d2afed0b457c63de6c063a",
-      "nativeQaSha256": "e9e7e8ef5c4f123e685c25add046546daed176b480b736bbf64fd54e0ab66cca"
+      "learningLibraryQaSha256": "c5d5ed94ebd8f32bf1f1d76ca754a93ca6d77c10ca538da2d207716f69370d8e",
+      "nativeQaSha256": "56afe224b0c288cefbd99c73d5d31cd2080afe6a84b40601c1668f12dc085c8a"
     },
     {
       "id": "praxis-plt-early-childhood-5621",
@@ -557,13 +557,13 @@
       ],
       "examModes": [],
       "packUrl": "./test_prep/plt_early_childhood_5621_pack.json",
-      "sha256": "5dbf53c462cbe0b6092077aeae5910644aa6d1f8af16e15f7178eaf1be42b341",
+      "sha256": "e768a3de53701ff8289ef8bce37576f0c7503ca9f27a8f93ae360658cadf44d3",
       "learningLibraryUrl": "./test_prep/plt_early_childhood_5621_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/plt_early_childhood_5621_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/plt_early_childhood_5621_native_qa.json",
       "learningLibrarySha256": "b86523780637ce6ae14214beca6e3a99645a6685c4aa48692835369361901fd4",
-      "learningLibraryQaSha256": "9c0e87b8a01d2f2afbb0237fe0c2b42644e31a1818760636f9593d17163a2309",
-      "nativeQaSha256": "578607b389972150b8d6ae0fc6ffdb233388fb3fe08e8cd35092242cac970ee9"
+      "learningLibraryQaSha256": "8a9ffe06beb0f4472cb4cb55993cecc3876ef5f90a5b9767122135441480dfdc",
+      "nativeQaSha256": "4629ac32403ca175cc9a9c773bef403bb256fb94c97282e054f46d7292f09276"
     },
     {
       "id": "praxis-special-education-early-childhood-5692",
@@ -755,13 +755,13 @@
       ],
       "examModes": [],
       "packUrl": "./test_prep/plt_5_9_5623_pack.json",
-      "sha256": "c6fb81610f1c547a76e81a426cf45c2ac92dfa2c305686735c8c60c6ef2f23fe",
+      "sha256": "3c7161197293818b576bdf4a7ea37aa6dc292cd740e19d44b6ff556590568e0d",
       "learningLibraryUrl": "./test_prep/plt_5_9_5623_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/plt_5_9_5623_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/plt_5_9_5623_native_qa.json",
       "learningLibrarySha256": "bc1b3e35b00400c65a35fbc430b2dead0ead11df6e1582958cd546b74c4575d4",
-      "learningLibraryQaSha256": "f0bb72ad9feaeeec2704836858b11bee798fa0b60f035a25b7c8fbb4f62705a0",
-      "nativeQaSha256": "ab8c0ef5da8d3d8ca79ad8174774b71560236403c8a1a1d30921929a762ce74b"
+      "learningLibraryQaSha256": "093da49f575898933016f72502b2269b49b4ce318489e4d7a944c6e672224a9b",
+      "nativeQaSha256": "a627f04e8621097465205757abf1086e1c249e98fcf7de47a0b82f16c7c861b1"
     },
     {
       "id": "praxis-plt-grades-7-12-5624",
@@ -788,13 +788,13 @@
       ],
       "examModes": [],
       "packUrl": "./test_prep/plt_7_12_5624_pack.json",
-      "sha256": "85b4aa0a5a68060a3f71e79ba8c461d8764196ebbf93b629e21ca5598aa4c352",
+      "sha256": "231e41382c09c86d5909e58ae3e611e57be5172d7a87896eabb9ebbcf9297b57",
       "learningLibraryUrl": "./test_prep/plt_7_12_5624_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/plt_7_12_5624_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/plt_7_12_5624_native_qa.json",
       "learningLibrarySha256": "d2c283da9d654dc414367785fbe2de52d3aa7607784127c02a608b53d42676ea",
-      "learningLibraryQaSha256": "81728c1c8ecb1449c1d74fe4dbd94e2675e7c6f169767878931fa168cc644eff",
-      "nativeQaSha256": "441f638514400fc0a9321924e87c3ff5d786e107270854ee3e2e6b0f580adb32"
+      "learningLibraryQaSha256": "61875ecfe91b29891894dfdc369abdda66d78cccec5c8de66983ce1f4ae4be54",
+      "nativeQaSha256": "76c22a04252a5a998a11cafa2f8332ea1578698cdd277e8cab0ed723b6f896a8"
     },
     {
       "id": "praxis-school-librarian-5312",
@@ -805,7 +805,7 @@
       ],
       "title": "Praxis School Librarian (5312) - 200 Source Questions + 100 Independent Practice Questions + 200 Guided Review",
       "shortTitle": "School Librarian (5312)",
-      "description": "Contains 200 original source questions, 100 assistant-authored independent practice questions, and 200 source-derived guided-review activities. The assistant audit found 126 distinct independent content kernels. Two 100-item diagnostics and a 120-item simulation with source-rich feedback and learning support for beginning school librarians.",
+      "description": "Contains 200 original source questions, 100 assistant-authored independent practice questions, and 200 source-derived guided-review activities. The assistant audit found 135 distinct independent content kernels. Two 100-item diagnostics and a 120-item simulation with source-rich feedback and learning support for beginning school librarians.",
       "disclaimer": "Independent preparation material, not affiliated with or endorsed by ETS, AASL, or ALA. Results are not official forms, scaled scores, pass predictions, licenses, legal advice, copyright determinations, privacy determinations, or substitutes for current state and local requirements.",
       "credentialOwner": "Educational Testing Service (ETS)",
       "status": "ready",
@@ -821,13 +821,13 @@
       ],
       "examModes": [],
       "packUrl": "./test_prep/school_librarian_5312_pack.json",
-      "sha256": "cb3c8bc24d576789066ed622b2aef00e829f0ce68791057129a70aeb437ac3eb",
+      "sha256": "02650e2c7f756eeb62e3a910c2001df860b62ec25e6e5de0cf61e94cd146ed99",
       "learningLibraryUrl": "./test_prep/school_librarian_5312_learning_library.json",
       "learningLibraryQaUrl": "./test_prep/school_librarian_5312_learning_library_qa.json",
       "nativeQaUrl": "./test_prep/school_librarian_5312_native_qa.json",
       "learningLibrarySha256": "9eeee966857c9d1af35550e9557251473d07ea9af45428a249063ec2e7b56d0f",
-      "learningLibraryQaSha256": "71959bedf81fcd40ccc67ff5c4c53faa582b15ab001e32487404a575192aa0c6",
-      "nativeQaSha256": "4cff3f10cd02aac5ce7f4a1066a914952e098d6ed69839a6c9db4db58eb33a92"
+      "learningLibraryQaSha256": "973ba1d9df0cf8a292aaa9d28566593f20ba0632c38ada7bb601cd4ac51b85d4",
+      "nativeQaSha256": "b587c7ba0e117f62e06a5a715198a0080364b267b504233f86512095da954e0f"
     },
     {
       "id": "ap-psychology-pilot",

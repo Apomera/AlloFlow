@@ -148,6 +148,50 @@ function verifyDeploymentIdentity() {
   return { ok: true, email: actor.email, role: actor.role, teacherId: actor.teacherId || '', domain: emailDomain_(actor.email) };
 }
 
+// Every audit row stores the previous row's hash plus a hash of its own fields,
+// which makes the log tamper-EVIDENT only if something actually recomputes it.
+// Admin-callable, read-only, and deliberately content-free: it reports positions
+// and entry ids so an administrator can investigate in the sheet, never the
+// evaluation text of the rows themselves.
+function verifyAuditChain() {
+  requireAdmin_();
+  return auditChainStatus_();
+}
+
+// Shared by verifyAuditChain() and the Setup health panel, so an administrator
+// gets the same answer whether they run it from the script editor or the portal.
+function auditChainStatus_() {
+  var sheet = repositorySpreadsheet_().getSheetByName('Audit');
+  if (!sheet) throw eeError_('not_configured', 'Audit sheet is not configured.');
+  var rows = dataRows_(sheet, 12);
+  var previous = 'GENESIS';
+  for (var i = 0; i < rows.length; i++) {
+    var row = rows[i];
+    var fields = [];
+    for (var c = 0; c < 11; c++) fields.push(auditCellText_(row[c]));
+    var stored = auditCellText_(row[11]);
+    // A break in the link means a row was removed, reordered, or inserted.
+    if (fields[10] !== previous) {
+      return { ok: false, reason: 'link', rows: rows.length, verified: i, brokenAtRow: i + 2, entryId: fields[0] };
+    }
+    // A content mismatch means a row was edited in place after it was written.
+    if (hashText_(fields.join('|')) !== stored) {
+      return { ok: false, reason: 'content', rows: rows.length, verified: i, brokenAtRow: i + 2, entryId: fields[0] };
+    }
+    previous = stored;
+  }
+  return { ok: true, rows: rows.length, verified: rows.length };
+}
+
+// Spreadsheets can hand back a typed value (a Date for an ISO timestamp, a
+// number for the version) where a string was written, so both sides of the
+// comparison are normalized the same way.
+function auditCellText_(value) {
+  if (value == null) return '';
+  if (Object.prototype.toString.call(value) === '[object Date]') return value.toISOString();
+  return String(value);
+}
+
 function adminUpsertMember(member) {
   var actor = requireAdmin_();
   var normalized = normalizeMember_(member, PropertiesService.getScriptProperties().getProperty('EE_ALLOWED_DOMAIN'));
@@ -603,6 +647,11 @@ function getPortalSetupHealth() {
   });
   var folderOk = false;
   try { DriveApp.getFolderById(props.getProperty('EE_FOLDER_ID')); folderOk = true; } catch (folderErr) {}
+  // Recomputed on demand, and defensively: a chain problem must not take the
+  // rest of the health report down with it.
+  var audit;
+  try { audit = auditChainStatus_(); }
+  catch (auditErr) { audit = { ok: false, reason: 'unavailable', rows: 0, verified: 0, brokenAtRow: 0 }; }
   return {
     ok: true,
     checkedAt: nowIso_(),
@@ -616,6 +665,10 @@ function getPortalSetupHealth() {
       activeEducators: teachers.length,
       educatorsWithoutMemberAccount: withoutMember,
       educatorsWithoutEvaluatorAssignment: withoutAssignment,
+      auditChainIntact: audit.ok === true,
+      auditChainRows: audit.rows || 0,
+      auditChainBreakReason: audit.ok ? '' : String(audit.reason || 'unknown'),
+      auditChainBrokenAtRow: audit.ok ? 0 : (audit.brokenAtRow || 0),
     },
   };
 }

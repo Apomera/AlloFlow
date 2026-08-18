@@ -2247,3 +2247,622 @@ describe('Fisher Lab presentation cadence', () => {
     calls.forEach((c) => expect(c.slice(0, c.indexOf('));') + 3), c.slice(0, 70)).toContain('true'));
   });
 });
+
+// ★ Losing the fish. Four things can go wrong — the cast lands outside the
+// water you picked, the strike comes after the window shuts, the line parts
+// under load, or it goes slack and the hook works free. All four produced the
+// same screen. Failure is where the learning is, and these are four different
+// lessons wearing one face.
+describe('Fisher Lab loss diagnostics', () => {
+  it('★ publishes the window the strike was judged against', () => {
+    const { evaluateHookset } = window.__FisherLabCore;
+    // Assist mode stretches the window 1.5x. A diagram re-applying that
+    // multiplier would be a second derivation of the very thing the student is
+    // being shown they missed.
+    const plain = evaluateHookset({ reactionMs: 1100, biteWindowMs: 900, assistMode: false });
+    expect(plain.windowMs).toBe(900);
+    expect(plain.reactionMs).toBe(1100);
+    expect(plain.lateBy).toBe(200);
+    expect(plain.success).toBe(false);
+
+    const assisted = evaluateHookset({ reactionMs: 1100, biteWindowMs: 900, assistMode: true });
+    expect(assisted.windowMs).toBeCloseTo(1350, 5);
+    expect(assisted.success).toBe(true);
+    expect(assisted.lateBy).toBe(0);
+  });
+
+  it('never reports a negative lateness', () => {
+    const { evaluateHookset } = window.__FisherLabCore;
+    expect(evaluateHookset({ reactionMs: 100, biteWindowMs: 900 }).lateBy).toBe(0);
+    expect(evaluateHookset({ reactionMs: -50, biteWindowMs: 900 }).reactionMs).toBe(0);
+  });
+
+  it('★ gives each failure its own diagram', () => {
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const block = src.slice(src.indexOf("var why = activeFishing.lossReason"), src.indexOf('Evidence from this cast'));
+    expect(block).toContain("why === 'off-target'");
+    expect(block).toContain("why === 'missed-bite'");
+    expect(block).toContain("why === 'line-break' || why === 'slack-line'");
+    // The off-target case reuses the very figure the cast was placed with, so
+    // the loss shows the same throw the sim rejected.
+    expect(block).toContain('flCastArcSvg(h, activeFishing.castMeter)');
+    expect(block).toContain('flHooksetTimingSvg(h, activeFishing.hookset)');
+    expect(block).toContain('flTensionTraceSvg(h, activeFishing.tensionSamples');
+  });
+
+  it('draws the tension band the fight was actually judged in', () => {
+    const { getFishingTensionProfile } = window.__FisherLabCore;
+    // Assist mode widens the band at both ends; the trace labels those edges,
+    // so a hardcoded 30/72 would lie to every assisted student.
+    const plain = getFishingTensionProfile(false, 0.5);
+    const assisted = getFishingTensionProfile(true, 0.5);
+    expect(plain).toMatchObject({ lower: 0.3, upper: 0.72 });
+    expect(assisted.lower).toBeLessThan(plain.lower);
+    expect(assisted.upper).toBeGreaterThan(plain.upper);
+
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const fig = src.slice(src.indexOf('function flTensionTraceSvg'), src.indexOf('// PLACING THE CAST'));
+    expect(fig).toContain("Math.round(e[0] * 100) + '%'");
+    expect(fig).not.toContain("'30%'");
+    expect(fig).not.toContain("'72%'");
+    // And it is handed the live profile rather than assuming one.
+    expect(src).toContain('getFishingTensionProfile(activeFishing.assistMode, activeFishing.tension), why)');
+  });
+
+  it('survives a fight with no usable samples', () => {
+    const { flTensionTraceSvg } = window.__FisherLabCore;
+    const h = () => ({});
+    expect(flTensionTraceSvg(h, [], {}, 'line-break')).toBeNull();
+    expect(flTensionTraceSvg(h, null, {}, 'line-break')).toBeNull();
+    expect(flTensionTraceSvg(h, [NaN, undefined], {}, 'slack-line')).toBeNull();
+    // One sample is a legal fight: it must draw rather than divide by zero.
+    expect(flTensionTraceSvg(h, [0.1], {}, 'slack-line')).not.toBeNull();
+  });
+
+  it('★ names both fight losses distinctly and says the correction', () => {
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const fig = src.slice(src.indexOf('function flTensionTraceSvg'), src.indexOf('// PLACING THE CAST'));
+    expect(fig).toContain("'LINE PARTED'");
+    expect(fig).toContain("'HOOK THREW'");
+    expect(fig).toContain('give line sooner when it rises');
+    expect(fig).toContain('reel sooner when it falls');
+  });
+});
+
+// ★ The regulations lookup. Measured across all 107 sections it was the largest
+// one with nothing to look at: a five-column table where every size rule is a
+// string you parse in your head, and comparing two species means reading down a
+// column of numbers.
+describe('Fisher Lab size-limit chart', () => {
+  const core = () => window.__FisherLabCore;
+
+  it('★ takes its bounds from the parser the simulator scores with', () => {
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const wiring = src.slice(src.indexOf('var charted = currentSpeciesList.map'), src.indexOf('SHELLFISH GAUGE') + 40);
+    expect(wiring).toContain('getCoreFishRuleEvidence(0, sp, {})');
+    expect(wiring).toContain('ev.minInches');
+    expect(wiring).toContain('ev.maxInches');
+    // Re-parsing the rule strings in the drawing would let the chart show a
+    // limit the sim does not enforce, or hide one it does.
+    const fig = src.slice(src.indexOf('function flSizeLimitChartSvg'), src.indexOf('// LOSING THE FISH'));
+    expect(fig).not.toContain('.slot');
+    expect(fig).not.toContain('minSize');
+    expect(fig).not.toContain('carapace');
+  });
+
+  it('★ keeps carapace width off the total-length axis', () => {
+    // A 5 inch crab and a 5 inch fish are not the same measurement, and one
+    // shared axis would say they are.
+    expect(core().isCoreCarapaceRule({ slot: '3.25" – 5" carapace' })).toBe(true);
+    expect(core().isCoreCarapaceRule({ minSize: '3-1/4" carapace (min) / 5" (max)' })).toBe(true);
+    expect(core().isCoreCarapaceRule({ slot: '5"+ carapace' })).toBe(true);
+    expect(core().isCoreCarapaceRule({ minSize: 23, slot: null })).toBe(false);
+    expect(core().isCoreCarapaceRule({})).toBe(false);
+    expect(core().isCoreCarapaceRule(null)).toBe(false);
+
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    expect(src).toContain("flSizeLimitChartSvg(h, byCarapace, 'SHELLFISH GAUGE', 'inches, carapace')");
+    expect(src).toContain("flSizeLimitChartSvg(h, byLength, 'LEGAL SIZE WINDOW', 'inches, total length')");
+  });
+
+  it('★ clips the axis to the bulk of the data and says what ran off', () => {
+    // Bluefin tuna's 73–81 inch slot scaled the axis to 95 and squeezed every
+    // groundfish into the left third — a 9 inch redfish and a 24 inch dogfish
+    // looked the same length. Clipping and SAYING so beats an unreadable
+    // technically-complete axis.
+    const fig = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const body = fig.slice(fig.indexOf('function flSizeLimitChartSvg'), fig.indexOf('// LOSING THE FISH'));
+    expect(body).toContain('0.8 * (bounds.length - 1)');
+    expect(body).toContain("'≫ ' + clipped + ' beyond '");
+    // An off-scale species keeps its real numbers rather than being dropped.
+    expect(body).toContain("'≫ ' + r.min + (slot ? '–' + r.max : '+') + '\"'");
+  });
+
+  it('★ moves a narrow slot label outside its own bar', () => {
+    // The striped bass window is three inches wide; two numbers printed inside
+    // it overprinted into nonsense.
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const body = src.slice(src.indexOf('function flSizeLimitChartSvg'), src.indexOf('// LOSING THE FISH'));
+    expect(body).toContain('var roomy = (right - left) >= 46');
+    expect(body).toContain("textAnchor: roomy ? 'start' : 'end'");
+  });
+
+  it('collapses unscored species to one line rather than one row each', () => {
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const body = src.slice(src.indexOf('function flSizeLimitChartSvg'), src.indexOf('// LOSING THE FISH'));
+    expect(body).toContain("'+' + unscored + ' more'");
+    expect(body).toContain('no size limit the simulator scores');
+  });
+
+  it('declines to draw a chart with nothing in it', () => {
+    const h = () => ({});
+    expect(core().flSizeLimitChartSvg(h, [], 'T', 'in')).toBeNull();
+    expect(core().flSizeLimitChartSvg(h, null, 'T', 'in')).toBeNull();
+    expect(core().flSizeLimitChartSvg(h, [null, undefined], 'T', 'in')).toBeNull();
+    // All-unscored is still worth one summary line.
+    expect(core().flSizeLimitChartSvg(h, [{ name: 'x', min: null, max: null }], 'T', 'in')).not.toBeNull();
+  });
+
+  it('agrees with the rule the sim enforces for a known species', () => {
+    // Cod: a 23 inch floor with no ceiling. The chart draws an open-ended bar
+    // off exactly these two values.
+    const cod = core().getCoreFishRuleEvidence(0, { name: 'Atlantic Cod', minSize: 23 }, {});
+    expect(cod.minInches).toBe(23);
+    expect(cod.maxInches).toBeNull();
+    // Striped bass: a closed slot.
+    const bass = core().getCoreFishRuleEvidence(0, { name: 'Striped Bass', slot: '28-31 inches (slot)' }, {});
+    expect(bass.minInches).toBe(28);
+    expect(bass.maxInches).toBe(31);
+  });
+});
+
+// ★ Cold-water survival. 1-10-1 is a lesson about PROPORTION — one minute to
+// get your breathing back, ten minutes of hands that work, one hour before the
+// cold has you. Written as three numbers in a sentence they look like three
+// comparable amounts of time.
+describe('Fisher Lab cold-water timeline', () => {
+  const span = (t) => window.__FisherLabCore.getCoreColdWaterSpan(t);
+
+  it('reads each phase span out of the title that already states it', () => {
+    // The titles are the single authored source; a second table of numbers
+    // would be free to drift from the prose beside it.
+    expect(span('1. Cold Shock (first 1 minute)')).toEqual({ from: 0, to: 1 });
+    expect(span('2. Swim Failure (minutes 1-10)')).toEqual({ from: 1, to: 10 });
+    expect(span('3. Hypothermia (10 min - 1 hr)')).toEqual({ from: 10, to: 60 });
+  });
+
+  it('★ does not mistake the list number for a duration', () => {
+    // Every title starts "N." — read as minutes that would put cold shock at
+    // one minute long starting from phase one.
+    expect(span('4. Post-rescue Collapse')).toBeNull();
+    expect(span('7. Something Untimed')).toBeNull();
+  });
+
+  it('converts hours so both ends of a span share a unit', () => {
+    expect(span('(30 min - 2 hr)')).toEqual({ from: 30, to: 120 });
+    expect(span('(1 hr - 3 hrs)')).toEqual({ from: 60, to: 180 });
+  });
+
+  it('refuses spans it cannot place on an axis', () => {
+    expect(span('')).toBeNull();
+    expect(span(null)).toBeNull();
+    expect(span('Phase with no numbers')).toBeNull();
+    // A lone duration with no anchor word is a length, not a position.
+    expect(span('lasts 20 minutes')).toBeNull();
+    // Backwards ranges are not spans.
+    expect(span('(10 min - 2 min)')).toBeNull();
+  });
+
+  it('★ magnifies the head of the timeline instead of hiding it', () => {
+    // On one linear hour the first minute is seven pixels and unlabellable;
+    // on a magnifier alone you never see how short it really is.
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const fig = src.slice(src.indexOf('function flColdWaterTimelineSvg'), src.indexOf('function flHelpHuddleSvg'));
+    expect(fig).toContain('minutes, magnified');
+    expect(fig).toContain('the minute that drowns people is the narrow one');
+    // Phases with no place on the clock are counted, not silently dropped.
+    expect(fig).toContain("'+' + untimed + ' phase'");
+  });
+
+  it('draws the two positions the text asks a person to reproduce', () => {
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const fig = src.slice(src.indexOf('function flHelpHuddleSvg'), src.indexOf('// THE SIZE-LIMIT CHART'));
+    expect(fig).toContain('HELP — alone');
+    expect(fig).toContain('HUDDLE — together');
+    expect(fig).toContain("'aria-hidden': 'true'");
+    // Both are wired under the prose that describes them.
+    expect(src).toContain('flColdWaterTimelineSvg(h, COLD_WATER)');
+    expect(src).toContain('flHelpHuddleSvg(h)');
+  });
+});
+
+// ★ The wind warning ladder. Three warnings that mean three different days on
+// the water, with their wind ranges buried mid-sentence in three paragraphs.
+describe('Fisher Lab wind warning ladder', () => {
+  const band = (t) => window.__FisherLabCore.getCoreWindBand(t);
+
+  it('reads the wind range out of the trigger that states it', () => {
+    expect(band('Sustained winds 21-33 kt OR seas 4+ ft hazardous to small craft')).toEqual({ from: 21, to: 33 });
+    expect(band('Sustained winds 34-47 kt')).toEqual({ from: 34, to: 47 });
+    expect(band('Sustained winds 48-63 kt')).toEqual({ from: 48, to: 63 });
+    // An en dash is as common as a hyphen in authored copy.
+    expect(band('Sustained winds 48–63 kt')).toEqual({ from: 48, to: 63 });
+  });
+
+  it('treats a bare floor as open-ended rather than as a range', () => {
+    expect(band('Sustained winds 64+ kt')).toEqual({ from: 64, to: null });
+  });
+
+  it('★ invents no wind band for a scenario that has none', () => {
+    // Fog is a visibility rule, a thunderstorm is a cloud, a nor easter is a
+    // pressure pattern. Giving them wind numbers would be fabrication.
+    expect(band('Visibility < 1 nm')).toBeNull();
+    expect(band('Cumulonimbus + lightning')).toBeNull();
+    expect(band('High pressure dome')).toBeNull();
+    expect(band('Tropical or post-tropical system')).toBeNull();
+    expect(band('')).toBeNull();
+    expect(band(null)).toBeNull();
+    // "seas 4+ ft" is a sea state, not a wind speed — it must not be read as one.
+    expect(band('seas 4+ ft hazardous to small craft')).toBeNull();
+  });
+
+  it('★ colours the ladder from the same risk palette as the cards below it', () => {
+    // Two palettes would let the chart and the list disagree about how serious
+    // a warning is, in the same glance.
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    expect(src).toContain('flWindLadderSvg(h, WEATHER_SCENARIOS, function(risk) {');
+    const fig = src.slice(src.indexOf('function flWindLadderSvg'), src.indexOf('// COLD WATER'));
+    expect(fig).toContain('riskInk(r.risk)');
+    // The builder holds no colours of its own for the bars.
+    expect(fig).not.toContain("'#dc2626'");
+    expect(fig).not.toContain("'#fbbf24'");
+  });
+
+  it('counts the scenarios it cannot place instead of dropping them', () => {
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const fig = src.slice(src.indexOf('function flWindLadderSvg'), src.indexOf('// COLD WATER'));
+    expect(fig).toContain("'+' + other + ' more'");
+    expect(fig).toContain('not defined by wind speed');
+  });
+});
+
+// ★ The VHF call triage. Mayday, Pan-Pan, Sécurité and a routine hail were four
+// cards in a list — but they are not four topics. They are one decision taken
+// in order of severity, and choosing between them under pressure is the skill.
+describe('Fisher Lab VHF triage', () => {
+  const name = (t) => window.__FisherLabCore.getCoreCallName(t);
+  const test = (w) => window.__FisherLabCore.getCoreCallTest(w);
+
+  it('strips the card gloss off the call name', () => {
+    expect(name('MAYDAY (distress — life-threatening)')).toBe('MAYDAY');
+    expect(name('PAN-PAN (urgency — situation requires assistance)')).toBe('PAN-PAN');
+    expect(name('General hail (calling another vessel)')).toBe('General hail');
+    expect(name('Radio Check')).toBe('Radio Check');
+    expect(name('')).toBe('');
+    expect(name(null)).toBe('');
+  });
+
+  it('splits the condition from its examples', () => {
+    expect(test('Imminent threat to life: fire, sinking, person overboard.')).toEqual({
+      test: 'Imminent threat to life',
+      examples: 'fire, sinking, person overboard.',
+    });
+    // No colon means the whole thing is the condition, with nothing dropped.
+    expect(test('Calling someone for non-emergency contact.')).toEqual({
+      test: 'Calling someone for non-emergency contact.',
+      examples: '',
+    });
+    expect(test(null)).toEqual({ test: '', examples: '' });
+  });
+
+  it('★ orders the rungs by severity, not by authoring order', () => {
+    // Working down the ladder IS the decision; any other order teaches nothing.
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const fig = src.slice(src.indexOf('function flVhfTriageSvg'), src.indexOf('// THE WIND WARNING LADDER'));
+    expect(fig).toContain("var order = ['mayday', 'panpan', 'securite', 'general-hail']");
+    expect(fig).toContain('WORK DOWN UNTIL ONE FITS');
+    expect(fig).toContain('EVERY CALL OPENS ON CHANNEL 16');
+  });
+
+  it('★ admits the call types the ladder does not cover', () => {
+    // A flow headed "WHICH CALL?" that quietly drops one reads as a complete
+    // list of them — a radio check is a fifth script and not a severity rung.
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const fig = src.slice(src.indexOf('function flVhfTriageSvg'), src.indexOf('// THE WIND WARNING LADDER'));
+    expect(fig).toContain('not part of this severity ladder');
+    expect(fig).toContain('order.indexOf(v.id) < 0');
+  });
+
+  it('takes its channels from the scripts rather than restating them', () => {
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const fig = src.slice(src.indexOf('function flVhfTriageSvg'), src.indexOf('// THE WIND WARNING LADDER'));
+    expect(fig).toContain("'Ch ' + (st.channel");
+    // The builder holds no call colours of its own; the tab passes the palette
+    // the cards below already use.
+    expect(fig).toContain('inkFor(st.id)');
+    expect(fig).not.toContain("'#f87171'");
+    expect(src).toContain('flVhfTriageSvg(h, VHF_SCRIPTS, function(id) {');
+  });
+
+  it('degrades rather than throwing when a script is missing', () => {
+    const { flVhfTriageSvg } = window.__FisherLabCore;
+    const h = () => ({});
+    const ink = () => '#fff';
+    expect(flVhfTriageSvg(h, [], ink)).toBeNull();
+    expect(flVhfTriageSvg(h, null, ink)).toBeNull();
+    expect(flVhfTriageSvg(h, [{ id: 'unknown', type: 'X', when: 'y' }], ink)).toBeNull();
+    expect(flVhfTriageSvg(h, [{ id: 'mayday', type: 'MAYDAY (x)', channel: '16', when: 'a: b' }], ink)).not.toBeNull();
+  });
+});
+
+// ★ The licence ladder. The section opens by promising "below is the ladder"
+// and then renders six flat cards. The ladder is the thing worth seeing: what
+// you can hold at what age, and that the trap limit goes from ten to eight
+// hundred the moment you cross eighteen.
+describe('Fisher Lab licence ladder', () => {
+  const gate = (a) => window.__FisherLabCore.getCoreAgeGate(a);
+
+  it('prefers an explicit range over the bound in the same sentence', () => {
+    // "Under 18 (typically 8-17)" carries both; the range is the real gate.
+    expect(gate('Under 18 (typically 8-17)')).toEqual({ from: 8, to: 17 });
+  });
+
+  it('reads an open-ended floor as open-ended', () => {
+    expect(gate('18+')).toEqual({ from: 18, to: null });
+    expect(gate('~16+ (varies)')).toEqual({ from: 16, to: null });
+  });
+
+  it('★ treats "any age" as no gate at all, not as age zero', () => {
+    // A tier open to everyone is a separate track, not the bottom rung of a
+    // progression — drawn as rung zero it would read as the place to start.
+    expect(gate('Any (Maine resident)')).toBeNull();
+    expect(gate('')).toBeNull();
+    expect(gate(null)).toBeNull();
+
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const fig = src.slice(src.indexOf('function flLicenseLadderSvg'), src.indexOf('function getCoreHullLength'));
+    expect(fig).toContain('any age — separate track');
+    expect(fig).toContain('return r.gate;');
+  });
+
+  it('handles "under N" with no companion range', () => {
+    expect(gate('Under 21')).toEqual({ from: null, to: 21 });
+  });
+
+  it('★ prints trap limits as numbers, not as a bar', () => {
+    // 0, 5, 10 and 800 share no usable scale; a bar would render the first
+    // three invisible and imply the fishery starts at Class I.
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const fig = src.slice(src.indexOf('function flLicenseLadderSvg'), src.indexOf('function getCoreHullLength'));
+    expect(fig).toContain('share no usable scale');
+    expect(fig).toContain("r.traps == null ? '—' : String(r.traps)");
+    // Eighteen is marked, because that is where the fishery opens up.
+    expect(fig).toContain('at(18)');
+  });
+
+  it('takes tier colours from the tab rather than holding its own', () => {
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    expect(src).toContain('flLicenseLadderSvg(h, LOBSTER_LICENSE, function(tier) {');
+    const fig = src.slice(src.indexOf('function flLicenseLadderSvg'), src.indexOf('function getCoreHullLength'));
+    expect(fig).toContain('inkFor(r.tier)');
+    expect(fig).not.toContain("'#38bdf8'");
+  });
+});
+
+// ★ The fleet. "From open skiffs to 90-ft draggers" is a sixfold spread that
+// six equally-sized cards flatten completely.
+describe('Fisher Lab fleet scale', () => {
+  const len = (n) => window.__FisherLabCore.getCoreHullLength(n);
+
+  it('reads the length range out of the name that states it', () => {
+    expect(len('Open Skiff (14-18 ft)')).toEqual({ from: 14, to: 18 });
+    expect(len('Dragger / Trawler (40-90 ft)')).toEqual({ from: 40, to: 90 });
+    expect(len('Maine Lobsterboat (28–42 ft)')).toEqual({ from: 28, to: 42 });
+  });
+
+  it('accepts a single length as a range of one', () => {
+    expect(len('Peapod (12 ft)')).toEqual({ from: 12, to: 12 });
+  });
+
+  it('★ invents no length for a type that gives none', () => {
+    expect(len('Sailing Vessel')).toBeNull();
+    expect(len('Pontoon Boat (lakes only)')).toBeNull();
+    expect(len('')).toBeNull();
+    expect(len(null)).toBeNull();
+
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const fig = src.slice(src.indexOf('function flFleetScaleSvg'), src.indexOf('// THE VHF CALL TRIAGE'));
+    expect(fig).toContain("'+' + unsized + ' more'");
+    expect(fig).toContain('no length given');
+  });
+
+  it('draws every hull from a common zero so the lengths compare', () => {
+    // Bars that each started at their own minimum would compare nothing.
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const fig = src.slice(src.indexOf('function flFleetScaleSvg'), src.indexOf('// THE VHF CALL TRIAGE'));
+    expect(fig).toContain('var left = at(0)');
+    expect(src).toContain('flFleetScaleSvg(h, BOAT_TYPES)');
+  });
+
+  it('declines to draw a fleet with no lengths in it', () => {
+    const h = () => ({});
+    expect(window.__FisherLabCore.flFleetScaleSvg(h, [])).toBeNull();
+    expect(window.__FisherLabCore.flFleetScaleSvg(h, null)).toBeNull();
+    expect(window.__FisherLabCore.flFleetScaleSvg(h, [{ name: 'Sailing Vessel' }])).toBeNull();
+  });
+});
+
+// ★ Where these places actually are. Two sections list places and leave you to
+// picture them — eight ports "each with its own character", and the grounds,
+// "some inshore, some offshore". Both already carried real coordinates, so the
+// map was sitting in the data unplotted.
+describe('Fisher Lab coast map', () => {
+  const at = (c) => window.__FisherLabCore.getCoreLatLon(c);
+
+  it('reads both ways the same coordinate is written', () => {
+    // The ports use a prime and no comma; the grounds use an apostrophe, a
+    // comma, a leading tilde and sometimes a trailing note.
+    expect(at('43°39′N 70°15′W')).toEqual({ lat: 43.65, lon: -70.25 });
+    expect(at("~42°55' N, 68°40' W (offshore)")).toEqual({ lat: 42 + 55 / 60, lon: -(68 + 40 / 60) });
+    expect(at('44°09′N 68°40′W').lat).toBeCloseTo(44.15, 6);
+  });
+
+  it('★ signs the hemisphere rather than dropping it', () => {
+    // West longitudes are negative; treated as positive, Maine plots into Asia
+    // and the whole east-to-west ordering reverses.
+    expect(at('43°39′N 70°15′W').lon).toBeLessThan(0);
+    expect(at('43°39′S 70°15′E')).toEqual({ lat: -43.65, lon: 70.25 });
+  });
+
+  it('refuses a coordinate missing either half', () => {
+    expect(at('43°39′N')).toBeNull();
+    expect(at('70°15′W')).toBeNull();
+    expect(at('Penobscot Bay')).toBeNull();
+    expect(at('')).toBeNull();
+    expect(at(null)).toBeNull();
+  });
+
+  it('★ draws no coastline it does not have', () => {
+    // Inventing a shore would put land where the tool has no idea whether
+    // there is any, on a figure people will read as a chart.
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const fig = src.slice(src.indexOf('function flCoastMapSvg'), src.indexOf('// THE LICENSE LADDER'));
+    expect(fig).toContain('positions only — no coastline, not for navigation');
+    expect(fig).toContain('it is not a route');
+    // And it says how many places it could not place.
+    expect(fig).toContain("' without coordinates omitted'");
+  });
+
+  it('★ corrects longitude for latitude so the shape is not stretched', () => {
+    // A degree of longitude is shorter than a degree of latitude by cos(lat).
+    // Plotted one-for-one the coast comes out wrong-shaped, which is a false
+    // claim rather than a stylistic one.
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const fig = src.slice(src.indexOf('function flCoastMapSvg'), src.indexOf('// THE LICENSE LADDER'));
+    expect(fig).toContain('Math.cos(midLat * Math.PI / 180)');
+    expect(fig).toContain('squeeze');
+  });
+
+  it('★ places a label by where its pin is, not by its index', () => {
+    // A pin in the right-hand third with a label anchored 'start' runs off the
+    // plot and is clipped away by the viewBox.
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const fig = src.slice(src.indexOf('function flCoastMapSvg'), src.indexOf('// THE LICENSE LADDER'));
+    expect(fig).toContain('var right = px < PAD + plotW * 0.62');
+    expect(fig).not.toContain('var right = i % 2 === 0');
+  });
+
+  it('needs two placeable points before it claims to be a map', () => {
+    const h = () => ({});
+    const map = window.__FisherLabCore.flCoastMapSvg;
+    expect(map(h, [], 'T', '#fff')).toBeNull();
+    expect(map(h, null, 'T', '#fff')).toBeNull();
+    expect(map(h, [{ name: 'A', coords: '43°39′N 70°15′W' }], 'T', '#fff')).toBeNull();
+    expect(map(h, [{ name: 'A', coords: 'nowhere' }, { name: 'B', coords: 'nowhere' }], 'T', '#fff')).toBeNull();
+    expect(map(h, [
+      { name: 'A', coords: '43°39′N 70°15′W' },
+      { name: 'B', coords: '44°09′N 68°40′W' },
+    ], 'T', '#fff')).not.toBeNull();
+  });
+
+  it('is wired into both sections that carry coordinates', () => {
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    expect(src).toContain("flCoastMapSvg(h, MAINE_PORTS, 'THE EIGHT PORTS'");
+    expect(src).toContain("flCoastMapSvg(h, FISHING_SPOTS, 'THE GROUNDS'");
+  });
+});
+
+// ★ Harbour profiles. Each harbour states a channel depth and a tidal range in
+// prose. The interesting question is comparative — which is shallowest, where
+// does the tide dominate — and ten cards answer neither.
+describe('Fisher Lab harbour profiles', () => {
+  const ft = (t) => window.__FisherLabCore.getCoreFeetRange(t);
+
+  it('reads a range or a single figure out of the prose', () => {
+    expect(ft('20-40 ft main channel')).toEqual({ from: 20, to: 40 });
+    expect(ft('~9 ft mean')).toEqual({ from: 9, to: 9 });
+    expect(ft('18-25 ft (extreme!)')).toEqual({ from: 18, to: 25 });
+    expect(ft('30-100 ft (Frenchman Bay is deep)')).toEqual({ from: 30, to: 100 });
+  });
+
+  it('★ reports no figure where the data gives none', () => {
+    // "Varies dramatically with tide" is a real entry. Read as zero it would
+    // draw the shallowest harbour on the chart.
+    expect(ft('Varies dramatically with tide')).toBeNull();
+    expect(ft('Variable; many shallow areas + ledges')).toBeNull();
+    expect(ft('')).toBeNull();
+    expect(ft(null)).toBeNull();
+  });
+
+  it('★ clips to the working depths and marks what runs past', () => {
+    // One harbour is a 300 ft deep bay. Scaled to it, the fifteen-to-forty foot
+    // channels most boats use are squeezed into a tenth of the width.
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const fig = src.slice(src.indexOf('function flHarborProfileSvg'), src.indexOf('function getCoreServiceHours'));
+    expect(fig).toContain('0.8 * (bounds.length - 1)');
+    expect(fig).toContain("'≫ ' + clipped + ' beyond '");
+    // A clipped bar keeps its real numbers rather than appearing to end at the rim.
+    expect(fig).toContain('var dOff = r.depth.to > axisMax');
+  });
+
+  it('names both quantities rather than leaving two bars to be guessed', () => {
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const fig = src.slice(src.indexOf('function flHarborProfileSvg'), src.indexOf('function getCoreServiceHours'));
+    expect(fig).toContain('charted channel depth');
+    expect(fig).toContain('tidal range');
+    expect(src).toContain('flHarborProfileSvg(h, HARBOR_DETAILS)');
+  });
+
+  it('draws a harbour that has only one of the two figures', () => {
+    const h = () => ({});
+    const svg = window.__FisherLabCore.flHarborProfileSvg;
+    // Cobscook Bay is exactly this: an extreme tide and no stable charted depth.
+    expect(svg(h, [{ name: 'A', tidal_range: '18-25 ft (extreme!)', depths: 'Varies with tide' }])).not.toBeNull();
+    expect(svg(h, [{ name: 'A', depths: '20-40 ft' }])).not.toBeNull();
+    expect(svg(h, [{ name: 'A', depths: 'Variable', tidal_range: 'unknown' }])).toBeNull();
+    expect(svg(h, [])).toBeNull();
+    expect(svg(h, null)).toBeNull();
+  });
+});
+
+// ★ Service intervals. Every system states how often it needs attention, and
+// the comparison — a legacy two-stroke against a diesel — is the whole point.
+describe('Fisher Lab service intervals', () => {
+  const hrs = (t) => window.__FisherLabCore.getCoreServiceHours(t);
+
+  it('★ takes the shortest interval a schedule quotes', () => {
+    // A schedule may name several. The one that matters is the soonest, because
+    // that is when you are next under the cowl.
+    expect(hrs('Every 100 hr or annually (whichever first): oil + filter, lower-unit gear oil, water-pump impeller every 2 yr or 200 hr, plugs every 200 hr.')).toBe(100);
+    expect(hrs('Every 50 hr: plugs, gear oil. Every season: fuel system, impeller every 2 yr.')).toBe(50);
+    expect(hrs('Every 200 hr: oil + filters. Coolant every 2 yr. Heat exchanger flush every 5 yr.')).toBe(200);
+  });
+
+  it('★ leaves a calendar-only system off an hours axis', () => {
+    // Engine hours and calendar time are different clocks. Placed at zero, an
+    // annually-serviced item would read as the most demanding on the list.
+    expect(hrs('Annual: fuel filter + water separator. Pre-season + post-season: fuel inspection.')).toBeNull();
+    expect(hrs('Annual: battery load test, terminal corrosion clean.')).toBeNull();
+    expect(hrs('Annual sanding + repaint of antifouling. Wax topsides 2x/yr.')).toBeNull();
+    expect(hrs('')).toBeNull();
+    expect(hrs(null)).toBeNull();
+
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const fig = src.slice(src.indexOf('function flServiceIntervalSvg'), src.indexOf('// WHERE THESE PLACES ACTUALLY ARE'));
+    expect(fig).toContain('on the calendar, not the hour meter');
+    expect(fig).toContain("'+' + calendarOnly + ' more'");
+  });
+
+  it('does not read a year figure as an hour figure', () => {
+    // "every 2 yr" and "every 5 yr" appear in the same sentences as hours.
+    expect(hrs('Coolant every 2 yr. Belts annual.')).toBeNull();
+    expect(hrs('Impeller every 2 yr or 200 hr')).toBe(200);
+  });
+
+  it('is wired and orders the systems by how soon they come round', () => {
+    const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    expect(src).toContain('flServiceIntervalSvg(h, ENGINE_MAINT)');
+    const fig = src.slice(src.indexOf('function flServiceIntervalSvg'), src.indexOf('// WHERE THESE PLACES ACTUALLY ARE'));
+    expect(fig).toContain('return a.hours - b.hours');
+  });
+});

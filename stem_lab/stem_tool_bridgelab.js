@@ -6,6 +6,31 @@
 // design cycle, quiz, and printable design specs.
 (function() {
   'use strict';
+  // ── The tool's surfaces are UNCONDITIONALLY DARK (BG = '#0f172a', panels
+  // #1e293b) in both app themes, but its ~194 text colours read
+  // `var(--allo-stem-text*)`, which resolves to the LIGHT palette's DARK ink
+  // whenever the app theme is light. Measured with axe: --allo-stem-text-soft
+  // (#475569) on the #0f172a canvas is 2.35:1, and that accounted for most of
+  // this tool's 48 contrast violations.
+  //
+  // Rather than rewrite every call site, pin the STEM palette to its DARK
+  // values on the tool's own root. Custom properties inherit, so the nearest
+  // ancestor definition wins for the whole subtree regardless of which theme
+  // wrapper is above it -- one rule fixes every var() site in both themes.
+  // Same defect class as BehaviorLab's hardcoded-dark panels.
+  if (typeof document !== 'undefined' && document.head &&
+      !document.getElementById('bridgelab-dark-surface-vars')) {
+    var _blVars = document.createElement('style');
+    _blVars.id = 'bridgelab-dark-surface-vars';
+    _blVars.textContent = '.selh-bridgelab{' +
+      '--allo-stem-canvas:#0f172a;' +
+      '--allo-stem-panel:#1e293b;' +
+      '--allo-stem-deeper:#020617;' +
+      '--allo-stem-text:#e2e8f0;' +
+      '--allo-stem-text-soft:#94a3b8;' +
+      '--allo-stem-border:#334155;}';
+    document.head.appendChild(_blVars);
+  }
   if (!window.StemLab || !window.StemLab.registerTool) {
     console.warn('[StemLab] stem_tool_bridgelab.js loaded before StemLab registry — bailing');
     return;
@@ -1445,7 +1470,7 @@
                     style: { padding: '8px 12px', borderRadius: 8, background: active ? 'rgba(245,158,11,0.20)' : '#0f172a', border: '1px solid ' + (active ? AMBER : '#334155'), color: active ? '#fbbf24' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer', textAlign: 'left' }
                   },
                     h('div', null, o.name),
-                    h('div', { style: { fontSize: 10, opacity: 0.75, fontWeight: 500, marginTop: 2 } }, o.sub)
+                    h('div', { style: { fontSize: 10, opacity: 0.95, fontWeight: 500, marginTop: 2 } }, o.sub)
                   );
                 })
               ),
@@ -1507,7 +1532,7 @@
                     style: { padding: '8px 12px', borderRadius: 8, background: active ? 'rgba(245,158,11,0.25)' : '#0f172a', border: '1px solid ' + (active ? AMBER : '#334155'), color: active ? '#fbbf24' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer', textAlign: 'left' }
                   },
                     h('div', null, s.name),
-                    h('div', { style: { fontSize: 10, opacity: 0.75, fontWeight: 500, marginTop: 2 } }, s.sub)
+                    h('div', { style: { fontSize: 10, opacity: 0.95, fontWeight: 500, marginTop: 2 } }, s.sub)
                   );
                 })
               ),
@@ -1571,8 +1596,8 @@
           ),
 
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8, marginBottom: 12 } },
-            statBox('Max chord force', analysis.maxChord.toFixed(0) + ' kN', '#dc2626'),
-            statBox('Max diagonal force', analysis.maxDiag.toFixed(0) + ' kN', '#2563eb'),
+            statBox('Max chord force', analysis.maxChord.toFixed(0) + ' kN', '#f87171'),
+            statBox('Max diagonal force', analysis.maxDiag.toFixed(0) + ' kN', '#60a5fa'),
             statBox('Max stress', maxStress.toFixed(0) + ' MPa', '#f59e0b'),
             statBox('Material yield', mat.yieldMPa + ' MPa', '#94a3b8'),
             statBox('Governing Euler P_cr', P_cr_top_kN.toFixed(0) + ' kN', '#a78bfa'),

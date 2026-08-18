@@ -14,6 +14,11 @@
 <meta name="twitter:card" content="summary_large_image">
 <style>
 :root{
+  /* Text-size multiplier for the Reading tools bar. Every prose font-size below
+     is calc(<px> * var(--fs)) so the slider scales text without scaling images
+     or the controls themselves; the manual's sizes are absolute px, so setting
+     body{font-size} alone would have moved paragraphs and left every heading. */
+  --fs:1;
   --ink:#0f172a;--body:#1e293b;--soft:#526079;--line:#e2e8f0;--panel:#ffffff;
   --accent:#1d4ed8;--accent-ink:#1e3a8a;--accent-soft:#eff6ff;--accent-bd:#bfdbfe;
   --warn-bg:#fffbeb;--warn-bd:#fcd34d;--warn-ink:#92400e;
@@ -30,12 +35,12 @@
   }
 }
 *{box-sizing:border-box;}
-body{margin:0;background:var(--bg);color:var(--body);font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.65;}
+body{margin:0;background:var(--bg);color:var(--body);font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.65;font-size:calc(16px * var(--fs));}
 .wrap{max-width:860px;margin:0 auto;padding:32px 22px 80px;}
-.banner{background:var(--accent-soft);border:1px solid var(--accent-bd);border-radius:14px;padding:14px 18px;margin:0 0 20px;font-size:14px;color:var(--accent-ink);}
-h1{font-size:30px;font-weight:900;letter-spacing:-0.5px;line-height:1.2;margin:0 0 10px;color:var(--ink);}
-h2{font-size:22px;font-weight:800;margin:38px 0 10px;padding-top:12px;border-top:1px solid var(--line);color:var(--ink);}
-h3{font-size:16px;font-weight:800;margin:24px 0 6px;color:var(--ink);}
+.banner{background:var(--accent-soft);border:1px solid var(--accent-bd);border-radius:14px;padding:14px 18px;margin:0 0 20px;font-size:calc(14px * var(--fs));color:var(--accent-ink);}
+h1{font-size:calc(30px * var(--fs));font-weight:900;letter-spacing:-0.5px;line-height:1.2;margin:0 0 10px;color:var(--ink);}
+h2{font-size:calc(22px * var(--fs));font-weight:800;margin:38px 0 10px;padding-top:12px;border-top:1px solid var(--line);color:var(--ink);}
+h3{font-size:calc(16px * var(--fs));font-weight:800;margin:24px 0 6px;color:var(--ink);}
 p{margin:0 0 14px;}
 ul,ol{margin:0 0 16px;padding-left:22px;}
 li{margin:0 0 7px;}
@@ -43,20 +48,20 @@ strong{font-weight:700;color:var(--ink);}
 a{color:var(--accent);}
 a:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:3px;}
 code{background:var(--code-bg);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.88em;}
-table{border-collapse:collapse;width:100%;margin:0;font-size:14.5px;background:var(--panel);}
+table{border-collapse:collapse;width:100%;margin:0;font-size:calc(14.5px * var(--fs));background:var(--panel);}
 th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top;}
 th{background:var(--th);font-weight:700;color:var(--ink);}
 caption{text-align:left;padding:0 0 8px;font-weight:700;color:var(--ink);}
 .tablewrap{overflow-x:auto;margin:0 0 18px;}
 blockquote{margin:18px 0;padding:12px 16px;background:var(--warn-bg);border:1px solid var(--warn-bd);border-left:4px solid #f59e0b;border-radius:10px;}
-blockquote p{margin:0;color:var(--warn-ink);font-size:14.5px;}
-.good{margin:18px 0;padding:12px 16px;background:var(--ok-bg);border:1px solid var(--ok-bd);border-left:4px solid #22c55e;border-radius:10px;color:var(--ok-ink);font-size:14.5px;}
-.suite{margin:0 0 18px;font-size:14px;color:var(--soft);}
+blockquote p{margin:0;color:var(--warn-ink);font-size:calc(14.5px * var(--fs));}
+.good{margin:18px 0;padding:12px 16px;background:var(--ok-bg);border:1px solid var(--ok-bd);border-left:4px solid #22c55e;border-radius:10px;color:var(--ok-ink);font-size:calc(14.5px * var(--fs));}
+.suite{margin:0 0 18px;font-size:calc(14px * var(--fs));color:var(--soft);}
 .start{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:6px 18px 14px;margin:0 0 22px;box-shadow:var(--shadow);}
-.start p{margin:10px 0 0;font-size:14.5px;}
+.start p{margin:10px 0 0;font-size:calc(14.5px * var(--fs));}
 figure{margin:22px 0 26px;}
 figure img{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);background:var(--panel);}
-figcaption{margin-top:8px;font-size:13.5px;color:var(--soft);}
+figcaption{margin-top:8px;font-size:calc(13.5px * var(--fs));color:var(--soft);}
 nav.toc{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 18px;margin:0 0 24px;box-shadow:var(--shadow);}
 nav.toc strong{display:block;margin-bottom:4px;}
 nav.toc ol{margin:6px 0 0;}
@@ -64,18 +69,18 @@ nav.toc li{margin:0 0 4px;}
 dl{margin:0 0 16px;}
 dt{font-weight:800;color:var(--ink);margin:14px 0 2px;}
 dd{margin:0 0 8px;}
-.doc{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:26px 30px;margin:18px 0 8px;box-shadow:var(--shadow);font-size:14.5px;}
-.doc .doc-title{font-size:19px;font-weight:800;color:var(--ink);margin:0 0 4px;}
-.doc h4{font-size:15px;font-weight:800;color:var(--ink);margin:22px 0 6px;}
+.doc{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:26px 30px;margin:18px 0 8px;box-shadow:var(--shadow);font-size:calc(14.5px * var(--fs));}
+.doc .doc-title{font-size:calc(19px * var(--fs));font-weight:800;color:var(--ink);margin:0 0 4px;}
+.doc h4{font-size:calc(15px * var(--fs));font-weight:800;color:var(--ink);margin:22px 0 6px;}
 .doc p{margin:0 0 10px;}
-.doc .meta{color:var(--soft);font-size:13px;}
-.doc .cut{color:var(--soft);font-style:italic;font-size:13px;}
-.doc table{font-size:13.5px;margin:8px 0 4px;}
+.doc .meta{color:var(--soft);font-size:calc(13px * var(--fs));}
+.doc .cut{color:var(--soft);font-style:italic;font-size:calc(13px * var(--fs));}
+.doc table{font-size:calc(13.5px * var(--fs));margin:8px 0 4px;}
 .doc ul{margin:0 0 10px;}
-footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:var(--soft);font-size:12.5px;}
-@media (max-width:600px){.wrap{padding:20px 16px 60px;}h1{font-size:25px;}.doc{padding:18px 16px;}}
+footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:var(--soft);font-size:calc(12.5px * var(--fs));}
+@media (max-width:600px){.wrap{padding:20px 16px 60px;}h1{font-size:calc(25px * var(--fs));}.doc{padding:18px 16px;}}
 /* ── Reading polish (2026-08-17) ───────────────────────────────────── */
-.docmeta{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;margin:0 0 22px;font-size:13px;color:var(--soft);}
+.docmeta{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;margin:0 0 22px;font-size:calc(13px * var(--fs));color:var(--soft);}
 .docmeta span{display:inline-flex;align-items:center;gap:6px;}
 .docmeta .dot{width:4px;height:4px;border-radius:50%;background:var(--line);}
 /* Section headings get an accent rule so a 20-page manual has visible rhythm
@@ -88,16 +93,80 @@ h2::before{content:"";position:absolute;left:0;top:16px;bottom:2px;width:4px;bor
 nav.toc a{text-decoration:none;border-bottom:1px solid transparent;}
 nav.toc a:hover{border-bottom-color:var(--accent);}
 /* ── Read aloud (device voice; see the note in the script) ─────────── */
-.listen{margin-left:10px;vertical-align:middle;font:600 12px/1 ui-sans-serif,system-ui,sans-serif;
-  color:var(--accent-ink);background:var(--accent-soft);border:1px solid var(--accent-bd);
-  border-radius:999px;padding:5px 10px;cursor:pointer;}
-.listen:hover{filter:brightness(.97);}
+/* A quiet 22px icon, not a pill: at one per heading the labelled version read
+   as 17 buttons competing with the headings. The accessible name lives in
+   aria-label, so dropping the visible word costs nothing to a screen reader.
+   Deliberately not hidden-until-hover, which would be mouse-only. */
+.listen{margin-left:9px;vertical-align:middle;display:inline-flex;align-items:center;
+  justify-content:center;width:22px;height:22px;padding:0;flex:none;
+  font:400 11px/1 ui-sans-serif,system-ui,sans-serif;letter-spacing:normal;
+  color:var(--soft);background:var(--panel);border:1px solid var(--line);
+  border-radius:50%;cursor:pointer;transition:background .15s,border-color .15s;}
+.listen:hover{background:var(--accent-soft);border-color:var(--accent-bd);}
 .listen:focus-visible{outline:3px solid var(--accent);outline-offset:2px;}
+.listen[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);}
 .reading{background:var(--accent-soft);box-shadow:0 0 0 4px var(--accent-soft);border-radius:4px;}
+/* ── Reading tools ─────────────────────────────────────────────────────
+   The same controls AlloFlow injects into its HTML exports (view_pdf_audit
+   _wrapAsReaderApp), restyled to this document's tokens and sharing its
+   localStorage key 'allo-reader-prefs', so a teacher who set their preferences
+   on an exported handout finds them already applied here. The export bar's
+   own read-aloud is deliberately NOT ported: this manual already has
+   per-section listening, and two engines calling synth.cancel() on each other
+   would strand a section button showing Stop. Injected by script, so the
+   controls never appear as dead UI when scripting is off. */
+.rtools{position:sticky;top:0;z-index:50;background:var(--panel);
+  border-bottom:1px solid var(--line);line-height:1.3;letter-spacing:normal;}
+.rtools-in{max-width:860px;margin:0 auto;padding:7px 22px;display:flex;
+  flex-wrap:wrap;gap:8px 14px;align-items:center;}
+.rtools-toggle{font:700 12.5px/1 ui-sans-serif,system-ui,sans-serif;color:var(--accent-ink);
+  background:var(--accent-soft);border:1px solid var(--accent-bd);border-radius:999px;
+  padding:6px 12px;cursor:pointer;}
+.rtools-toggle:hover{border-color:var(--accent);}
+.rtools-panel{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;
+  font:600 12.5px/1 ui-sans-serif,system-ui,sans-serif;color:var(--soft);}
+.rtools-panel[hidden]{display:none;}
+.rtools-panel label{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
+.rtools select,.rtools input[type=range],.rtools-panel button{font:inherit;}
+.rtools select{color:var(--body);background:var(--bg);border:1px solid var(--line);
+  border-radius:7px;padding:3px 5px;}
+.rtools input[type=range]{width:86px;accent-color:var(--accent);padding:0;}
+.rtools-panel button{color:var(--body);background:var(--bg);border:1px solid var(--line);
+  border-radius:7px;padding:5px 9px;cursor:pointer;}
+.rtools-panel button[aria-pressed="true"]{background:var(--accent-soft);
+  border-color:var(--accent);color:var(--accent-ink);}
+.rtools :focus-visible{outline:3px solid var(--accent);outline-offset:2px;}
+#rtools-ruler{position:fixed;left:0;width:100%;height:2.4em;
+  background:rgba(250,204,21,.16);border-top:2px solid rgba(250,204,21,.65);
+  border-bottom:2px solid rgba(250,204,21,.65);pointer-events:none;z-index:49;display:none;}
+html[data-allo-ruler="1"] #rtools-ruler{display:block;}
+/* Reading themes retint this document's OWN tokens rather than forcing
+   body{background;color} like the export does, which would leave every card,
+   table, callout and code span stranded on the new background. `html:root[…]`
+   is (0,2,1), which outranks the (0,2,0) dark-mode block above; plain
+   `[data-allo-theme]` would lose to it whenever the OS is in dark mode. */
+html:root[data-allo-theme="warm"]{--bg:#fdf3dd;--panel:#fffcf3;--ink:#432c10;--body:#573a1c;--soft:#7a5a34;--line:#e6d3ae;--th:#f7ecd5;--code-bg:#f7ecd5;--accent:#9a3412;--accent-ink:#7c2d12;--accent-soft:#fbeadb;--accent-bd:#e4c3a6;--shadow:0 1px 3px rgba(87,58,28,.13);}
+html:root[data-allo-theme="sepia"]{--bg:#f4ecd8;--panel:#fdf8ec;--ink:#3f2d18;--body:#5c4033;--soft:#7b5f45;--line:#ddcdb0;--th:#f0e6d0;--code-bg:#f0e6d0;--accent:#8a4b1e;--accent-ink:#6f3c18;--accent-soft:#f7edda;--accent-bd:#dcc3a2;--shadow:0 1px 3px rgba(92,64,51,.13);}
+html:root[data-allo-theme="dark"]{--bg:#12121f;--panel:#1e1e33;--ink:#f1f5fb;--body:#d8e0ee;--soft:#a3b0c8;--line:#343a55;--th:#242440;--code-bg:#242440;--accent:#8ab4ff;--accent-ink:#c4d9ff;--accent-soft:#1c2947;--accent-bd:#33507f;--warn-bg:#2c2410;--warn-bd:#6d5716;--warn-ink:#f6d894;--ok-bg:#10261a;--ok-bd:#1f6b3d;--ok-ink:#a7e8bf;--shadow:0 1px 3px rgba(0,0,0,.45);}
+html:root[data-allo-theme="highContrast"]{--bg:#000;--panel:#000;--ink:#ff0;--body:#ff0;--soft:#ff0;--line:#ff0;--th:#000;--code-bg:#000;--accent:#ff0;--accent-ink:#ff0;--accent-soft:#000;--accent-bd:#ff0;--warn-bg:#000;--warn-bd:#ff0;--warn-ink:#ff0;--ok-bg:#000;--ok-bd:#ff0;--ok-ink:#ff0;--shadow:none;}
+html:root[data-allo-theme="blue"]{--bg:#d9e9f6;--panel:#f0f7fd;--ink:#0d1f2e;--body:#1b2631;--soft:#41566a;--line:#b2cfe5;--th:#e2eff9;--code-bg:#e2eff9;--accent:#0b4f7a;--accent-ink:#083b5c;--accent-soft:#e4f0fa;--accent-bd:#a8c9e2;--shadow:0 1px 3px rgba(27,38,49,.13);}
+html:root[data-allo-theme="green"]{--bg:#e6f4e7;--panel:#f4fbf5;--ink:#0f3016;--body:#1b5e20;--soft:#3d6b42;--line:#c0dfc3;--th:#ecf7ed;--code-bg:#ecf7ed;--accent:#1b5e20;--accent-ink:#12441a;--accent-soft:#e9f6ea;--accent-bd:#b5d8b8;--shadow:0 1px 3px rgba(27,94,32,.13);}
+html:root[data-allo-theme="rose"]{--bg:#fbe2ea;--panel:#fef3f7;--ink:#4f0a29;--body:#7c0d47;--soft:#8d4064;--line:#f0c0d2;--th:#fbe8ef;--code-bg:#fbe8ef;--accent:#9d1148;--accent-ink:#7c0d38;--accent-soft:#fceaf1;--accent-bd:#eebccd;--shadow:0 1px 3px rgba(124,13,71,.13);}
+html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f;--body:#26324a;--soft:#57637d;--line:#e2ddc8;--th:#f3f0e2;--code-bg:#f3f0e2;--accent:#1d4ed8;--accent-ink:#1e3a8a;--accent-soft:#eef3fe;--accent-bd:#c6d3f2;--shadow:0 1px 3px rgba(38,50,74,.11);}
 @media print{
+  /* A chosen reading theme must not reach paper: dark or high-contrast would
+     print light text on white. Same (0,2,1) specificity as the theme rules but
+     later in source, so it wins for any theme value. The text-size choice is
+     deliberately NOT reset, because setting a large size and then printing is
+     how you get a large-print copy. */
+  html:root[data-allo-theme]{--bg:#fff;--panel:#fff;--ink:#000;--body:#000;--soft:#333;
+    --line:#999;--th:#eee;--code-bg:#f2f2f2;--accent:#000;--accent-ink:#000;
+    --accent-soft:#fff;--accent-bd:#999;--warn-bg:#fff;--warn-bd:#999;--warn-ink:#000;
+    --ok-bg:#fff;--ok-bd:#999;--ok-ink:#000;--shadow:none;}
   body{background:#fff;color:#000;}
   nav.toc{display:none;}
   .listen{display:none;}
+  .rtools,#rtools-ruler{display:none !important;}
   h2{padding-left:0;}
   h2::before{display:none;}
   .reading{background:none;box-shadow:none;}
@@ -332,7 +401,7 @@ nav.toc a:hover{border-bottom-color:var(--accent);}
 <img src="educator-evaluation-manual-assets/11-portal-evaluator.jpg" width="1770" height="1200" loading="lazy" alt="The district portal in an evaluator's browser. A green banner reads District Google account with the signed-in address, Evaluator access, and Saved to district repository, beside buttons for Refresh, Email educator a portal notice, and Share released summary to educator's Drive. The eight evaluator tabs and the overview cards look the same as the on-device workspace, and there is no role switch.">
 <figcaption>The connected portal. The signed-in identity replaces the role switch, because the server decides what each person can see.</figcaption>
 </figure>
-<p>After connecting, the <strong>Setup health</strong> panel confirms the deployment is configured correctly, checking the domain lock, repository files, and assignments before anyone relies on it.</p>
+<p>After connecting, the <strong>Setup health</strong> panel confirms the deployment is configured correctly, checking the domain lock, repository files, and assignments before anyone relies on it. It also re-hashes the audit log and reports whether any entry has been edited, deleted, or reordered since it was written, so an administrator can confirm the record is intact without opening the script editor.</p>
 
 <h2 id="sharing">10. The Released Summary: How It Arrives and What It Says</h2>
 <p>In the district portal, when an evaluator releases a finalized evaluation:</p>
@@ -408,7 +477,7 @@ nav.toc a:hover{border-bottom-color:var(--accent);}
 <li><strong>Growth snapshot</strong> is the formative, ratings-free file you can share with an educator directly.</li>
 </ul>
 <blockquote><p>Exports can contain confidential personnel information. Store and transmit them only through district-authorized systems, never personal email or cloud storage.</p></blockquote>
-<p>In the district portal this concern disappears: records live server-side in the district's Drive, and the portal keeps its own tamper-evident audit log.</p>
+<p>In the district portal this concern disappears: records live server-side in the district's Drive, and the portal keeps its own tamper-evident audit log. Each audit row is hashed together with the hash of the row before it, so an administrator can run <code>verifyAuditChain()</code> at any time and find out whether any row has been edited, deleted, or reordered since it was written.</p>
 
 <h2 id="phone">13. Using It on a Phone</h2>
 <p>Walkthroughs happen while you are standing in a doorway, so the workspace reflows to a single column on a phone. The tab strip scrolls sideways, cards stack, and buttons keep a large touch target.</p>
@@ -464,7 +533,7 @@ nav.toc a:hover{border-bottom-color:var(--accent);}
 <h2 id="troubleshooting">17. Troubleshooting</h2>
 <ul>
 <li><strong>"This page must be opened from the district Apps Script web-app URL":</strong> the portal bundle was opened outside its deployment. Use the <code>/exec</code> link from your district administrator.</li>
-<li><strong>A teacher cannot sign in:</strong> the portal admits only district-domain accounts that an administrator has added as members. Failing closed is the design; ask the administrator to add them.</li>
+<li><strong>"The secure workspace could not be opened":</strong> this is the portal refusing to show anything, which is the design rather than a fault. The line underneath names the reason: an account that is not a member, a repository that was never set up, or the page opened outside its Apps Script address. Access is granted by the district, so the fix is with the administrator who deployed the portal, not on the page.</li>
 <li><strong>The portal looks out of date:</strong> the administrator should re-paste the current <code>Code.gs</code> and <code>Portal.html</code> and create a new deployment version. Apps Script serves the old version until a new one is deployed.</li>
 <li><strong>Setup health shows a warning:</strong> follow its specific message. It checks the domain lock, repository files, and assignments in order.</li>
 <li><strong>A finalized record needs a correction:</strong> finalized records are immutable by design. Add an appended comment, record a new entry, or have the educator attach a statement.</li>
@@ -514,8 +583,10 @@ nav.toc a:hover{border-bottom-color:var(--accent);}
     if (!current) return;
     try { synth.cancel(); } catch (e) {}
     current.blocks.forEach(function (b) { b.classList.remove('reading'); });
-    current.btn.textContent = '🔊 Listen';
+    current.btn.textContent = '🔊';
+    current.btn.setAttribute('aria-pressed', 'false');
     current.btn.setAttribute('aria-label', 'Read this section aloud');
+    current.btn.title = 'Read this section aloud';
     current = null;
   }
 
@@ -540,14 +611,18 @@ nav.toc a:hover{border-bottom-color:var(--accent);}
     var btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'listen';
-    btn.textContent = '🔊 Listen';
+    btn.textContent = '🔊';
+    btn.title = 'Read this section aloud';
+    btn.setAttribute('aria-pressed', 'false');
     btn.setAttribute('aria-label', 'Read this section aloud');
     btn.addEventListener('click', function () {
       var wasThis = current && current.btn === btn;
       stop();
       if (wasThis) return;            // second click on the same button = stop
       current = { btn: btn, blocks: blocks, idx: 0 };
-      btn.textContent = '⏹ Stop';
+      btn.textContent = '⏹';
+      btn.setAttribute('aria-pressed', 'true');
+      btn.title = 'Stop reading';
       btn.setAttribute('aria-label', 'Stop reading this section');
       speakFrom(current);
     });
@@ -558,6 +633,118 @@ nav.toc a:hover{border-bottom-color:var(--accent);}
   // Leaving the page open in a background tab and returning should not resume
   // half-read; browsers vary, so stop cleanly when the page is hidden.
   document.addEventListener('visibilitychange', function () { if (document.hidden) stop(); });
+}());
+</script>
+
+<script>
+/* Reading tools — font, text size, line and letter spacing, reading theme and
+   a reading ruler. Ported from the reader bar AlloFlow injects into its HTML
+   exports (view_pdf_audit_source.jsx :: _wrapAsReaderApp) and sharing its
+   localStorage key, so preferences set on an exported handout are already
+   applied here. Built in script rather than shipped in the markup: with
+   scripting off the controls would otherwise render as dead UI. */
+(function () {
+  var d = document, root = d.documentElement, LS = 'allo-reader-prefs';
+  var prefs = {};
+  try { prefs = JSON.parse(localStorage.getItem(LS) || '{}') || {}; } catch (e) { prefs = {}; }
+  function save() { try { localStorage.setItem(LS, JSON.stringify(prefs)); } catch (e) {} }
+
+  var FONTS = [
+    ['', 'Original'],
+    ['ui-sans-serif, system-ui, sans-serif', 'Sans-serif'],
+    ["Georgia, 'Times New Roman', serif", 'Serif'],
+    ["'OpenDyslexic','Comic Sans MS','Trebuchet MS',sans-serif", 'Dyslexia-friendly'],
+    ["ui-monospace, Menlo, Consolas, monospace", 'Monospace']
+  ];
+  // 'easyread' rather than the export's 'dyslexia': here it is a calm palette,
+  // while the dyslexia-friendly FACE is a separate choice in the Font menu.
+  var THEMES = [
+    ['default', 'Default'], ['warm', 'Warm'], ['sepia', 'Sepia'], ['dark', 'Dark'],
+    ['highContrast', 'High contrast'], ['blue', 'Blue'], ['green', 'Green'],
+    ['rose', 'Rose'], ['easyread', 'Easy read']
+  ];
+
+  function el(tag, attrs, kids) {
+    var n = d.createElement(tag);
+    Object.keys(attrs || {}).forEach(function (k) {
+      if (k === 'text') n.textContent = attrs[k]; else n.setAttribute(k, attrs[k]);
+    });
+    (kids || []).forEach(function (c) { n.appendChild(c); });
+    return n;
+  }
+  function select(id, label, pairs) {
+    var s = el('select', { id: id, 'aria-label': label });
+    pairs.forEach(function (p) {
+      var o = el('option', { value: p[0], text: p[1] });
+      s.appendChild(o);
+    });
+    return el('label', { text: '' }, [d.createTextNode(label + ' '), s]);
+  }
+  function range(id, label, min, max, step) {
+    var r = el('input', { type: 'range', id: id, min: min, max: max, step: step, 'aria-label': label });
+    return el('label', {}, [d.createTextNode(label + ' '), r]);
+  }
+  function $(id) { return d.getElementById(id); }
+
+  var panel = el('div', { class: 'rtools-panel', id: 'rtools-panel', hidden: '' }, [
+    select('rt-font', 'Font', FONTS),
+    range('rt-size', 'Size', '0.85', '1.6', '0.05'),
+    range('rt-line', 'Line', '1.2', '2.4', '0.1'),
+    range('rt-letter', 'Letter', '0', '0.14', '0.01'),
+    select('rt-theme', 'Theme', THEMES),
+    el('button', { type: 'button', id: 'rt-ruler', 'aria-pressed': 'false', text: 'Reading ruler' }),
+    el('button', { type: 'button', id: 'rt-reset', text: 'Reset' })
+  ]);
+  var toggle = el('button', {
+    type: 'button', id: 'rt-toggle', class: 'rtools-toggle',
+    'aria-expanded': 'false', 'aria-controls': 'rtools-panel', text: '⚙️ Reading tools'
+  });
+  var bar = el('div', { class: 'rtools', id: 'rtools', lang: 'en', role: 'region', 'aria-label': 'Reading tools' },
+    [el('div', { class: 'rtools-in' }, [toggle, panel])]);
+  d.body.insertBefore(bar, d.body.firstChild);
+  d.body.appendChild(el('div', { id: 'rtools-ruler', 'aria-hidden': 'true' }));
+
+  function apply() {
+    var b = d.body;
+    b.style.fontFamily = prefs.font || '';
+    b.style.lineHeight = prefs.line ? String(prefs.line) : '';
+    b.style.letterSpacing = prefs.letter ? prefs.letter + 'em' : '';
+    // Text size drives the --fs multiplier, not body{font-size}: every prose
+    // size in this document is absolute px, so font-size alone would scale
+    // paragraphs and leave all seventeen headings untouched.
+    root.style.setProperty('--fs', prefs.size ? String(prefs.size) : '1');
+    if (prefs.theme && prefs.theme !== 'default') root.setAttribute('data-allo-theme', prefs.theme);
+    else root.removeAttribute('data-allo-theme');
+    if (prefs.ruler) root.setAttribute('data-allo-ruler', '1');
+    else root.removeAttribute('data-allo-ruler');
+    $('rt-font').value = prefs.font || '';
+    $('rt-size').value = prefs.size || 1;
+    $('rt-line').value = prefs.line || 1.65;
+    $('rt-letter').value = prefs.letter || 0;
+    $('rt-theme').value = prefs.theme || 'default';
+    $('rt-ruler').setAttribute('aria-pressed', prefs.ruler ? 'true' : 'false');
+  }
+  function on(id, ev, fn) { var n = $(id); if (n) n.addEventListener(ev, fn); }
+  on('rt-font', 'change', function (e) { prefs.font = e.target.value; save(); apply(); });
+  on('rt-size', 'input', function (e) { prefs.size = parseFloat(e.target.value); save(); apply(); });
+  on('rt-line', 'input', function (e) { prefs.line = parseFloat(e.target.value); save(); apply(); });
+  on('rt-letter', 'input', function (e) { prefs.letter = parseFloat(e.target.value); save(); apply(); });
+  on('rt-theme', 'change', function (e) { prefs.theme = e.target.value; save(); apply(); });
+  on('rt-ruler', 'click', function () { prefs.ruler = !prefs.ruler; save(); apply(); });
+  on('rt-reset', 'click', function () { prefs = {}; save(); apply(); });
+  on('rt-toggle', 'click', function () {
+    var open = panel.hasAttribute('hidden');
+    if (open) panel.removeAttribute('hidden'); else panel.setAttribute('hidden', '');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+
+  var ruler = $('rtools-ruler');
+  d.addEventListener('mousemove', function (e) {
+    if (ruler && root.getAttribute('data-allo-ruler') === '1') {
+      ruler.style.top = (e.clientY - ruler.offsetHeight / 2) + 'px';
+    }
+  });
+  apply();
 }());
 </script>
 

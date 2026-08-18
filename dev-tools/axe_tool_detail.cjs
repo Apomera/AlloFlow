@@ -41,6 +41,24 @@ if (!fs.existsSync(TW)) {
   process.exit(2);
 }
 
+// ★THE STEM PALETTE MUST BE DEFINED. Tools write
+// `var(--allo-stem-text-soft, #64748b)`; with the variables undefined every one
+// of those silently falls back to its hardcoded literal, so this would measure
+// a colour the app never renders -- and "fixing" the fallback would be fixing
+// the wrong thing. theme_contrast_sweep.cjs learned this in 2026-08-05; the
+// same extraction is reused here so both instruments agree.
+function extractStemPalette() {
+  const src = read('app_styles_module.js');
+  const start = src.indexOf(':root, .theme-default {');
+  if (start === -1) throw new Error('STEM palette block not found in app_styles_module.js');
+  const anchor = src.indexOf('.theme-contrast {', start);
+  if (anchor === -1) throw new Error('.theme-contrast block not found after :root/.theme-default');
+  const end = src.indexOf('}', src.indexOf('--allo-stem-button-border', anchor));
+  if (end === -1) throw new Error('could not find the end of the .theme-contrast block');
+  return src.slice(start, end + 1);
+}
+const STEM_PALETTE = extractStemPalette();
+
 const toolSrc = fs.readFileSync(toolFile, 'utf8');
 const idMatch = /registerTool\(\s*['"]([^'"]+)['"]/.exec(toolSrc);
 if (!idMatch) { console.error('no registerTool() id found in ' + toolFile); process.exit(2); }
@@ -55,6 +73,12 @@ window.__mount = function (id, dark, state) {
     var init = {}; init[id] = state || {};
     var pair = React.useState(init);
     var ctx = { React: React, toolData: pair[0], setToolData: pair[1],
+      // theme AND isDark: tools read one or the other, and a missing field is
+      // undefined for every tool that reads it. cityLab tests
+      // ctx.theme !== 'light', so omitting theme made it render dark inks on a
+      // light page and report 143 phantom violations.
+      // (No backticks in this comment: it lives inside a template literal.)
+      theme: dark ? 'dark' : 'light',
       isDark: !!dark, isContrast: false, gradeBand: 'g68', gradeLevel: '7th Grade',
       setStemLabTool: function(){}, setStemLabTab: function(){}, setToolSnapshots: function(){},
       addToast: function(){}, announceToSR: function(){}, awardXP: function(){},
@@ -87,8 +111,10 @@ window.__mount = function (id, dark, state) {
   page.on('pageerror', (e) => errors.push(String(e).slice(0, 140)));
 
   await page.setContent('<!doctype html><html><head><style>' + fs.readFileSync(TW, 'utf8') +
+    '</style><style>' + STEM_PALETTE +
     '</style><style>body{margin:0;font-family:system-ui;background:' + (DARK ? '#0f172a' : '#ffffff') +
-    '}</style></head><body><main id="slot"></main></body></html>');
+    '}</style></head><body><main id="slot" class="' + (DARK ? 'theme-dark' : 'theme-default') +
+    '"></main></body></html>');
   for (const code of [
     read('node_modules/axe-core/axe.min.js'),
     read('desktop/web-app/node_modules/react/umd/react.production.min.js'),

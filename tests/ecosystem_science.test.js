@@ -80,12 +80,19 @@ describe('Ecosystem content contracts', () => {
     const html = renderEcosystem({ tab: 'quiz' });
     expect(html).toContain('6 multiple-choice questions');
     expect(html).toContain('Question 1 of 6');
-    expect(html).toContain('Answer A: Predators decrease');
+    // Option A changed when the bank was rotated to break its answer-position bias
+    // (answers sat at A/B/C/D = 1/3/2/0, so always picking B beat guessing). The point
+    // of this assertion is the "Answer <letter>: <text>" label format, not which option
+    // happens to be first.
+    expect(html).toContain('Answer A: Predators stay the same');
     expect(html).not.toContain('12 multi-choice items');
   });
 
   it('defines carrying capacity as conditional rather than permanently fixed', () => {
-    const html = renderEcosystem({ tab: 'quiz', quizIndex: 3, quizAnswer: 1 });
+    // quizAnswer selects the correct option so the confirming feedback renders; the
+    // carrying-capacity answer moved from B to C when the bank was rotated to spread
+    // its answer positions.
+    const html = renderEcosystem({ tab: 'quiz', quizIndex: 3, quizAnswer: 2 });
     expect(html).toContain('under a specified set of environmental conditions');
     expect(html).toContain('Real carrying capacity can change');
     expect(html).not.toContain('sustain indefinitely');

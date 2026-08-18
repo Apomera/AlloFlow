@@ -313,6 +313,24 @@ identity, records, IDs, or tenant configuration.
 
 ## Operational controls
 
+- Run `verifyAuditChain()` from the Apps Script editor after setup and on a
+  schedule your district is comfortable with. Every audit row stores the
+  previous row's hash plus a hash of its own fields, so the log is
+  tamper-evident, but only a recomputation actually surfaces tampering. The
+  function is administrator-only and read-only. It returns
+  `{ok:true, rows, verified}` for a clean log, or
+  `{ok:false, reason:'content'|'link', brokenAtRow, entryId}` where `content`
+  means a row was edited in place and `link` means a row was deleted, inserted,
+  or reordered. It reports positions and entry ids only, never the evaluation
+  text of a row, so it is safe to paste into a ticket. A break is not
+  self-healing: investigate the spreadsheet and restore from a reviewed backup.
+  The same check also runs inside `getPortalSetupHealth()`, so the portal's Setup
+  health panel shows an "Audit log integrity" row and an administrator never has
+  to open the script editor for a routine check. Both entry points share one
+  implementation, so their verdicts cannot diverge. The chain is recomputed on
+  demand rather than on a schedule; on a very large audit sheet expect the health
+  check to take proportionally longer.
+
 - Use a dedicated district owner with MFA and recovery controls. Keep the
   repository folder and index private; do not manually share them to make a
   broken identity deployment work.

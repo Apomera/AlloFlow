@@ -34,6 +34,28 @@ Have these four items ready:
 
 Use the same source you would be comfortable projecting or handing to students. Remove names, student IDs, grades, disability information, behavior notes, health information, and other personally identifying details before pasting or uploading anything. See [Privacy and responsible AI](07-privacy-and-responsible-ai.md) before using sensitive material.
 
+## Build it before class, not during it
+
+Everything in the next section belongs in your planning time. By the time the first student sees anything, the resources should already exist, already be reviewed, and already be saved. Plan to open AlloFlow during class only to deliver what is finished.
+
+Three reasons this matters more than it looks:
+
+- **Generation is neither instant nor guaranteed.** Creating a resource calls an AI service that can be slow, rate-limited, or briefly unavailable. That is a minor annoyance during planning and an expensive one at 10:05 with a full class waiting.
+- **The review gate needs unhurried judgment.** Checking facts, translations, examples, calculations, and answer keys is the step most easily skipped under time pressure, and it is exactly the step that catches a confident-sounding mistake before students meet it.
+- **The live tools assume the content already exists.** A Live Session paces, checks understanding, and routes students through material you built beforehand. It is not a place to author it.
+
+Finished before class starts:
+
+- The source, trimmed and verified.
+- Every resource you intend to use, generated and reviewed.
+- Any translation, audio, or accessible export a student will need.
+- The student route, previewed at least once from the student side.
+- A saved project file, and a fallback that still works if the network does not.
+
+Reasonable to do live: choosing which existing pathway a student gets, adjusting pacing, revealing an answer key you already checked, and opening a single tool link. If you find yourself generating new material while class is running, use the fallback instead and rebuild afterwards.
+
+A practical habit: build the lesson at least a day ahead, then reopen it cold the morning of class. Loading your own project the way a student will meet it catches a surprising amount, and it costs two minutes.
+
 ## A first lesson in about fifteen minutes
 
 ### 1. Open Guided Mode

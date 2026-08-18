@@ -85,6 +85,8 @@
     "verify:announcers": "node dev-tools/scan_silent_announcer.cjs --quiet",
     "verify:shell-i18n": "node dev-tools/scan_shell_i18n.cjs --all --gate",
     "i18n:baseline": "node dev-tools/scan_shell_i18n.cjs --all --update-baseline",
+    "verify:shell-i18n:deep": "node dev-tools/scan_shell_i18n.cjs --all --deep --gate",
+    "i18n:baseline:deep": "node dev-tools/scan_shell_i18n.cjs --all --deep --update-baseline",
     "verify:mouse-only": "node dev-tools/scan_mouse_only_controls.cjs",
     "verify:fn-in-state": "node dev-tools/scan_fn_in_tool_state.cjs",
     "verify:key-listeners": "node dev-tools/scan_window_key_listeners.cjs",

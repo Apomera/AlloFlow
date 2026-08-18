@@ -82,6 +82,55 @@ const harness = new GlHarness({
       for (var i = layers.length-2; i >= 0; i--) out = window.__over(layers[i], out);
       return out;
     };
+    window.__ratio = function (a, b) { var x=window.__lum(a), y=window.__lum(b); return (Math.max(x,y)+0.05)/(Math.min(x,y)+0.05); };
+
+    // WCAG 1.4.11: a control's visual boundary needs 3:1 against what is behind it.
+    window.__borders = function () {
+      var fails=[], checked=0;
+      [].slice.call(document.querySelectorAll('#wrap button, #wrap [role="button"], #wrap input, #wrap select')).forEach(function (el) {
+        var cs=getComputedStyle(el);
+        var r=el.getBoundingClientRect();
+        if (r.width<3 || r.height<3) return;
+        var w=parseFloat(cs.borderTopWidth)||0;
+        if (w<=0) return;
+        var bc=window.__parse(cs.borderTopColor); if(!bc) return;
+        if (bc.a<=0.01) return;                     // a transparent border is not a boundary
+        var outer=window.__bg(el.parentElement); if(!outer || outer==='gradient') return;
+        // If the control's own fill already stands out, the border is decoration, and
+        // 1.4.11 only asks for the information REQUIRED to identify the control.
+        var self=window.__parse(cs.backgroundColor);
+        if (self && self.a>0.01) {
+          var solid=self.a<0.999?window.__over(self,outer):self;
+          if (window.__ratio(solid,outer)>=3) return;
+        }
+        checked++;
+        var eff=bc.a<0.999?window.__over(bc,outer):bc;
+        var ratio=window.__ratio(eff,outer);
+        if (ratio<2.99) fails.push({ t:(el.textContent||'').trim().slice(0,22), r:+ratio.toFixed(2),
+          border:cs.borderTopColor, behind:'rgb('+[outer.r,outer.g,outer.b].map(Math.round).join(',')+')',
+          cls:String(el.className).slice(0,60) });
+      });
+      return { checked: checked, fails: fails };
+    };
+
+    // WCAG 2.4.7: focusing a control must change something visible about it.
+    window.__focusProbe = function () {
+      var bad=[], checked=0;
+      [].slice.call(document.querySelectorAll('#wrap button, #wrap [href], #wrap input, #wrap select, #wrap [tabindex]:not([tabindex="-1"])')).forEach(function (el) {
+        var r=el.getBoundingClientRect();
+        if (r.width<3||r.height<3) return;
+        var b=getComputedStyle(el);
+        var sig0=[b.outlineStyle,b.outlineWidth,b.outlineColor,b.boxShadow,b.backgroundColor,b.borderColor].join('|');
+        try { el.focus(); } catch(e) { return; }
+        if (document.activeElement!==el) return;
+        checked++;
+        var a=getComputedStyle(el);
+        var sig1=[a.outlineStyle,a.outlineWidth,a.outlineColor,a.boxShadow,a.backgroundColor,a.borderColor].join('|');
+        if (sig0===sig1) bad.push({ tag:el.tagName, t:(el.textContent||'').trim().slice(0,28), cls:String(el.className).slice(0,48) });
+      });
+      return { checked: checked, bad: bad };
+    };
+
     window.__contrast = function () {
       var fails = [], checked = 0;
       [].slice.call(document.querySelectorAll('#wrap *')).forEach(function (el) {
@@ -136,6 +185,36 @@ test.describe('ecosystem text contrast', () => {
       expect(con.fails, `${tab}: ` + JSON.stringify(con.fails, null, 1)).toEqual([]);
     });
   }
+});
+
+test.describe('ecosystem control boundaries', () => {
+  // Measured before the fix: the quiz answer options were bounded by border-slate-200 at
+  // 1.23:1 over white with no fill at all, the inquiry actions by slate-300 at 1.48:1,
+  // and the species buttons by their accent at 53% alpha (1.51-2.72:1). The dark theme
+  // was no better — the remap forces border-slate-200 to #334155, 1.72:1 on slate-900 —
+  // so the replacements use shades the remap leaves alone and that clear 3:1 on both.
+  for (const tab of TABS) {
+    test(`${tab} controls meet WCAG 1.4.11`, async ({ page }) => {
+      await harness.mount(page, { ecosystem: { tab, tutorialDismissed: true } }, undefined, { expectCanvas: false });
+      await page.evaluate(() => (window as any).__setTheme('dark'));
+      await page.waitForTimeout(1000);
+      const b = await page.evaluate(() => (window as any).__borders());
+      expect(b.fails, `${tab}: ` + JSON.stringify(b.fails, null, 1)).toEqual([]);
+    });
+  }
+
+  test('every focusable control shows a focus indicator', async ({ page }) => {
+    let totalChecked = 0;
+    for (const tab of TABS) {
+      await harness.mount(page, { ecosystem: { tab, tutorialDismissed: true } }, undefined, { expectCanvas: false });
+      await page.waitForTimeout(700);
+      const f = await page.evaluate(() => (window as any).__focusProbe());
+      totalChecked += f.checked;
+      expect(f.bad, `${tab}: ` + JSON.stringify(f.bad, null, 1)).toEqual([]);
+    }
+    // Guards against the selector silently matching nothing across every tab.
+    expect(totalChecked).toBeGreaterThan(150);
+  });
 });
 
 test.describe('ecosystem species accent follows the theme', () => {

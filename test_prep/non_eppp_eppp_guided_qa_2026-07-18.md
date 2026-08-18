@@ -9,9 +9,9 @@ Status: **assistant-reviewed-pass-with-declared-content-gaps**
 - Packs reviewed: **22**
 - Learning activities structurally reviewed: **11,000**
 - Independent-practice items reviewed: **5,300**
-- Distinct independent content kernels: **3,162**
+- Distinct independent content kernels: **3,171**
 - Guided-review activities reviewed: **5,700**
-- Remaining distinct-question gap: **7,838**
+- Remaining distinct-question gap: **7,829**
 - Exact response-option kernels shared across different packs: **324**
 - Hard findings: **0**
 - Libraries: **22** with 264 chapters, 1056 lessons, 1320 checks, 1650 flashcards, and 440 memory aids
@@ -35,7 +35,7 @@ A hard-QA pass does not mean every pack has 500 independent questions. Guided tr
 | Praxis Core (5752) | 200 | 107 | 300 | 393 | 0 | 72 |
 | Reading Specialist 5302 diagnostics | 200 | 100 | 300 | 400 | 0 | 191 |
 | School Counselor 5422 diagnostics | 300 | 200 | 200 | 300 | 0 | 209 |
-| School Librarian (5312) | 300 | 126 | 200 | 374 | 0 | 194 |
+| School Librarian (5312) | 300 | 135 | 200 | 365 | 0 | 194 |
 | School Psychologist 5403 diagnostics | 300 | 200 | 200 | 300 | 0 | 213 |
 | Special Education 5355 diagnostics | 200 | 100 | 300 | 400 | 0 | 175 |
 | Behavioral Disorders and Emotional Disturbances (5372) | 200 | 103 | 300 | 397 | 0 | 174 |

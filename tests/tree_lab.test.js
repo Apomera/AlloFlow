@@ -1183,6 +1183,14 @@ describe('Tree Life Lab — banks and mirrors', () => {
           baseline: experimentBaseline, treatment: experimentTreatment, result: experimentResult },
         experimentTrials: { A: experimentTrial, B: experimentTrial },
       }],
+      // Full screen is a SEPARATE render path — its own HUD, conditions panel,
+      // presets, budget lines and toolbar — and it was outside this sweep entirely,
+      // so nothing checked whether any of that text could be translated.
+      ['grow/full', { view: 'grow', bandOverride: 'g68', tree, viewerFull: true }],
+      ['grow/full-dead', {
+        view: 'grow', bandOverride: 'g68', viewerFull: true,
+        tree: { ...tree, alive: false, causeOfDeath: 'carbon_starvation', deficitYears: 9 },
+      }],
       ['chem/k2', { view: 'chem', bandOverride: 'k2', tree }],
       ['chem/g912', { view: 'chem', bandOverride: 'g912', tree }],
       ['transport/g68', { view: 'transport', bandOverride: 'g68', tree }],
@@ -1246,6 +1254,15 @@ describe('Tree Life Lab — banks and mirrors', () => {
       }
     }
     expect(attrLeftovers, `untranslated accessible names:\n  ${attrLeftovers.join('\n  ')}`).toEqual([]);
+
+    // Non-vacuity. Two of the surfaces above are full screen, which is a separate
+    // render path; if it ever stops rendering in this harness those entries would
+    // pass by containing no text at all, and a sweep that is green because it found
+    // nothing to look at is worse than no sweep.
+    const fullHtml = render({ treeLab: { view: 'grow', bandOverride: 'g68', tree, viewerFull: true } });
+    expect(fullHtml, 'full-screen toolbar missing — the sweep above covered nothing').toContain('data-tree-fullbar');
+    expect(fullHtml, 'full-screen conditions panel missing').toContain('data-tree-fullconds');
+    expect(fullHtml, 'full-screen HUD missing').toContain('data-tree-fullhud');
   });
 
   it('avoids var() in canvas and THREE colour paths', () => {

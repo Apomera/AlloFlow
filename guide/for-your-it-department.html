@@ -30,6 +30,9 @@
         <p class="chapter-nav__title">Teacher guide</p>
         <ol>
           <li><a href="start-here.html">Start here: prepare your first student-ready resource</a></li>
+          <li><a href="the-workspace.html">The workspace, part by part</a></li>
+          <li><a href="settings-and-help.html">Settings, help, and finding your way</a></li>
+          <li><a href="saving-and-storage.html">Saving, loading, and managing storage</a></li>
           <li><a href="quick-reference.html">Quick reference: the one page to keep nearby</a></li>
           <li><a href="prepare-a-lesson.html">Prepare a purposeful, differentiated lesson</a></li>
           <li><a href="universal-settings.html">Universal Settings: set it once, not per tool</a></li>
@@ -73,14 +76,13 @@
             <dd>5 minutes</dd>
           </div>
         </dl>
-        <p class="chapter-meta">Chapter 19 of 21 · Verified <time datetime="2026-08-16">2026-08-16</time></p>
+        <p class="chapter-meta">Chapter 22 of 24 · Verified <time datetime="2026-08-16">2026-08-16</time></p>
         <nav class="section-nav" aria-labelledby="section-nav-title">
           <p id="section-nav-title" class="section-nav__title">On this page</p>
           <ol>
             <li><a href="#what-it-is-architecturally">What it is, architecturally</a></li>
             <li><a href="#accounts-and-authentication">Accounts and authentication</a></li>
             <li><a href="#where-data-lives">Where data lives</a></li>
-            <li><a href="#the-one-exception-the-educator-evaluation-portal">The one exception: the educator evaluation portal</a></li>
             <li><a href="#the-ai-question-which-is-really-three-options">The AI question, which is really three options</a></li>
             <li><a href="#network-requirements">Network requirements</a></li>
             <li><a href="#what-to-verify-yourself-because-you-should-not-take-a-guides-word-for-it">What to verify yourself, because you should not take a guide&#39;s word for it</a></li>
@@ -103,6 +105,9 @@
               <p>Search needs JavaScript. Browse the complete chapter list instead:</p>
               <ul>
               <li><a href="start-here.html">Start here: prepare your first student-ready resource</a></li>
+              <li><a href="the-workspace.html">The workspace, part by part</a></li>
+              <li><a href="settings-and-help.html">Settings, help, and finding your way</a></li>
+              <li><a href="saving-and-storage.html">Saving, loading, and managing storage</a></li>
               <li><a href="quick-reference.html">Quick reference: the one page to keep nearby</a></li>
               <li><a href="prepare-a-lesson.html">Prepare a purposeful, differentiated lesson</a></li>
               <li><a href="universal-settings.html">Universal Settings: set it once, not per tool</a></li>
@@ -138,21 +143,111 @@
 <li>Nothing to breach centrally, nothing to subpoena from a vendor, nothing to delete on offboarding.</li>
 <li>A lost or wiped device loses its local work unless the user exported a project file. Treat exported project files as instructional records under your normal file-handling policy.</li>
 </ul>
-<p>The full data-path table, including live sessions, exports, QR codes, and LMS launches, is in <a href="privacy-and-responsible-ai.html">Privacy and responsible AI</a>; it is written to be reviewed line by line with a privacy officer.</p>
-<h2 id="the-one-exception-the-educator-evaluation-portal">The one exception: the educator evaluation portal</h2>
-<p>Everything above describes the default. There is exactly one part of AlloFlow where a district deliberately stands up a server-side store, and it is worth knowing about because it holds <strong>personnel</strong> records: the Educator Evaluation portal. It is optional. Without it, the evaluation tool behaves like every other tool and keeps records in the signed-in browser profile on one device.</p>
-<p>When a district does want shared, authenticated evaluation records, an administrator deploys a small Apps Script project <strong>into a district-owned Google account, never a personal one</strong>:</p>
-<ul>
-<li><strong>It runs in your tenant, not ours.</strong> The workspace file, its index spreadsheet, and released summary documents live in a Drive folder owned by your deployment account. The server code makes <strong>no external network calls at all</strong>, so nothing leaves your Google Workspace. That is what lets it sit under the Workspace for Education agreement you already have.</li>
-<li><strong>It fails closed.</strong> Access is limited to accounts on your domain that an administrator has added, deployed as <em>Execute as: Me</em> with <em>Who has access: users in your domain</em>. The server, not the link, decides each person's role and which records they see. Someone without a district account gets nothing.</li>
-<li><strong>Storage is private by verified default.</strong> Setup sets the repository folder and files to private and then checks that it took effect, refusing to continue if it cannot confirm it.</li>
-<li><strong>Notifications carry no content.</strong> Email says only that there was portal activity. Ratings, names, and evidence stay inside the authenticated portal. Released summaries are Google Docs shared view-only to the one educator they belong to.</li>
-<li><strong>The legal frame is personnel, not student.</strong> FERPA governs student education records and is largely the wrong lens here. What governs is your state's personnel-records law, the collective bargaining agreement, and district retention and discoverability policy. Keep student names out of observation evidence and that separation holds.</li>
-</ul>
-<p>Things you can check yourself: <code>verifyDeploymentIdentity()</code> confirms the deployment identity, <code>getPortalSetupHealth()</code> reports the domain lock and configuration state, and <code>doGet?api=health</code> reveals only service status to an already-authorized member. The package and its deployment README are in <code>apps_script/educator_evaluation/</code>, and the operating manual is the <a href="https://alloflow-cdn.pages.dev/educator-evaluation-manual">Educator Growth &amp; Evaluation user manual</a>.</p>
+<h3 id="every-place-work-can-come-to-rest">Every place work can come to rest</h3>
+<p>Browser storage is the default, not the only destination. These are the paths an audit should account for, in rough order of how often they are used:</p>
+<div class="table-scroll" role="region" aria-label="Every place work can come to rest table" tabindex="0">
+<table>
+<thead>
+<tr>
+<th scope="col">Destination</th>
+<th scope="col">Who owns the storage</th>
+<th scope="col">What lands there</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Browser storage on the device</td>
+<td>The device, under your fleet policy</td>
+<td>All working state: workspaces, drafts, settings, generated resources</td>
+</tr>
+<tr>
+<td>AlloFlow project file (<code>Save Project</code>)</td>
+<td>Wherever the user saves it</td>
+<td>A full snapshot: source material, generated resources, settings, notes</td>
+</tr>
+<tr>
+<td>Exports (PDF, print, accessible document, worksheet, teacher copy)</td>
+<td>Wherever the user saves it</td>
+<td>Finished copies, and the teacher copy also carries answer keys</td>
+</tr>
+<tr>
+<td>QR code or student share link</td>
+<td>No new storage; a new access path</td>
+<td>Whatever the shared route exposes</td>
+</tr>
+<tr>
+<td>Live session transport</td>
+<td>Local peer connections, or a mailbox you deploy (below)</td>
+<td>Session coordination and student responses</td>
+</tr>
+<tr>
+<td>LMS launch</td>
+<td>Your LMS</td>
+<td>Course, role, and assignment context supplied by the LMS</td>
+</tr>
+<tr>
+<td>Optional Apps Script services</td>
+<td><strong>Your school's own Google Drive</strong></td>
+<td>Only what that specific service is for (below)</td>
+</tr>
+<tr>
+<td>On-device model and remediation caches</td>
+<td>The device</td>
+<td>Cached speech models and remediation working data</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Two consequences worth stating to a leadership team. Browser storage means a wiped device or a cleared profile destroys unexported work, so &quot;save the project file&quot; is an operational instruction, not a nicety. And &quot;local&quot; is not the same as &quot;safe&quot;: a shared Windows profile, a synced Downloads folder, or a copied project file moves instructional content exactly as far as any other file would.</p>
+<p>The full teacher-facing data-path table is in <a href="privacy-and-responsible-ai.html">Privacy and responsible AI</a>; it is written to be reviewed line by line with a privacy officer. The teacher-side mechanics of saving, exporting, storage presets and recovery are in <a href="saving-and-storage.html">Saving and storage</a>.</p>
+<h3 id="the-google-drive-option-services-you-deploy-in-your-own-tenant">The Google Drive option: services you deploy in your own tenant</h3>
+<p>AlloFlow has no server. When a school genuinely needs shared or persistent storage, the pattern is always the same: a small Apps Script project deployed <strong>into a school-owned Google account, never a personal one</strong>, so the data sits in your Drive under the Workspace for Education agreement you already hold. Each is optional, and each is off until someone deploys it. The packages and their deployment READMEs are in <code>apps_script/</code>.</p>
+<p>They do not share one security model, and the differences are the part worth your attention:</p>
+<div class="table-scroll" role="region" aria-label="The Google Drive option: services you deploy in your own tenant table" tabindex="0">
+<table>
+<thead>
+<tr>
+<th scope="col">Service</th>
+<th scope="col">Deployed by</th>
+<th scope="col">Identity model</th>
+<th scope="col">Holds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Educator Evaluation repository</td>
+<td>District administrator</td>
+<td>Google identity, locked to your domain; the server decides each person's role</td>
+<td>Personnel records, with a tamper-evident audit chain</td>
+</tr>
+<tr>
+<td>Walkthrough Records</td>
+<td>A principal, in their own account</td>
+<td><code>drive.file</code> scope only; each file is Restricted and shared with one named teacher, so Google enforces the reader's identity</td>
+<td>Walkthrough feedback a human wrote and approved</td>
+</tr>
+<tr>
+<td>Class Mailbox</td>
+<td>A teacher, in their own account</td>
+<td>Capability tokens, no student accounts; possession of the link stands in for identity</td>
+<td>Live session and homework-pack traffic</td>
+</tr>
+<tr>
+<td>Leadership Hub backup</td>
+<td>A school leader, in their own account</td>
+<td>Capability token that can only touch files the script itself created; files created Restricted</td>
+<td>The Leadership Hub's own backup file</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The distinction that matters: <strong>a link-possession model is appropriate for anonymous class traffic and inappropriate for anything about a named staff member.</strong> The Class Mailbox is deliberately built the first way and the other three are not. Walkthrough Records is explicitly not a system of record and never scores anyone; if you need a district system of record with verified identity, assignments and an audit trail, that is the Educator Evaluation repository.</p>
+<h3 id="the-educator-evaluation-portal-in-one-paragraph">The educator evaluation portal, in one paragraph</h3>
+<p>The one service that holds <strong>personnel</strong> records deserves a named pointer rather than a summary here. It is optional; without it the evaluation tool keeps records in the signed-in browser profile on one device like every other tool. When a district does deploy it, an administrator installs it into a <strong>district-owned Google account, never a personal one</strong>, and from there it runs in your tenant, makes <strong>no external network calls</strong>, <strong>fails closed</strong> to accounts on your domain, sets its storage private and verifies that it took effect, and sends notifications that carry no ratings or evidence. The legal frame is personnel law, your collective bargaining agreement and district retention policy, not FERPA. You can verify a deployment yourself with <code>verifyDeploymentIdentity()</code>, <code>getPortalSetupHealth()</code>, <code>verifyAuditChain()</code> and <code>doGet?api=health</code>.</p>
+<p>For the full treatment, read the <a href="https://alloflow-cdn.pages.dev/educator-evaluation-manual">Educator Growth &amp; Evaluation user manual</a>, which covers setup, roles, the audit chain and the release workflow in detail, and <a href="for-school-leaders.html">For school leaders</a> for how it sits beside the rest of the suite.</p>
 <h2 id="the-ai-question-which-is-really-three-options">The AI question, which is really three options</h2>
 <p>AI features only work when a backend is configured, and the district controls which:</p>
-<div class="table-scroll" role="region" aria-label="Scrollable table" tabindex="0">
+<div class="table-scroll" role="region" aria-label="The AI question, which is really three options table" tabindex="0">
 <table>
 <thead>
 <tr>
@@ -195,7 +290,7 @@
 <li>If you deploy the evaluation portal, grep its <code>Code.gs</code> for <code>UrlFetchApp</code> before you approve it. There are zero occurrences, which is the claim that nothing leaves your tenant, and it takes one search to confirm rather than trust.</li>
 </ol>
 <h2 id="the-two-sentence-version-for-a-busy-director">The two-sentence version for a busy director</h2>
-<p>AlloFlow is a static, open source web app with no accounts and no vendor-side data storage; work stays on the device, and AI runs only through the backend the district chooses, including a fully local option. The realistic review effort is the same as approving a website plus, if you choose one, an AI provider you have likely already reviewed.</p>
+<p>AlloFlow is a static, open source web app with no accounts and no vendor-side data storage; work stays on the device by default, and AI runs only through the backend the district chooses, including a fully local option. Where a school does want shared storage, it deploys a small optional service into its own Google Drive, so that data stays in your tenant too. The realistic review effort is the same as approving a website plus, if you choose one, an AI provider you have likely already reviewed.</p>
       </article>
       <nav class="chapter-pager" aria-label="Previous and next chapters">
         <a class="chapter-pager__previous" href="school-rollout-and-coaching.html"><span>Previous</span>School rollout and coaching</a>

@@ -999,26 +999,144 @@ hr {
    Injected by guide-search.js only when the browser has a speech engine, so
    these rules simply never match otherwise. Uses the guide's own tokens so it
    follows every theme, including the print overrides below. */
+/* A quiet 1.4rem icon rather than a labelled pill: one per heading, the
+   labelled version competed with the heading text it sat beside. The
+   accessible name stays in aria-label, so a screen reader loses nothing.
+   Deliberately always visible — revealing it on :hover would be mouse-only. */
 .listen-btn {
-  margin-left: 0.6rem;
+  margin-left: 0.55rem;
   vertical-align: middle;
-  font: 600 0.75rem/1 inherit;
-  color: var(--brand-strong);
-  background: var(--brand-soft);
-  border: 1px solid var(--brand);
-  border-radius: 999px;
-  padding: 0.3rem 0.65rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  flex: none;
+  padding: 0;
+  font: 400 0.7rem/1 inherit;
+  letter-spacing: normal;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 50%;
   cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
 }
-.listen-btn:hover { filter: brightness(0.97); }
+.listen-btn:hover { background: var(--brand-soft); border-color: var(--brand); }
 .listen-btn:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+.listen-btn[aria-pressed="true"] { background: var(--brand-soft); border-color: var(--brand); }
 .is-reading {
   background: var(--brand-soft);
   box-shadow: 0 0 0 4px var(--brand-soft);
   border-radius: 3px;
 }
 
+/* ── Reading tools (2026-08-17) ────────────────────────────────────────
+   The controls AlloFlow injects into its HTML exports (view_pdf_audit_source
+   :: _wrapAsReaderApp), sharing the same localStorage key so a teacher's
+   preferences carry from an exported handout to the guide. The toggle joins
+   the existing sticky header rather than adding a second sticky bar; the
+   panel is a header row that exists only while open, so a collapsed bar
+   costs no vertical space. Injected by script — never dead UI without JS. */
+.rtools-toggle {
+  font: 700 0.78rem/1 inherit;
+  color: var(--brand-strong);
+  background: var(--brand-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.4rem 0.75rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.rtools-toggle:hover { border-color: var(--brand); }
+.rtools-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.9rem;
+  align-items: center;
+  padding: 0.5rem clamp(1rem, 4vw, 2.5rem);
+  border-top: 1px solid var(--line);
+  font: 600 0.78rem/1 inherit;
+  color: var(--muted);
+  letter-spacing: normal;
+}
+.rtools-panel[hidden] { display: none; }
+.rtools-panel label { display: inline-flex; align-items: center; gap: 0.35rem; white-space: nowrap; }
+.rtools-panel select,
+.rtools-panel input[type="range"],
+.rtools-panel button { font: inherit; }
+.rtools-panel select {
+  color: var(--ink);
+  background: var(--page);
+  border: 1px solid var(--line);
+  border-radius: 0.4rem;
+  padding: 0.2rem 0.3rem;
+}
+.rtools-panel input[type="range"] { width: 5.5rem; accent-color: var(--brand); padding: 0; }
+.rtools-panel button {
+  color: var(--ink);
+  background: var(--page);
+  border: 1px solid var(--line);
+  border-radius: 0.4rem;
+  padding: 0.3rem 0.55rem;
+  cursor: pointer;
+}
+.rtools-panel button[aria-pressed="true"] {
+  background: var(--brand-soft);
+  border-color: var(--brand);
+  color: var(--brand-strong);
+}
+.rtools-panel :focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+#rtools-ruler {
+  position: fixed;
+  left: 0;
+  width: 100%;
+  height: 2.4em;
+  background: rgba(250, 204, 21, 0.16);
+  border-top: 2px solid rgba(250, 204, 21, 0.65);
+  border-bottom: 2px solid rgba(250, 204, 21, 0.65);
+  pointer-events: none;
+  z-index: 19;
+  display: none;
+}
+html[data-allo-ruler="1"] #rtools-ruler { display: block; }
+
+/* Reading themes retint the guide's OWN tokens, so every card, table, callout
+   and code span follows the theme instead of being stranded on a new page
+   colour. `html:root[…]` is (0,2,1), which beats both the (0,1,0) dark-mode
+   block and the (0,1,0) print block — hence the explicit print reset below,
+   which matches on specificity and wins on source order. */
+html:root[data-allo-theme="warm"]{--page:#fdf3dd;--surface:#fffcf3;--surface-subtle:#f7ecd5;--ink:#432c10;--muted:#6d5030;--line:#e6d3ae;--brand:#8a3a12;--brand-strong:#6f2d0e;--brand-soft:#fbeadb;--accent:#9a3412;--success:#3f6212;--shadow:0 12px 34px rgba(87,58,28,.12);}
+html:root[data-allo-theme="sepia"]{--page:#f4ecd8;--surface:#fdf8ec;--surface-subtle:#f0e6d0;--ink:#3f2d18;--muted:#6b5138;--line:#ddcdb0;--brand:#7d4419;--brand-strong:#653713;--brand-soft:#f7edda;--accent:#8a4b1e;--success:#3f6212;--shadow:0 12px 34px rgba(92,64,51,.12);}
+html:root[data-allo-theme="dark"]{--page:#12121f;--surface:#1e1e33;--surface-subtle:#242440;--ink:#f1f5fb;--muted:#b6c2d6;--line:#343a55;--brand:#8ab4ff;--brand-strong:#c4d9ff;--brand-soft:#1c2947;--accent:#f0a882;--focus:#f5a623;--success:#7fd6a8;--shadow:0 12px 34px rgba(0,0,0,.45);}
+html:root[data-allo-theme="highContrast"]{--page:#000;--surface:#000;--surface-subtle:#000;--ink:#ff0;--muted:#ff0;--line:#ff0;--brand:#ff0;--brand-strong:#ff0;--brand-soft:#000;--accent:#ff0;--focus:#fff;--success:#ff0;--shadow:none;}
+html:root[data-allo-theme="blue"]{--page:#d9e9f6;--surface:#f0f7fd;--surface-subtle:#e2eff9;--ink:#0d1f2e;--muted:#3b4f62;--line:#b2cfe5;--brand:#0b4f7a;--brand-strong:#083b5c;--brand-soft:#e4f0fa;--accent:#8a3a12;--success:#155e40;--shadow:0 12px 34px rgba(27,38,49,.12);}
+html:root[data-allo-theme="green"]{--page:#e6f4e7;--surface:#f4fbf5;--surface-subtle:#ecf7ed;--ink:#0f3016;--muted:#38603c;--line:#c0dfc3;--brand:#155e20;--brand-strong:#0f4417;--brand-soft:#e9f6ea;--accent:#8a3a12;--success:#155e40;--shadow:0 12px 34px rgba(27,94,32,.12);}
+html:root[data-allo-theme="rose"]{--page:#fbe2ea;--surface:#fef3f7;--surface-subtle:#fbe8ef;--ink:#4f0a29;--muted:#7d3557;--line:#f0c0d2;--brand:#9d1148;--brand-strong:#7c0d38;--brand-soft:#fceaf1;--accent:#8a3a12;--success:#155e40;--shadow:0 12px 34px rgba(124,13,71,.12);}
+html:root[data-allo-theme="easyread"]{--page:#faf8ef;--surface:#fffefa;--surface-subtle:#f3f0e2;--ink:#18202f;--muted:#4c5870;--line:#e2ddc8;--brand:#124e78;--brand-strong:#0b3654;--brand-soft:#e7f1f8;--accent:#a63f17;--success:#155e40;--shadow:0 12px 34px rgba(38,50,74,.1);}
+
 @media print {
+  /* Reading tools are screen affordances, and a chosen theme must not reach
+     paper — dark or high contrast would print light text on white. Same
+     (0,2,1) specificity as the theme rules, later in source, so it wins. */
+  .rtools-toggle,
+  .rtools-panel,
+  #rtools-ruler { display: none !important; }
+  html:root[data-allo-theme] {
+    --page: #ffffff;
+    --surface: #ffffff;
+    --surface-subtle: #f4f4f4;
+    --ink: #000000;
+    --muted: #333333;
+    --line: #777777;
+    --brand: #000000;
+    --brand-strong: #000000;
+    --brand-soft: #ffffff;
+    --accent: #000000;
+    --success: #000000;
+    --shadow: none;
+  }
+
   /* The listen control and its highlight are screen affordances. */
   .listen-btn { display: none !important; }
   .is-reading { background: none !important; box-shadow: none !important; }
@@ -1137,4 +1255,16 @@ hr {
   .offline-chapter {
     break-before: page;
   }
+}
+
+/* The catalog card offers up to two actions. Opening the tool is the primary
+   one; the weight difference keeps the pair from reading as a single link. */
+.tool-reference-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+.tool-reference-card__launch {
+  font-weight: 700;
 }

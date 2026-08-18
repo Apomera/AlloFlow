@@ -69,11 +69,18 @@ describe('the QR path is real, not a stub', () => {
   it('the settings card renders a QR component that waits for that generator', () => {
     expect(settings).toContain('function EvaluationPortalQr(props) {');
     expect(settings).toContain('var makeQr = window.__alloMakeQrSvg;');
-    expect(settings).toContain("setState({ status: 'error', svg: '', error: 'The QR generator is not available in this build.' });");
+    // The message is now translatable, so assert the state shape and the English
+    // fallback separately rather than one literal that any t() wrapper breaks.
+    expect(settings).toContain("setState({ status: 'error', svg: ''");
+    expect(settings).toContain("'The QR generator is not available in this build.'");
   });
 
   it('only ever encodes a connected district portal, never the demo', () => {
-    expect(settings).toContain("<EvaluationPortalQr url={isEvaluationPortalConnected ? evaluationPortalUrl : ''} />");
+    // Pinned on the url expression, not the whole tag: the guarantee is that the
+    // QR can only ever encode a CONNECTED portal, and that must survive prop
+    // additions (an i18n pass added t={t} here and broke the literal form).
+    expect(settings).toContain('<EvaluationPortalQr');
+    expect(settings).toContain("url={isEvaluationPortalConnected ? evaluationPortalUrl : ''}");
     // and the component itself refuses to render without a url
     expect(settings).toContain("if (!url) return null;");
   });

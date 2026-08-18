@@ -155,7 +155,33 @@ function scanFile(rel) {
   // are marked ambiguous so a person checks the consumption site rather than
   // being told a covered table is a bug.
   const fallbackProps = new Set();
-  const markCovered = (node) => { if (node && node.type === 'StringLiteral') covered.add(node.start); };
+  // Under --deep the fallback of `t('k') || (...)` is frequently a CONCATENATION
+  // or a ternary, not a bare literal:
+  //     t('sf.exact_match', { code }) || ('Exact local match: ' + code)
+  // Marking only a bare StringLiteral left those fragments looking unlocalized,
+  // so --deep reported already-translated sites as findings. Coverage has to
+  // descend the same shapes pushExpr does, or the two disagree.
+  const markCovered = (node, depth) => {
+    if (!node) return;
+    const d = depth || 0;
+    if (node.type === 'StringLiteral') { covered.add(node.start); return; }
+    if (!DEEP || d > 6) return;
+    switch (node.type) {
+      case 'ConditionalExpression':
+        markCovered(node.consequent, d + 1); markCovered(node.alternate, d + 1); break;
+      case 'LogicalExpression':
+        markCovered(node.left, d + 1); markCovered(node.right, d + 1); break;
+      case 'BinaryExpression':
+        if (node.operator === '+') { markCovered(node.left, d + 1); markCovered(node.right, d + 1); }
+        break;
+      case 'TemplateLiteral':
+        for (const q of node.quasis) covered.add(q.start);
+        break;
+      case 'JSXExpressionContainer':
+        markCovered(node.expression, d + 1); break;
+      default: break;
+    }
+  };
   traverse(ast, {
     CallExpression(p) {
       const callee = p.node.callee;

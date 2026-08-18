@@ -2158,3 +2158,449 @@ both presets screenshotted and inspected, console clean. Scratch spec removed.
 The measured visual-debt list that started this work — 123 views, only 24 with any art — is
 closed at the top. Four content errors and one never-rendering view were found along the way,
 every one of them because drawing a claim forces you to check it.
+
+### Twenty-first pass — re-measured, and found denser debt than the original list
+
+With the top ten closed I rebuilt the visual-debt detector and re-ran it rather than guessing what
+was left. Two things came back.
+
+**A React key warning I had introduced.** `bgBase` returns a `<g>` that gets dropped straight into
+the hand-built `kids` array of several behaviour glyphs, with no key. `check_keyless_map` passed —
+that gate inspects `.map()` call sites, and this is an unkeyed element inside an **array literal**,
+which it does not look at. Fixed, and worth noting as a gate blind spot rather than a one-off.
+
+**The bigger finding: the original top-ten was not the densest debt in the tool.** Current state is
+23 of 123 views carrying art, with this remaining:
+
+| view | claims | per 1k |
+|---|---|---|
+| sparrows | 14 | **131** |
+| warblers | 15 | **130** |
+| flyvireo | 9 | 106 |
+| woodpeckers | 8 | 104 |
+| waterfowl | 11 | 83 |
+| gullId / shorebirds | 9 / 8 | 80 |
+| springArr | 14 | 42 |
+| footTypes / glossaryDeep | — | closed by cross-link, correctly still flagged as art-free |
+
+`sparrows` at 131 claims per 1000 words is **denser than anything in the original list** (the top
+entry there was shapediff at 104). These are species-identification views, which is where a visual
+claim matters most.
+
+**Sparrow head plates.** Every `key_mark` in that view describes a face — "rufous cap, white eyebrow
++ dark eyeline", "black + white head striping; yellow lores", "plain face with white eye ring". So:
+one head geometry driven by a per-species band spec, with the bands clipped to the head so every
+face is the same shape and the eye goes straight to the pattern. Twelve species specced —
+crown, median crown stripe, eyebrow, eyeline, cheek, malar, throat, lores, eye ring, and a bill
+that can be two-tone.
+
+The diagnostic marks now read at a glance: White-throated's **yellow lores** and sharply outlined
+white bib, White-crowned's **pink bill** and lack of yellow, American Tree's **bicoloured bill**,
+Chipping's white brow over a **black** eyeline, Field's bold white **eye ring**, Savannah's
+**yellow** brow, Nelson's buff-orange face.
+
+It hooks into the shared `BirdSpeciesFamilyView`, and `sparrowHead` returns null for any unspecced
+name — so the single call serves every family view and lights up only where a face has actually
+been drawn. Warblers, woodpeckers and the vireos can be added to the same table later without
+touching the view.
+
+**One defect caught by rendering it.** The throat shape spanned only x 40–70 inside a head circle
+spanning 20–72, so instead of a throat it drew a pale block floating clear of the head's edges.
+Extended past the clip bounds on both sides, so the clip does the shaping — it reads as a throat
+now, and White-throated's outlined bib works.
+
+**Guards, both calibrated.** `SP_HEADS` is keyed by hand-typed species name, the same silent-failure
+shape as the behaviour glyph table: a typo does not throw, the bird just quietly loses its plate.
+Added a test that every key matches a real species name plus one that the view actually renders a
+plate; injected `Vespar Sparrow` to confirm it fires, and it named the bad key.
+
+**A mistake in my own tooling, worth recording.** My restore step wrote a backup with node's
+`fs.writeFileSync('/tmp/...')` and tried to restore it with bash `cp /tmp/...`. Node resolved that
+to `C:\tmp` and Git Bash to something else, so the restore silently failed and the injected typo
+stayed in the file. Caught by re-grepping for the typo rather than trusting `cp` — but the lesson
+is not to mix node and bash path conventions inside one verification step.
+
+### Verified (twenty-first pass)
+
+`birdlab_visual_qa` **83 core / 402 exhaustive, exit 0** (I-Spy states only); five BirdLab test
+files **51/51**; both e2e specs **7/7**; `check_keyless_map` and `check_render_refs` clean; no React
+key warnings; mirror byte-identical. All twelve heads rendered to a contact sheet at 2x and
+inspected side by side, which is the only way to check that faces meant to differ actually do.
+Scratch spec and the audit harness removed.
+
+### Next by measurement
+
+`warblers` (130 per 1k) is the obvious next target and the same head-plate mechanism should extend
+to it — warblers separate on face pattern, wingbars and throat colour. After that `flyvireo` (106)
+and `woodpeckers` (104), both of which are also face-and-pattern problems.
+
+### Twenty-second pass — warblers, the family the view itself calls the hardest
+
+`warblers` measured 130 visual claims per 1000 words, second only to `sparrows`, and the view's
+own intro calls warblers "the hardest ID family for new birders" — then describes all fifteen in
+prose.
+
+**Why this needed a different plate from the sparrows.** Sparrow ID is a head-pattern problem, so a
+face card was enough. Warbler marks are spread over the whole bird: "yellow rump always visible",
+"chestnut-sided", "black necklace across breast", "orange flash on wings + tail", "white
+wing-patch", "blue-gray + green back". A head plate would have thrown away most of what the text
+is pointing at. So this is a whole-bird plate with named colour zones — back, rump, crown, face,
+mask, throat, breast, belly, flank, wing, wing bars, plus a breast-marking mode (streaks,
+necklace, band) — all clipped to one shared body and head, so two warblers differ on screen
+exactly where they differ in the field.
+
+All fifteen are specced, and the test asserts that in **both directions**: no plate keyed to a
+species that does not exist, and no species left without a plate.
+
+The bill differs from the sparrow plates on purpose — thin and insectivorous against the sparrows'
+conical seed-cracker, which is itself a family-level mark.
+
+**Three defects caught on the contact sheet.**
+
+1. **Black-and-white Warbler was not striped.** Its entire name is a pattern, and the body was
+   drawn plain with streaking only on the breast. Body stripes now run over the back and flanks.
+2. **American Redstart had no orange wing flash**, though its `mark` says "orange flash on wings
+   **+ tail**" — only the tail carried it. The wing patch is now present and deliberately larger
+   than Black-throated Blue's small white "handkerchief", because those two patches are not the
+   same kind of mark.
+3. The tail was a slab rather than a tail; tapered and re-seated at the body's rear.
+
+**Caption honesty.** Every plate is labelled **"Breeding male"**, and says so: females and autumn
+birds are duller, the shape and wing bars survive, the colours often do not. Drawing a bright
+spring male and letting a learner think that is what they will see in September would be worse
+than no drawing.
+
+### Verified (twenty-second pass)
+
+`birdlab_visual_qa` **83 core / 402 exhaustive, exit 0**; five BirdLab test files **53/53**; both
+e2e specs **7/7**; `check_keyless_map` and `check_render_refs` clean; no React key warnings; mirror
+byte-identical. All fifteen warblers rendered to a 2x contact sheet and compared side by side, twice
+— once to find the three defects and once to confirm the fixes. Scratch spec removed.
+
+### Next by measurement
+
+`flyvireo` (106 per 1k) and `woodpeckers` (104). Both are whole-bird pattern problems rather than
+face problems, so the warbler plate mechanism should extend to them by adding spec rows — the
+renderer already covers crown stripes, masks, wing patches, bars and breast marks. Woodpeckers add
+one genuinely new axis (back pattern: ladder, spotted, solid) worth handling explicitly rather than
+approximating with the existing zones.
+
+### Twenty-third pass — woodpeckers, and the one pair that needs a ruler
+
+`woodpeckers` measured 104 visual claims per 1000 words. Unlike the warblers this family did not
+fit the existing plate, for two reasons.
+
+**A new axis.** Woodpecker marks run on something no other family uses — what the BACK is doing:
+a white ladder stripe (Downy, Hairy), zebra barring (Red-bellied), solid black (Black-backed),
+white bars (Three-toed), brown spotting (Flicker). That is the first sort a birder makes, before
+which patch of the head is red. So `back` is an explicit mode rather than an approximation with
+the warbler zones.
+
+**A different posture.** They are drawn upright on a trunk with the tail braced and the feet
+gripping, because that posture IS the family mark — and drawing a woodpecker as a perched songbird
+would have taught the wrong silhouette.
+
+**The Downy/Hairy plate is the point of the whole pass.** Those two are the commonest hard call in
+the family, the plumage is near enough identical, and the entire key_mark for Hairy is "longer bill
+(longer than head)". A proportion stated in prose is nearly useless; a proportion drawn next to the
+thing it is a proportion OF is immediate. So bill length is stored as a fraction of head width and
+drawn to scale, and the comparison marks both quantities — a red bar under each bill for its
+length, a blue bar under each head for the head width. Downy's red bar is visibly shorter than its
+blue one; Hairy's matches or exceeds it. The caption says explicitly to compare those two bars and
+not the whole bird, because size at distance is exactly what fools people here.
+
+The comparison leads the card for **both** species, not just Downy — someone who has landed on
+Hairy needs the same question answered.
+
+**Guard.** `WP` is asserted forward-only (no plate keyed to a species that does not exist) rather
+than in both directions like the warblers, because the WOODPECKERS array also carries finches,
+which correctly have no trunk plate. The test says so, so nobody later "fixes" the asymmetry.
+
+### Verified (twenty-third pass)
+
+`birdlab_visual_qa` **83 core / 402 exhaustive, exit 0**; five BirdLab test files **55/55**; both
+e2e specs **7/7**; `check_keyless_map` and `check_render_refs` clean; no React key warnings; mirror
+byte-identical. All eight woodpeckers rendered to a 2x contact sheet and compared side by side, and
+the Downy/Hairy comparison checked in situ rather than in isolation. Scratch spec removed.
+
+### Measured state
+
+Three of the four views the re-measure surfaced are now closed — `sparrows` (131 per 1k),
+`warblers` (130) and `woodpeckers` (104). `flyvireo` (106) is the remaining one, and it is a
+genuinely harder problem than the others: the Empidonax flycatchers are separated by eye ring
+boldness and underpart wash, differences so slight that many are not safely identifiable by sight
+at all and are called on voice. That is worth drawing carefully and captioning honestly rather than
+implying a confidence the marks do not support.
+
+### Twenty-fourth pass — flycatchers and vireos, and knowing when not to promise
+
+`flyvireo` measured 106 visual claims per 1000 words, the last of the four the re-measure surfaced.
+
+**This one reuses the warbler renderer rather than getting a third.** Flycatchers and vireos are the
+same KIND of problem — marks spread over a whole perched songbird — so `warblerPlate` was factored
+into a shared `birdPlate` that both families drive. Three plate systems now exist, and each was
+chosen from the ID problem rather than for consistency: sparrows sort on the FACE, warblers on
+whole-bird ZONES, woodpeckers on BACK pattern and trunk posture.
+
+**What this group added.** An eye-surround mode, because that is genuinely how the group sorts:
+nothing at all (Phoebe, Pewee, Kingbird), a bold complete ring (Least, Yellow-bellied), spectacles
+— a ring joined to the bill by a short loral line (Blue-headed and Yellow-throated Vireos) — or a
+white brow above a dark eyeline with no ring (Red-eyed Vireo). Drawing the ring alone would make a
+Blue-headed Vireo look like a Least Flycatcher, and that join is precisely what separates them.
+
+Bill shape now carries the **family** split the prose never states: flycatchers a broad flat bill
+for taking insects on the wing, vireos a thicker one with a hooked tip. Also added: Wood-Pewee's
+yellow bill base, Kingbird's white tail tip, and Olive-sided's "vest" — dark sides meeting over an
+open pale centre, which reads nothing like streaking and had to be its own mode.
+
+**The honesty callout, which is the point of this pass.** Several Empidonax flycatchers are not
+safely separable by sight; silent birds are routinely left as "Empidonax sp." and called on voice.
+A clean confident drawing with no caveat would teach a false certainty that the marks do not
+support. So Least and Yellow-bellied carry a warning saying exactly that, and the test asserts both
+that the wording survives and that it stays gated to both species.
+
+**One defect caught on the contact sheet.** Red-eyed Vireo's white supercilium was crushed to a
+3px sliver because it was drawn with the broad `mask` band, which overlapped it. A thin eyeline is
+a different mark from a mask and now has its own mode — brow above, dark line through the eye,
+which is what the bird actually shows.
+
+### Verified (twenty-fourth pass)
+
+`birdlab_visual_qa` **83 core / 402 exhaustive, exit 0**; five BirdLab test files **56/56**; both
+e2e specs **7/7**; `check_keyless_map` and `check_render_refs` clean; no React key warnings; mirror
+byte-identical. All ten rendered to a 2x contact sheet twice — once to find the Red-eyed defect and
+once to confirm the fix. Scratch spec removed.
+
+### Measured state — all four re-measure targets closed
+
+`sparrows` (131 per 1k), `warblers` (130), `flyvireo` (106) and `woodpeckers` (104) are done, on top
+of the original top ten. Species-ID views now carry plates driven by tables, so extending to the
+remaining families — `waterfowl` (83), `gullId` (80), `shorebirds` (80) — is spec rows rather than
+new renderers, with one caveat: waterfowl and gulls need a swimming body and a multi-year gull
+plumage axis, so at least one of those will want its own geometry the way the woodpeckers did.
+
+### Twenty-fifth pass — waterfowl, and the first family where the data describes both sexes
+
+`waterfowl` measured 83 visual claims per 1000 words. It is also the first family in this tool
+whose data carries a **`male` AND a `female` field on every entry** — and the female is the hard
+half: "mottled brown overall", "warm reddish-brown finely vermiculated", "brown head, gray body".
+Drawing only the drake would have illustrated the easy half of the problem, so **every plate is a
+pair**, and the test enforces that: no species may carry an `m:` without an `f:`.
+
+**Its own geometry, as flagged last pass.** Ducks are drawn swimming with a waterline, because
+that is how they are seen and because it puts head shape and the pattern above the water — what
+birders actually use — where it belongs. Twenty species, forty figures, one geometry.
+
+**Marks that had to be modes, not colours.** Bill shape carries real weight here: mergansers thin
+and serrated, eiders a long sloping wedge, dabblers and divers broad and flat. Then the specifics —
+Mallard's drake curl and white neck ring, Goldeneye's round white face spot, Bufflehead's big head
+patch, Ring-necked's white bill ring, Hooded Merganser's fan crest against Common Merganser's
+shaggy one, Long-tailed Duck's tail, Surf Scoter's white nape patch, Black Scoter's orange bill
+knob, Canada Goose's chin strap, Snow Goose's grin patch, Mute Swan's black bill knob and curved
+neck. Geese and swans needed a neck at all, which ducks do not — so head, eye and bill positions
+all move when `longNeck` is set.
+
+**Greater vs Lesser Scaup are separated the way the field separates them** — head SHAPE (round
+versus peaked) plus head gloss — rather than by colour alone, which would have been useless.
+
+**Two mistakes of mine, both in the test rather than the art.**
+
+1. My contact-sheet spec filtered selector buttons on a bracket, but the buttons carry the common
+   name only (`name.split(' (')[0]`). It matched nothing and reported `COUNT 0` — a green test that
+   had checked nothing. Fixed by naming the species explicitly.
+2. The both-sexes assertion sliced each entry with a brace-anchored regex, but entries end with
+   `} },` on the `f:` line, so it matched nothing and reported **all twenty** species as broken.
+   Rewritten to slice by the next top-level key. Calibrated afterwards by deleting Brant's `f:`
+   block — the guard fires and names the species.
+
+Worth stating plainly: a guard that reports everything broken is the same class of useless as one
+that reports nothing broken. Both needed calibrating before I trusted them.
+
+### Verified (twenty-fifth pass)
+
+`birdlab_visual_qa` **83 core / 402 exhaustive, exit 0**; five BirdLab test files **57/57**; both
+e2e specs **7/7**; `check_keyless_map` and `check_render_refs` clean; no React key warnings; mirror
+byte-identical. All twelve ducks rendered as sex-pairs to a contact sheet and inspected. Scratch
+spec removed.
+
+### Remaining by measurement
+
+`gullId` (80 per 1k) and `shorebirds` (80). Gulls are the one genuinely different problem left:
+large gulls take up to four years to reach adult plumage and look different in each, so a
+single-figure plate would be actively misleading. That view wants a **plumage-by-year** axis —
+first winter, second, third, adult — which none of the five existing plate systems has. Worth
+building deliberately rather than forcing a gull into the duck geometry.
+
+### Twenty-sixth pass — gulls, the one family where a single figure would lie
+
+`gullId` measured 80 visual claims per 1000 words, and it is the only view in this tool where
+drawing the bird **once** would have been actively misleading rather than merely incomplete. A
+large gull takes three to four years to reach adult plumage and looks different in each: the brown
+streaky bird and the clean grey-and-white one on the same beach are frequently the same species.
+
+**The data already had the axis and never drew it.** Every entry carries `first_winter`,
+`adult_winter` and `adult_breeding`. So the plate is a ROW — the same bird at each of those three
+stages, left to right, with the years-to-adult stated in the heading. That is a sixth plate system,
+and the only one with a time axis.
+
+**Marks that only exist because of the stage axis.** Winter head streaking, which makes a summer
+bird and a winter bird of the *same age* look different. Laughing and Bonaparte's hoods, full in
+breeding and reduced to a half-hood or a single ear spot in winter. Juvenile bill colour and the
+dark tip that adults lose. Great Black-backed's checkered juvenile mantle against Herring's plain
+brown one — the actual first-winter separation.
+
+And the white-winged gulls work: Iceland and Glaucous have **pale wingtips at every stage**, which
+is their whole identity and is visible straight down the row.
+
+**The honesty line matters here more than anywhere.** The caption says explicitly that large gulls
+pass through intermediate plumages *not drawn here*, so a bird matching none of the three is
+probably a middle year rather than a different species. Without that, a three-stage plate would
+quietly teach that gulls come in exactly three forms, which is a worse error than the prose it
+replaced.
+
+**One defect caught on the sheet.** Winter head streaking was drawn unclipped and ran the full
+height of the viewBox, reading as a detached barcode floating beside the bird. Clipped to the head
+and softened to curved strokes.
+
+### Verified (twenty-sixth pass)
+
+`birdlab_visual_qa` **83 core / 402 exhaustive, exit 0**; five BirdLab test files **58/58**; both
+e2e specs **7/7**; `check_keyless_map` and `check_render_refs` clean; no React key warnings; mirror
+byte-identical. All seven gulls rendered as three-stage rows to a contact sheet, twice. The guard
+asserts both directions plus that every gull carries a `years` value, since that number drives the
+caption. Scratch spec removed.
+
+### Where this stands
+
+Six plate systems now exist, each chosen from the ID problem rather than for consistency:
+
+| family | sorts on | system |
+|---|---|---|
+| sparrows | face pattern | head card |
+| warblers | marks over the whole bird | whole-bird zones |
+| flycatchers + vireos | what surrounds the eye | whole-bird zones (shared) |
+| woodpeckers | back pattern | trunk posture |
+| waterfowl | head/bill shape, both sexes | swimming pair |
+| gulls | age | three-stage row |
+
+`shorebirds` (80 per 1k) is the last measured item. It is a leg-length, bill-shape and
+bill-curvature problem — closest to the Downy/Hairy proportion work — so it likely wants
+bill-and-leg measurement plates rather than another plumage system.
+
+### Twenty-seventh pass — shorebirds, and a detector that lied to me
+
+`shorebirds` measured 80 visual claims per 1000 words, the last item on the list. It is the
+Downy/Hairy problem at family scale: almost every key_mark is a measurement or a colour on a
+measurement — "long slightly upturned bill", "bill straight + shorter", "long down-curved black
+bill", "very long bill", "yellow legs (only sandpiper with yellow legs at this size)", "tall".
+
+Prose cannot hold a set of proportions side by side in a reader's head. So bill length is stored
+as a fraction of head width and leg length as a fraction of body depth, both drawn to scale on one
+shared body, with **curvature as its own axis** — down, straight, or upturned. The card prints the
+bill figure as a multiple of head width next to the drawing, so the number and the picture come
+from the same value.
+
+It works where it matters: Greater and Lesser Yellowlegs separate on bill length and curve rather
+than on the word "smaller"; Dunlin's down-curve and Snipe's very long bill are unmistakable; Least
+Sandpiper's yellow legs stand out against the black-legged peeps beside it. Plovers carry their
+breast bands **counted** — one for Piping and Semipalmated, two for Killdeer.
+
+One defect caught on the sheet: the breast bands were drawn unclipped and ran past the body edge,
+reading as bars floating beside the head. Clipped to the body.
+
+### The detector lied, and I nearly reported it
+
+After finishing I re-ran the visual-debt measurement and it returned **"no remaining debt"**. That
+was wrong. I had rebuilt the audit with a shell heredoc instead of the Write tool, and the `\b`
+word-boundary escapes were stripped in the process, so the claim regex matched nothing and every
+view scored zero claims. A blind detector reads exactly like a clean result.
+
+What caught it was a sanity check rather than the number itself: `glossaryDeep` is a 1300-word
+birding glossary, and a birding glossary containing zero colour or pattern words is not plausible.
+Chasing that took three wrong hypotheses — stale harness state, regex `lastIndex` reuse, render
+truncation in a loop — before testing the regex in isolation showed the pattern had come out as
+`shape|shaped|pattern|...` with no boundaries at all.
+
+The rebuilt audit now **calibrates itself before it reports**: it runs the regex against a known
+sentence and checks two fixture views (`sparrows` must show art, `glossaryDeep` must show claims),
+and prints `*** DETECTOR BLIND ***` instead of a clean bill if either fails.
+
+### Measured state, verified
+
+`CALIBRATION probeHits=6 sparrows.art=14 glossaryDeep.claims=34  OK`
+**Views with art: 30 of 123** (24 when this work started).
+
+| still flagged | claims | per 1k | status |
+|---|---|---|---|
+| springArr | 14 | 42 | genuinely open |
+| footTypes | 13 | 31 | closed by cross-link — art lives in Beak & Feet Lab |
+| glossaryDeep | 34 | 26 | closed by cross-link — art lives in Topography Lab |
+| families | 9 | 21 | genuinely open |
+| facts | 14 | 11 | genuinely open |
+
+Every species-identification view is now closed: sparrows (131 per 1k), warblers (130),
+flyvireo (106), woodpeckers (104), waterfowl (83), gullId (80), shorebirds (80), plus the original
+top ten. The three genuinely open views left are low-density prose pages rather than ID problems —
+`springArr` is an arrival calendar, `families` a taxonomy overview, `facts` a trivia list — so they
+want a different treatment than a plate system, if they want one at all.
+
+### Verified (twenty-seventh pass)
+
+`birdlab_visual_qa` **83 core / 402 exhaustive, exit 0**; five BirdLab test files **59/59**; both
+e2e specs **7/7**; `check_keyless_map` and `check_render_refs` clean; no React key warnings; mirror
+byte-identical. All fifteen shorebirds rendered to a contact sheet twice. Audit harness removed
+after use; no scratch specs left in `tests/e2e/`.
+
+### Twenty-eighth pass — the spring wave, which the table was hiding
+
+`springArr` measured 42 visual claims per 1000 words, the highest of the three genuinely open
+views. It is thirty-four species in a table with a date phrase each — and the thing the view is
+actually about, the wave rolling up from early March to late May, is invisible in a table that is
+not sorted by date.
+
+**So it gets a timeline**, above the table rather than instead of it: the table stays as the
+screen-readable record, and the chart carries the shape. Each species is a bar spanning its
+arrival window, sorted earliest first. What that shows immediately:
+
+- a thin early trickle — Red-winged Blackbird, then Robin and Grackle in March
+- Common Loon's long bar, because its arrival tracks ice-out rather than a date
+- a scatter through April as the first flycatcher, swallows and Yellow-rumped Warbler come in
+- then a **dense pile-up in mid May**, where fifteen insect-eaters arrive at once
+
+That last cluster is the point, and no table sorted alphabetically will ever show it.
+
+**Dates are parsed, not hand-numbered.** They are prose — "Late March to mid-April", "Early to
+mid-May", "May (variable)" — so `springWindow()` reads the {early|mid|late} × {March|April|May}
+grammar, inherits the month across a range ("Early to mid-May" has no month on its first half),
+and treats a bare month as the whole month. Hand-transcribing thirty-four windows into numbers
+would have been a silent-error factory.
+
+**The guard is the important part.** An entry that fails to parse does not throw — the species just
+drops off the chart, and the chart still looks fine. So the test re-implements the same grammar
+independently, fails on any phrasing it does not recognise, and separately asserts that the number
+of bars rendered **equals the number of species in the data**. A new date written as, say,
+"first week of June" fails the test rather than vanishing.
+
+Bars show a window rather than a date, and the caption says so: arrival shifts with the season and
+the weather.
+
+### A test flake, recorded rather than ignored
+
+One run of the five BirdLab test files reported 3 failures. I could not reproduce it: four
+subsequent runs were 60/60. The failing run was inside a single chained command that also ran
+Playwright and file copies, hit its 120-second limit and was backgrounded mid-flight, so resource
+contention is the likely cause. Noting it because an unexplained red run is worth a line in the
+record even when it does not reproduce — if it recurs, it starts from here rather than from zero.
+
+### Verified (twenty-eighth pass)
+
+`birdlab_visual_qa` **83 core / 402 exhaustive, exit 0**; five BirdLab test files **60/60** (run
+four times); both e2e specs **7/7**; `check_keyless_map` and `check_render_refs` clean; no React key
+warnings; mirror byte-identical. Timeline rendered and inspected. Scratch spec removed.
+
+### Measured state
+
+Two views remain flagged and genuinely open: `families` (9 claims, 21 per 1k) and `facts` (14
+claims, 11 per 1k). Both are low-density prose pages rather than identification problems — a
+taxonomy overview and a trivia list — and neither has an obvious shape the way an arrival calendar
+does. `footTypes` and `glossaryDeep` stay flagged by design, closed by cross-link.

@@ -1187,7 +1187,7 @@
       "algorithm": "sha256",
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
-      "sourceItemsSha256": "ddfb76965550215cb268cfbeac296eab4f7af29a138d249f730bfbff0cc6943c",
+      "sourceItemsSha256": "50128abe83790c02241fd2078eea324ba78f254a11ddddd91a984a3a6faf2be3",
       "learningLibrarySha256": "fc24eed89a1c287c3adf72c9cd548ba1eb4acff99a07aac71dc9565c63523a0e"
     },
     {
@@ -1211,7 +1211,7 @@
       "algorithm": "sha256",
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
-      "sourceItemsSha256": "3e0010b976873dab441b2d2d8acaad956268428011af639fe1d14529a3b257d8",
+      "sourceItemsSha256": "aaea2d5e118c9625c2f3e336ed1c9e931da91ae95e83fea74ff407de146965ee",
       "learningLibrarySha256": "bc1b3e35b00400c65a35fbc430b2dead0ead11df6e1582958cd546b74c4575d4"
     },
     {
@@ -1219,7 +1219,7 @@
       "algorithm": "sha256",
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
-      "sourceItemsSha256": "37b17dfc2228804f22f6b51f52cd828176c62e5a1b731d9dc0c39b4a25e4263a",
+      "sourceItemsSha256": "1637b6974434dda31d9b724eb8bc034ce955e8ce37a596e0017954b3e447ff4b",
       "learningLibrarySha256": "d2c283da9d654dc414367785fbe2de52d3aa7607784127c02a608b53d42676ea"
     },
     {
@@ -1227,7 +1227,7 @@
       "algorithm": "sha256",
       "reviewedAt": "2026-07-18",
       "sourceItemCount": 200,
-      "sourceItemsSha256": "53c0e3a5e007823afd72e617f54bfde0b147834a4a7a63309196cabb05e3bf44",
+      "sourceItemsSha256": "8f8d382820fce1c1d6c4cecd1291910cf5ed7ce7f62580aa718e6f1623b8908b",
       "learningLibrarySha256": "b86523780637ce6ae14214beca6e3a99645a6685c4aa48692835369361901fd4"
     }
   ]

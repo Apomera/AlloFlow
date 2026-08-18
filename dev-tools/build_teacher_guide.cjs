@@ -136,7 +136,29 @@ function createMarkdownEngine() {
   });
 
   md.renderer.rules.table_open = function tableOpen(tokens, index, options, environment, renderer) {
-    return '<div class="table-scroll" role="region" aria-label="Scrollable table" tabindex="0">\n'
+    // Every scrollable table is a landmark, so each one needs its OWN name.
+    // A single fixed label collided on any chapter with more than one table
+    // (offline.html had 24 identical regions), which axe reports as
+    // landmark-unique and which makes a screen reader's landmark list useless.
+    // Name each table from the nearest heading above it, and fall back to a
+    // number so the label is never empty.
+    let heading = '';
+    for (let i = index - 1; i >= 0; i--) {
+      if (tokens[i].type === 'heading_open') {
+        const inline = tokens[i + 1];
+        if (inline && inline.content) heading = normalizeText(inline.content);
+        break;
+      }
+    }
+    environment.tableCount = (environment.tableCount || 0) + 1;
+    const label = heading
+      ? heading + ' table' + (environment.tableSeen && environment.tableSeen[heading]
+          ? ' ' + (environment.tableSeen[heading] + 1) : '')
+      : 'Scrollable table ' + environment.tableCount;
+    environment.tableSeen = environment.tableSeen || {};
+    environment.tableSeen[heading] = (environment.tableSeen[heading] || 0) + 1;
+    return '<div class="table-scroll" role="region" aria-label="'
+      + escapeHtml(label) + '" tabindex="0">\n'
       + renderer.renderToken(tokens, index, options);
   };
   md.renderer.rules.table_close = function tableClose(tokens, index, options, environment, renderer) {
@@ -849,6 +871,7 @@ function loadPublicToolCatalog() {
       tags: Array.isArray(raw.tags) ? raw.tags.map(String) : [],
       featured: Boolean(raw.featured),
       detailHref: typeof raw.detailHref === 'string' ? raw.detailHref : '',
+      launchHref: typeof raw.launchHref === 'string' ? raw.launchHref : '',
     };
   }).sort((first, second) => first.name.localeCompare(second.name));
 }
@@ -914,7 +937,14 @@ function toolReferenceCard(tool) {
     '              <div><dt>For</dt><dd>' + escapeHtml(tool.audiences.join(', ') || 'Educators') + '</dd></div>',
     '              <div><dt>Access</dt><dd>' + escapeHtml(accessLabel) + '</dd></div>',
     '            </dl>',
-    '            <p><a href="' + escapeHtml(toolReferenceHref(tool)) + '">Open the tool details</a></p>',
+    // Opening the tool is the primary action where one exists, so it leads and
+    // the details link follows behind a separator. Two adjacent underlined links
+    // read as a single link, which is why they are not just space-separated.
+    '            <p class="tool-reference-card__actions">'
+      + (tool.launchHref && validateBasicUrl(tool.launchHref, 'link')
+        ? '<a class="tool-reference-card__launch" href="' + escapeHtml(tool.launchHref) + '">Open the tool</a><span aria-hidden="true"> · </span>'
+        : '')
+      + '<a href="' + escapeHtml(toolReferenceHref(tool)) + '">Open the tool details</a></p>',
     '          </article>',
   ].join('\n');
 }

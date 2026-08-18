@@ -4,7 +4,7 @@ Status: **Reviewed — 500-distinct-question target not met.** This is a complet
 
 ## Bottom line
 
-The 22 non-EPPP packs contain **11,000 learning activities**. The current strict audit found **2,262 normalized kernels among the original source banks**, **900 newly assistant-authored independent practice questions**, **3,162 distinct independent-practice content kernels overall**, and **5,700 source-derived guided-review activities**. Reaching 500 genuinely distinct questions in every pack requires **7,838 additional independently authored questions**.
+The 22 non-EPPP packs contain **11,000 learning activities**. The current strict audit found **2,271 normalized kernels among the original source banks**, **900 newly assistant-authored independent practice questions**, **3,171 distinct independent-practice content kernels overall**, and **5,700 source-derived guided-review activities**. Reaching 500 genuinely distinct questions in every pack requires **7,829 additional independently authored questions**.
 
 Structural integrity and guided-answer derivation passed. New independent additions were reviewed for blueprint alignment, keyed-answer defensibility, distractor plausibility, feedback, citations, originality, and answer balance. Guided additions remain approved for guided practice only and are excluded from diagnostic analytics.
 
@@ -30,7 +30,7 @@ Assistant review is separate from licensed subject-matter endorsement, field tes
 | Praxis Core (5752) | 200 | 0 | 107 | 93 | 300 | 393 |
 | Reading Specialist 5302 diagnostics | 200 | 0 | 100 | 100 | 300 | 400 |
 | School Counselor 5422 diagnostics | 200 | 100 | 200 | 100 | 200 | 300 |
-| School Librarian (5312) | 200 | 100 | 126 | 174 | 200 | 374 |
+| School Librarian (5312) | 200 | 100 | 135 | 165 | 200 | 365 |
 | School Psychologist 5403 diagnostics | 200 | 100 | 200 | 100 | 200 | 300 |
 | Special Education 5355 diagnostics | 200 | 0 | 100 | 100 | 300 | 400 |
 | Behavioral Disorders and Emotional Disturbances (5372) | 200 | 0 | 103 | 97 | 300 | 397 |
@@ -51,4 +51,4 @@ Assistant review is separate from licensed subject-matter endorsement, field tes
 
 ## Next release standard
 
-Author the 7,838-question remaining gap pack by pack in 100-item stages. Every addition should use a new credential-specific stimulus, plausible distractors, item-specific feedback, and directly relevant sources. Guided-review activities should remain available as a separate learning tool.
+Author the 7,829-question remaining gap pack by pack in 100-item stages. Every addition should use a new credential-specific stimulus, plausible distractors, item-specific feedback, and directly relevant sources. Guided-review activities should remain available as a separate learning tool.

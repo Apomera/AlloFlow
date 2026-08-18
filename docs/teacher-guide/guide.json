@@ -8,10 +8,21 @@
             "description": "Start with a focused, student-ready resource and a teacher review gate.",
             "chapterSlugs": [
                 "quick-reference",
+                "the-workspace",
                 "start-here",
                 "prepare-a-lesson",
                 "universal-settings",
                 "documents-and-printing"
+            ]
+        },
+        {
+            "title": "I want to learn the app itself",
+            "description": "Learn the interface: what every part of the screen does, how to generate, and how work is saved.",
+            "chapterSlugs": [
+                "the-workspace",
+                "settings-and-help",
+                "saving-and-storage",
+                "quick-reference"
             ]
         },
         {
@@ -72,6 +83,27 @@
             "summary": "Choose an entry route and prepare a first student-ready resource.",
             "audience": "First-time teacher",
             "time": "About 15 minutes"
+        },
+        {
+            "source": "chapters/22-the-workspace.md",
+            "slug": "the-workspace",
+            "summary": "The mechanical tour: every region of the screen, the header, finding tools, and the three ways to generate (one resource, full pack, Blueprint Mode).",
+            "audience": "Everyone",
+            "time": "15 minutes"
+        },
+        {
+            "source": "chapters/23-settings-and-help.md",
+            "slug": "settings-and-help",
+            "summary": "Universal Settings versus app settings, the AI connection, interface language, and the three ways to get help: Help Mode, the tour, and the command palette.",
+            "audience": "Everyone",
+            "time": "10 minutes"
+        },
+        {
+            "source": "chapters/24-saving-and-storage.md",
+            "slug": "saving-and-storage",
+            "summary": "Where on-device work lives, Save Project and Load Project, exporting, storage presets, on-device speech models, and recovering a lost session.",
+            "audience": "Everyone",
+            "time": "10 minutes"
         },
         {
             "source": "chapters/18-quick-reference.md",

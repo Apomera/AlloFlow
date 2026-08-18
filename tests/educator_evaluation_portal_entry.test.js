@@ -80,6 +80,10 @@ describe('the QR generator handles a real deployment URL', () => {
 
   it('only renders the QR when a portal is actually connected', () => {
     const settings = readFileSync('view_project_settings_source.jsx', 'utf8');
-    expect(settings).toContain("<EvaluationPortalQr url={isEvaluationPortalConnected ? evaluationPortalUrl : ''} />");
+    // Pinned on the url expression, not the whole tag: the guarantee is that the
+    // QR can only ever encode a CONNECTED portal, and that must survive prop
+    // additions (an i18n pass added t={t} here and broke the literal form).
+    expect(settings).toContain('<EvaluationPortalQr');
+    expect(settings).toContain("url={isEvaluationPortalConnected ? evaluationPortalUrl : ''}");
   });
 });

@@ -3655,7 +3655,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "application",
-      "prompt": "For a parallel early-childhood language and literacy decision, in an early elementary literacy lesson, a team asks whether literacy skills always emerge in a rigid sequence. What is the best response?",
+      "prompt": "In an early elementary literacy lesson, a team asks whether literacy skills always emerge in a rigid sequence. What is the best response?",
       "choices": [
         "Use the continuum to anticipate relationships and prerequisites while assessing the individual learner rather than treating stages as fixed gates.",
         "Require every learner to master skills at the same age.",
@@ -3690,7 +3690,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "foundation",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: What is 3/4 + 2/3?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: What is 3/4 + 2/3?",
       "choices": [
         "5/7",
         "5/12",
@@ -3834,7 +3834,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "application",
-      "prompt": "For a parallel early-childhood language and literacy decision, in an early elementary literacy lesson, a student understands spoken explanations but cannot identify many printed words. What should the teacher investigate?",
+      "prompt": "In an early elementary literacy lesson, a student understands spoken explanations but cannot identify many printed words. What should the teacher investigate?",
       "choices": [
         "Comprehension depends only on reading rate.",
         "Reading comprehension depends on both efficient word recognition and language comprehension, so each component should be assessed.",
@@ -3869,7 +3869,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "foundation",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: A backpack costs $48 and is discounted by 25%. What is the sale price before tax?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: A backpack costs $48 and is discounted by 25%. What is the sale price before tax?",
       "choices": [
         "$12",
         "$23",
@@ -4013,7 +4013,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "application",
-      "prompt": "For a parallel early-childhood language and literacy decision, in an early elementary literacy lesson, why should vocabulary, syntax, narrative, and listening comprehension be considered in a literacy evaluation?",
+      "prompt": "In an early elementary literacy lesson, why should vocabulary, syntax, narrative, and listening comprehension be considered in a literacy evaluation?",
       "choices": [
         "It replaces direct assessment of print skills.",
         "It establishes intelligence from conversation.",
@@ -4048,7 +4048,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "foundation",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: A paint mixture uses 2 cups of blue paint for every 5 cups of white paint. How many cups of blue paint are needed with 20 cups of white paint?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: A paint mixture uses 2 cups of blue paint for every 5 cups of white paint. How many cups of blue paint are needed with 20 cups of white paint?",
       "choices": [
         "8 cups",
         "4 cups",
@@ -4192,7 +4192,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "application",
-      "prompt": "For a parallel early-childhood language and literacy decision, in an early elementary literacy lesson, two students have the same comprehension score but different decoding and language patterns. What follows?",
+      "prompt": "In an early elementary literacy lesson, two students have the same comprehension score but different decoding and language patterns. What follows?",
       "choices": [
         "Assign identical intervention from the total score.",
         "Assume both students have dyslexia.",
@@ -4227,7 +4227,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "foundation",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: What is -7 + 12 - 5?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: What is -7 + 12 - 5?",
       "choices": [
         "-24",
         "0",
@@ -4262,7 +4262,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "application",
-      "prompt": "For a parallel early-childhood language and literacy decision, in an early elementary literacy lesson, a learner has persistent difficulty reading unfamiliar words accurately and spelling despite appropriate instruction. What should the team consider?",
+      "prompt": "In an early elementary literacy lesson, a learner has persistent difficulty reading unfamiliar words accurately and spelling despite appropriate instruction. What should the team consider?",
       "choices": [
         "A word-level reading difficulty involving accurate or fluent recognition, decoding, and spelling, evaluated comprehensively and under current criteria.",
         "A disorder defined by reversing letters.",
@@ -4297,7 +4297,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "foundation",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: Solve 4x - 7 = 21.",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: Solve 4x - 7 = 21.",
       "choices": [
         "x = 3.5",
         "x = 5",
@@ -4332,7 +4332,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "application",
-      "prompt": "For a parallel early-childhood language and literacy decision, in an early elementary literacy lesson, a teacher attributes every reading error to slow processing. What should the teacher do?",
+      "prompt": "In an early elementary literacy lesson, a teacher attributes every reading error to slow processing. What should the teacher do?",
       "choices": [
         "Treat processing speed as a complete reading diagnosis.",
         "Consider cognitive and behavioral factors as part of the learning context while directly assessing the literacy skills and instructional response.",
@@ -4367,7 +4367,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "application",
-      "prompt": "For a parallel early-childhood language and literacy decision, in an early elementary literacy lesson, a school uses unrelated activities across grades without a shared progression. What should the teacher recommend?",
+      "prompt": "In an early elementary literacy lesson, a school uses unrelated activities across grades without a shared progression. What should the teacher recommend?",
       "choices": [
         "Adopt more isolated worksheets without review.",
         "Use one commercial lesson identically for every learner.",
@@ -4402,7 +4402,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "foundation",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: Which expression is equivalent to 5(2n - 3)?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: Which expression is equivalent to 5(2n - 3)?",
       "choices": [
         "10n - 3",
         "7n - 8",
@@ -4546,7 +4546,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "application",
-      "prompt": "For a parallel early-childhood language and literacy decision, in an early elementary literacy lesson, a multilingual learner uses knowledge from a home language while reading English. What is the best interpretation?",
+      "prompt": "In an early elementary literacy lesson, a multilingual learner uses knowledge from a home language while reading English. What is the best interpretation?",
       "choices": [
         "Require the learner to suppress the home language.",
         "Interpret every cross-language feature as disability.",
@@ -4581,7 +4581,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "foundation",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: A rectangular bulletin board is 9 feet long and 4 feet wide. What is its perimeter?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: A rectangular bulletin board is 9 feet long and 4 feet wide. What is its perimeter?",
       "choices": [
         "26 feet",
         "13 feet",
@@ -4725,7 +4725,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "application",
-      "prompt": "For a parallel early-childhood language and literacy decision, while reviewing an emergent reader’s evidence, a teacher asks whether syllable blending and phoneme deletion measure the same level of sound awareness. What is correct?",
+      "prompt": "While reviewing an emergent reader’s evidence, a teacher asks whether syllable blending and phoneme deletion measure the same level of sound awareness. What is correct?",
       "choices": [
         "Phonological awareness covers spoken sound structures broadly; phonemic awareness focuses specifically on individual phonemes.",
         "Both require printed letters.",
@@ -4760,7 +4760,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "foundation",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: A triangle has a base of 10 centimeters and a height of 6 centimeters. What is its area?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: A triangle has a base of 10 centimeters and a height of 6 centimeters. What is its area?",
       "choices": [
         "16 square centimeters",
         "30 square centimeters",
@@ -4904,7 +4904,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "application",
-      "prompt": "For a parallel early-childhood language and literacy decision, while reviewing an emergent reader’s evidence, a student is asked to say every sound in “ship.” Which skill is being assessed?",
+      "prompt": "While reviewing an emergent reader’s evidence, a student is asked to say every sound in “ship.” Which skill is being assessed?",
       "choices": [
         "Combining phonemes to form a word.",
         "Separating a spoken word into its individual phonemes.",
@@ -4939,7 +4939,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "foundation",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: Two angles form a straight line. One angle measures 128 degrees. What is the measure of the other angle?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: Two angles form a straight line. One angle measures 128 degrees. What is the measure of the other angle?",
       "choices": [
         "38 degrees",
         "62 degrees",
@@ -5083,7 +5083,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "application",
-      "prompt": "For a parallel early-childhood language and literacy decision, while reviewing an emergent reader’s evidence, a learner changes the first sound in “map” to /s/ and says “sap.” What skill is demonstrated?",
+      "prompt": "While reviewing an emergent reader’s evidence, a learner changes the first sound in “map” to /s/ and says “sap.” What skill is demonstrated?",
       "choices": [
         "Print-directionality knowledge.",
         "Syllable counting only.",
@@ -5118,7 +5118,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "application",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: On a coordinate grid, point A is at (2, -1) and point B is at (2, 5). What is the distance between the points?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: On a coordinate grid, point A is at (2, -1) and point B is at (2, 5). What is the distance between the points?",
       "choices": [
         "3 units",
         "4 units",
@@ -5262,7 +5262,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "application",
-      "prompt": "For a parallel early-childhood language and literacy decision, while reviewing an emergent reader’s evidence, what understanding allows a beginning reader to connect spoken words with printed words?",
+      "prompt": "While reviewing an emergent reader’s evidence, what understanding allows a beginning reader to connect spoken words with printed words?",
       "choices": [
         "Every letter always represents one sound.",
         "Word meaning can be derived from letter shape alone.",
@@ -5297,7 +5297,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "foundation",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: What is the mean of 6, 8, 9, 12, and 15?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: What is the mean of 6, 8, 9, 12, and 15?",
       "choices": [
         "10",
         "9",
@@ -5441,7 +5441,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "application",
-      "prompt": "For a parallel early-childhood language and literacy decision, while reviewing an emergent reader’s evidence, a child points to the first word, tracks left to right, and distinguishes a letter from a word. What is being developed?",
+      "prompt": "While reviewing an emergent reader’s evidence, a child points to the first word, tracks left to right, and distinguishes a letter from a word. What is being developed?",
       "choices": [
         "Understanding how print is organized and functions in books and written language.",
         "Advanced morphological analysis.",
@@ -5476,7 +5476,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "foundation",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: What is the median of 4, 7, 7, 10, 13, and 19?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: What is the median of 4, 7, 7, 10, 13, and 19?",
       "choices": [
         "7",
         "8.5",
@@ -5620,7 +5620,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "application",
-      "prompt": "For a parallel early-childhood language and literacy decision, while reviewing an emergent reader’s evidence, a teacher adds grapheme tiles after students can blend sounds orally. What is the rationale?",
+      "prompt": "While reviewing an emergent reader’s evidence, a teacher adds grapheme tiles after students can blend sounds orally. What is the rationale?",
       "choices": [
         "Letters convert the activity into vocabulary instruction only.",
         "Connecting phonemes with graphemes can strengthen transfer from oral awareness to decoding and spelling.",
@@ -5655,7 +5655,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "foundation",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: A bag contains 3 red, 5 blue, and 2 green tiles. What is the probability of selecting a green tile at random?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: A bag contains 3 red, 5 blue, and 2 green tiles. What is the probability of selecting a green tile at random?",
       "choices": [
         "1/10",
         "1/2",
@@ -5799,7 +5799,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "application",
-      "prompt": "For a parallel early-childhood language and literacy decision, while reviewing an emergent reader’s evidence, students can recognize rhyme but cannot blend or segment phonemes. What next step is most defensible?",
+      "prompt": "While reviewing an emergent reader’s evidence, students can recognize rhyme but cannot blend or segment phonemes. What next step is most defensible?",
       "choices": [
         "Begin with advanced Latin roots.",
         "Require independent silent reading only.",
@@ -5834,7 +5834,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "foundation",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: A table shows notebooks sold: Monday 18, Tuesday 24, Wednesday 21, Thursday 27. How many more notebooks were sold Thursday than Monday?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: A table shows notebooks sold: Monday 18, Tuesday 24, Wednesday 21, Thursday 27. How many more notebooks were sold Thursday than Monday?",
       "choices": [
         "3 notebooks",
         "6 notebooks",
@@ -5978,7 +5978,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "application",
-      "prompt": "For a parallel early-childhood language and literacy decision, while reviewing an emergent reader’s evidence, an elementary classroom teacher hears students name printed letter–sound correspondences but call the activity phonemic awareness. How should the teacher clarify the instruction?",
+      "prompt": "While reviewing an emergent reader’s evidence, an elementary classroom teacher hears students name printed letter–sound correspondences but call the activity phonemic awareness. How should the teacher clarify the instruction?",
       "choices": [
         "Phonics concerns comprehension strategies.",
         "Phonemic awareness always uses written words.",
@@ -6013,7 +6013,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "foundation",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: What is 2.4 multiplied by 0.35?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: What is 2.4 multiplied by 0.35?",
       "choices": [
         "0.84",
         "0.084",
@@ -6157,7 +6157,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "application",
-      "prompt": "For a parallel early-childhood language and literacy decision, during explicit K-6 decoding and word-analysis instruction, students are learning a common vowel correspondence. Which lesson design is strongest?",
+      "prompt": "During explicit K-6 decoding and word-analysis instruction, students are learning a common vowel correspondence. Which lesson design is strongest?",
       "choices": [
         "Explicitly model the sound–spelling relationship, guide blending and encoding, and apply it in controlled words and connected text.",
         "Ask students to infer the pattern from an unrelated story without guidance.",
@@ -6192,7 +6192,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "foundation",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: How many centimeters are in 2.75 meters?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: How many centimeters are in 2.75 meters?",
       "choices": [
         "27.5 centimeters",
         "275 centimeters",
@@ -6336,7 +6336,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "application",
-      "prompt": "For a parallel early-childhood language and literacy decision, during explicit K-6 decoding and word-analysis instruction, what is the main purpose of a passage closely aligned with recently taught correspondences?",
+      "prompt": "During explicit K-6 decoding and word-analysis instruction, what is the main purpose of a passage closely aligned with recently taught correspondences?",
       "choices": [
         "It permanently limits students to one text type.",
         "It gives students a high opportunity to practice applying taught decoding patterns in connected reading.",
@@ -6371,7 +6371,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "application",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: What is 3 squared multiplied by 3 cubed?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: What is 3 squared multiplied by 3 cubed?",
       "choices": [
         "27",
         "81",
@@ -6443,7 +6443,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "application",
-      "prompt": "For a parallel early-childhood language and literacy decision, during explicit K-6 decoding and word-analysis instruction, a frequently encountered word contains both regular and unexpected spellings. What should the teacher emphasize?",
+      "prompt": "During explicit K-6 decoding and word-analysis instruction, a frequently encountered word contains both regular and unexpected spellings. What should the teacher emphasize?",
       "choices": [
         "Treat every letter as arbitrary.",
         "Require visual memorization without sound analysis.",
@@ -6478,7 +6478,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "application",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: Evaluate 2a squared - 3b when a = 4 and b = 5.",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: Evaluate 2a squared - 3b when a = 4 and b = 5.",
       "choices": [
         "1",
         "49",
@@ -6550,7 +6550,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "application",
-      "prompt": "For a parallel early-childhood language and literacy decision, during an explicit upper-elementary decoding lesson, a fifth-grade student can read short words but guesses at long academic words. What should instruction include?",
+      "prompt": "During an explicit upper-elementary decoding lesson, a fifth-grade student can read short words but guesses at long academic words. What should instruction include?",
       "choices": [
         "Counting letters and choosing the shortest pronunciation.",
         "Using context to replace word analysis.",
@@ -6585,7 +6585,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "application",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: If 6 notebooks cost $15, what is the cost of 14 notebooks at the same rate?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: If 6 notebooks cost $15, what is the cost of 14 notebooks at the same rate?",
       "choices": [
         "$35",
         "$21",
@@ -6657,7 +6657,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "application",
-      "prompt": "For a parallel early-childhood language and literacy decision, during an explicit upper-elementary decoding lesson, how can prefixes, suffixes, and roots support students reading complex grade-level words?",
+      "prompt": "During an explicit upper-elementary decoding lesson, how can prefixes, suffixes, and roots support students reading complex grade-level words?",
       "choices": [
         "Morpheme analysis supports decoding, spelling, vocabulary, and meaning across related words.",
         "It is useful only for grammar labels.",
@@ -6692,7 +6692,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "foundation",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: A rectangular prism measures 7 centimeters by 4 centimeters by 6 centimeters. What is its volume?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: A rectangular prism measures 7 centimeters by 4 centimeters by 6 centimeters. What is its volume?",
       "choices": [
         "17 cubic centimeters",
         "168 cubic centimeters",
@@ -6727,7 +6727,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "application",
-      "prompt": "For a parallel early-childhood language and literacy decision, during explicit K-6 decoding and word-analysis instruction, how do readers establish rapid access to a word after successful encounters?",
+      "prompt": "During explicit K-6 decoding and word-analysis instruction, how do readers establish rapid access to a word after successful encounters?",
       "choices": [
         "They store the outline of the word as a picture.",
         "They bond a word’s phonemes, graphemes, and meaning in memory through accurate analysis and repeated successful retrieval.",
@@ -6762,7 +6762,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "application",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: Enrollment increased from 240 students to 276 students. What was the percent increase?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: Enrollment increased from 240 students to 276 students. What was the percent increase?",
       "choices": [
         "13%",
         "36%",
@@ -6797,7 +6797,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "application",
-      "prompt": "For a parallel early-childhood language and literacy decision, during explicit K-6 decoding and word-analysis instruction, why should encoding be included in a decoding intervention?",
+      "prompt": "During explicit K-6 decoding and word-analysis instruction, why should encoding be included in a decoding intervention?",
       "choices": [
         "Spelling and reading use unrelated systems.",
         "Encoding should wait until reading is fluent.",
@@ -6832,7 +6832,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "application",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: A student has $50 and buys 3 identical notebooks. After the purchase, $32 remains. Which equation can be used to find the price n of one notebook?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: A student has $50 and buys 3 identical notebooks. After the purchase, $32 remains. Which equation can be used to find the price n of one notebook?",
       "choices": [
         "50 + 3n = 32",
         "3(50 - n) = 32",
@@ -6867,7 +6867,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "application",
-      "prompt": "For a parallel early-childhood language and literacy decision, during explicit K-6 decoding and word-analysis instruction, a student repeatedly reads “plan” as “pan” and spells “best” as “bet.” What should the teacher examine?",
+      "prompt": "During explicit K-6 decoding and word-analysis instruction, a student repeatedly reads “plan” as “pan” and spells “best” as “bet.” What should the teacher examine?",
       "choices": [
         "Whether the student knows the story theme.",
         "Whether the font is the preferred color.",
@@ -6902,7 +6902,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "application",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: A student says 1/3 + 1/4 = 2/7. Which response best addresses the error?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: A student says 1/3 + 1/4 = 2/7. Which response best addresses the error?",
       "choices": [
         "Use fraction strips to show twelfths, then connect 4/12 + 3/12 to 7/12.",
         "Ask the student to memorize 7/12 without representing why it works.",
@@ -6937,7 +6937,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "application",
-      "prompt": "For a parallel early-childhood language and literacy decision, during explicit K-6 decoding and word-analysis instruction, a student reads a word that fits the sentence meaning but does not match the printed letters. What should the teacher prompt?",
+      "prompt": "During explicit K-6 decoding and word-analysis instruction, a student reads a word that fits the sentence meaning but does not match the printed letters. What should the teacher prompt?",
       "choices": [
         "Return to the graphemes, blend or analyze the word accurately, then confirm that the pronunciation and meaning fit the sentence.",
         "Accept the substitution because the meaning is plausible.",
@@ -6972,7 +6972,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "application",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: A student writes 4.07 as 4.7. Which support would best clarify the value of the zero?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: A student writes 4.07 as 4.7. Which support would best clarify the value of the zero?",
       "choices": [
         "State that zeros never affect the value of a decimal number.",
         "Build both numbers on a place-value chart and compare tenths with hundredths.",
@@ -7007,7 +7007,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "application",
-      "prompt": "For a parallel early-childhood language and literacy decision, when an elementary teacher plans word-analysis instruction, a child can blend /m/ /a/ /p/ but cannot segment the word map. What is the clearest next instructional target?",
+      "prompt": "When an elementary teacher plans word-analysis instruction, a child can blend /m/ /a/ /p/ but cannot segment the word map. What is the clearest next instructional target?",
       "choices": [
         "Advanced figurative language.",
         "Explicit supported phoneme segmentation linked to the letters once the oral task is understood.",
@@ -7042,7 +7042,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "application",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: Students need to compare category totals across four months. Which graph is generally the clearest choice?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: Students need to compare category totals across four months. Which graph is generally the clearest choice?",
       "choices": [
         "A circle graph for each individual data point",
         "An unlabeled line with months placed in random order",
@@ -7077,7 +7077,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "application",
-      "prompt": "For a parallel early-childhood language and literacy decision, when an elementary teacher plans word-analysis instruction, a student reads memorized words well but struggles with novel letter strings. What does a controlled unfamiliar-word task help assess?",
+      "prompt": "When an elementary teacher plans word-analysis instruction, a student reads memorized words well but struggles with novel letter strings. What does a controlled unfamiliar-word task help assess?",
       "choices": [
         "Background knowledge of the story.",
         "Writing organization.",
@@ -7112,7 +7112,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "application",
-      "prompt": "For a parallel early-childhood language and literacy decision, when an elementary teacher plans word-analysis instruction, a teacher collects oral reading, retelling, and question responses across graded passages. How should the information be used?",
+      "prompt": "When an elementary teacher plans word-analysis instruction, a teacher collects oral reading, retelling, and question responses across graded passages. How should the information be used?",
       "choices": [
         "As a single standardized diagnosis.",
         "As proof of an exact independent grade level.",
@@ -7147,7 +7147,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "application",
-      "prompt": "For a parallel early-childhood language and literacy decision, when an elementary teacher plans word-analysis instruction, a learner spells “jumped” as “jumpt” and “running” as “runing.” What is most useful?",
+      "prompt": "When an elementary teacher plans word-analysis instruction, a learner spells “jumped” as “jumpt” and “running” as “runing.” What is most useful?",
       "choices": [
         "Examine phoneme representation, orthographic conventions, inflectional morphology, and doubling patterns rather than count errors only.",
         "Treat both words as random visual failures.",
@@ -7182,7 +7182,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "application",
-      "prompt": "For a parallel early-childhood language and literacy decision, when an elementary teacher plans word-analysis instruction, a student reads many words correctly per minute but ignores punctuation and cannot explain the passage. What conclusion is warranted?",
+      "prompt": "When an elementary teacher plans word-analysis instruction, a student reads many words correctly per minute but ignores punctuation and cannot explain the passage. What conclusion is warranted?",
       "choices": [
         "The student is fully fluent because rate is high.",
         "Rate is one indicator; accuracy, prosody, text conditions, language, and comprehension show that fluent meaningful reading is not yet established.",
@@ -17269,7 +17269,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "analysis",
-      "prompt": "For a parallel early-childhood language and literacy decision, in an early elementary literacy lesson, a team asks whether literacy skills always emerge in a rigid sequence. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early elementary literacy lesson, a team asks whether literacy skills always emerge in a rigid sequence. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Use the continuum to anticipate relationships and prerequisites while assessing the individual learner rather than treating stages as fixed gates\" — Literacy components develop in related and partly overlapping ways; a continuum organizes assessment and instruction but does not erase individual, linguistic, cultural, disability, or opportunity differences.",
         "\"Require every learner to master skills at the same age\" — Literacy components develop in related and partly overlapping ways; a continuum organizes assessment and instruction but does not erase individual, linguistic, cultural, disability, or opportunity differences as presented for this item in context under these facts as described for the scenario in this case",
@@ -17318,7 +17318,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "analysis",
-      "prompt": "A learner is working through this task: \"A beginning early-childhood teacher reviews this parallel content problem: What is 3/4 + 2/3?\" Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A learner is working through this task: \"A beginning early-childhood teacher reviews this content problem: What is 3/4 + 2/3?\" Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"5/7\" — The least common denominator is 12. Convert 3/4 to 9/12 and 2/3 to 8/12, then add to obtain 17/12, which is the mixed number 1 5/12 in this case",
         "\"5/12\" — The least common denominator is 12. Convert 3/4 to 9/12 and 2/3 to 8/12, then add to obtain 17/12, which is the mixed number 1 5/12 as presented",
@@ -17518,7 +17518,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "analysis",
-      "prompt": "For a parallel early-childhood language and literacy decision, in an early elementary literacy lesson, a student understands spoken explanations but cannot identify many printed words. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early elementary literacy lesson, a student understands spoken explanations but cannot identify many printed words. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Comprehension depends primarily on reading rate\" — Word recognition and language comprehension make distinct, interacting contributions; instructional planning should locate the learner’s relative strengths and needs rather than infer one from the other in this case as presented for this item in context under these facts as described",
         "\"Reading comprehension depends on both efficient word recognition and language comprehension, so each component should be assessed\" — Word recognition and language comprehension make distinct, interacting contributions; instructional planning should locate the learner’s relative strengths and needs rather than infer one from the other.",
@@ -17567,7 +17567,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "analysis",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: A backpack costs $48 and is discounted by 25%. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: A backpack costs $48 and is discounted by 25%. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"$12\" — Find the discount by multiplying 48 by 0.25 to get 12. The sale price is the original 48 dollars minus the 12-dollar discount, which equals 36 dollars.",
         "\"$23\" — Find the discount by multiplying 48 by 0.25 to get 12. The sale price is the original 48 dollars minus the 12-dollar discount, which equals 36 dollars.",
@@ -17765,7 +17765,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "analysis",
-      "prompt": "A learner is working through this task: \"For a parallel early-childhood language and literacy decision, in an early elementary literacy lesson, why should vocabulary, syntax, narrative, and listening comprehension be considered in a literacy evaluation?\" Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A learner is working through this task: \"In an early elementary literacy lesson, why should vocabulary, syntax, narrative, and listening comprehension be considered in a literacy evaluation?\" Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"It replaces direct assessment of print skills\" — Oral language supports vocabulary, syntax, discourse, inference, comprehension, and written expression across grades, but it must be integrated with direct print and writing evidence in this case as presented for this item in context under these facts as described",
         "\"It establishes intelligence from conversation\" — Oral language supports vocabulary, syntax, discourse, inference, comprehension, and written expression across grades, but it must be integrated with direct print and writing evidence as presented for this item in context under these facts as described for the scenario",
@@ -17814,7 +17814,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "analysis",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: A paint mixture uses 2 cups of blue paint for every 5 cups of white paint. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: A paint mixture uses 2 cups of blue paint for every 5 cups of white paint. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"8 cups\" — The ratio 2 to 5 must remain equivalent. Since 20 cups of white paint is four groups of 5, multiply the blue amount by four as well to obtain 8 cups.",
         "\"4 cups\" — The ratio 2 to 5 must remain equivalent. Since 20 cups of white paint is four groups of 5, multiply the blue amount by four as well to obtain 8 cups as presented",
@@ -18013,7 +18013,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "analysis",
-      "prompt": "For a parallel early-childhood language and literacy decision, in an early elementary literacy lesson, two students have the same comprehension score but different decoding and language patterns. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early elementary literacy lesson, two students have the same comprehension score but different decoding and language patterns. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Assign identical intervention from the total score\" — Composite performance can conceal different mechanisms; disaggregating word recognition, language, fluency, knowledge, writing, opportunity, and task conditions supports more precise instruction (in the context of same score) in this case as presented for this item in context",
         "\"Assume both students have dyslexia\" — Composite performance can conceal different mechanisms; disaggregating word recognition, language, fluency, knowledge, writing, opportunity, and task conditions supports more precise instruction (in the context of same score) as presented for this item in context under these facts as described",
@@ -18062,7 +18062,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "analysis",
-      "prompt": "A learner is working through this task: \"A beginning early-childhood teacher reviews this parallel content problem: What is -7 + 12 - 5?\" Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A learner is working through this task: \"A beginning early-childhood teacher reviews this content problem: What is -7 + 12 - 5?\" Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"-24\" — Evaluate from left to right: negative 7 plus 12 equals 5, and 5 minus 5 equals 0. The signs must be applied to each operation as written.",
         "\"0\" — Evaluate from left to right: negative 7 plus 12 equals 5, and 5 minus 5 equals 0. The signs must be applied to each operation as written.",
@@ -18109,7 +18109,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "analysis",
-      "prompt": "For a parallel early-childhood language and literacy decision, in an early elementary literacy lesson, a learner has persistent difficulty reading unfamiliar words accurately and spelling despite appropriate instruction. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early elementary literacy lesson, a learner has persistent difficulty reading unfamiliar words accurately and spelling despite appropriate instruction. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"A word-level reading difficulty involving accurate or fluent recognition, decoding, and spelling, evaluated comprehensively and under current criteria\" — Dyslexia is not established by reversals or a single score; evaluation considers persistent word-level patterns, instruction, language, development, functional impact, and exclusionary and co-occurring factors.",
         "\"A disorder defined by reversing letters\" — Dyslexia is not established by reversals or a single score; evaluation considers persistent word-level patterns, instruction, language, development, functional impact, and exclusionary and co-occurring factors (in the context of difficulty reading spelling) as presented for this item in context under these facts as described",
@@ -18158,7 +18158,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "analysis",
-      "prompt": "A learner is working through this task: \"A beginning early-childhood teacher reviews this parallel content problem: Solve 4x - 7 = 21.\" Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A learner is working through this task: \"A beginning early-childhood teacher reviews this content problem: Solve 4x - 7 = 21.\" Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"x = 3.5\" — Undo the subtraction by adding 7 to each side, producing 4x = 28. Then divide both sides by 4 to isolate x, so x equals 7.",
         "\"x = 5\" — Undo the subtraction by adding 7 to each side, producing 4x = 28. Then divide both sides by 4 to isolate x, so x equals 7 as presented",
@@ -18206,7 +18206,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "analysis",
-      "prompt": "For a parallel early-childhood language and literacy decision, in an early elementary literacy lesson, a teacher attributes every reading error to slow processing. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early elementary literacy lesson, a teacher attributes every reading error to slow processing. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Treat processing speed as a complete reading diagnosis\" — Attention, verbal memory, automaticity, processing speed, and graphomotor control can affect performance, but direct literacy evidence remains necessary for instructional and differential decisions (in the context of response) in this case as presented for this item in context under these facts",
         "\"Consider cognitive and behavioral factors as part of the learning context while directly assessing the literacy skills and instructional response\" — Attention, verbal memory, automaticity, processing speed, and graphomotor control can affect performance, but direct literacy evidence remains necessary for instructional and differential decisions.",
@@ -18255,7 +18255,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "analysis",
-      "prompt": "For a parallel early-childhood language and literacy decision, in an early elementary literacy lesson, a school uses unrelated activities across grades without a shared progression. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early elementary literacy lesson, a school uses unrelated activities across grades without a shared progression. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Adopt more isolated worksheets without review\" — Coherence connects goals, content, instructional routines, assessment, intervention, materials, and grade-to-grade development while allowing responsive adaptation (in the context of across grades evidence) in this case as presented for this item in context",
         "\"Use one commercial lesson identically for every learner\" — Coherence connects goals, content, instructional routines, assessment, intervention, materials, and grade-to-grade development while allowing responsive adaptation (in the context of across grades evidence) as presented for this item in context",
@@ -18304,7 +18304,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "analysis",
-      "prompt": "A learner is working through this task: \"A beginning early-childhood teacher reviews this parallel content problem: Which expression is equivalent to 5(2n - 3)?\" Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A learner is working through this task: \"A beginning early-childhood teacher reviews this content problem: Which expression is equivalent to 5(2n - 3)?\" Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"10n - 3\" — Apply the factor 5 to both terms inside the parentheses. Five times 2n is 10n, and five times negative 3 is negative 15, yielding 10n - 15 in this case",
         "\"7n - 8\" — Apply the factor 5 to both terms inside the parentheses. Five times 2n is 10n, and five times negative 3 is negative 15, yielding 10n - 15 as presented",
@@ -18504,7 +18504,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "analysis",
-      "prompt": "For a parallel early-childhood language and literacy decision, in an early elementary literacy lesson, a multilingual learner uses knowledge from a home language while reading English. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early elementary literacy lesson, a multilingual learner uses knowledge from a home language while reading English. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Require the learner to suppress the home language\" — Asset-based instruction connects prior knowledge and cross-linguistic resources with explicit teaching of English language and literacy, without confusing difference, opportunity, and disability in this case as presented for this item in context under these facts as described",
         "\"Interpret every cross-language feature as disability\" — Asset-based instruction connects prior knowledge and cross-linguistic resources with explicit teaching of English language and literacy, without confusing difference, opportunity, and disability as presented for this item in context under these facts as described for the scenario",
@@ -18553,7 +18553,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "analysis",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: A rectangular bulletin board is 9 feet long and 4 feet wide. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: A rectangular bulletin board is 9 feet long and 4 feet wide. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"26 feet\" — Perimeter measures the total distance around the rectangle. Add all four sides or calculate 2(9 + 4) to obtain 26 feet. The response preserves disciplinary accuracy, appropriate scope, evidence, and a verifiable reasoning chain.",
         "\"13 feet\" — Perimeter measures the total distance around the rectangle. Add all four sides or calculate 2(9 + 4) to obtain 26 feet. The response preserves disciplinary accuracy, appropriate scope, evidence, and a verifiable reasoning chain.",
@@ -18751,7 +18751,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "analysis",
-      "prompt": "For a parallel early-childhood language and literacy decision, while reviewing an emergent reader’s evidence, a teacher asks whether syllable blending and phoneme deletion measure the same level of sound awareness. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "While reviewing an emergent reader’s evidence, a teacher asks whether syllable blending and phoneme deletion measure the same level of sound awareness. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Phonological awareness covers spoken sound structures broadly; phonemic awareness focuses specifically on individual phonemes\" — Phonological awareness includes words, syllables, onset-rime, and phonemes; phonemic awareness is the most specific level and can be practiced orally before or alongside graphemes.",
         "\"Both require printed letters\" — Phonological awareness includes words, syllables, onset-rime, and phonemes; phonemic awareness is the most specific level and can be practiced orally before or alongside graphemes (in the context of sound) as presented for this item in context under these facts as described for the scenario",
@@ -18800,7 +18800,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "analysis",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: A triangle has a base of 10 centimeters and a height of 6 centimeters. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: A triangle has a base of 10 centimeters and a height of 6 centimeters. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"16 square centimeters\" — The area of a triangle is one-half times base times height. Substituting 10 and 6 gives one-half of 60, which is 30 square centimeters in this case",
         "\"30 square centimeters\" — The area of a triangle is one-half times base times height. Substituting 10 and 6 gives one-half of 60, which is 30 square centimeters.",
@@ -19000,7 +19000,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "analysis",
-      "prompt": "A learner is working through this task: \"For a parallel early-childhood language and literacy decision, while reviewing an emergent reader’s evidence, a student is asked to say every sound in ship. Which skill is being assessed?\" Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A learner is working through this task: \"While reviewing an emergent reader’s evidence, a student is asked to say every sound in ship. Which skill is being assessed?\" Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Combining phonemes to form a word\" — Segmentation requires identifying the sequence of phonemes in a spoken word; the number of sounds need not equal the number of printed letters in this case as presented",
         "\"Separating a spoken word into its individual phonemes\" — Segmentation requires identifying the sequence of phonemes in a spoken word; the number of sounds need not equal the number of printed letters.",
@@ -19049,7 +19049,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "analysis",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: Two angles form a straight line. One angle measures 128 degrees. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: Two angles form a straight line. One angle measures 128 degrees. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"38 degrees\" — A straight angle measures 180 degrees. Subtract the known 128-degree angle from 180 to find the adjacent angle, giving 52 degrees in this case",
         "\"62 degrees\" — A straight angle measures 180 degrees. Subtract the known 128-degree angle from 180 to find the adjacent angle, giving 52 degrees as presented",
@@ -19249,7 +19249,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "analysis",
-      "prompt": "A learner is working through this task: \"For a parallel early-childhood language and literacy decision, while reviewing an emergent reader’s evidence, a learner changes the first sound in map to /s/ and says sap. What skill is demonstrated?\" Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A learner is working through this task: \"While reviewing an emergent reader’s evidence, a learner changes the first sound in map to /s/ and says sap. What skill is demonstrated?\" Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Print-directionality knowledge\" — Deleting, adding, or substituting phonemes requires deliberate manipulation of the sound sequence and is more complex than recognition alone in this case as presented",
         "\"Syllable counting primarily\" — Deleting, adding, or substituting phonemes requires deliberate manipulation of the sound sequence and is more complex than recognition alone as presented for this item",
@@ -19298,7 +19298,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "analysis",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: On a coordinate grid, point A is at (2, -1) and point B is at (2, 5). Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: On a coordinate grid, point A is at (2, -1) and point B is at (2, 5). Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"3 units\" — Because both points have x-coordinate 2, the segment is vertical. Its length is |5 - (-1)|, which equals |6| or 6 units.",
         "\"4 units\" — Because both points have x-coordinate 2, the segment is vertical. Its length is |5 - (-1)|, which equals |6| or 6 units.",
@@ -19496,11 +19496,11 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "analysis",
-      "prompt": "A learner is working through this task: \"For a parallel early-childhood language and literacy decision, while reviewing an emergent reader’s evidence, what understanding allows a beginning reader to connect spoken words with printed words?\" Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A learner is working through this task: \"While reviewing an emergent reader’s evidence, what understanding allows a beginning reader to connect spoken words with printed words?\" Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
-        "\"Every letter typically represents one sound\" — The alphabetic principle links phonology and orthography; English correspondences vary, so teaching progresses from common transparent patterns to more complex ones (in the context of language spoken) in this case",
-        "\"Word meaning can be derived from letter shape alone\" — The alphabetic principle links phonology and orthography; English correspondences vary, so teaching progresses from common transparent patterns to more complex ones (in the context of language spoken) as presented",
-        "\"Print is memorized primarily as whole visual pictures\" — The alphabetic principle links phonology and orthography; English correspondences vary, so teaching progresses from common transparent patterns to more complex ones (in the context of language spoken) for this item",
+        "\"Every letter typically represents one sound\" — The alphabetic principle links phonology and orthography; English correspondences vary, so teaching progresses from common transparent patterns to more complex ones (in the context of spoken) in this case as presented",
+        "\"Word meaning can be derived from letter shape alone\" — The alphabetic principle links phonology and orthography; English correspondences vary, so teaching progresses from common transparent patterns to more complex ones (in the context of spoken) as presented",
+        "\"Print is memorized primarily as whole visual pictures\" — The alphabetic principle links phonology and orthography; English correspondences vary, so teaching progresses from common transparent patterns to more complex ones (in the context of spoken) for this item",
         "\"Letters and letter patterns represent the phonemes in spoken language in systematic ways\" — The alphabetic principle links phonology and orthography; English correspondences vary, so teaching progresses from common transparent patterns to more complex ones."
       ],
       "answerIndex": 3,
@@ -19545,7 +19545,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "analysis",
-      "prompt": "A learner is working through this task: \"A beginning early-childhood teacher reviews this parallel content problem: What is the mean of 6, 8, 9, 12, and 15?\" Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A learner is working through this task: \"A beginning early-childhood teacher reviews this content problem: What is the mean of 6, 8, 9, 12, and 15?\" Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"10\" — Add the five values to get 50, then divide by the number of values, which is 5. The resulting arithmetic mean is 10. The response preserves disciplinary accuracy, appropriate scope, evidence, and a verifiable reasoning chain.",
         "\"9\" — Add the five values to get 50, then divide by the number of values, which is 5. The resulting arithmetic mean is 10. The response preserves disciplinary accuracy, appropriate scope, evidence, and a verifiable reasoning chain as presented",
@@ -19744,12 +19744,12 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "analysis",
-      "prompt": "For a parallel early-childhood language and literacy decision, while reviewing an emergent reader’s evidence, a child points to the first word, tracks left to right, and distinguishes a letter from a word. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "While reviewing an emergent reader’s evidence, a child points to the first word, tracks left to right, and distinguishes a letter from a word. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Understanding how print is organized and functions in books and written language\" — Concepts of print include directionality, word boundaries, book handling, and distinctions among letters, words, and sentences that support access to alphabetic instruction.",
-        "\"Advanced morphological analysis\" — Concepts of print include directionality, word boundaries, book handling, and distinctions among letters, words, and sentences that support access to alphabetic instruction (in the context of language) as presented for this item",
-        "\"Silent-reading rate\" — Concepts of print include directionality, word boundaries, book handling, and distinctions among letters, words, and sentences that support access to alphabetic instruction (in the context of language) for this item in context under these facts",
-        "\"Norm-referenced interpretation\" — Concepts of print include directionality, word boundaries, book handling, and distinctions among letters, words, and sentences that support access to alphabetic instruction (in the context of language) in context under these facts"
+        "\"Advanced morphological analysis\" — Concepts of print include directionality, word boundaries, book handling, and distinctions among letters, words, and sentences that support access to alphabetic instruction as presented for this item in context under these facts",
+        "\"Silent-reading rate\" — Concepts of print include directionality, word boundaries, book handling, and distinctions among letters, words, and sentences that support access to alphabetic instruction for this item in context under these facts as described for the scenario",
+        "\"Norm-referenced interpretation\" — Concepts of print include directionality, word boundaries, book handling, and distinctions among letters, words, and sentences that support access to alphabetic instruction in context under these facts as described for the scenario"
       ],
       "answerIndex": 0,
       "rationale": "The evidence statement accurately describes \"Understanding how print is organized and functions in books and written language\". Pairing that same evidence with another response creates a mismatch. Concepts of print include directionality, word boundaries, book handling, and distinctions among letters, words, and sentences that support access to alphabetic instruction.",
@@ -19793,7 +19793,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "analysis",
-      "prompt": "A learner is working through this task: \"A beginning early-childhood teacher reviews this parallel content problem: What is the median of 4, 7, 7, 10, 13, and 19?\" Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A learner is working through this task: \"A beginning early-childhood teacher reviews this content problem: What is the median of 4, 7, 7, 10, 13, and 19?\" Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"7\" — An even number of observations has two middle values. The third and fourth values are 7 and 10, and their mean is 17/2, or 8.5 in this case",
         "\"8.5\" — An even number of observations has two middle values. The third and fourth values are 7 and 10, and their mean is 17/2, or 8.5.",
@@ -19992,7 +19992,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "analysis",
-      "prompt": "For a parallel early-childhood language and literacy decision, while reviewing an emergent reader’s evidence, a teacher adds grapheme tiles after students can blend sounds orally. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "While reviewing an emergent reader’s evidence, a teacher adds grapheme tiles after students can blend sounds orally. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Letters convert the activity into vocabulary instruction primarily\" — Sound awareness and letter–sound knowledge are mutually supportive; carefully linking them helps students apply phonemic skills to reading and encoding in this case as presented for this item",
         "\"Connecting phonemes with graphemes can strengthen transfer from oral awareness to decoding and spelling\" — Sound awareness and letter–sound knowledge are mutually supportive; carefully linking them helps students apply phonemic skills to reading and encoding.",
@@ -20041,7 +20041,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "analysis",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: A bag contains 3 red, 5 blue, and 2 green tiles. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: A bag contains 3 red, 5 blue, and 2 green tiles. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"1/10\" — Probability is favorable outcomes divided by total outcomes. Two of the ten tiles are green, so the probability is 2/10, which simplifies to 1/5.",
         "\"1/2\" — Probability is favorable outcomes divided by total outcomes. Two of the ten tiles are green, so the probability is 2/10, which simplifies to 1/5 as presented",
@@ -20240,7 +20240,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "analysis",
-      "prompt": "For a parallel early-childhood language and literacy decision, while reviewing an emergent reader’s evidence, students can recognize rhyme but cannot blend or segment phonemes. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "While reviewing an emergent reader’s evidence, students can recognize rhyme but cannot blend or segment phonemes. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Begin with advanced Latin roots\" — Instruction should be explicit, cumulative, responsive, and focused on the skills needed for word reading rather than tied mechanically to one universal sequence (in the context of phonemes) in this case as presented for this item in context under these facts as described for the scenario",
         "\"Require independent silent reading primarily\" — Instruction should be explicit, cumulative, responsive, and focused on the skills needed for word reading rather than tied mechanically to one universal sequence (in the context of phonemes) as presented for this item in context under these facts as described for the scenario",
@@ -20289,7 +20289,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "analysis",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: A table shows notebooks sold: Monday 18, Tuesday 24, Wednesday 21, Thursday 27. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: A table shows notebooks sold: Monday 18, Tuesday 24, Wednesday 21, Thursday 27. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"3 notebooks\" — The phrase how many more calls for subtraction. Compare the two relevant entries: 27 notebooks on Thursday minus 18 on Monday equals 9 notebooks in this case",
         "\"6 notebooks\" — The phrase how many more calls for subtraction. Compare the two relevant entries: 27 notebooks on Thursday minus 18 on Monday equals 9 notebooks as presented",
@@ -20489,7 +20489,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "analysis",
-      "prompt": "For a parallel early-childhood language and literacy decision, while reviewing an emergent reader’s evidence, an elementary classroom teacher hears students name printed letter–sound correspondences but call the activity phonemic awareness. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "While reviewing an emergent reader’s evidence, an elementary classroom teacher hears students name printed letter–sound correspondences but call the activity phonemic awareness. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Phonics concerns comprehension strategies\" — Clear construct labels help teams select aligned assessments and instruction: oral sound analysis is distinct from, though closely related to, print–sound mapping (in the context of phonemic awareness) in this case as presented for this item in context",
         "\"Phonemic awareness typically uses written words\" — Clear construct labels help teams select aligned assessments and instruction: oral sound analysis is distinct from, though closely related to, print–sound mapping as presented for this item in context under these facts as described for the scenario",
@@ -20538,7 +20538,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "analysis",
-      "prompt": "A learner is working through this task: \"A beginning early-childhood teacher reviews this parallel content problem: What is 2.4 multiplied by 0.35?\" Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A learner is working through this task: \"A beginning early-childhood teacher reviews this content problem: What is 2.4 multiplied by 0.35?\" Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"0.84\" — Multiply 24 by 35 to get 840, then place three decimal digits because 2.4 has one and 0.35 has two. The product is 0.840, equal to 0.84.",
         "\"0.084\" — Multiply 24 by 35 to get 840, then place three decimal digits because 2.4 has one and 0.35 has two. The product is 0.840, equal to 0.84.",
@@ -20737,7 +20737,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "analysis",
-      "prompt": "For a parallel early-childhood language and literacy decision, during explicit K-6 decoding and word-analysis instruction, students are learning a common vowel correspondence. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "During explicit K-6 decoding and word-analysis instruction, students are learning a common vowel correspondence. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Explicitly model the sound–spelling relationship, guide blending and encoding, and apply it in controlled words and connected text\" — Explicit explanation, cumulative practice, corrective feedback, spelling, and connected-text application help students establish and generalize a new correspondence.",
         "\"Ask students to infer the pattern from an unrelated story without guidance\" — Explicit explanation, cumulative practice, corrective feedback, spelling, and connected-text application help students establish and generalize a new correspondence as presented for this item in context under these facts",
@@ -20786,7 +20786,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "analysis",
-      "prompt": "A learner is working through this task: \"A beginning early-childhood teacher reviews this parallel content problem: How many centimeters are in 2.75 meters?\" Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A learner is working through this task: \"A beginning early-childhood teacher reviews this content problem: How many centimeters are in 2.75 meters?\" Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"27.5 centimeters\" — Converting meters to centimeters requires multiplying by 100. Moving the decimal two places right changes 2.75 meters to 275 centimeters in this case",
         "\"275 centimeters\" — Converting meters to centimeters requires multiplying by 100. Moving the decimal two places right changes 2.75 meters to 275 centimeters.",
@@ -20986,7 +20986,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "analysis",
-      "prompt": "A learner is working through this task: \"For a parallel early-childhood language and literacy decision, during explicit K-6 decoding and word-analysis instruction, what is the main purpose of a passage closely aligned with recently taught correspondences?\" Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A learner is working through this task: \"During explicit K-6 decoding and word-analysis instruction, what is the main purpose of a passage closely aligned with recently taught correspondences?\" Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"It permanently limits students to one text type\" — Aligned decodable text supports transfer and accuracy while a complete literacy program also includes rich oral language, diverse texts, vocabulary, knowledge, and writing (in the context of decoding taught) in this case as presented",
         "\"It gives students a high opportunity to practice applying taught decoding patterns in connected reading\" — Aligned decodable text supports transfer and accuracy while a complete literacy program also includes rich oral language, diverse texts, vocabulary, knowledge, and writing.",
@@ -21035,7 +21035,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "analysis",
-      "prompt": "A learner is working through this task: \"A beginning early-childhood teacher reviews this parallel content problem: What is 3 squared multiplied by 3 cubed?\" Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A learner is working through this task: \"A beginning early-childhood teacher reviews this content problem: What is 3 squared multiplied by 3 cubed?\" Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"27\" — Powers with the same base are multiplied by adding exponents. Two plus three equals five, and 3 to the fifth power is 243 in this case",
         "\"81\" — Powers with the same base are multiplied by adding exponents. Two plus three equals five, and 3 to the fifth power is 243 as presented",
@@ -21134,7 +21134,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "analysis",
-      "prompt": "For a parallel early-childhood language and literacy decision, during explicit K-6 decoding and word-analysis instruction, a frequently encountered word contains both regular and unexpected spellings. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "During explicit K-6 decoding and word-analysis instruction, a frequently encountered word contains both regular and unexpected spellings. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Treat every letter as arbitrary\" — Analyzing what is regular and what is unusual supports orthographic learning more precisely than presenting the entire word as a visual shape (in the context of unexpected) in this case as presented for this item in context under these facts",
         "\"Require visual memorization without sound analysis\" — Analyzing what is regular and what is unusual supports orthographic learning more precisely than presenting the entire word as a visual shape (in the context of unexpected) as presented for this item in context under these facts",
@@ -21183,7 +21183,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "analysis",
-      "prompt": "A learner is working through this task: \"A beginning early-childhood teacher reviews this parallel content problem: Evaluate 2a squared - 3b when a = 4 and b = 5.\" Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A learner is working through this task: \"A beginning early-childhood teacher reviews this content problem: Evaluate 2a squared - 3b when a = 4 and b = 5.\" Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"1\" — Substitute the given values and apply exponents before multiplication: 4 squared is 16, so 2 times 16 is 32; then 32 minus 15 equals 17 in this case",
         "\"49\" — Substitute the given values and apply exponents before multiplication: 4 squared is 16, so 2 times 16 is 32; then 32 minus 15 equals 17 as presented",
@@ -21282,7 +21282,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "analysis",
-      "prompt": "For a parallel early-childhood language and literacy decision, during an explicit upper-elementary decoding lesson, a fifth-grade student can read short words but guesses at long academic words. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "During an explicit upper-elementary decoding lesson, a fifth-grade student can read short words but guesses at long academic words. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Counting letters and choosing the shortest pronunciation\" — Multisyllabic decoding integrates orthographic chunks, syllable and morpheme knowledge, pronunciation flexibility, vocabulary, and confirmation in context in this case as presented for this item in context under these facts as described",
         "\"Using context to replace word analysis\" — Multisyllabic decoding integrates orthographic chunks, syllable and morpheme knowledge, pronunciation flexibility, vocabulary, and confirmation in context as presented for this item in context under these facts as described for the scenario in this case",
@@ -21331,7 +21331,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "analysis",
-      "prompt": "A learner is working through this task: \"A beginning early-childhood teacher reviews this parallel content problem: If 6 notebooks cost $15, what is the cost of 14 notebooks at the same rate?\" Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A learner is working through this task: \"A beginning early-childhood teacher reviews this content problem: If 6 notebooks cost $15, what is the cost of 14 notebooks at the same rate?\" Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"$35\" — Find the constant rate: 15 dollars for 6 notebooks is 2.50 dollars per notebook. Multiplying 2.50 by 14 gives a total cost of 35 dollars.",
         "\"$21\" — Find the constant rate: 15 dollars for 6 notebooks is 2.50 dollars per notebook. Multiplying 2.50 by 14 gives a total cost of 35 dollars.",
@@ -21429,7 +21429,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "analysis",
-      "prompt": "A learner is working through this task: \"For a parallel early-childhood language and literacy decision, during an explicit upper-elementary decoding lesson, how can prefixes, suffixes, and roots support students reading complex grade-level words?\" Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A learner is working through this task: \"During an explicit upper-elementary decoding lesson, how can prefixes, suffixes, and roots support students reading complex grade-level words?\" Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Morpheme analysis supports decoding, spelling, vocabulary, and meaning across related words\" — Morphology links word form and meaning and becomes increasingly valuable in academic language while working alongside phonological, orthographic, and contextual knowledge.",
         "\"It is useful primarily for grammar labels\" — Morphology links word form and meaning and becomes increasingly valuable in academic language while working alongside phonological, orthographic, and contextual knowledge (in the context of decoding words) as presented for this item",
@@ -21478,7 +21478,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "analysis",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: A rectangular prism measures 7 centimeters by 4 centimeters by 6 centimeters. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: A rectangular prism measures 7 centimeters by 4 centimeters by 6 centimeters. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"17 cubic centimeters\" — A rectangular prism volume is the product of its three dimensions. Multiplying 7 by 4 by 6 gives 168, and the unit is cubic centimeters in this case",
         "\"168 cubic centimeters\" — A rectangular prism volume is the product of its three dimensions. Multiplying 7 by 4 by 6 gives 168, and the unit is cubic centimeters.",
@@ -21527,7 +21527,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "analysis",
-      "prompt": "A learner is working through this task: \"For a parallel early-childhood language and literacy decision, during explicit K-6 decoding and word-analysis instruction, how do readers establish rapid access to a word after successful encounters?\" Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A learner is working through this task: \"During explicit K-6 decoding and word-analysis instruction, how do readers establish rapid access to a word after successful encounters?\" Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"They store the outline of the word as a picture\" — Orthographic mapping depends on phonemic proficiency and knowledge of spelling patterns; it explains why accurate decoding supports increasingly automatic word recognition (in the context of analysis successful) in this case as presented for this item",
         "\"They bond a word’s phonemes, graphemes, and meaning in memory through accurate analysis and repeated successful retrieval\" — Orthographic mapping depends on phonemic proficiency and knowledge of spelling patterns; it explains why accurate decoding supports increasingly automatic word recognition.",
@@ -21576,7 +21576,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "analysis",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: Enrollment increased from 240 students to 276 students. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: Enrollment increased from 240 students to 276 students. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"13%\" — Percent increase compares the change with the original amount. Subtract to get 36, divide 36 by 240 to get 0.15, and convert to 15 percent.",
         "\"36%\" — Percent increase compares the change with the original amount. Subtract to get 36, divide 36 by 240 to get 0.15, and convert to 15 percent.",
@@ -21623,7 +21623,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "analysis",
-      "prompt": "A learner is working through this task: \"For a parallel early-childhood language and literacy decision, during explicit K-6 decoding and word-analysis instruction, why should encoding be included in a decoding intervention?\" Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A learner is working through this task: \"During explicit K-6 decoding and word-analysis instruction, why should encoding be included in a decoding intervention?\" Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Spelling and reading use unrelated systems\" — Reading and spelling are reciprocal: generative encoding exposes what a learner understands about sounds, patterns, syllables, and morphemes and strengthens those links (in the context of word analysis) in this case as presented for this item in context under these facts",
         "\"Encoding should wait until reading is fluent\" — Reading and spelling are reciprocal: generative encoding exposes what a learner understands about sounds, patterns, syllables, and morphemes and strengthens those links (in the context of word analysis) as presented for this item in context under these facts",
@@ -21672,7 +21672,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "analysis",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: A student has $50 and buys 3 identical notebooks. After the purchase, $32 remains. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: A student has $50 and buys 3 identical notebooks. After the purchase, $32 remains. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"50 + 3n = 32\" — The original amount is 50 dollars, the total purchase is three times the single price n, and the remainder is 32. That relationship is 50 - 3n = 32 in this case",
         "\"3(50 - n) = 32\" — The original amount is 50 dollars, the total purchase is three times the single price n, and the remainder is 32. That relationship is 50 - 3n = 32.",
@@ -21721,7 +21721,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "analysis",
-      "prompt": "A learner is working through this task: \"For a parallel early-childhood language and literacy decision, during explicit K-6 decoding and word-analysis instruction, a student repeatedly reads plan as pan and spells best as bet. What should the teacher examine?\" Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A learner is working through this task: \"During explicit K-6 decoding and word-analysis instruction, a student repeatedly reads plan as pan and spells best as bet. What should the teacher examine?\" Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Whether the student knows the story theme\" — Parallel omissions in reading and spelling suggest a specific cluster or phoneme-sequence need that can be confirmed and addressed explicitly (in the context of decoding student) in this case as presented",
         "\"Whether the font is the preferred color\" — Parallel omissions in reading and spelling suggest a specific cluster or phoneme-sequence need that can be confirmed and addressed explicitly (in the context of decoding student) as presented for this item",
@@ -21770,7 +21770,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "analysis",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: A student says 1/3 + 1/4 = 2/7. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: A student says 1/3 + 1/4 = 2/7. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Use fraction strips to show twelfths, then connect 4/12 + 3/12 to 7/12\" — The student is treating unlike fractional units as if they were the same size. Fraction strips partitioned into twelfths show why equivalent fractions are needed before adding.",
         "\"Ask the student to memorize 7/12 without representing why it works\" — The student is treating unlike fractional units as if they were the same size. Fraction strips partitioned into twelfths show why equivalent fractions are needed before adding as presented for this item",
@@ -21819,7 +21819,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "analysis",
-      "prompt": "For a parallel early-childhood language and literacy decision, during explicit K-6 decoding and word-analysis instruction, a student reads a word that fits the sentence meaning but does not match the printed letters. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "During explicit K-6 decoding and word-analysis instruction, a student reads a word that fits the sentence meaning but does not match the printed letters. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Return to the graphemes, blend or analyze the word accurately, then confirm that the pronunciation and meaning fit the sentence\" — Context confirms meaning and pronunciation but should not replace close attention to the orthographic information needed for accurate word recognition.",
         "\"Accept the substitution because the meaning is plausible\" — Context confirms meaning and pronunciation but should not replace close attention to the orthographic information needed for accurate word recognition (in the context of sentence) as presented for this item in context under these facts",
@@ -21868,7 +21868,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "analysis",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: A student writes 4.07 as 4.7. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: A student writes 4.07 as 4.7. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"State that zeros rarely affect the value of a decimal number\" — The misconception concerns positional value. Modeling the two decimals by place makes the placeholder function of zero visible and supports an exact comparison in this case as presented",
         "\"Build both numbers on a place-value chart and compare tenths with hundredths\" — The misconception concerns positional value. Modeling the two decimals by place makes the placeholder function of zero visible and supports an exact comparison.",
@@ -21917,7 +21917,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "analysis",
-      "prompt": "For a parallel early-childhood language and literacy decision, when an elementary teacher plans word-analysis instruction, a child can blend /m/ /a/ /p/ but cannot segment the word map. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "When an elementary teacher plans word-analysis instruction, a child can blend /m/ /a/ /p/ but cannot segment the word map. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Advanced figurative language\" — The contrast between blending and segmentation identifies a specific sound-analysis need that can be taught directly and connected to encoding and decoding in this case as presented for this item in context under these facts",
         "\"Explicit supported phoneme segmentation linked to the letters once the oral task is understood\" — The contrast between blending and segmentation identifies a specific sound-analysis need that can be taught directly and connected to encoding and decoding.",
@@ -21966,7 +21966,7 @@
       "type": "single-choice",
       "domainId": "mathematics",
       "difficulty": "analysis",
-      "prompt": "A beginning early-childhood teacher reviews this parallel content problem: Students need to compare category totals across four months. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A beginning early-childhood teacher reviews this content problem: Students need to compare category totals across four months. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"A circle graph for each individual data point\" — The goal is to compare several categories repeatedly across months. Grouped bars support direct comparisons within and across months when labels, colors, and scale remain consistent (in the context of category) in this case",
         "\"An unlabeled line with months placed in random order\" — The goal is to compare several categories repeatedly across months. Grouped bars support direct comparisons within and across months when labels, colors, and scale remain consistent (in the context of category) as presented",
@@ -22015,7 +22015,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "analysis",
-      "prompt": "For a parallel early-childhood language and literacy decision, when an elementary teacher plans word-analysis instruction, a student reads memorized words well but struggles with novel letter strings. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "When an elementary teacher plans word-analysis instruction, a student reads memorized words well but struggles with novel letter strings. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Background knowledge of the story\" — Novel-word tasks can sample generative decoding, but interpretation still requires appropriate language, pattern legality, instruction, and comparison with real-word and spelling evidence (in the context of analysis) in this case as presented for this item in context",
         "\"Writing organization\" — Novel-word tasks can sample generative decoding, but interpretation still requires appropriate language, pattern legality, instruction, and comparison with real-word and spelling evidence (in the context of analysis) as presented for this item in context under these facts as described",
@@ -22064,7 +22064,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "analysis",
-      "prompt": "For a parallel early-childhood language and literacy decision, when an elementary teacher plans word-analysis instruction, a teacher collects oral reading, retelling, and question responses across graded passages. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "When an elementary teacher plans word-analysis instruction, a teacher collects oral reading, retelling, and question responses across graded passages. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"As a single standardized diagnosis\" — Passage inventories reveal strategies and errors in context but their level labels and comprehension scores can be unstable; decisions need converging evidence in this case as presented for this item in context under these facts as described for the scenario in this case",
         "\"As proof of an exact independent grade level\" — Passage inventories reveal strategies and errors in context but their level labels and comprehension scores can be unstable; decisions need converging evidence as presented for this item in context under these facts as described for the scenario in this case",
@@ -22113,7 +22113,7 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "analysis",
-      "prompt": "A learner is working through this task: \"For a parallel early-childhood language and literacy decision, when an elementary teacher plans word-analysis instruction, a learner spells jumped as jumpt and running as runing. What is most useful?\" Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A learner is working through this task: \"When an elementary teacher plans word-analysis instruction, a learner spells jumped as jumpt and running as runing. What is most useful?\" Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Examine phoneme representation, orthographic conventions, inflectional morphology, and doubling patterns rather than count errors only\" — Feature analysis shows what the learner represents and which phonological, orthographic, syllabic, or morphological patterns need explicit instruction.",
         "\"Treat both words as random visual failures\" — Feature analysis shows what the learner represents and which phonological, orthographic, syllabic, or morphological patterns need explicit instruction as presented for this item in context under these facts as described for the scenario in this case",
@@ -22162,12 +22162,12 @@
       "type": "single-choice",
       "domainId": "language-literacy",
       "difficulty": "analysis",
-      "prompt": "For a parallel early-childhood language and literacy decision, when an elementary teacher plans word-analysis instruction, a student reads many words correctly per minute but ignores punctuation and cannot explain the passage. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "When an elementary teacher plans word-analysis instruction, a student reads many words correctly per minute but ignores punctuation and cannot explain the passage. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
-        "\"The student is fully fluent because rate is high\" — A fluency decision integrates rate with accuracy, phrasing, expression, difficulty, and understanding rather than using a speed cutoff in isolation (in the context of language) in this case as presented for this item in context under these facts",
+        "\"The student is fully fluent because rate is high\" — A fluency decision integrates rate with accuracy, phrasing, expression, difficulty, and understanding rather than using a speed cutoff in isolation in this case as presented for this item in context under these facts as described for the scenario",
         "\"Rate is one indicator; accuracy, prosody, text conditions, language, and comprehension show that fluent meaningful reading is not yet established\" — A fluency decision integrates rate with accuracy, phrasing, expression, difficulty, and understanding rather than using a speed cutoff in isolation.",
-        "\"The passage was understood because few words were missed\" — A fluency decision integrates rate with accuracy, phrasing, expression, difficulty, and understanding rather than using a speed cutoff in isolation (in the context of language) for this item in context under these facts as described for the scenario",
-        "\"Prosody is unrelated to syntax or meaning\" — A fluency decision integrates rate with accuracy, phrasing, expression, difficulty, and understanding rather than using a speed cutoff in isolation (in the context of language) in context under these facts as described for the scenario in this case"
+        "\"The passage was understood because few words were missed\" — A fluency decision integrates rate with accuracy, phrasing, expression, difficulty, and understanding rather than using a speed cutoff in isolation for this item in context under these facts as described for the scenario in this case",
+        "\"Prosody is unrelated to syntax or meaning\" — A fluency decision integrates rate with accuracy, phrasing, expression, difficulty, and understanding rather than using a speed cutoff in isolation in context under these facts as described for the scenario in this case as presented for this item"
       ],
       "answerIndex": 1,
       "rationale": "The evidence statement accurately describes \"Rate is one indicator; accuracy, prosody, text conditions, language, and comprehension show that fluent meaningful reading is not yet established\". Pairing that same evidence with another response creates a mismatch. A fluency decision integrates rate with accuracy, phrasing, expression, difficulty, and understanding rather than using a speed cutoff in isolation. The decision should remain tied to the assessed literacy skill, grade-appropriate text access, explicit instruction, and observable progress evidence.",

@@ -122,7 +122,7 @@
   },
   "snapshot": {
     "algorithm": "sha256",
-    "sha256": "9027f475f6604ce304ed171fe3ba649242075f2537d74669ba8dd06b711daf15",
+    "sha256": "aa6d69e51d1b754c8f138f6623dece234258bc8e87cd38db463653fd1539dc62",
     "dependencyCount": 125,
     "dependencies": [
       {
@@ -151,11 +151,11 @@
       },
       {
         "path": "dev-tools/authored/non_eppp_eppp_guided_qa_group_a.review.json",
-        "sha256": "54b82081c508a4e201bd63450ca7fbacfb3ca1b4b69a02e92377234c99734728"
+        "sha256": "271bb59858bfc8c99b06a864e914c0d1018c5fd43f97b79afe3fd5e582451d61"
       },
       {
         "path": "dev-tools/authored/non_eppp_eppp_guided_qa_group_b.review.json",
-        "sha256": "b7f06f1b04161101963013cfa9261baa578398080a4e63d108ad5c1b38bf3277"
+        "sha256": "de27ad25ee97cc739f299b37affe740c13f45ed798f4c37ee8176917b458f4f6"
       },
       {
         "path": "dev-tools/authored/non_eppp_eppp_guided_qa_group_c.review.json",
@@ -279,7 +279,7 @@
       },
       {
         "path": "test_prep/early_childhood_5025_learning_library_qa.json",
-        "sha256": "22d4393b4e58fb2710e697f1a04e3db76ff9771a99d2afed0b457c63de6c063a"
+        "sha256": "c5d5ed94ebd8f32bf1f1d76ca754a93ca6d77c10ca538da2d207716f69370d8e"
       },
       {
         "path": "test_prep/early_childhood_5025_learning_library.json",
@@ -287,11 +287,11 @@
       },
       {
         "path": "test_prep/early_childhood_5025_native_qa.json",
-        "sha256": "e9e7e8ef5c4f123e685c25add046546daed176b480b736bbf64fd54e0ab66cca"
+        "sha256": "56afe224b0c288cefbd99c73d5d31cd2080afe6a84b40601c1668f12dc085c8a"
       },
       {
         "path": "test_prep/early_childhood_5025_pack.json",
-        "sha256": "d6069d125f43ae852be4d9a9811d3354fe30353d19585739ff8a32fa2b2cb7bc"
+        "sha256": "aad848ddb8ce901b0469c9a58e9572a0cc44d3a6863c052d14383818c12ab1bd"
       },
       {
         "path": "test_prep/educational_leadership_5412_learning_library_qa.json",
@@ -351,7 +351,7 @@
       },
       {
         "path": "test_prep/plt_5_9_5623_learning_library_qa.json",
-        "sha256": "f0bb72ad9feaeeec2704836858b11bee798fa0b60f035a25b7c8fbb4f62705a0"
+        "sha256": "093da49f575898933016f72502b2269b49b4ce318489e4d7a944c6e672224a9b"
       },
       {
         "path": "test_prep/plt_5_9_5623_learning_library.json",
@@ -359,15 +359,15 @@
       },
       {
         "path": "test_prep/plt_5_9_5623_native_qa.json",
-        "sha256": "ab8c0ef5da8d3d8ca79ad8174774b71560236403c8a1a1d30921929a762ce74b"
+        "sha256": "a627f04e8621097465205757abf1086e1c249e98fcf7de47a0b82f16c7c861b1"
       },
       {
         "path": "test_prep/plt_5_9_5623_pack.json",
-        "sha256": "c6fb81610f1c547a76e81a426cf45c2ac92dfa2c305686735c8c60c6ef2f23fe"
+        "sha256": "3c7161197293818b576bdf4a7ea37aa6dc292cd740e19d44b6ff556590568e0d"
       },
       {
         "path": "test_prep/plt_7_12_5624_learning_library_qa.json",
-        "sha256": "81728c1c8ecb1449c1d74fe4dbd94e2675e7c6f169767878931fa168cc644eff"
+        "sha256": "61875ecfe91b29891894dfdc369abdda66d78cccec5c8de66983ce1f4ae4be54"
       },
       {
         "path": "test_prep/plt_7_12_5624_learning_library.json",
@@ -375,15 +375,15 @@
       },
       {
         "path": "test_prep/plt_7_12_5624_native_qa.json",
-        "sha256": "441f638514400fc0a9321924e87c3ff5d786e107270854ee3e2e6b0f580adb32"
+        "sha256": "76c22a04252a5a998a11cafa2f8332ea1578698cdd277e8cab0ed723b6f896a8"
       },
       {
         "path": "test_prep/plt_7_12_5624_pack.json",
-        "sha256": "85b4aa0a5a68060a3f71e79ba8c461d8764196ebbf93b629e21ca5598aa4c352"
+        "sha256": "231e41382c09c86d5909e58ae3e611e57be5172d7a87896eabb9ebbcf9297b57"
       },
       {
         "path": "test_prep/plt_early_childhood_5621_learning_library_qa.json",
-        "sha256": "9c0e87b8a01d2f2afbb0237fe0c2b42644e31a1818760636f9593d17163a2309"
+        "sha256": "8a9ffe06beb0f4472cb4cb55993cecc3876ef5f90a5b9767122135441480dfdc"
       },
       {
         "path": "test_prep/plt_early_childhood_5621_learning_library.json",
@@ -391,11 +391,11 @@
       },
       {
         "path": "test_prep/plt_early_childhood_5621_native_qa.json",
-        "sha256": "578607b389972150b8d6ae0fc6ffdb233388fb3fe08e8cd35092242cac970ee9"
+        "sha256": "4629ac32403ca175cc9a9c773bef403bb256fb94c97282e054f46d7292f09276"
       },
       {
         "path": "test_prep/plt_early_childhood_5621_pack.json",
-        "sha256": "5dbf53c462cbe0b6092077aeae5910644aa6d1f8af16e15f7178eaf1be42b341"
+        "sha256": "e768a3de53701ff8289ef8bce37576f0c7503ca9f27a8f93ae360658cadf44d3"
       },
       {
         "path": "test_prep/plt_k6_5622_learning_library_qa.json",
@@ -467,7 +467,7 @@
       },
       {
         "path": "test_prep/school_librarian_5312_learning_library_qa.json",
-        "sha256": "71959bedf81fcd40ccc67ff5c4c53faa582b15ab001e32487404a575192aa0c6"
+        "sha256": "973ba1d9df0cf8a292aaa9d28566593f20ba0632c38ada7bb601cd4ac51b85d4"
       },
       {
         "path": "test_prep/school_librarian_5312_learning_library.json",
@@ -475,11 +475,11 @@
       },
       {
         "path": "test_prep/school_librarian_5312_native_qa.json",
-        "sha256": "4cff3f10cd02aac5ce7f4a1066a914952e098d6ed69839a6c9db4db58eb33a92"
+        "sha256": "b587c7ba0e117f62e06a5a715198a0080364b267b504233f86512095da954e0f"
       },
       {
         "path": "test_prep/school_librarian_5312_pack.json",
-        "sha256": "cb3c8bc24d576789066ed622b2aef00e829f0ce68791057129a70aeb437ac3eb"
+        "sha256": "02650e2c7f756eeb62e3a910c2001df860b62ec25e6e5de0cf61e94cd146ed99"
       },
       {
         "path": "test_prep/school_psychologist_5403_learning_library_qa.json",
@@ -633,10 +633,10 @@
     "originalSourceItemsReviewed": 4400,
     "assistantAuthoredIndependentItemsReviewed": 900,
     "independentPracticeItemsReviewed": 5300,
-    "distinctIndependentContentKernels": 3162,
+    "distinctIndependentContentKernels": 3171,
     "guidedReviewActivitiesReviewed": 5700,
     "independentQuestionTarget": 11000,
-    "newIndependentItemsNeeded": 7838,
+    "newIndependentItemsNeeded": 7829,
     "librariesReviewed": 22,
     "chaptersReviewed": 264,
     "lessonsReviewed": 1056,
@@ -646,8 +646,8 @@
     "uniqueReferencesReviewed": 136,
     "warningCounts": {
       "short-prompt": 33,
-      "severe-answer-length-clue": 3503,
-      "key-stem-lexical-leakage": 1885,
+      "severe-answer-length-clue": 3501,
+      "key-stem-lexical-leakage": 1878,
       "asymmetric-extreme-distractors": 337,
       "advanced-direct-recall": 0,
       "incorrect-option-feedback-detail": 463,
@@ -691,7 +691,7 @@
           "algorithm": "sha256",
           "reviewedAt": "2026-07-18",
           "sourceItemCount": 200,
-          "sourceItemsSha256": "ddfb76965550215cb268cfbeac296eab4f7af29a138d249f730bfbff0cc6943c",
+          "sourceItemsSha256": "50128abe83790c02241fd2078eea324ba78f254a11ddddd91a984a3a6faf2be3",
           "learningLibrarySha256": "fc24eed89a1c287c3adf72c9cd548ba1eb4acff99a07aac71dc9565c63523a0e"
         },
         {
@@ -715,7 +715,7 @@
           "algorithm": "sha256",
           "reviewedAt": "2026-07-18",
           "sourceItemCount": 200,
-          "sourceItemsSha256": "3e0010b976873dab441b2d2d8acaad956268428011af639fe1d14529a3b257d8",
+          "sourceItemsSha256": "aaea2d5e118c9625c2f3e336ed1c9e931da91ae95e83fea74ff407de146965ee",
           "learningLibrarySha256": "bc1b3e35b00400c65a35fbc430b2dead0ead11df6e1582958cd546b74c4575d4"
         },
         {
@@ -723,7 +723,7 @@
           "algorithm": "sha256",
           "reviewedAt": "2026-07-18",
           "sourceItemCount": 200,
-          "sourceItemsSha256": "37b17dfc2228804f22f6b51f52cd828176c62e5a1b731d9dc0c39b4a25e4263a",
+          "sourceItemsSha256": "1637b6974434dda31d9b724eb8bc034ce955e8ce37a596e0017954b3e447ff4b",
           "learningLibrarySha256": "d2c283da9d654dc414367785fbe2de52d3aa7607784127c02a608b53d42676ea"
         },
         {
@@ -731,7 +731,7 @@
           "algorithm": "sha256",
           "reviewedAt": "2026-07-18",
           "sourceItemCount": 200,
-          "sourceItemsSha256": "53c0e3a5e007823afd72e617f54bfde0b147834a4a7a63309196cabb05e3bf44",
+          "sourceItemsSha256": "8f8d382820fce1c1d6c4cecd1291910cf5ed7ce7f62580aa718e6f1623b8908b",
           "learningLibrarySha256": "b86523780637ce6ae14214beca6e3a99645a6685c4aa48692835369361901fd4"
         }
       ],
@@ -799,7 +799,7 @@
           "algorithm": "sha256",
           "reviewedAt": "2026-07-18",
           "sourceItemCount": 200,
-          "sourceItemsSha256": "dee9ed75623dbffb3279d5fe08d5f5d1d27f39353b867c50f872921a4ba05c98",
+          "sourceItemsSha256": "960de2211453482a1d02487bfbf8d6ace39062d81c66894cc0540a48a63031e7",
           "learningLibrarySha256": "9eeee966857c9d1af35550e9557251473d07ea9af45428a249063ec2e7b56d0f"
         },
         {
@@ -7115,10 +7115,10 @@
       "stem": "early_childhood_5025",
       "packId": "praxis-early-childhood-5025",
       "title": "Early Childhood Education (5025)",
-      "packSha256": "d6069d125f43ae852be4d9a9811d3354fe30353d19585739ff8a32fa2b2cb7bc",
+      "packSha256": "aad848ddb8ce901b0469c9a58e9572a0cc44d3a6863c052d14383818c12ab1bd",
       "learningLibrarySha256": "fc24eed89a1c287c3adf72c9cd548ba1eb4acff99a07aac71dc9565c63523a0e",
-      "nativeQaSha256": "e9e7e8ef5c4f123e685c25add046546daed176b480b736bbf64fd54e0ab66cca",
-      "learningLibraryQaSha256": "22d4393b4e58fb2710e697f1a04e3db76ff9771a99d2afed0b457c63de6c063a",
+      "nativeQaSha256": "56afe224b0c288cefbd99c73d5d31cd2080afe6a84b40601c1668f12dc085c8a",
+      "learningLibraryQaSha256": "c5d5ed94ebd8f32bf1f1d76ca754a93ca6d77c10ca538da2d207716f69370d8e",
       "learningActivities": 500,
       "originalSourceItems": 200,
       "assistantAuthoredIndependentItems": 100,
@@ -7164,7 +7164,7 @@
       "warningCounts": {
         "short-prompt": 0,
         "severe-answer-length-clue": 125,
-        "key-stem-lexical-leakage": 65,
+        "key-stem-lexical-leakage": 62,
         "asymmetric-extreme-distractors": 23,
         "advanced-direct-recall": 0,
         "incorrect-option-feedback-detail": 79,
@@ -7761,10 +7761,10 @@
       "stem": "plt_5_9_5623",
       "packId": "praxis-plt-grades-5-9-5623",
       "title": "PLT: Grades 5–9 (5623)",
-      "packSha256": "c6fb81610f1c547a76e81a426cf45c2ac92dfa2c305686735c8c60c6ef2f23fe",
+      "packSha256": "3c7161197293818b576bdf4a7ea37aa6dc292cd740e19d44b6ff556590568e0d",
       "learningLibrarySha256": "bc1b3e35b00400c65a35fbc430b2dead0ead11df6e1582958cd546b74c4575d4",
-      "nativeQaSha256": "ab8c0ef5da8d3d8ca79ad8174774b71560236403c8a1a1d30921929a762ce74b",
-      "learningLibraryQaSha256": "f0bb72ad9feaeeec2704836858b11bee798fa0b60f035a25b7c8fbb4f62705a0",
+      "nativeQaSha256": "a627f04e8621097465205757abf1086e1c249e98fcf7de47a0b82f16c7c861b1",
+      "learningLibraryQaSha256": "093da49f575898933016f72502b2269b49b4ce318489e4d7a944c6e672224a9b",
       "learningActivities": 500,
       "originalSourceItems": 200,
       "assistantAuthoredIndependentItems": 0,
@@ -7922,10 +7922,10 @@
       "stem": "plt_7_12_5624",
       "packId": "praxis-plt-grades-7-12-5624",
       "title": "PLT: Grades 7–12 (5624)",
-      "packSha256": "85b4aa0a5a68060a3f71e79ba8c461d8764196ebbf93b629e21ca5598aa4c352",
+      "packSha256": "231e41382c09c86d5909e58ae3e611e57be5172d7a87896eabb9ebbcf9297b57",
       "learningLibrarySha256": "d2c283da9d654dc414367785fbe2de52d3aa7607784127c02a608b53d42676ea",
-      "nativeQaSha256": "441f638514400fc0a9321924e87c3ff5d786e107270854ee3e2e6b0f580adb32",
-      "learningLibraryQaSha256": "81728c1c8ecb1449c1d74fe4dbd94e2675e7c6f169767878931fa168cc644eff",
+      "nativeQaSha256": "76c22a04252a5a998a11cafa2f8332ea1578698cdd277e8cab0ed723b6f896a8",
+      "learningLibraryQaSha256": "61875ecfe91b29891894dfdc369abdda66d78cccec5c8de66983ce1f4ae4be54",
       "learningActivities": 500,
       "originalSourceItems": 200,
       "assistantAuthoredIndependentItems": 0,
@@ -8083,10 +8083,10 @@
       "stem": "plt_early_childhood_5621",
       "packId": "praxis-plt-early-childhood-5621",
       "title": "PLT: Early Childhood (5621)",
-      "packSha256": "5dbf53c462cbe0b6092077aeae5910644aa6d1f8af16e15f7178eaf1be42b341",
+      "packSha256": "e768a3de53701ff8289ef8bce37576f0c7503ca9f27a8f93ae360658cadf44d3",
       "learningLibrarySha256": "b86523780637ce6ae14214beca6e3a99645a6685c4aa48692835369361901fd4",
-      "nativeQaSha256": "578607b389972150b8d6ae0fc6ffdb233388fb3fe08e8cd35092242cac970ee9",
-      "learningLibraryQaSha256": "9c0e87b8a01d2f2afbb0237fe0c2b42644e31a1818760636f9593d17163a2309",
+      "nativeQaSha256": "4629ac32403ca175cc9a9c773bef403bb256fb94c97282e054f46d7292f09276",
+      "learningLibraryQaSha256": "8a9ffe06beb0f4472cb4cb55993cecc3876ef5f90a5b9767122135441480dfdc",
       "learningActivities": 500,
       "originalSourceItems": 200,
       "assistantAuthoredIndependentItems": 0,
@@ -8885,17 +8885,17 @@
       "stem": "school_librarian_5312",
       "packId": "praxis-school-librarian-5312",
       "title": "School Librarian (5312)",
-      "packSha256": "cb3c8bc24d576789066ed622b2aef00e829f0ce68791057129a70aeb437ac3eb",
+      "packSha256": "02650e2c7f756eeb62e3a910c2001df860b62ec25e6e5de0cf61e94cd146ed99",
       "learningLibrarySha256": "9eeee966857c9d1af35550e9557251473d07ea9af45428a249063ec2e7b56d0f",
-      "nativeQaSha256": "4cff3f10cd02aac5ce7f4a1066a914952e098d6ed69839a6c9db4db58eb33a92",
-      "learningLibraryQaSha256": "71959bedf81fcd40ccc67ff5c4c53faa582b15ab001e32487404a575192aa0c6",
+      "nativeQaSha256": "b587c7ba0e117f62e06a5a715198a0080364b267b504233f86512095da954e0f",
+      "learningLibraryQaSha256": "973ba1d9df0cf8a292aaa9d28566593f20ba0632c38ada7bb601cd4ac51b85d4",
       "learningActivities": 500,
       "originalSourceItems": 200,
       "assistantAuthoredIndependentItems": 100,
       "independentPracticeItems": 300,
-      "distinctIndependentContentKernels": 126,
+      "distinctIndependentContentKernels": 135,
       "guidedReviewActivities": 200,
-      "newIndependentItemsNeeded": 374,
+      "newIndependentItemsNeeded": 365,
       "domains": 5,
       "simulation": {
         "items": 120,
@@ -8933,8 +8933,8 @@
       "warningItemCount": 194,
       "warningCounts": {
         "short-prompt": 0,
-        "severe-answer-length-clue": 192,
-        "key-stem-lexical-leakage": 113,
+        "severe-answer-length-clue": 190,
+        "key-stem-lexical-leakage": 109,
         "asymmetric-extreme-distractors": 0,
         "advanced-direct-recall": 0,
         "incorrect-option-feedback-detail": 0,

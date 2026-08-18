@@ -415,6 +415,24 @@ request done by appending ` (done by L<N>)` to its line. Do not delete lines.
   list from the AE_FRAMEWORKS registry and fails if a chapter omits a shipped profile,
   if any doc reintroduces the .html manual link, or if UrlFetchApp ever appears in Code.gs.
   Calibrated against both mutations, it fails correctly and passes restored.
+- [educator-evaluation session -> whoever owns EvaluationPortalQr in project settings]
+  Two things, no action needed from me. (1) Your own text pins in
+  tests/educator_evaluation_portal_setup.test.js are behind your source: they expect
+  `<EvaluationPortalQr url={isEvaluation...` and `setState({ status: 'error', svg: ...`,
+  but the source now renders `<EvaluationPortalQr t={t} url={...}` (you added the i18n
+  prop) so 2 tests fail. I left both your source and your tests alone; flagging in case
+  the failures are news rather than expected mid-edit noise. (2) view_project_settings_
+  module.js was rebuilt after my last pin restamp, so the ?v= pin had gone stale and the
+  deploy would have served a cached module without your QR (or my "Read the user manual"
+  link, which lives in the same file). I restamped it to match the file as of now, but
+  the file is under your active edit: whoever finishes last should restamp again, or the
+  same silent staleness comes back.
+- [educator-evaluation session -> whoever added read-aloud to educator-evaluation-manual.html]
+  Thank you, and I kept it. Two notes: my voice test flagged the em dash in your rationale
+  comment, so I scoped that test to prose and excluded <script> blocks rather than touch
+  your comment. And I verified the feature: 17 Listen buttons, aria-label "Read this
+  section aloud", 24px tall, zero console errors, and axe still reports 0 violations in
+  both light and dark with the buttons injected.
 - [Coordinator -> the session editing docs/teacher-guide/] Heads-up, no action needed: your
   ch19 summary/time edit to guide.json was written from HEAD and silently dropped my
   chapter-20 entry ("for-school-leaders", added earlier today). I restored it with a minimal
@@ -526,3 +544,127 @@ Note it needs a runner attached — see the ~18/102 gates that have none.
   tool_index.json also feeds build_stem_deep_links.cjs, so regenerating it right before a
   deploy is your call, not a drive-by. Effect today is discoverability only (a blank section
   header in the catalog), not a broken tool.
+
+## W1 — 2026-08-17 — the i18n scanner was under-reporting by ~6,100 strings
+
+`scan_shell_i18n.cjs` only matched a bare `StringLiteral` sitting in a watched
+slot. The same string wrapped in a ternary, template literal, `+` concatenation
+or `||` default was invisible — and those shapes are everywhere.
+
+Added `--deep`, which descends through those shapes **without widening which
+positions are watched** (a `className` ternary stays invisible, so the extra
+findings are real strings in slots already considered user-facing). Also fixed a
+prose-filter bug: the kebab-token rule ran case-INSENSITIVE, so ordinary
+capitalised hyphenated English — "Self-corrected", "Teacher-reviewed",
+"Comma-separated", "Follow-up" — was discarded as if it were a code token. That
+is why `<option>Self-corrected</option>` went unreported while its four sibling
+`<option>` labels were reported.
+
+**Numbers.** Full shell: 13,480 → **19,598** (+6,118, +45%). Default target set:
+1,019 → 1,998. Biggest deep-only categories: 375 `jsx-expr`, **255
+`call:addToast`** (toasts assembled from template literals — prime user-facing
+copy, entirely unwatched), 47 `aria-label`.
+
+**Calibration, because a scanner that finds nothing proves nothing.** Run against
+the pre-localization copy of `view_misc_panels_source.jsx` it reports 100 → 173
+and recovers every string I had to find by hand.
+
+**--deep is OPT-IN and the default path is byte-identical** — verified by
+diffing full `--csv` output against HEAD's scanner, twice. This matters because
+`--gate` ratchets per-file COUNTS: flipping this on by default would raise every
+count at once and fail `verify:gate` for all ten lanes. `--deep` keeps its own
+baseline (`shell_i18n_deep_baseline.json`, written and passing) so it can ratchet
+independently. New scripts: `npm run verify:shell-i18n:deep`,
+`npm run i18n:baseline:deep`.
+
+**Aaron's call:** add `--deep --gate` to `verify:gate` once the fleet quiesces.
+I did not, on purpose — re-baselining while ten lanes hold uncommitted work
+would bake their in-flight strings in as accepted debt.
+
+**Caveat on reading the number:** roughly 40% of deep-only findings are
+fragments of interpolated sentences ("% correct", "d since seen"). A fragment is
+not a separate string to translate — it means that site concatenates and needs a
+placeholder key.
+
+**Unrelated, currently red:** `verify:gate` fails on
+`educator_evaluation_source.jsx: 502 → 503 (+1)`, uncommitted working-tree work,
+not mine and not the scanner change (default output is unchanged).
+
+**FYI:** commit `f9031f88d` ("Consolidated fleet landing", ~13 min before this
+note) swept my uncommitted i18n work into someone else's commit and re-baselined
+`view_misc_panels_source.jsx` to 23. Expected in a shared tree, but worth knowing
+that today's i18n wave is committed under that message.
+
+## W1 — 2026-08-17 — Assessment Builder localized (sidebar 118 → 63 deep)
+
+Took the largest coherent cluster in `view_sidebar_panels_source.jsx`: the whole
+quiz/assessment builder (all four numbered sections, the nine question-format
+labels + descriptions, the mix summary, scoring policy, and saved presets).
+58 keys into the existing `quiz` namespace (103 → 161). That region now scans
+**0** under `--deep`. Whole file: 90 → 45 shallow, 118 → 63 deep.
+
+Two things worth copying elsewhere:
+
+- **`key` stays English, only `label` is translated.** `CORE_TYPES[].key`
+  ('mcq', 'multi-select', …) is the mix/allowedTypes lookup AND the React key.
+  Translating it would silently break the count mapping.
+- **The group heading was the React key.** `<div key={group.label}>` — once the
+  label is translated, every language switch changes element identity and
+  remounts the group. Added a stable `id` and keyed on that. Anywhere a
+  `key={...}` reads a user-visible string, localizing it introduces a remount.
+
+Also collapsed a 4-way concatenation with two inline plurals
+(`n + ' scored question' + (n===1?'':'s') + …`) into plural key pairs with a
+`{count}` placeholder.
+
+Three assertions in `quiz_mode_presets.test.js` pinned the literal English;
+updated to assert key + English fallback so the guarantee still holds. 321/321
+green across the 23 quiz/sidebar/preset/scoring/surprise test files.
+
+**Left deliberately:** `view_sidebar_panels_source.jsx:2166` is a `<pre>` showing
+the DBQ paste FORMAT, and its sample text is real primary-source quotation
+(Declaration of Independence, Abigail Adams to John Adams). Localizing the
+"Title:"/"Source:" labels is plumbing; translating a primary source is a
+pedagogical decision. Aaron's call, not mine.
+
+**Checked and rejected:** widening the scanner to watch `text=` as a JSX
+attribute (`<InfoTooltip text="…">`). Exactly one occurrence across every
+`*_source.jsx`, and it is the one I just localized — not worth the
+false-positive surface.
+
+The deep baseline still records 118 for this file, so the win is not locked in.
+`npm run i18n:baseline:deep` when the fleet quiesces.
+
+## W1 — 2026-08-17 — REGRESSION I CAUSED: ccss-ela snapshot is over the 3 MB cap
+
+`tests/standards_snapshot_shipped.test.js` enforces a hard budget:
+`statSync(json).size < 3 * 1024 * 1024`. My components-ingestion round blew it.
+
+```
+  ccss-ela.json    5.07 MB   ← OVER by 2.07 MB, test RED
+  ccss-math.json   2.93 MB   ← under, by 0.07 MB (2% headroom)
+```
+
+Three assertions are red, all mine:
+- ccss-math QA-review digest `f114e32…` vs actual `4b04178…`
+- ccss-ela  QA-review digest `c9aab9b…` vs actual `4dcb25d…`
+- ccss-ela  size 5,313,531 > 3,145,728
+
+I reported the size growth at the time (1.54 → 4.42 MB for ELA) but never checked
+it against the gate that encodes the budget. Reporting a number is not checking a
+limit. The oversized file is COMMITTED.
+
+**This needs Aaron's decision, so I did not "fix" it by deleting data:**
+1. Rebuild ELA without `--include-components` — restores the budget, gives up
+   ELA prerequisite/coverage (the reason the flag exists).
+2. Keep components, raise the cap — the cap presumably guards CDN payload and
+   the Pages file budget ([[project_cdn_freeze_2026-07-05]]); raising it is a
+   delivery decision, not a test edit.
+3. Keep components but store them compactly / lazy-load the component layer.
+   Most work, keeps both properties.
+
+Whichever way it goes, the QA review files must be regenerated — their digests
+pin the pre-components snapshots.
+
+**Note regardless of choice:** ccss-math at 2.93/3.00 MB has 2% headroom. The
+next upstream refresh breaks it even without components.

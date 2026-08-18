@@ -106,6 +106,61 @@ describe('district portal bundle renders', () => {
     await page.close();
   }, 90000);
 
+  const renderRejected = async (reply, name) => {
+    const file = path.join(dir, name + '.html');
+    const stub = reply === null ? '' : `
+      const REPLY = ${JSON.stringify(reply)};
+      const chain = () => {
+        const api = { withSuccessHandler(fn) { api._ok = fn; return api; }, withFailureHandler(fn) { api._fail = fn; return api; } };
+        for (const n of ['getPortalBootstrap','savePortalWorkspace','getPortalSetupHealth']) {
+          api[n] = function () { setTimeout(() => api._ok && api._ok(REPLY), 5); };
+        }
+        return api;
+      };
+      window.google = { script: { run: chain(), url: { getLocation(cb) { cb({ parameter: {} }); } } } };`;
+    const html = harnessPage({}).replace(/const BOOT[\s\S]*?} };/, stub);
+    fs.writeFileSync(file, html, 'utf8');
+    const page = await browser.newPage({ viewport: { width: 1100, height: 700 } });
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(String(error)));
+    await page.goto(pathToFileURL(file).href);
+    await page.waitForSelector('h2', { timeout: 15000 });
+    await page.waitForTimeout(500);
+    return { page, errors };
+  };
+
+  // "Fails closed" is promised in the user manual and in the IT chapter of the
+  // teacher guide. These assert that failing closed is legible, not a blank page.
+  const FAILURES = [
+    ['a district account that is not a member',
+      { ok: false, error: { code: 'denied', message: 'Your district account is not authorized for this evaluation repository.' } },
+      'not authorized for this evaluation repository'],
+    ['a repository that was never set up',
+      { ok: false, error: { code: 'not_configured', message: 'The evaluation repository has not been set up yet.' } },
+      'has not been set up yet'],
+    ['the page opened outside Apps Script', null,
+      'must be opened from the district Apps Script web-app URL'],
+  ];
+
+  for (const [label, reply, expectedReason] of FAILURES) {
+    it(`refuses ${label} with a readable explanation and a way forward`, async () => {
+      const { page, errors } = await renderRejected(reply, 'fail-' + label.replace(/\W+/g, '-'));
+      const text = await page.locator('body').innerText();
+      expect(text).toContain('The secure workspace could not be opened');
+      // Proves this case's stub actually drove the render, rather than the page
+      // failing for some unrelated reason and passing the generic assertions.
+      expect(text).toContain(expectedReason);
+      expect(text).toContain('ask the district administrator');
+      expect(text).toContain('Records remain hidden until identity and assignments are verified');
+      // No records leak into a refused session, and no raw error tokens surface.
+      expect(text).not.toMatch(/undefined|\[object|TypeError/);
+      expect(await page.locator('.ae-tabs').count()).toBe(0);
+      expect(await page.locator('button', { hasText: 'Try again' }).count()).toBe(1);
+      expect(errors).toEqual([]);
+      await page.close();
+    }, 90000);
+  }
+
   it('offers the user manual from the portal header too', async () => {
     const { page, errors } = await render(EVALUATOR, 'manual-link');
     expect(await page.locator('a[href*="educator-evaluation-manual"]').count()).toBeGreaterThanOrEqual(1);

@@ -17,7 +17,8 @@
             location: 'STEM Lab → Earth & Space Science',
             tags: ['weather', 'climate', 'droplet', 'evaporation', 'precipitation', 'transpiration'],
             featured: true,
-            detailHref: 'features.html#stem'
+            detailHref: 'features.html#stem',
+            launchHref: 'https://alloflow-cdn.pages.dev/water-cycle'
         },
         {
             id: 'chemBalance',
@@ -34,7 +35,8 @@
             location: 'STEM Lab → Physics & Chemistry',
             tags: ['equations', 'reactions', 'stoichiometry', 'molecules', 'lab safety'],
             featured: true,
-            detailHref: 'features.html#stem'
+            detailHref: 'features.html#stem',
+            launchHref: 'https://alloflow-cdn.pages.dev/chem-balance'
         },
         {
             id: 'roadReady',
@@ -51,7 +53,8 @@
             location: 'STEM Lab → Life Skills, Careers & Economics',
             tags: ['driving', 'road safety', 'permit', 'cars', 'fuel efficiency', 'maine'],
             featured: true,
-            detailHref: 'features.html#stem'
+            detailHref: 'features.html#stem',
+            launchHref: 'https://alloflow-cdn.pages.dev/road-ready'
         },
         {
             id: 'anatomy',
@@ -68,7 +71,8 @@
             location: 'STEM Lab → Human Body, Health & Safety',
             tags: ['body systems', 'organs', 'skeletal', 'circulatory', 'nervous system'],
             featured: true,
-            detailHref: 'features.html#stem'
+            detailHref: 'features.html#stem',
+            launchHref: 'https://alloflow-cdn.pages.dev/anatomy'
         },
         {
             id: 'ecosystem',
@@ -85,7 +89,8 @@
             location: 'STEM Lab → Ecology, Environment & Animals',
             tags: ['food web', 'predator prey', 'population', 'ecology', 'lotka volterra'],
             featured: false,
-            detailHref: 'features.html#stem'
+            detailHref: 'features.html#stem',
+            launchHref: 'https://alloflow-cdn.pages.dev/ecosystem'
         },
         {
             id: 'wave',
@@ -102,7 +107,8 @@
             location: 'STEM Lab → Physics & Chemistry',
             tags: ['frequency', 'amplitude', 'wavelength', 'interference', 'sound', 'light'],
             featured: false,
-            detailHref: 'features.html#stem'
+            detailHref: 'features.html#stem',
+            launchHref: 'https://alloflow-cdn.pages.dev/wave'
         },
         {
             id: 'circuit',
@@ -119,7 +125,8 @@
             location: 'STEM Lab → Engineering & Design',
             tags: ['electricity', 'voltage', 'current', 'resistance', 'electronics'],
             featured: false,
-            detailHref: 'features.html#stem'
+            detailHref: 'features.html#stem',
+            launchHref: 'https://alloflow-cdn.pages.dev/circuit'
         },
         {
             id: 'funcGrapher',
@@ -136,7 +143,8 @@
             location: 'STEM Lab → Advanced Math',
             tags: ['graph', 'linear', 'quadratic', 'trigonometry', 'functions', 'coefficients'],
             featured: false,
-            detailHref: 'features.html#stem'
+            detailHref: 'features.html#stem',
+            launchHref: 'https://alloflow-cdn.pages.dev/func-grapher'
         },
         {
             id: 'dataStudio',
@@ -153,7 +161,8 @@
             location: 'STEM Lab → Data, Statistics & Probability',
             tags: ['csv', 'charts', 'scatter plot', 'histogram', 'regression', 'outliers'],
             featured: true,
-            detailHref: 'features.html#stem'
+            detailHref: 'features.html#stem',
+            launchHref: 'https://alloflow-cdn.pages.dev/data-studio'
         },
         {
             id: 'codingPlayground',
@@ -170,7 +179,8 @@
             location: 'STEM Lab → Computing, AI & Digital Literacy',
             tags: ['blockly', 'programming', 'loops', 'conditionals', 'turtle', 'code'],
             featured: true,
-            detailHref: 'features.html#stem'
+            detailHref: 'features.html#stem',
+            launchHref: 'https://alloflow-cdn.pages.dev/coding-playground'
         },
         {
             id: 'geometryWorld',
@@ -187,7 +197,8 @@
             location: 'STEM Lab → Geometry & Measurement',
             tags: ['3d', 'shapes', 'spatial reasoning', 'angles', 'measurement', 'game'],
             featured: false,
-            detailHref: 'features.html#stem'
+            detailHref: 'features.html#stem',
+            launchHref: 'https://alloflow-cdn.pages.dev/geometry-world'
         },
         {
             id: 'machineLab',
@@ -204,7 +215,8 @@
             location: 'STEM Lab → Engineering & Design',
             tags: ['lever', 'pulley', 'inclined plane', 'wedge', 'screw', 'force'],
             featured: false,
-            detailHref: 'features.html#stem'
+            detailHref: 'features.html#stem',
+            launchHref: 'https://alloflow-cdn.pages.dev/machine-lab'
         },
         {
             id: 'leveledText',
@@ -425,7 +437,8 @@
             location: 'STEM Lab → Computing, AI & Digital Literacy',
             tags: ['wcag', 'website audit', 'document audit', 'developer', 'accessibility testing'],
             featured: true,
-            detailHref: 'accessibility_demo.html'
+            detailHref: 'accessibility_demo.html',
+            launchHref: 'https://alloflow-cdn.pages.dev/a11y-auditor'
         },
         {
             id: 'accessLens',
@@ -442,7 +455,8 @@
             location: 'Accessibility workflows → AccessLens',
             tags: ['wcag', 'evidence', 'review', 'audit', 'accessibility'],
             featured: false,
-            detailHref: 'accessibility_demo.html'
+            detailHref: 'accessibility_demo.html',
+            launchHref: 'https://alloflow-cdn.pages.dev/access-lens'
         },
         {
             id: 'documentRemediation',
@@ -493,7 +507,8 @@
             location: 'STEM Lab → Learning & Behavioral Science',
             tags: ['aba', 'reinforcement', 'operant conditioning', 'shaping', 'extinction'],
             featured: false,
-            detailHref: 'features.html#stem'
+            detailHref: 'features.html#stem',
+            launchHref: 'https://alloflow-cdn.pages.dev/behavior-lab'
         },
         {
             id: 'rtiMonitoring',

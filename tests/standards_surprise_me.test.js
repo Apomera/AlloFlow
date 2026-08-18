@@ -44,7 +44,10 @@ describe('grounding discipline', () => {
     expect(source).toContain('function SurpriseMeCompare(props)');
     expect(source).toContain('Pin to edit & use');
     expect(source).toContain('aria-pressed={isPinned}');
-    expect(source).toMatch(/editedBrief\.trim\(\)\) \? editedBrief : SurpriseMeEngine\.directionBrief\(direction\)/);
+    // directionBrief now takes an optional translator as its 2nd argument (the
+    // engine is module scope and has no `t` of its own). The teacher's edit
+    // still wins over the generated brief, which is what this pins.
+    expect(source).toMatch(/editedBrief\.trim\(\)\) \? editedBrief : SurpriseMeEngine\.directionBrief\(direction, t\)/);
   });
 
   it('directions carry the judgment framing, not certification', () => {

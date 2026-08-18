@@ -11,26 +11,29 @@ This consolidated Markdown edition is generated for repository browsing, review,
 ## Contents
 
 1. [Start here: prepare your first student-ready resource](#start-here-prepare-your-first-student-ready-resource) · Choose an entry route and prepare a first student-ready resource.
-2. [Quick reference: the one page to keep nearby](#quick-reference-the-one-page-to-keep-nearby) · The printable one-pager: the fifteen-minute flow, the three keys, talking to AlloBot, and where things live.
-3. [Prepare a purposeful, differentiated lesson](#prepare-a-purposeful-differentiated-lesson) · Turn source material into a purposeful, differentiated lesson package.
-4. [Universal Settings: set it once, not per tool](#universal-settings-set-it-once-not-per-tool) · Set grade level, language, translations, and other shared defaults once for the whole lesson.
-5. [Run a live lesson safely and calmly](#run-a-live-lesson-safely-and-calmly) · Prepare, run, differentiate, and close a live lesson safely.
-6. [Adventure Mode: a story your lesson can carry](#adventure-mode-a-story-your-lesson-can-carry) · When students see Adventure Mode, lesson-scoped resume, and the assignment switch.
-7. [Family mode: AlloFlow for a parent at home](#family-mode-alloflow-for-a-parent-at-home) · What a parent authoring at home can reach, what stays school-only, and how teachers hand off cleanly.
-8. [Accessibility and UDL: verify the learner experience](#accessibility-and-udl-verify-the-learner-experience) · Check the real learner experience and remove barriers before sharing.
-9. [Review evidence and plan next steps](#review-evidence-and-plan-next-steps) · Interpret classroom evidence carefully and plan useful follow-up.
-10. [Classroom workflows](#classroom-workflows) · Use practical recipes for common middle-school teaching needs.
-11. [Privacy and responsible AI](#privacy-and-responsible-ai) · Use student data and generated materials with appropriate judgment.
-12. [AlloBot: the assistant that talks with you](#allobot-the-assistant-that-talks-with-you) · Talking with the assistant: conversation first, offers before actions, and what the microphone states mean.
-13. [Documents and printing: from resource to handout](#documents-and-printing-from-resource-to-handout) · The four export formats, the handout reading tools, annotations that stay put, and printing that always comes out light.
-14. [Make a document accessible: the remediation workflow](#make-a-document-accessible-the-remediation-workflow) · Turning an inherited document into an accessible version: what you can upload, the audit, Make Accessible, the human review, the evidence report, the local connector, and the no-egress option.
-15. [Troubleshooting](#troubleshooting) · Recover work and diagnose common classroom problems.
-16. [Math Fluency: timed practice and CBM probes](#math-fluency-timed-practice-and-cbm-probes) · Where timed math practice and CBM probes live, and the fastest way to open them.
-17. [Specialist and product reference](#specialist-and-product-reference) · Find specialist surfaces, keyboard help, and product terminology.
-18. [School rollout and coaching](#school-rollout-and-coaching) · Introduce AlloFlow as an instructional routine with shared guardrails and coaching.
-19. [For your IT department: the one-page technical brief](#for-your-it-department-the-one-page-technical-brief) · The technical brief: static app, no accounts, on-device data, the three AI backend options, and what to verify.
-20. [For school leaders: the Leadership Hub](#for-school-leaders-the-leadership-hub) · The nine Leadership Hub tools: visits and coaching, equity and student-services analytics, meeting documentation, multilingual family communication, and backing the whole suite up.
-21. [The STEAM Lab: 142 tools, and how to find the one you need](#the-steam-lab-142-tools-and-how-to-find-the-one-you-need) · The 142-tool STEAM Lab: how to find a tool, how to put one in front of students with its own link, what to expect from any of them, and three ways teachers actually use them.
+2. [The workspace, part by part](#the-workspace-part-by-part) · The mechanical tour: every region of the screen, the header, finding tools, and the three ways to generate (one resource, full pack, Blueprint Mode).
+3. [Settings, help, and finding your way](#settings-help-and-finding-your-way) · Universal Settings versus app settings, the AI connection, interface language, and the three ways to get help: Help Mode, the tour, and the command palette.
+4. [Saving, loading, and managing storage](#saving-loading-and-managing-storage) · Where on-device work lives, Save Project and Load Project, exporting, storage presets, on-device speech models, and recovering a lost session.
+5. [Quick reference: the one page to keep nearby](#quick-reference-the-one-page-to-keep-nearby) · The printable one-pager: the fifteen-minute flow, the three keys, talking to AlloBot, and where things live.
+6. [Prepare a purposeful, differentiated lesson](#prepare-a-purposeful-differentiated-lesson) · Turn source material into a purposeful, differentiated lesson package.
+7. [Universal Settings: set it once, not per tool](#universal-settings-set-it-once-not-per-tool) · Set grade level, language, translations, and other shared defaults once for the whole lesson.
+8. [Run a live lesson safely and calmly](#run-a-live-lesson-safely-and-calmly) · Prepare, run, differentiate, and close a live lesson safely.
+9. [Adventure Mode: a story your lesson can carry](#adventure-mode-a-story-your-lesson-can-carry) · When students see Adventure Mode, lesson-scoped resume, and the assignment switch.
+10. [Family mode: AlloFlow for a parent at home](#family-mode-alloflow-for-a-parent-at-home) · What a parent authoring at home can reach, what stays school-only, and how teachers hand off cleanly.
+11. [Accessibility and UDL: verify the learner experience](#accessibility-and-udl-verify-the-learner-experience) · Check the real learner experience and remove barriers before sharing.
+12. [Review evidence and plan next steps](#review-evidence-and-plan-next-steps) · Interpret classroom evidence carefully and plan useful follow-up.
+13. [Classroom workflows](#classroom-workflows) · Use practical recipes for common middle-school teaching needs.
+14. [Privacy and responsible AI](#privacy-and-responsible-ai) · Use student data and generated materials with appropriate judgment.
+15. [AlloBot: the assistant that talks with you](#allobot-the-assistant-that-talks-with-you) · Talking with the assistant: conversation first, offers before actions, and what the microphone states mean.
+16. [Documents and printing: from resource to handout](#documents-and-printing-from-resource-to-handout) · The four export formats, the handout reading tools, annotations that stay put, and printing that always comes out light.
+17. [Make a document accessible: the remediation workflow](#make-a-document-accessible-the-remediation-workflow) · Turning an inherited document into an accessible version: what you can upload, the audit, Make Accessible, the human review, the evidence report, the local connector, and the no-egress option.
+18. [Troubleshooting](#troubleshooting) · Recover work and diagnose common classroom problems.
+19. [Math Fluency: timed practice and CBM probes](#math-fluency-timed-practice-and-cbm-probes) · Where timed math practice and CBM probes live, and the fastest way to open them.
+20. [Specialist and product reference](#specialist-and-product-reference) · Find specialist surfaces, keyboard help, and product terminology.
+21. [School rollout and coaching](#school-rollout-and-coaching) · Introduce AlloFlow as an instructional routine with shared guardrails and coaching.
+22. [For your IT department: the one-page technical brief](#for-your-it-department-the-one-page-technical-brief) · The technical brief: static app, no accounts, on-device data, the three AI backend options, and what to verify.
+23. [For school leaders: the Leadership Hub](#for-school-leaders-the-leadership-hub) · The nine Leadership Hub tools: visits and coaching, equity and student-services analytics, meeting documentation, multilingual family communication, and backing the whole suite up.
+24. [The STEAM Lab: 142 tools, and how to find the one you need](#the-steam-lab-142-tools-and-how-to-find-the-one-you-need) · The 142-tool STEAM Lab: how to find a tool, how to put one in front of students with its own link, what to expect from any of them, and three ways teachers actually use them.
 
 ---
 
@@ -69,6 +72,28 @@ Have these four items ready:
 - A quick way to check whether students met the goal.
 
 Use the same source you would be comfortable projecting or handing to students. Remove names, student IDs, grades, disability information, behavior notes, health information, and other personally identifying details before pasting or uploading anything. See [Privacy and responsible AI](#privacy-and-responsible-ai) before using sensitive material.
+
+### Build it before class, not during it
+
+Everything in the next section belongs in your planning time. By the time the first student sees anything, the resources should already exist, already be reviewed, and already be saved. Plan to open AlloFlow during class only to deliver what is finished.
+
+Three reasons this matters more than it looks:
+
+- **Generation is neither instant nor guaranteed.** Creating a resource calls an AI service that can be slow, rate-limited, or briefly unavailable. That is a minor annoyance during planning and an expensive one at 10:05 with a full class waiting.
+- **The review gate needs unhurried judgment.** Checking facts, translations, examples, calculations, and answer keys is the step most easily skipped under time pressure, and it is exactly the step that catches a confident-sounding mistake before students meet it.
+- **The live tools assume the content already exists.** A Live Session paces, checks understanding, and routes students through material you built beforehand. It is not a place to author it.
+
+Finished before class starts:
+
+- The source, trimmed and verified.
+- Every resource you intend to use, generated and reviewed.
+- Any translation, audio, or accessible export a student will need.
+- The student route, previewed at least once from the student side.
+- A saved project file, and a fallback that still works if the network does not.
+
+Reasonable to do live: choosing which existing pathway a student gets, adjusting pacing, revealing an answer key you already checked, and opening a single tool link. If you find yourself generating new material while class is running, use the fallback instead and rebuild afterwards.
+
+A practical habit: build the lesson at least a day ahead, then reopen it cold the morning of class. Loading your own project the way a student will meet it catches a surprising amount, and it costs two minutes.
 
 ### A first lesson in about fifteen minutes
 
@@ -203,6 +228,439 @@ You do not have to begin with a lesson at all. Every interactive STEAM Lab tool 
 Protect instructional time first. Keep a stable fallback ready: the original source, a downloadable handout, or a simple discussion prompt. If a module is still loading, wait briefly, use its retry control if shown, or return to the previous view. If generation fails, preserve your source and directions before refreshing.
 
 For a systematic recovery sequence, see [Troubleshooting](#troubleshooting). For planning a fuller package, continue to [Prepare a lesson](#prepare-a-purposeful-differentiated-lesson). To teach it synchronously, continue to [Live sessions](#run-a-live-lesson-safely-and-calmly).
+
+---
+
+## The workspace, part by part
+
+This is the mechanical tour. Other chapters explain what to make and why; this one explains where everything is, which control does what, and how the three ways of generating work differ. If you have ever opened AlloFlow and not been sure what you were looking at, start here and read straight through with the app open beside you.
+
+### Getting in: the Launch Pad
+
+The first screen asks how you want to begin. It is not a settings page you have to get right, and nothing here is permanent.
+
+![The AlloFlow Launch Pad, offering Guided Mode, Full Platform, Learning Tools, and Educator Tools](docs/teacher-guide/assets/screenshots/10-launch-pad.png)
+
+**Choose your workspace** offers two doors into the same product:
+
+- **Guided Mode** walks you through lesson creation one step at a time. It is marked *Recommended* because it is the shortest route to a finished resource on your first day.
+- **Full Platform** opens the complete workspace at once: every tool, every setting, nothing hidden. The rest of this chapter describes this view, because it is the one with all the parts in it.
+
+**Open a tool directly** skips the workspace entirely:
+
+- **Learning Tools** goes straight to the STEAM Lab, StoryForge, SEL Hub, Research Hub and the rest.
+- **Educator Tools** goes to the professional tools such as BehaviorLens and Report Writer, and to the Leadership Hub.
+
+Two more things live on this screen. **Voice and device setup** is optional and can be left alone. Top right, **AI Backend Settings** is where an AI connection is configured, and the globe control sets the language. The footer says it plainly: you can switch modes any time from the menu, so a wrong first choice costs you nothing.
+
+### The two questions AlloFlow asks first
+
+Choosing Full Platform brings up two short gates. Both are one-time, and the second is skippable.
+
+**Who is using this device?** Student, Teacher, Parent, or Independent Learner. This is what decides whether you see teacher controls at all, so pick Teacher on your own machine.
+
+**Quick Start** then offers four steps of global context, beginning with grade level. Every step has a **SKIP** control, and skipping is a legitimate choice: everything Quick Start sets can be set later in Universal Settings. If you are exploring rather than building, skip it and look around first.
+
+### The screen, in four regions
+
+![The full AlloFlow workspace: header strip, left settings and tool column, centre workspace, and the AlloBot panel](docs/teacher-guide/assets/screenshots/11-workspace-overview.png)
+
+Once you are in, the screen is always the same four regions:
+
+1. **The header strip** across the top: where you are, and the things that apply to the whole session.
+2. **The left column**: source material, Universal Settings, the tool finder, and the list of tools. This is where you choose what to make.
+3. **The centre**: what you have generated, and the starting points when you have not generated anything yet.
+4. **The AlloBot panel** on the right, which opens when you ask for it.
+
+Nothing moves between these regions. When a chapter tells you to "open Universal Settings", it means the left column, every time.
+
+The left column has two tabs at the top, **Create** and **History**. Create is where you work; History is what you have already made this session. And at the bottom right of the screen sits **Student tools**, which is how you look at the same work the way a student would.
+
+### The header, control by control
+
+![The AlloFlow header strip showing the breadcrumb, session controls, and the personal-information note](docs/teacher-guide/assets/screenshots/12-header.png)
+
+Left to right:
+
+- **The AlloFlow mark**, and beside it a breadcrumb reading something like **TEACHER / SOURCE MATERIAL**. That is your role and the part of the workspace you are in, which is the fastest way to confirm you are not accidentally in a student view.
+- **A standing note not to enter personally identifiable information.** It is deliberately always visible rather than a dialog you dismiss once. Treat it as the rule it is.
+- **Icon buttons** for the Documents menu, the reading catalog, Learning Tools, and Educator Tools. These are shortcuts to the same places the Launch Pad offers.
+- **Start Live Class** for running a session with students in the room.
+- **Setup and Guided Mode** to switch into the step-by-step flow without losing what you have.
+- **More information**, which holds the rest. Opening it reveals a second bank of controls: **Text**, **Voice**, **Translate**, **Documents**, **Assessment Center**, **AI**, and the **Tools**, **Learn** and **Bridge** groups. Export, model diagnostics, **Jump to Lesson Plan**, **Copy Link for Students** and the Cloud Sync toggle all live in here. If you cannot find a control anywhere else, open this menu.
+
+**The header has two states, and this catches people out.** What is described above is the collapsed header. Expand it and a second, much larger bank appears: the **App Language** selector, **Text** and **Voice** controls, **Translate**, **Documents**, **Assessment Center**, and the **AI**, **Tools**, **Learn** and **Bridge** groups.
+
+It also carries a row of icon buttons that are easy to overlook and worth learning, because three of them are the fastest routes to help: the **lightbulb** holds messages you may have missed, **?** turns on Help Mode, the **map** starts the guided tour, the **sparkles** reopens setup and Guided Mode, and the **cloud** toggles Cloud Sync. The tour and setup icons appear in teacher mode only.
+
+So if a control is missing from the header, it is almost certainly in the expanded state rather than gone. **Collapse** returns you to the compact strip and reclaims vertical space on a small laptop, and **Maximize View** gives the centre column the whole window.
+
+### Changing the language, and the setting people mix up
+
+There are two different language settings, they do different jobs, and confusing them is the single most common source of "why is this in the wrong language".
+
+**App Language** is in the header. It changes the interface: buttons, menus, labels. Open it and you get a searchable list, your current language, and a **Custom** option if your language is not listed. Changing it may offer to regenerate the content you already have so it matches, and it warns you first, because unsaved changes to the current text can be lost in that regeneration.
+
+**Output and translation languages** live in **Universal Settings**, not the header. These decide what language the resources you generate come out in, and which translations get attached. A glossary panel will tell you directly when none are set, with a line reading that no translation languages are set and pointing you to Universal Settings.
+
+So: header for the language *you* read the app in, Universal Settings for the language *students* receive.
+
+### The left column: settings, then tools
+
+#### Universal Settings
+
+![Universal Settings, showing AI Match and Manual modes and the per-setting coverage notes](docs/teacher-guide/assets/screenshots/14-universal-settings.png)
+
+The header line reads **Apply to most resources you generate**, and the collapsed state summarises itself, for example *3rd Grade · English*. That summary is worth glancing at before every generation.
+
+Two ways to fill it in:
+
+- **AI Match** infers settings from your source material and goal.
+- **Manual** lets you set each one yourself.
+
+Inside are grade level, output language and translations, whether to use emoji for visual support, a **Differentiation Set** (for instance *Target Level Only*), and a default **Image Style** used by Visuals, Glossary, Timeline and Concept Sort unless a tool sets its own.
+
+The detail that makes this panel trustworthy is the small coverage note under many settings, reading something like *Applies to 12 of 19 resource types*. AlloFlow is telling you exactly how far a setting reaches rather than implying it governs everything.
+
+**These apply to new work only.** Set them before you generate, not after.
+
+#### Find a tool
+
+![The Find a tool panel with its purpose filters and the tool list](docs/teacher-guide/assets/screenshots/13-sidebar-tools.png)
+
+Below the settings is the tool finder, and it has three ways to narrow a long list:
+
+- **Search by name** in the search box, which prompts with examples such as *glossary, visuals, assessment*.
+- **Filter by purpose** with the row of buttons: **Recommended**, **Make accessible**, **Engage**, **Assess and deliver**, **All tools**. When a filter is active the panel says so in words, reading something like *A filter is on: showing 8 of 22 tools*, with a count of how many are shown. This matters: if a tool you expected is missing, a filter is the usual reason, and the panel tells you rather than leaving you to guess.
+- **Show all tools** clears the filter, and **Expand All** and **Collapse** open or close every tool panel at once.
+
+The list underneath holds the resource tools: Analyze Source Material, Glossary, Text Adaptation, Word Sounds, Visual Organizer, Note-Taking Templates, Anchor Chart, Lesson Images, FAQ Generator, Writing Scaffolds, Activities, Interview Mode, Sequence Builder, Concept Sort, Document Analysis, Assess, Lesson Plan, Assignment Directions, and the entry points to the STEAM Lab and Adventure Mode.
+
+### Starting from a source
+
+The centre column begins at **Source Material**, because most resources are generated *from* something. There are three routes, offered as cards:
+
+- **Open reading catalog** for books, articles and primary sources.
+- **Find a resource online** to paste a link or let AI search.
+- **Generate from a topic** to have AI write the source text for you.
+
+The same routes exist as a row of buttons on the Source Material card in the left column: **Upload**, **Load Project**, **Link**, **Generate**, and **Books**. Under them is a paste box that accepts curriculum text directly, or a PDF, image, text or audio file up to 20MB.
+
+Once a source is in, **Analyze Source Material** reads it back to you, so you can check the AI understood it before you build eight resources on top of a misreading.
+
+You do not always need a source. Some tools invent their own material. But when a tool warns that a step produced nothing, a missing source is the usual reason.
+
+### Making one resource
+
+![A tool panel expanded, with its own options, Custom Instructions, and its Generate button](docs/teacher-guide/assets/screenshots/15-tool-panel.png)
+
+Click a tool in the left column and its panel expands in place. Every tool panel has the same shape:
+
+1. **Options specific to that tool.** The Glossary, for example, asks how many Tier 2 academic and Tier 3 domain words to pull, what reading level the definitions should sit at, and whether to include word roots and etymology.
+2. **Custom Instructions (Optional)**, a free-text box for anything the options do not cover.
+3. **Per-generation overrides** where offered: Writing Tone, Content Length, Reading Level, and Webb's Depth of Knowledge. These override Universal Settings for this one resource without changing your defaults.
+4. **The Generate button**, always named for the tool: *Generate Glossary*.
+
+**Change tool** swaps the open panel without collapsing everything and starting again.
+
+### Making a whole lesson at once: the full pack
+
+The full pack is the "do it all" path. It generates a coordinated set of resources from one source in a single run.
+
+![The Auto-Configure card at the foot of the tool list, with its size selector and the Plan full pack control](docs/teacher-guide/assets/screenshots/17-full-pack.png)
+
+It lives at the very bottom of the tool list, under an **Auto-Configure** card, which is easy to scroll past.
+
+- **The size selector** on that card controls how much gets made. **Auto (AI Decides)** is the default, or choose **Short (5)**, **Standard (8)**, **Deep (12)**, or **All Tools**.
+- **Auto-Configure** itself fills in the per-tool settings for you rather than making you set each one.
+- **Plan full pack** is the control to press first. It says what it does: review resources, settings, and estimated generations *before* creating them. Read the estimate, because that number is your AI usage for the run.
+- **Generate Full Resource Pack** then runs it. The helper text names the shape of what you get: analysis, text, glossary, visuals, quiz and more.
+
+The full pack is the fastest route from one text to a usable lesson set. It is also the easiest way to spend a lot of generations at once, which is exactly why the planner shows the estimate first.
+
+### Blueprint Mode: describe the lesson, approve the plan, then build
+
+This is the most powerful path in the app and the least discoverable, because it lives inside AlloBot rather than on a button of its own.
+
+![The AlloBot panel with the Auto-Fill Settings toggle that turns on Blueprint Mode](docs/teacher-guide/assets/screenshots/16-allobot-autofill.png)
+
+**How to turn it on.** Open **AI Guide and Assistant** from the header to bring up the AlloBot panel on the right. Near the bottom, tick **Auto-Fill Settings**, marked *Recommended*. That toggle is what puts AlloBot into Blueprint Mode. Then describe what you are teaching in ordinary language.
+
+**What happens next.** AlloBot tells you it is analysing context and designing a lesson blueprint, and it says up front that you will be able to review and change the plan before anything is generated. It then presents a **Lesson Blueprint**: an ordered list of the resources it proposes to build.
+
+**Reviewing and changing the plan.** Nothing is generated yet, and this is the point of the whole feature.
+
+- **Type changes in plain language**: "Add a quiz", "Change grade to 5th". AlloBot confirms with *Blueprint updated* and you can keep going.
+- **Edit Plan** opens direct editing, with **Add Resource Step** to insert one and **Done Editing** to finish.
+- **Reorder** by dragging, or use **Move up** and **Move down**, which exist so reordering does not require a mouse.
+- **What does this resource do?** explains any step you do not recognise.
+- Ask a question without touching the plan and it answers, leaving the blueprint unchanged.
+
+**Building it.** **Generate Plan** starts the run. A progress line reads *Building, N of M steps finished*. If you need to stop, **Stop after this step** finishes the step in progress and then halts: everything already finished is kept, and the remaining steps show a **Rebuild** control so you can run them one at a time later.
+
+**Two things worth knowing before you start.** If there is no source text yet, AlloFlow warns that some resources may not generate and suggests adding or generating a source first. And previous plans are archived rather than discarded, so an earlier blueprint can be restored, though not while a plan is still generating.
+
+### The command palette and Help Mode
+
+Two shortcuts do more work than anything else in this chapter.
+
+![The command palette opened with Ctrl+K](docs/teacher-guide/assets/screenshots/18-command-palette.png)
+
+**Ctrl+K** (Cmd+K on a Mac, or Ctrl+Shift+P) opens the command palette. Type what you want in ordinary words and it takes you there. It reports how many commands match, you can star the ones you use constantly, and **Esc** closes it.
+
+**?** turns on **Help Mode**. With it on, click any button, panel or tool and AlloFlow explains that specific element in plain language. This is the fastest way to answer "what is this control" without leaving the screen you are on, and pressing **Esc** turns it back off.
+
+### Saving your work, and getting it out
+
+Work lives on the device, so saving is something you do deliberately.
+
+- **Save Project** writes the whole session to a file. You give it a name and AlloFlow adds the `.json` extension. This is your backup and the way to move a lesson to another machine.
+- **Load Project** sits in the Source Material button row and reopens one you saved earlier.
+- **Export** offers the output formats, including a finished copy to print or save as PDF, a blank worksheet version, and a teacher copy that includes answer keys and analyses.
+- **Copy Link for Students** gives you the student route to what you have built.
+
+If a lesson matters, save the project. Browser data clearing removes on-device work, and the project file is what survives it. [Saving, loading, and managing storage](#saving-loading-and-managing-storage) covers the whole picture, including the recovery key and how to stop AlloFlow running out of room.
+
+### When no AI is connected
+
+You will sometimes see a line on a tool panel reading *Needs AI setup*, offering to connect an AI or to use AlloFlow inside Gemini Canvas. Nothing is broken. AlloFlow separates the things that need a model from the things that do not.
+
+Generation needs AI. Browsing tools, the STEAM Lab simulations, Universal Settings, saving and exporting, and everything you have already generated all keep working without it. If you are evaluating AlloFlow before your district has chosen a model, you can still see most of the product.
+
+For the three ways to connect one, see [Troubleshooting](#troubleshooting); for what leaves the device when you do, see [Privacy and responsible AI](#privacy-and-responsible-ai).
+
+### Where to go next
+
+Now that the screen makes sense, [Prepare a lesson](#prepare-a-purposeful-differentiated-lesson) shows how to use it well, [Universal Settings](#universal-settings-set-it-once-not-per-tool) goes deeper on the settings panel, and [AlloBot](#allobot-the-assistant-that-talks-with-you) covers talking to the assistant beyond Blueprint Mode. Keep [Quick reference](#quick-reference-the-one-page-to-keep-nearby) beside you until the shortcuts are habit.
+
+---
+
+## Settings, help, and finding your way
+
+AlloFlow has more settings than any one teacher needs, which is a problem only if nobody tells you which ones matter. This chapter sorts them into the two kinds that behave differently, then covers the three ways to get help without leaving the screen you are on.
+
+### The two kinds of settings
+
+The distinction that prevents most confusion:
+
+- **Universal Settings** shape *what gets generated*: grade, language, differentiation, image style. They live in the left column and apply to new work only.
+- **App settings** shape *the app itself*: interface language, which AI is connected, voice, storage, and who the device thinks you are. They live in the header and the Launch Pad.
+
+If output came out wrong, look at Universal Settings. If the app itself is behaving unexpectedly, look at app settings.
+
+### Universal Settings
+
+![Universal Settings, showing AI Match and Manual modes and the per-setting coverage notes](docs/teacher-guide/assets/screenshots/14-universal-settings.png)
+
+Open it from the top of the left column. Collapsed, it summarises itself, for example *3rd Grade · English*, and that one line is worth reading before every generation.
+
+**Two ways to fill it in.** **AI Match** infers the settings from your source material and goal. **Manual** puts you in control of each one. AI Match is a good starting point; Manual is what you want once you know your class.
+
+**What is inside:**
+
+- **Grade level**, which drives vocabulary, sentence length, and complexity everywhere.
+- **Output language and translations**, which decide what language students receive. This is *not* the same as the interface language.
+- **Use emoji for visual support**, on or off.
+- **Differentiation Set**, for example *Target Level Only*, which decides whether you get one version or a range.
+- **Image Style**, a default used by Visuals, Glossary, Timeline and Concept Sort unless a tool overrides it.
+
+**The coverage notes are the important detail.** Under many settings sits a small line reading something like *Applies to 12 of 19 resource types*. AlloFlow is telling you exactly how far that setting reaches instead of implying it governs everything. When a setting seems not to have worked, check whether the tool you used is inside its coverage.
+
+**They apply to new work only.** Changing grade level does not rewrite what you already made. Set them first, then generate. [Universal Settings](#universal-settings-set-it-once-not-per-tool) goes further on using them well.
+
+### App settings
+
+#### The AI connection
+
+**AI Backend Settings** is on the Launch Pad, top right, and again under **AI** in the header's More information menu, which also holds model diagnostics and a usage meter.
+
+Until an AI is connected, tool panels show a line reading *Needs AI setup*, offering to connect one or to use AlloFlow inside Gemini Canvas. Nothing else is broken by this: browsing, the STEAM Lab, settings, saving and exporting all work. Only generation waits.
+
+The usage meter is worth knowing about before you run a full pack, because a pack is the fastest way to spend a daily quota.
+
+#### Interface language
+
+![The expanded header, with the App Language selector, the custom-language field, and the Translate, Documents, AI, Tools, Learn and Bridge controls](docs/teacher-guide/assets/screenshots/19-app-language.png)
+
+**App Language** changes the buttons, menus and labels. It sits in the expanded header under its own **APP LANGUAGE** label, with a dropdown for the listed languages and an **Enter Language** box beside it for one that is not listed.
+
+Changing it may offer to regenerate the content you already have so it matches, and it warns you first, because unsaved changes to the current text can be lost in that regeneration. Say no if you have unsaved work you care about, then change it again once you have saved.
+
+Remember the pairing: **App Language** for the language you read the interface in, **Universal Settings** for the language students receive. Setting one does not set the other.
+
+#### Voice and device setup
+
+Offered on the Launch Pad as **Voice and device setup**, and marked *Optional* because it is. This is where microphone and voice output get configured for AlloBot's Talk mode and read-aloud.
+
+The models that power it are downloaded once and kept on the device, so speech works without sending audio anywhere. They are also the largest thing AlloFlow stores. [Saving, loading, and managing storage](#saving-loading-and-managing-storage) covers the size and how to reclaim it.
+
+#### Who the device thinks you are
+
+On first run AlloFlow asks whether this is a Student, Teacher, Parent, or Independent Learner. That answer decides whether teacher controls appear at all.
+
+The header breadcrumb always shows the current answer, reading something like **TEACHER / SOURCE MATERIAL**, so a glance confirms you are not accidentally in a student view. **Student tools**, at the bottom right, is the deliberate way to look at your work as a student would.
+
+You can also move between **Guided Mode** and **Full Platform** whenever you like. The Launch Pad says so directly: you can switch modes any time from the menu.
+
+#### Cloud Sync
+
+A toggle in the More information menu. Off by default, which is consistent with the rest of the product: work stays on the device unless you choose otherwise.
+
+#### Storage
+
+How much of the device AlloFlow may use, which models are downloaded, and how to recover a previous session. All of it is in [Saving, loading, and managing storage](#saving-loading-and-managing-storage).
+
+### Three ways to get help without leaving the screen
+
+#### Help Mode: point at anything and ask
+
+**Help Mode** is the one to learn first. Turn it on and click any button, panel or tool, and AlloFlow explains that specific element in plain language. Turn it off and everything returns to normal, dismissing the tooltips and spotlights.
+
+Two ways in:
+
+- Press **?**, which is the fast route and what the onboarding hint points at.
+- Or open the command palette and choose **Toggle help mode**, described there as *click anything to learn what it does*.
+
+**Esc** turns it off. This is the fastest possible answer to "what is this control", because it never takes you away from the thing you were doing.
+
+#### The tour: a guided walk through the whole workspace
+
+The tour spotlights each part of the interface in turn, with an explanation of what it is for: the input panel, the accessibility upload, the AI Guide, the tool finder, Universal Settings, source analysis, and then each tool in the list.
+
+**How to start it.** Three routes, and the first is the one to remember:
+
+- **The map icon in the header.** Its tooltip reads *Start Tour*. It appears in the header's icon row alongside the cloud-sync toggle and the setup control. It only shows in teacher mode, which is one more reason to answer Teacher when AlloFlow asks who is using the device.
+- **The command palette**: press **Ctrl+K** and choose **Show me around the app**, described there as *a guided tour of the main features*.
+- **Ask AlloBot** to show you around, in those words.
+
+One deliberate touch worth knowing: **while the tour is running, every tool is shown**, with your purpose filters set aside, so you see the whole set rather than whatever subset was filtered when you started.
+
+The remediation pipeline has a tour of its own, reached the same way from inside that tool.
+
+#### The command palette: type what you want
+
+![The command palette, which groups commands by what they do and adapts to where you are](docs/teacher-guide/assets/screenshots/18-command-palette.png)
+
+**Ctrl+K** (Cmd+K, or Ctrl+Shift+P) opens it. Type in ordinary words and it finds the command.
+
+Three things make it more useful than a search box:
+
+- **It is grouped by intent.** A section for where you are right now, a **Navigate** group for moving between the four workspaces, and a **Create from this content** group for acting on what you have.
+- **It is context aware.** Commands that do not apply where you are standing say so, rather than failing quietly when you pick them.
+- **You can star the ones you use constantly**, which floats them to the top next time.
+
+**Esc** closes it. Between the palette, Help Mode, and the tour, you should rarely need to hunt through menus.
+
+### A sensible first-day setup
+
+1. Choose **Teacher** when asked who is using the device.
+2. Skip Quick Start if you are exploring; you can set everything later.
+3. Run **Show me around the app** once, all the way through.
+4. Connect an AI in **AI Backend Settings**, or note that generation waits until your district does.
+5. Set **Universal Settings**: grade, output language, and translations for your class.
+6. Set the storage preset to **Automatic**.
+7. Learn two keys: **Ctrl+K** and **?**.
+
+That is the whole configuration surface that matters on day one. Everything else can wait until you meet it.
+
+---
+
+## Saving, loading, and managing storage
+
+AlloFlow keeps your work on the device rather than in an account. That is what makes it usable without sign-in, rostering, or a district contract, and it is also the thing most likely to lose you a lesson if nobody explains it. This chapter explains where your work actually lives, how to save and reload it, and how to keep the device from filling up.
+
+Read [Privacy and responsible AI](#privacy-and-responsible-ai) for why the design is this way. This chapter is the operating manual.
+
+### Where your work lives
+
+Everything you generate is held in the browser's own storage on the machine you are using. Nothing is uploaded, which has three practical consequences worth stating plainly:
+
+- **Your work does not follow you to another device.** A lesson built on the classroom desktop is not on your laptop at home.
+- **Clearing browsing data erases it.** "Clear cookies and site data" removes AlloFlow's work along with everything else. On a managed fleet, a device wipe or a profile reset does the same.
+- **Nobody else can see it**, including us. There is no server copy to recover from, which is the trade you are making for the privacy.
+
+The fix for all three is the same, and it is the next section.
+
+### Save Project: the file that survives everything
+
+**Save Project** writes your entire session to a single file: the source material, every resource you generated, and the settings that produced them.
+
+- You give it a filename. AlloFlow adds the `.json` extension itself.
+- The file lands in your normal downloads location, so it can go to a school drive, a shared folder, or a USB stick like any other file.
+- **Load Project** reads it back. The button sits in the Source Material row in the left column, next to Upload, Link and Generate.
+
+This is the one habit worth building. If a lesson took you more than a few minutes to build, save the project. The file is device-independent, survives a browser wipe, and is how you move work between home and school.
+
+> **In Gemini Canvas, this matters even more.** Nothing survives closing the tab except files you have downloaded. The project file *is* your save.
+
+### Getting finished work out
+
+Saving a project preserves your ability to keep working. Exporting produces the thing students or colleagues actually receive. They are different jobs and you usually want both.
+
+The **Export** options include:
+
+- A **finished copy** to print or save as PDF.
+- A **worksheet** version, which is the same material with the answers removed.
+- A **teacher copy**, which adds answer keys, fact checks, analyses and UDL advice. Its own header tells you to keep it separate from student packets, and that instruction is there because the two look similar once printed.
+- **Copy Link for Students**, which hands over the student route rather than a file.
+
+For the full treatment of formats, margins, and what prints well, see [Documents and printing](#documents-and-printing-from-resource-to-handout).
+
+### Storage and recovery
+
+AlloFlow has a **Storage and recovery** panel, and on a device used all year you will eventually want it.
+
+#### Recovery
+
+If the app cannot find your previous session it says so directly, reporting that no restorable workspace was found rather than opening silently empty. You can also choose to **work without device recovery**, which is the right choice on a shared or public machine where you do not want work persisting after you walk away.
+
+Where a recovery key is offered, it is shown **once**. Write it down at the moment it appears, because it cannot be shown again.
+
+#### Storage presets
+
+Because browser storage is finite, AlloFlow lets you choose how much of it to use:
+
+| Preset | What it targets |
+| --- | --- |
+| **Standard** | About 20 workspaces, 150MB, and 50 offline resources. This is the normal behaviour. |
+| **Compact** | About 4 workspaces, 50MB, and 20 offline resources. Older unpinned draft-only work may expire. |
+| **Automatic** | Uses Standard normally, and drops to Compact when the device reports storage pressure. |
+
+**Automatic is the sensible default for a school device.** Choose Compact deliberately on a Chromebook that is short of space, and understand what you are agreeing to: unpinned drafts you have not saved as projects can be dropped. Anything you have saved as a project file is unaffected, because that file is outside the browser.
+
+If you ever see a message that a plan could not be archived because storage may be full, this panel is where you go.
+
+#### On-device speech models
+
+Voice features download their models once and then keep them on the device, so speech works without sending audio anywhere.
+
+- **Speech recognition (Whisper)** understands what you say.
+- **Natural voice (Kokoro)** reads text aloud in a natural voice.
+
+The panel shows each model's download size, whether it is already on this device, and the total model cache. These are the largest single thing AlloFlow stores, so if you need space back and you do not use voice features, this is the first place to look.
+
+#### Cached remediation work
+
+If you have run a document through the accessibility remediation pipeline, the result is held on the device so you can reopen and review it. The panel offers to open those results directly. See [Make a document accessible](#make-a-document-accessible-the-remediation-workflow) for that workflow.
+
+### A storage routine that prevents the common losses
+
+1. **Save Project whenever a lesson matters**, and name it something you will recognise in a downloads folder six weeks later.
+2. **Export the student-facing copy** as soon as it is right, so the deliverable exists independently of the app.
+3. **Set the storage preset to Automatic** and forget about it.
+4. **Before a device refresh, an OS update, or handing back a loaner**, save your projects. IT will not know your work was in there.
+5. **On a shared machine**, use "work without device recovery" and take your project file with you.
+
+### If work has gone missing
+
+Check these in order:
+
+1. **Is it a different device or a different browser profile?** On-device means exactly that, and a different Chrome profile is a different device as far as storage is concerned.
+2. **Was browsing data cleared?** By you, by an IT policy, or by a "clean up this device" tool.
+3. **Is there a project file?** Load Project is the answer whenever there is one.
+4. **Does the storage panel report a restorable workspace?** If it says none was found, there is nothing on this device to recover.
+
+If none of those apply, [Troubleshooting](#troubleshooting) covers the wider recovery sequence. And if the answer turns out to be that no project file was ever saved, that is the habit worth changing rather than a fault to chase.
 
 ---
 
@@ -2848,21 +3306,45 @@ Work product stays in the browser's own storage on the device that created it (l
 - Nothing to breach centrally, nothing to subpoena from a vendor, nothing to delete on offboarding.
 - A lost or wiped device loses its local work unless the user exported a project file. Treat exported project files as instructional records under your normal file-handling policy.
 
-The full data-path table, including live sessions, exports, QR codes, and LMS launches, is in [Privacy and responsible AI](#privacy-and-responsible-ai); it is written to be reviewed line by line with a privacy officer.
+#### Every place work can come to rest
 
-### The one exception: the educator evaluation portal
+Browser storage is the default, not the only destination. These are the paths an audit should account for, in rough order of how often they are used:
 
-Everything above describes the default. There is exactly one part of AlloFlow where a district deliberately stands up a server-side store, and it is worth knowing about because it holds **personnel** records: the Educator Evaluation portal. It is optional. Without it, the evaluation tool behaves like every other tool and keeps records in the signed-in browser profile on one device.
+| Destination | Who owns the storage | What lands there |
+|---|---|---|
+| Browser storage on the device | The device, under your fleet policy | All working state: workspaces, drafts, settings, generated resources |
+| AlloFlow project file (`Save Project`) | Wherever the user saves it | A full snapshot: source material, generated resources, settings, notes |
+| Exports (PDF, print, accessible document, worksheet, teacher copy) | Wherever the user saves it | Finished copies, and the teacher copy also carries answer keys |
+| QR code or student share link | No new storage; a new access path | Whatever the shared route exposes |
+| Live session transport | Local peer connections, or a mailbox you deploy (below) | Session coordination and student responses |
+| LMS launch | Your LMS | Course, role, and assignment context supplied by the LMS |
+| Optional Apps Script services | **Your school's own Google Drive** | Only what that specific service is for (below) |
+| On-device model and remediation caches | The device | Cached speech models and remediation working data |
 
-When a district does want shared, authenticated evaluation records, an administrator deploys a small Apps Script project **into a district-owned Google account, never a personal one**:
+Two consequences worth stating to a leadership team. Browser storage means a wiped device or a cleared profile destroys unexported work, so "save the project file" is an operational instruction, not a nicety. And "local" is not the same as "safe": a shared Windows profile, a synced Downloads folder, or a copied project file moves instructional content exactly as far as any other file would.
 
-- **It runs in your tenant, not ours.** The workspace file, its index spreadsheet, and released summary documents live in a Drive folder owned by your deployment account. The server code makes **no external network calls at all**, so nothing leaves your Google Workspace. That is what lets it sit under the Workspace for Education agreement you already have.
-- **It fails closed.** Access is limited to accounts on your domain that an administrator has added, deployed as *Execute as: Me* with *Who has access: users in your domain*. The server, not the link, decides each person's role and which records they see. Someone without a district account gets nothing.
-- **Storage is private by verified default.** Setup sets the repository folder and files to private and then checks that it took effect, refusing to continue if it cannot confirm it.
-- **Notifications carry no content.** Email says only that there was portal activity. Ratings, names, and evidence stay inside the authenticated portal. Released summaries are Google Docs shared view-only to the one educator they belong to.
-- **The legal frame is personnel, not student.** FERPA governs student education records and is largely the wrong lens here. What governs is your state's personnel-records law, the collective bargaining agreement, and district retention and discoverability policy. Keep student names out of observation evidence and that separation holds.
+The full teacher-facing data-path table is in [Privacy and responsible AI](#privacy-and-responsible-ai); it is written to be reviewed line by line with a privacy officer. The teacher-side mechanics of saving, exporting, storage presets and recovery are in [Saving and storage](#saving-loading-and-managing-storage).
 
-Things you can check yourself: `verifyDeploymentIdentity()` confirms the deployment identity, `getPortalSetupHealth()` reports the domain lock and configuration state, and `doGet?api=health` reveals only service status to an already-authorized member. The package and its deployment README are in `apps_script/educator_evaluation/`, and the operating manual is the [Educator Growth & Evaluation user manual](https://alloflow-cdn.pages.dev/educator-evaluation-manual).
+#### The Google Drive option: services you deploy in your own tenant
+
+AlloFlow has no server. When a school genuinely needs shared or persistent storage, the pattern is always the same: a small Apps Script project deployed **into a school-owned Google account, never a personal one**, so the data sits in your Drive under the Workspace for Education agreement you already hold. Each is optional, and each is off until someone deploys it. The packages and their deployment READMEs are in `apps_script/`.
+
+They do not share one security model, and the differences are the part worth your attention:
+
+| Service | Deployed by | Identity model | Holds |
+|---|---|---|---|
+| Educator Evaluation repository | District administrator | Google identity, locked to your domain; the server decides each person's role | Personnel records, with a tamper-evident audit chain |
+| Walkthrough Records | A principal, in their own account | `drive.file` scope only; each file is Restricted and shared with one named teacher, so Google enforces the reader's identity | Walkthrough feedback a human wrote and approved |
+| Class Mailbox | A teacher, in their own account | Capability tokens, no student accounts; possession of the link stands in for identity | Live session and homework-pack traffic |
+| Leadership Hub backup | A school leader, in their own account | Capability token that can only touch files the script itself created; files created Restricted | The Leadership Hub's own backup file |
+
+The distinction that matters: **a link-possession model is appropriate for anonymous class traffic and inappropriate for anything about a named staff member.** The Class Mailbox is deliberately built the first way and the other three are not. Walkthrough Records is explicitly not a system of record and never scores anyone; if you need a district system of record with verified identity, assignments and an audit trail, that is the Educator Evaluation repository.
+
+#### The educator evaluation portal, in one paragraph
+
+The one service that holds **personnel** records deserves a named pointer rather than a summary here. It is optional; without it the evaluation tool keeps records in the signed-in browser profile on one device like every other tool. When a district does deploy it, an administrator installs it into a **district-owned Google account, never a personal one**, and from there it runs in your tenant, makes **no external network calls**, **fails closed** to accounts on your domain, sets its storage private and verifies that it took effect, and sends notifications that carry no ratings or evidence. The legal frame is personnel law, your collective bargaining agreement and district retention policy, not FERPA. You can verify a deployment yourself with `verifyDeploymentIdentity()`, `getPortalSetupHealth()`, `verifyAuditChain()` and `doGet?api=health`.
+
+For the full treatment, read the [Educator Growth & Evaluation user manual](https://alloflow-cdn.pages.dev/educator-evaluation-manual), which covers setup, roles, the audit chain and the release workflow in detail, and [For school leaders](#for-school-leaders-the-leadership-hub) for how it sits beside the rest of the suite.
 
 ### The AI question, which is really three options
 
@@ -2891,7 +3373,7 @@ Teachers are instructed throughout this guide to use de-identified content with 
 
 ### The two-sentence version for a busy director
 
-AlloFlow is a static, open source web app with no accounts and no vendor-side data storage; work stays on the device, and AI runs only through the backend the district chooses, including a fully local option. The realistic review effort is the same as approving a website plus, if you choose one, an AI provider you have likely already reviewed.
+AlloFlow is a static, open source web app with no accounts and no vendor-side data storage; work stays on the device by default, and AI runs only through the backend the district chooses, including a fully local option. Where a school does want shared storage, it deploys a small optional service into its own Google Drive, so that data stays in your tenant too. The realistic review effort is the same as approving a website plus, if you choose one, an AI provider you have likely already reviewed.
 
 ---
 

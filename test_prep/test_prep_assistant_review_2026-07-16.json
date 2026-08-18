@@ -6,8 +6,8 @@
   "status": "reviewed-target-not-met",
   "snapshot": {
     "algorithm": "sha256",
-    "generatedAt": "2026-08-17T17:45:54.267Z",
-    "hash": "1d4e8fdc5693769db84631f31c99529c508ba791a49f102b5017a9179cd19f39"
+    "generatedAt": "2026-08-17T21:52:07.652Z",
+    "hash": "eb7a4de351ae23cb8dbf77797bdf0d726275659479eb86aed05de3a9cc010ba4"
   },
   "standard": {
     "target": "500 genuinely distinct exam-style questions per non-EPPP pack",
@@ -33,15 +33,15 @@
   },
   "inventory": {
     "originalSourceQuestions": 4400,
-    "distinctSourceContentKernels": 2262,
-    "parallelSourceVariants": 2138,
+    "distinctSourceContentKernels": 2271,
+    "parallelSourceVariants": 2129,
     "assistantAuthoredIndependentItems": 900,
     "independentPracticeItems": 5300,
-    "distinctIndependentContentKernels": 3162,
-    "parallelIndependentVariants": 2138,
+    "distinctIndependentContentKernels": 3171,
+    "parallelIndependentVariants": 2129,
     "guidedReviewActivities": 5700,
     "independentQuestionTarget": 11000,
-    "newIndependentItemsNeeded": 7838
+    "newIndependentItemsNeeded": 7829
   },
   "verdict": {
     "structuralStatus": "pass",
@@ -57,7 +57,7 @@
     "The misconception-correction form repeats the selected response in keyed feedback, creating a lexical matching cue.",
     "The response-and-evidence form repeats the same evidence across all four options, so the task largely asks the learner to reselect the original answer.",
     "The comparison form always presents the source-correct response first in the prompt and commonly includes only two choices that directly evaluate the named pair.",
-    "The original 4,400 source questions contain 2,262 normalized content kernels and 2,138 parallel variants.",
+    "The original 4,400 source questions contain 2,271 normalized content kernels and 2,129 parallel variants.",
     "Every learner-visible source now resolves to a catalog entry with a readable title, organization, brief summary, and credibility explanation; broad source-bundle reuse remains an editorial-depth warning rather than a missing-metadata defect."
   ],
   "correctionsCompleted": [
@@ -79,7 +79,7 @@
     "Content-kernel counts detect normalized within-pack reuse. They do not by themselves establish item quality or detect every semantically similar question across different wording."
   ],
   "nextWork": [
-    "Author the per-pack gap shown below as genuinely new credential-specific questions; the total remaining gap is 7,838.",
+    "Author the per-pack gap shown below as genuinely new credential-specific questions; the total remaining gap is 7,829.",
     "Give each new question a new stimulus or decision, plausible distractors, item-specific feedback, and a source that directly supports the tested principle.",
     "Review and release additions pack by pack in 100-item stages; keep guided-review activities as a separate learning mode.",
     "After authoring, run independent subject-matter and psychometric review if the product will make stronger validity or readiness claims."
@@ -146,8 +146,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 295,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "d6069d125f43ae852be4d9a9811d3354fe30353d19585739ff8a32fa2b2cb7bc",
-      "itemsSha256": "45c0414db61525d8e761b89c052995944a29db304ed1774de145b9e82b1479b4"
+      "packSha256": "aad848ddb8ce901b0469c9a58e9572a0cc44d3a6863c052d14383818c12ab1bd",
+      "itemsSha256": "6cfdc7cca19c12804e1eab2b5fdaf00427e6dd4bc8f11e2cf5d9fbbb8959ed1c"
     },
     {
       "stem": "educational_leadership_5412",
@@ -222,8 +222,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 400,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "c6fb81610f1c547a76e81a426cf45c2ac92dfa2c305686735c8c60c6ef2f23fe",
-      "itemsSha256": "1ed8a7560c553edbacd83550af8ae93a9b1a22f4b873e6fef2556bcc7bc65235"
+      "packSha256": "3c7161197293818b576bdf4a7ea37aa6dc292cd740e19d44b6ff556590568e0d",
+      "itemsSha256": "2d2edbb9ee1db17b8f610c99d712dd05cd36a24c2021b4ced7072e4c173d2d9d"
     },
     {
       "stem": "plt_7_12_5624",
@@ -241,8 +241,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 400,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "85b4aa0a5a68060a3f71e79ba8c461d8764196ebbf93b629e21ca5598aa4c352",
-      "itemsSha256": "1c26dfd495da2f18949dc8039f61b77db10c93dc6a896c499973d768a5f0223b"
+      "packSha256": "231e41382c09c86d5909e58ae3e611e57be5172d7a87896eabb9ebbcf9297b57",
+      "itemsSha256": "14bbeecd01760246c6e7a086f55ab7387f31bf92f392f8d0b38e05361fd64e08"
     },
     {
       "stem": "plt_early_childhood_5621",
@@ -260,8 +260,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 400,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "5dbf53c462cbe0b6092077aeae5910644aa6d1f8af16e15f7178eaf1be42b341",
-      "itemsSha256": "58143ac671a1842068b423a80869942780ece08965cd506cc3e962fb4557bd1c"
+      "packSha256": "e768a3de53701ff8289ef8bce37576f0c7503ca9f27a8f93ae360658cadf44d3",
+      "itemsSha256": "85ea466bae714cb43cbf466baacb4f300b6f76b9f151939da11772ae24ecc8b2"
     },
     {
       "stem": "plt_k6_5622",
@@ -347,16 +347,16 @@
       "sourceQuestions": 200,
       "assistantAuthoredIndependentItems": 100,
       "independentPracticeItems": 300,
-      "distinctSourceContentKernels": 26,
-      "parallelSourceVariants": 174,
-      "distinctIndependentContentKernels": 126,
-      "parallelIndependentVariants": 174,
+      "distinctSourceContentKernels": 35,
+      "parallelSourceVariants": 165,
+      "distinctIndependentContentKernels": 135,
+      "parallelIndependentVariants": 165,
       "guidedReviewActivities": 200,
       "independentQuestionTarget": 500,
-      "newIndependentItemsNeeded": 374,
+      "newIndependentItemsNeeded": 365,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "cb3c8bc24d576789066ed622b2aef00e829f0ce68791057129a70aeb437ac3eb",
-      "itemsSha256": "3788457639bd40b01783bf7acb66aacb3df86f38d0f4576683716929afbda620"
+      "packSha256": "02650e2c7f756eeb62e3a910c2001df860b62ec25e6e5de0cf61e94cd146ed99",
+      "itemsSha256": "8941238fedea371635805cca5228cabb3dd8d7e6104f1c3494c8b482cfc01323"
     },
     {
       "stem": "school_psychologist_5403",

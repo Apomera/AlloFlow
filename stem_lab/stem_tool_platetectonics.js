@@ -9062,68 +9062,280 @@ var d = labToolData.plateTectonics || {};
 
                 var ERA_CONTINENTS = [
                   // 0: Hadean - no continents, just magma ocean
-                  { name: __alloT('stem.platetectonics.hadean_2', 'Hadean'), ocean: '#1a0505', land: '#cc3300', continents: [],
-                    magma: true, desc: __alloT('stem.platetectonics.molten_magma_ocean', 'Molten magma ocean') },
+                  { name: __alloT('stem.platetectonics.hadean_2', 'Hadean'), ocean: '#1a0505', land: '#cc3300', magma: true, desc: __alloT('stem.platetectonics.molten_magma_ocean', 'Molten magma ocean') },
 
                   // 1: Archean - small cratons
-                  { name: __alloT('stem.platetectonics.archean_2', 'Archean'), ocean: '#0a1e4a', land: '#6b7c3f', continents: [
-                    { cx: -0.05, cy: 0.05, r: 0.18, shape: 'blob', label: __alloT('stem.platetectonics.vaalbara', 'Vaalbara'), color: '#7a8a40' },
-                    { cx: 0.2,  cy: -0.15, r: 0.12, shape: 'blob', label: 'Ur', color: '#8a9050' },
-                    { cx: -0.25, cy: -0.1, r: 0.10, shape: 'blob', label: __alloT('stem.platetectonics.kenorland', 'Kenorland'), color: '#6a7a35' }
-                  ] },
+                  { name: __alloT('stem.platetectonics.archean_2', 'Archean'), ocean: '#0a1e4a', land: '#6b7c3f' },
 
                   // 2: Rodinia - first supercontinent
-                  { name: __alloT('stem.platetectonics.rodinia_2', 'Rodinia'), ocean: '#082854', land: '#5a7a30', continents: [
-                    { cx: 0, cy: 0.05, r: 0.42, shape: 'pangaea', label: __alloT('stem.platetectonics.rodinia_3', 'Rodinia'), color: '#5a7a30' }
-                  ] },
+                  { name: __alloT('stem.platetectonics.rodinia_2', 'Rodinia'), ocean: '#082854', land: '#5a7a30' },
 
                   // 3: Pangaea - all land united
-                  { name: __alloT('stem.platetectonics.pangaea_2', 'Pangaea'), ocean: '#0e4080', land: '#3d8b37', continents: [
-                    { cx: 0.05, cy: 0, r: 0.52, shape: 'pangaea', label: __alloT('stem.platetectonics.pangaea_3', 'Pangaea'), color: '#3d8b37' }
-                  ] },
+                  { name: __alloT('stem.platetectonics.pangaea_2', 'Pangaea'), ocean: '#0e4080', land: '#3d8b37' },
 
                   // 4: Breakup - Laurasia + Gondwana
-                  { name: __alloT('stem.platetectonics.breakup_2', 'Breakup'), ocean: '#125ea0', land: '#4a9e44', continents: [
-                    { cx: -0.08, cy: -0.18, r: 0.30, shape: 'blob', label: __alloT('stem.platetectonics.laurasia', 'Laurasia'), color: '#5aad50' },
-                    { cx: 0.05, cy: 0.18, r: 0.32, shape: 'blob', label: __alloT('stem.platetectonics.gondwana', 'Gondwana'), color: '#3d8b37' }
-                  ], riftLine: { y: 0.02, width: 0.6, color: 'rgba(255,100,0,0.4)' } },
+                  { name: __alloT('stem.platetectonics.breakup_2', 'Breakup'), ocean: '#125ea0', land: '#4a9e44', riftLine: { y: 0.02, width: 0.6, color: 'rgba(255,100,0,0.4)' } },
 
                   // 5: Cretaceous - continents separating
-                  { name: __alloT('stem.platetectonics.cretaceous_2', 'Cretaceous'), ocean: '#1a70b8', land: '#50b848', continents: [
-                    { cx: -0.32, cy: -0.15, r: 0.16, shape: 'blob', label: __alloT('stem.platetectonics.n_america', 'N. America'), color: '#4a8040' },
-                    { cx: 0.12,  cy: -0.20, r: 0.20, shape: 'blob', label: __alloT('stem.platetectonics.eurasia', 'Eurasia'), color: '#5a9050' },
-                    { cx: -0.18, cy: 0.18,  r: 0.13, shape: 'blob', label: __alloT('stem.platetectonics.s_america', 'S. America'), color: '#3d8030' },
-                    { cx: 0.08,  cy: 0.12,  r: 0.15, shape: 'blob', label: __alloT('stem.platetectonics.africa', 'Africa'), color: '#6a9a55' },
-                    { cx: 0.28,  cy: 0.10,  r: 0.07, shape: 'blob', label: __alloT('stem.platetectonics.india', 'India'), color: '#80a060' },
-                    { cx: 0.15,  cy: 0.38,  r: 0.14, shape: 'blob', label: 'Antarctica+Aus', color: '#90b070' }
-                  ], riftLine: { y: 0.0, width: 0.8, color: 'rgba(255,80,0,0.25)' } },
+                  { name: __alloT('stem.platetectonics.cretaceous_2', 'Cretaceous'), ocean: '#1a70b8', land: '#50b848', riftLine: { y: 0.0, width: 0.8, color: 'rgba(255,80,0,0.25)' } },
 
                   // 6: Cenozoic - near-modern arrangement
-                  { name: __alloT('stem.platetectonics.cenozoic_2', 'Cenozoic'), ocean: '#1e82cc', land: '#4caf50', continents: [
-                    { cx: -0.35, cy: -0.12, r: 0.14, shape: 'blob', label: __alloT('stem.platetectonics.n_america_2', 'N. America'), color: '#558040' },
-                    { cx: -0.20, cy: 0.22,  r: 0.11, shape: 'blob', label: __alloT('stem.platetectonics.s_america_2', 'S. America'), color: '#3d7530' },
-                    { cx: 0.05,  cy: 0.0,   r: 0.13, shape: 'blob', label: __alloT('stem.platetectonics.africa_2', 'Africa'), color: '#7a9a55' },
-                    { cx: 0.18,  cy: -0.22, r: 0.19, shape: 'blob', label: __alloT('stem.platetectonics.eurasia_2', 'Eurasia'), color: '#5a8e48' },
-                    { cx: 0.22,  cy: -0.05, r: 0.05, shape: 'blob', label: __alloT('stem.platetectonics.india_2', 'India'), color: '#80a560' },
-                    { cx: 0.35,  cy: 0.30,  r: 0.09, shape: 'blob', label: __alloT('stem.platetectonics.australia', 'Australia'), color: '#90b570' },
-                    { cx: 0.0,   cy: 0.42,  r: 0.10, shape: 'blob', label: __alloT('stem.platetectonics.antarctica', 'Antarctica'), color: '#c0d8c0' }
-                  ] },
+                  { name: __alloT('stem.platetectonics.cenozoic_2', 'Cenozoic'), ocean: '#1e82cc', land: '#4caf50' },
 
                   // 7: Modern - current configuration
-                  { name: __alloT('stem.platetectonics.modern_2', 'Modern'), ocean: '#2196f3', land: '#4caf50', continents: [
-                    { cx: -0.35, cy: -0.15, r: 0.14, shape: 'blob', label: __alloT('stem.platetectonics.n_america_3', 'N. America'), color: '#558b40' },
-                    { cx: -0.22, cy: 0.22,  r: 0.11, shape: 'blob', label: __alloT('stem.platetectonics.s_america_3', 'S. America'), color: '#3d7a30' },
-                    { cx: 0.05,  cy: -0.02, r: 0.13, shape: 'blob', label: __alloT('stem.platetectonics.africa_3', 'Africa'), color: '#7a9a55' },
-                    { cx: 0.18,  cy: -0.25, r: 0.20, shape: 'blob', label: __alloT('stem.platetectonics.eurasia_3', 'Eurasia'), color: '#5a8e48' },
-                    { cx: 0.25,  cy: 0.02,  r: 0.05, shape: 'blob', label: __alloT('stem.platetectonics.india_3', 'India'), color: '#80a560' },
-                    { cx: 0.38,  cy: 0.30,  r: 0.09, shape: 'blob', label: __alloT('stem.platetectonics.australia_2', 'Australia'), color: '#90b570' },
-                    { cx: 0.0,   cy: 0.45,  r: 0.10, shape: 'blob', label: __alloT('stem.platetectonics.antarctica_2', 'Antarctica'), color: '#c0d8c0' }
-                  ] }
+                  { name: __alloT('stem.platetectonics.modern_2', 'Modern'), ocean: '#2196f3', land: '#4caf50' }
                 ];
 
                 // Map timeline era index to continent config
 
                 var eraMap = [0, 1, 2, 3, 4, 5, 6, 7];
+
+
+                // ═══ Continent geometry ═══
+                // Continents were previously drawn as procedural noise blobs -
+                // contR * (0.75 + 0.25*sin(3a) + 0.1*cos(5a) + ...) - so Africa,
+                // India and Australia were the same lumpy circle at different
+                // sizes, and nothing was projected: the disc was treated as a flat
+                // plane, so land near the limb was not foreshortened.
+                //
+                // This replaces them with coarse real coastlines in lat/lon and a
+                // true orthographic projection with far-side culling, so the globe
+                // reads as a sphere and each landmass is recognisable.
+                var AlloTectonicsGeo = (function () {
+                  var OUTLINES = {
+                    'N. America': [[-168,65],[-150,71],[-125,70],[-100,74],[-80,73],[-60,62],[-55,52],[-63,45],[-70,42],[-76,35],[-81,25],[-90,29],[-97,26],[-105,20],[-115,30],[-124,40],[-124,48],[-140,60]],
+                    'S. America': [[-81,-4],[-75,8],[-60,10],[-52,4],[-44,-2],[-35,-8],[-38,-13],[-48,-25],[-58,-34],[-62,-40],[-68,-52],[-75,-52],[-72,-45],[-71,-33],[-70,-18]],
+                    'Africa': [[-17,15],[-10,27],[0,32],[10,37],[25,32],[35,30],[43,12],[51,12],[42,-2],[40,-15],[35,-25],[25,-34],[18,-34],[12,-18],[9,-1],[5,5],[-8,5]],
+                    'Eurasia': [[-10,36],[0,44],[5,52],[-5,58],[10,64],[30,70],[60,72],[90,76],[130,72],[160,70],[170,65],[160,58],[142,45],[130,35],[120,30],[110,20],[100,10],[95,15],[88,22],[75,25],[62,25],[52,28],[45,38],[35,42],[28,40],[15,38]],
+                    'India': [[68,24],[72,20],[75,15],[78,10],[80,8],[85,20],[88,22],[80,25],[75,28]],
+                    'Australia': [[113,-22],[114,-33],[125,-33],[135,-35],[147,-38],[150,-33],[153,-27],[145,-15],[135,-12],[128,-15],[120,-20]]
+                  };
+                  var PANGAEA = {
+                    'N. America': { dLon: 55, dLat: -18 }, 'S. America': { dLon: 35, dLat: 12 },
+                    'Africa': { dLon: -10, dLat: 5 }, 'Eurasia': { dLon: -25, dLat: -8 },
+                    'India': { dLon: -33, dLat: -44 }, 'Australia': { dLon: -58, dLat: -20 },
+                    'Antarctica': { edgeLat: -78 }
+                  };
+                  // Drift is one continuous motion, so the post-Pangaea eras are
+                  // fractions of the same displacement instead of separate layouts.
+                  function driftAt(f) {
+                    var out = {};
+                    Object.keys(PANGAEA).forEach(function (n) {
+                      var p = PANGAEA[n];
+                      if (n === 'Antarctica') { out[n] = { edgeLat: -68 + (p.edgeLat + 68) * f }; return; }
+                      out[n] = { dLon: (p.dLon || 0) * f, dLat: (p.dLat || 0) * f };
+                    });
+                    return out;
+                  }
+                  var BESPOKE = {
+                    rodinia: { 'Africa':{dLon:-4,dLat:-6,scale:0.9}, 'S. America':{dLon:24,dLat:-10,scale:0.85},
+                               'N. America':{dLon:44,dLat:14,scale:0.8}, 'Eurasia':{dLon:-30,dLat:2,scale:0.7},
+                               'Australia':{dLon:-52,dLat:-26,scale:0.7} },
+                    archean: { 'Africa':{dLon:-6,dLat:2,scale:0.34}, 'Eurasia':{dLon:-46,dLat:12,scale:0.2}, 'Australia':{dLon:20,dLat:-18,scale:0.3} },
+                    hadean: {}
+                  };
+                  // When an era is about GROUPS rather than continents, label the
+                  // group once at the combined centroid. Breakup is titled
+                  // "Laurasia + Gondwana", so naming seven separate landmasses
+                  // there teaches the wrong thing.
+                  var GROUPS = {
+                    breakup: {
+                      'N. America': 'Laurasia', 'Eurasia': 'Laurasia',
+                      'S. America': 'Gondwana', 'Africa': 'Gondwana',
+                      'India': 'Gondwana', 'Australia': 'Gondwana', 'Antarctica': 'Gondwana'
+                    }
+                  };
+                  var LABELS = {
+                    rodinia: { 'Africa': 'Rodinia' },
+                    archean: { 'Africa': 'Vaalbara', 'Eurasia': 'Ur', 'Australia': 'Kenorland' },
+                    pangaea: { 'Africa': 'Pangaea' }
+                  };
+                  // Timeline index -> era. 0-2 are reconstructions with low outline
+                  // confidence and use scaled fragments; 3-7 ride the drift curve.
+                  var DRIFT_BY_INDEX = { 3: 1, 4: 0.78, 5: 0.5, 6: 0.22, 7: 0 };
+                  var KEY_BY_INDEX = ['hadean','archean','rodinia','pangaea','breakup','cretaceous','cenozoic','modern'];
+                  var RAD = Math.PI / 180;
+                  function centroid(r) { var x=0,y=0; for (var i=0;i<r.length;i++){x+=r[i][0];y+=r[i][1];} return [x/r.length,y/r.length]; }
+                  function transformRing(ring, t) {
+                    if (!t) return ring;
+                    var c = centroid(ring), sc = t.scale || 1;
+                    return ring.map(function (p) {
+                      return [c[0]+(p[0]-c[0])*sc+(t.dLon||0), Math.max(-88, Math.min(88, c[1]+(p[1]-c[1])*sc+(t.dLat||0)))];
+                    });
+                  }
+                  function antarcticaRing(edgeLat) {
+                    var r = [];
+                    for (var lon = -180; lon <= 180; lon += 10) r.push([lon, edgeLat + 4*Math.sin(lon*Math.PI/45)]);
+                    return r;
+                  }
+                  function densify(ring, step) {
+                    var out = [];
+                    for (var i=0;i<ring.length;i++) {
+                      var a=ring[i], b=ring[(i+1)%ring.length];
+                      var n = Math.max(1, Math.ceil(Math.max(Math.abs(b[0]-a[0]), Math.abs(b[1]-a[1]))/step));
+                      for (var k=0;k<n;k++){ var t=k/n; out.push([a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t]); }
+                    }
+                    return out;
+                  }
+                  function makeProjector(cx, cy, R, lon0, lat0) {
+                    var s0=Math.sin(lat0*RAD), c0=Math.cos(lat0*RAD);
+                    return function (lon, lat) {
+                      var dl=(lon-lon0)*RAD, la=lat*RAD;
+                      return { x: cx + R*Math.cos(la)*Math.sin(dl),
+                               y: cy - R*(c0*Math.sin(la) - s0*Math.cos(la)*Math.cos(dl)),
+                               visible: (s0*Math.sin(la) + c0*Math.cos(la)*Math.cos(dl)) > 0 };
+                    };
+                  }
+                  function visibleSegments(ring, project, cx, cy, R) {
+                    var pts = ring.map(function (p) { var q = project(p[0], p[1]); q.lon=p[0]; q.lat=p[1]; return q; });
+                    var segs=[], cur=[];
+                    for (var i=0;i<pts.length;i++) {
+                      var a=pts[i], b=pts[(i+1)%pts.length];
+                      if (a.visible) cur.push(a);
+                      if (a.visible !== b.visible) {
+                        var lo=0, hi=1;
+                        for (var k=0;k<20;k++) {
+                          var m=(lo+hi)/2;
+                          var q=project(a.lon+(b.lon-a.lon)*m, a.lat+(b.lat-a.lat)*m);
+                          if (q.visible === a.visible) lo=m; else hi=m;
+                        }
+                        var e=project(a.lon+(b.lon-a.lon)*lo, a.lat+(b.lat-a.lat)*lo);
+                        var ang=Math.atan2(e.y-cy, e.x-cx);
+                        e.x=cx+R*Math.cos(ang); e.y=cy+R*Math.sin(ang); e.limb=true; e.ang=ang;
+                        cur.push(e);
+                        if (a.visible) { segs.push(cur); cur=[]; }
+                      }
+                    }
+                    if (cur.length) {
+                      if (segs.length && segs[0][0] && !segs[0][0].limb) segs[0]=cur.concat(segs[0]);
+                      else segs.push(cur);
+                    }
+                    return segs.filter(function (x) { return x.length > 2; });
+                  }
+                  // Close across the limb along the ARC. Closing with a straight
+                  // chord turned any continent half past the horizon into a spike.
+                  function tracePath(ctx, seg, cx, cy, R) {
+                    ctx.beginPath();
+                    ctx.moveTo(seg[0].x, seg[0].y);
+                    for (var i=1;i<seg.length;i++) ctx.lineTo(seg[i].x, seg[i].y);
+                    var f=seg[0], l=seg[seg.length-1];
+                    if (f.limb && l.limb) {
+                      var d=f.ang-l.ang;
+                      while (d>Math.PI) d-=Math.PI*2;
+                      while (d<-Math.PI) d+=Math.PI*2;
+                      ctx.arc(cx, cy, R, l.ang, l.ang+d, d<0);
+                    }
+                    ctx.closePath();
+                  }
+                  function eraConfig(idx, frac) {
+                    var key = KEY_BY_INDEX[idx] || 'modern';
+                    if (BESPOKE[key]) return { key: key, cfg: BESPOKE[key] };
+                    var f = DRIFT_BY_INDEX[idx];
+                    var nf = DRIFT_BY_INDEX[idx + 1];
+                    if (nf !== undefined && frac > 0) f = f + (nf - f) * frac;
+                    return { key: key, cfg: driftAt(f) };
+                  }
+                  function draw(ctx, o) {
+                    var cx=o.cx, cy=o.cy, R=o.R;
+                    var picked = eraConfig(o.eraIndex, o.eraFrac || 0);
+                    var era = picked.cfg;
+                    var project = makeProjector(cx, cy, R, o.lon0 || 0, 12);
+                    if (o.showGraticule !== false) {
+                      ctx.strokeStyle='rgba(255,255,255,0.07)'; ctx.lineWidth=1;
+                      for (var lat=-60; lat<=60; lat+=30) {
+                        ctx.beginPath(); var st=false;
+                        for (var lon=-180; lon<=180; lon+=4) {
+                          var q=project(lon,lat);
+                          if (!q.visible) { st=false; continue; }
+                          if (!st) { ctx.moveTo(q.x,q.y); st=true; } else ctx.lineTo(q.x,q.y);
+                        }
+                        ctx.stroke();
+                      }
+                      for (var ml=-180; ml<180; ml+=30) {
+                        ctx.beginPath(); var st2=false;
+                        for (var mt=-85; mt<=85; mt+=4) {
+                          var p2=project(ml,mt);
+                          if (!p2.visible) { st2=false; continue; }
+                          if (!st2) { ctx.moveTo(p2.x,p2.y); st2=true; } else ctx.lineTo(p2.x,p2.y);
+                        }
+                        ctx.stroke();
+                      }
+                    }
+                    var pending = [];
+                    var groupAcc = {};
+                    Object.keys(era).forEach(function (name) {
+                      var t = era[name];
+                      var base = name === 'Antarctica' ? antarcticaRing(t.edgeLat || -68) : (OUTLINES[name] ? transformRing(OUTLINES[name], t) : null);
+                      if (!base) return;
+                      var segs = visibleSegments(densify(base, 4), project, cx, cy, R);
+                      if (!segs.length) return;
+                      segs.forEach(function (seg) {
+                        tracePath(ctx, seg, cx, cy, R);
+                        ctx.fillStyle = o.landColor || '#4f8f3f';
+                        ctx.shadowColor='rgba(0,0,0,0.35)'; ctx.shadowBlur=6;
+                        ctx.fill(); ctx.shadowBlur=0;
+                        ctx.strokeStyle='rgba(255,255,255,0.22)'; ctx.lineWidth=1; ctx.stroke();
+                      });
+                      var named = !LABELS[picked.key] || LABELS[picked.key][name];
+                      if (!named) return;
+                      var big = segs.reduce(function (b,x){ return x.length>b.length?x:b; }, segs[0]);
+                      var area=0;
+                      for (var i=0;i<big.length;i++){ var p1=big[i], p2b=big[(i+1)%big.length]; area += p1.x*p2b.y - p2b.x*p1.y; }
+                      area = Math.abs(area)/2;
+                      var mx=0,my=0; big.forEach(function(p){ mx+=p.x; my+=p.y; });
+                      mx/=big.length; my/=big.length;
+                      var grp = GROUPS[picked.key] && GROUPS[picked.key][name];
+                      if (grp) { groupAcc[grp] = groupAcc[grp] || { x:0, y:0, w:0 };
+                                 groupAcc[grp].x += mx*area; groupAcc[grp].y += my*area; groupAcc[grp].w += area; return; }
+                      if (area < R*R*0.035) return;
+                      var raw = (LABELS[picked.key] && LABELS[picked.key][name]) || name;
+                      pending.push({ text: (o.labels && o.labels[raw]) || raw, x: mx, y: my });
+                    });
+                    Object.keys(groupAcc).forEach(function (g) {
+                      var a = groupAcc[g];
+                      if (a.w <= 0) return;
+                      pending.push({ text: (o.labels && o.labels[g]) || g, x: a.x/a.w, y: a.y/a.w });
+                    });
+                    // Labels last: drawn inline, a later continent's fill painted
+                    // over an earlier one's label.
+                    ctx.font = 'bold ' + Math.max(9, Math.round(R * 0.09)) + 'px Inter, system-ui';
+                    ctx.textAlign='center';
+                    ctx.fillStyle='rgba(255,255,255,0.94)';
+                    ctx.shadowColor='rgba(0,0,0,0.9)'; ctx.shadowBlur=4;
+                    pending.forEach(function (l) {
+                      var half = ctx.measureText(l.text).width/2 + 3;
+                      var dx=l.x-cx, dy=l.y-cy, dist=Math.hypot(dx,dy)||1;
+                      var maxD = Math.max(0, R - half - 6);
+                      var lx=l.x, ly=l.y;
+                      if (dist > maxD) { lx = cx + dx/dist*maxD; ly = cy + dy/dist*maxD; }
+                      if (lx-half < cx-R) lx = cx-R+half;
+                      if (lx+half > cx+R) lx = cx+R-half;
+                      ctx.fillText(l.text, lx, ly);
+                    });
+                    ctx.shadowBlur=0;
+
+                    // Spreading ridge, drawn along a great circle so it curves with
+                    // the globe instead of cutting straight across the disc.
+                    if (o.rift) {
+                      ctx.save();
+                      ctx.strokeStyle = o.rift.color || 'rgba(255,110,0,0.5)';
+                      ctx.lineWidth = 2;
+                      ctx.setLineDash([5, 6]);
+                      ctx.beginPath();
+                      var started = false;
+                      for (var rl = -180; rl <= 180; rl += 3) {
+                        var wob = 3 * Math.sin(rl * 0.06 + (o.riftPhase || 0));
+                        var q = project(rl, (o.rift.lat || 0) + wob);
+                        if (!q.visible) { started = false; continue; }
+                        if (!started) { ctx.moveTo(q.x, q.y); started = true; } else ctx.lineTo(q.x, q.y);
+                      }
+                      ctx.stroke();
+                      ctx.setLineDash([]);
+                      ctx.restore();
+                    }
+                  }
+                  return { draw: draw };
+                })();
 
                 function drawEarth() {
 
@@ -9280,125 +9492,37 @@ var d = labToolData.plateTectonics || {};
                     }
                   }
 
-                  // Rift line between separating continents
-                  if (era.riftLine) {
-                    var rl = era.riftLine;
-                    ctx.strokeStyle = rl.color;
-                    ctx.lineWidth = 2;
-                    ctx.setLineDash([4, 6]);
-                    ctx.beginPath();
-                    var rlY = cy + rl.y * R;
-                    ctx.moveTo(cx - rl.width * R, rlY + Math.sin(tick * 0.015) * 3);
-                    for (var rx = -rl.width; rx <= rl.width; rx += 0.05) {
-                      ctx.lineTo(cx + rx * R, rlY + Math.sin(rx * 8 + tick * 0.02) * 4);
-                    }
-                    ctx.stroke();
-                    ctx.setLineDash([]);
-                  }
 
-                  // Continents — during time-lapse, interpolate toward the next era:
-                  // landmasses present in both eras GLIDE to their new positions, the rest
-                  // crossfade out/in. (eraFrac was computed before but never used, so each
-                  // era boundary snapped abruptly.)
-                  var contRenderList;
-                  if (eraFrac > 0 && nextEra !== era) {
-                    contRenderList = [];
-                    var nextByLabel = {};
-                    nextEra.continents.forEach(function (nc) { nextByLabel[nc.label] = nc; });
-                    var matchedNext = {};
-                    era.continents.forEach(function (c) {
-                      var nc = nextByLabel[c.label];
-                      if (nc) {
-                        matchedNext[c.label] = true;
-                        contRenderList.push({
-                          cx: c.cx + (nc.cx - c.cx) * eraFrac,
-                          cy: c.cy + (nc.cy - c.cy) * eraFrac,
-                          r: c.r + (nc.r - c.r) * eraFrac,
-                          shape: c.shape, label: c.label, color: c.color, alpha: 1
-                        });
-                      } else {
-                        contRenderList.push({ cx: c.cx, cy: c.cy, r: c.r, shape: c.shape, label: c.label, color: c.color, alpha: 1 - eraFrac });
-                      }
-                    });
-                    nextEra.continents.forEach(function (nc) {
-                      if (!matchedNext[nc.label]) contRenderList.push({ cx: nc.cx, cy: nc.cy, r: nc.r, shape: nc.shape, label: nc.label, color: nc.color, alpha: eraFrac });
-                    });
-                  } else {
-                    contRenderList = era.continents.map(function (c) { return { cx: c.cx, cy: c.cy, r: c.r, shape: c.shape, label: c.label, color: c.color, alpha: 1 }; });
-                  }
-                  contRenderList.forEach(function (c) {
-                    var contX = cx + c.cx * R;
-                    var contY = cy + c.cy * R;
-                    var contR = c.r * R;
-
-                    // Slight rotation drift
-                    var drift = Math.sin(tick * 0.005) * 5;
-                    contX += drift;
-
-                    ctx.save();
-                    ctx.globalAlpha = c.alpha;
-                    ctx.translate(contX, contY);
-
-                    // Draw continent blob with per-continent color
-                    ctx.fillStyle = c.color || era.land;
-                    ctx.shadowColor = 'rgba(0,0,0,0.3)';
-                    ctx.shadowBlur = 8;
-                    ctx.beginPath();
-
-                    if (c.shape === 'circle') {
-                      ctx.arc(0, 0, contR, 0, Math.PI * 2);
-                    } else if (c.shape === 'pangaea') {
-                      for (var a = 0; a < Math.PI * 2; a += 0.12) {
-                        var rr = contR * (0.7 + 0.3 * Math.sin(a * 3 + 1) + 0.12 * Math.cos(a * 5 + 2) + 0.05 * Math.sin(a * 8 + 0.5));
-                        var px = Math.cos(a) * rr;
-                        var py = Math.sin(a) * rr;
-                        if (a === 0) ctx.moveTo(px, py);
-                        else ctx.lineTo(px, py);
-                      }
-                      ctx.closePath();
-                    } else {
-                      // Blob shape with more detail
-                      for (var a = 0; a < Math.PI * 2; a += 0.15) {
-                        var rr = contR * (0.75 + 0.25 * Math.sin(a * 3 + c.cx * 5) + 0.1 * Math.cos(a * 5 + c.cy * 3) + 0.05 * Math.sin(a * 7));
-                        var px = Math.cos(a) * rr;
-                        var py = Math.sin(a) * rr;
-                        if (a === 0) ctx.moveTo(px, py);
-                        else ctx.lineTo(px, py);
-                      }
-                      ctx.closePath();
-                    }
-                    ctx.fill();
-                    ctx.shadowBlur = 0;
-
-                    // Coastline stipple effect
-                    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-                    ctx.lineWidth = 1;
-                    ctx.stroke();
-
-                    // Terrain highlights
-                    ctx.fillStyle = 'rgba(255,255,255,0.08)';
-                    ctx.beginPath();
-                    ctx.arc(-contR * 0.2, -contR * 0.2, contR * 0.35, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // Mountain stipple dots (for larger continents)
-                    if (contR > 20) {
-                      ctx.fillStyle = 'rgba(255,255,255,0.06)';
-                      for (var md = 0; md < Math.min(8, contR / 5); md++) {
-                        var mdx = (Math.sin(md * 2.3 + c.cx * 10) * contR * 0.5);
-                        var mdy = (Math.cos(md * 1.7 + c.cy * 8) * contR * 0.4);
-                        ctx.beginPath(); ctx.arc(mdx, mdy, 2 + Math.random(), 0, Math.PI * 2); ctx.fill();
-                      }
-                    }
-
-                    // Label
-                    if (c.label) {
-                      ctx.fillStyle = 'rgba(255,255,255,0.9)';
-                      ctx.font = 'bold ' + Math.max(7, Math.min(11, contR * 0.28)) + 'px Inter, system-ui';
-                      ctx.textAlign = 'center';
-                      ctx.fillText(c.label, 0, contR * 0.12);
-                    }
-                    ctx.restore();
+                  // Continents. Positions ride one drift curve from Pangaea to
+                  // today, so time-lapse glides instead of snapping between eight
+                  // separately authored layouts. lon0 advances with the clock so
+                  // the whole surface is seen over time; the old code nudged every
+                  // landmass sideways by the same amount instead, which made the
+                  // map slide rather than the planet turn.
+                  AlloTectonicsGeo.draw(ctx, {
+                    cx: cx, cy: cy, R: R,
+                    eraIndex: eraIdx,
+                    eraFrac: (typeof eraFrac === 'number' ? eraFrac : 0),
+                    lon0: -20 + (tick * 0.06) % 360,
+                    labels: {
+                      'N. America': __alloT('stem.platetectonics.n_america_3', 'N. America'),
+                      'S. America': __alloT('stem.platetectonics.s_america_3', 'S. America'),
+                      'Africa': __alloT('stem.platetectonics.africa_3', 'Africa'),
+                      'Eurasia': __alloT('stem.platetectonics.eurasia_3', 'Eurasia'),
+                      'India': __alloT('stem.platetectonics.india_3', 'India'),
+                      'Australia': __alloT('stem.platetectonics.australia_2', 'Australia'),
+                      'Antarctica': __alloT('stem.platetectonics.antarctica_2', 'Antarctica'),
+                      'Rodinia': __alloT('stem.platetectonics.rodinia_3', 'Rodinia'),
+                      'Pangaea': __alloT('stem.platetectonics.pangaea_3', 'Pangaea'),
+                      'Vaalbara': __alloT('stem.platetectonics.vaalbara', 'Vaalbara'),
+                      'Kenorland': __alloT('stem.platetectonics.kenorland', 'Kenorland'),
+                      'Laurasia': __alloT('stem.platetectonics.laurasia', 'Laurasia'),
+                      'Gondwana': __alloT('stem.platetectonics.gondwana', 'Gondwana')
+                    },
+                    landColor: era.land,
+                    rift: era.riftLine ? { lat: (era.riftLine.y || 0) * -60, color: era.riftLine.color } : null,
+                    riftPhase: tick * 0.02,
+                    showGraticule: true
                   });
 
                   // Drifting cloud bands (still inside the sphere clip) — a light, slow

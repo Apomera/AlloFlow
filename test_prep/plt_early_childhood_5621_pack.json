@@ -3692,7 +3692,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, young learners interpret a new history topic only through an inaccurate prior idea. What should the teacher do first?",
+      "prompt": "In an early-childhood classroom, young learners interpret a new history topic only through an inaccurate prior idea. What should the teacher do first?",
       "choices": [
         "Elicit and examine prior knowledge, make the conflict visible with evidence, and connect the revised concept to an organized knowledge structure.",
         "Begin with isolated vocabulary copying.",
@@ -3728,7 +3728,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a young learner can complete a task with help but cannot explain how to choose a strategy. What teacher response best builds metacognition?",
+      "prompt": "In an early-childhood classroom, a young learner can complete a task with help but cannot explain how to choose a strategy. What teacher response best builds metacognition?",
       "choices": [
         "Praise speed without discussing reasoning.",
         "Model planning and monitoring, prompt the learner to name the strategy and evidence, and require reflection on when the strategy should change.",
@@ -3764,7 +3764,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a learned reading strategy appears only on the worksheet used during instruction. How should the teacher promote transfer?",
+      "prompt": "In an early-childhood classroom, a learned reading strategy appears only on the worksheet used during instruction. How should the teacher promote transfer?",
       "choices": [
         "Repeat the identical item format indefinitely.",
         "Introduce unrelated topics without comparison.",
@@ -3800,7 +3800,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, during guided practice, a second grader needs a visual cue and one question to continue. What is the strongest next step?",
+      "prompt": "In an early-childhood classroom, during guided practice, a second grader needs a visual cue and one question to continue. What is the strongest next step?",
       "choices": [
         "Remove every support immediately.",
         "Complete the task for the learner each time.",
@@ -3836,7 +3836,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a class needs to learn how to disagree productively during discussion. What modeling approach is most defensible?",
+      "prompt": "In an early-childhood classroom, a class needs to learn how to disagree productively during discussion. What modeling approach is most defensible?",
       "choices": [
         "Demonstrate the behavior and thinking, direct attention to critical features, provide supported rehearsal and feedback, and reinforce successful use.",
         "Describe the rule once without an example.",
@@ -3872,7 +3872,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a teacher introduces conservation and equivalence to early-childhood learners. Which design best connects with their developing reasoning?",
+      "prompt": "In an early-childhood classroom, a teacher introduces conservation and equivalence to early-childhood learners. Which design best connects with their developing reasoning?",
       "choices": [
         "Use symbols only and forbid models.",
         "Let young learners manipulate and compare concrete representations, explain transformations, and connect those actions with increasingly abstract symbols.",
@@ -3908,7 +3908,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, young learners are exploring plant growth, but their observations are disconnected from the learning goal. How should the teacher scaffold the inquiry?",
+      "prompt": "In an early-childhood classroom, young learners are exploring plant growth, but their observations are disconnected from the learning goal. How should the teacher scaffold the inquiry?",
       "choices": [
         "Let activity continue without a question or synthesis.",
         "Reveal every conclusion before young learners investigate.",
@@ -3944,7 +3944,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, young learners begin a routine more consistently because completing it ends an unwanted monitoring step. What process is illustrated?",
+      "prompt": "In an early-childhood classroom, young learners begin a routine more consistently because completing it ends an unwanted monitoring step. What process is illustrated?",
       "choices": [
         "Positive punishment, because something was removed.",
         "Extinction, because the behavior increased.",
@@ -3980,7 +3980,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a young learner shows rapid academic growth while peer relationships and motor stamina are changing. How should the teacher interpret development?",
+      "prompt": "In an early-childhood classroom, a young learner shows rapid academic growth while peer relationships and motor stamina are changing. How should the teacher interpret development?",
       "choices": [
         "Treat development as interacting and variable across domains, then use multiple observations and context rather than one milestone to plan support.",
         "Assume every domain develops at the same rate.",
@@ -4016,7 +4016,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, first graders must organize objects by multiple attributes. Which instructional sequence best fits the task?",
+      "prompt": "In an early-childhood classroom, first graders must organize objects by multiple attributes. Which instructional sequence best fits the task?",
       "choices": [
         "Start with a long abstract definition only.",
         "Begin with active sorting and language-rich comparison, invite explanations of changing rules, and then represent the categories with drawings or symbols.",
@@ -4052,7 +4052,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a young learner develops coordination later than several classmates but is making steady progress. How should the teacher respond?",
+      "prompt": "In an early-childhood classroom, a young learner develops coordination later than several classmates but is making steady progress. How should the teacher respond?",
       "choices": [
         "Conclude that same-age young learners must perform identically.",
         "Lower every academic expectation permanently.",
@@ -4088,7 +4088,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a young learner begins to describe personal worth entirely through comparison with faster classmates. Which teacher response is strongest?",
+      "prompt": "In an early-childhood classroom, a young learner begins to describe personal worth entirely through comparison with faster classmates. Which teacher response is strongest?",
       "choices": [
         "Reserve valued roles for the highest scorers.",
         "Use public ranking as the main motivator.",
@@ -4124,7 +4124,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, during a moral discussion, a learner focuses only on personal consequences. How should the teacher use that response?",
+      "prompt": "In an early-childhood classroom, during a moral discussion, a learner focuses only on personal consequences. How should the teacher use that response?",
       "choices": [
         "Treat it as evidence about the reasoning expressed in that situation and use discussion of perspectives, rules, care, and consequences without fixing the child to a permanent label.",
         "Conclude the student has no moral values.",
@@ -4160,7 +4160,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a curriculum guide assigns a task by age, but class evidence shows wide differences in prerequisite knowledge. What should guide adaptation?",
+      "prompt": "In an early-childhood classroom, a curriculum guide assigns a task by age, but class evidence shows wide differences in prerequisite knowledge. What should guide adaptation?",
       "choices": [
         "Use birthday order as the only criterion.",
         "Use demonstrated prerequisite knowledge, language and strategy access, current support needs, motivation, and task demands rather than age alone.",
@@ -4196,7 +4196,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, young learners become restless during long sedentary lessons and show uneven motor confidence. What design is most responsive?",
+      "prompt": "In an early-childhood classroom, young learners become restless during long sedentary lessons and show uneven motor confidence. What design is most responsive?",
       "choices": [
         "Use loss of all movement as routine punishment.",
         "Require identical motor performance from every learner.",
@@ -4232,7 +4232,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, several learners produce different outcomes after the same lesson. What should the teacher examine before attributing the pattern to ability?",
+      "prompt": "In an early-childhood classroom, several learners produce different outcomes after the same lesson. What should the teacher examine before attributing the pattern to ability?",
       "choices": [
         "Attribute the pattern to one demographic characteristic.",
         "Assume the task offered equal access because directions were identical.",
@@ -4268,7 +4268,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a multilingual student understands the experiment but needs support explaining cause and effect in English. What should the teacher do?",
+      "prompt": "In an early-childhood classroom, a multilingual student understands the experiment but needs support explaining cause and effect in English. What should the teacher do?",
       "choices": [
         "Maintain the science goal while providing visuals, modeled language, structured interaction, vocabulary in context, and multiple ways to rehearse and communicate reasoning.",
         "Replace science with unrelated basic-English worksheets.",
@@ -4304,7 +4304,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a classroom assessment approaches, and a documented access support is inconvenient to arrange. What should the teacher do?",
+      "prompt": "In an early-childhood classroom, a classroom assessment approaches, and a documented access support is inconvenient to arrange. What should the teacher do?",
       "choices": [
         "Withhold it when the student appears successful.",
         "Implement the documented support as specified, coordinate questions through the responsible team, and preserve the intended construct of the task.",
@@ -4340,7 +4340,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, preassessment shows that a learner can explain and apply the upcoming content. What should the teacher plan?",
+      "prompt": "In an early-childhood classroom, preassessment shows that a learner can explain and apply the upcoming content. What should the teacher plan?",
       "choices": [
         "Require repeated completion of mastered work.",
         "Use the student only as an unpaid tutor.",
@@ -4376,7 +4376,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a class must explain relationships in an ecosystem, but young learners differ in reading, language, and communication access. What is the strongest design?",
+      "prompt": "In an early-childhood classroom, a class must explain relationships in an ecosystem, but young learners differ in reading, language, and communication access. What is the strongest design?",
       "choices": [
         "Assign unrelated objectives by perceived ability.",
         "Use one inaccessible text and one response mode.",
@@ -4412,7 +4412,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, young learners participate differently during whole-group discussion, and the teacher suspects cultural and linguistic factors. What should happen next?",
+      "prompt": "In an early-childhood classroom, young learners participate differently during whole-group discussion, and the teacher suspects cultural and linguistic factors. What should happen next?",
       "choices": [
         "Learn from young learners and families without stereotyping, offer multiple legitimate participation structures, teach expectations explicitly, and monitor access and learning.",
         "Assign a fixed cultural explanation to each student.",
@@ -4448,7 +4448,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a team wants to require completion of every intervention tier before considering a disability evaluation. What should the teacher know?",
+      "prompt": "In an early-childhood classroom, a team wants to require completion of every intervention tier before considering a disability evaluation. What should the teacher know?",
       "choices": [
         "Wait until every tier has failed for a full year.",
         "Continue helpful supports while promptly using the school’s referral and evaluation process; MTSS must not delay or deny a full individual evaluation when disability is suspected.",
@@ -4484,7 +4484,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a teacher is preparing for a meeting with caregivers who use another primary language. Which communication plan is strongest?",
+      "prompt": "In an early-childhood classroom, a teacher is preparing for a meeting with caregivers who use another primary language. Which communication plan is strongest?",
       "choices": [
         "Use the child as interpreter for sensitive decisions.",
         "Send English-only documents and assume silence means consent.",
@@ -4520,7 +4520,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, young learners comply with a project but show little ownership. What adjustment is most likely to strengthen self-determined motivation?",
+      "prompt": "In an early-childhood classroom, young learners comply with a project but show little ownership. What adjustment is most likely to strengthen self-determined motivation?",
       "choices": [
         "Allow any activity regardless of the objective.",
         "Use public comparison as the main incentive.",
@@ -4556,7 +4556,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, young learners focus on earning points rather than the substance of a learning task. What is the most defensible response?",
+      "prompt": "In an early-childhood classroom, young learners focus on earning points rather than the substance of a learning task. What is the most defensible response?",
       "choices": [
         "Increase meaningful choice, relevance, achievable challenge, strategy feedback, and opportunities to notice growth while reducing unnecessary controlling rewards.",
         "Increase prize size after every task.",
@@ -4592,7 +4592,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, after an error, a learner treats ability as fixed and uncontrollable. What should the teacher emphasize?",
+      "prompt": "In an early-childhood classroom, after an error, a learner treats ability as fixed and uncontrollable. What should the teacher emphasize?",
       "choices": [
         "Promise that effort alone guarantees success.",
         "Identify the specific strategy or prerequisite that needs work, acknowledge effective effort, model an alternative, and create a near-term chance to apply it.",
@@ -4628,7 +4628,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a class loses learning time during materials cleanup. What should the teacher do before relying on consequences?",
+      "prompt": "In an early-childhood classroom, a class loses learning time during materials cleanup. What should the teacher do before relying on consequences?",
       "choices": [
         "Mention the expectation once.",
         "Add several rules without practice.",
@@ -4664,7 +4664,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a behavior persists despite repeated reprimands. Which analysis is most useful for selecting instruction and support?",
+      "prompt": "In an early-childhood classroom, a behavior persists despite repeated reprimands. Which analysis is most useful for selecting instruction and support?",
       "choices": [
         "Assume the behavior reflects a bad attitude.",
         "Choose a severe consequence without data.",
@@ -4700,7 +4700,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a teacher plans to acknowledge young learners after they demonstrate a taught discussion routine. What makes the plan instructional?",
+      "prompt": "In an early-childhood classroom, a teacher plans to acknowledge young learners after they demonstrate a taught discussion routine. What makes the plan instructional?",
       "choices": [
         "The expectation and consequence are established ethically in advance, the acknowledgement follows the desired behavior, and the goal is to strengthen and eventually naturalize the skill.",
         "The reward is offered secretly during unsafe behavior.",
@@ -4736,7 +4736,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a room layout prevents one student from seeing demonstrations and makes group transitions chaotic. What should the teacher prioritize?",
+      "prompt": "In an early-childhood classroom, a room layout prevents one student from seeing demonstrations and makes group transitions chaotic. What should the teacher prioritize?",
       "choices": [
         "Keep the layout because desks should never move.",
         "Arrange for physical and communication access, visibility, safe movement, purposeful grouping, materials access, and adjustment based on observed learning and behavior.",
@@ -4772,7 +4772,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a grade-level standard combines several concepts and practices. Which planning action best preserves its intent?",
+      "prompt": "In an early-childhood classroom, a grade-level standard combines several concepts and practices. Which planning action best preserves its intent?",
       "choices": [
         "Copy the standard as the daily activity.",
         "Select worksheets before clarifying the outcome.",
@@ -4808,7 +4808,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a teacher writes that young learners will understand two accounts of an event. How should the objective be strengthened?",
+      "prompt": "In an early-childhood classroom, a teacher writes that young learners will understand two accounts of an event. How should the objective be strengthened?",
       "choices": [
         "young learners will appreciate history.",
         "young learners will complete a worksheet.",
@@ -4844,7 +4844,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, young learners must explain a scientific mechanism, but the planned test asks only for vocabulary matching. What revision is needed?",
+      "prompt": "In an early-childhood classroom, young learners must explain a scientific mechanism, but the planned test asks only for vocabulary matching. What revision is needed?",
       "choices": [
         "Provide instruction and practice in constructing mechanism explanations, then assess an explanation using criteria tied to the same reasoning and content.",
         "Keep the test because vocabulary is easier to score.",
@@ -4880,7 +4880,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a team is deciding both what content belongs in a year and the order in which ideas develop. Which distinction is correct?",
+      "prompt": "In an early-childhood classroom, a team is deciding both what content belongs in a year and the order in which ideas develop. Which distinction is correct?",
       "choices": [
         "Scope is the daily order and sequence is the textbook price.",
         "Scope identifies the breadth and boundaries of content, while sequence organizes a coherent progression based on prerequisites, development, and increasing complexity.",
@@ -4916,7 +4916,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a teacher needs to identify prerequisite knowledge and misconceptions before planning groups. Which use of evidence is strongest?",
+      "prompt": "In an early-childhood classroom, a teacher needs to identify prerequisite knowledge and misconceptions before planning groups. Which use of evidence is strongest?",
       "choices": [
         "Use it only to rank young learners publicly.",
         "Skip instruction for anyone who answers one item correctly.",
@@ -4952,7 +4952,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a team wants to connect science and writing through a common environmental question. What is the strongest plan?",
+      "prompt": "In an early-childhood classroom, a team wants to connect science and writing through a common environmental question. What is the strongest plan?",
       "choices": [
         "Use a theme but omit subject objectives.",
         "Grade only the visual decoration.",
@@ -4988,7 +4988,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a popular app is visually attractive but has unclear alignment and inaccessible navigation. What should the teacher examine before adoption?",
+      "prompt": "In an early-childhood classroom, a popular app is visually attractive but has unclear alignment and inaccessible navigation. What should the teacher examine before adoption?",
       "choices": [
         "Evaluate alignment, accuracy, cognitive demand, accessibility, cultural and linguistic representation, privacy, usability, evidence, and practical fit for the intended learners and task.",
         "Choose it because many schools purchased it.",
@@ -5024,7 +5024,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a young learner repeatedly misses fraction comparisons because prerequisite magnitude concepts are weak. What should the teacher do?",
+      "prompt": "In an early-childhood classroom, a young learner repeatedly misses fraction comparisons because prerequisite magnitude concepts are weak. What should the teacher do?",
       "choices": [
         "Assign the identical worksheet again without analysis.",
         "Diagnose the underlying misconception or missing prerequisite and provide explicit targeted instruction with representations, guided practice, feedback, and a transfer check.",
@@ -5060,7 +5060,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a teacher has collected engaging activities but cannot explain how they fit the unit goal. What should happen first?",
+      "prompt": "In an early-childhood classroom, a teacher has collected engaging activities but cannot explain how they fit the unit goal. What should happen first?",
       "choices": [
         "Keep every activity and invent a goal later.",
         "Begin with classroom decorations.",
@@ -5096,7 +5096,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, an early-childhood lesson uses an abstract context that learners cannot access. Which revision is strongest?",
+      "prompt": "In an early-childhood classroom, an early-childhood lesson uses an abstract context that learners cannot access. Which revision is strongest?",
       "choices": [
         "Replace the concept with unrelated entertainment.",
         "Keep the inaccessible context to build character.",
@@ -5132,7 +5132,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, young learners need a reliable strategy for solving unfamiliar word problems. What teaching sequence is strongest?",
+      "prompt": "In an early-childhood classroom, young learners need a reliable strategy for solving unfamiliar word problems. What teaching sequence is strongest?",
       "choices": [
         "State the goal, activate prerequisites, model steps and decisions, guide practice with checks and feedback, then move to cumulative independent application.",
         "Assign independent problems before explanation.",
@@ -5168,7 +5168,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a teacher plans an investigation of erosion. Which condition best supports conceptual inquiry?",
+      "prompt": "In an early-childhood classroom, a teacher plans an investigation of erosion. Which condition best supports conceptual inquiry?",
       "choices": [
         "The activity has no intended concept.",
         "Learners have accessible background knowledge and materials, a focused question, strategic teacher guidance, opportunities to analyze evidence, and a planned synthesis.",
@@ -5204,7 +5204,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, four young learners share a table, but one completes all the reasoning. What should the teacher add?",
+      "prompt": "In an early-childhood classroom, four young learners share a table, but one completes all the reasoning. What should the teacher add?",
       "choices": [
         "Give one group grade without individual evidence.",
         "Let roles remain fixed by perceived ability.",
@@ -5240,7 +5240,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, assessment evidence shows that student needs change across skills and over time. How should groups be organized?",
+      "prompt": "In an early-childhood classroom, assessment evidence shows that student needs change across skills and over time. How should groups be organized?",
       "choices": [
         "Keep one group assignment for the year.",
         "Use one global ability judgment for every subject.",
@@ -5276,7 +5276,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a young learner completes a task accurately with a graphic organizer and begins anticipating every prompt. What is the next step?",
+      "prompt": "In an early-childhood classroom, a young learner completes a task accurately with a graphic organizer and begins anticipating every prompt. What is the next step?",
       "choices": [
         "Reduce support gradually while monitoring accuracy, strategy use, confidence, and transfer, restoring or altering support when evidence shows it is needed.",
         "Remove it abruptly regardless of performance.",
@@ -5312,7 +5312,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, some young learners need language and organizational support for the same evidence-based explanation task. What should the teacher vary?",
+      "prompt": "In an early-childhood classroom, some young learners need language and organizational support for the same evidence-based explanation task. What should the teacher vary?",
       "choices": [
         "Assign unsupported harder work to advanced young learners.",
         "Vary representations, vocabulary and language scaffolds, examples, grouping, pacing, and response supports while retaining the essential explanation and evidence criteria.",
@@ -5348,7 +5348,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, young learners make systematic errors during the first examples of a new procedure. What should the teacher do?",
+      "prompt": "In an early-childhood classroom, young learners make systematic errors during the first examples of a new procedure. What should the teacher do?",
       "choices": [
         "Record errors without responding.",
         "Assign more independent work immediately.",
@@ -5384,7 +5384,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a teacher wants to model how an expert notices confusion while reading. Which approach is strongest?",
+      "prompt": "In an early-childhood classroom, a teacher wants to model how an expert notices confusion while reading. Which approach is strongest?",
       "choices": [
         "Narrate every unrelated thought.",
         "Show only the final correct answer.",
@@ -5420,7 +5420,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, young learners wait for the teacher to tell them whether their work is complete. What should the teacher add?",
+      "prompt": "In an early-childhood classroom, young learners wait for the teacher to tell them whether their work is complete. What should the teacher add?",
       "choices": [
         "Teach learners to set a specific goal, select and use a strategy, monitor evidence, seek help appropriately, evaluate results, and plan the next adjustment.",
         "Provide a completion sticker without criteria.",
@@ -5456,7 +5456,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, young learners remember vocabulary on Friday but not several weeks later. What revision is most defensible?",
+      "prompt": "In an early-childhood classroom, young learners remember vocabulary on Friday but not several weeks later. What revision is most defensible?",
       "choices": [
         "Mass all study into one review period.",
         "Use spaced cumulative retrieval with feedback, interleave related decisions when appropriate, revisit ideas in varied contexts, and ask learners to explain connections.",
@@ -5492,7 +5492,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a discussion includes only the fastest responders. Which teacher adjustment best broadens reasoning and participation?",
+      "prompt": "In an early-childhood classroom, a discussion includes only the fastest responders. Which teacher adjustment best broadens reasoning and participation?",
       "choices": [
         "Answer the question after one second.",
         "Call only on volunteers who already know.",
@@ -5528,7 +5528,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a teacher needs a rapid check of whether young learners can identify a key prerequisite before continuing. Which question type fits?",
+      "prompt": "In an early-childhood classroom, a teacher needs a rapid check of whether young learners can identify a key prerequisite before continuing. Which question type fits?",
       "choices": [
         "Use only open questions for every purpose.",
         "Use a vague prompt that cannot be interpreted.",
@@ -5564,7 +5564,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a misconception surfaces publicly in a mathematics conversation. What should the teacher do?",
+      "prompt": "In an early-childhood classroom, a misconception surfaces publicly in a mathematics conversation. What should the teacher do?",
       "choices": [
         "Acknowledge the contribution, ask for the reasoning, invite evidence or comparison, clarify the misconception, and provide an opportunity to revise the answer.",
         "Ridicule the error so others remember.",
@@ -5600,7 +5600,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, young learners appear confused by a long verbal explanation. What should the teacher change?",
+      "prompt": "In an early-childhood classroom, young learners appear confused by a long verbal explanation. What should the teacher change?",
       "choices": [
         "Add more jargon and speed.",
         "Organize a few essential ideas, connect them to prior knowledge, use accurate examples and representations, check interpretation, and revisit the explanation responsively.",
@@ -5636,7 +5636,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, after modeling, the teacher needs to decide whether the whole class is ready for independent work. What should happen?",
+      "prompt": "In an early-childhood classroom, after modeling, the teacher needs to decide whether the whole class is ready for independent work. What should happen?",
       "choices": [
         "Ask whether everyone understands.",
         "Use one confident volunteer as the sample.",
@@ -5672,7 +5672,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a formative check shows a coherent error pattern during guided practice. What should the teacher do next?",
+      "prompt": "In an early-childhood classroom, a formative check shows a coherent error pattern during guided practice. What should the teacher do next?",
       "choices": [
         "Continue because the pacing guide is fixed.",
         "Record grades and reveal the answer only.",
@@ -5708,7 +5708,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, young learners have identified facts in two sources and are ready to analyze perspective. What should the teacher ask?",
+      "prompt": "In an early-childhood classroom, young learners have identified facts in two sources and are ready to analyze perspective. What should the teacher ask?",
       "choices": [
         "Which differences in purpose, audience, and evidence best explain how the accounts portray the event, and what supports your conclusion?",
         "What year appears in the heading?",
@@ -5744,7 +5744,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a young learner observation reveals a productive connection outside the planned example. What is the strongest response?",
+      "prompt": "In an early-childhood classroom, a young learner observation reveals a productive connection outside the planned example. What is the strongest response?",
       "choices": [
         "Abandon the unit for any new topic.",
         "Judge relevance, timing, access, and value; briefly explore or record the connection, link it to the objective, and protect essential lesson priorities.",
@@ -5780,7 +5780,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, young learners state ideas but rarely respond to one another. What should the teacher model and prompt?",
+      "prompt": "In an early-childhood classroom, young learners state ideas but rarely respond to one another. What should the teacher model and prompt?",
       "choices": [
         "Move to a new topic after each comment.",
         "Evaluate every idea before peers can respond.",
@@ -5816,7 +5816,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a lesson felt engaging, but the teacher is unsure whether the objective was learned equitably. What should be reviewed?",
+      "prompt": "In an early-childhood classroom, a lesson felt engaging, but the teacher is unsure whether the objective was learned equitably. What should be reviewed?",
       "choices": [
         "Use teacher enjoyment as the only evidence.",
         "Attribute every result to the strategy.",
@@ -5852,7 +5852,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a teacher collects exit responses before tomorrow’s lesson. What makes the assessment formative?",
+      "prompt": "In an early-childhood classroom, a teacher collects exit responses before tomorrow’s lesson. What makes the assessment formative?",
       "choices": [
         "The teacher and learners use timely evidence about current understanding to decide feedback and next instructional or learning actions.",
         "It occurs on paper rather than online.",
@@ -5888,7 +5888,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, at the end of a unit, a teacher needs evidence of achievement across the priority objectives. What should the assessment do?",
+      "prompt": "In an early-childhood classroom, at the end of a unit, a teacher needs evidence of achievement across the priority objectives. What should the assessment do?",
       "choices": [
         "Diagnose every prerequisite from one score.",
         "Sample the intended outcomes with aligned tasks and criteria to summarize learning while reporting limitations and avoiding unsupported conclusions.",
@@ -5924,7 +5924,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, before teaching division, a teacher wants to locate whether errors arise from place value, multiplication facts, or interpretation of equal groups. What should be used?",
+      "prompt": "In an early-childhood classroom, before teaching division, a teacher wants to locate whether errors arise from place value, multiplication facts, or interpretation of equal groups. What should be used?",
       "choices": [
         "A participation grade.",
         "An unrelated standardized reading score.",
@@ -5960,7 +5960,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a science objective emphasizes planning, evidence collection, and explanation. Which assessment format is strongest?",
+      "prompt": "In an early-childhood classroom, a science objective emphasizes planning, evidence collection, and explanation. Which assessment format is strongest?",
       "choices": [
         "A vocabulary-only matching quiz.",
         "A self-report of whether science is enjoyable.",
@@ -5996,7 +5996,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a teacher must evaluate whether young learners can deliver an organized evidence-based oral presentation. Which format best matches the construct?",
+      "prompt": "In an early-childhood classroom, a teacher must evaluate whether young learners can deliver an organized evidence-based oral presentation. Which format best matches the construct?",
       "choices": [
         "Have young learners perform the presentation under defined conditions and use transparent criteria for content, evidence, organization, and communication.",
         "Ask young learners to select the definition of presentation.",
@@ -6032,7 +6032,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, young learners need feedback on evidence, organization, reasoning, and conventions separately. What scoring tool is most useful?",
+      "prompt": "In an early-childhood classroom, young learners need feedback on evidence, organization, reasoning, and conventions separately. What scoring tool is most useful?",
       "choices": [
         "A single impression with no criteria.",
         "An analytic rubric reports performance by distinct criteria, supporting targeted feedback while requiring clear, nonoverlapping descriptors and scorer consistency.",
@@ -6068,7 +6068,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, young learners are giving one another vague praise on drafts. What should the teacher add?",
+      "prompt": "In an early-childhood classroom, young learners are giving one another vague praise on drafts. What should the teacher add?",
       "choices": [
         "Let popularity determine scores.",
         "Use peer marks as the sole high-stakes grade.",
@@ -6104,7 +6104,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a teacher saves every assignment but cannot use the collection to discuss growth. What should change?",
+      "prompt": "In an early-childhood classroom, a teacher saves every assignment but cannot use the collection to discuss growth. What should change?",
       "choices": [
         "Include only the highest score.",
         "Remove dates and task descriptions.",
@@ -6140,7 +6140,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a teacher writes that a young learner was unmotivated during group work. What documentation is stronger?",
+      "prompt": "In an early-childhood classroom, a teacher writes that a young learner was unmotivated during group work. What documentation is stronger?",
       "choices": [
         "Record dated observable actions and context, separate observation from inference, sample across occasions, and connect patterns cautiously to the learning question.",
         "Use personality labels without examples.",
@@ -6176,7 +6176,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a learner uses a documented response support on a classroom assessment. What question should guide implementation?",
+      "prompt": "In an early-childhood classroom, a learner uses a documented response support on a classroom assessment. What question should guide implementation?",
       "choices": [
         "Does it make every learner finish at the same time?",
         "Does the support remove an access barrier without changing the essential construct, and is it provided consistently according to the authorized plan?",
@@ -6212,7 +6212,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, an assessment is reliable across occasions but poorly aligned to the target construct. What does that mean?",
+      "prompt": "In an early-childhood classroom, an assessment is reliable across occasions but poorly aligned to the target construct. What does that mean?",
       "choices": [
         "The test is valid because it is consistent.",
         "The test is invalid only if the mean is low.",
@@ -6248,7 +6248,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a family asks whether a score describes comparison with peers or mastery of defined skills. Which explanation is accurate?",
+      "prompt": "In an early-childhood classroom, a family asks whether a score describes comparison with peers or mastery of defined skills. Which explanation is accurate?",
       "choices": [
         "Both compare only with the classroom average.",
         "Criterion reference always reports a percentile.",
@@ -6284,7 +6284,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, how should a teacher explain a national percentile rank of 75 accurately?",
+      "prompt": "In an early-childhood classroom, how should a teacher explain a national percentile rank of 75 accurately?",
       "choices": [
         "The score was as high as or higher than the scores of approximately 75 percent of the relevant norm group, not that 75 percent of items were correct.",
         "The student mastered 75 percent of the curriculum.",
@@ -6320,7 +6320,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, which statement avoids the common misuse of a grade-equivalent score above the learner’s current grade?",
+      "prompt": "In an early-childhood classroom, which statement avoids the common misuse of a grade-equivalent score above the learner’s current grade?",
       "choices": [
         "The student should automatically skip two grades.",
         "On that test, the raw score matched the typical score of the referenced third-grade second-month group; it does not prove mastery of the third-grade curriculum or readiness for placement.",
@@ -6356,7 +6356,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a teacher is summarizing data with a strong skew caused by one extreme value. Which statistic should be examined alongside the mean?",
+      "prompt": "In an early-childhood classroom, a teacher is summarizing data with a strong skew caused by one extreme value. Which statistic should be examined alongside the mean?",
       "choices": [
         "The range, because it ignores extremes.",
         "The mean, because outliers never affect it.",
@@ -6392,7 +6392,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a teacher sees that two forms report scaled rather than raw results. What is the safest general explanation?",
+      "prompt": "In an early-childhood classroom, a teacher sees that two forms report scaled rather than raw results. What is the safest general explanation?",
       "choices": [
         "A scaled score is always a percentile.",
         "Scaling makes an invalid test valid.",
@@ -6428,7 +6428,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a teacher needs one overall judgment of integrated writing quality after also preserving criteria-based feedback elsewhere. Which approach fits?",
+      "prompt": "In an early-childhood classroom, a teacher needs one overall judgment of integrated writing quality after also preserving criteria-based feedback elsewhere. Which approach fits?",
       "choices": [
         "Use a holistic rubric with clear overall performance descriptors and trained calibration when the intended decision concerns the quality of the integrated whole.",
         "Count spelling errors only.",
@@ -6464,7 +6464,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, one screening result conflicts with classroom work, observation, and recent progress. What should happen next?",
+      "prompt": "In an early-childhood classroom, one screening result conflicts with classroom work, observation, and recent progress. What should happen next?",
       "choices": [
         "Ignore all evidence except the standardized score.",
         "Verify administration and access, gather converging evidence across methods and time, examine the construct and context, and use the qualified decision process.",
@@ -6500,7 +6500,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a score report contains technical terms and uncertainty. How should the teacher communicate it?",
+      "prompt": "In an early-childhood classroom, a score report contains technical terms and uncertainty. How should the teacher communicate it?",
       "choices": [
         "Read the score table without context.",
         "Guarantee a future outcome from the score.",
@@ -6536,7 +6536,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a teacher suspects that wording and background knowledge may be affecting performance beyond the intended construct. What should be reviewed?",
+      "prompt": "In an early-childhood classroom, a teacher suspects that wording and background knowledge may be affecting performance beyond the intended construct. What should be reviewed?",
       "choices": [
         "Delete subgroup data to avoid concern.",
         "Assume the difference proves lower ability.",
@@ -6572,7 +6572,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a teacher notices that discussion participation is inequitable. What should happen after identifying the concern?",
+      "prompt": "In an early-childhood classroom, a teacher notices that discussion participation is inequitable. What should happen after identifying the concern?",
       "choices": [
         "Define the learning and access question, gather relevant evidence, examine assumptions and alternatives, implement a focused change, and review its effects.",
         "Write a general feeling and make no change.",
@@ -6608,7 +6608,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a one-time workshop introduces a useful strategy, but implementation is inconsistent. What support should follow?",
+      "prompt": "In an early-childhood classroom, a one-time workshop introduces a useful strategy, but implementation is inconsistent. What support should follow?",
       "choices": [
         "Schedule another identical lecture only.",
         "Connect the strategy to student need and current curriculum through modeling, co-planning, rehearsal, classroom use, feedback, and repeated review of evidence.",
@@ -6644,7 +6644,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a teacher reads a correlational program evaluation with important group differences. How should the claim inform practice?",
+      "prompt": "In an early-childhood classroom, a teacher reads a correlational program evaluation with important group differences. How should the claim inform practice?",
       "choices": [
         "Conclude the program caused the difference.",
         "Reject all research that is not randomized.",
@@ -6680,7 +6680,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a teacher changes a feedback routine and sees improvement over four weeks without a comparison group. What claim is defensible?",
+      "prompt": "In an early-childhood classroom, a teacher changes a feedback routine and sees improvement over four weeks without a comparison group. What claim is defensible?",
       "choices": [
         "The routine is proven for all schools.",
         "No learning is possible from local evidence.",
@@ -6716,7 +6716,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a novice teacher struggles with transitions and wants actionable help. What mentoring response is strongest?",
+      "prompt": "In an early-childhood classroom, a novice teacher struggles with transitions and wants actionable help. What mentoring response is strongest?",
       "choices": [
         "Clarify the goal, jointly plan and model a manageable routine, observe agreed evidence, provide specific feedback, and revisit progress within clear confidentiality boundaries.",
         "Take over the class indefinitely.",
@@ -6752,7 +6752,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, two colleagues want to learn from one another’s questioning practices. Which design best protects usefulness and trust?",
+      "prompt": "In an early-childhood classroom, two colleagues want to learn from one another’s questioning practices. Which design best protects usefulness and trust?",
       "choices": [
         "Use the visit as an undisclosed formal evaluation.",
         "Agree on the learning question, evidence to collect, observation role, confidentiality and data-use boundaries, feedback process, and a follow-up action.",
@@ -6788,7 +6788,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a teacher writes, “Become better at differentiation.” How should the goal be improved?",
+      "prompt": "In an early-childhood classroom, a teacher writes, “Become better at differentiation.” How should the goal be improved?",
       "choices": [
         "Choose a slogan with no measure.",
         "Use test scores without an instructional action.",
@@ -6824,7 +6824,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, several specialists work with one learner, but classroom recommendations are disconnected. What should the teacher do?",
+      "prompt": "In an early-childhood classroom, several specialists work with one learner, but classroom recommendations are disconnected. What should the teacher do?",
       "choices": [
         "Ask one specialist to make every classroom decision.",
         "Ignore recommendations that require coordination.",
@@ -6860,7 +6860,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a teacher needs to discuss learning progress with caregivers. Which plan best builds partnership?",
+      "prompt": "In an early-childhood classroom, a teacher needs to discuss learning progress with caregivers. Which plan best builds partnership?",
       "choices": [
         "Invite family goals, observations, language and access needs; share clear evidence and limits; co-develop feasible next steps; and establish a follow-up channel.",
         "Read grades and end the meeting.",
@@ -6896,7 +6896,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a grade-level team wants to improve student transitions but members disagree about the problem. What should happen first?",
+      "prompt": "In an early-childhood classroom, a grade-level team wants to improve student transitions but members disagree about the problem. What should happen first?",
       "choices": [
         "Assign tasks before agreeing on the goal.",
         "Clarify the shared purpose and observable problem with relevant stakeholder evidence, then define roles, actions, measures, communication, and review dates.",
@@ -6932,7 +6932,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a family must understand a consequential school decision and requests language assistance. What should the teacher arrange?",
+      "prompt": "In an early-childhood classroom, a family must understand a consequential school decision and requests language assistance. What should the teacher arrange?",
       "choices": [
         "Ask a young sibling to interpret.",
         "Provide a machine translation without review for a high-stakes decision.",
@@ -6968,7 +6968,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a paraeducator receives vague directions and is left to design instruction independently. What should the teacher do?",
+      "prompt": "In an early-childhood classroom, a paraeducator receives vague directions and is left to design instruction independently. What should the teacher do?",
       "choices": [
         "Delegate every instructional decision.",
         "Use the paraeducator only for behavior removal.",
@@ -7004,7 +7004,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, caregivers report that a classroom support conflicts with what they observe at home. How should the teacher proceed?",
+      "prompt": "In an early-childhood classroom, caregivers report that a classroom support conflicts with what they observe at home. How should the teacher proceed?",
       "choices": [
         "Listen and clarify the concern, share the evidence and purpose in accessible language, examine discrepancies, explain rights and decision processes, and bring needed revisions to the appropriate team.",
         "Defend the plan before hearing the concern.",
@@ -7040,7 +7040,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a potential school partner requests names, schedules, scores, and disability information to plan services. What is the strongest response?",
+      "prompt": "In an early-childhood classroom, a potential school partner requests names, schedules, scores, and disability information to plan services. What is the strongest response?",
       "choices": [
         "Send records because the service is free.",
         "Define the educational purpose, authority or consent, minimum necessary data, security and redisclosure controls, roles, access, safeguarding, evaluation, and exit terms through approved procedures.",
@@ -7076,7 +7076,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, an employee wants to review records unrelated to assigned professional responsibilities. Which privacy principle controls?",
+      "prompt": "In an early-childhood classroom, an employee wants to review records unrelated to assigned professional responsibilities. Which privacy principle controls?",
       "choices": [
         "Any employee may open every record.",
         "Records are unrestricted once stored electronically.",
@@ -7112,7 +7112,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a classroom teacher wants to suspend an approved accommodation until the next meeting. What should happen?",
+      "prompt": "In an early-childhood classroom, a classroom teacher wants to suspend an approved accommodation until the next meeting. What should happen?",
       "choices": [
         "Ask classmates to vote on the support.",
         "Remove it whenever the student earns a high score.",
@@ -7148,7 +7148,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a teacher receives information suggesting possible neglect but is unsure of the exact local procedure. What should the teacher do?",
+      "prompt": "In an early-childhood classroom, a teacher receives information suggesting possible neglect but is unsure of the exact local procedure. What should the teacher do?",
       "choices": [
         "Prioritize immediate safety, listen without leading or promising secrecy, document facts as required, and promptly follow current mandated-reporting law and school procedure with qualified authority.",
         "Conduct an independent interrogation first.",
@@ -7184,7 +7184,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a teacher wants to post an entire commercial workbook online for unrestricted access. What should happen first?",
+      "prompt": "In an early-childhood classroom, a teacher wants to post an entire commercial workbook online for unrestricted access. What should happen first?",
       "choices": [
         "Assume educational purpose permits unlimited copying.",
         "Use licensed, public-domain, openly licensed, or permission-covered material and evaluate any limited fair-use claim under current policy and law before copying or posting.",
@@ -7220,7 +7220,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, a viewpoint-sensitive student activity raises First Amendment and equal-access questions. How should a teacher respond?",
+      "prompt": "In an early-childhood classroom, a viewpoint-sensitive student activity raises First Amendment and equal-access questions. How should a teacher respond?",
       "choices": [
         "Ban the group because the teacher dislikes its viewpoint.",
         "Promise unrestricted access without checking the forum rules.",
@@ -7256,7 +7256,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "application",
-      "prompt": "In a parallel early-childhood setting, before a consequential classroom or school response, evidence is incomplete and the student disputes the allegation. What should the teacher support?",
+      "prompt": "In an early-childhood classroom, before a consequential classroom or school response, evidence is incomplete and the student disputes the allegation. What should the teacher support?",
       "choices": [
         "Announce guilt before review.",
         "Use a harsher rule for one protected group.",
@@ -12292,7 +12292,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, young learners interpret a new history topic only through an inaccurate prior idea. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, young learners interpret a new history topic only through an inaccurate prior idea. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Elicit and examine prior knowledge, make the conflict visible with evidence, and connect the revised concept to an organized knowledge structure\" — Schema influences how learners notice, organize, and retrieve new information; instruction should activate relevant knowledge and explicitly reorganize misconceptions.",
         "\"Begin with isolated vocabulary copying\" — Schema influences how learners notice, organize, and retrieve new information; instruction should activate relevant knowledge and explicitly reorganize misconceptions (in the context of prior evidence) as presented for this item in context under these facts as described for the scenario",
@@ -12342,7 +12342,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a young learner can complete a task with help but cannot explain how to choose a strategy. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a young learner can complete a task with help but cannot explain how to choose a strategy. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Praise speed without discussing reasoning\" — Metacognition includes planning, monitoring understanding and strategy use, evaluating results, and adjusting deliberately rather than merely completing a task (in the context of learner evidence) in this case as presented for this item in context under these facts",
         "\"Model planning and monitoring, prompt the learner to name the strategy and evidence, and require reflection on when the strategy should change\" — Metacognition includes planning, monitoring understanding and strategy use, evaluating results, and adjusting deliberately rather than merely completing a task.",
@@ -12392,7 +12392,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a learned reading strategy appears only on the worksheet used during instruction. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a learned reading strategy appears only on the worksheet used during instruction. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Repeat the identical item format indefinitely\" — Transfer improves when learners recognize underlying relationships, retrieve the strategy across varied situations, explain its conditions, and practice independently in this case as presented for this item in context under these facts as described for the scenario",
         "\"Introduce unrelated topics without comparison\" — Transfer improves when learners recognize underlying relationships, retrieve the strategy across varied situations, explain its conditions, and practice independently as presented for this item in context under these facts as described for the scenario in this case",
@@ -12442,7 +12442,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, during guided practice, a second grader needs a visual cue and one question to continue. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, during guided practice, a second grader needs a visual cue and one question to continue. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Remove every support promptly\" — Scaffolding is responsive temporary support for work a learner can accomplish with assistance; it is adjusted and faded as competence and self-regulation increase in this case as presented for this item in context under these facts as described for the scenario in this case",
         "\"Complete the task for the learner each time\" — Scaffolding is responsive temporary support for work a learner can accomplish with assistance; it is adjusted and faded as competence and self-regulation increase as presented for this item in context under these facts as described for the scenario in this case",
@@ -12492,7 +12492,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a class needs to learn how to disagree productively during discussion. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a class needs to learn how to disagree productively during discussion. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Demonstrate the behavior and thinking, direct attention to critical features, provide supported rehearsal and feedback, and reinforce successful use\" — Observational learning is strengthened by attention to a credible model, retention of what was observed, opportunities to reproduce it, feedback, and motivation.",
         "\"Describe the rule once without an example\" — Observational learning is strengthened by attention to a credible model, retention of what was observed, opportunities to reproduce it, feedback, and motivation as presented for this item in context under these facts as described for the scenario in this case as presented",
@@ -12542,7 +12542,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a teacher introduces conservation and equivalence to early-childhood learners. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a teacher introduces conservation and equivalence to early-childhood learners. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Use symbols primarily and forbid models\" — early-childhood learners often reason more successfully about logical relationships when ideas are grounded in observable objects and actions before abstraction is increased in this case as presented for this item in context under these facts as described for the scenario in this case",
         "\"Let young learners manipulate and compare concrete representations, explain transformations, and connect those actions with increasingly abstract symbols\" — early-childhood learners often reason more successfully about logical relationships when ideas are grounded in observable objects and actions before abstraction is increased.",
@@ -12592,7 +12592,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, young learners are exploring plant growth, but their observations are disconnected from the learning goal. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, young learners are exploring plant growth, but their observations are disconnected from the learning goal. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Let activity continue without a question or synthesis\" — Guided inquiry combines active construction with clear goals, productive constraints, evidence, teacher prompts, discussion, and consolidation of the intended concept in this case as presented for this item in context under these facts as described for the scenario",
         "\"Reveal every conclusion before young learners investigate\" — Guided inquiry combines active construction with clear goals, productive constraints, evidence, teacher prompts, discussion, and consolidation of the intended concept as presented for this item in context under these facts as described for the scenario in this case",
@@ -12642,7 +12642,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, young learners begin a routine more consistently because completing it ends an unwanted monitoring step. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, young learners begin a routine more consistently because completing it ends an unwanted monitoring step. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Positive punishment, because something was removed\" — Negative reinforcement increases behavior through removal of an aversive condition; it is not punishment, which is intended to decrease behavior in this case as presented for this item in context",
         "\"Extinction, because the behavior increased\" — Negative reinforcement increases behavior through removal of an aversive condition; it is not punishment, which is intended to decrease behavior as presented for this item in context under these facts",
@@ -12692,7 +12692,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a young learner shows rapid academic growth while peer relationships and motor stamina are changing. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a young learner shows rapid academic growth while peer relationships and motor stamina are changing. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Treat development as interacting and variable across domains, then use multiple observations and context rather than one milestone to plan support\" — Developmental domains interact, yet rates and pathways vary within and among children; instruction uses patterns as guides rather than rigid labels or diagnoses.",
         "\"Assume every domain develops at the same rate\" — Developmental domains interact, yet rates and pathways vary within and among children; instruction uses patterns as guides rather than rigid labels or diagnoses as presented for this item in context under these facts as described for the scenario in this case as presented",
@@ -12742,7 +12742,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, first graders must organize objects by multiple attributes. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, first graders must organize objects by multiple attributes. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Start with a long abstract definition primarily\" — Active manipulation, talk, comparison, and representation make relationships visible and support movement from concrete experience toward symbolic reasoning in this case as presented for this item in context under these facts as described for the scenario in this case",
         "\"Begin with active sorting and language-rich comparison, invite explanations of changing rules, and then represent the categories with drawings or symbols\" — Active manipulation, talk, comparison, and representation make relationships visible and support movement from concrete experience toward symbolic reasoning.",
@@ -12792,7 +12792,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a young learner develops coordination later than several classmates but is making steady progress. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a young learner develops coordination later than several classmates but is making steady progress. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Conclude that same-age young learners must perform identically\" — Age-based expectations describe broad patterns, not fixed schedules; teachers distinguish variation from persistent concern using multiple evidence sources and appropriate referral processes (in the context of progress) in this case as presented for this item in context under these facts",
         "\"Lower every academic expectation permanently\" — Age-based expectations describe broad patterns, not fixed schedules; teachers distinguish variation from persistent concern using multiple evidence sources and appropriate referral processes (in the context of progress) as presented for this item in context under these facts as described for the scenario",
@@ -12842,7 +12842,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a young learner begins to describe personal worth entirely through comparison with faster classmates. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a young learner begins to describe personal worth entirely through comparison with faster classmates. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Reserve valued roles for the highest scorers\" — early-childhood learners develop a sense of competence through purposeful work, supported mastery, contribution, and credible feedback rather than humiliation or empty praise in this case as presented for this item in context under these facts as described for the scenario in this case as presented",
         "\"Use public ranking as the main motivator\" — early-childhood learners develop a sense of competence through purposeful work, supported mastery, contribution, and credible feedback rather than humiliation or empty praise as presented for this item in context under these facts as described for the scenario in this case as presented for this item",
@@ -12892,7 +12892,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, during a moral discussion, a learner focuses only on personal consequences. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, during a moral discussion, a learner focuses only on personal consequences. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Treat it as evidence about the reasoning expressed in that situation and use discussion of perspectives, rules, care, and consequences without fixing the child to a permanent label\" — Stage frameworks can help analyze the structure of stated reasoning, but classroom responses are contextual and do not justify a total or permanent judgment about a learner.",
         "\"Conclude the student has no moral values\" — Stage frameworks can help analyze the structure of stated reasoning, but classroom responses are contextual and do not justify a total or permanent judgment about a learner (in the context of discussion consequences evidence) as presented for this item in context under these facts as described for the scenario",
@@ -12942,7 +12942,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a curriculum guide assigns a task by age, but class evidence shows wide differences in prerequisite knowledge. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a curriculum guide assigns a task by age, but class evidence shows wide differences in prerequisite knowledge. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Use birthday order as the primarily criterion\" — Readiness is task specific and reflects current knowledge, development, experience, and available support; teachers assess it and provide appropriate challenge and scaffolding (in the context of prerequisite) in this case as presented for this item in context under these facts",
         "\"Use demonstrated prerequisite knowledge, language and strategy access, current support needs, motivation, and task demands rather than age alone\" — Readiness is task specific and reflects current knowledge, development, experience, and available support; teachers assess it and provide appropriate challenge and scaffolding.",
@@ -12992,7 +12992,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, young learners become restless during long sedentary lessons and show uneven motor confidence. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, young learners become restless during long sedentary lessons and show uneven motor confidence. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Use loss of all movement as routine punishment\" — Physical development, movement, health, attention, participation, and social experience interact; responsive environments offer access without turning differences into fixed judgments (in the context of motor) in this case as presented for this item in context under these facts as described for the scenario",
         "\"Require identical motor performance from every learner\" — Physical development, movement, health, attention, participation, and social experience interact; responsive environments offer access without turning differences into fixed judgments as presented for this item in context under these facts as described for the scenario in this case as presented",
@@ -13042,7 +13042,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, several learners produce different outcomes after the same lesson. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, several learners produce different outcomes after the same lesson. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Attribute the pattern to one demographic characteristic\" — Learning and performance reflect interacting learner and context variables; responsible analysis avoids stereotypes and examines opportunity and access as well as individual needs (in the context of evidence) in this case as presented for this item in context under these facts as described for the scenario",
         "\"Assume the task offered equal access because directions were identical\" — Learning and performance reflect interacting learner and context variables; responsible analysis avoids stereotypes and examines opportunity and access as well as individual needs (in the context of evidence) as presented for this item in context under these facts as described for the scenario",
@@ -13092,7 +13092,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a multilingual student understands the experiment but needs support explaining cause and effect in English. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a multilingual student understands the experiment but needs support explaining cause and effect in English. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Maintain the science goal while providing visuals, modeled language, structured interaction, vocabulary in context, and multiple ways to rehearse and communicate reasoning\" — English learners need meaningful access to grade-level content alongside explicit language development; language support should not remove the intended thinking.",
         "\"Replace science with unrelated basic-English worksheets\" — English learners need meaningful access to grade-level content alongside explicit language development; language support should not remove the intended thinking as presented for this item in context under these facts as described for the scenario in this case as presented",
@@ -13142,7 +13142,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a classroom assessment approaches, and a documented access support is inconvenient to arrange. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a classroom assessment approaches, and a documented access support is inconvenient to arrange. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Withhold it when the student appears successful\" — Teachers implement authorized IEP or accommodation provisions consistently and bring concerns to the qualified team rather than changing services unilaterally (in the context of documented support) in this case as presented for this item in context under these facts",
         "\"Implement the documented support as specified, coordinate questions through the responsible team, and preserve the intended construct of the task\" — Teachers implement authorized IEP or accommodation provisions consistently and bring concerns to the qualified team rather than changing services unilaterally.",
@@ -13192,7 +13192,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, preassessment shows that a learner can explain and apply the upcoming content. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, preassessment shows that a learner can explain and apply the upcoming content. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Require repeated completion of mastered work\" — Gifted and advanced learners require evidence-based challenge, not extra repetition; enrichment and acceleration should respond to demonstrated readiness and broader development in this case as presented for this item in context under these facts as described for the scenario in this case",
         "\"Use the student primarily as an unpaid tutor\" — Gifted and advanced learners require evidence-based challenge, not extra repetition; enrichment and acceleration should respond to demonstrated readiness and broader development as presented for this item in context under these facts as described for the scenario in this case as presented",
@@ -13242,7 +13242,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a class must explain relationships in an ecosystem, but young learners differ in reading, language, and communication access. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a class must explain relationships in an ecosystem, but young learners differ in reading, language, and communication access. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Assign unrelated objectives by perceived ability\" — Inclusive differentiation varies pathways, scaffolds, materials, pacing, or response access while preserving worthwhile goals and valid evidence of learning in this case as presented for this item in context under these facts as described for the scenario in this case as presented for this item",
         "\"Use one inaccessible text and one response mode\" — Inclusive differentiation varies pathways, scaffolds, materials, pacing, or response access while preserving worthwhile goals and valid evidence of learning as presented for this item in context under these facts as described for the scenario in this case as presented for this item in context",
@@ -13292,7 +13292,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, young learners participate differently during whole-group discussion, and the teacher suspects cultural and linguistic factors. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, young learners participate differently during whole-group discussion, and the teacher suspects cultural and linguistic factors. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Learn from young learners and families without stereotyping, offer multiple legitimate participation structures, teach expectations explicitly, and monitor access and learning\" — Cultural responsiveness uses inquiry, assets, explicit access, and flexible participation while avoiding assumptions that reduce individuals to group stereotypes.",
         "\"Assign a fixed cultural explanation to each student\" — Cultural responsiveness uses inquiry, assets, explicit access, and flexible participation while avoiding assumptions that reduce individuals to group stereotypes (in the context of young learners) as presented for this item in context under these facts as described for the scenario in this case",
@@ -13342,7 +13342,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a team wants to require completion of every intervention tier before considering a disability evaluation. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a team wants to require completion of every intervention tier before considering a disability evaluation. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Wait until every tier has failed for a full year\" — Tiered support and disability evaluation can proceed in coordination; federal guidance does not permit MTSS to become a barrier to timely evaluation in this case as presented for this item in context under these facts as described for the scenario in this case as presented for this item",
         "\"Continue helpful supports while promptly using the school’s referral and evaluation process; MTSS must not delay or deny a full individual evaluation when disability is suspected\" — Tiered support and disability evaluation can proceed in coordination; federal guidance does not permit MTSS to become a barrier to timely evaluation.",
@@ -13392,7 +13392,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a teacher is preparing for a meeting with caregivers who use another primary language. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a teacher is preparing for a meeting with caregivers who use another primary language. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Use the child as interpreter for sensitive decisions\" — Meaningful family participation requires understandable, accessible, confidential communication and qualified support rather than reliance on children or informal disclosure (in the context of language) in this case as presented for this item in context under these facts as described for the scenario",
         "\"Send English-primarily documents and assume silence means consent\" — Meaningful family participation requires understandable, accessible, confidential communication and qualified support rather than reliance on children or informal disclosure (in the context of language) as presented for this item in context under these facts as described for the scenario",
@@ -13442,7 +13442,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, young learners comply with a project but show little ownership. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, young learners comply with a project but show little ownership. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Allow any activity regardless of the objective\" — Motivation is supported when learners experience genuine agency, growing competence, connection, and purpose within clear educational boundaries in this case as presented for this item in context under these facts as described for the scenario",
         "\"Use public comparison as the main incentive\" — Motivation is supported when learners experience genuine agency, growing competence, connection, and purpose within clear educational boundaries as presented for this item in context under these facts as described for the scenario in this case",
@@ -13492,7 +13492,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, young learners focus on earning points rather than the substance of a learning task. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, young learners focus on earning points rather than the substance of a learning task. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Increase meaningful choice, relevance, achievable challenge, strategy feedback, and opportunities to notice growth while reducing unnecessary controlling rewards\" — External incentives can sometimes initiate behavior, but durable engagement is better supported by value, agency, competence, interest, belonging, and informative feedback.",
         "\"Increase prize size after every task\" — External incentives can sometimes initiate behavior, but durable engagement is better supported by value, agency, competence, interest, belonging, and informative feedback as presented for this item in context under these facts as described for the scenario in this case as presented for this item",
@@ -13542,7 +13542,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, after an error, a learner treats ability as fixed and uncontrollable. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, after an error, a learner treats ability as fixed and uncontrollable. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Promise that effort alone supports success\" — Adaptive feedback connects outcomes with controllable strategies, knowledge, help seeking, and effective effort while providing credible evidence that improvement is possible in this case as presented for this item in context under these facts as described for the scenario in this case",
         "\"Identify the specific strategy or prerequisite that needs work, acknowledge effective effort, model an alternative, and create a near-term chance to apply it\" — Adaptive feedback connects outcomes with controllable strategies, knowledge, help seeking, and effective effort while providing credible evidence that improvement is possible.",
@@ -13592,7 +13592,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a class loses learning time during materials cleanup. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a class loses learning time during materials cleanup. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Mention the expectation once\" — Routines become efficient when they are explicitly taught, practiced, prompted, acknowledged, monitored, and retaught like other learned behavior in this case as presented for this item in context under these facts as described for the scenario in this case as presented",
         "\"Add several rules without practice\" — Routines become efficient when they are explicitly taught, practiced, prompted, acknowledged, monitored, and retaught like other learned behavior as presented for this item in context under these facts as described for the scenario in this case as presented for this item",
@@ -13642,7 +13642,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a behavior persists despite repeated reprimands. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a behavior persists despite repeated reprimands. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Assume the behavior reflects a bad attitude\" — A functional classroom analysis examines what precedes and follows behavior and what need it may serve so prevention and replacement-skill instruction can be matched in this case as presented for this item in context under these facts as described for the scenario in this case as presented",
         "\"Choose a severe consequence without data\" — A functional classroom analysis examines what precedes and follows behavior and what need it may serve so prevention and replacement-skill instruction can be matched as presented for this item in context under these facts as described for the scenario in this case as presented for this item",
@@ -13692,7 +13692,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a teacher plans to acknowledge young learners after they demonstrate a taught discussion routine. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a teacher plans to acknowledge young learners after they demonstrate a taught discussion routine. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"The expectation and consequence are established ethically in advance, the acknowledgement follows the desired behavior, and the goal is to strengthen and eventually naturalize the skill\" — Planned reinforcement follows a defined behavior and supports learning; an improvised inducement during misconduct may reinforce the wrong behavior and bypass instruction.",
         "\"The reward is offered secretly during unsafe behavior\" — Planned reinforcement follows a defined behavior and supports learning; an improvised inducement during misconduct may reinforce the wrong behavior and bypass instruction as presented for this item in context under these facts as described for the scenario in this case as presented for this item in context",
@@ -13742,7 +13742,7 @@
       "type": "single-choice",
       "domainId": "students-as-learners",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a room layout prevents one student from seeing demonstrations and makes group transitions chaotic. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a room layout prevents one student from seeing demonstrations and makes group transitions chaotic. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Keep the layout because desks should rarely move\" — The physical environment is an instructional variable; access, traffic, visibility, interaction, sensory needs, and task purpose should guide its design and revision in this case as presented for this item in context under these facts as described for the scenario in this case as presented",
         "\"Arrange for physical and communication access, visibility, safe movement, purposeful grouping, materials access, and adjustment based on observed learning and behavior\" — The physical environment is an instructional variable; access, traffic, visibility, interaction, sensory needs, and task purpose should guide its design and revision.",
@@ -13792,7 +13792,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a grade-level standard combines several concepts and practices. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a grade-level standard combines several concepts and practices. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Copy the standard as the daily activity\" — Unpacking clarifies what learners must know and do and what evidence will demonstrate the standard without fragmenting away its intended rigor (in the context of level concepts practices) in this case as presented for this item in context under these facts",
         "\"Select worksheets before clarifying the outcome\" — Unpacking clarifies what learners must know and do and what evidence will demonstrate the standard without fragmenting away its intended rigor (in the context of level concepts practices) as presented for this item in context under these facts",
@@ -13842,7 +13842,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a teacher writes that young learners will understand two accounts of an event. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a teacher writes that young learners will understand two accounts of an event. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"young learners will appreciate history\" — A useful objective names the conditions, observable performance, important content, and sufficient criterion so instruction and assessment can align (in the context of accounts) in this case as presented for this item in context under these facts as described",
         "\"young learners will complete a worksheet\" — A useful objective names the conditions, observable performance, important content, and sufficient criterion so instruction and assessment can align (in the context of accounts) as presented for this item in context under these facts as described for the scenario",
@@ -13892,7 +13892,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, young learners must explain a scientific mechanism, but the planned test asks only for vocabulary matching. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, young learners must explain a scientific mechanism, but the planned test asks only for vocabulary matching. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Provide instruction and practice in constructing mechanism explanations, then assess an explanation using criteria tied to the same reasoning and content\" — Alignment requires learners to practice and demonstrate the knowledge and cognitive process named in the objective through a valid assessment task.",
         "\"Keep the test because vocabulary is easier to score\" — Alignment requires learners to practice and demonstrate the knowledge and cognitive process named in the objective through a valid assessment task (in the context of mechanism) as presented for this item in context under these facts as described for the scenario",
@@ -13942,7 +13942,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a team is deciding both what content belongs in a year and the order in which ideas develop. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a team is deciding both what content belongs in a year and the order in which ideas develop. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Scope is the daily order and sequence is the textbook price\" — Curriculum scope defines what is included; sequence arranges learning so knowledge and skill can build coherently toward standards and transfer (in the context of content) in this case as presented for this item in context under these facts as described",
         "\"Scope identifies the breadth and boundaries of content, while sequence organizes a coherent progression based on prerequisites, development, and increasing complexity\" — Curriculum scope defines what is included; sequence arranges learning so knowledge and skill can build coherently toward standards and transfer.",
@@ -13992,7 +13992,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a teacher needs to identify prerequisite knowledge and misconceptions before planning groups. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a teacher needs to identify prerequisite knowledge and misconceptions before planning groups. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Use it primarily to rank young learners publicly\" — Diagnostic evidence informs what learners already know and need next; it should guide responsive planning rather than high-stakes conclusions from a limited sample (in the context of prerequisite) in this case as presented for this item in context under these facts as described",
         "\"Skip instruction for anyone who answers one item correctly\" — Diagnostic evidence informs what learners already know and need next; it should guide responsive planning rather than high-stakes conclusions from a limited sample (in the context of prerequisite) as presented for this item in context under these facts as described",
@@ -14042,7 +14042,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a team wants to connect science and writing through a common environmental question. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a team wants to connect science and writing through a common environmental question. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Use a theme but omit subject objectives\" — Interdisciplinary planning is more than a shared topic; it maintains meaningful disciplinary goals while using integration to deepen inquiry, communication, and transfer in this case as presented for this item in context under these facts as described for the scenario in this case as presented for this item in context",
         "\"Grade primarily the visual decoration\" — Interdisciplinary planning is more than a shared topic; it maintains meaningful disciplinary goals while using integration to deepen inquiry, communication, and transfer as presented for this item in context under these facts as described for the scenario in this case as presented for this item in context under these facts",
@@ -14092,7 +14092,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a popular app is visually attractive but has unclear alignment and inaccessible navigation. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a popular app is visually attractive but has unclear alignment and inaccessible navigation. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Evaluate alignment, accuracy, cognitive demand, accessibility, cultural and linguistic representation, privacy, usability, evidence, and practical fit for the intended learners and task\" — Resources are tools for a defined learning purpose and must be accurate, accessible, secure, developmentally appropriate, and usable in the actual instructional context.",
         "\"Choose it because many schools purchased it\" — Resources are tools for a defined learning purpose and must be accurate, accessible, secure, developmentally appropriate, and usable in the actual instructional context (in the context of alignment evidence) as presented for this item in context under these facts as described for the scenario in this case",
@@ -14142,7 +14142,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a young learner repeatedly misses fraction comparisons because prerequisite magnitude concepts are weak. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a young learner repeatedly misses fraction comparisons because prerequisite magnitude concepts are weak. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Assign the identical worksheet again without analysis\" — Remediation responds to a diagnosed learning need by changing support and instruction, whereas unchanged repetition may reproduce the same barrier (in the context of prerequisite) in this case as presented for this item in context under these facts as described for the scenario",
         "\"Diagnose the underlying misconception or missing prerequisite and provide explicit targeted instruction with representations, guided practice, feedback, and a transfer check\" — Remediation responds to a diagnosed learning need by changing support and instruction, whereas unchanged repetition may reproduce the same barrier.",
@@ -14192,7 +14192,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a teacher has collected engaging activities but cannot explain how they fit the unit goal. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a teacher has collected engaging activities but cannot explain how they fit the unit goal. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Keep every activity and invent a goal later\" — Backward planning establishes intended results and valid evidence before choosing learning experiences, which improves coherence and protects time for priority learning in this case as presented for this item in context under these facts as described for the scenario in this case as presented",
         "\"Begin with classroom decorations\" — Backward planning establishes intended results and valid evidence before choosing learning experiences, which improves coherence and protects time for priority learning as presented for this item in context under these facts as described for the scenario in this case as presented for this item in context",
@@ -14242,7 +14242,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, an early-childhood lesson uses an abstract context that learners cannot access. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, an early-childhood lesson uses an abstract context that learners cannot access. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Replace the concept with unrelated entertainment\" — Developmental responsiveness changes access, representation, pacing, and support while maintaining meaningful intellectual work and avoiding low expectations in this case as presented for this item in context under these facts as described for the scenario in this case as presented",
         "\"Keep the inaccessible context to build character\" — Developmental responsiveness changes access, representation, pacing, and support while maintaining meaningful intellectual work and avoiding low expectations as presented for this item in context under these facts as described for the scenario in this case as presented for this item",
@@ -14292,7 +14292,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, young learners need a reliable strategy for solving unfamiliar word problems. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, young learners need a reliable strategy for solving unfamiliar word problems. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"State the goal, activate prerequisites, model steps and decisions, guide practice with checks and feedback, then move to cumulative independent application\" — Explicit instruction makes the process and reasoning visible, elicits frequent responses, corrects errors, and gradually transfers responsibility through supported practice.",
         "\"Assign independent problems before explanation\" — Explicit instruction makes the process and reasoning visible, elicits frequent responses, corrects errors, and gradually transfers responsibility through supported practice as presented for this item in context under these facts as described for the scenario in this case as presented",
@@ -14342,7 +14342,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a teacher plans an investigation of erosion. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a teacher plans an investigation of erosion. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"The activity has no intended concept\" — Inquiry supports knowledge construction when it is purposeful and guided, not when discovery is expected without the knowledge, prompts, tools, evidence, or consolidation needed (in the context of teacher) in this case as presented for this item in context under these facts as described for the scenario in this case",
         "\"Learners have accessible background knowledge and materials, a focused question, strategic teacher guidance, opportunities to analyze evidence, and a planned synthesis\" — Inquiry supports knowledge construction when it is purposeful and guided, not when discovery is expected without the knowledge, prompts, tools, evidence, or consolidation needed.",
@@ -14392,7 +14392,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, four young learners share a table, but one completes all the reasoning. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, four young learners share a table, but one completes all the reasoning. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Give one group grade without individual evidence\" — Cooperative learning requires a task and structures that make members responsible to one another while preserving evidence of individual learning and participation in this case as presented for this item in context under these facts as described for the scenario in this case as presented",
         "\"Let roles remain fixed by perceived ability\" — Cooperative learning requires a task and structures that make members responsible to one another while preserving evidence of individual learning and participation as presented for this item in context under these facts as described for the scenario in this case as presented for this item",
@@ -14442,7 +14442,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, assessment evidence shows that student needs change across skills and over time. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, assessment evidence shows that student needs change across skills and over time. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Keep one group assignment for the year\" — Flexible grouping responds to a specific instructional need and changes with evidence, reducing the access and identity risks associated with static tracking in this case as presented for this item in context under these facts as described for the scenario in this case as presented",
         "\"Use one global ability judgment for every subject\" — Flexible grouping responds to a specific instructional need and changes with evidence, reducing the access and identity risks associated with static tracking as presented for this item in context under these facts as described for the scenario in this case as presented for this item",
@@ -14492,7 +14492,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a young learner completes a task accurately with a graphic organizer and begins anticipating every prompt. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a young learner completes a task accurately with a graphic organizer and begins anticipating every prompt. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Reduce support gradually while monitoring accuracy, strategy use, confidence, and transfer, restoring or altering support when evidence shows it is needed\" — Scaffolds should be contingent: enough to enable productive effort, then faded as learners internalize the process while performance remains monitored.",
         "\"Remove it abruptly regardless of performance\" — Scaffolds should be contingent: enough to enable productive effort, then faded as learners internalize the process while performance remains monitored (in the context of evidence) as presented for this item in context under these facts as described for the scenario",
@@ -14542,7 +14542,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, some young learners need language and organizational support for the same evidence-based explanation task. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, some young learners need language and organizational support for the same evidence-based explanation task. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Assign unsupported harder work to advanced young learners\" — Differentiation responds to readiness and access through pathways and supports while maintaining clear worthwhile outcomes and valid expectations (in the context of language evidence explanation response) in this case as presented for this item in context",
         "\"Vary representations, vocabulary and language scaffolds, examples, grouping, pacing, and response supports while retaining the essential explanation and evidence criteria\" — Differentiation responds to readiness and access through pathways and supports while maintaining clear worthwhile outcomes and valid expectations.",
@@ -14592,7 +14592,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, young learners make systematic errors during the first examples of a new procedure. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, young learners make systematic errors during the first examples of a new procedure. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Record errors without responding\" — Guided practice gives the teacher evidence and gives learners supported retrieval, feedback, and correction before errors become established in independent work (in the context of examples) in this case as presented for this item in context under these facts as described for the scenario",
         "\"Assign more independent work promptly\" — Guided practice gives the teacher evidence and gives learners supported retrieval, feedback, and correction before errors become established in independent work (in the context of examples) as presented for this item in context under these facts as described for the scenario",
@@ -14642,7 +14642,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a teacher wants to model how an expert notices confusion while reading. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a teacher wants to model how an expert notices confusion while reading. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Narrate every unrelated thought\" — A think-aloud exposes otherwise invisible decision making and self-monitoring so learners can connect cues with strategies and later take control in this case as presented for this item in context under these facts as described for the scenario in this case as presented",
         "\"Show primarily the final correct answer\" — A think-aloud exposes otherwise invisible decision making and self-monitoring so learners can connect cues with strategies and later take control as presented for this item in context under these facts as described for the scenario in this case as presented for this item",
@@ -14692,7 +14692,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, young learners wait for the teacher to tell them whether their work is complete. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, young learners wait for the teacher to tell them whether their work is complete. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Teach learners to set a specific goal, select and use a strategy, monitor evidence, seek help appropriately, evaluate results, and plan the next adjustment\" — Self-regulation coordinates goals, strategies, monitoring, feedback, reflection, and adjustment; it develops through modeling, guided use, and increasing learner ownership.",
         "\"Provide a completion sticker without criteria\" — Self-regulation coordinates goals, strategies, monitoring, feedback, reflection, and adjustment; it develops through modeling, guided use, and increasing learner ownership (in the context of learners evidence) as presented for this item in context under these facts as described",
@@ -14742,7 +14742,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, young learners remember vocabulary on Friday but not several weeks later. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, young learners remember vocabulary on Friday but not several weeks later. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Mass all study into one review period\" — Spacing, active retrieval, feedback, cumulative review, and varied application strengthen long-term access and help learners discriminate when knowledge applies in this case as presented for this item in context under these facts as described for the scenario in this case as presented for this item",
         "\"Use spaced cumulative retrieval with feedback, interleave related decisions when appropriate, revisit ideas in varied contexts, and ask learners to explain connections\" — Spacing, active retrieval, feedback, cumulative review, and varied application strengthen long-term access and help learners discriminate when knowledge applies.",
@@ -14792,7 +14792,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a discussion includes only the fastest responders. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a discussion includes only the fastest responders. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Answer the question after one second\" — Wait time and preparation structures increase opportunities to formulate responses, improve explanation, and make participation less dependent on rapid verbal processing in this case as presented for this item in context under these facts as described for the scenario in this case",
         "\"Call primarily on volunteers who already know\" — Wait time and preparation structures increase opportunities to formulate responses, improve explanation, and make participation less dependent on rapid verbal processing as presented for this item in context under these facts as described for the scenario in this case",
@@ -14842,7 +14842,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a teacher needs a rapid check of whether young learners can identify a key prerequisite before continuing. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a teacher needs a rapid check of whether young learners can identify a key prerequisite before continuing. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Use primarily open questions for every purpose\" — Question form should match purpose: focused questions can check specific knowledge efficiently, while open and probing questions reveal reasoning, alternatives, and connections (in the context of needs prerequisite) in this case as presented for this item in context under these facts",
         "\"Use a vague prompt that cannot be interpreted\" — Question form should match purpose: focused questions can check specific knowledge efficiently, while open and probing questions reveal reasoning, alternatives, and connections (in the context of needs prerequisite) as presented for this item in context under these facts",
@@ -14892,7 +14892,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a misconception surfaces publicly in a mathematics conversation. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a misconception surfaces publicly in a mathematics conversation. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Acknowledge the contribution, ask for the reasoning, invite evidence or comparison, clarify the misconception, and provide an opportunity to revise the answer\" — Errors are diagnostic opportunities; respectful probing reveals the underlying idea, supports correction, and preserves a climate where learners can take intellectual risks.",
         "\"Ridicule the error so others remember\" — Errors are diagnostic opportunities; respectful probing reveals the underlying idea, supports correction, and preserves a climate where learners can take intellectual risks (in the context of misconception evidence) as presented for this item in context under these facts as described for the scenario",
@@ -14942,7 +14942,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, young learners appear confused by a long verbal explanation. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, young learners appear confused by a long verbal explanation. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Add more jargon and speed\" — Clear communication manages cognitive demand, uses precise accessible language and representations, and relies on learner evidence rather than assuming the message was received (in the context of explanation) in this case as presented for this item in context under these facts as described for the scenario in this case",
         "\"Organize a few essential ideas, connect them to prior knowledge, use accurate examples and representations, check interpretation, and revisit the explanation responsively\" — Clear communication manages cognitive demand, uses precise accessible language and representations, and relies on learner evidence rather than assuming the message was received.",
@@ -14992,7 +14992,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, after modeling, the teacher needs to decide whether the whole class is ready for independent work. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, after modeling, the teacher needs to decide whether the whole class is ready for independent work. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Ask whether everyone understands\" — An effective check is aligned, inclusive, interpretable, and actionable; it reveals more than self-reported confidence or one selected response (in the context of evidence) in this case as presented for this item in context under these facts as described for the scenario in this case",
         "\"Use one confident volunteer as the sample\" — An effective check is aligned, inclusive, interpretable, and actionable; it reveals more than self-reported confidence or one selected response (in the context of evidence) as presented for this item in context under these facts as described for the scenario in this case",
@@ -15042,7 +15042,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a formative check shows a coherent error pattern during guided practice. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a formative check shows a coherent error pattern during guided practice. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Continue because the pacing guide is fixed\" — Monitoring matters primarily when evidence changes instruction; a common misconception warrants focused diagnosis, responsive teaching, and another aligned check in this case as presented for this item in context under these facts as described for the scenario in this case",
         "\"Record grades and reveal the answer primarily\" — Monitoring matters primarily when evidence changes instruction; a common misconception warrants focused diagnosis, responsive teaching, and another aligned check as presented for this item in context under these facts as described for the scenario in this case as presented",
@@ -15092,7 +15092,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, young learners have identified facts in two sources and are ready to analyze perspective. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, young learners have identified facts in two sources and are ready to analyze perspective. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Which differences in purpose, audience, and evidence best explain how the accounts portray the event, and what supports your conclusion\" — Higher-order questions require learners to relate relevant evidence, criteria, perspectives, or concepts rather than merely retrieve an isolated visible detail.",
         "\"What year appears in the heading\" — Higher-order questions require learners to relate relevant evidence, criteria, perspectives, or concepts rather than merely retrieve an isolated visible detail as presented for this item in context under these facts as described for the scenario in this case as presented",
@@ -15142,7 +15142,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a young learner observation reveals a productive connection outside the planned example. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a young learner observation reveals a productive connection outside the planned example. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Abandon the unit for any new topic\" — A teachable moment is used purposefully when it deepens or applies intended learning without sacrificing safety, inclusion, or essential instructional coherence (in the context of connection) in this case as presented for this item in context under these facts as described",
         "\"Judge relevance, timing, access, and value; briefly explore or record the connection, link it to the objective, and protect essential lesson priorities\" — A teachable moment is used purposefully when it deepens or applies intended learning without sacrificing safety, inclusion, or essential instructional coherence.",
@@ -15192,7 +15192,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, young learners state ideas but rarely respond to one another. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, young learners state ideas but rarely respond to one another. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Move to a new topic after each comment\" — Active listening checks understanding and makes ideas available for response; structured uptake turns parallel answers into evidence-based dialogue in this case as presented for this item in context under these facts as described for the scenario in this case",
         "\"Evaluate every idea before peers can respond\" — Active listening checks understanding and makes ideas available for response; structured uptake turns parallel answers into evidence-based dialogue as presented for this item in context under these facts as described for the scenario in this case as presented",
@@ -15242,7 +15242,7 @@
       "type": "single-choice",
       "domainId": "instructional-process",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a lesson felt engaging, but the teacher is unsure whether the objective was learned equitably. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a lesson felt engaging, but the teacher is unsure whether the objective was learned equitably. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Use teacher enjoyment as the primarily evidence\" — Professional reflection connects a clear goal with multiple relevant evidence sources and identifies a testable next adjustment without causal overclaiming in this case as presented for this item in context under these facts as described for the scenario in this case as presented for this item",
         "\"Attribute every result to the strategy\" — Professional reflection connects a clear goal with multiple relevant evidence sources and identifies a testable next adjustment without causal overclaiming as presented for this item in context under these facts as described for the scenario in this case as presented for this item in context under these facts",
@@ -15292,7 +15292,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a teacher collects exit responses before tomorrow’s lesson. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a teacher collects exit responses before tomorrow’s lesson. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"The teacher and learners use timely evidence about current understanding to decide feedback and next instructional or learning actions\" — Formative assessment is defined by its use in an ongoing learning process, not merely by timing, format, or the absence of points.",
         "\"It occurs on paper rather than online\" — Formative assessment is defined by its use in an ongoing learning process, not merely by timing, format, or the absence of points (in the context of teacher evidence) as presented for this item in context under these facts as described",
@@ -15342,7 +15342,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, at the end of a unit, a teacher needs evidence of achievement across the priority objectives. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, at the end of a unit, a teacher needs evidence of achievement across the priority objectives. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Diagnose every prerequisite from one score\" — Summative assessment supports a bounded judgment about achievement after a period of learning; validity depends on representative alignment and defensible interpretation in this case as presented for this item in context under these facts as described for the scenario in this case",
         "\"Sample the intended outcomes with aligned tasks and criteria to summarize learning while reporting limitations and avoiding unsupported conclusions\" — Summative assessment supports a bounded judgment about achievement after a period of learning; validity depends on representative alignment and defensible interpretation.",
@@ -15392,7 +15392,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, before teaching division, a teacher wants to locate whether errors arise from place value, multiplication facts, or interpretation of equal groups. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, before teaching division, a teacher wants to locate whether errors arise from place value, multiplication facts, or interpretation of equal groups. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"A participation grade\" — Diagnostic assessment gathers fine-grained evidence to explain current performance and guide targeted instruction rather than merely ranking or summarizing in this case as presented for this item in context under these facts as described for the scenario in this case as presented",
         "\"An unrelated standardized reading score\" — Diagnostic assessment gathers fine-grained evidence to explain current performance and guide targeted instruction rather than merely ranking or summarizing as presented for this item in context under these facts as described for the scenario in this case as presented",
@@ -15442,7 +15442,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a science objective emphasizes planning, evidence collection, and explanation. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a science objective emphasizes planning, evidence collection, and explanation. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"A vocabulary-primarily matching quiz\" — Assessment should elicit the knowledge and performance named in the objective; a proxy that omits the critical practice cannot support the intended interpretation (in the context of evidence explanation) in this case as presented for this item in context under these facts as described",
         "\"A self-report of whether science is enjoyable\" — Assessment should elicit the knowledge and performance named in the objective; a proxy that omits the critical practice cannot support the intended interpretation (in the context of evidence explanation) as presented for this item in context under these facts as described",
@@ -15492,7 +15492,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a teacher must evaluate whether young learners can deliver an organized evidence-based oral presentation. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a teacher must evaluate whether young learners can deliver an organized evidence-based oral presentation. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Have young learners perform the presentation under defined conditions and use transparent criteria for content, evidence, organization, and communication\" — Direct performance evidence is appropriate when the target includes creating, doing, communicating, or applying a process that selected response cannot adequately represent.",
         "\"Ask young learners to select the definition of presentation\" — Direct performance evidence is appropriate when the target includes creating, doing, communicating, or applying a process that selected response cannot adequately represent as presented for this item in context under these facts as described for the scenario in this case",
@@ -15542,7 +15542,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, young learners need feedback on evidence, organization, reasoning, and conventions separately. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, young learners need feedback on evidence, organization, reasoning, and conventions separately. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"A single impression with no criteria\" — Analytic scoring separates dimensions of performance, which can improve diagnostic feedback, though the criteria and scoring process still require validity and reliability attention in this case as presented for this item in context under these facts as described for the scenario in this case as presented",
         "\"An analytic rubric reports performance by distinct criteria, supporting targeted feedback while requiring clear, nonoverlapping descriptors and scorer consistency\" — Analytic scoring separates dimensions of performance, which can improve diagnostic feedback, though the criteria and scoring process still require validity and reliability attention.",
@@ -15592,7 +15592,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, young learners are giving one another vague praise on drafts. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, young learners are giving one another vague praise on drafts. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Let popularity determine scores\" — Peer assessment can deepen criteria knowledge and revision when learners are trained, supported, respectful, and not asked to make unsupported high-stakes decisions (in the context of evidence) in this case as presented for this item in context under these facts as described for the scenario in this case as presented",
         "\"Use peer marks as the sole high-stakes grade\" — Peer assessment can deepen criteria knowledge and revision when learners are trained, supported, respectful, and not asked to make unsupported high-stakes decisions (in the context of evidence) as presented for this item in context under these facts as described for the scenario in this case as presented",
@@ -15642,7 +15642,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a teacher saves every assignment but cannot use the collection to discuss growth. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a teacher saves every assignment but cannot use the collection to discuss growth. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Include primarily the highest score\" — A portfolio is a systematic, interpreted collection tied to purposes and criteria; selection, context, reflection, and time make the evidence meaningful (in the context of growth) in this case as presented for this item in context under these facts as described for the scenario in this case",
         "\"Remove dates and task descriptions\" — A portfolio is a systematic, interpreted collection tied to purposes and criteria; selection, context, reflection, and time make the evidence meaningful (in the context of growth) as presented for this item in context under these facts as described for the scenario in this case as presented",
@@ -15692,7 +15692,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a teacher writes that a young learner was unmotivated during group work. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a teacher writes that a young learner was unmotivated during group work. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Record dated observable actions and context, separate observation from inference, sample across occasions, and connect patterns cautiously to the learning question\" — Objective descriptive records reduce inference and recall bias; repeated context-rich observations can inform decisions when combined with other evidence.",
         "\"Use personality labels without examples\" — Objective descriptive records reduce inference and recall bias; repeated context-rich observations can inform decisions when combined with other evidence as presented for this item in context under these facts as described for the scenario in this case as presented for this item",
@@ -15742,7 +15742,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a learner uses a documented response support on a classroom assessment. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a learner uses a documented response support on a classroom assessment. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Does it make every learner finish at the same time\" — An appropriate accommodation supports access while preserving what the assessment is intended to measure and follows the documented qualified decision process (in the context of support) in this case as presented for this item in context under these facts as described",
         "\"Does the support remove an access barrier without changing the essential construct, and is it provided consistently according to the authorized plan\" — An appropriate accommodation supports access while preserving what the assessment is intended to measure and follows the documented qualified decision process.",
@@ -15792,7 +15792,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, an assessment is reliable across occasions but poorly aligned to the target construct. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, an assessment is reliable across occasions but poorly aligned to the target construct. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"The test is valid because it is consistent\" — Reliability concerns consistency or precision; validity concerns evidence supporting an intended interpretation and use, and reliable measurement can consistently measure the wrong thing (in the context of construct) in this case as presented for this item in context under these facts as described for the scenario",
         "\"The test is invalid primarily if the mean is low\" — Reliability concerns consistency or precision; validity concerns evidence supporting an intended interpretation and use, and reliable measurement can consistently measure the wrong thing (in the context of construct) as presented for this item in context under these facts as described for the scenario in this case",
@@ -15842,7 +15842,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a family asks whether a score describes comparison with peers or mastery of defined skills. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a family asks whether a score describes comparison with peers or mastery of defined skills. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Both compare primarily with the classroom average\" — The reference for interpretation differs: relative standing within a norm group versus performance against established criteria, each with its own supported uses and limits (in the context of defined evidence) in this case as presented for this item in context under these facts as described for the scenario",
         "\"Criterion reference typically reports a percentile\" — The reference for interpretation differs: relative standing within a norm group versus performance against established criteria, each with its own supported uses and limits (in the context of defined evidence) as presented for this item in context under these facts as described for the scenario in this case",
@@ -15892,7 +15892,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "analysis",
-      "prompt": "A learner is working through this task: \"In a parallel early-childhood setting, how should a teacher explain a national percentile rank of 75 accurately?\" Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A learner is working through this task: \"In an early-childhood classroom, how should a teacher explain a national percentile rank of 75 accurately?\" Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"The score was as high as or higher than the scores of approximately 75 percent of the relevant norm group, not that 75 percent of items were correct\" — Percentile rank indicates relative standing within the specified norm group and must not be confused with percent correct, mastery, or a grade-equivalent score.",
         "\"The student mastered 75 percent of the curriculum\" — Percentile rank indicates relative standing within the specified norm group and must not be confused with percent correct, mastery, or a grade-equivalent score as presented for this item in context under these facts as described for the scenario in this case",
@@ -15942,7 +15942,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "analysis",
-      "prompt": "A learner is working through this task: \"In a parallel early-childhood setting, which statement avoids the common misuse of a grade-equivalent score above the learner’s current grade?\" Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A learner is working through this task: \"In an early-childhood classroom, which statement avoids the common misuse of a grade-equivalent score above the learner’s current grade?\" Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"The student should as a routine step skip two grades\" — Grade-equivalent scores describe comparison of a test score with norm-group performance and are easily overinterpreted as curriculum mastery or instructional placement in this case as presented for this item in context under these facts as described for the scenario in this case as presented for this item",
         "\"On that test, the raw score matched the typical score of the referenced third-grade second-month group; it does not prove mastery of the third-grade curriculum or readiness for placement\" — Grade-equivalent scores describe comparison of a test score with norm-group performance and are easily overinterpreted as curriculum mastery or instructional placement.",
@@ -15992,7 +15992,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a teacher is summarizing data with a strong skew caused by one extreme value. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a teacher is summarizing data with a strong skew caused by one extreme value. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"The range, because it ignores extremes\" — The median is resistant to extreme values, while the mean can shift substantially; distribution, purpose, and additional statistics should guide interpretation in this case as presented for this item in context under these facts as described for the scenario",
         "\"The mean, because outliers rarely affect it\" — The median is resistant to extreme values, while the mean can shift substantially; distribution, purpose, and additional statistics should guide interpretation as presented for this item in context under these facts as described for the scenario",
@@ -16042,7 +16042,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a teacher sees that two forms report scaled rather than raw results. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a teacher sees that two forms report scaled rather than raw results. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"A scaled score is typically a percentile\" — Raw-to-scale conversion follows a defined measurement model; users should not infer simple item counts, percentiles, or comparability beyond the developer’s evidence (in the context of forms) in this case as presented for this item in context under these facts as described for the scenario in this case as presented",
         "\"Scaling makes an invalid test valid\" — Raw-to-scale conversion follows a defined measurement model; users should not infer simple item counts, percentiles, or comparability beyond the developer’s evidence (in the context of forms) as presented for this item in context under these facts as described for the scenario in this case as presented for this item in context",
@@ -16092,7 +16092,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a teacher needs one overall judgment of integrated writing quality after also preserving criteria-based feedback elsewhere. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a teacher needs one overall judgment of integrated writing quality after also preserving criteria-based feedback elsewhere. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Use a holistic rubric with clear overall performance descriptors and trained calibration when the intended decision concerns the quality of the integrated whole\" — Holistic scoring evaluates the overall performance pattern efficiently, whereas analytic scoring separates dimensions; either requires aligned criteria and dependable scoring.",
         "\"Count spelling errors primarily\" — Holistic scoring evaluates the overall performance pattern efficiently, whereas analytic scoring separates dimensions; either requires aligned criteria and dependable scoring (in the context of integrated quality) as presented for this item in context under these facts as described for the scenario in this case",
@@ -16142,7 +16142,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, one screening result conflicts with classroom work, observation, and recent progress. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, one screening result conflicts with classroom work, observation, and recent progress. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Ignore all evidence except the standardized score\" — Multiple relevant measures reduce the risk of sampling error, construct mismatch, access barriers, and context-driven overinterpretation in consequential decisions in this case as presented for this item in context under these facts as described for the scenario in this case",
         "\"Verify administration and access, gather converging evidence across methods and time, examine the construct and context, and use the qualified decision process\" — Multiple relevant measures reduce the risk of sampling error, construct mismatch, access barriers, and context-driven overinterpretation in consequential decisions.",
@@ -16192,7 +16192,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a score report contains technical terms and uncertainty. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a score report contains technical terms and uncertainty. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Read the score table without context\" — Clear communication links evidence with its supported meaning and next actions while naming uncertainty, avoiding labels, and inviting reciprocal family understanding in this case as presented for this item in context under these facts as described for the scenario in this case as presented for this item in context under these facts",
         "\"supports a future outcome from the score\" — Clear communication links evidence with its supported meaning and next actions while naming uncertainty, avoiding labels, and inviting reciprocal family understanding as presented for this item in context under these facts as described for the scenario in this case as presented for this item in context under these facts",
@@ -16242,7 +16242,7 @@
       "type": "single-choice",
       "domainId": "assessment",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a teacher suspects that wording and background knowledge may be affecting performance beyond the intended construct. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a teacher suspects that wording and background knowledge may be affecting performance beyond the intended construct. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Delete subgroup data to avoid concern\" — Assessment fairness requires examining whether irrelevant language, experience, access, or administration factors distort evidence while preserving the intended construct and high expectations in this case as presented for this item in context under these facts as described for the scenario in this case as presented for this item in context under these facts",
         "\"Assume the difference proves lower ability\" — Assessment fairness requires examining whether irrelevant language, experience, access, or administration factors distort evidence while preserving the intended construct and high expectations as presented for this item in context under these facts as described for the scenario in this case as presented for this item in context under these facts as described",
@@ -16292,7 +16292,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a teacher notices that discussion participation is inequitable. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a teacher notices that discussion participation is inequitable. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Define the learning and access question, gather relevant evidence, examine assumptions and alternatives, implement a focused change, and review its effects\" — Reflection becomes professional inquiry when it connects goals and evidence with a reasoned adjustment and follow-up rather than remaining an impression.",
         "\"Write a general feeling and make no change\" — Reflection becomes professional inquiry when it connects goals and evidence with a reasoned adjustment and follow-up rather than remaining an impression as presented for this item in context under these facts as described for the scenario in this case as presented",
@@ -16342,12 +16342,12 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a one-time workshop introduces a useful strategy, but implementation is inconsistent. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a one-time workshop introduces a useful strategy, but implementation is inconsistent. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
-        "\"Schedule another identical lecture primarily\" — Job-embedded, sustained, collaborative professional learning supports enactment and refinement better than exposure alone (in the context of strategy evidence) in this case as presented for this item in context under these facts as described",
+        "\"Schedule another identical lecture primarily\" — Job-embedded, sustained, collaborative professional learning supports enactment and refinement better than exposure alone (in the context of classroom strategy evidence) in this case as presented for this item in context under these facts",
         "\"Connect the strategy to student need and current curriculum through modeling, co-planning, rehearsal, classroom use, feedback, and repeated review of evidence\" — Job-embedded, sustained, collaborative professional learning supports enactment and refinement better than exposure alone.",
-        "\"Require immediate mastery without practice\" — Job-embedded, sustained, collaborative professional learning supports enactment and refinement better than exposure alone (in the context of strategy evidence) for this item in context under these facts as described for the scenario in this case",
-        "\"Evaluate teachers before clarifying expectations\" — Job-embedded, sustained, collaborative professional learning supports enactment and refinement better than exposure alone (in the context of strategy evidence) in context under these facts as described for the scenario in this case"
+        "\"Require immediate mastery without practice\" — Job-embedded, sustained, collaborative professional learning supports enactment and refinement better than exposure alone (in the context of classroom strategy evidence) for this item in context under these facts as described for the scenario",
+        "\"Evaluate teachers before clarifying expectations\" — Job-embedded, sustained, collaborative professional learning supports enactment and refinement better than exposure alone (in the context of classroom strategy evidence) in context under these facts as described for the scenario"
       ],
       "answerIndex": 1,
       "rationale": "The evidence statement accurately describes \"Connect the strategy to student need and current curriculum through modeling, co-planning, rehearsal, classroom use, feedback, and repeated review of evidence\". Pairing that same evidence with another response creates a mismatch. Job-embedded, sustained, collaborative professional learning supports enactment and refinement better than exposure alone. The response must fit young children’s development, play, relationships, language, access, safety, family context, and observable learning evidence.",
@@ -16392,7 +16392,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a teacher reads a correlational program evaluation with important group differences. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a teacher reads a correlational program evaluation with important group differences. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Conclude the program caused the difference\" — Educators interpret evidence according to design quality, comparison, measurement, implementation, context, uncertainty, and convergence rather than a headline alone in this case as presented for this item in context under these facts as described for the scenario in this case as presented for this item in context",
         "\"Reject all research that is not randomized\" — Educators interpret evidence according to design quality, comparison, measurement, implementation, context, uncertainty, and convergence rather than a headline alone as presented for this item in context under these facts as described for the scenario in this case as presented for this item in context under these facts",
@@ -16442,7 +16442,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a teacher changes a feedback routine and sees improvement over four weeks without a comparison group. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a teacher changes a feedback routine and sees improvement over four weeks without a comparison group. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"The routine is proven for all schools\" — Action inquiry supports disciplined local learning when measures and implementation are documented, while causal and generalizability limits remain explicit (in the context of routine improvement evidence) in this case as presented for this item in context under these facts as described",
         "\"No learning is possible from local evidence\" — Action inquiry supports disciplined local learning when measures and implementation are documented, while causal and generalizability limits remain explicit (in the context of routine improvement evidence) as presented for this item in context under these facts as described for the scenario",
@@ -16492,7 +16492,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a novice teacher struggles with transitions and wants actionable help. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a novice teacher struggles with transitions and wants actionable help. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Clarify the goal, jointly plan and model a manageable routine, observe agreed evidence, provide specific feedback, and revisit progress within clear confidentiality boundaries\" — Effective mentoring combines relational trust with concrete practice, evidence, feedback, role clarity, and follow-up rather than dependence or surveillance.",
         "\"Take over the class indefinitely\" — Effective mentoring combines relational trust with concrete practice, evidence, feedback, role clarity, and follow-up rather than dependence or surveillance as presented for this item in context under these facts as described for the scenario in this case as presented for this item in context under these facts",
@@ -16542,7 +16542,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, two colleagues want to learn from one another’s questioning practices. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, two colleagues want to learn from one another’s questioning practices. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Use the visit as an undisclosed formal evaluation\" — Focused peer observation supports inquiry when purpose, evidence, roles, confidentiality, feedback, and intended use are transparent in this case as presented for this item in context under these facts as described for the scenario",
         "\"Agree on the learning question, evidence to collect, observation role, confidentiality and data-use boundaries, feedback process, and a follow-up action\" — Focused peer observation supports inquiry when purpose, evidence, roles, confidentiality, feedback, and intended use are transparent.",
@@ -16592,7 +16592,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "analysis",
-      "prompt": "A learner is working through this task: \"In a parallel early-childhood setting, a teacher writes, Become better at differentiation. How should the goal be improved?\" Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "A learner is working through this task: \"In an early-childhood classroom, a teacher writes, Become better at differentiation. How should the goal be improved?\" Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Choose a slogan with no measure\" — A strong growth goal links a meaningful student need with a specific practice, learning supports, observable evidence, and a time-bounded inquiry cycle (in the context of learner) in this case as presented for this item in context under these facts as described for the scenario",
         "\"Use test scores without an instructional action\" — A strong growth goal links a meaningful student need with a specific practice, learning supports, observable evidence, and a time-bounded inquiry cycle (in the context of learner) as presented for this item in context under these facts as described for the scenario",
@@ -16642,7 +16642,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, several specialists work with one learner, but classroom recommendations are disconnected. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, several specialists work with one learner, but classroom recommendations are disconnected. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Ask one specialist to make every classroom decision\" — Teachers contribute instructional context and carry out team decisions while respecting professional roles, privacy, family participation, and coordinated monitoring (in the context of classroom evidence) in this case as presented for this item in context under these facts as described for the scenario",
         "\"Ignore recommendations that require coordination\" — Teachers contribute instructional context and carry out team decisions while respecting professional roles, privacy, family participation, and coordinated monitoring (in the context of classroom evidence) as presented for this item in context under these facts as described for the scenario in this case",
@@ -16692,7 +16692,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a teacher needs to discuss learning progress with caregivers. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a teacher needs to discuss learning progress with caregivers. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Invite family goals, observations, language and access needs; share clear evidence and limits; co-develop feasible next steps; and establish a follow-up channel\" — Reciprocal partnership treats families as knowledgeable collaborators and connects accessible evidence, assets, concerns, shared actions, and follow-up.",
         "\"Read grades and end the meeting\" — Reciprocal partnership treats families as knowledgeable collaborators and connects accessible evidence, assets, concerns, shared actions, and follow-up (in the context of needs) as presented for this item in context under these facts as described for the scenario in this case as presented",
@@ -16742,7 +16742,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a grade-level team wants to improve student transitions but members disagree about the problem. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a grade-level team wants to improve student transitions but members disagree about the problem. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Assign tasks before agreeing on the goal\" — Collaboration is strengthened by a shared evidence-based purpose, meaningful participation, clear responsibility, communication, and accountability for review (in the context of problem) in this case as presented for this item in context under these facts as described for the scenario",
         "\"Clarify the shared purpose and observable problem with relevant stakeholder evidence, then define roles, actions, measures, communication, and review dates\" — Collaboration is strengthened by a shared evidence-based purpose, meaningful participation, clear responsibility, communication, and accountability for review.",
@@ -16792,7 +16792,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a family must understand a consequential school decision and requests language assistance. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a family must understand a consequential school decision and requests language assistance. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Ask a young sibling to interpret\" — Meaningful language access and confidentiality require qualified supports and direct respectful communication, especially for important or sensitive information (in the context of family school) in this case as presented for this item in context under these facts as described for the scenario in this case as presented",
         "\"Provide a machine translation without review for a high-stakes decision\" — Meaningful language access and confidentiality require qualified supports and direct respectful communication, especially for important or sensitive information (in the context of family school) as presented for this item in context under these facts as described for the scenario",
@@ -16842,7 +16842,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a paraeducator receives vague directions and is left to design instruction independently. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a paraeducator receives vague directions and is left to design instruction independently. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Delegate every instructional decision\" — Paraeducators are valuable team members who need role clarity, preparation, communication, supervision, and access to primarily the information required for assigned responsibilities (in the context of instruction) in this case as presented for this item in context under these facts as described for the scenario in this case",
         "\"Use the paraeducator primarily for behavior removal\" — Paraeducators are valuable team members who need role clarity, preparation, communication, supervision, and access to primarily the information required for assigned responsibilities (in the context of instruction) as presented for this item in context under these facts as described for the scenario in this case",
@@ -16892,7 +16892,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, caregivers report that a classroom support conflicts with what they observe at home. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, caregivers report that a classroom support conflicts with what they observe at home. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Listen and clarify the concern, share the evidence and purpose in accessible language, examine discrepancies, explain rights and decision processes, and bring needed revisions to the appropriate team\" — Trustworthy collaboration respects family evidence and questions, distinguishes classroom roles from team authority, and uses transparent qualified processes for decisions.",
         "\"Defend the plan before hearing the concern\" — Trustworthy collaboration respects family evidence and questions, distinguishes classroom roles from team authority, and uses transparent qualified processes for decisions as presented for this item in context under these facts as described for the scenario in this case as presented for this item in context under these facts",
@@ -16942,7 +16942,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a potential school partner requests names, schedules, scores, and disability information to plan services. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a potential school partner requests names, schedules, scores, and disability information to plan services. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Send records because the service is free\" — Community partnership does not remove privacy, consent, data minimization, safety, accessibility, contracting, oversight, or continuity responsibilities in this case as presented for this item in context under these facts as described for the scenario in this case as presented for this item in context",
         "\"Define the educational purpose, authority or consent, minimum necessary data, security and redisclosure controls, roles, access, safeguarding, evaluation, and exit terms through approved procedures\" — Community partnership does not remove privacy, consent, data minimization, safety, accessibility, contracting, oversight, or continuity responsibilities.",
@@ -16992,7 +16992,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, an employee wants to review records unrelated to assigned professional responsibilities. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, an employee wants to review records unrelated to assigned professional responsibilities. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Any employee may open every record\" — FERPA permits disclosure without consent to qualifying school officials with legitimate educational interests; employment alone does not authorize access to every student record (in the context of records professional) in this case as presented for this item in context under these facts as described for the scenario in this case as presented for this item",
         "\"Records are unrestricted once stored electronically\" — FERPA permits disclosure without consent to qualifying school officials with legitimate educational interests; employment alone does not authorize access to every student record (in the context of records professional) as presented for this item in context under these facts as described for the scenario in this case as presented for this item",
@@ -17042,7 +17042,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a classroom teacher wants to suspend an approved accommodation until the next meeting. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a classroom teacher wants to suspend an approved accommodation until the next meeting. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Ask classmates to vote on the support\" — Disability supports and services are determined through authorized individualized processes; teachers implement them and collaborate with the responsible team (in the context of evidence) in this case as presented for this item in context under these facts as described for the scenario",
         "\"Remove it whenever the student earns a high score\" — Disability supports and services are determined through authorized individualized processes; teachers implement them and collaborate with the responsible team (in the context of evidence) as presented for this item in context under these facts as described for the scenario",
@@ -17092,7 +17092,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a teacher receives information suggesting possible neglect but is unsure of the exact local procedure. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a teacher receives information suggesting possible neglect but is unsure of the exact local procedure. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Prioritize immediate safety, listen without leading or promising secrecy, document facts as required, and promptly follow current mandated-reporting law and school procedure with qualified authority\" — Reporting thresholds and procedures vary, but teachers should not investigate or make unsupported promises; they follow current law and safety procedures promptly.",
         "\"Conduct an independent interrogation first\" — Reporting thresholds and procedures vary, but teachers should not investigate or make unsupported promises; they follow current law and safety procedures promptly (in the context of procedure) as presented for this item in context under these facts as described for the scenario in this case as presented for this item",
@@ -17142,7 +17142,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a teacher wants to post an entire commercial workbook online for unrestricted access. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a teacher wants to post an entire commercial workbook online for unrestricted access. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Assume educational purpose permits unlimited copying\" — Educational use is not an automatic copyright exception; amount, purpose, nature, market effect, license terms, access controls, and current guidance matter in this case as presented for this item in context under these facts as described for the scenario in this case as presented",
         "\"Use licensed, public-domain, openly licensed, or permission-covered material and evaluate any limited fair-use claim under current policy and law before copying or posting\" — Educational use is not an automatic copyright exception; amount, purpose, nature, market effect, license terms, access controls, and current guidance matter.",
@@ -17192,7 +17192,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, a viewpoint-sensitive student activity raises First Amendment and equal-access questions. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, a viewpoint-sensitive student activity raises First Amendment and equal-access questions. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Ban the group because the teacher dislikes its viewpoint\" — School speech and forum questions are fact specific; educators use current policy and qualified authority while avoiding viewpoint discrimination and protecting lawful safety boundaries (in the context of access) in this case as presented for this item in context under these facts as described for the scenario in this case",
         "\"Promise unrestricted access without checking the forum rules\" — School speech and forum questions are fact specific; educators use current policy and qualified authority while avoiding viewpoint discrimination and protecting lawful safety boundaries as presented for this item in context under these facts as described for the scenario in this case as presented for this item in context",
@@ -17242,7 +17242,7 @@
       "type": "single-choice",
       "domainId": "professional-development-leadership-community",
       "difficulty": "analysis",
-      "prompt": "In a parallel early-childhood setting, before a consequential classroom or school response, evidence is incomplete and the student disputes the allegation. Which response-and-evidence pairing is internally consistent with the case?",
+      "prompt": "In an early-childhood classroom, before a consequential classroom or school response, evidence is incomplete and the student disputes the allegation. Which response-and-evidence pairing is internally consistent with the case?",
       "choices": [
         "\"Announce guilt before review\" — Ethical and lawful discipline requires fair evidence, proportionality, voice, documentation, nondiscrimination, required protections, and current school procedures in this case as presented for this item in context under these facts as described for the scenario in this case as presented for this item in context under these facts as described for the scenario",
         "\"Use a harsher rule for one protected group\" — Ethical and lawful discipline requires fair evidence, proportionality, voice, documentation, nondiscrimination, required protections, and current school procedures as presented for this item in context under these facts as described for the scenario in this case as presented for this item in context under these facts as described for the scenario",

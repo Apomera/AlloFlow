@@ -40,7 +40,12 @@ describe('Test Prep learning-library release determinism', () => {
       expect(fs.readFileSync(item.file).equals(item.bytes), item.file).toBe(true);
       expect(fs.statSync(item.file).mtimeMs, item.file).toBe(item.mtimeMs);
     }
-  });
+    // Spawns the stamper and re-reads ~44 artifacts. It finishes in well under a
+    // second alone, but the default 5s ceiling is not enough once the rest of the
+    // suite is competing for the disk: it timed out in a full run on 2026-08-17
+    // and passed in 734ms in isolation immediately afterwards. Timing out here
+    // reads as a determinism failure, which is the wrong diagnosis entirely.
+  }, 60_000);
 
   it('finalizes library bytes before the final non-EPPP QA binding', () => {
     const builder = fs.readFileSync(path.join(root, 'dev-tools', 'build_test_prep_hub_release.cjs'), 'utf8');

@@ -92,6 +92,85 @@ async function contrastViolations(page: import('@playwright/test').Page) {
   });
 }
 
+/**
+ * What axe could NOT decide.
+ *
+ * ★ This is the blind spot that matters most in this tool, and it was invisible
+ * for the whole of this work: `resultTypes: ['violations']` discards axe's
+ * `incomplete` bucket, and this tool paints a great many panels with
+ * `linear-gradient` / `bg-gradient-to-*`. axe cannot compute a contrast ratio over
+ * a gradient, so every element on one lands in `incomplete` and was silently
+ * dropped — a green suite that had never graded them at all.
+ *
+ * They cannot simply be failed: axe is right that it does not know. So the count is
+ * pinned instead. A rise means new text was put somewhere nobody is checking, and
+ * the fix is either to give that element a flat background or to verify it by
+ * hand-computing the blend (which is how the 2.98:1 pulse cases were found).
+ */
+async function contrastUndecided(page: import('@playwright/test').Page) {
+  return page.evaluate(async () => {
+    const res = await (window as any).axe.run('#wrap', { runOnly: ['color-contrast'] });
+    return (res.incomplete || []).flatMap((v: any) => v.nodes.map((n: any) =>
+      String(n.html).replace(/\s+/g, ' ').slice(0, 100)));
+  });
+}
+
+/**
+ * Replace every gradient background with its worst-case colour stop, so axe can
+ * actually measure the text on it. Returns how many elements were flattened.
+ *
+ * The stop chosen is the one whose luminance is CLOSEST to the element's text
+ * colour, i.e. the point along the gradient where the text is hardest to read.
+ * Passing at that stop means passing everywhere along it.
+ */
+async function flattenGradients(page: import('@playwright/test').Page) {
+  return page.evaluate(() => {
+    const nums = (t: string) => (t.match(/[\d.]+/g) || []).map(Number);
+    const lum = (c: number[]) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+
+    /** Nearest ancestor colour that is actually opaque, to blend translucent stops over. */
+    const backdrop = (el: HTMLElement): number[] => {
+      let p: HTMLElement | null = el.parentElement;
+      while (p) {
+        const c = nums(getComputedStyle(p).backgroundColor);
+        if (c.length >= 3 && (c.length < 4 || c[3] >= 0.999)) return c.slice(0, 3);
+        p = p.parentElement;
+      }
+      return [255, 255, 255];
+    };
+
+    let n = 0;
+    // Document order, so a gradient ancestor is already flat when its children are read.
+    for (const el of Array.from(document.querySelectorAll('*')) as HTMLElement[]) {
+      const cs = getComputedStyle(el);
+      if (!/gradient/.test(cs.backgroundImage || '')) continue;
+      const raw = (cs.backgroundImage.match(/rgba?\([^)]+\)/g) || [])
+        .map(nums).filter((c) => c.length >= 3);
+      if (!raw.length) continue;
+
+      const under = backdrop(el);
+      // A stop is a tint, not a fill: composite it over what is actually behind it.
+      const stops = raw.map((c) => {
+        const a = c.length >= 4 ? c[3] : 1;
+        return [0, 1, 2].map((i) => Math.round(a * c[i] + (1 - a) * under[i]));
+      });
+
+      const txt = nums(cs.color);
+      const target = txt.length >= 3 ? lum(txt) : 0;
+      let worst = stops[0];
+      let best = Infinity;
+      for (const c of stops) {
+        const d = Math.abs(lum(c) - target);
+        if (d < best) { best = d; worst = c; }
+      }
+      el.style.backgroundImage = 'none';
+      el.style.backgroundColor = 'rgb(' + worst[0] + ',' + worst[1] + ',' + worst[2] + ')';
+      n++;
+    }
+    return n;
+  });
+}
+
 test.describe('colour contrast', () => {
   test('the theme variables are really applied', async ({ page }) => {
     // Guard on the guard: if this is empty, every other assertion in the file is
@@ -150,6 +229,77 @@ test.describe('colour contrast', () => {
       for (const h of hits) bad.push(`L${lvl}: ${h.why}`);
     }
     expect(bad, bad.length + ' contrast violation(s) across the nine levels:\n  ' + bad.join('\n  ')).toEqual([]);
+  });
+
+  // ── Animated elements, measured mid-animation ────────────────────────────
+  // axe takes ONE sample. An element whose opacity is animated is therefore graded
+  // at whatever phase the sample happened to land on — which is how the Deliver
+  // Food button and the streak chip sat green at 2.98:1 while the chain chip next
+  // to them failed at 3.28:1. The three were equally broken; only one was unlucky.
+  //
+  // Freezing is the fix, and it is a one-line stylesheet: `animation-play-state:
+  // paused` with a NEGATIVE `animation-delay` pins every animation at a chosen
+  // point in its cycle. Sampling four phases covers the trough of anything on a
+  // 2s loop without knowing which element animates what.
+  const PHASES = [0, 0.5, 1, 1.5];
+
+  /**
+   * Pin every running animation at `seconds` into its timeline and return how many
+   * were pinned. Uses the Web Animations API rather than CSS: injecting
+   * `animation-play-state: paused` with a negative `animation-delay` does NOT
+   * re-seed an already-running animation in Chromium — asking for the trough of a
+   * 2s pulse that way measured opacity 0.985, which is the top of the cycle.
+   */
+  async function freezeAt(page: import('@playwright/test').Page, seconds: number) {
+    const n = await page.evaluate((t: number) => {
+      const anims = document.getAnimations();
+      for (const a of anims) {
+        try { a.pause(); a.currentTime = t * 1000; } catch { /* finished or unseekable */ }
+      }
+      return anims.length;
+    }, seconds);
+    await page.waitForTimeout(80);
+    return n;
+  }
+
+  for (const [name, data] of [
+    ['chain tracker', Object.assign({}, RUNNING, { blLevel: 7, blChainStep: 1 })],
+    ['deliver food + streak', Object.assign({}, RUNNING, { blLevel: 1, blLastAction: 'pressLever', blStreak: 6, blScenarioIdx: 0 })],
+  ] as Array<[string, Record<string, unknown>]>) {
+    test(`${name} stays legible at every point in its animation`, async ({ page }) => {
+      const bad: string[] = [];
+      let animationsSeen = 0;
+      for (const phase of PHASES) {
+        await mount(page, data, 'dark');
+        animationsSeen = Math.max(animationsSeen, await freezeAt(page, phase));
+        // Flatten too: half of what pulses sits on a gradient card, and axe files
+        // those under `incomplete` rather than failing them, which is exactly why
+        // this test stayed green with the bug deliberately put back.
+        await flattenGradients(page);
+        for (const h of await contrastViolations(page)) bad.push(`@${phase}s: ${h.why}`);
+      }
+      // Without this the test passes when the animated element is simply not on
+      // screen, which is how the first version of it went green on a real bug.
+      expect(animationsSeen, 'nothing was animating — this surface proves nothing').toBeGreaterThan(0);
+      expect(bad, bad.length + ' violation(s) while animating:\n  ' + bad.join('\n  ')).toEqual([]);
+    });
+  }
+
+  test('text on gradient panels is legible at the gradient\'s worst point', async ({ page }) => {
+    // axe cannot compute contrast over a gradient, so it files those elements under
+    // `incomplete` -- and this suite asked only for `violations`, which threw them
+    // away. 122 elements on this one surface had never been graded at all while the
+    // suite reported green. Flattening each gradient to its worst stop makes them
+    // measurable.
+    for (const theme of ['default', 'dark', 'contrast'] as Theme[]) {
+      await mount(page, RUNNING, theme);
+      const flattened = await flattenGradients(page);
+      expect(flattened, 'no gradients found -- has flattenGradients stopped working?')
+        .toBeGreaterThan(0);
+      const bad = await contrastViolations(page);
+      expect(bad, theme + ': ' + bad.length + ' violation(s) at the worst gradient stop:\n  '
+        + bad.map((h) => h.html + ' -- ' + h.why).slice(0, 15).join('\n  ')).toEqual([]);
+    }
   });
 
   test('the locked level badges are dimmed but still legible', async ({ page }) => {

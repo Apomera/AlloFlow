@@ -11,7 +11,7 @@
       "duplicateRate": 0,
       "frameShare": 0.41,
       "crossPackItems": 110,
-      "scaffoldPrompts": 110
+      "scaffoldPrompts": 0
     },
     "educational_leadership_5412": {
       "duplicateRate": 0,
@@ -45,21 +45,21 @@
     },
     "plt_5_9_5623": {
       "duplicateRate": 0,
-      "frameShare": 0.24,
+      "frameShare": 0.09,
       "crossPackItems": 198,
-      "scaffoldPrompts": 200
+      "scaffoldPrompts": 0
     },
     "plt_7_12_5624": {
       "duplicateRate": 0,
       "frameShare": 0.09,
       "crossPackItems": 198,
-      "scaffoldPrompts": 200
+      "scaffoldPrompts": 0
     },
     "plt_early_childhood_5621": {
       "duplicateRate": 0,
-      "frameShare": 0.24,
+      "frameShare": 0.09,
       "crossPackItems": 156,
-      "scaffoldPrompts": 200
+      "scaffoldPrompts": 0
     },
     "plt_k6_5622": {
       "duplicateRate": 0,
@@ -86,7 +86,7 @@
       "scaffoldPrompts": 0
     },
     "school_librarian_5312": {
-      "duplicateRate": 0.66,
+      "duplicateRate": 0.62,
       "frameShare": 0.26,
       "crossPackItems": 0,
       "scaffoldPrompts": 200

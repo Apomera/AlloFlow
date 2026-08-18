@@ -9,8 +9,11 @@ const MANUAL = fs.readFileSync(path.join(ROOT, 'educator-evaluation-manual.html'
 const MIRROR = fs.readFileSync(path.join(PUBLIC, 'educator-evaluation-manual.html'), 'utf8');
 const SOURCE = fs.readFileSync(path.join(ROOT, 'educator_evaluation_source.jsx'), 'utf8');
 const GS_SOURCE = fs.readFileSync(path.join(ROOT, 'apps_script', 'educator_evaluation', 'Code.gs'), 'utf8');
-// The quoted summary is Code.gs output; the manual's own voice is everything else.
-const PROSE = MANUAL.replace(/<section class="doc"[\s\S]*?<\/section>/g, '');
+// The manual's own voice is the prose only: not the quoted Code.gs summary, and
+// not script blocks, whose comments are code written by whoever owns them.
+const PROSE = MANUAL
+  .replace(/<section class="doc"[\s\S]*?<\/section>/g, '')
+  .replace(/<script[\s\S]*?<\/script>/g, '');
 
 const imageTags = [...MANUAL.matchAll(/<img\b[^>]*>/g)].map((m) => m[0]);
 const imageSrcs = imageTags.map((tag) => (tag.match(/src="([^"]+)"/) || [])[1]);

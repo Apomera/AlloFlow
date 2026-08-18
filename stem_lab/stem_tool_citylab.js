@@ -2366,8 +2366,8 @@
       var dim = isDark ? '#94a3b8' : '#475569';
       var panelBg = isDark ? 'rgba(148,163,184,0.08)' : 'rgba(255,255,255,0.92)';
       var panelBorder = isDark ? 'rgba(148,163,184,0.26)' : 'rgba(100,116,139,0.24)';
-      var okColour = '#1baf7a';
-      var missColour = '#eb6834';
+      var okColour = isDark ? '#1baf7a' : '#12805a';
+      var missColour = isDark ? '#eb6834' : '#b8410f';
 
       function panel(key, title, children) {
         return h('section', { key: key, className: 'rounded-xl border p-3 mb-3',

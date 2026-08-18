@@ -24,6 +24,33 @@ const registryBlock = () => {
   return SOURCE.slice(start, end);
 };
 
+describe('tool catalog launch links', () => {
+  const CATALOG = read('tool-catalog-data.js');
+  const REDIRECTS = read('_redirects');
+  const REFERENCE = read('guide/tool-reference.html');
+
+  it('only points at deep links that actually exist in _redirects', () => {
+    const slugs = new Set([...REDIRECTS.matchAll(/^\/([a-z0-9-]+) \/app\/\?tool=/gm)].map((m) => m[1]));
+    const launched = [...CATALOG.matchAll(/launchHref: 'https:\/\/alloflow-cdn\.pages\.dev\/([a-z0-9-]+)'/g)].map((m) => m[1]);
+    expect(launched.length).toBeGreaterThan(10);
+    expect(launched.filter((slug) => !slugs.has(slug))).toEqual([]);
+  });
+
+  it('uses absolute CDN URLs, because the deep links 404 on GitHub Pages', () => {
+    // A relative deep link here would break the promotional site, which is
+    // served from Pages and ignores _redirects entirely.
+    expect(CATALOG).not.toMatch(/launchHref: '(?!https:\/\/)/);
+    expect(REFERENCE).toContain('https://alloflow-cdn.pages.dev/');
+  });
+
+  it('renders the launch action ahead of the details link on every linked card', () => {
+    const launches = (REFERENCE.match(/tool-reference-card__launch/g) || []).length;
+    expect(launches).toBeGreaterThan(10);
+    // Primary action first, then a separator, then the details link.
+    expect(REFERENCE).toMatch(/tool-reference-card__launch[^<]*>Open the tool<\/a><span aria-hidden="true"> · <\/span><a/);
+  });
+});
+
 describe('teacher guide: educator evaluation claims', () => {
   it('names every framework profile the tool actually ships', () => {
     const profiles = [...registryBlock().matchAll(/name: '([^']+)'/g)].map((match) => match[1]);

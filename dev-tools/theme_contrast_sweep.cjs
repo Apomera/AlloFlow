@@ -119,7 +119,17 @@ window.__mount = function (theme) {
   document.documentElement.className = (theme === 'dark') ? 'theme-dark' : 'theme-default';
   var Icons = new Proxy({}, { get: function () { return function () { return React.createElement('span'); }; } });
   var store = {};
-  var ctx = { React: React, toolData: store, setToolData: function(){}, setStemLabTool: function(){},
+  // ★THE THEME MUST REACH THE TOOL, not just the <html> class. This ctx carried
+  // no `theme`/`isDark`/`isContrast`, so a tool that branches on them measured
+  // the WRONG theme. cityLab does `var isDark = ctx.theme !== 'light'`, and with
+  // theme undefined that is TRUE -- it painted dark inks (#e2e8f0) on the light
+  // surfaces this sweep renders, reporting 143 violations that do not exist in
+  // the product (the real host does pass theme; stem_lab_module.js:7280).
+  // Tools reading ctx.isDark had the mirror problem: undefined = always light.
+  // Same family as check_stem_ctx.cjs: a field missing from a ctx literal is
+  // undefined for every tool that reads it.
+  var ctx = { theme: (theme === 'dark' ? 'dark' : 'light'), isDark: theme === 'dark', isContrast: false,
+    React: React, toolData: store, setToolData: function(){}, setStemLabTool: function(){},
     setStemLabTab: function(){}, setToolSnapshots: function(){}, addToast: function(){}, announceToSR: function(){},
     awardXP: function(){}, beep: function(){}, celebrate: function(){}, canvasNarrate: function(){}, canvasA11yDesc: function(){},
     callGemini: null, callTTS: null, callImagen: null, callGeminiVision: null, gradeLevel: '5th',

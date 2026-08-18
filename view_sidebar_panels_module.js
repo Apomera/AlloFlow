@@ -311,7 +311,20 @@ const SurpriseMeEngine = {
     if (!directions.length) throw new Error("no usable directions");
     return directions;
   },
-  fallbackDirections: function(match, hood) {
+  // `t` is threaded in from the calling COMPONENT: this engine is module scope,
+  // so it has no translator of its own. It stays optional and falls back to the
+  // English text, because a stale host that never passes it must still render a
+  // usable starter card rather than blank prompts.
+  // NOTE: `tone` is NOT localized. TONES above is a validation enum — parseDirections
+  // drops any tone not on that list — so it is a data value, not display copy.
+  fallbackDirections: function(match, hood, t) {
+    const sf = (key, fallback, params) => {
+      let s = typeof t === "function" && t("standards_finder." + key, params) || fallback;
+      if (params) Object.keys(params).forEach((p) => {
+        s = s.replace("{" + p + "}", params[p]);
+      });
+      return s;
+    };
     const safeBrief = (record, fallback, limit) => {
       try {
         const value = SurpriseMeEngine.brief(record || {}).trim();
@@ -329,55 +342,63 @@ const SurpriseMeEngine = {
     });
     return [
       {
-        title: "Connect prior knowledge",
-        phenomenon: prior ? `A bridge from ${prior} to ${target}.` : `Examples and non-examples of ${target}.`,
-        essentialQuestion: prior ? `How does ${prior} help us understand ${target}?` : `What makes an example demonstrate ${target}?`,
-        activity: "Sort examples and non-examples, then annotate the evidence for each choice.",
-        evidence: "An annotated example and a brief evidence-based explanation.",
-        udlSupports: ["Offer visual, spoken, and written examples", "Allow drawing, speaking, or writing"],
+        title: sf("dir1_title", "Connect prior knowledge"),
+        phenomenon: prior ? sf("dir1_phenomenon_prior", "A bridge from {prior} to {target}.", { prior, target }) : sf("dir1_phenomenon_plain", "Examples and non-examples of {target}.", { target }),
+        essentialQuestion: prior ? sf("dir1_question_prior", "How does {prior} help us understand {target}?", { prior, target }) : sf("dir1_question_plain", "What makes an example demonstrate {target}?", { target }),
+        activity: sf("dir1_activity", "Sort examples and non-examples, then annotate the evidence for each choice."),
+        evidence: sf("dir1_evidence", "An annotated example and a brief evidence-based explanation."),
+        udlSupports: [sf("dir1_udl_1", "Offer visual, spoken, and written examples"), sf("dir1_udl_2", "Allow drawing, speaking, or writing")],
         tone: "Step-by-Step",
         vocabulary: vocabulary.slice()
       },
       {
-        title: "Compare and justify",
-        phenomenon: related ? `A choice involving ${target} and the source-listed related idea ${related}.` : `Two plausible approaches to ${target}.`,
-        essentialQuestion: `Which approach best demonstrates ${target}, and why?`,
-        activity: "Compare two approaches, choose or revise one, and justify the decision with evidence.",
-        evidence: "A comparison that names specific features and supports a choice.",
-        udlSupports: ["Use a side-by-side organizer", "Provide sentence starters for justification"],
+        title: sf("dir2_title", "Compare and justify"),
+        phenomenon: related ? sf("dir2_phenomenon_related", "A choice involving {target} and the source-listed related idea {related}.", { target, related }) : sf("dir2_phenomenon_plain", "Two plausible approaches to {target}.", { target }),
+        essentialQuestion: sf("dir2_question", "Which approach best demonstrates {target}, and why?", { target }),
+        activity: sf("dir2_activity", "Compare two approaches, choose or revise one, and justify the decision with evidence."),
+        evidence: sf("dir2_evidence", "A comparison that names specific features and supports a choice."),
+        udlSupports: [sf("dir2_udl_1", "Use a side-by-side organizer"), sf("dir2_udl_2", "Provide sentence starters for justification")],
         tone: "Dialogue",
         vocabulary: vocabulary.slice()
       },
       {
-        title: "Create and teach",
-        phenomenon: `A design challenge that makes ${target} clear to someone else.`,
-        essentialQuestion: `How can we create and teach a clear example of ${target}?`,
-        activity: "Create a model, explanation, or demonstration, then improve it with peer feedback.",
-        evidence: "A student-created example plus a reflection on how it meets the target.",
-        udlSupports: ["Offer model, audio, video, or text options", "Use a short feedback checklist"],
+        title: sf("dir3_title", "Create and teach"),
+        phenomenon: sf("dir3_phenomenon", "A design challenge that makes {target} clear to someone else.", { target }),
+        essentialQuestion: sf("dir3_question", "How can we create and teach a clear example of {target}?", { target }),
+        activity: sf("dir3_activity", "Create a model, explanation, or demonstration, then improve it with peer feedback."),
+        evidence: sf("dir3_evidence", "A student-created example plus a reflection on how it meets the target."),
+        udlSupports: [sf("dir3_udl_1", "Offer model, audio, video, or text options"), sf("dir3_udl_2", "Use a short feedback checklist")],
         tone: "Informative",
         vocabulary: vocabulary.slice()
       }
     ];
   },
-  directionBrief: function(direction) {
+  directionBrief: function(direction, t) {
+    const sf = (key, fallback) => typeof t === "function" && t("standards_finder." + key) || fallback;
     return [
       direction.title,
-      "Phenomenon: " + direction.phenomenon,
-      "Essential question: " + direction.essentialQuestion,
-      "Activity: " + direction.activity,
-      "Evidence of learning: " + direction.evidence,
-      direction.udlSupports.length ? "UDL supports: " + direction.udlSupports.join("; ") : ""
+      sf("brief_phenomenon", "Phenomenon: ") + direction.phenomenon,
+      sf("brief_question", "Essential question: ") + direction.essentialQuestion,
+      sf("brief_activity", "Activity: ") + direction.activity,
+      sf("brief_evidence", "Evidence of learning: ") + direction.evidence,
+      direction.udlSupports.length ? sf("brief_udl", "UDL supports: ") + direction.udlSupports.join("; ") : ""
     ].filter(Boolean).join("\n");
   }
 };
 function SurpriseMeCompare(props) {
-  const { directions, hood, onUse } = props;
+  const { directions, hood, onUse, t } = props;
+  const sfText = (key, fallback, params) => {
+    let s = typeof t === "function" && t("standards_finder." + key, params) || fallback;
+    if (params) Object.keys(params).forEach((p) => {
+      s = s.replace("{" + p + "}", params[p]);
+    });
+    return s;
+  };
   const [pinnedIndex, setPinnedIndex] = React.useState(null);
   const [editedBrief, setEditedBrief] = React.useState("");
   const pin = (index) => {
     setPinnedIndex(index);
-    setEditedBrief(SurpriseMeEngine.directionBrief(directions[index]));
+    setEditedBrief(SurpriseMeEngine.directionBrief(directions[index], t));
   };
   const DIMENSIONS = [
     ["Essential question", (d) => d.essentialQuestion],
@@ -401,17 +422,17 @@ function SurpriseMeCompare(props) {
         "aria-pressed": isPinned,
         className: "mt-2 w-full rounded px-2 py-1 font-bold " + (isPinned ? "bg-violet-800 text-white" : "bg-violet-100 text-violet-900 hover:bg-violet-200")
       },
-      isPinned ? "\u2713 Pinned" : "Pin to edit & use"
+      isPinned ? "\u2713 " + sfText("pinned_button", "Pinned") : sfText("pin_button", "Pin to edit & use")
     ));
-  })), hood && hood.prerequisites.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[10px] text-slate-600" }, "Prerequisites (from source data): ", hood.prerequisites.map(function(p) {
+  })), hood && hood.prerequisites.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[10px] text-slate-600" }, sfText("prereq_line", "Prerequisites (from source data): {codes} \u2014 shared by all three directions.", { codes: hood.prerequisites.map(function(p) {
     return p.code;
-  }).filter(Boolean).join(", "), " \u2014 shared by all three directions."), pinnedIndex !== null && /* @__PURE__ */ React.createElement("div", { className: "mt-2 rounded border border-violet-300 bg-white p-2" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-violet-950" }, "Edit before using \u2014 your judgment wins over the proposal"), /* @__PURE__ */ React.createElement(
+  }).filter(Boolean).join(", ") })), pinnedIndex !== null && /* @__PURE__ */ React.createElement("div", { className: "mt-2 rounded border border-violet-300 bg-white p-2" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-violet-950" }, sfText("edit_before_using", "Edit before using \u2014 your judgment wins over the proposal")), /* @__PURE__ */ React.createElement(
     "textarea",
     {
       value: editedBrief,
       onChange: (e) => setEditedBrief(e.target.value),
       rows: 6,
-      "aria-label": "Edit the pinned lesson direction before using it",
+      "aria-label": sfText("edit_textarea_aria", "Edit the pinned lesson direction before using it"),
       className: `${SIDEBAR_PANEL_UI.textarea} mt-2 text-xs focus-visible:border-violet-500 focus-visible:ring-violet-500/20`
     }
   ), /* @__PURE__ */ React.createElement(
@@ -423,7 +444,7 @@ function SurpriseMeCompare(props) {
       },
       className: `${SIDEBAR_PANEL_UI.secondaryButton} mt-2 border-violet-200 text-violet-700 hover:border-violet-300 hover:bg-violet-50 focus-visible:ring-violet-500/20`
     },
-    "Use this direction"
+    sfText("use_direction", "Use this direction")
   )));
 }
 function UniversalSettingsPanel(props) {
@@ -512,27 +533,27 @@ function UniversalSettingsPanel(props) {
       setSurpriseDirections(SurpriseMeEngine.parseDirections(raw));
       setSurpriseState("ready");
     } catch (error) {
-      setSurpriseDirections(SurpriseMeEngine.fallbackDirections(match, hood));
+      setSurpriseDirections(SurpriseMeEngine.fallbackDirections(match, hood, t));
       setSurpriseState("ready");
       if (typeof console !== "undefined" && typeof console.warn === "function") {
         console.warn("[SurpriseMe] AI proposal unavailable; using built-in starters:", error && error.message ? error.message : "unknown error");
       }
-      addToast("AI directions were unavailable, so AlloFlow prepared three editable starters.", "info");
+      addToast(t("standards_finder.toast_ai_unavailable") || "AI directions were unavailable, so AlloFlow prepared three editable starters.", "info");
     }
   };
   const useSurpriseDirection = (direction, editedBrief) => {
     if (typeof handleUseResolvedStandard === "function" && localResolution) handleUseResolvedStandard(localResolution);
-    const brief = typeof editedBrief === "string" && editedBrief.trim() ? editedBrief : SurpriseMeEngine.directionBrief(direction);
+    const brief = typeof editedBrief === "string" && editedBrief.trim() ? editedBrief : SurpriseMeEngine.directionBrief(direction, t);
     if (typeof setSourceTopic === "function") {
       setSourceTopic(brief);
-      addToast("Standard attached and topic seeded with this direction.", "success");
+      addToast(t("standards_finder.toast_attached_seeded") || "Standard attached and topic seeded with this direction.", "success");
       return;
     }
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(brief);
-      addToast("Standard attached; direction copied \u2014 paste it into your topic or source field.", "success");
+      addToast(t("standards_finder.toast_attached_copied") || "Standard attached; direction copied \u2014 paste it into your topic or source field.", "success");
     } catch (e) {
-      addToast("Standard attached. Copy the direction text manually.", "info");
+      addToast(t("standards_finder.toast_attached_manual") || "Standard attached. Copy the direction text manually.", "info");
     }
   };
   const resolveFromLocalSnapshot = () => {
@@ -543,7 +564,7 @@ function UniversalSettingsPanel(props) {
       setLocalResolution(localStandardsProvider.resolveStandard(query));
     } catch (error) {
       setLocalResolution({ status: "error", query, match: null, candidates: [], context: null });
-      addToast("The local standards snapshot could not be read.", "error");
+      addToast(t("standards_finder.toast_snapshot_unreadable") || "The local standards snapshot could not be read.", "error");
     } finally {
       setIsResolvingLocal(false);
     }
@@ -661,7 +682,7 @@ function UniversalSettingsPanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "Level 3: Strategic Thinking" }, t("wizard.dok_levels.l3")),
     /* @__PURE__ */ React.createElement("option", { value: "Level 4: Extended Thinking" }, t("wizard.dok_levels.l4")),
     /* @__PURE__ */ React.createElement("option", { value: "Mixed" }, t("wizard.dok_levels.mixed"))
-  ), /* @__PURE__ */ React.createElement(UniversalApplicability, { settingKey: "dok", t }))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "rounded-2xl border border-slate-200 bg-white p-3 shadow-sm", "data-help-key": "simplified_standards" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("span", { id: "simplified-standard-mode-label", className: "text-xs text-slate-600 font-bold flex items-center gap-1" }, /* @__PURE__ */ React.createElement(CheckCircle, { size: 12, className: "text-indigo-600" }), " Target Standard"), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-labelledby": "simplified-standard-mode-label", className: "flex bg-white rounded-md border border-slate-400 p-0.5 shadow-sm" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement(UniversalApplicability, { settingKey: "dok", t }))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "rounded-2xl border border-slate-200 bg-white p-3 shadow-sm", "data-help-key": "simplified_standards" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("span", { id: "simplified-standard-mode-label", className: "text-xs text-slate-600 font-bold flex items-center gap-1" }, /* @__PURE__ */ React.createElement(CheckCircle, { size: 12, className: "text-indigo-600" }), " ", t("standards.target_standard_label") || "Target Standard"), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-labelledby": "simplified-standard-mode-label", className: "flex bg-white rounded-md border border-slate-400 p-0.5 shadow-sm" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -669,7 +690,7 @@ function UniversalSettingsPanel(props) {
       onClick: handleSetStandardModeToAi,
       className: `px-2 py-0.5 text-[11px] font-bold rounded transition-colors motion-reduce:transition-none ${standardMode === "ai" ? "bg-indigo-100 text-indigo-700" : "text-slate-600 hover:text-slate-600"}`
     },
-    "AI Match"
+    t("standards.mode_ai_match") || "AI Match"
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -678,7 +699,7 @@ function UniversalSettingsPanel(props) {
       onClick: handleSetStandardModeToManual,
       className: `px-2 py-0.5 text-[11px] font-bold rounded transition-colors motion-reduce:transition-none ${standardMode === "manual" ? "bg-indigo-100 text-indigo-700" : "text-slate-600 hover:text-slate-600"}`
     },
-    "Manual"
+    t("standards.mode_manual") || "Manual"
   ))), standardMode === "ai" ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2 animate-in motion-reduce:animate-none fade-in slide-in-from-top-1 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {
@@ -687,7 +708,7 @@ function UniversalSettingsPanel(props) {
       value: aiStandardQuery,
       onChange: (e) => setAiStandardQuery(e.target.value),
       onKeyDown: (e) => e.key === "Enter" && handleFindStandards(gradeLevel),
-      placeholder: `Describe skill (e.g. "identify main idea") for ${gradeLevel}...`,
+      placeholder: t("standards.describe_skill_placeholder", { grade: gradeLevel }) || `Describe skill (e.g. "identify main idea") for ${gradeLevel}...`,
       className: `${SIDEBAR_PANEL_UI.control} min-w-0 flex-grow text-xs`
     }
   ), /* @__PURE__ */ React.createElement(
@@ -710,7 +731,7 @@ function UniversalSettingsPanel(props) {
         const val = `${std.code}: ${std.description}`;
         if (targetStandards.length < 3 && !targetStandards.includes(val)) {
           setTargetStandards((prev) => [...prev, val]);
-          addToast(`Added ${std.code} to list`, "success");
+          addToast(t("standards.added_to_list", { code: std.code }) || `Added ${std.code} to list`, "success");
         } else if (targetStandards.length >= 3) {
           addToast(t("standards.toast_max_limit"), "error");
         }
@@ -753,7 +774,8 @@ function UniversalSettingsPanel(props) {
       className: "inline-flex items-center gap-1 rounded bg-cyan-700 px-2 py-1 text-[11px] font-bold text-white hover:bg-cyan-800 disabled:cursor-not-allowed disabled:opacity-50"
     },
     isResolvingLocal ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin motion-reduce:animate-none" }) : /* @__PURE__ */ React.createElement(Search, { size: 12 }),
-    " Resolve from local snapshot"
+    " ",
+    t("standards_finder.resolve_local") || "Resolve from local snapshot"
   ), localStandardsManifest && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-cyan-900", title: localStandardsManifest.attribution || localStandardsManifest.provider }, localStandardsManifest.datasetVersion || localStandardsManifest.provider)), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] leading-snug text-cyan-900/80" }, localStandardsManifest && localStandardsManifest.attribution || "Standards data: Learning Commons Knowledge Graph (CC BY 4.0).", " ", t("standards_finder.evidence_disclaimer") || "Matches are alignment evidence to support educator judgment, not official certification, and not for grading, placement, or evaluation."), localResolution && localResolution.status === "resolved" && localResolution.match && /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded border border-emerald-200 bg-white p-2 text-[11px] text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-emerald-800" }, t("standards_finder.exact_match", { code: localResolution.match.code }) || "Exact local match: " + localResolution.match.code), /* @__PURE__ */ React.createElement("div", { className: "mt-0.5" }, localResolution.match.label || localResolution.match.text), /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -772,7 +794,7 @@ function UniversalSettingsPanel(props) {
       className: "rounded bg-violet-700 px-2 py-1 font-bold text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50"
     },
     surpriseState === "loading" ? t("standards_finder.proposing") || "Proposing\u2026" : surpriseState === "ready" ? t("standards_finder.propose_again") || "Propose again" : t("standards_finder.propose_3_sparkle") || "\u2728 Propose 3 directions"
-  )), surpriseState === "ready" && surpriseHood && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-violet-900" }, t("standards_finder.graph_context", { prereq: surpriseHood.prerequisites.length, next: surpriseHood.leadsTo.length, related: surpriseHood.related.length, provider: surpriseHood.dataset && surpriseHood.dataset.provider ? t("standards_finder.provider_suffix", { provider: surpriseHood.dataset.provider }) || " \u2014 " + surpriseHood.dataset.provider : "" }) || "Graph context: " + surpriseHood.prerequisites.length + " prerequisite(s), " + surpriseHood.leadsTo.length + " next, " + surpriseHood.related.length + " related. Directions are AI proposals grounded in these source edges, for educator judgment \u2014 not certification."), surpriseState === "ready" && surpriseDirections.length > 0 && /* @__PURE__ */ React.createElement(SurpriseMeCompare, { directions: surpriseDirections, hood: surpriseHood, onUse: useSurpriseDirection })), localResolution && localResolution.status === "ambiguous" && /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded border border-amber-200 bg-white p-2 text-[11px] text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-amber-800" }, t("standards_finder.ambiguous_framework") || "Multiple exact matches. Choose the intended framework."), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex flex-wrap gap-1" }, (localResolution.candidates || []).map((candidate) => /* @__PURE__ */ React.createElement(
+  )), surpriseState === "ready" && surpriseHood && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-violet-900" }, t("standards_finder.graph_context", { prereq: surpriseHood.prerequisites.length, next: surpriseHood.leadsTo.length, related: surpriseHood.related.length, provider: surpriseHood.dataset && surpriseHood.dataset.provider ? t("standards_finder.provider_suffix", { provider: surpriseHood.dataset.provider }) || " \u2014 " + surpriseHood.dataset.provider : "" }) || "Graph context: " + surpriseHood.prerequisites.length + " prerequisite(s), " + surpriseHood.leadsTo.length + " next, " + surpriseHood.related.length + " related. Directions are AI proposals grounded in these source edges, for educator judgment \u2014 not certification."), surpriseState === "ready" && surpriseDirections.length > 0 && /* @__PURE__ */ React.createElement(SurpriseMeCompare, { directions: surpriseDirections, hood: surpriseHood, onUse: useSurpriseDirection, t })), localResolution && localResolution.status === "ambiguous" && /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded border border-amber-200 bg-white p-2 text-[11px] text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-amber-800" }, t("standards_finder.ambiguous_framework") || "Multiple exact matches. Choose the intended framework."), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex flex-wrap gap-1" }, (localResolution.candidates || []).map((candidate) => /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -2347,18 +2369,25 @@ function QuizPanel(props) {
   const allowedTypes = _modeStrategy && _modeStrategy.generation && _modeStrategy.generation.allowedItemTypes ? _modeStrategy.generation.allowedItemTypes : ["mcq"];
   const defaultMix = _modeStrategy && _modeStrategy.generation && _modeStrategy.generation.defaultItemTypeMix ? _modeStrategy.generation.defaultItemTypeMix : { mcq: quizMcqCount };
   const defaultReflectionCount = _modeStrategy && _modeStrategy.generation ? Number(_modeStrategy.generation.defaultReflectionCount) || 0 : 0;
+  const qzText = (key, fallback, params) => {
+    let s = t("quiz." + key, params) || fallback;
+    if (params) Object.keys(params).forEach((p) => {
+      s = s.replace("{" + p + "}", params[p]);
+    });
+    return s;
+  };
   const CORE_TYPES = [
-    { key: "mcq", label: "Multiple Choice", emoji: "\u25C9", desc: "Choose one best answer", minutes: 1 },
-    { key: "multi-select", label: "Multi-Select", emoji: "\u2611", desc: "Select every correct answer", minutes: 1.5 },
-    { key: "fill-blank", label: "Fill-in-the-Blank", emoji: "\u270F", desc: "Recall a precise word or phrase", minutes: 1 },
-    { key: "short-answer", label: "Brief Written Response", emoji: "\u{1F4AC}", desc: "Demonstrate understanding in 1\u20132 sentences", minutes: 3 },
-    { key: "self-explanation", label: "Explain Your Reasoning", emoji: "\u{1F9E0}", desc: "Explain a concept against a rubric", minutes: 5 },
-    { key: "numeric-response", label: "Numeric Response", emoji: "#", desc: "Enter a value with optional units", minutes: 2 }
+    { key: "mcq", label: qzText("format_mcq_label", "Multiple Choice"), emoji: "\u25C9", desc: qzText("format_mcq_desc", "Choose one best answer"), minutes: 1 },
+    { key: "multi-select", label: qzText("format_multi_select_label", "Multi-Select"), emoji: "\u2611", desc: qzText("format_multi_select_desc", "Select every correct answer"), minutes: 1.5 },
+    { key: "fill-blank", label: qzText("format_fill_blank_label", "Fill-in-the-Blank"), emoji: "\u270F", desc: qzText("format_fill_blank_desc", "Recall a precise word or phrase"), minutes: 1 },
+    { key: "short-answer", label: qzText("format_short_answer_label", "Brief Written Response"), emoji: "\u{1F4AC}", desc: qzText("format_short_answer_desc", "Demonstrate understanding in 1\u20132 sentences"), minutes: 3 },
+    { key: "self-explanation", label: qzText("format_self_explanation_label", "Explain Your Reasoning"), emoji: "\u{1F9E0}", desc: qzText("format_self_explanation_desc", "Explain a concept against a rubric"), minutes: 5 },
+    { key: "numeric-response", label: qzText("format_numeric_response_label", "Numeric Response"), emoji: "#", desc: qzText("format_numeric_response_desc", "Enter a value with optional units"), minutes: 2 }
   ];
   const DIAGNOSTIC_TYPES = [
-    { key: "sequence-sense", label: "Sequence Sense", emoji: "\u2195", desc: "Diagnose an order and its principle", minutes: 2.5 },
-    { key: "relation-mismatch", label: "Relation Mismatch", emoji: "\u2194", desc: "Find and repair an incorrect pair", minutes: 2.5 },
-    { key: "answer-evidence", label: "Answer + Evidence", emoji: "\u{1F50E}", desc: "Answer, then identify supporting evidence", minutes: 2.5 }
+    { key: "sequence-sense", label: qzText("format_sequence_sense_label", "Sequence Sense"), emoji: "\u2195", desc: qzText("format_sequence_sense_desc", "Diagnose an order and its principle"), minutes: 2.5 },
+    { key: "relation-mismatch", label: qzText("format_relation_mismatch_label", "Relation Mismatch"), emoji: "\u2194", desc: qzText("format_relation_mismatch_desc", "Find and repair an incorrect pair"), minutes: 2.5 },
+    { key: "answer-evidence", label: qzText("format_answer_evidence_label", "Answer + Evidence"), emoji: "\u{1F50E}", desc: qzText("format_answer_evidence_desc", "Answer, then identify supporting evidence"), minutes: 2.5 }
   ];
   const ALL_TYPES = CORE_TYPES.concat(DIAGNOSTIC_TYPES);
   const visibleCoreTypes = CORE_TYPES.filter((item) => allowedTypes.indexOf(item.key) !== -1);
@@ -2454,10 +2483,12 @@ function QuizPanel(props) {
   };
   if (!expandedTools || !expandedTools.includes("quiz")) return null;
   const groups = [
-    { label: "Core formats", types: visibleCoreTypes },
-    { label: "Diagnostic formats", types: visibleDiagnosticTypes }
+    // `id` is the React key: a translated label would change identity on every
+    // language switch and force a remount of the whole group.
+    { id: "core", label: qzText("group_core", "Core formats"), types: visibleCoreTypes },
+    { id: "diagnostic", label: qzText("group_diagnostic", "Diagnostic formats"), types: visibleDiagnosticTypes }
   ].filter((group) => group.types.length > 0);
-  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-teal-50/50 space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-teal-200 bg-white p-3" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-mode-select", className: "block text-[10px] font-black uppercase tracking-wider text-teal-700 mb-1" }, "1. Assessment purpose"), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-teal-50/50 space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-teal-200 bg-white p-3" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-mode-select", className: "block text-[10px] font-black uppercase tracking-wider text-teal-700 mb-1" }, qzText("section_purpose", "1. Assessment purpose")), /* @__PURE__ */ React.createElement(
     "select",
     {
       id: "quiz-mode-select",
@@ -2472,7 +2503,15 @@ function QuizPanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "pre-check" }, t("quiz.mode_pre_check") || "\u{1F3AF} Pre-Check (Readiness)"),
     /* @__PURE__ */ React.createElement("option", { value: "formative" }, t("quiz.mode_formative") || "\u{1F321}\uFE0F Formative Check"),
     /* @__PURE__ */ React.createElement("option", { value: "review" }, t("quiz.mode_review") || "\u{1F501} Spaced Review")
-  ), _modeStrategy && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] leading-snug text-slate-600 mt-1.5" }, _modeStrategy.description, " This loads a recommended recipe that you can customize.")), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-teal-200 bg-white p-3", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full " + (isCustomized ? "bg-indigo-100 text-indigo-700" : "bg-teal-100 text-teal-700") }, isCustomized ? "Customized" : "Recommended preset"), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-semibold text-slate-700" }, assessedTotal + " scored question" + (assessedTotal === 1 ? "" : "s") + (reflectionTotal ? " + " + reflectionTotal + " unscored reflection" + (reflectionTotal === 1 ? "" : "s") : "")), isCustomized && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleResetMix, className: "ml-auto text-[11px] text-indigo-600 hover:text-indigo-800 font-semibold" }, "Reset")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex items-center gap-2 flex-wrap text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "rounded bg-slate-100 px-2 py-1 font-semibold text-slate-700" }, "About ", estimatedLow, "\u2013", estimatedHigh, " minutes"), estimatedHigh > 30 && /* @__PURE__ */ React.createElement("span", { className: "rounded bg-amber-100 px-2 py-1 font-semibold text-amber-800" }, "Long assessment\u2014consider reducing the mix."))), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-slate-200 bg-white overflow-hidden" }, /* @__PURE__ */ React.createElement(
+  ), _modeStrategy && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] leading-snug text-slate-600 mt-1.5" }, _modeStrategy.description, " ", qzText("recipe_hint", "This loads a recommended recipe that you can customize."))), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-teal-200 bg-white p-3", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full " + (isCustomized ? "bg-indigo-100 text-indigo-700" : "bg-teal-100 text-teal-700") }, isCustomized ? qzText("badge_customized", "Customized") : qzText("badge_recommended", "Recommended preset")), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-semibold text-slate-700" }, qzText(
+    assessedTotal === 1 ? "summary_scored_one" : "summary_scored_other",
+    assessedTotal === 1 ? "{count} scored question" : "{count} scored questions",
+    { count: assessedTotal }
+  ) + (reflectionTotal ? qzText(
+    reflectionTotal === 1 ? "summary_reflection_one" : "summary_reflection_other",
+    reflectionTotal === 1 ? " + {count} unscored reflection" : " + {count} unscored reflections",
+    { count: reflectionTotal }
+  ) : "")), isCustomized && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleResetMix, className: "ml-auto text-[11px] text-indigo-600 hover:text-indigo-800 font-semibold" }, t("common.reset") || "Reset")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex items-center gap-2 flex-wrap text-[11px]" }, /* @__PURE__ */ React.createElement("span", { className: "rounded bg-slate-100 px-2 py-1 font-semibold text-slate-700" }, qzText("estimate_minutes", "About {low}\u2013{high} minutes", { low: estimatedLow, high: estimatedHigh })), estimatedHigh > 30 && /* @__PURE__ */ React.createElement("span", { className: "rounded bg-amber-100 px-2 py-1 font-semibold text-amber-800" }, qzText("long_warning", "Long assessment\u2014consider reducing the mix.")))), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-slate-200 bg-white overflow-hidden" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -2482,9 +2521,9 @@ function QuizPanel(props) {
       "data-help-key": "quiz_item_mix_toggle",
       className: "w-full px-3 py-2.5 flex items-center justify-between text-xs font-bold text-slate-700 hover:text-indigo-700 hover:bg-indigo-50/50"
     },
-    /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Settings2, { size: 13 }), "2. Customize questions"),
+    /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Settings2, { size: 13 }), qzText("section_customize", "2. Customize questions")),
     /* @__PURE__ */ React.createElement(ChevronDown, { size: 14, className: "transition-transform motion-reduce:transition-none " + (itemMixOpen ? "rotate-180" : "") })
-  ), itemMixOpen && /* @__PURE__ */ React.createElement("div", { id: "quiz-item-mix-panel", className: "px-3 pb-3 pt-1 space-y-3 bg-slate-50/60" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, "Set the exact number of every scored format. No format is treated as an \u201Cextra.\u201D"), groups.map((group) => /* @__PURE__ */ React.createElement("div", { key: group.label, className: "space-y-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wider text-slate-500" }, group.label), group.types.map((item) => {
+  ), itemMixOpen && /* @__PURE__ */ React.createElement("div", { id: "quiz-item-mix-panel", className: "px-3 pb-3 pt-1 space-y-3 bg-slate-50/60" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600" }, qzText("mix_help", "Set the exact number of every scored format. No format is treated as an \u201Cextra.\u201D")), groups.map((group) => /* @__PURE__ */ React.createElement("div", { key: group.id, className: "space-y-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wider text-slate-500" }, group.label), group.types.map((item) => {
     const count = clampCount(effectiveMix[item.key] || 0, item.key === "mcq" ? 20 : 5);
     return /* @__PURE__ */ React.createElement("div", { key: item.key, className: "flex items-center gap-2 rounded-lg border border-slate-200 bg-white p-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm flex-shrink-0 w-5 text-center", "aria-hidden": "true" }, item.emoji), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-semibold text-slate-700" }, item.label), /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] text-slate-600 leading-tight" }, item.desc)), /* @__PURE__ */ React.createElement(
       "input",
@@ -2494,15 +2533,15 @@ function QuizPanel(props) {
         max: item.key === "mcq" ? 20 : 5,
         value: count,
         onChange: (event) => handleMixChange(item.key, event.target.value),
-        "aria-label": item.label + " count",
+        "aria-label": qzText("format_count_aria", "{format} count", { format: item.label }),
         className: "w-14 text-center text-sm border border-slate-300 rounded-md p-1.5 focus:ring-indigo-200 focus:border-indigo-300 bg-white"
       }
     ));
-  }))))), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-indigo-200 bg-indigo-50/60 p-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-reflection-count", className: "text-xs font-bold text-indigo-900 flex items-center gap-1" }, "3. Closing reflection ", /* @__PURE__ */ React.createElement("span", { className: "font-semibold text-indigo-700" }, "(unscored)"), /* @__PURE__ */ React.createElement(InfoTooltip, { text: "Optional prompts shown after the assessment. They never affect the score." })), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-indigo-700 mt-0.5" }, "Use 1 for a quick close; choose 0 to omit it.")), /* @__PURE__ */ React.createElement(
+  }))))), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-indigo-200 bg-indigo-50/60 p-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-reflection-count", className: "text-xs font-bold text-indigo-900 flex items-center gap-1" }, qzText("section_reflection", "3. Closing reflection"), " ", /* @__PURE__ */ React.createElement("span", { className: "font-semibold text-indigo-700" }, qzText("reflection_unscored", "(unscored)")), /* @__PURE__ */ React.createElement(InfoTooltip, { text: qzText("reflection_tooltip", "Optional prompts shown after the assessment. They never affect the score.") })), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-indigo-700 mt-0.5" }, qzText("reflection_help", "Use 1 for a quick close; choose 0 to omit it."))), /* @__PURE__ */ React.createElement(
     "input",
     {
       id: "quiz-reflection-count",
-      "aria-label": "Closing reflection count",
+      "aria-label": qzText("reflection_count_aria", "Closing reflection count"),
       type: "number",
       min: "0",
       max: "2",
@@ -2510,7 +2549,7 @@ function QuizPanel(props) {
       onChange: (event) => handleReflectionCountChange(event.target.value),
       className: "w-14 text-center text-sm border-indigo-300 rounded-md p-1.5 focus:ring-indigo-200 focus:border-indigo-400 bg-white"
     }
-  ))), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-slate-200 bg-white overflow-hidden" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setScoringOpen(!scoringOpen), "aria-expanded": scoringOpen, className: "w-full px-3 py-2.5 flex items-center justify-between text-xs font-bold text-slate-700 hover:text-indigo-700 hover:bg-indigo-50/50" }, /* @__PURE__ */ React.createElement("span", null, "4. Scoring and feedback"), /* @__PURE__ */ React.createElement(ChevronDown, { size: 14, className: "transition-transform motion-reduce:transition-none " + (scoringOpen ? "rotate-180" : "") })), scoringOpen && /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-3 pt-1 space-y-3 bg-slate-50/60" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: scoringPolicy.partialCredit, onChange: (event) => setScoringPolicy(Object.assign({}, scoringPolicy, { partialCredit: event.target.checked })), className: "mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-400" }), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("strong", null, "Allow partial credit"), /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] text-slate-600" }, "Applies to multi-select, multi-step diagnostics, answer + evidence, and numeric value/unit checks."))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-live-response-policy", className: "block text-xs font-semibold text-slate-700 mb-1" }, "Live session response policy"), /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-slate-200 bg-white overflow-hidden" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setScoringOpen(!scoringOpen), "aria-expanded": scoringOpen, className: "w-full px-3 py-2.5 flex items-center justify-between text-xs font-bold text-slate-700 hover:text-indigo-700 hover:bg-indigo-50/50" }, /* @__PURE__ */ React.createElement("span", null, qzText("section_scoring", "4. Scoring and feedback")), /* @__PURE__ */ React.createElement(ChevronDown, { size: 14, className: "transition-transform motion-reduce:transition-none " + (scoringOpen ? "rotate-180" : "") })), scoringOpen && /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-3 pt-1 space-y-3 bg-slate-50/60" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: scoringPolicy.partialCredit, onChange: (event) => setScoringPolicy(Object.assign({}, scoringPolicy, { partialCredit: event.target.checked })), className: "mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-400" }), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("strong", null, qzText("partial_credit_label", "Allow partial credit")), /* @__PURE__ */ React.createElement("span", { className: "block text-[10px] text-slate-600" }, qzText("partial_credit_desc", "Applies to multi-select, multi-step diagnostics, answer + evidence, and numeric value/unit checks.")))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-live-response-policy", className: "block text-xs font-semibold text-slate-700 mb-1" }, qzText("live_policy_label", "Live session response policy")), /* @__PURE__ */ React.createElement(
     "select",
     {
       id: "quiz-live-response-policy",
@@ -2521,14 +2560,14 @@ function QuizPanel(props) {
       })),
       className: "w-full text-xs border-slate-300 rounded-md p-2 bg-white"
     },
-    /* @__PURE__ */ React.createElement("option", { value: "accuracy" }, "Accuracy \u2014 correctness, never speed"),
-    /* @__PURE__ */ React.createElement("option", { value: "confidence" }, "Confidence check \u2014 accuracy + learner certainty")
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-600 mt-1" }, scoringPolicy.confidence ? "Learners report how sure they were after answering. Confidence never changes correctness or points." : "Uses the answer key and configured partial credit. Response speed never changes points.")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-written-scoring", className: "block text-xs font-semibold text-slate-700 mb-1" }, "Written-response feedback"), /* @__PURE__ */ React.createElement("select", { id: "quiz-written-scoring", value: scoringPolicy.writtenResponseMode, onChange: (event) => setScoringPolicy(Object.assign({}, scoringPolicy, { writtenResponseMode: event.target.value })), className: "w-full text-xs border-slate-300 rounded-md p-2 bg-white" }, /* @__PURE__ */ React.createElement("option", { value: "ai-provisional" }, "Immediate AI feedback (provisional)"), /* @__PURE__ */ React.createElement("option", { value: "teacher-review" }, "Submit for teacher review")), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-600 mt-1" }, scoringPolicy.writtenResponseMode === "ai-provisional" ? "Students receive immediate guidance; teachers can override it." : "Written responses are collected without an automatic correctness judgment.")))), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-slate-200 bg-white overflow-hidden" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setPresetsOpen(!presetsOpen), "aria-expanded": presetsOpen, className: "w-full px-3 py-2.5 flex items-center justify-between text-xs font-bold text-slate-700 hover:text-indigo-700 hover:bg-indigo-50/50" }, /* @__PURE__ */ React.createElement("span", null, "Save or reuse this setup"), /* @__PURE__ */ React.createElement(ChevronDown, { size: 14, className: "transition-transform motion-reduce:transition-none " + (presetsOpen ? "rotate-180" : "") })), presetsOpen && /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-3 pt-1 space-y-2 bg-slate-50/60" }, savedPresets.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("select", { "aria-label": "Saved assessment presets", value: selectedPresetId, onChange: (event) => applyPreset(event.target.value), className: "flex-1 min-w-0 text-xs border-slate-300 rounded-md p-2 bg-white" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Choose a saved preset\u2026"), savedPresets.map((preset) => /* @__PURE__ */ React.createElement("option", { key: preset.id, value: preset.id }, preset.name))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: deleteSelectedPreset, disabled: !selectedPresetId, className: "px-2 text-xs font-semibold rounded border border-rose-200 text-rose-700 bg-white disabled:opacity-40" }, "Delete")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("input", { "aria-label": "New preset name", value: presetName, onChange: (event) => setPresetName(event.target.value), onKeyDown: (event) => {
+    /* @__PURE__ */ React.createElement("option", { value: "accuracy" }, qzText("policy_accuracy", "Accuracy \u2014 correctness, never speed")),
+    /* @__PURE__ */ React.createElement("option", { value: "confidence" }, qzText("policy_confidence", "Confidence check \u2014 accuracy + learner certainty"))
+  ), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-600 mt-1" }, scoringPolicy.confidence ? qzText("policy_confidence_desc", "Learners report how sure they were after answering. Confidence never changes correctness or points.") : qzText("policy_accuracy_desc", "Uses the answer key and configured partial credit. Response speed never changes points."))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-written-scoring", className: "block text-xs font-semibold text-slate-700 mb-1" }, qzText("written_feedback_label", "Written-response feedback")), /* @__PURE__ */ React.createElement("select", { id: "quiz-written-scoring", value: scoringPolicy.writtenResponseMode, onChange: (event) => setScoringPolicy(Object.assign({}, scoringPolicy, { writtenResponseMode: event.target.value })), className: "w-full text-xs border-slate-300 rounded-md p-2 bg-white" }, /* @__PURE__ */ React.createElement("option", { value: "ai-provisional" }, qzText("written_ai", "Immediate AI feedback (provisional)")), /* @__PURE__ */ React.createElement("option", { value: "teacher-review" }, qzText("written_teacher", "Submit for teacher review"))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-600 mt-1" }, scoringPolicy.writtenResponseMode === "ai-provisional" ? qzText("written_ai_desc", "Students receive immediate guidance; teachers can override it.") : qzText("written_teacher_desc", "Written responses are collected without an automatic correctness judgment."))))), /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-slate-200 bg-white overflow-hidden" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setPresetsOpen(!presetsOpen), "aria-expanded": presetsOpen, className: "w-full px-3 py-2.5 flex items-center justify-between text-xs font-bold text-slate-700 hover:text-indigo-700 hover:bg-indigo-50/50" }, /* @__PURE__ */ React.createElement("span", null, qzText("presets_title", "Save or reuse this setup")), /* @__PURE__ */ React.createElement(ChevronDown, { size: 14, className: "transition-transform motion-reduce:transition-none " + (presetsOpen ? "rotate-180" : "") })), presetsOpen && /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-3 pt-1 space-y-2 bg-slate-50/60" }, savedPresets.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("select", { "aria-label": qzText("presets_select_aria", "Saved assessment presets"), value: selectedPresetId, onChange: (event) => applyPreset(event.target.value), className: "flex-1 min-w-0 text-xs border-slate-300 rounded-md p-2 bg-white" }, /* @__PURE__ */ React.createElement("option", { value: "" }, qzText("presets_choose", "Choose a saved preset\u2026")), savedPresets.map((preset) => /* @__PURE__ */ React.createElement("option", { key: preset.id, value: preset.id }, preset.name))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: deleteSelectedPreset, disabled: !selectedPresetId, className: "px-2 text-xs font-semibold rounded border border-rose-200 text-rose-700 bg-white disabled:opacity-40" }, qzText("presets_delete", "Delete"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("input", { "aria-label": qzText("preset_name_aria", "New preset name"), value: presetName, onChange: (event) => setPresetName(event.target.value), onKeyDown: (event) => {
     if (event.key === "Enter") {
       event.preventDefault();
       savePreset();
     }
-  }, maxLength: "50", placeholder: "e.g. Friday concept check", className: "flex-1 min-w-0 text-xs border-slate-300 rounded-md p-2 bg-white" }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: savePreset, disabled: assessedTotal <= 0, className: "px-3 text-xs font-bold rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40" }, "Save")), presetStatus && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-[10px] text-slate-600" }, presetStatus))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(
+  }, maxLength: "50", placeholder: qzText("preset_name_placeholder", "e.g. Friday concept check"), className: "flex-1 min-w-0 text-xs border-slate-300 rounded-md p-2 bg-white" }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: savePreset, disabled: assessedTotal <= 0, className: "px-3 text-xs font-bold rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40" }, qzText("preset_save", "Save"))), presetStatus && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-[10px] text-slate-600" }, presetStatus))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(
     ResourceCustomInstructions,
     {
       helpKey: "quiz_custom_instructions",

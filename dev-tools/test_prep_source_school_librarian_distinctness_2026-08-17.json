@@ -1,0 +1,191 @@
+[
+  {
+    "stem": "school_librarian_5312",
+    "id": "sl5312-b1-090",
+    "item": {
+      "id": "sl5312-b1-090",
+      "choices": [
+        "Adopt whichever format the most experienced team member prefers.",
+        "Surface the competing assumptions, agree on the learner outcomes the learning must move, and select a format that can be evaluated against them.",
+        "Schedule a single after-school session so the disagreement does not delay the calendar.",
+        "Poll the team and implement the option with the most votes without reviewing evidence."
+      ],
+      "answerIndex": 1,
+      "rationale": "A disagreement about professional learning is resolved by agreeing first on the learner outcomes it must move, because format follows purpose. Naming the competing assumptions and the evidence each design would produce lets the team choose something that can actually be evaluated, rather than settling by seniority, schedule pressure, or a show of hands.",
+      "choiceRationales": [
+        "Not the best answer. Seniority is not evidence that a format will move the intended learner outcomes. A disagreement about professional learning is resolved by agreeing first on the learner outcomes it must move, because format follows purpose. Naming the competing assumptions and the evidence each design would produce lets the team choose something that can actually be evaluated, rather than settling by seniority, schedule pressure, or a show of hands.",
+        "Correct. A disagreement about professional learning is resolved by agreeing first on the learner outcomes it must move, because format follows purpose. Naming the competing assumptions and the evidence each design would produce lets the team choose something that can actually be evaluated, rather than settling by seniority, schedule pressure, or a show of hands.",
+        "Not the best answer. Protecting the calendar resolves the scheduling problem while leaving the instructional disagreement unexamined. A disagreement about professional learning is resolved by agreeing first on the learner outcomes it must move, because format follows purpose. Naming the competing assumptions and the evidence each design would produce lets the team choose something that can actually be evaluated, rather than settling by seniority, schedule pressure, or a show of hands.",
+        "Not the best answer. A vote records preference without testing which option is likely to change practice. A disagreement about professional learning is resolved by agreeing first on the learner outcomes it must move, because format follows purpose. Naming the competing assumptions and the evidence each design would produce lets the team choose something that can actually be evaluated, rather than settling by seniority, schedule pressure, or a show of hands."
+      ]
+    }
+  },
+  {
+    "stem": "school_librarian_5312",
+    "id": "sl5312-b1-091",
+    "item": {
+      "id": "sl5312-b1-091",
+      "choices": [
+        "Report attendance and satisfaction ratings as the measure of effectiveness.",
+        "Describe the number of sessions offered and the total hours delivered.",
+        "Name the standards and research base behind the chosen design, describe how transfer into instruction will be observed, and state what impact evidence will be reported.",
+        "Present a list of topics covered during the most recent school year."
+      ],
+      "answerIndex": 2,
+      "rationale": "Beginning-practice standards ask for a design tied to a research base and to observable transfer, not for activity counts. Attendance, hours, and topic lists describe what was provided; none of them establishes whether instruction changed or whether learners benefited.",
+      "choiceRationales": [
+        "Not the best answer. Satisfaction and attendance measure participation rather than change in practice. Beginning-practice standards ask for a design tied to a research base and to observable transfer, not for activity counts. Attendance, hours, and topic lists describe what was provided; none of them establishes whether instruction changed or whether learners benefited.",
+        "Not the best answer. Hours delivered describes the volume of input and says nothing about transfer. Beginning-practice standards ask for a design tied to a research base and to observable transfer, not for activity counts. Attendance, hours, and topic lists describe what was provided; none of them establishes whether instruction changed or whether learners benefited.",
+        "Correct. Beginning-practice standards ask for a design tied to a research base and to observable transfer, not for activity counts. Attendance, hours, and topic lists describe what was provided; none of them establishes whether instruction changed or whether learners benefited.",
+        "Not the best answer. A topic list documents coverage rather than effect. Beginning-practice standards ask for a design tied to a research base and to observable transfer, not for activity counts. Attendance, hours, and topic lists describe what was provided; none of them establishes whether instruction changed or whether learners benefited."
+      ]
+    }
+  },
+  {
+    "stem": "school_librarian_5312",
+    "id": "sl5312-b1-092",
+    "item": {
+      "id": "sl5312-b1-092",
+      "choices": [
+        "Increase the number of sessions offered each term.",
+        "Replace the current provider with an outside consultant.",
+        "Move the sessions earlier in the year so more staff can attend.",
+        "Add a follow-up cycle in which participants apply the practice, receive coaching, and bring classroom evidence before the next session is planned."
+      ],
+      "answerIndex": 3,
+      "rationale": "Audits of professional learning commonly find that one-off sessions never reach instruction. The improvement that addresses that finding is a follow-up cycle with application, coaching, and evidence brought back, rather than more sessions, a different presenter, or a more convenient time, each of which adjusts delivery without adding transfer support.",
+      "choiceRationales": [
+        "Not the best answer. More sessions repeat the delivery model the audit identified as weak. Audits of professional learning commonly find that one-off sessions never reach instruction. The improvement that addresses that finding is a follow-up cycle with application, coaching, and evidence brought back, rather than more sessions, a different presenter, or a more convenient time, each of which adjusts delivery without adding transfer support.",
+        "Not the best answer. Changing the presenter leaves the absence of follow-up untouched. Audits of professional learning commonly find that one-off sessions never reach instruction. The improvement that addresses that finding is a follow-up cycle with application, coaching, and evidence brought back, rather than more sessions, a different presenter, or a more convenient time, each of which adjusts delivery without adding transfer support.",
+        "Not the best answer. A better time slot raises attendance without supporting transfer. Audits of professional learning commonly find that one-off sessions never reach instruction. The improvement that addresses that finding is a follow-up cycle with application, coaching, and evidence brought back, rather than more sessions, a different presenter, or a more convenient time, each of which adjusts delivery without adding transfer support.",
+        "Correct. Audits of professional learning commonly find that one-off sessions never reach instruction. The improvement that addresses that finding is a follow-up cycle with application, coaching, and evidence brought back, rather than more sessions, a different presenter, or a more convenient time, each of which adjusts delivery without adding transfer support."
+      ]
+    }
+  },
+  {
+    "stem": "school_librarian_5312",
+    "id": "sl5312-b1-094",
+    "item": {
+      "id": "sl5312-b1-094",
+      "choices": [
+        "Assign the librarian to lead every partnership so responsibilities stay consistent.",
+        "Clarify the shared goal, then define each partner’s responsibilities, decision rights, and the review point at which the arrangement is reconsidered.",
+        "Delay the partnership until the team reaches full agreement on all details.",
+        "Let each partner define its own role independently after the work begins."
+      ],
+      "answerIndex": 1,
+      "rationale": "Disagreement about partnerships is usually disagreement about roles rather than about goals. Naming the shared goal and then fixing responsibilities, decision rights, and a review point gives the team something concrete to agree to, and makes the arrangement revisable without renegotiating it from the beginning.",
+      "choiceRationales": [
+        "Not the best answer. Centralizing leadership removes the partnership rather than structuring it. Disagreement about partnerships is usually disagreement about roles rather than about goals. Naming the shared goal and then fixing responsibilities, decision rights, and a review point gives the team something concrete to agree to, and makes the arrangement revisable without renegotiating it from the beginning.",
+        "Correct. Disagreement about partnerships is usually disagreement about roles rather than about goals. Naming the shared goal and then fixing responsibilities, decision rights, and a review point gives the team something concrete to agree to, and makes the arrangement revisable without renegotiating it from the beginning.",
+        "Not the best answer. Full agreement on every detail is rarely reachable and defers the work indefinitely. Disagreement about partnerships is usually disagreement about roles rather than about goals. Naming the shared goal and then fixing responsibilities, decision rights, and a review point gives the team something concrete to agree to, and makes the arrangement revisable without renegotiating it from the beginning.",
+        "Not the best answer. Roles defined independently after work starts produce the overlap and gaps under discussion. Disagreement about partnerships is usually disagreement about roles rather than about goals. Naming the shared goal and then fixing responsibilities, decision rights, and a review point gives the team something concrete to agree to, and makes the arrangement revisable without renegotiating it from the beginning."
+      ]
+    }
+  },
+  {
+    "stem": "school_librarian_5312",
+    "id": "sl5312-b1-095",
+    "item": {
+      "id": "sl5312-b1-095",
+      "choices": [
+        "List the organizations contacted during the school year.",
+        "Describe the number of meetings held with each partner.",
+        "Document the shared goals, the participation of each partner, and the learner outcomes the partnership is expected to affect, then report against them.",
+        "Summarize positive comments received from partner representatives."
+      ],
+      "answerIndex": 2,
+      "rationale": "An evidence-based account of partnership work states what the partnership was for and what changed for learners. Contact lists, meeting counts, and favourable comments describe activity and goodwill without showing whether the shared goal was advanced.",
+      "choiceRationales": [
+        "Not the best answer. A contact list records outreach rather than result. An evidence-based account of partnership work states what the partnership was for and what changed for learners. Contact lists, meeting counts, and favourable comments describe activity and goodwill without showing whether the shared goal was advanced.",
+        "Not the best answer. Meeting frequency measures effort rather than learner impact. An evidence-based account of partnership work states what the partnership was for and what changed for learners. Contact lists, meeting counts, and favourable comments describe activity and goodwill without showing whether the shared goal was advanced.",
+        "Correct. An evidence-based account of partnership work states what the partnership was for and what changed for learners. Contact lists, meeting counts, and favourable comments describe activity and goodwill without showing whether the shared goal was advanced.",
+        "Not the best answer. Testimonials capture satisfaction and are not outcome evidence. An evidence-based account of partnership work states what the partnership was for and what changed for learners. Contact lists, meeting counts, and favourable comments describe activity and goodwill without showing whether the shared goal was advanced."
+      ]
+    }
+  },
+  {
+    "stem": "school_librarian_5312",
+    "id": "sl5312-b1-096",
+    "item": {
+      "id": "sl5312-b1-096",
+      "choices": [
+        "Recruit additional partners to broaden the program’s reach.",
+        "Publish a summary of partnership activities for the school community.",
+        "Ask each partner to submit an annual written report.",
+        "Establish a regular review in which partners examine shared evidence, adjust responsibilities, and decide whether to continue, revise, or end the arrangement."
+      ],
+      "answerIndex": 3,
+      "rationale": "A partnership weakness found in an audit is addressed by a review structure that can change the arrangement, not by expanding or publicizing it. Shared evidence together with explicit authority to revise or end the partnership is what turns a standing relationship into a managed one.",
+      "choiceRationales": [
+        "Not the best answer. Adding partners scales an arrangement whose weakness has not been diagnosed. A partnership weakness found in an audit is addressed by a review structure that can change the arrangement, not by expanding or publicizing it. Shared evidence together with explicit authority to revise or end the partnership is what turns a standing relationship into a managed one.",
+        "Not the best answer. Publishing activity improves visibility without improving the partnership. A partnership weakness found in an audit is addressed by a review structure that can change the arrangement, not by expanding or publicizing it. Shared evidence together with explicit authority to revise or end the partnership is what turns a standing relationship into a managed one.",
+        "Not the best answer. An annual report collects information without creating authority to act on it. A partnership weakness found in an audit is addressed by a review structure that can change the arrangement, not by expanding or publicizing it. Shared evidence together with explicit authority to revise or end the partnership is what turns a standing relationship into a managed one.",
+        "Correct. A partnership weakness found in an audit is addressed by a review structure that can change the arrangement, not by expanding or publicizing it. Shared evidence together with explicit authority to revise or end the partnership is what turns a standing relationship into a managed one."
+      ]
+    }
+  },
+  {
+    "stem": "school_librarian_5312",
+    "id": "sl5312-b1-098",
+    "item": {
+      "id": "sl5312-b1-098",
+      "choices": [
+        "Prepare one comprehensive presentation suitable for every audience.",
+        "Identify the specific decision and audience first, then select the evidence and the concrete request that fit them.",
+        "Begin with the library’s funding history so the need is understood in context.",
+        "Wait until the budget cycle closes so the message is not seen as self-interested."
+      ],
+      "answerIndex": 1,
+      "rationale": "Advocacy is shaped by the decision it is meant to influence and by who makes it. Naming the decision and the audience determines which evidence is relevant and what to ask for; a universal presentation, a historical preamble, or a delayed message each detach the communication from the decision point.",
+      "choiceRationales": [
+        "Not the best answer. One presentation for every audience is matched to none of their decisions. Advocacy is shaped by the decision it is meant to influence and by who makes it. Naming the decision and the audience determines which evidence is relevant and what to ask for; a universal presentation, a historical preamble, or a delayed message each detach the communication from the decision point.",
+        "Correct. Advocacy is shaped by the decision it is meant to influence and by who makes it. Naming the decision and the audience determines which evidence is relevant and what to ask for; a universal presentation, a historical preamble, or a delayed message each detach the communication from the decision point.",
+        "Not the best answer. Funding history is context and rarely answers the question a decision-maker is holding. Advocacy is shaped by the decision it is meant to influence and by who makes it. Naming the decision and the audience determines which evidence is relevant and what to ask for; a universal presentation, a historical preamble, or a delayed message each detach the communication from the decision point.",
+        "Not the best answer. Waiting for the cycle to close removes the opportunity to influence it. Advocacy is shaped by the decision it is meant to influence and by who makes it. Naming the decision and the audience determines which evidence is relevant and what to ask for; a universal presentation, a historical preamble, or a delayed message each detach the communication from the decision point."
+      ]
+    }
+  },
+  {
+    "stem": "school_librarian_5312",
+    "id": "sl5312-b1-099",
+    "item": {
+      "id": "sl5312-b1-099",
+      "choices": [
+        "Emphasize how much the library is valued by students and staff.",
+        "Compare the library’s resources with those of neighbouring districts.",
+        "Connect documented learner needs to program evidence and to a specific feasible request, and state how the result will be reported back.",
+        "Describe the range of services the library currently provides."
+      ],
+      "answerIndex": 2,
+      "rationale": "A beginning-practice advocacy message links a documented need to evidence and to one feasible request, and commits to reporting the result. Expressions of value, district comparisons, and service inventories describe the program without asking a decision-maker for a decision.",
+      "choiceRationales": [
+        "Not the best answer. Perceived value is not evidence of need and carries no request. A beginning-practice advocacy message links a documented need to evidence and to one feasible request, and commits to reporting the result. Expressions of value, district comparisons, and service inventories describe the program without asking a decision-maker for a decision.",
+        "Not the best answer. Comparison invites a debate about districts rather than about this decision. A beginning-practice advocacy message links a documented need to evidence and to one feasible request, and commits to reporting the result. Expressions of value, district comparisons, and service inventories describe the program without asking a decision-maker for a decision.",
+        "Correct. A beginning-practice advocacy message links a documented need to evidence and to one feasible request, and commits to reporting the result. Expressions of value, district comparisons, and service inventories describe the program without asking a decision-maker for a decision.",
+        "Not the best answer. A service list describes provision without identifying a gap to close. A beginning-practice advocacy message links a documented need to evidence and to one feasible request, and commits to reporting the result. Expressions of value, district comparisons, and service inventories describe the program without asking a decision-maker for a decision."
+      ]
+    }
+  },
+  {
+    "stem": "school_librarian_5312",
+    "id": "sl5312-b1-100",
+    "item": {
+      "id": "sl5312-b1-100",
+      "choices": [
+        "Increase the frequency of newsletters sent to families.",
+        "Create a social media account dedicated to library news.",
+        "Add a library section to the school website.",
+        "Set a communication routine that reports program evidence to named audiences at the points in the year when resource decisions are actually made."
+      ],
+      "answerIndex": 3,
+      "rationale": "Advocacy weaknesses are usually about timing and audience rather than channel volume. A routine that delivers evidence to the people making resource decisions, at the moment they make them, addresses that; more newsletters, a new account, or a web page add channels without connecting to a decision point.",
+      "choiceRationales": [
+        "Not the best answer. More frequent newsletters increase volume to an audience that does not set the budget. Advocacy weaknesses are usually about timing and audience rather than channel volume. A routine that delivers evidence to the people making resource decisions, at the moment they make them, addresses that; more newsletters, a new account, or a web page add channels without connecting to a decision point.",
+        "Not the best answer. A new channel broadens reach without reaching decision-makers at the right time. Advocacy weaknesses are usually about timing and audience rather than channel volume. A routine that delivers evidence to the people making resource decisions, at the moment they make them, addresses that; more newsletters, a new account, or a web page add channels without connecting to a decision point.",
+        "Not the best answer. A web page is passive and does not arrive at a decision point. Advocacy weaknesses are usually about timing and audience rather than channel volume. A routine that delivers evidence to the people making resource decisions, at the moment they make them, addresses that; more newsletters, a new account, or a web page add channels without connecting to a decision point.",
+        "Correct. Advocacy weaknesses are usually about timing and audience rather than channel volume. A routine that delivers evidence to the people making resource decisions, at the moment they make them, addresses that; more newsletters, a new account, or a web page add channels without connecting to a decision point."
+      ]
+    }
+  }
+]

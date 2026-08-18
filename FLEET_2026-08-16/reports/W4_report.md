@@ -1446,3 +1446,146 @@ standing rule for this lane becomes:
 - Reviewer: **0 hard findings**, 22 packs / 11,000 activities
 - Four ratchets green; nothing staged, nothing pushed
 - Post-review drift: **1 item** (`parapro-writing-skills-023`), deliberate and recorded
+
+---
+
+## 20. Scaffolding removed from 710 learner-facing prompts
+
+First content repair run through the §19 workflow.
+
+### 20.1 What the survey changed about the plan
+
+The 910 scaffolded prompts came from six preambles, each uniform within its pack:
+"In a parallel middle-grades setting," / "secondary" / "early-childhood" (100 each),
+"In a parallel school," (100), "For a parallel early-childhood language and literacy decision,"
+(30) and "A beginning early-childhood teacher reviews this parallel content problem:" (25).
+
+The obvious fix - delete the preamble - is wrong twice over:
+
+1. **It loses the grade band.** "In a parallel secondary setting, students interpret a new history
+   topic..." reduced to "Students interpret..." throws away the one thing a PLT credential is
+   about. The replacements keep it: *"In a secondary classroom, ..."*.
+2. **For school_librarian it creates duplicates.** My first collision check said zero for all five
+   packs. It was wrong - it compared case-sensitively, and every stripped prompt begins lowercase.
+   Re-run with case normalisation, **74 of 100 school_librarian bank-2 prompts collide with an
+   existing item**. Its bank 2 is bank 1 behind a prefix, so the scaffolding is load-bearing and
+   removing it exposes the §15 duplication rather than fixing anything. Excluded deliberately;
+   prompt uniqueness is a hard pipeline invariant and this would have failed the build.
+
+### 20.2 Result
+
+355 source prompts rewritten through an auditable per-item ledger
+(`dev-tools/test_prep_source_prompt_descaffold_2026-08-17.json`), with the generator refusing any
+replacement that made no change or collided with an existing prompt. Guided banks are derived from
+source, so rebuilding carried the fix into another 355.
+
+| | before | after |
+|---|---|---|
+| scaffolded prompts, corpus | 910 | **200** |
+| plt_5_9 / plt_7_12 / plt_early_childhood | 200 each | **0** |
+| early_childhood_5025 | 110 | **0** |
+| school_librarian_5312 | 200 | 200 *(needs the §15 repair)* |
+
+A side effect worth recording: the three PLT packs were flagged at 24% top prompt frame, and
+removing the preamble took them to **9%** - the shared frame largely *was* the scaffolding, so the
+templated-prompt flag cleared on all three.
+
+### 20.3 The §19 workflow in anger
+
+Edit source -> `bind_non_eppp_native_qa.cjs` -> `freeze_non_eppp_group_review_artifact_bindings.cjs
+--confirm-current-independent-review` -> **0 hard findings**. The drift tracker now lists
+**356 items** (355 descaffold + the ParaPro duplicate) as the standing worklist for a future
+expert. The workflow held on a 355-item change, not just the one-item demo.
+
+### 20.4 Two things found along the way
+
+**Another session committed my work.** `f9031f88d "Consolidated fleet landing"` (Aaron,
+2026-08-17 17:22) swept the §14-§19 output - all four scanners, the wave-24 data, the baselines and
+this report - into a consolidated commit alongside other lanes. Nothing was lost, and I verified
+each file is present in HEAD. Worth knowing because "clean vs HEAD" now means "already committed by
+someone else", which briefly made ParaPro look like it had lost its edits.
+
+**A latent flaky test.** `test_prep_learning_library_release_determinism` timed out at the default
+5s during a full run and passed in 734ms alone immediately after. It spawns the stamper and re-reads
+~44 artifacts, so it loses that race under suite load. Given an explicit 60s timeout, because a
+timeout there reads as a determinism failure, which is the wrong diagnosis.
+
+### 20.5 State
+
+- `tests/test_prep_` -> **37 files, 244 tests, all passing**
+- Reviewer: **0 hard findings**, 22 packs / 11,000 activities
+- Four ratchets green; source-duplication baseline re-recorded to lock in the improvement
+- Nothing staged, nothing pushed by me
+
+**Open:** school_librarian's 200 scaffolded prompts, unblockable only by the §15 duplication repair
+(198 within-bank duplicate items) - which the §19 workflow now permits whenever you want it done.
+
+---
+
+## 21. school_librarian distinctness: first domain repaired, and the metric moved 1:1
+
+### 21.1 The structure, precisely
+
+Both source banks are **25 topics crossed with 4 scenario frames**, and each topic's four items
+share ONE answer set:
+
+> A school librarian is **reviewing** needs assessment after noticing uneven learner outcomes...
+> During collaborative planning, a team **disagrees** about needs assessment...
+> A **principal asks** for an evidence-based approach to needs assessment...
+> A library program **audit** identifies a weakness involving needs assessment...
+
+The frames are genuinely different questions. The defect is that all four are answered by the same
+generic key, distractors and rationale. So the repair is not deduplication by deletion; it is
+giving each frame the answer its own question deserves.
+
+### 21.2 What was done
+
+The `professional-development-leadership-advocacy` domain of bank 1 - 3 topics, 12 items - was
+repaired by authoring **9 new answer sets** (frame 1 keeps the existing key, which suits it).
+Each new set is key + three distractors + rationale + per-option feedback, written to fit its
+scenario: the disagreement frame resolves competing assumptions against learner outcomes, the
+principal frame distinguishes a research base and observable transfer from activity counts, the
+audit frame adds a follow-up cycle rather than more sessions.
+
+Stored as an extensible ledger
+(`dev-tools/test_prep_source_school_librarian_distinctness_2026-08-17.json`) whose generator places
+each key at the item's **existing** answerIndex, so the 25/25/25/25 per-bank balance is untouched,
+and refuses any group whose four choices are not distinct.
+
+| | before | after |
+|---|---|---|
+| target domain, distinct kernels | 3 | **12** (all items distinct) |
+| bank 1, items in a duplicate group | 99 | **87** |
+| bank 1 answer positions | 25/25/25/25 | 25/25/25/25 |
+
+### 21.3 The confirmation worth having
+
+`newIndependentItemsNeeded` moved **7,838 -> 7,829**: down by exactly the 9 items given distinct
+answer sets. That is the 1:1 movement hypothesised in §15 when the bank-2 pilot was first
+discussed, now demonstrated on real content. Distinctness repair is not cosmetic - it pays down the
+headline gap directly, one item per item.
+
+### 21.4 A test of mine that decayed as the defect was fixed
+
+`test_prep_source_bank_duplication` asserted bank 1 carried **more than 90** duplicate items. After
+this repair it carries 87, so my own test failed on an improvement. The comment I wrote in §15
+predicted it ("that is the good outcome, not a broken test"), but predicting it is not the same as
+designing for it.
+
+Rewritten to assert what should stay true regardless of repair progress: school_librarian carries
+more within-bank duplication than **all other packs combined**, and its authored bank remains 0.
+Regression is the ratchet's job; this test's job is to prove the detector still discriminates. A
+fixed threshold in a test that measures work-in-progress is a trap.
+
+### 21.5 State
+
+- `tests/test_prep_` -> **37 files, 244 tests, all passing**
+- Reviewer: **0 hard findings**; independent-question gap **7,829** (was 7,838)
+- Four ratchets green, baseline re-recorded to lock in the improvement
+- Post-review drift: **365 items**, all deliberate and enumerable
+- Nothing staged, nothing pushed by me
+
+**Open:** 22 topics remain in bank 1 (66 answer sets) and bank 2 is untouched (25 topics). Bank 2
+additionally needs new prompts, because its items are bank 1's behind "In a parallel school," and
+stripping that prefix collides with bank 1 in 74 of 100 cases. The ledger and generator extend to
+both; the work is now mechanical rather than exploratory.

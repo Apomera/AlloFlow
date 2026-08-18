@@ -5,7 +5,7 @@
 //               the previous fill persists
 //   SVG attrs   stroke={sp.color} / fill={sp.color} -> presentation attributes
 //               do not accept var()
-//   concat      '1px solid ' + s.color + '88'  -> invalid CSS, declaration dropped
+//   concat      s.color + '22' (button tint)   -> invalid CSS, declaration dropped
 //
 // Two records were affected and are pinned here:
 //   MAINE_SPECIES "grayWolf"  -> SVG population line + species button border
@@ -40,7 +40,9 @@ describe('ecosystem — species colours are concrete', () => {
 
   it('guards the premise: species colours really do feed SVG attributes and concatenation', () => {
     expect(src).toMatch(/stroke:\s*sp\.color/);
-    expect(src).toMatch(/\+\s*s\.color\s*\+\s*'88'/);
+    // The border moved to currentColor when it was raised to meet 1.4.11, so the
+    // surviving concatenation is the button's background tint.
+    expect(src).toMatch(/s\.color\s*\+\s*'22'/);
   });
 });
 

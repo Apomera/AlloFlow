@@ -97,8 +97,44 @@ for(const pack of Object.values(localPatches))for(const patch of Object.values(p
   delete patch.notes;
 }
 
+// Prompt-only overrides that remove authoring scaffolding from learner-facing
+// text: "In a parallel secondary setting, ...", "For a parallel early-childhood
+// language and literacy decision, ...", "reviews this parallel content problem:".
+// No exam item is phrased that way; it is the authoring process showing through,
+// and it also tells a candidate the item is a transplant. The PLT replacements
+// keep the grade band ("In a secondary classroom, ...") because the grade band is
+// the point of the credential and deleting the clause would lose it.
+//
+// school_librarian_5312 is deliberately ABSENT. Its bank-2 prompts are bank-1
+// prompts behind the same prefix: strip it and 74 of 100 collide with an existing
+// item. There the scaffolding is load-bearing, and removing it needs the deeper
+// duplication repair in section 15, not a prompt edit.
+const descaffold=JSON.parse(fs.readFileSync(path.join(__dirname,'test_prep_source_prompt_descaffold_2026-08-17.json'),'utf8'));
+
+// school_librarian_5312 distinctness. Its source banks are 25 topics crossed with
+// four scenario frames, and each topic's four items share ONE answer set, so a
+// learner meets the same key, distractors and rationale four times inside a
+// single 100-question sitting. The frames are genuinely different questions - a
+// review after uneven outcomes, a team disagreement, a principal asking what
+// evidence-based practice looks like, and an audit finding - so each is given an
+// answer that fits its own question. Answer positions are unchanged, so the
+// 25/25/25/25 per-bank balance holds.
+//
+// This file covers the professional-development-leadership-advocacy domain of
+// bank 1 (3 topics, 9 rewritten items). The remaining topics follow the same
+// shape and can be appended here.
+const librarianDistinctness=JSON.parse(fs.readFileSync(path.join(__dirname,'test_prep_source_school_librarian_distinctness_2026-08-17.json'),'utf8'));
+
 const byStem={};
 for(const entry of targeted)if(!retiredTargetedStems.has(entry.stem))(byStem[entry.stem]||(byStem[entry.stem]={}))[entry.id]=entry.item;
+for(const entry of descaffold){
+  const stem=byStem[entry.stem]||(byStem[entry.stem]={});
+  stem[entry.id]={...(stem[entry.id]||{}),...entry.item};
+}
+for(const entry of librarianDistinctness){
+  const stem=byStem[entry.stem]||(byStem[entry.stem]={});
+  stem[entry.id]={...(stem[entry.id]||{}),...entry.item};
+}
 for(const [stem,file] of authoredFiles){
   const entries=JSON.parse(fs.readFileSync(path.join(__dirname,file),'utf8'));
   if(entries.length!==34)throw Error(`${file}: expected 34 authored replacements, found ${entries.length}`);

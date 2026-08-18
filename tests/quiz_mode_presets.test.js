@@ -51,7 +51,9 @@ describe('quiz modes as customizable presets', () => {
     expect(source).toContain('quizReflectionCount: reflectionTotal');
     expect(source).toContain('itemTypes: effectiveMix');
     expect(source).toContain('handleModeChange(event.target.value)');
-    expect(source).toContain("{isCustomized ? 'Customized' : 'Recommended preset'}");
+    // Localised: assert the branch and both English fallbacks, so the badge
+    // still distinguishes a customized mix from the recommended preset.
+    expect(source).toContain("isCustomized ? qzText('badge_customized', 'Customized') : qzText('badge_recommended', 'Recommended preset')");
     expect(source).toContain('Closing reflection');
     expect(source).not.toContain("{quizMode === 'exit-ticket' && (");
     expect(dispatcherSource()).toContain('const _includeReflections = _reflectionCount > 0;');
@@ -64,10 +66,12 @@ describe('quiz modes as customizable presets', () => {
     expect(source).toContain('Closing reflection');
     expect(source).toContain('(unscored)');
     expect(source).toContain('max="2"');
-    expect(source).toContain("label: 'Core formats'");
-    expect(source).toContain("label: 'Diagnostic formats'");
-    expect(source).toContain("label: 'Brief Written Response'");
-    expect(source).toContain("label: 'Explain Your Reasoning'");
+    // Localised: the group headings and format labels must still exist, now as
+    // key + English fallback.
+    expect(source).toContain("qzText('group_core', 'Core formats')");
+    expect(source).toContain("qzText('group_diagnostic', 'Diagnostic formats')");
+    expect(source).toContain("qzText('format_short_answer_label', 'Brief Written Response')");
+    expect(source).toContain("qzText('format_self_explanation_label', 'Explain Your Reasoning')");
   });
 
   it('defines schemas and exact-count support for the new deterministic formats', () => {
@@ -126,7 +130,9 @@ describe('quiz modes as customizable presets', () => {
   it('uses a purpose-first unified builder with time guidance and reusable presets', () => {
     const source = panelSource();
     expect(source.indexOf('1. Assessment purpose')).toBeLessThan(source.indexOf('2. Customize questions'));
-    expect(source).toContain("{ key: 'mcq', label: 'Multiple Choice'");
+    // `key` stays the stable English identifier (mix lookup + React key); only
+    // the label is localised.
+    expect(source).toContain("{ key: 'mcq', label: qzText('format_mcq_label', 'Multiple Choice')");
     expect(source).toContain('No format is treated as an “extra.”');
     expect(source).toContain('estimatedLow');
     expect(source).toContain('estimatedHigh');

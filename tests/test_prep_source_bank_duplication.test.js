@@ -47,12 +47,24 @@ describe('source-bank duplication', () => {
   it('finds the shipped within-bank duplication the authored gate never sees', () => {
     // school_librarian_5312 is 25 topics crossed with 4 prompt frames: four
     // items per answer set, in one bank, all with the same key, distractors and
-    // rationale. If this stops being true the pack was fixed and the baseline
-    // should be re-recorded - that is the good outcome, not a broken test.
+    // rationale.
+    //
+    // This deliberately does NOT assert a fixed count. It did originally, and
+    // repairing one domain took bank 1 from 99 to 87 and failed the test - the
+    // assertion decayed exactly as the defect was fixed, which is the wrong
+    // signal. Regression is the ratchet's job
+    // (tests/fixtures/test_prep_source_duplication_baseline.json). What belongs
+    // here is that the detector still discriminates: this pack carries the
+    // duplication and the others do not.
     const pack = readPack('school_librarian_5312_pack.json');
     const banks = scoredBanks(pack);
-    expect(duplicateItems(banks[0])).toBeGreaterThan(90);
-    expect(duplicateItems(banks[1])).toBeGreaterThan(90);
+    const librarian = duplicateItems(banks[0]) + duplicateItems(banks[1]);
+    expect(librarian).toBeGreaterThan(0);
+    const others = packFiles()
+      .filter((file) => !file.startsWith('school_librarian_5312'))
+      .reduce((sum, file) => sum + scoredBanks(readPack(file))
+        .reduce((inner, bank) => inner + duplicateItems(bank), 0), 0);
+    expect(librarian).toBeGreaterThan(others);
     // Its own authored bank 3 is clean, which is the point: that range is gated.
     expect(duplicateItems(banks[2])).toBe(0);
   }, 60_000);
