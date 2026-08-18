@@ -1834,3 +1834,49 @@ describe('Tree Life Lab - derived 3D visual state', () => {
     expect(rootInvestedVisual.rootVigor).toBeGreaterThan(leafInvestedVisual.rootVigor + 0.08);
   });
 });
+
+describe('Survival margin: the death rule, made visible', () => {
+  // deficitYears and the reserve floor decide carbon_starvation inside
+  // simulateYear, but the only place a student ever saw deficitYears was the
+  // sentence explaining the death AFTER it happened. These assert the gauge
+  // reads the engine's own rule rather than a number invented for the UI.
+  it('counts one deficit year per negative year and kills at the species limit', () => {
+    const E = window.__alloTreeLabEngine;
+    const sp = E.SPECIES.oak || Object.values(E.SPECIES)[0];
+    const limit = Math.max(1, Math.round(6 + (sp.droughtTol || 0) * 8));
+    const alloc = E.normaliseAlloc({});
+    let t = E.newTree(sp.id);
+    const good = { tempC: 22, light: 0.85, co2ppm: 420, soilWater: 0.75 };
+    for (let y = 0; y < 20 && t.alive; y++) t = E.simulateYear(t, sp, good, alloc);
+    expect(t.alive).toBe(true);
+    expect(t.deficitYears).toBe(0);
+
+    const dark = { tempC: 22, light: 0.02, co2ppm: 420, soilWater: 0.75 };
+    const seen = [];
+    for (let y = 0; y < limit + 5; y++) {
+      t = E.simulateYear(t, sp, dark, alloc);
+      seen.push(t.deficitYears);
+      if (!t.alive) break;
+    }
+    // Climbs by one a year, so the gauge can count DOWN from the limit.
+    expect(seen.slice(0, 5)).toEqual([0, 1, 2, 3, 4]);
+    expect(t.alive).toBe(false);
+    expect(t.causeOfDeath).toBe('carbon_starvation');
+    // The student gets the whole tolerance as warning, not a surprise.
+    expect(Math.max.apply(null, seen)).toBeLessThanOrEqual(limit);
+  });
+
+  it('a good year resets the counter, so the bar refills as the card promises', () => {
+    const E = window.__alloTreeLabEngine;
+    const sp = E.SPECIES.oak || Object.values(E.SPECIES)[0];
+    const alloc = E.normaliseAlloc({});
+    let t = E.newTree(sp.id);
+    const good = { tempC: 22, light: 0.85, co2ppm: 420, soilWater: 0.75 };
+    for (let y = 0; y < 20 && t.alive; y++) t = E.simulateYear(t, sp, good, alloc);
+    const dark = { tempC: 22, light: 0.02, co2ppm: 420, soilWater: 0.75 };
+    for (let y = 0; y < 3; y++) t = E.simulateYear(t, sp, dark, alloc);
+    expect(t.deficitYears).toBeGreaterThan(0);
+    t = E.simulateYear(t, sp, good, alloc);
+    expect(t.deficitYears).toBe(0);
+  });
+});

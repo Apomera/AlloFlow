@@ -4425,6 +4425,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             'Qualitative teaching model, not a forest growth model or a measurement. The shapes are real (saturating light response, a smallest-factor gate, respiration that scales with living tissue) and the magnitudes are the right order for a temperate tree, but no figure here should be quoted as data.'))
         ]), 'grow-budget');
 
+        // ── Survival margin ─────────────────────────────────────────────────
+        //
+        // The engine already decides death from two running quantities: a count of
+        // consecutive negative-carbon years against a species tolerance, and a
+        // reserve pool that can be overdrawn. Neither was ever shown. deficitYears
+        // appeared in exactly one place in the whole tool — the sentence explaining
+        // the death, after it had happened — so a student could not see the failure
+        // coming, and "spend less than you make" had no visible dial.
+        //
+        // Nothing here is a new rule or a new threshold. It is the engine's own
+        // carbon_starvation test, drawn.
+        if (tree.alive) {
+          var stressYears = typeof tree.deficitYears === 'number' ? tree.deficitYears : 0;
+          var stressLimit = Math.max(1, Math.round(6 + (sp.droughtTol || 0) * 8));
+          var stressFrac = clamp(stressYears / stressLimit, 0, 1);
+          var reserveFloor = Math.max(0.15, (tree.sapwoodMass || 0) * 0.35);
+          var reserveFrac = clamp(1 - (-(Math.min(0, tree.reserves || 0)) / reserveFloor), 0, 1);
+          var margin = Math.min(1 - stressFrac, reserveFrac);
+          var marginTone = margin > 0.66 ? T.good : (margin > 0.33 ? T.warn : T.bad);
+          function meter(label, frac, tone, detail) {
+            return h('div', { key: label, style: { marginBottom: 8 } }, [
+              h('div', { key: 'l', style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, color: T.dim, marginBottom: 3 } }, [
+                h('span', { key: 'a' }, label), h('span', { key: 'b', style: { color: tone, fontWeight: 700 } }, detail)
+              ]),
+              h('div', { key: 'bar', role: 'img', 'aria-label': label + ': ' + detail,
+                style: { height: 8, borderRadius: 999, background: T.cardAlt, border: '1px solid ' + T.border, overflow: 'hidden' } },
+                h('div', { key: 'f', style: { width: Math.round(frac * 100) + '%', height: '100%', background: tone } }))
+            ]);
+          }
+          pushKeyed(kids, card([
+            heading(__alloT('stem.treelab.survival', 'Survival margin'),
+              __alloT('stem.treelab.survival_sub', 'How much room this tree has left before it starves. Both bars refill on any year it makes more than it spends.')),
+            meter(__alloT('stem.treelab.good_years_left', 'Years of deficit it can still take'),
+              1 - stressFrac, stressFrac > 0.66 ? T.bad : (stressFrac > 0.33 ? T.warn : T.good),
+              (stressLimit - stressYears) + ' / ' + stressLimit),
+            meter(__alloT('stem.treelab.reserves_left', 'Stored sugar reserves'),
+              reserveFrac, reserveFrac < 0.34 ? T.bad : (reserveFrac < 0.67 ? T.warn : T.good),
+              Math.round(reserveFrac * 100) + '%'),
+            h('div', { key: 'why', style: { fontSize: 12, color: marginTone, lineHeight: 1.5, marginTop: 6 } },
+              stressYears === 0
+                ? __alloT('stem.treelab.survival_ok', 'Making more than it spends. Reserves are refilling and the deficit count is back to zero.')
+                : (margin > 0.33
+                  ? __alloT('stem.treelab.survival_warn', 'Running a deficit. Give it more leaf area, easier conditions, or less to pay for, and both bars recover.')
+                  : __alloT('stem.treelab.survival_bad', 'Close to starving. The next few negative years will kill it unless something changes now.'))),
+            h('div', { key: 'lim', style: { fontSize: 12, color: T.dim, lineHeight: 1.5, marginTop: 4 } },
+              __alloT('stem.treelab.survival_limit_is', 'What is holding it back right now: ') + limName + '.')
+          ]), 'grow-survival');
+        }
+
         pushKeyed(kids, card([
           heading(__alloT('stem.treelab.conditions', 'Conditions'),
             __alloT('stem.treelab.conditions_sub', 'Change one thing at a time and watch which factor takes over as the limit.')),
