@@ -31,6 +31,165 @@
 const AE_STORAGE_KEY = 'allo_educator_evaluation_workspace_v1';
 const AE_ONBOARDING_KEY = 'allo_educator_evaluation_onboarding_v1';
 const AE_EXPORT_KIND = 'alloflow-educator-evaluation-workspace';
+// ── Educator packets ────────────────────────────────────────────────────────────────────
+// A packet is one educator's own evaluation, sent as an email attachment so a principal can
+// share it without a district portal deployment. It ships as HTML with the data embedded in a
+// script tag: opened directly it renders as a readable evaluation, and imported into AlloFlow
+// it round-trips as structured records. Plain .json was the obvious choice but is stripped by
+// some district mail filters, and an attachment nobody can open without the tool is worse for
+// the educator than one they can just read.
+const AE_PACKET_KIND = 'alloflow-educator-evaluation-packet';
+const AE_PACKET_SCRIPT_ID = 'allo-evaluation-packet';
+// The only fields a returned packet may write. A response file is hand-editable JSON, so every
+// other field -- ratings, evidence, evaluator comments, audit entries -- must be dropped on
+// merge. This list is the line between "the educator added their input" and "the educator
+// rewrote their evaluation".
+const AE_PACKET_TEACHER_FIELDS = ['educatorStatement'];
+const AE_PACKET_RECORD_FIELDS = ['reflection', 'reflectionSubmittedAt', 'teacherAcknowledgedAt'];
+function aePacketEmbed(json) {
+  // Escape '<' so the payload can never close the host script element early. The replacement
+  // must be the literal six-character sequence, not '<', which is simply '<' again.
+  return String(json).split('<').join('\\u003c');
+}
+function aePacketExtract(text) {
+  // Index-based rather than a built RegExp: the string form needed doubled backslashes and
+  // silently compiled to ([sS]*?), which matches only the letters s and S.
+  const raw = String(text == null ? '' : text).trim();
+  if (raw.charAt(0) === '{') return raw;
+  const marker = raw.indexOf('id="' + AE_PACKET_SCRIPT_ID + '"');
+  if (marker === -1) return raw;
+  const opens = raw.indexOf('>', marker);
+  const closes = raw.indexOf('</' + 'script>', opens);
+  if (opens === -1 || closes === -1) return raw;
+  return raw.slice(opens + 1, closes).trim();
+}
+
+
+function aeEducatorPacket(workspace, teacherId, options) {
+  const opts = options || {};
+  const source = workspace || {};
+  const teacher = (source.teachers || []).filter(function (item) { return item && item.id === teacherId; })[0];
+  if (!teacher) return null;
+  const mine = function (list) {
+    return (list || []).filter(function (item) { return item && item.teacherId === teacherId; });
+  };
+  const stamp = function (list) {
+    return mine(list).map(function (item) {
+      const copy = JSON.parse(JSON.stringify(item));
+      copy.sourceUpdatedAt = item.updatedAt || item.publishedAt || null;
+      return copy;
+    });
+  };
+  const packetTeacher = JSON.parse(JSON.stringify(teacher));
+  const config = source.config || {};
+  if (!opts.includeNames) {
+    packetTeacher.name = packetTeacher.code || 'Educator';
+    packetTeacher.evaluator = 'Evaluator';
+  }
+  return {
+    kind: AE_PACKET_KIND,
+    version: 1,
+    packetType: 'educator',
+    packetId: aeId('packet'),
+    issuedAt: aeNow(),
+    teacherId: teacherId,
+    includeNames: !!opts.includeNames,
+    config: {
+      organization: config.organization || '',
+      academicYear: config.academicYear || '',
+      evaluatorName: opts.includeNames ? (config.evaluatorName || '') : 'Evaluator',
+    },
+    teachers: [packetTeacher],
+    walkthroughs: stamp(source.walkthroughs),
+    observations: stamp(source.observations),
+    spms: stamp(source.spms),
+    comments: mine(source.comments),
+  };
+}
+
+function aeResponsePacket(workspace, teacherId, sourcePacketId) {
+  const source = workspace || {};
+  const teacher = (source.teachers || []).filter(function (item) { return item && item.id === teacherId; })[0];
+  if (!teacher) return null;
+  const records = [];
+  ['walkthroughs', 'observations', 'spms'].forEach(function (collection) {
+    (source[collection] || []).forEach(function (item) {
+      if (!item || item.teacherId !== teacherId) return;
+      const entry = { collection: collection, recordId: item.id, sourceUpdatedAt: item.sourceUpdatedAt || item.updatedAt || item.publishedAt || null };
+      let carries = false;
+      AE_PACKET_RECORD_FIELDS.forEach(function (field) {
+        if (item[field] == null || item[field] === '') return;
+        entry[field] = item[field];
+        carries = true;
+      });
+      if (carries) records.push(entry);
+    });
+  });
+  return {
+    kind: AE_PACKET_KIND,
+    version: 1,
+    packetType: 'response',
+    packetId: aeId('packet'),
+    sourcePacketId: sourcePacketId || '',
+    issuedAt: aeNow(),
+    teacherId: teacherId,
+    educatorStatement: teacher.educatorStatement || null,
+    records: records,
+    comments: (source.comments || []).filter(function (item) {
+      return item && item.teacherId === teacherId && item.role === 'Teacher';
+    }),
+  };
+}
+
+// Applies ONLY the educator-owned fields. A response file is hand-editable JSON, so anything
+// outside the allow-lists is counted and dropped rather than written. `stale` reports records
+// the evaluator changed after the packet was issued, so a correction made in response to the
+// educator is visible instead of silently overwriting what they replied to.
+function aeMergeResponsePacket(workspace, packet) {
+  const result = { applied: 0, ignored: 0, stale: [], teacherId: '', ok: false };
+  if (!workspace || !packet || packet.packetType !== 'response') return result;
+  const teacherId = packet.teacherId;
+  const teacher = (workspace.teachers || []).filter(function (item) { return item && item.id === teacherId; })[0];
+  if (!teacher) return result;
+  result.ok = true;
+  result.teacherId = teacherId;
+  const statement = packet.educatorStatement;
+  if (statement && typeof statement.text === 'string' && statement.text.trim()) {
+    teacher.educatorStatement = { text: statement.text, updatedAt: statement.updatedAt || packet.issuedAt };
+    result.applied += 1;
+  }
+  (packet.records || []).forEach(function (entry) {
+    const list = entry && workspace[entry.collection];
+    if (!Array.isArray(list)) { result.ignored += 1; return; }
+    const record = list.filter(function (item) {
+      return item && item.id === entry.recordId && item.teacherId === teacherId;
+    })[0];
+    if (!record) { result.ignored += 1; return; }
+    const liveStamp = record.updatedAt || record.publishedAt || null;
+    if (entry.sourceUpdatedAt && liveStamp && entry.sourceUpdatedAt !== liveStamp) result.stale.push(entry.recordId);
+    Object.keys(entry).forEach(function (key) {
+      if (key === 'collection' || key === 'recordId' || key === 'sourceUpdatedAt') return;
+      if (AE_PACKET_RECORD_FIELDS.indexOf(key) === -1) { result.ignored += 1; return; }
+      if (entry[key] == null) return;
+      record[key] = entry[key];
+      result.applied += 1;
+    });
+  });
+  (packet.comments || []).forEach(function (comment) {
+    if (!comment || comment.teacherId !== teacherId || !comment.text) { result.ignored += 1; return; }
+    if (!Array.isArray(workspace.comments)) workspace.comments = [];
+    const already = workspace.comments.some(function (item) { return item && item.id === comment.id; });
+    if (already) return;
+    workspace.comments.push({
+      id: comment.id, recordType: comment.recordType, recordId: comment.recordId,
+      teacherId: teacherId, text: comment.text, role: 'Teacher',
+      author: comment.author || 'Educator', at: comment.at || packet.issuedAt,
+    });
+    result.applied += 1;
+  });
+  return result;
+}
+
 const AE_FRAMEWORK = 'pa-act13-classroom-2021';
 
 // ── Framework profiles (2026-08-16) ─────────────────────────────────────────
@@ -1379,7 +1538,7 @@ function AeSpm({ workspace, selectedTeacher, setSelectedTeacherId, role, createS
   </div>;
 }
 
-function AeAuditExport({ workspace, selectedTeacher, exportWorkspace, exportCsv, exportSummary, exportGrowthSnapshot, importWorkspace, resetWorkspace, role, isRemote = false }) {
+function AeAuditExport({ workspace, selectedTeacher, exportWorkspace, exportCsv, exportSummary, exportGrowthSnapshot, importWorkspace, resetWorkspace, role, isRemote = false, exportEducatorPacket, exportResponsePacket, packetIncludeNames, setPacketIncludeNames }) {
   const [filter, setFilter] = React.useState('selected');
   const [clearStep, setClearStep] = React.useState(false);
   const fileRef = React.useRef(null);
@@ -1395,7 +1554,7 @@ function AeAuditExport({ workspace, selectedTeacher, exportWorkspace, exportCsv,
       {isRemote ? <section className="ae-card ae-span-12"><h3>District exports unavailable</h3><div className="ae-note ae-warn" style={{ marginTop: 12 }}><strong>District export policy not configured.</strong><br/>Downloads, imports, and reset are disabled for every portal role until the LEA approves an export policy and an audited server export workflow is implemented.</div></section> : isEvaluator ? <section className="ae-card ae-span-5">
         <h3>Export and transfer</h3>
         <p className="ae-sub">Exports can contain confidential personnel information. Store and transmit them only through district-authorized systems.</p>
-        <div className="ae-actions" style={{ marginTop: 12 }}><button type="button" className="ae-btn" onClick={exportWorkspace}>Export workspace JSON</button><button type="button" className="ae-btn" onClick={exportCsv}>Export status CSV</button><button type="button" className="ae-btn" disabled={!selectedTeacher} onClick={exportSummary}>Workflow summary HTML</button><button type="button" className="ae-btn" disabled={!selectedTeacher} onClick={exportGrowthSnapshot} title="Formative, no ratings: published bright spots, evidence progress, and documentation coverage — identical for educator and evaluator.">Growth snapshot (formative)</button></div>
+        <div className="ae-actions" style={{ marginTop: 12 }}><button type="button" className="ae-btn" onClick={exportWorkspace}>Export workspace JSON</button><button type="button" className="ae-btn" onClick={exportCsv}>Export status CSV</button><button type="button" className="ae-btn" disabled={!selectedTeacher} onClick={exportSummary}>Workflow summary HTML</button><button type="button" className="ae-btn" disabled={!selectedTeacher} onClick={exportEducatorPacket}>Educator packet (send to educator)</button><label className="ae-field" style={{ marginTop: 8 }}><input type="checkbox" style={{ width: 24, height: 24 }} checked={packetIncludeNames} onChange={(event) => setPacketIncludeNames(event.target.checked)} /> <span>Include names in the packet (uncheck to send codes only)</span></label><p className="ae-sub">The packet carries only the selected educator’s records. Send it as an email attachment; they can read it in a browser or import it to reply.</p><button type="button" className="ae-btn" disabled={!selectedTeacher} onClick={exportGrowthSnapshot} title="Formative, no ratings: published bright spots, evidence progress, and documentation coverage — identical for educator and evaluator.">Growth snapshot (formative)</button></div>
         <hr style={{ border: 0, borderTop: '1px solid #d8deea', margin: '18px 0' }}/>
         <h4>Import another device export</h4>
         <p className="ae-sub">Import replaces this on-device workspace after validation. Export first if you need a backup.</p>
@@ -1403,7 +1562,7 @@ function AeAuditExport({ workspace, selectedTeacher, exportWorkspace, exportCsv,
         <input ref={fileRef} hidden tabIndex={-1} aria-label="Import evaluation workspace JSON" type="file" accept="application/json,.json" onChange={(event) => { const file = event.target.files && event.target.files[0]; if (file) importWorkspace(file); event.target.value = ''; }}/>
         <div className="ae-note ae-warn" style={{ marginTop: 16 }}>This export assists front-end supervision work. {AE_ACTIVE_FW.id === 'pa_act13' ? 'PEERS or your LEA-authorized system' : 'Your district-authorized PEPG record system'} remains the official summative rating record for this MVP.</div>
         {workspace.config.sampleMode && <div style={{ marginTop: 18 }}><h4>Sample workspace</h4>{!clearStep ? <button type="button" className="ae-btn ae-btn-danger" onClick={() => setClearStep(true)}>Replace sample with blank workspace</button> : <div className="ae-note ae-danger"><strong>This removes all current on-device records.</strong><div className="ae-actions" style={{ marginTop: 8 }}><button className="ae-btn" type="button" onClick={() => setClearStep(false)}>Cancel</button><button className="ae-btn ae-btn-danger" type="button" onClick={() => { setClearStep(false); resetWorkspace(); }}>Confirm and start blank</button></div></div>}</div>}
-      </section> : <section className="ae-card ae-span-12"><h3>My copy</h3><p className="ae-sub">Download only the selected educator’s workflow summary.</p><button type="button" className="ae-btn" disabled={!selectedTeacher} onClick={exportSummary}>Download my summary HTML</button><button type="button" className="ae-btn" disabled={!selectedTeacher} onClick={exportGrowthSnapshot}>Download my growth snapshot</button><div className="ae-note" style={{ marginTop: 12 }}>Teacher view cannot export or import the full workspace or view organization-wide audit events.</div></section>}
+      </section> : <section className="ae-card ae-span-12"><h3>My copy</h3><p className="ae-sub">Download only the selected educator’s workflow summary.</p><button type="button" className="ae-btn" disabled={!selectedTeacher} onClick={exportSummary}>Download my summary HTML</button><button type="button" className="ae-btn" disabled={!selectedTeacher} onClick={exportResponsePacket}>Export my response to send back</button><p className="ae-sub">Your statement, reflections and acknowledgements only. Ratings and evidence are not included, and cannot be changed by this file.</p><button type="button" className="ae-btn" disabled={!selectedTeacher} onClick={exportGrowthSnapshot}>Download my growth snapshot</button><div className="ae-note" style={{ marginTop: 12 }}>Teacher view cannot export or import the full workspace or view organization-wide audit events.</div></section>}
     </div>
   </div>;
 }
@@ -2009,13 +2168,73 @@ function EducatorEvaluationPanel(props) {
     const html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Evaluation workflow summary</title><style>body{font:14px system-ui;color:#172033;max-width:850px;margin:40px auto;padding:0 24px}h1{color:#173e70}table{border-collapse:collapse;width:100%;margin:14px 0}th,td{border:1px solid #ccd5e2;padding:8px;text-align:left}.notice{padding:12px;background:#fff8e8;border:1px solid #e5bd59}</style></head><body><h1>Educator evaluation workflow summary</h1><p><strong>' + aeEsc(workspace.config.organization) + '</strong> · ' + aeEsc(workspace.config.academicYear) + '</p><h2>' + aeEsc(selectedTeacher.name) + ' · ' + aeEsc(selectedTeacher.code) + '</h2><p>' + aeEsc(selectedTeacher.assignment) + ' · evaluator ' + aeEsc(selectedTeacher.evaluator) + '</p><h2>Weighting snapshot</h2><table><thead><tr><th>Factor</th><th>Weight</th></tr></thead><tbody>' + profile.map((part) => '<tr><td>' + aeEsc(part.label) + '</td><td>' + part.weight + '%</td></tr>').join('') + '</tbody></table><h2>' + aeEsc(AE_ACTIVE_FW.practiceLabel) + ' ratings</h2><table><thead><tr><th>Domain</th><th>' + (AE_ACTIVE_FW.id === 'pa_act13' ? 'Weight within O&amp;P' : 'Share (equal average)') + '</th><th>Rating</th></tr></thead><tbody>' + AE_DOMAINS.map((domain) => '<tr><td>' + aeEsc(domain.label) + '</td><td>' + (AE_ACTIVE_FW.id === 'pa_act13' ? domain.weight : 25) + '%</td><td>' + aeEsc(selectedTeacher.ratings.domains[domain.id] == null ? 'Not rated' : selectedTeacher.ratings.domains[domain.id]) + '</td></tr>').join('') + '</tbody></table><p><strong>Calculation preview:</strong> ' + (score == null ? 'Incomplete' : score.toFixed(2) + ' · ' + aeBand(score)) + '</p><p class="notice"><strong>Workflow aid only.</strong> ' + (AE_ACTIVE_FW.id === 'pa_act13' ? 'This is not an official PDE rating form or proof of PEERS release. Verify all inputs and complete the LEA-authorized process.' : 'This is not an official PEPG summative form. Verify all inputs against your district’s PEPG plan and complete the district-authorized process.') + '</p><p>Generated ' + aeEsc(aeDateTime(aeNow())) + '</p></body></html>';
     aeDownload('evaluation-summary-' + selectedTeacher.code + '-' + aeToday() + '.html', 'text/html;charset=utf-8', html); commit(() => {}, { teacherId: selectedTeacher.id, event: 'EXPORTED', summary: 'Educator workflow summary exported', entityType: 'evaluation', entityId: selectedTeacher.id }, 'Summary export created');
   };
+  const [packetIncludeNames, setPacketIncludeNames] = React.useState(true);
+  const exportEducatorPacket = () => {
+    if (!selectedTeacher) return;
+    const packet = aeEducatorPacket(workspace, selectedTeacher.id, { includeNames: packetIncludeNames });
+    if (!packet) { addToast('Export failed: no record for that educator.', 'error'); return; }
+    const who = packetIncludeNames ? selectedTeacher.name : selectedTeacher.code;
+    const readable = '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Your evaluation packet</title>'
+      + '<style>body{font:15px system-ui;color:#172033;max-width:820px;margin:40px auto;padding:0 24px;line-height:1.6}'
+      + 'h1{color:#173e70}.notice{padding:12px;background:#eef6ff;border:1px solid #93b8e8;border-radius:6px}</style></head><body>'
+      + '<h1>Your evaluation</h1>'
+      + '<p><strong>' + aeEsc(who) + '</strong> · ' + aeEsc(packet.config.organization) + ' · ' + aeEsc(packet.config.academicYear) + '</p>'
+      + '<p class="notice">You can read this file as it is. To add your statement, a reflection, or an acknowledgement, '
+      + 'open AlloFlow Educator Evaluation, switch to the Teacher role, and import this same file. '
+      + 'Your response exports as a second file to send back.</p>'
+      + '<p>Issued ' + aeEsc(aeDateTime(packet.issuedAt)) + '. This packet contains only your own records.</p>'
+      + '<script type="application/json" id="' + AE_PACKET_SCRIPT_ID + '">' + aePacketEmbed(JSON.stringify(packet)) + '<\/script>'
+      + '</body></html>';
+    aeDownload('evaluation-packet-' + selectedTeacher.code + '-' + aeToday() + '.html', 'text/html;charset=utf-8', readable);
+    commit(() => {}, { teacherId: selectedTeacher.id, event: 'EXPORTED', summary: 'Educator packet issued' + (packetIncludeNames ? '' : ' (names withheld)'), entityType: 'evaluation', entityId: selectedTeacher.id }, 'Educator packet created');
+  };
+  const exportResponsePacket = () => {
+    if (!selectedTeacher) return;
+    const packet = aeResponsePacket(workspace, selectedTeacher.id, workspace.receivedPacketId || '');
+    if (!packet) { addToast('Export failed: no record to respond to.', 'error'); return; }
+    aeDownload('evaluation-response-' + selectedTeacher.code + '-' + aeToday() + '.json', 'application/json', JSON.stringify(packet, null, 2));
+    commit(() => {}, { teacherId: selectedTeacher.id, event: 'EXPORTED', summary: 'Educator response packet created', entityType: 'evaluation', entityId: selectedTeacher.id }, 'Response packet created');
+  };
   const importWorkspace = (file) => {
-    if (!file || file.size > 5 * 1024 * 1024) { addToast('Import failed: choose a JSON export smaller than 5 MB.', 'error'); return; }
+    if (!file || file.size > 5 * 1024 * 1024) { addToast('Import failed: choose an export or packet smaller than 5 MB.', 'error'); return; }
     const reader = new FileReader();
     reader.onerror = () => addToast('Import failed: the selected file could not be read.', 'error');
     reader.onload = () => {
       try {
-        const parsed = JSON.parse(String(reader.result || ''));
+        const parsed = JSON.parse(aePacketExtract(String(reader.result || '')));
+        if (parsed.kind === AE_PACKET_KIND && Number(parsed.version) === 1) {
+          if (parsed.packetType === 'response') {
+            // Evaluator side: fold the educator's own words back in, nothing else.
+            const merged = aeClone(workspaceRef.current);
+            const outcome = aeMergeResponsePacket(merged, parsed);
+            if (!outcome.ok) throw new Error('This response does not match an educator in this workspace.');
+            const staleNote = outcome.stale.length ? ' ' + outcome.stale.length + ' record(s) changed after the packet was issued.' : '';
+            const droppedNote = outcome.ignored ? ' ' + outcome.ignored + ' field(s) outside the educator-owned set were ignored.' : '';
+            aeAuditEvent(merged, {
+              teacherId: outcome.teacherId, event: 'IMPORTED',
+              summary: 'Educator response imported from packet ' + (parsed.packetId || 'unknown') + ' issued ' + aeDate(parsed.issuedAt) + '.' + staleNote + droppedNote,
+              entityType: 'evaluation', entityId: outcome.teacherId,
+            }, (merged.teachers.find((item) => item.id === outcome.teacherId) || {}).name || 'Educator');
+            workspaceRef.current = merged;
+            setWorkspace(merged);
+            setSelectedTeacherId(outcome.teacherId);
+            addToast('Educator response merged: ' + outcome.applied + ' field(s).' + staleNote + droppedNote, outcome.stale.length ? 'info' : 'success');
+            return;
+          }
+          if (parsed.packetType === 'educator') {
+            // Educator side: this packet is their own record, so it becomes their workspace.
+            const own = aeNormalizeWorkspace(Object.assign({}, parsed, { kind: AE_EXPORT_KIND }));
+            if (!own) throw new Error('Invalid packet structure.');
+            own.receivedPacketId = parsed.packetId || '';
+            workspaceRef.current = own;
+            setWorkspace(own);
+            setSelectedTeacherId((own.teachers[0] && own.teachers[0].id) || '');
+            setTab('overview');
+            addToast('Your evaluation packet was imported', 'success');
+            return;
+          }
+          throw new Error('Unrecognised packet type.');
+        }
         if (parsed.kind !== AE_EXPORT_KIND || Number(parsed.version) !== 1) throw new Error('Not an AlloFlow Educator Evaluation v1 export.');
         const normalized = aeNormalizeWorkspace(parsed);
         if (!normalized) throw new Error('Invalid workspace structure.');
@@ -2075,7 +2294,7 @@ href="https://alloflow-cdn.pages.dev/educator-evaluation-manual" target="_blank"
       {tab === 'walkthroughs' && <AeWalkthroughs workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} createWalkthrough={createWalkthrough} publishWalkthrough={publishWalkthrough} addComment={addComment} acknowledgeWalkthrough={acknowledgeWalkthrough} isRemote={isRemote}/>}
       {tab === 'formal' && <AeFormalObservations workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} createObservation={createObservation} updateObservation={updateObservation} updateTeacher={updateTeacher} addComment={addComment}/>}
       {tab === 'spm' && <AeSpm workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} createSpm={createSpm} updateSpm={updateSpm} updateTeacher={updateTeacher} addComment={addComment}/>}
-      {tab === 'audit' && <AeAuditExport workspace={workspace} selectedTeacher={selectedTeacher} exportWorkspace={exportWorkspace} exportCsv={exportCsv} exportSummary={exportSummary} exportGrowthSnapshot={exportGrowthSnapshot} importWorkspace={importWorkspace} resetWorkspace={resetWorkspace} role={role} isRemote={isRemote}/>}
+      {tab === 'audit' && <AeAuditExport workspace={workspace} selectedTeacher={selectedTeacher} exportWorkspace={exportWorkspace} exportCsv={exportCsv} exportSummary={exportSummary} exportEducatorPacket={exportEducatorPacket} exportResponsePacket={exportResponsePacket} packetIncludeNames={packetIncludeNames} setPacketIncludeNames={setPacketIncludeNames} exportGrowthSnapshot={exportGrowthSnapshot} importWorkspace={importWorkspace} resetWorkspace={resetWorkspace} role={role} isRemote={isRemote}/>}
       {tab === 'about' && <AeAbout workspace={workspace} updateConfig={updateConfig} role={role} isRemote={isRemote} currentUser={remoteState.currentUser} repository={repository} standalone={standalone} portalUrl={(remoteState.deployment && remoteState.deployment.portalUrl) || ''}/>}
     </main>
     <footer className="ae-footer"><span>No AI scoring · evidence and judgments stay separate · published records are append-only in the workflow model</span><span>{AE_ACTIVE_FW.id === 'pa_act13' ? <><a href="https://www.pa.gov/agencies/education/programs-and-services/educators/educator-effectiveness" target="_blank" rel="noreferrer">PDE Educator Effectiveness</a> · <a href="https://www.pdesas.org/Page/Viewer/ViewPage/75" target="_blank" rel="noreferrer">Act 13 Toolkit</a></> : <><a href="https://www.maine.gov/doe/educators/educatoreval/educator" target="_blank" rel="noreferrer">Maine DOE Educator Effectiveness</a> · <a href="https://www.law.cornell.edu/regulations/maine/department-05/division-071/chapter-180" target="_blank" rel="noreferrer">PEPG Rule Ch. 180</a></>}</span></footer><div className="ae-live" aria-live="polite" aria-atomic="true"><span key={liveMessage.id}>{liveMessage.text}</span></div>
