@@ -311,5 +311,9 @@
   ],
   "student_analytics_module.js": [
     "Chart"
+  ],
+  "view_misc_modals_module.js": [
+    "WebAssembly",
+    "isSecureContext"
   ]
 }
