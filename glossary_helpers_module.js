@@ -311,7 +311,11 @@ ${roots.map((r, i) => `                      ${i}. root "${r.root}" — origin l
                 if (Object.keys(r.meaningByLang).length === 0) delete r.meaningByLang;
             });
         }
-        const primaryProse = etymologyByLang[leveledTextLanguage] || etymologyByLang['English']
+        // The legacy `etymology` field is contractually the English prose (the prompt documents
+        // it as "English prose version (legacy field, mirrors etymologyByLang.English)"), and the
+        // glossary's base column always shows the English definition. Keying this to
+        // leveledTextLanguage stored e.g. Spanish prose in the field read as English.
+        const primaryProse = etymologyByLang['English'] || etymologyByLang[leveledTextLanguage]
             || etymologyByLang[Object.keys(etymologyByLang)[0]] || '';
         if (!primaryProse || primaryProse === 'NONE') {
             addToast(t('glossary.actions.etymology_none') || "No useful etymology for this term.", "info");

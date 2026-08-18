@@ -1857,7 +1857,7 @@ function GlossaryView(props) {
     type: "button",
     onClick: e => {
       e.stopPropagation();
-      handleGlossarySpeak(generatedContent?.data[flashcardIndex], 'term', generatedContent?.data[flashcardIndex].term, 'fc-front', generatedContent?.data[flashcardIndex].termLanguage || leveledTextLanguage || 'English');
+      handleGlossarySpeak(generatedContent?.data[flashcardIndex], 'term', generatedContent?.data[flashcardIndex].term, 'fc-front', generatedContent?.data[flashcardIndex].termLanguage || 'English');
     },
     "aria-label": `Read term: ${generatedContent?.data[flashcardIndex].term}`,
     title: t('flashcards.tooltip_audio'),
@@ -1903,7 +1903,7 @@ function GlossaryView(props) {
     type: "button",
     onClick: e => {
       e.stopPropagation();
-      handleGlossarySpeak(generatedContent?.data[flashcardIndex], 'term', generatedContent?.data[flashcardIndex].term, 'fc-front-term', generatedContent?.data[flashcardIndex].termLanguage || leveledTextLanguage || 'English');
+      handleGlossarySpeak(generatedContent?.data[flashcardIndex], 'term', generatedContent?.data[flashcardIndex].term, 'fc-front-term', generatedContent?.data[flashcardIndex].termLanguage || 'English');
     },
     "aria-label": `Read term: ${generatedContent?.data[flashcardIndex].term}`,
     className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-inherit [font:inherit] cursor-pointer rounded  focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
@@ -1913,7 +1913,7 @@ function GlossaryView(props) {
     type: "button",
     onClick: e => {
       e.stopPropagation();
-      handleGlossarySpeak(generatedContent?.data[flashcardIndex], 'definition', generatedContent?.data[flashcardIndex].def, 'fc-front-def', generatedContent?.data[flashcardIndex].definitionLanguage || leveledTextLanguage || 'English');
+      handleGlossarySpeak(generatedContent?.data[flashcardIndex], 'definition', generatedContent?.data[flashcardIndex].def, 'fc-front-def', generatedContent?.data[flashcardIndex].definitionLanguage || 'English');
     },
     "aria-label": `${t('common.click_read_aloud')}: ${generatedContent?.data[flashcardIndex].term} definition`,
     className: "min-h-11 max-w-full inline-flex items-center justify-center appearance-none border-0 bg-transparent p-0 text-center text-inherit [font:inherit] cursor-pointer rounded  focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
@@ -1989,7 +1989,7 @@ function GlossaryView(props) {
     type: "button",
     onClick: e => {
       e.stopPropagation();
-      handleGlossarySpeak(generatedContent?.data[flashcardIndex], 'definition', generatedContent?.data[flashcardIndex].def, 'fc-back-def', generatedContent?.data[flashcardIndex].definitionLanguage || leveledTextLanguage || 'English');
+      handleGlossarySpeak(generatedContent?.data[flashcardIndex], 'definition', generatedContent?.data[flashcardIndex].def, 'fc-back-def', generatedContent?.data[flashcardIndex].definitionLanguage || 'English');
     },
     "aria-label": `${t('common.click_read_aloud')}: ${generatedContent?.data[flashcardIndex].term} definition`,
     title: t('flashcards.tooltip_audio'),
@@ -2727,7 +2727,7 @@ function GlossaryView(props) {
     }, /*#__PURE__*/React.createElement("button", {
       type: "button",
       "aria-label": 'Read term: ' + item.term,
-      onClick: () => handleGlossarySpeak(item, 'term', item.term, `term-${idx}`, item.termLanguage || leveledTextLanguage || 'English'),
+      onClick: () => handleGlossarySpeak(item, 'term', item.term, `term-${idx}`, item.termLanguage || 'English'),
       disabled: isGeneratingAudio && playingContentId !== `term-${idx}`,
       className: `min-h-11 min-w-11 inline-flex items-center justify-center rounded-full transition-colors flex-shrink-0 ${playingContentId === `term-${idx}` ? 'text-red-700 bg-red-50' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`,
       "data-help-key": "glossary_speak_term"
@@ -2779,7 +2779,7 @@ function GlossaryView(props) {
     }, /*#__PURE__*/React.createElement("button", {
       type: "button",
       "aria-label": 'Read definition for ' + item.term,
-      onClick: () => handleGlossarySpeak(item, 'definition', item.def, `def-${idx}`, item.definitionLanguage || leveledTextLanguage || 'English'),
+      onClick: () => handleGlossarySpeak(item, 'definition', item.def, `def-${idx}`, item.definitionLanguage || 'English'),
       disabled: isGeneratingAudio && playingContentId !== `def-${idx}`,
       className: `min-h-11 min-w-11 inline-flex items-center justify-center rounded-full transition-colors flex-shrink-0 ${playingContentId === `def-${idx}` ? 'text-red-700 bg-red-50' : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50'}`
     }, playingContentId === `def-${idx}` && isGeneratingAudio ? /*#__PURE__*/React.createElement(RefreshCw, {
@@ -2807,8 +2807,8 @@ function GlossaryView(props) {
       className: "cursor-pointer text-indigo-700 font-medium hover:text-indigo-900 select-none"
     }, "📜 ", t('glossary.etymology_label') || 'Word roots'), (() => {
       const etyMap = item.etymologyByLang && typeof item.etymologyByLang === 'object' ? item.etymologyByLang : null;
-      const displayLang = leveledTextLanguage || 'English';
-      const etymologyProse = etyMap && (etyMap[displayLang] || etyMap['English'] || etyMap[Object.keys(etyMap)[0]]) || item.etymology || '';
+      const displayLang = 'English'; /* The glossary is deliberately multi-language: the base column is always the English definition (the generation prompt asks for "An English definition") and every teacher language gets its own column. Keying this to leveledTextLanguage put e.g. Spanish word-root prose under the English definition whenever the output language was not English. */
+      const etymologyProse = etyMap && (etyMap['English'] || etyMap[displayLang]) || item.etymology || '';
       return /*#__PURE__*/React.createElement("div", {
         className: "mt-1 pl-4 border-l-2 border-indigo-200 space-y-2"
       }, etyMap && Object.keys(etyMap).length > 1 && /*#__PURE__*/React.createElement("div", {
