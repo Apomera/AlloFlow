@@ -4092,7 +4092,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                   // A tree is a TALL subject. At 320 the box came out 842x320 (2.6:1) and
                   // the shell's 42-degree VERTICAL field of view cropped the crown off the
                   // top of every mature tree.
-                  width: '100%', height: 420, borderRadius: 10, overflow: 'hidden',
+                  //
+                  // Responsive rather than a fixed 420: a laptop at 900px tall and a 27in
+                  // monitor were getting an identically small window on the one thing the
+                  // tool is actually about. The floor keeps the old height as the WORST
+                  // case, so nothing shrinks; the ceiling stops the controls below being
+                  // pushed off-screen on a very tall display. The shell's ResizeObserver
+                  // re-frames on a material aspect change, and frame() already raises
+                  // fill and pitch for a squarer box, so the camera follows this on its
+                  // own.
+                  width: '100%', height: 'clamp(420px, 58vh, 660px)', borderRadius: 10, overflow: 'hidden',
                   background: isDark ? '#020617' : '#e2e8f0', border: '1px solid ' + T.border
                 }
             }),

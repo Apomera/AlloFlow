@@ -426,6 +426,11 @@
                 specular: props.contrast ? 0x000000 : 0x6b7688
               });
             }
+            // Everything added ABOVE is shell-owned (background, fog, three lights).
+            // Everything cfg.buildScene adds lands after it, so this index is the
+            // boundary a content-only rebuild removes from. Recorded rather than
+            // assumed, so adding a shell light later cannot silently break it.
+            var shellChildCount = scene.children.length;
             var content = cfg.buildScene(THREE, {
               scene: scene, contrast: props.contrast, dark: props.dark,
               wantShadow: wantShadow, trim: trim, partColor: partColor, parts: cfg.parts,
@@ -469,6 +474,8 @@
               raycaster: new THREE.Raycaster(), pointer: new THREE.Vector2(),
               builtDark: props.dark, builtContrast: props.contrast, builtPhase: (props.phase || 0),
               builtSceneKey: (props.sceneKey || ''),
+              shellChildCount: shellChildCount,
+              wantShadow: wantShadow, trim: trim, partColor: partColor,
               paused: false, io: null,
               yaw: cfg.home.yaw, pitch: cfg.home.pitch, dist: cfg.home.dist,
               dragging: false, lastX: 0, lastY: 0, moved: 0,
@@ -532,9 +539,28 @@
             // Theme AND phase are baked at build time. The tyre scene changes shape
             // as the procedure advances (car lifts, wheel comes off), so a phase
             // change rebuilds exactly like a theme change does.
-            if (S.builtDark !== props.dark || S.builtContrast !== props.contrast ||
-                S.builtPhase !== (props.phase || 0) ||
-                S.builtSceneKey !== (props.sceneKey || '')) {
+            // A THEME change (dark/contrast) is baked into the background, fog and
+            // the three lights, so it still needs the full rebuild below. A PHASE or
+            // sceneKey change only alters scene CONTENT, and content can be swapped
+            // in place: keep the renderer, its canvas, the camera and the handlers.
+            //
+            // This used to teardown()+start() for every one of them, which removes the
+            // canvas from the DOM, disposes the renderer and calls forceContextLoss().
+            // The container showed through for the gap, so any tool whose key changes
+            // on a clock strobed: Tree Lab puts `season` in its sceneKey, so every
+            // season transition flashed black, and at 25 yr/s that is a GPU context
+            // destroyed and recreated ~100 times a run.
+            var themeChanged = S.builtDark !== props.dark || S.builtContrast !== props.contrast;
+            var contentChanged = S.builtPhase !== (props.phase || 0) ||
+                S.builtSceneKey !== (props.sceneKey || '');
+            // Keep the loop alive. The full-rebuild path below returns safely because
+            // start() schedules its own frame; this path has no start(), so returning
+            // without re-arming rAF silently froze the viewer after ONE content swap.
+            if (!themeChanged && contentChanged && rebuildContent(props)) {
+              S.raf = requestAnimationFrame(frame);
+              return;
+            }
+            if (themeChanged || contentChanged) {
               var node = S.node;
               var keep = { yaw: S.yaw, pitch: S.pitch, dist: S.dist };
               teardown();
@@ -907,6 +933,74 @@
             } catch (e) {}
             S = null;
             status = 'idle';
+          }
+
+          // Swap scene CONTENT without touching the renderer, canvas or camera.
+          // Returns false if anything is not as expected, so the caller falls back to
+          // the full teardown+start rather than leaving a half-built scene on screen.
+          function rebuildContent(props) {
+            if (!S || !S.THREE || typeof cfg.buildScene !== 'function') return false;
+            if (typeof S.shellChildCount !== 'number') return false;
+            var THREE = S.THREE;
+            try {
+              // Remove and dispose only what the previous content added. Shell-owned
+              // lights, fog and background sit below shellChildCount and stay put,
+              // which is why the camera does not have to be rebuilt either.
+              var doomed = S.scene.children.slice(S.shellChildCount);
+              for (var i = 0; i < doomed.length; i++) S.scene.remove(doomed[i]);
+              var geos = new Set(), mats = new Set(), texs = new Set();
+              var slots = ['map', 'alphaMap', 'aoMap', 'bumpMap', 'displacementMap', 'emissiveMap',
+                'envMap', 'lightMap', 'metalnessMap', 'normalMap', 'roughnessMap', 'specularMap'];
+              for (var di = 0; di < doomed.length; di++) {
+                doomed[di].traverse(function (o) {
+                  if (o.geometry && o.geometry.dispose && !geos.has(o.geometry)) { geos.add(o.geometry); o.geometry.dispose(); }
+                  if (!o.material) return;
+                  var ms = Array.isArray(o.material) ? o.material : [o.material];
+                  ms.forEach(function (m) {
+                    if (!m || mats.has(m)) return;
+                    mats.add(m);
+                    for (var ti = 0; ti < slots.length; ti++) {
+                      var tex = m[slots[ti]];
+                      if (tex && tex.dispose && !texs.has(tex)) { texs.add(tex); tex.dispose(); }
+                    }
+                    if (m.dispose) m.dispose();
+                  });
+                });
+              }
+              // Rebuilt with the SAME flags the shell baked in, not the incoming
+              // props: theme is handled by the full-rebuild path, and reading it from
+              // props here would produce content that disagrees with the lights.
+              var content = cfg.buildScene(THREE, {
+                scene: S.scene, contrast: S.builtContrast, dark: S.builtDark,
+                wantShadow: S.wantShadow, trim: S.trim, partColor: S.partColor, parts: cfg.parts,
+                phase: props.phase || null,
+                sceneProps: props.sceneProps || null,
+                reduced: S.reduced
+              });
+              if (!content || !content.meshes || !content.anchor) return false;
+              S.meshes = content.meshes;
+              S.picks = content.picks;
+              S.contentFrame = (typeof content.frame === 'function') ? content.frame : null;
+              // The selection cage points at the OLD anchor once content is replaced.
+              if (S.selBox) { S.scene.remove(S.selBox); if (S.selBox.geometry && S.selBox.geometry.dispose) S.selBox.geometry.dispose(); if (S.selBox.material && S.selBox.material.dispose) S.selBox.material.dispose(); }
+              var selBox = new THREE.BoxHelper(content.anchor, S.builtContrast ? 0xffff00 : 0xfbbf24);
+              selBox.material.depthTest = false;
+              selBox.material.transparent = true;
+              selBox.material.linewidth = 2;
+              selBox.renderOrder = 999;
+              selBox.visible = false;
+              S.scene.add(selBox);
+              S.selBox = selBox;
+              // Mesh ids are gone, so anything keyed by them has to be dropped or it
+              // points at disposed objects: hover highlight and the levels smoother.
+              S.hovered = null;
+              S.lvl = null;
+              S.builtPhase = (props.phase || 0);
+              S.builtSceneKey = (props.sceneKey || '');
+              return true;
+            } catch (e) {
+              return false;
+            }
           }
 
           function start(THREE, node) {
