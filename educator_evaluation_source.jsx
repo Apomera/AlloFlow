@@ -463,6 +463,64 @@ function aeNormalizeRubric(raw) {
 // The union-protective case is the one that matters most: an adverse rating resting on little or
 // no documented evidence is exactly what a grievance overturns, so flagging it before the record
 // is finalised serves the educator and the evaluator at the same time.
+// AI reflection prompt. Two rules shape this and both are deliberate.
+//
+// 1. It analyses the DOCUMENTATION, never the person. The model is asked whether the evaluator's
+//    own written evidence supports the rating the evaluator assigned, and what other readings the
+//    same evidence allows. It is told not to rate, not to judge the educator, and not to suggest a
+//    score, because a model scoring an educator is the thing a union should refuse.
+// 2. The answer is advisory and is never written into the record. It prompts the human to think;
+//    it does not author part of a personnel file.
+//
+// This sends evaluation text off the device, so it is opt-in per workspace and off by default.
+function aeBuildReflectionPrompt(workspace, teacherId, domains, ratingLabels) {
+  const source = workspace || {};
+  const teacher = (source.teachers || []).filter(function (item) { return item && item.id === teacherId; })[0];
+  if (!teacher) return null;
+  const textOf = function (record) {
+    return ['notes', 'summary', 'evidence', 'text', 'narrative', 'comment']
+      .map(function (field) { return record && typeof record[field] === 'string' ? record[field].trim() : ''; })
+      .filter(Boolean).join(' ').slice(0, 1200);
+  };
+  const published = []
+    .concat((source.walkthroughs || []).filter(function (i) { return i && i.teacherId === teacherId && i.publishedAt; }))
+    .concat((source.observations || []).filter(function (i) { return i && i.teacherId === teacherId && i.publishedAt; }));
+  const evidenceLines = published.map(function (record, index) {
+    const tags = (record.componentTags || []).join(', ');
+    const body = textOf(record);
+    return (index + 1) + '. ' + (tags ? '[' + tags + '] ' : '') + (body || '(no written detail recorded)');
+  });
+  if (!evidenceLines.length) return null;
+  const rated = (teacher.ratings && teacher.ratings.domains) || {};
+  const ratingLines = (domains || []).map(function (domain) {
+    const value = rated[domain.id];
+    if (value == null || value === '') return null;
+    const label = ratingLabels && ratingLabels[String(value)] ? ratingLabels[String(value)] : String(value);
+    return '- ' + domain.label + ': ' + label;
+  }).filter(Boolean);
+  return [
+    'You are helping an evaluator check their own reasoning before they finalise an educator evaluation.',
+    'You are NOT evaluating the educator. Do not assign, suggest, or imply a rating. Do not judge the',
+    'quality of the teaching. Analyse only whether the written evidence below supports the ratings the',
+    'evaluator has assigned, and what other reasonable readings that same evidence allows.',
+    '',
+    'Documented evidence:',
+    evidenceLines.join('\n'),
+    '',
+    ratingLines.length ? 'Ratings the evaluator assigned:' : 'No ratings assigned yet.',
+    ratingLines.join('\n'),
+    '',
+    'Reply with three short sections and nothing else:',
+    '1. ALTERNATIVE READINGS - other plausible explanations for what was observed, including ones',
+    '   favourable to the educator (context, a one-off lesson, a deliberate choice, missing context).',
+    '2. WHERE THE EVIDENCE IS THIN OR CONTRADICTORY - any rating the written evidence does not clearly',
+    '   support, and any place two pieces of evidence point different ways.',
+    '3. WHAT TO GATHER NEXT - concrete evidence that would settle the question either way.',
+    '',
+    'Be brief and specific. If the evidence genuinely supports the ratings, say so plainly.',
+  ].join('\n');
+}
+
 function aeEvidenceSufficiency(workspace, teacherId, options) {
   const opts = options || {};
   const adverseBelow = Number.isFinite(Number(opts.adverseBelow)) ? Number(opts.adverseBelow) : 2;
@@ -1376,7 +1434,7 @@ function AeFrameworkReference() {
   </div>;
 }
 
-function AeRatingComposer({ teacher, role, updateTeacher, evidenceFindings }) {
+function AeRatingComposer({ teacher, role, updateTeacher, evidenceFindings, aiReflectionEnabled, askForReflection, reflection }) {
   const [releaseChecked, setReleaseChecked] = React.useState(false);
   React.useEffect(() => { setReleaseChecked(false); }, [teacher.id]);
   const profile = aeWeightProfile(teacher);
@@ -1409,6 +1467,7 @@ function AeRatingComposer({ teacher, role, updateTeacher, evidenceFindings }) {
       : 'Full transparency into the arithmetic: these are the only inputs that enter your final rating, entered by your evaluator after reviewing your evidence. Nothing else affects the math.'}</p></div>
       <div>{overall === null ? <span className={'ae-chip ' + (role === 'evaluator' ? 'ae-chip-amber' : 'ae-chip-neutral')}>{role === 'evaluator' ? 'Draft · ' + missing.length + ' input' + (missing.length === 1 ? '' : 's') + ' missing' : 'In progress · ' + missing.length + ' component' + (missing.length === 1 ? '' : 's') + ' still ahead in your cycle'}</span> : (AE_ACTIVE_FW.id === 'portland_me' ? <span className="ae-chip ae-chip-blue">{(aePortlandPracticeRating(teacher.ratings.domains) || {}).label}</span> : <span className="ae-chip ae-chip-blue">{aeRoundedScore(overall).toFixed(2)} · {aeBand(overall)}</span>)}</div>
     </div>
+    {role === 'evaluator' && aiReflectionEnabled && <div className="ae-note ae-info" style={{ marginTop: 12 }}><strong>Second read on your own reasoning</strong><p className="ae-help" style={{ marginTop: 4 }}>Asks a model whether the evidence you wrote supports the ratings you assigned, and what else it could mean. Advisory only: nothing it says is stored in the record.</p><button type="button" className="ae-btn" onClick={askForReflection} disabled={reflection.status === 'working'}>{reflection.status === 'working' ? 'Checking…' : 'Ask for alternative readings'}</button>{reflection.status === 'done' && <div style={{ marginTop: 10 }}><p className="ae-help"><strong>Suggestion, not a finding.</strong> You decide what, if anything, to change.</p><pre style={{ whiteSpace: 'pre-wrap', font: 'inherit', margin: 0 }}>{reflection.text}</pre></div>}{reflection.status === 'error' && <p className="ae-help" style={{ marginTop: 8 }}>{reflection.text}</p>}</div>}
     {evidenceFindings && evidenceFindings.length > 0 && <div className={'ae-note ' + (evidenceFindings.some((item) => item.severity === 'high') ? 'ae-warn' : 'ae-info')} style={{ marginTop: 12 }}><strong>{role === 'evaluator' ? 'Check the evidence before you finalise' : 'What the documentation shows'}</strong><ul style={{ margin: '8px 0 0', paddingLeft: 20 }}>{evidenceFindings.map((item, index) => <li key={item.code + '-' + (item.domainId || index)}>{item.message}</li>)}</ul><p className="ae-help" style={{ marginTop: 8 }}>{role === 'evaluator' ? 'Counted from the evidence you tagged, on this device. A rating resting on little documented evidence is the one most likely to be overturned, so this is a prompt to add evidence or revisit the rating, not a judgment about the educator.' : 'Counted from the evidence tagged to your record. You can raise any of these with your evaluator.'}</p></div>}
     <div className="ae-rating-grid" style={{ marginTop: 12 }}>
       {AE_DOMAINS.map((domain) => <div className="ae-rating-card" key={domain.id} style={{ borderTop: '4px solid ' + domain.color }}>
@@ -1449,7 +1508,7 @@ function AeEducatorStatement({ teacher, role, updateTeacher }) {
   </section>;
 }
 
-function AeOverview({ workspace, selectedTeacher, setSelectedTeacherId, role, updateTeacher, setTab }) {
+function AeOverview({ workspace, selectedTeacher, setSelectedTeacherId, role, updateTeacher, setTab, aiReflectionEnabled, askForReflection, reflection }) {
   const evidenceFindings = React.useMemo(() => (selectedTeacher ? aeEvidenceSufficiency(workspace, selectedTeacher.id, { domains: AE_DOMAINS, componentsByDomain: AE_ACTIVE_FW.components || null, expectedPieces: AE_ACTIVE_FW.evidenceTarget || 0 }) : []), [workspace, selectedTeacher]);
   const isEvaluator = role === 'evaluator';
   const visibleTeachers = isEvaluator ? workspace.teachers : (selectedTeacher ? [selectedTeacher] : []);
@@ -1518,7 +1577,7 @@ function AeOverview({ workspace, selectedTeacher, setSelectedTeacherId, role, up
         return <section className="ae-card ae-span-12" aria-labelledby="ae-evidence-count-title"><h3 id="ae-evidence-count-title">Evidence collected this cycle</h3><div className="ae-grid" style={{ marginTop: 10 }}><div className="ae-span-4 ae-stat"><strong>{pieces}</strong><span>portal-tracked evidence pieces</span></div><div className="ae-span-8"><p className="ae-sub">The guidebook calls for at least nine pieces of evidence per cycle across the full range of practice — including an observation cycle, and possibly walk-throughs, student materials, parent communication, surveys, and team-meeting performance. This counter sees only what lives in this portal ({published} published walkthrough{published === 1 ? '' : 's'} + {observed} observation{observed === 1 ? '' : 's'} with published evidence); evidence gathered outside it counts toward the nine as well.</p></div></div></section>;
       })()}
       {selectedTeacher && <AeEducatorStatement teacher={selectedTeacher} role={role} updateTeacher={updateTeacher} />}
-      {selectedTeacher && <section className="ae-span-12"><AeRatingComposer teacher={selectedTeacher} role={role} updateTeacher={updateTeacher} evidenceFindings={evidenceFindings} /></section>}
+      {selectedTeacher && <section className="ae-span-12"><AeRatingComposer teacher={selectedTeacher} role={role} updateTeacher={updateTeacher} evidenceFindings={evidenceFindings} aiReflectionEnabled={aiReflectionEnabled} askForReflection={askForReflection} reflection={reflection} /></section>}
     </div>
   </div>;
 }
@@ -1868,6 +1927,7 @@ function AeAbout({ workspace, updateConfig, role, isRemote = false, currentUser 
         (caught demoing the teacher view, 2026-08-17). */}
     <div className="ae-heading"><div><h2>{role === 'teacher' ? 'About this workspace' : ('Setup, sources, and ' + (isRemote ? 'district records' : 'sharing'))}</h2><p>{role === 'teacher' ? 'Where your records live, who can see them, and how to reach the full manual.' : (isRemote ? 'Review the authenticated repository boundary and the approvals that still belong to your district.' : 'Configure this on-device workspace and see what the district portal adds for shared records.')}</p><p><a className="ae-link" target="_blank" rel="noopener noreferrer" href="https://alloflow-cdn.pages.dev/educator-evaluation-manual">User manual: how to use both versions</a></p></div></div>
     <div className="ae-grid">
+{/* Off by default: this is the only feature that sends evaluation text off the device. */}<div className="ae-field ae-field-wide"><span>AI reflection (optional)</span><label style={{ display: 'flex', gap: 12, alignItems: 'flex-start', marginTop: 6 }}><input type="checkbox" style={{ width: 24, height: 24, flex: '0 0 auto' }} checked={!!workspace.config.aiReflectionEnabled} onChange={(event) => updateConfig('aiReflectionEnabled', event.target.checked)} /><span className="ae-help" style={{ margin: 0 }}>Let an evaluator ask a model to check whether their own written evidence supports the ratings they assigned, and what other readings it allows. <strong>This sends the evidence notes and ratings for that educator to your configured AI provider.</strong> The reply is advisory, is shown to the evaluator only, and is never written into the record. The model is instructed not to rate or judge the educator. Leave this off if your district or contract does not permit AI in evaluation.</span></label></div>
 {/* Custom rubric: a district on a non-Danielson instrument cannot use the built-in domain set, which is the single thing blocking adoption outside Portland and Pennsylvania. */}<div className="ae-field ae-field-wide"><span>Rubric</span><p className="ae-help">Using <strong>{aeEsc ? AE_ACTIVE_FW.name : AE_ACTIVE_FW.name}</strong> <code>{AE_ACTIVE_FW.versionTag}</code>. Load your district's own domains and components as JSON, or download the current rubric as a starting point.</p><div className="ae-btn-row"><button type="button" className="ae-btn" onClick={exportRubric}>Download current rubric</button><label className="ae-btn" style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44 }}>Load a custom rubric<input type="file" accept="application/json,.json" style={{ display: 'none' }} onChange={(event) => { const file = event.target.files && event.target.files[0]; if (file) importRubric(file); event.target.value = ''; }} /></label>{workspace.config.customRubric && <button type="button" className="ae-btn" onClick={clearRubric}>Restore the built-in rubric</button>}</div></div>
       <section className="ae-card ae-span-6"><h3>Workspace setup</h3><fieldset disabled={isRemote || role !== 'evaluator'} style={{ border: 0, padding: 0, margin: 0 }}><label className="ae-field"><span>Organization / LEA</span><input className="ae-input" value={workspace.config.organization} onChange={(event) => set('organization', event.target.value)}/></label><div className="ae-form-grid"><label className="ae-field"><span>Building</span><input className="ae-input" value={workspace.config.building} onChange={(event) => set('building', event.target.value)}/></label><label className="ae-field"><span>Academic year</span><input className="ae-input" value={workspace.config.academicYear} onChange={(event) => set('academicYear', event.target.value)}/></label><label className="ae-field"><span>Evaluator name</span><input className="ae-input" value={workspace.config.evaluatorName} onChange={(event) => set('evaluatorName', event.target.value)}/></label><label className="ae-field"><span>Evaluator initials</span><input className="ae-input" value={workspace.config.evaluatorInitials} onChange={(event) => set('evaluatorInitials', event.target.value)}/></label><label className="ae-field ae-field-wide"><span>Evaluation framework</span><select className="ae-select" value={workspace.config.frameworkProfile || 'pa_act13'} onChange={(event) => set('frameworkProfile', event.target.value)}>{Object.keys(AE_FRAMEWORKS).map((id) => <option key={id} value={id}>{AE_FRAMEWORKS[id].name}</option>)}</select></label>{workspace.config.frameworkProfile === 'maine_pepg' && <label className="ae-field ae-field-wide"><span>Professional Practice weight (%) — optional; SLG measures are a district choice under the 2019 amendments</span><input className="ae-input" type="number" min="0" max="100" step="1" value={workspace.config.pepgPracticeWeight == null ? '' : workspace.config.pepgPracticeWeight} onChange={(event) => set('pepgPracticeWeight', event.target.value)} placeholder="e.g. 75 — Student Learning & Growth gets the rest"/></label>}</div></fieldset>{isRemote && <div className="ae-note ae-warn" style={{ marginBottom: 12 }}>Portal configuration is read-only. An authorized district administrator or IT must use the reviewed setup process to change repository configuration.</div>}<div className="ae-note">{AE_ACTIVE_FW.id === 'pa_act13' ? 'Framework snapshot: Pennsylvania Act 13 classroom-teacher framework, June 2021. Full performance-level rubric text is not bundled.' : 'Framework: Maine PEPG — the district plan governs. Rating-level labels shown are Maine State Model defaults; confirm labels, cut points, and category weights against your district’s PEPG plan. Full rubric text is not bundled.'}</div></section>
       <section className="ae-card ae-span-6"><h3>Official references</h3>{AE_ACTIVE_FW.id === 'pa_act13' ? <ul><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://www.pa.gov/agencies/education/programs-and-services/educators/educator-effectiveness">Pennsylvania Department of Education · Educator Effectiveness</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://www.pacodeandbulletin.gov/secure/pacode/data/022/chapter19/s19.2a.html">22 Pa. Code § 19.2a · Classroom teachers</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://www.pdesas.org/Page/Viewer/ViewPage/75">PDE/SAS Act 13 Toolkit</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://danielsongroup.org/the-framework-for-teaching/">Danielson Group · Framework access and licensing</a></li></ul> : <ul><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://www.maine.gov/doe/educators/educatoreval/educator">Maine DOE · Educator Effectiveness (PEPG)</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://legislature.maine.gov/statutes/20-A/title20-Ach508sec0.html">20-A M.R.S.A. ch. 508 · Educator Effectiveness</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://www.law.cornell.edu/regulations/maine/department-05/division-071/chapter-180">DOE Rule Chapter 180 · PEPG Systems</a></li><li><a className="ae-link" target="_blank" rel="noreferrer" href="https://danielsongroup.org/the-framework-for-teaching/">Danielson Group · Framework access and licensing</a></li></ul>}{AE_ACTIVE_FW.id === 'pa_act13' ? <div className="ae-note ae-warn">The older 50% observation model is not the default current Act 13 classroom-teacher composition. This workspace uses assignment-aware 70/10/10/10, 80% O&amp;P where Building Level Data is unavailable, and 100% O&amp;P for temporary classroom teachers.</div> : <div className="ae-note ae-warn">Maine PEPG systems are LOCAL: the district plan — built with a steering committee that must have a teacher majority chosen by the bargaining unit, revising by consensus — defines the rubric, rating levels, category weights, and process. Since the 2019 amendments, student learning &amp; growth measures are a district choice, not a state mandate. This workspace mirrors that plan; it never substitutes for it. Enter the plan’s Professional Practice / Student Learning &amp; Growth split above.</div>}</section>
@@ -2426,6 +2486,40 @@ function EducatorEvaluationPanel(props) {
     aeDownload('evaluation-response-' + selectedTeacher.code + '-' + aeToday() + '.json', 'application/json', JSON.stringify(packet, null, 2));
     commit(() => {}, { teacherId: selectedTeacher.id, event: 'EXPORTED', summary: 'Educator response packet created', entityType: 'evaluation', entityId: selectedTeacher.id }, 'Response packet created');
   };
+  const [reflection, setReflection] = React.useState({ status: 'idle', text: '' });
+  const aiReflectionEnabled = !!(workspace.config && workspace.config.aiReflectionEnabled);
+  const askForReflection = () => {
+    if (!selectedTeacher) return;
+    const ask = typeof window !== 'undefined' ? window.callGemini : null;
+    if (typeof ask !== 'function') {
+      setReflection({ status: 'error', text: 'No AI backend is configured in this copy, so this stays unavailable.' });
+      return;
+    }
+    const labels = {};
+    AE_RATINGS.forEach((entry) => { labels[String(entry.value)] = entry.label; });
+    const prompt = aeBuildReflectionPrompt(workspace, selectedTeacher.id, AE_DOMAINS, labels);
+    if (!prompt) {
+      setReflection({ status: 'error', text: 'There is no published evidence yet for this educator, so there is nothing to check.' });
+      return;
+    }
+    setReflection({ status: 'working', text: '' });
+    Promise.resolve()
+      .then(() => ask(prompt))
+      .then((answer) => {
+        const text = typeof answer === 'string' ? answer : (answer && (answer.text || answer.output)) || '';
+        setReflection({ status: text ? 'done' : 'error', text: text || 'The model returned nothing.' });
+        if (text) {
+          // Record that assistance was used. The answer itself is never written into the record.
+          commit(() => {}, {
+            teacherId: selectedTeacher.id, event: 'CONFIG_UPDATED',
+            summary: 'AI reflection requested on the documented evidence; the reply was shown to the evaluator and not stored in the record.',
+            entityType: 'evaluation', entityId: selectedTeacher.id,
+          }, null);
+        }
+      })
+      .catch((error) => setReflection({ status: 'error', text: 'That request failed: ' + ((error && error.message) || 'unknown error') }));
+  };
+
   const exportRubric = () => {
     aeDownload('evaluation-rubric-' + (AE_ACTIVE_FW.versionTag || 'current') + '.json', 'application/json',
       JSON.stringify({
@@ -2573,7 +2667,7 @@ href="https://alloflow-cdn.pages.dev/educator-evaluation-manual" target="_blank"
     </div> : <div className={'ae-local-banner ' + (workspace.config.sampleMode ? 'ae-sample' : '')}><strong>{workspace.config.sampleMode ? 'Simulated data' : 'Private on-device workspace'}</strong>{' '}<span>Your work stays on this device — nothing is uploaded. Role switching previews each perspective; official summative records live in your district-authorized system.</span></div>}
     <nav className="ae-tabs" role="tablist" aria-label="Evaluation workspace sections">{tabs.map(([id, label], index) => <button type="button" role="tab" key={id} id={'ae-tab-' + id} aria-selected={tab === id} aria-controls="ae-panel" tabIndex={tab === id ? 0 : -1} className="ae-tab" onClick={() => setTab(id)} onKeyDown={(event) => tabKey(event, index)}>{label}</button>)}</nav>
     <main className="ae-main" id="ae-panel" role="tabpanel" tabIndex={-1} aria-labelledby={'ae-tab-' + tab} aria-busy={remoteState.inFlight ? 'true' : undefined} aria-disabled={isRemote && remoteState.status === 'error' ? 'true' : undefined} onClickCapture={blockRemoteMutation} onChangeCapture={blockRemoteMutation} onInputCapture={blockRemoteMutation} onSubmitCapture={blockRemoteMutation}>
-      {tab === 'overview' && <AeOverview workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} updateTeacher={updateTeacher} setTab={setTab}/>}
+      {tab === 'overview' && <AeOverview workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} aiReflectionEnabled={aiReflectionEnabled} askForReflection={askForReflection} reflection={reflection} updateTeacher={updateTeacher} setTab={setTab}/>}
       {tab === 'trends' && <AeTrends workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} isRemote={isRemote}/>}
       {tab === 'staff' && <AeStaff workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} updateTeacher={updateTeacher} addTeacher={addTeacher} isRemote={isRemote} canAddStaff={!isRemote || !!(remoteState.currentUser && remoteState.currentUser.role === 'admin')}/>}
       {tab === 'walkthroughs' && <AeWalkthroughs workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} createWalkthrough={createWalkthrough} publishWalkthrough={publishWalkthrough} addComment={addComment} acknowledgeWalkthrough={acknowledgeWalkthrough} isRemote={isRemote}/>}

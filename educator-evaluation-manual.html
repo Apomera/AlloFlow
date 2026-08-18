@@ -216,6 +216,9 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <li><a href="#phone">Using it on a phone</a></li>
 <li><a href="#accessibility">Accessibility</a></li>
 <li><a href="#qr">Sharing the tool by QR</a></li>
+<li><a href="#packet">Sending an evaluation to an educator by email</a></li>
+<li><a href="#rubric">Using your district’s own rubric</a></li>
+<li><a href="#evidence-check">Evidence checks and the optional AI second read</a></li>
 <li><a href="#glossary">Glossary</a></li>
 <li><a href="#troubleshooting">Troubleshooting</a></li>
 </ol>
@@ -515,7 +518,62 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <li><strong>District portal:</strong> the code points to your district's portal address. Each person's district sign-in still decides what they can see, so the code is safe to print on a staff-meeting handout.</li>
 </ul>
 
-<h2 id="glossary">16. Glossary</h2>
+<h2 id="packet">16. Sending an Evaluation to an Educator by Email</h2>
+<p>The QR card above shares the <em>tool</em>. This section is about sharing <em>one educator's evaluation</em> with
+that educator, and getting their written response back, without any district server.</p>
+<p>On <strong>Reports &amp; audit</strong>, with an educator selected, choose <strong>Educator packet (send to
+educator)</strong>. You get a single HTML file containing only that educator's records: their own walkthroughs,
+observations and student-measure records, and nothing that reveals which other educators exist. A checkbox lets you
+send codes instead of names.</p>
+<p>Email that file to the educator as an attachment. They can simply open it and read their evaluation in a browser,
+with nothing installed and no account. If they want to respond, the same file contains a form: a statement in their
+own words, a reflection on each observation, and a box confirming they have read it. Clicking the button downloads a
+small response file, which they email back to you.</p>
+<p>Import that response with the same <strong>Import</strong> control you use for a workspace file. It merges into the
+educator's record and the timeline notes where it came from.</p>
+<p><strong>What a returned file can and cannot change.</strong> Only the educator's own words are accepted: their
+statement, their reflections, and their read-receipt. Ratings, evidence and evaluator comments are ignored even if the
+file has been edited by hand, and the import tells you how many fields it dropped. If you changed a record after
+issuing the packet, the import says so rather than quietly overwriting what the educator replied to.</p>
+<p><strong>The receipt is not a signature.</strong> Ticking the box records that the educator read the evaluation. It
+is not the signature your district's evaluation form asks for, and it does not replace the conference where you and
+the educator both sign.</p>
+
+<h2 id="rubric">17. Using Your District's Own Rubric</h2>
+<p>The tool ships with three scoring profiles (Pennsylvania Act 13, Portland ME PEPG, and Maine PEPG). If your
+district uses a different instrument altogether, you can supply it.</p>
+<p>On the <strong>About</strong> tab, under <strong>Rubric</strong>, <strong>Download current rubric</strong> gives you
+the active one as a JSON file to use as a starting point. Edit the domains, their components, weights, colours and
+rating-band labels, then use <strong>Load a custom rubric</strong>. <strong>Restore the built-in rubric</strong> puts
+it back.</p>
+<p>A rubric is rejected rather than half-applied if any domain is missing an id or a label, or if two domains share an
+id, because a partly-valid rubric would mis-score everyone rated against it. A custom rubric is given a version tag so
+that records can say which rubric produced them.</p>
+<p><strong>Changing a rubric mid-cycle.</strong> Ratings are stored against domain ids. If a new rubric does not
+include a domain that already carries a rating, the tool names the affected educators and asks before applying it.
+Nothing is deleted: restoring the previous rubric brings those ratings back.</p>
+
+<h2 id="evidence-check">18. Evidence Checks and the Optional AI Second Read</h2>
+<p>When you assign ratings, the tool compares them against the evidence you tagged and reports what it finds: a domain
+rated with no evidence tagged to it, a rating below proficient resting on a single piece, domains with no evidence at
+all, and how your total compares with what the plan expects. Portland's guidebook, for instance, looks for at least
+nine pieces across a cycle.</p>
+<p>This is counting, not judgment. It runs on the device, needs no AI, and never leaves. Favourable ratings are not
+questioned for thin evidence, and unrated domains are left alone. The point is narrow and practical: a rating that
+rests on little documented evidence is the one most likely to be overturned, so it is worth seeing before the record
+is finalised rather than afterwards.</p>
+<p><strong>The optional AI second read.</strong> Off by default. A district that permits it can enable
+<strong>AI reflection</strong> on the About tab. An evaluator can then ask a model whether the evidence
+<em>they wrote</em> supports the ratings <em>they assigned</em>, and what other readings that same evidence allows,
+including ones favourable to the educator.</p>
+<p>Three boundaries apply and they are deliberate. The model is asked about the documentation, never about the
+educator, and is explicitly instructed not to assign, suggest or imply a rating. Its answer is advisory: it is shown
+to the evaluator and is never written into the record, so nothing a model produces becomes part of a personnel file.
+And enabling it does send that educator's evidence notes and ratings to your configured AI provider, which is why it
+is opt-in, per workspace, and why the educator's name is not included in what is sent. If your district or contract
+does not permit AI in evaluation, leave it off and everything else works unchanged.</p>
+
+<h2 id="glossary">19. Glossary</h2>
 <dl>
 <dt>Walkthrough</dt><dd>A short, frequent, low-stakes classroom visit that captures evidence. It does not score a rubric.</dd>
 <dt>Formal observation</dt><dd>The full ten-step cycle with prework, conferences, evidence, reflection, ratings, acknowledgment, and finalization.</dd>
@@ -530,7 +588,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <dt>Cohort suppression</dt><dd>Withholding peer comparisons until enough peers contribute, so no individual can be identified from an aggregate.</dd>
 </dl>
 
-<h2 id="troubleshooting">17. Troubleshooting</h2>
+<h2 id="troubleshooting">20. Troubleshooting</h2>
 <ul>
 <li><strong>"This page must be opened from the district Apps Script web-app URL":</strong> the portal bundle was opened outside its deployment. Use the <code>/exec</code> link from your district administrator.</li>
 <li><strong>"The secure workspace could not be opened":</strong> this is the portal refusing to show anything, which is the design rather than a fault. The line underneath names the reason: an account that is not a member, a repository that was never set up, or the page opened outside its Apps Script address. Access is granted by the district, so the fix is with the administrator who deployed the portal, not on the page.</li>
