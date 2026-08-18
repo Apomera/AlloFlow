@@ -52,9 +52,14 @@ async function runCustomChecks(page) {
       });
     }
 
-    // Check 2: Skip navigation link
+    // Check 2: Skip navigation link.
+    // 2.4.1 is about bypassing a BLOCK of repeated navigation, so a page carrying no such block
+    // has nothing to skip and must not be failed for omitting the link. Require a real nav block
+    // (3+ links in a nav/navbar that sits outside <main>) before asking for one.
     const skipLink = document.querySelector('a[href="#main-content"], a[href="#main"], [class*="skip"]');
-    if (!skipLink) {
+    const navBlocks = [...document.querySelectorAll('nav, [role="navigation"], .navbar, [class*="nav-links"]')];
+    const hasBypassableNav = navBlocks.some(nav => !nav.closest('main, [role="main"]') && nav.querySelectorAll('a[href]').length >= 3);
+    if (!skipLink && hasBypassableNav) {
       findings.push({
         id: 'custom-skip-nav',
         description: 'No skip navigation link found',
@@ -76,9 +81,11 @@ async function runCustomChecks(page) {
       });
     }
 
-    // Check 4: <nav> landmark
+    // Check 4: <nav> landmark. Only meaningful when the page actually offers navigation; a
+    // standalone page with a single card has no navigation region to label.
     const nav = document.querySelector('nav, [role="navigation"]');
-    if (!nav) {
+    const looksNavigational = document.querySelectorAll('a[href]').length >= 3;
+    if (!nav && looksNavigational) {
       findings.push({
         id: 'custom-nav-landmark',
         description: 'No <nav> landmark element found',
@@ -137,7 +144,10 @@ async function runCustomChecks(page) {
     if (liveRegions.length === 0) {
       findings.push({
         id: 'custom-aria-live',
-        description: 'No aria-live regions found on the page',
+        // Severity stays high for the app, where unannounced status changes are a real failure.
+        // The wording carries the condition so a static page, which has no status messages to
+        // announce, is not read as a confirmed violation.
+        description: 'No aria-live regions found on the page (4.1.3 applies only if this page announces dynamic status changes; a static page has none)',
         wcag: '4.1.3 Status Messages',
         severity: 'critical',
         selector: 'body',
