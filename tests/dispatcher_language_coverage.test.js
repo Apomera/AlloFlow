@@ -72,6 +72,17 @@ describe('per-type language directives', () => {
     expect(dispatcher).toContain('Write ALL generated student-facing text in ${effectiveLanguage}');
   });
 
+  it('keeps every teacher-selected glossary language, including one matching the output language', () => {
+    const body = branchBodies(dispatcher)['glossary'];
+    // The glossary is deliberately multi-language: its base column is always the English
+    // definition, so English is the only language that must never be requested as a translation.
+    // Filtering effectiveLanguage instead silently dropped a column the teacher had asked for --
+    // selecting Spanish AND setting the output language to Spanish produced no Spanish column.
+    expect(body).toMatch(/key === 'english'/);
+    const filterStmt = (body.match(/langsReq = langsReq\.filter\([\s\S]*?\}\);/) || [''])[0];
+    expect(filterStmt).not.toContain('effectiveLanguage');
+  });
+
   it('routes math through effectiveLanguage so langOverride is honored', () => {
     const body = branchBodies(dispatcher)['math'];
     expect(body).toContain('effectiveLanguage');

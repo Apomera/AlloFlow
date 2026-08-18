@@ -2191,8 +2191,20 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         } else if (!langsReq.some(l => String(l).toLowerCase() === String(_xlate.target).toLowerCase())) {
             langsReq.push(_xlate.target);
         }
-        // Never ask for a "translation" into the language the terms are in.
-        langsReq = langsReq.filter(l => String(l).trim().toLowerCase() !== String(effectiveLanguage || '').trim().toLowerCase());
+        // The glossary is deliberately multi-language: its base column is always the English
+        // definition, so English is the only language that must never be requested as a
+        // "translation". This used to filter out effectiveLanguage on the assumption that the
+        // terms were written in it, which silently dropped a column the teacher had explicitly
+        // asked for: selecting Spanish AND setting the output language to Spanish removed the
+        // Spanish column entirely. De-duplicate case-insensitively too, since the same language
+        // can arrive from the teacher's list and from the output/translation setting.
+        const _seenGlossaryLangs = new Set();
+        langsReq = langsReq.filter(l => {
+            const key = String(l == null ? '' : l).trim().toLowerCase();
+            if (!key || key === 'english' || _seenGlossaryLangs.has(key)) return false;
+            _seenGlossaryLangs.add(key);
+            return true;
+        });
         if (usesLocalTextBackend) {
             const localTermLimit = Math.max(1, Math.min(totalTerms, 8));
             const localLangInstruction = langsReq.length > 0
