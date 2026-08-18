@@ -14,6 +14,168 @@
 const AE_STORAGE_KEY = "allo_educator_evaluation_workspace_v1";
 const AE_ONBOARDING_KEY = "allo_educator_evaluation_onboarding_v1";
 const AE_EXPORT_KIND = "alloflow-educator-evaluation-workspace";
+const AE_PACKET_KIND = "alloflow-educator-evaluation-packet";
+const AE_PACKET_SCRIPT_ID = "allo-evaluation-packet";
+const AE_PACKET_TEACHER_FIELDS = ["educatorStatement"];
+const AE_PACKET_RECORD_FIELDS = ["reflection", "reflectionSubmittedAt", "teacherAcknowledgedAt"];
+function aePacketEmbed(json) {
+  return String(json).split("<").join("\\u003c");
+}
+function aePacketExtract(text) {
+  const raw = String(text == null ? "" : text).trim();
+  if (raw.charAt(0) === "{") return raw;
+  const marker = raw.indexOf('id="' + AE_PACKET_SCRIPT_ID + '"');
+  if (marker === -1) return raw;
+  const opens = raw.indexOf(">", marker);
+  const closes = raw.indexOf("<\/script>", opens);
+  if (opens === -1 || closes === -1) return raw;
+  return raw.slice(opens + 1, closes).trim();
+}
+function aeEducatorPacket(workspace, teacherId, options) {
+  const opts = options || {};
+  const source = workspace || {};
+  const teacher = (source.teachers || []).filter(function(item) {
+    return item && item.id === teacherId;
+  })[0];
+  if (!teacher) return null;
+  const mine = function(list) {
+    return (list || []).filter(function(item) {
+      return item && item.teacherId === teacherId;
+    });
+  };
+  const stamp = function(list) {
+    return mine(list).map(function(item) {
+      const copy = JSON.parse(JSON.stringify(item));
+      copy.sourceUpdatedAt = item.updatedAt || item.publishedAt || null;
+      return copy;
+    });
+  };
+  const packetTeacher = JSON.parse(JSON.stringify(teacher));
+  const config = source.config || {};
+  if (!opts.includeNames) {
+    packetTeacher.name = packetTeacher.code || "Educator";
+    packetTeacher.evaluator = "Evaluator";
+  }
+  return {
+    kind: AE_PACKET_KIND,
+    version: 1,
+    packetType: "educator",
+    packetId: aeId("packet"),
+    issuedAt: aeNow(),
+    teacherId,
+    includeNames: !!opts.includeNames,
+    config: {
+      organization: config.organization || "",
+      academicYear: config.academicYear || "",
+      evaluatorName: opts.includeNames ? config.evaluatorName || "" : "Evaluator"
+    },
+    teachers: [packetTeacher],
+    walkthroughs: stamp(source.walkthroughs),
+    observations: stamp(source.observations),
+    spms: stamp(source.spms),
+    comments: mine(source.comments)
+  };
+}
+function aeResponsePacket(workspace, teacherId, sourcePacketId) {
+  const source = workspace || {};
+  const teacher = (source.teachers || []).filter(function(item) {
+    return item && item.id === teacherId;
+  })[0];
+  if (!teacher) return null;
+  const records = [];
+  ["walkthroughs", "observations", "spms"].forEach(function(collection) {
+    (source[collection] || []).forEach(function(item) {
+      if (!item || item.teacherId !== teacherId) return;
+      const entry = { collection, recordId: item.id, sourceUpdatedAt: item.sourceUpdatedAt || item.updatedAt || item.publishedAt || null };
+      let carries = false;
+      AE_PACKET_RECORD_FIELDS.forEach(function(field) {
+        if (item[field] == null || item[field] === "") return;
+        entry[field] = item[field];
+        carries = true;
+      });
+      if (carries) records.push(entry);
+    });
+  });
+  return {
+    kind: AE_PACKET_KIND,
+    version: 1,
+    packetType: "response",
+    packetId: aeId("packet"),
+    sourcePacketId: sourcePacketId || "",
+    issuedAt: aeNow(),
+    teacherId,
+    educatorStatement: teacher.educatorStatement || null,
+    records,
+    comments: (source.comments || []).filter(function(item) {
+      return item && item.teacherId === teacherId && item.role === "Teacher";
+    })
+  };
+}
+function aeMergeResponsePacket(workspace, packet) {
+  const result = { applied: 0, ignored: 0, stale: [], teacherId: "", ok: false };
+  if (!workspace || !packet || packet.packetType !== "response") return result;
+  const teacherId = packet.teacherId;
+  const teacher = (workspace.teachers || []).filter(function(item) {
+    return item && item.id === teacherId;
+  })[0];
+  if (!teacher) return result;
+  result.ok = true;
+  result.teacherId = teacherId;
+  const statement = packet.educatorStatement;
+  if (statement && typeof statement.text === "string" && statement.text.trim()) {
+    teacher.educatorStatement = { text: statement.text, updatedAt: statement.updatedAt || packet.issuedAt };
+    result.applied += 1;
+  }
+  (packet.records || []).forEach(function(entry) {
+    const list = entry && workspace[entry.collection];
+    if (!Array.isArray(list)) {
+      result.ignored += 1;
+      return;
+    }
+    const record = list.filter(function(item) {
+      return item && item.id === entry.recordId && item.teacherId === teacherId;
+    })[0];
+    if (!record) {
+      result.ignored += 1;
+      return;
+    }
+    const liveStamp = record.updatedAt || record.publishedAt || null;
+    if (entry.sourceUpdatedAt && liveStamp && entry.sourceUpdatedAt !== liveStamp) result.stale.push(entry.recordId);
+    Object.keys(entry).forEach(function(key) {
+      if (key === "collection" || key === "recordId" || key === "sourceUpdatedAt") return;
+      if (AE_PACKET_RECORD_FIELDS.indexOf(key) === -1) {
+        result.ignored += 1;
+        return;
+      }
+      if (entry[key] == null) return;
+      record[key] = entry[key];
+      result.applied += 1;
+    });
+  });
+  (packet.comments || []).forEach(function(comment) {
+    if (!comment || comment.teacherId !== teacherId || !comment.text) {
+      result.ignored += 1;
+      return;
+    }
+    if (!Array.isArray(workspace.comments)) workspace.comments = [];
+    const already = workspace.comments.some(function(item) {
+      return item && item.id === comment.id;
+    });
+    if (already) return;
+    workspace.comments.push({
+      id: comment.id,
+      recordType: comment.recordType,
+      recordId: comment.recordId,
+      teacherId,
+      text: comment.text,
+      role: "Teacher",
+      author: comment.author || "Educator",
+      at: comment.at || packet.issuedAt
+    });
+    result.applied += 1;
+  });
+  return result;
+}
 const AE_FRAMEWORK = "pa-act13-classroom-2021";
 const AE_FRAMEWORKS = {
   pa_act13: {
@@ -1313,20 +1475,20 @@ function AeSpm({ workspace, selectedTeacher, setSelectedTeacherId, role, createS
     } }, "Rate and lock record")), active.status === "results_submitted" && role === "teacher" && /* @__PURE__ */ React.createElement("div", { className: "ae-note", style: { marginTop: 12 } }, "Results submitted ", aeDateTime(active.resultsSubmittedAt), ". Awaiting evaluator rating."), active.status === "locked" && /* @__PURE__ */ React.createElement("div", { className: "ae-note ae-ok", style: { marginTop: 12 } }, /* @__PURE__ */ React.createElement("strong", null, "Rated and locked · ", active.rating, " (", aeBand(active.rating), ")"), /* @__PURE__ */ React.createElement("br", null), "Locked ", aeDateTime(active.lockedAt), ". Plan approval and final result rating remain separate audit events."), /* @__PURE__ */ React.createElement(AeThread, { workspace, recordType: "spm", recordId: active.id, teacherId: active.teacherId, role, onAdd: addComment })), /* @__PURE__ */ React.createElement("aside", { className: "ae-card ae-span-5" }, /* @__PURE__ */ React.createElement("h3", null, "Submission receipts"), /* @__PURE__ */ React.createElement("div", { className: "ae-timeline" }, /* @__PURE__ */ React.createElement("div", { className: "ae-event" }, /* @__PURE__ */ React.createElement("h4", null, "Created"), /* @__PURE__ */ React.createElement("p", null, aeDateTime(active.createdAt))), active.submittedAt && /* @__PURE__ */ React.createElement("div", { className: "ae-event" }, /* @__PURE__ */ React.createElement("h4", null, "Submitted"), /* @__PURE__ */ React.createElement("p", null, aeDateTime(active.submittedAt))), active.firstOpenedAt && /* @__PURE__ */ React.createElement("div", { className: "ae-event" }, /* @__PURE__ */ React.createElement("h4", null, "First opened by evaluator"), /* @__PURE__ */ React.createElement("p", null, aeDateTime(active.firstOpenedAt))), active.approvedAt && /* @__PURE__ */ React.createElement("div", { className: "ae-event" }, /* @__PURE__ */ React.createElement("h4", null, "Approved by ", active.approvedBy), /* @__PURE__ */ React.createElement("p", null, aeDateTime(active.approvedAt))), active.resultsSubmittedAt && /* @__PURE__ */ React.createElement("div", { className: "ae-event" }, /* @__PURE__ */ React.createElement("h4", null, "Results submitted"), /* @__PURE__ */ React.createElement("p", null, aeDateTime(active.resultsSubmittedAt))), active.lockedAt && /* @__PURE__ */ React.createElement("div", { className: "ae-event" }, /* @__PURE__ */ React.createElement("h4", null, "Rated and locked"), /* @__PURE__ */ React.createElement("p", null, aeDateTime(active.lockedAt)))), /* @__PURE__ */ React.createElement("div", { className: "ae-note ae-warn" }, "“Opened” is an automatic access receipt. It does not claim the person read or agreed with the contents; approval and acknowledgment are explicit actions.")));
   })());
 }
-function AeAuditExport({ workspace, selectedTeacher, exportWorkspace, exportCsv, exportSummary, exportGrowthSnapshot, importWorkspace, resetWorkspace, role, isRemote = false }) {
+function AeAuditExport({ workspace, selectedTeacher, exportWorkspace, exportCsv, exportSummary, exportGrowthSnapshot, importWorkspace, resetWorkspace, role, isRemote = false, exportEducatorPacket, exportResponsePacket, packetIncludeNames, setPacketIncludeNames }) {
   const [filter, setFilter] = React.useState("selected");
   const [clearStep, setClearStep] = React.useState(false);
   const fileRef = React.useRef(null);
   const isEvaluator = role === "evaluator";
   const events = workspace.audit.filter((event) => isEvaluator && filter === "all" ? true : selectedTeacher && event.teacherId === selectedTeacher.id);
-  return /* @__PURE__ */ React.createElement("div", { className: "ae-page" }, /* @__PURE__ */ React.createElement("div", { className: "ae-heading" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", null, isEvaluator ? "Audit, reports, and handoff" : "My evaluation timeline"), /* @__PURE__ */ React.createElement("p", null, "Submission, approval, acknowledgment, comment, and finalization events are distinct."))), /* @__PURE__ */ React.createElement("div", { className: "ae-grid" }, /* @__PURE__ */ React.createElement("section", { className: "ae-card " + (isEvaluator ? "ae-span-7" : "ae-span-12") }, /* @__PURE__ */ React.createElement("div", { className: "ae-record-head" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", null, "Audit timeline"), /* @__PURE__ */ React.createElement("p", { className: "ae-sub" }, isRemote ? "This permission-filtered timeline is loaded from the district repository; the server owns the authoritative audit history." : "On-device activity history; the district portal adds server-side tamper-evident logs.")), isEvaluator && /* @__PURE__ */ React.createElement("select", { className: "ae-select", style: { width: "auto" }, value: filter, onChange: (event) => setFilter(event.target.value), "aria-label": "Filter audit timeline" }, /* @__PURE__ */ React.createElement("option", { value: "selected" }, "Selected educator"), /* @__PURE__ */ React.createElement("option", { value: "all" }, "All educators"))), events.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "ae-empty" }, "No matching audit events.") : /* @__PURE__ */ React.createElement(React.Fragment, null, events.length > 150 && /* @__PURE__ */ React.createElement("p", { className: "ae-sub" }, "Showing the 150 most recent of ", events.length, " events; older history is not deleted and remains in the ", isRemote ? "district repository" : "workspace export", "."), /* @__PURE__ */ React.createElement("div", { className: "ae-timeline" }, events.slice(0, 150).map((event) => /* @__PURE__ */ React.createElement("div", { className: "ae-event", key: event.id }, /* @__PURE__ */ React.createElement("h4", null, event.event.replace(/_/g, " "), " · ", event.summary), /* @__PURE__ */ React.createElement("p", null, event.actor, " · ", event.role, " · ", aeDateTime(event.at)), /* @__PURE__ */ React.createElement("p", null, event.entityType, " · version ", event.version || 1)))))), isRemote ? /* @__PURE__ */ React.createElement("section", { className: "ae-card ae-span-12" }, /* @__PURE__ */ React.createElement("h3", null, "District exports unavailable"), /* @__PURE__ */ React.createElement("div", { className: "ae-note ae-warn", style: { marginTop: 12 } }, /* @__PURE__ */ React.createElement("strong", null, "District export policy not configured."), /* @__PURE__ */ React.createElement("br", null), "Downloads, imports, and reset are disabled for every portal role until the LEA approves an export policy and an audited server export workflow is implemented.")) : isEvaluator ? /* @__PURE__ */ React.createElement("section", { className: "ae-card ae-span-5" }, /* @__PURE__ */ React.createElement("h3", null, "Export and transfer"), /* @__PURE__ */ React.createElement("p", { className: "ae-sub" }, "Exports can contain confidential personnel information. Store and transmit them only through district-authorized systems."), /* @__PURE__ */ React.createElement("div", { className: "ae-actions", style: { marginTop: 12 } }, /* @__PURE__ */ React.createElement("button", { type: "button", className: "ae-btn", onClick: exportWorkspace }, "Export workspace JSON"), /* @__PURE__ */ React.createElement("button", { type: "button", className: "ae-btn", onClick: exportCsv }, "Export status CSV"), /* @__PURE__ */ React.createElement("button", { type: "button", className: "ae-btn", disabled: !selectedTeacher, onClick: exportSummary }, "Workflow summary HTML"), /* @__PURE__ */ React.createElement("button", { type: "button", className: "ae-btn", disabled: !selectedTeacher, onClick: exportGrowthSnapshot, title: "Formative, no ratings: published bright spots, evidence progress, and documentation coverage — identical for educator and evaluator." }, "Growth snapshot (formative)")), /* @__PURE__ */ React.createElement("hr", { style: { border: 0, borderTop: "1px solid #d8deea", margin: "18px 0" } }), /* @__PURE__ */ React.createElement("h4", null, "Import another device export"), /* @__PURE__ */ React.createElement("p", { className: "ae-sub" }, "Import replaces this on-device workspace after validation. Export first if you need a backup."), /* @__PURE__ */ React.createElement("button", { type: "button", className: "ae-btn", onClick: () => fileRef.current && fileRef.current.click() }, "Choose JSON export"), /* @__PURE__ */ React.createElement("input", { ref: fileRef, hidden: true, tabIndex: -1, "aria-label": "Import evaluation workspace JSON", type: "file", accept: "application/json,.json", onChange: (event) => {
+  return /* @__PURE__ */ React.createElement("div", { className: "ae-page" }, /* @__PURE__ */ React.createElement("div", { className: "ae-heading" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", null, isEvaluator ? "Audit, reports, and handoff" : "My evaluation timeline"), /* @__PURE__ */ React.createElement("p", null, "Submission, approval, acknowledgment, comment, and finalization events are distinct."))), /* @__PURE__ */ React.createElement("div", { className: "ae-grid" }, /* @__PURE__ */ React.createElement("section", { className: "ae-card " + (isEvaluator ? "ae-span-7" : "ae-span-12") }, /* @__PURE__ */ React.createElement("div", { className: "ae-record-head" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", null, "Audit timeline"), /* @__PURE__ */ React.createElement("p", { className: "ae-sub" }, isRemote ? "This permission-filtered timeline is loaded from the district repository; the server owns the authoritative audit history." : "On-device activity history; the district portal adds server-side tamper-evident logs.")), isEvaluator && /* @__PURE__ */ React.createElement("select", { className: "ae-select", style: { width: "auto" }, value: filter, onChange: (event) => setFilter(event.target.value), "aria-label": "Filter audit timeline" }, /* @__PURE__ */ React.createElement("option", { value: "selected" }, "Selected educator"), /* @__PURE__ */ React.createElement("option", { value: "all" }, "All educators"))), events.length === 0 ? /* @__PURE__ */ React.createElement("div", { className: "ae-empty" }, "No matching audit events.") : /* @__PURE__ */ React.createElement(React.Fragment, null, events.length > 150 && /* @__PURE__ */ React.createElement("p", { className: "ae-sub" }, "Showing the 150 most recent of ", events.length, " events; older history is not deleted and remains in the ", isRemote ? "district repository" : "workspace export", "."), /* @__PURE__ */ React.createElement("div", { className: "ae-timeline" }, events.slice(0, 150).map((event) => /* @__PURE__ */ React.createElement("div", { className: "ae-event", key: event.id }, /* @__PURE__ */ React.createElement("h4", null, event.event.replace(/_/g, " "), " · ", event.summary), /* @__PURE__ */ React.createElement("p", null, event.actor, " · ", event.role, " · ", aeDateTime(event.at)), /* @__PURE__ */ React.createElement("p", null, event.entityType, " · version ", event.version || 1)))))), isRemote ? /* @__PURE__ */ React.createElement("section", { className: "ae-card ae-span-12" }, /* @__PURE__ */ React.createElement("h3", null, "District exports unavailable"), /* @__PURE__ */ React.createElement("div", { className: "ae-note ae-warn", style: { marginTop: 12 } }, /* @__PURE__ */ React.createElement("strong", null, "District export policy not configured."), /* @__PURE__ */ React.createElement("br", null), "Downloads, imports, and reset are disabled for every portal role until the LEA approves an export policy and an audited server export workflow is implemented.")) : isEvaluator ? /* @__PURE__ */ React.createElement("section", { className: "ae-card ae-span-5" }, /* @__PURE__ */ React.createElement("h3", null, "Export and transfer"), /* @__PURE__ */ React.createElement("p", { className: "ae-sub" }, "Exports can contain confidential personnel information. Store and transmit them only through district-authorized systems."), /* @__PURE__ */ React.createElement("div", { className: "ae-actions", style: { marginTop: 12 } }, /* @__PURE__ */ React.createElement("button", { type: "button", className: "ae-btn", onClick: exportWorkspace }, "Export workspace JSON"), /* @__PURE__ */ React.createElement("button", { type: "button", className: "ae-btn", onClick: exportCsv }, "Export status CSV"), /* @__PURE__ */ React.createElement("button", { type: "button", className: "ae-btn", disabled: !selectedTeacher, onClick: exportSummary }, "Workflow summary HTML"), /* @__PURE__ */ React.createElement("button", { type: "button", className: "ae-btn", disabled: !selectedTeacher, onClick: exportEducatorPacket }, "Educator packet (send to educator)"), /* @__PURE__ */ React.createElement("label", { className: "ae-field", style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", style: { width: 24, height: 24 }, checked: packetIncludeNames, onChange: (event) => setPacketIncludeNames(event.target.checked) }), " ", /* @__PURE__ */ React.createElement("span", null, "Include names in the packet (uncheck to send codes only)")), /* @__PURE__ */ React.createElement("p", { className: "ae-sub" }, "The packet carries only the selected educator’s records. Send it as an email attachment; they can read it in a browser or import it to reply."), /* @__PURE__ */ React.createElement("button", { type: "button", className: "ae-btn", disabled: !selectedTeacher, onClick: exportGrowthSnapshot, title: "Formative, no ratings: published bright spots, evidence progress, and documentation coverage — identical for educator and evaluator." }, "Growth snapshot (formative)")), /* @__PURE__ */ React.createElement("hr", { style: { border: 0, borderTop: "1px solid #d8deea", margin: "18px 0" } }), /* @__PURE__ */ React.createElement("h4", null, "Import another device export"), /* @__PURE__ */ React.createElement("p", { className: "ae-sub" }, "Import replaces this on-device workspace after validation. Export first if you need a backup."), /* @__PURE__ */ React.createElement("button", { type: "button", className: "ae-btn", onClick: () => fileRef.current && fileRef.current.click() }, "Choose JSON export"), /* @__PURE__ */ React.createElement("input", { ref: fileRef, hidden: true, tabIndex: -1, "aria-label": "Import evaluation workspace JSON", type: "file", accept: "application/json,.json", onChange: (event) => {
     const file = event.target.files && event.target.files[0];
     if (file) importWorkspace(file);
     event.target.value = "";
   } }), /* @__PURE__ */ React.createElement("div", { className: "ae-note ae-warn", style: { marginTop: 16 } }, "This export assists front-end supervision work. ", AE_ACTIVE_FW.id === "pa_act13" ? "PEERS or your LEA-authorized system" : "Your district-authorized PEPG record system", " remains the official summative rating record for this MVP."), workspace.config.sampleMode && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 18 } }, /* @__PURE__ */ React.createElement("h4", null, "Sample workspace"), !clearStep ? /* @__PURE__ */ React.createElement("button", { type: "button", className: "ae-btn ae-btn-danger", onClick: () => setClearStep(true) }, "Replace sample with blank workspace") : /* @__PURE__ */ React.createElement("div", { className: "ae-note ae-danger" }, /* @__PURE__ */ React.createElement("strong", null, "This removes all current on-device records."), /* @__PURE__ */ React.createElement("div", { className: "ae-actions", style: { marginTop: 8 } }, /* @__PURE__ */ React.createElement("button", { className: "ae-btn", type: "button", onClick: () => setClearStep(false) }, "Cancel"), /* @__PURE__ */ React.createElement("button", { className: "ae-btn ae-btn-danger", type: "button", onClick: () => {
     setClearStep(false);
     resetWorkspace();
-  } }, "Confirm and start blank"))))) : /* @__PURE__ */ React.createElement("section", { className: "ae-card ae-span-12" }, /* @__PURE__ */ React.createElement("h3", null, "My copy"), /* @__PURE__ */ React.createElement("p", { className: "ae-sub" }, "Download only the selected educator’s workflow summary."), /* @__PURE__ */ React.createElement("button", { type: "button", className: "ae-btn", disabled: !selectedTeacher, onClick: exportSummary }, "Download my summary HTML"), /* @__PURE__ */ React.createElement("button", { type: "button", className: "ae-btn", disabled: !selectedTeacher, onClick: exportGrowthSnapshot }, "Download my growth snapshot"), /* @__PURE__ */ React.createElement("div", { className: "ae-note", style: { marginTop: 12 } }, "Teacher view cannot export or import the full workspace or view organization-wide audit events."))));
+  } }, "Confirm and start blank"))))) : /* @__PURE__ */ React.createElement("section", { className: "ae-card ae-span-12" }, /* @__PURE__ */ React.createElement("h3", null, "My copy"), /* @__PURE__ */ React.createElement("p", { className: "ae-sub" }, "Download only the selected educator’s workflow summary."), /* @__PURE__ */ React.createElement("button", { type: "button", className: "ae-btn", disabled: !selectedTeacher, onClick: exportSummary }, "Download my summary HTML"), /* @__PURE__ */ React.createElement("button", { type: "button", className: "ae-btn", disabled: !selectedTeacher, onClick: exportResponsePacket }, "Export my response to send back"), /* @__PURE__ */ React.createElement("p", { className: "ae-sub" }, "Your statement, reflections and acknowledgements only. Ratings and evidence are not included, and cannot be changed by this file."), /* @__PURE__ */ React.createElement("button", { type: "button", className: "ae-btn", disabled: !selectedTeacher, onClick: exportGrowthSnapshot }, "Download my growth snapshot"), /* @__PURE__ */ React.createElement("div", { className: "ae-note", style: { marginTop: 12 } }, "Teacher view cannot export or import the full workspace or view organization-wide audit events."))));
 }
 function AeShareQr({ isRemote, standalone, portalUrl }) {
   const loc = typeof window !== "undefined" ? window.location : null;
@@ -1929,16 +2091,74 @@ function EducatorEvaluationPanel(props) {
     commit(() => {
     }, { teacherId: selectedTeacher.id, event: "EXPORTED", summary: "Educator workflow summary exported", entityType: "evaluation", entityId: selectedTeacher.id }, "Summary export created");
   };
+  const [packetIncludeNames, setPacketIncludeNames] = React.useState(true);
+  const exportEducatorPacket = () => {
+    if (!selectedTeacher) return;
+    const packet = aeEducatorPacket(workspace, selectedTeacher.id, { includeNames: packetIncludeNames });
+    if (!packet) {
+      addToast("Export failed: no record for that educator.", "error");
+      return;
+    }
+    const who = packetIncludeNames ? selectedTeacher.name : selectedTeacher.code;
+    const readable = '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Your evaluation packet</title><style>body{font:15px system-ui;color:#172033;max-width:820px;margin:40px auto;padding:0 24px;line-height:1.6}h1{color:#173e70}.notice{padding:12px;background:#eef6ff;border:1px solid #93b8e8;border-radius:6px}</style></head><body><h1>Your evaluation</h1><p><strong>' + aeEsc(who) + "</strong> · " + aeEsc(packet.config.organization) + " · " + aeEsc(packet.config.academicYear) + '</p><p class="notice">You can read this file as it is. To add your statement, a reflection, or an acknowledgement, open AlloFlow Educator Evaluation, switch to the Teacher role, and import this same file. Your response exports as a second file to send back.</p><p>Issued ' + aeEsc(aeDateTime(packet.issuedAt)) + '. This packet contains only your own records.</p><script type="application/json" id="' + AE_PACKET_SCRIPT_ID + '">' + aePacketEmbed(JSON.stringify(packet)) + "<\/script></body></html>";
+    aeDownload("evaluation-packet-" + selectedTeacher.code + "-" + aeToday() + ".html", "text/html;charset=utf-8", readable);
+    commit(() => {
+    }, { teacherId: selectedTeacher.id, event: "EXPORTED", summary: "Educator packet issued" + (packetIncludeNames ? "" : " (names withheld)"), entityType: "evaluation", entityId: selectedTeacher.id }, "Educator packet created");
+  };
+  const exportResponsePacket = () => {
+    if (!selectedTeacher) return;
+    const packet = aeResponsePacket(workspace, selectedTeacher.id, workspace.receivedPacketId || "");
+    if (!packet) {
+      addToast("Export failed: no record to respond to.", "error");
+      return;
+    }
+    aeDownload("evaluation-response-" + selectedTeacher.code + "-" + aeToday() + ".json", "application/json", JSON.stringify(packet, null, 2));
+    commit(() => {
+    }, { teacherId: selectedTeacher.id, event: "EXPORTED", summary: "Educator response packet created", entityType: "evaluation", entityId: selectedTeacher.id }, "Response packet created");
+  };
   const importWorkspace = (file) => {
     if (!file || file.size > 5 * 1024 * 1024) {
-      addToast("Import failed: choose a JSON export smaller than 5 MB.", "error");
+      addToast("Import failed: choose an export or packet smaller than 5 MB.", "error");
       return;
     }
     const reader = new FileReader();
     reader.onerror = () => addToast("Import failed: the selected file could not be read.", "error");
     reader.onload = () => {
       try {
-        const parsed = JSON.parse(String(reader.result || ""));
+        const parsed = JSON.parse(aePacketExtract(String(reader.result || "")));
+        if (parsed.kind === AE_PACKET_KIND && Number(parsed.version) === 1) {
+          if (parsed.packetType === "response") {
+            const merged = aeClone(workspaceRef.current);
+            const outcome = aeMergeResponsePacket(merged, parsed);
+            if (!outcome.ok) throw new Error("This response does not match an educator in this workspace.");
+            const staleNote = outcome.stale.length ? " " + outcome.stale.length + " record(s) changed after the packet was issued." : "";
+            const droppedNote = outcome.ignored ? " " + outcome.ignored + " field(s) outside the educator-owned set were ignored." : "";
+            aeAuditEvent(merged, {
+              teacherId: outcome.teacherId,
+              event: "IMPORTED",
+              summary: "Educator response imported from packet " + (parsed.packetId || "unknown") + " issued " + aeDate(parsed.issuedAt) + "." + staleNote + droppedNote,
+              entityType: "evaluation",
+              entityId: outcome.teacherId
+            }, (merged.teachers.find((item) => item.id === outcome.teacherId) || {}).name || "Educator");
+            workspaceRef.current = merged;
+            setWorkspace(merged);
+            setSelectedTeacherId(outcome.teacherId);
+            addToast("Educator response merged: " + outcome.applied + " field(s)." + staleNote + droppedNote, outcome.stale.length ? "info" : "success");
+            return;
+          }
+          if (parsed.packetType === "educator") {
+            const own = aeNormalizeWorkspace(Object.assign({}, parsed, { kind: AE_EXPORT_KIND }));
+            if (!own) throw new Error("Invalid packet structure.");
+            own.receivedPacketId = parsed.packetId || "";
+            workspaceRef.current = own;
+            setWorkspace(own);
+            setSelectedTeacherId(own.teachers[0] && own.teachers[0].id || "");
+            setTab("overview");
+            addToast("Your evaluation packet was imported", "success");
+            return;
+          }
+          throw new Error("Unrecognised packet type.");
+        }
         if (parsed.kind !== AE_EXPORT_KIND || Number(parsed.version) !== 1) throw new Error("Not an AlloFlow Educator Evaluation v1 export.");
         const normalized = aeNormalizeWorkspace(parsed);
         if (!normalized) throw new Error("Invalid workspace structure.");
@@ -2018,7 +2238,7 @@ function EducatorEvaluationPanel(props) {
       repository.recordReleasedSummaryOpened({ teacherId: selectedTeacher.id }).then(() => loadRemoteWorkspace()).catch(() => {
       });
     }
-  } }, role === "teacher" ? "Open your released evaluation summary" : "Open shared summary"), role !== "teacher" && selectedTeacher && selectedTeacher.releasedDoc && selectedTeacher.releasedDoc.openedAt && /* @__PURE__ */ React.createElement("span", { className: "ae-chip ae-chip-good", title: "Records that the educator clicked the portal link. It cannot claim the document was read." }, "Summary link opened ", aeDateTime(selectedTeacher.releasedDoc.openedAt))) : /* @__PURE__ */ React.createElement("div", { className: "ae-local-banner " + (workspace.config.sampleMode ? "ae-sample" : "") }, /* @__PURE__ */ React.createElement("strong", null, workspace.config.sampleMode ? "Simulated data" : "Private on-device workspace"), " ", /* @__PURE__ */ React.createElement("span", null, "Your work stays on this device — nothing is uploaded. Role switching previews each perspective; official summative records live in your district-authorized system.")), /* @__PURE__ */ React.createElement("nav", { className: "ae-tabs", role: "tablist", "aria-label": "Evaluation workspace sections" }, tabs.map(([id, label], index) => /* @__PURE__ */ React.createElement("button", { type: "button", role: "tab", key: id, id: "ae-tab-" + id, "aria-selected": tab === id, "aria-controls": "ae-panel", tabIndex: tab === id ? 0 : -1, className: "ae-tab", onClick: () => setTab(id), onKeyDown: (event) => tabKey(event, index) }, label))), /* @__PURE__ */ React.createElement("main", { className: "ae-main", id: "ae-panel", role: "tabpanel", tabIndex: -1, "aria-labelledby": "ae-tab-" + tab, "aria-busy": remoteState.inFlight ? "true" : void 0, "aria-disabled": isRemote && remoteState.status === "error" ? "true" : void 0, onClickCapture: blockRemoteMutation, onChangeCapture: blockRemoteMutation, onInputCapture: blockRemoteMutation, onSubmitCapture: blockRemoteMutation }, tab === "overview" && /* @__PURE__ */ React.createElement(AeOverview, { workspace, selectedTeacher, setSelectedTeacherId, role, updateTeacher, setTab }), tab === "trends" && /* @__PURE__ */ React.createElement(AeTrends, { workspace, selectedTeacher, setSelectedTeacherId, role, isRemote }), tab === "staff" && /* @__PURE__ */ React.createElement(AeStaff, { workspace, selectedTeacher, setSelectedTeacherId, role, updateTeacher, addTeacher, isRemote, canAddStaff: !isRemote || !!(remoteState.currentUser && remoteState.currentUser.role === "admin") }), tab === "walkthroughs" && /* @__PURE__ */ React.createElement(AeWalkthroughs, { workspace, selectedTeacher, setSelectedTeacherId, role, createWalkthrough, publishWalkthrough, addComment, acknowledgeWalkthrough, isRemote }), tab === "formal" && /* @__PURE__ */ React.createElement(AeFormalObservations, { workspace, selectedTeacher, setSelectedTeacherId, role, createObservation, updateObservation, updateTeacher, addComment }), tab === "spm" && /* @__PURE__ */ React.createElement(AeSpm, { workspace, selectedTeacher, setSelectedTeacherId, role, createSpm, updateSpm, updateTeacher, addComment }), tab === "audit" && /* @__PURE__ */ React.createElement(AeAuditExport, { workspace, selectedTeacher, exportWorkspace, exportCsv, exportSummary, exportGrowthSnapshot, importWorkspace, resetWorkspace, role, isRemote }), tab === "about" && /* @__PURE__ */ React.createElement(AeAbout, { workspace, updateConfig, role, isRemote, currentUser: remoteState.currentUser, repository, standalone, portalUrl: remoteState.deployment && remoteState.deployment.portalUrl || "" })), /* @__PURE__ */ React.createElement("footer", { className: "ae-footer" }, /* @__PURE__ */ React.createElement("span", null, "No AI scoring · evidence and judgments stay separate · published records are append-only in the workflow model"), /* @__PURE__ */ React.createElement("span", null, AE_ACTIVE_FW.id === "pa_act13" ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("a", { href: "https://www.pa.gov/agencies/education/programs-and-services/educators/educator-effectiveness", target: "_blank", rel: "noreferrer" }, "PDE Educator Effectiveness"), " · ", /* @__PURE__ */ React.createElement("a", { href: "https://www.pdesas.org/Page/Viewer/ViewPage/75", target: "_blank", rel: "noreferrer" }, "Act 13 Toolkit")) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("a", { href: "https://www.maine.gov/doe/educators/educatoreval/educator", target: "_blank", rel: "noreferrer" }, "Maine DOE Educator Effectiveness"), " · ", /* @__PURE__ */ React.createElement("a", { href: "https://www.law.cornell.edu/regulations/maine/department-05/division-071/chapter-180", target: "_blank", rel: "noreferrer" }, "PEPG Rule Ch. 180")))), /* @__PURE__ */ React.createElement("div", { className: "ae-live", "aria-live": "polite", "aria-atomic": "true" }, /* @__PURE__ */ React.createElement("span", { key: liveMessage.id }, liveMessage.text)));
+  } }, role === "teacher" ? "Open your released evaluation summary" : "Open shared summary"), role !== "teacher" && selectedTeacher && selectedTeacher.releasedDoc && selectedTeacher.releasedDoc.openedAt && /* @__PURE__ */ React.createElement("span", { className: "ae-chip ae-chip-good", title: "Records that the educator clicked the portal link. It cannot claim the document was read." }, "Summary link opened ", aeDateTime(selectedTeacher.releasedDoc.openedAt))) : /* @__PURE__ */ React.createElement("div", { className: "ae-local-banner " + (workspace.config.sampleMode ? "ae-sample" : "") }, /* @__PURE__ */ React.createElement("strong", null, workspace.config.sampleMode ? "Simulated data" : "Private on-device workspace"), " ", /* @__PURE__ */ React.createElement("span", null, "Your work stays on this device — nothing is uploaded. Role switching previews each perspective; official summative records live in your district-authorized system.")), /* @__PURE__ */ React.createElement("nav", { className: "ae-tabs", role: "tablist", "aria-label": "Evaluation workspace sections" }, tabs.map(([id, label], index) => /* @__PURE__ */ React.createElement("button", { type: "button", role: "tab", key: id, id: "ae-tab-" + id, "aria-selected": tab === id, "aria-controls": "ae-panel", tabIndex: tab === id ? 0 : -1, className: "ae-tab", onClick: () => setTab(id), onKeyDown: (event) => tabKey(event, index) }, label))), /* @__PURE__ */ React.createElement("main", { className: "ae-main", id: "ae-panel", role: "tabpanel", tabIndex: -1, "aria-labelledby": "ae-tab-" + tab, "aria-busy": remoteState.inFlight ? "true" : void 0, "aria-disabled": isRemote && remoteState.status === "error" ? "true" : void 0, onClickCapture: blockRemoteMutation, onChangeCapture: blockRemoteMutation, onInputCapture: blockRemoteMutation, onSubmitCapture: blockRemoteMutation }, tab === "overview" && /* @__PURE__ */ React.createElement(AeOverview, { workspace, selectedTeacher, setSelectedTeacherId, role, updateTeacher, setTab }), tab === "trends" && /* @__PURE__ */ React.createElement(AeTrends, { workspace, selectedTeacher, setSelectedTeacherId, role, isRemote }), tab === "staff" && /* @__PURE__ */ React.createElement(AeStaff, { workspace, selectedTeacher, setSelectedTeacherId, role, updateTeacher, addTeacher, isRemote, canAddStaff: !isRemote || !!(remoteState.currentUser && remoteState.currentUser.role === "admin") }), tab === "walkthroughs" && /* @__PURE__ */ React.createElement(AeWalkthroughs, { workspace, selectedTeacher, setSelectedTeacherId, role, createWalkthrough, publishWalkthrough, addComment, acknowledgeWalkthrough, isRemote }), tab === "formal" && /* @__PURE__ */ React.createElement(AeFormalObservations, { workspace, selectedTeacher, setSelectedTeacherId, role, createObservation, updateObservation, updateTeacher, addComment }), tab === "spm" && /* @__PURE__ */ React.createElement(AeSpm, { workspace, selectedTeacher, setSelectedTeacherId, role, createSpm, updateSpm, updateTeacher, addComment }), tab === "audit" && /* @__PURE__ */ React.createElement(AeAuditExport, { workspace, selectedTeacher, exportWorkspace, exportCsv, exportSummary, exportEducatorPacket, exportResponsePacket, packetIncludeNames, setPacketIncludeNames, exportGrowthSnapshot, importWorkspace, resetWorkspace, role, isRemote }), tab === "about" && /* @__PURE__ */ React.createElement(AeAbout, { workspace, updateConfig, role, isRemote, currentUser: remoteState.currentUser, repository, standalone, portalUrl: remoteState.deployment && remoteState.deployment.portalUrl || "" })), /* @__PURE__ */ React.createElement("footer", { className: "ae-footer" }, /* @__PURE__ */ React.createElement("span", null, "No AI scoring · evidence and judgments stay separate · published records are append-only in the workflow model"), /* @__PURE__ */ React.createElement("span", null, AE_ACTIVE_FW.id === "pa_act13" ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("a", { href: "https://www.pa.gov/agencies/education/programs-and-services/educators/educator-effectiveness", target: "_blank", rel: "noreferrer" }, "PDE Educator Effectiveness"), " · ", /* @__PURE__ */ React.createElement("a", { href: "https://www.pdesas.org/Page/Viewer/ViewPage/75", target: "_blank", rel: "noreferrer" }, "Act 13 Toolkit")) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("a", { href: "https://www.maine.gov/doe/educators/educatoreval/educator", target: "_blank", rel: "noreferrer" }, "Maine DOE Educator Effectiveness"), " · ", /* @__PURE__ */ React.createElement("a", { href: "https://www.law.cornell.edu/regulations/maine/department-05/division-071/chapter-180", target: "_blank", rel: "noreferrer" }, "PEPG Rule Ch. 180")))), /* @__PURE__ */ React.createElement("div", { className: "ae-live", "aria-live": "polite", "aria-atomic": "true" }, /* @__PURE__ */ React.createElement("span", { key: liveMessage.id }, liveMessage.text)));
   return /* @__PURE__ */ React.createElement("div", { className: "ae-shell " + (standalone ? "ae-standalone" : "ae-overlay"), role: standalone ? void 0 : "presentation", onClick: standalone ? void 0 : (event) => {
     if (event.target === event.currentTarget) onClose();
   } }, /* @__PURE__ */ React.createElement(AeStyles, null), /* @__PURE__ */ React.createElement("div", { "aria-hidden": !isRemote && showLocalOnboarding ? "true" : void 0 }, body), !isRemote && showLocalOnboarding && /* @__PURE__ */ React.createElement(AeLocalOnboarding, { onChoose: chooseLocalStart }));

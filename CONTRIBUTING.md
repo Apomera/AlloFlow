@@ -8,35 +8,50 @@ Thank you for contributing to AlloFlow! This project exists because educators an
 
 AlloFlow uses a **Hub-and-Spoke** architecture: a single monolithic orchestrator loads lightweight spoke modules on demand, keeping memory usage low on school Chromebooks.
 
+It is hub-and-spoke **twice over**: the core loads spoke modules, and one of those spokes (the STEM Lab) is itself a hub with its own plugin registry. That nesting is what makes the project contributable — a new STEM tool is one new file, with no edit to the hub and none to the core.
+
 ```
-AlloFlowANTI.txt / App.jsx          ← Core orchestrator (~29K lines)
+AlloFlowANTI.txt / App.jsx          ← Core orchestrator (55,897 lines)
 ├── word_sounds_module.js            ← Phonemic awareness studio
 ├── stem_lab/stem_lab_module.js      ← STEM Lab host + inline fallbacks
-│   ├── stem_tool_dna.js             ← STEM plugin
-│   ├── stem_tool_physics.js         ← STEM plugin
+│   ├── stem_tool_solarsystem.js     ← STEM plugin
+│   ├── stem_tool_bridgelab.js       ← STEM plugin
 │   ├── stem_tool_cyberdefense.js    ← STEM plugin
-│   └── stem_tool_*.js               ← 122 STEM tool files / 123 registered plugin IDs
+│   └── stem_tool_*.js               ← 141 STEM tool files / 142 registered plugin IDs
 ├── sel_hub/sel_tool_*.js            ← 70 SEL plugins
 ├── behavior_lens_module.js          ← Clinical FBA/BIP suite
 ├── report_writer_module.js          ← Psychoeducational report wizard
 ├── symbol_studio_module.js          ← AAC & visual communication
 ├── student_analytics_module.js      ← RTI probes & dashboards
 ├── math_fluency_module.js           ← CBM math fluency probes
+├── admin_hub_source.jsx             ← Leadership Hub (walkthroughs, MTSS, evaluation)
 ├── build-managed module entries     ← cinematic_studio, pd_core, doc_pipeline, etc.
 ├── help_strings.js                  ← Contextual help content
-├── ui_strings.js                    ← English i18n master (56 lang packs in lang/)
+├── ui_strings.js                    ← English i18n master (63 lang packs in lang/)
 └── audio_bank.json                  ← Pre-recorded phoneme audio
+```
+
+**Counts above were verified against the repository on 2026-08-18.** They drift; if you are reading this much later, re-check before quoting them:
+
+```bash
+grep -c '' AlloFlowANTI.txt                              # core orchestrator lines
+ls stem_lab/stem_tool_*.js | wc -l                       # STEM tool files
+grep -rl "window.StemLab.registerTool" stem_lab/ | wc -l # registered plugin IDs
+ls sel_hub/sel_tool_*.js | wc -l                         # SEL plugins
+ls lang/*.js | wc -l                                     # language packs
 ```
 
 ---
 
 ## 1. The Core Orchestrator (`AlloFlowANTI.txt` / `App.jsx`)
 
-The core UI, state management, and primary interaction tools live in the single ~29K-line `AlloFlowANTI.txt` file (which compiles to `App.jsx`). It used to be ~67K lines; it shrank as heavy features were extracted into build-managed spoke modules and plugin families.
+The core UI, state management, and primary interaction tools live in the single `AlloFlowANTI.txt` file (which compiles to `App.jsx`). It is currently **55,897 lines**. It peaked around 67K, shrank as heavy features were extracted into build-managed spoke modules and plugin families, and has grown again since — expect it to keep moving, and expect the number in this document to lag reality.
+
+Yes, that is a very large file, and it is a deliberate trade rather than neglect. See the rules below.
 
 **Rules:**
-- **Do NOT split** the core file into standard React components (e.g., `Button.jsx`). AlloFlow must remain deployable as a single unified bundle for offline School Box instances.
-- **Navigate by symbol.** The old `// @section` markers are essentially gone (one remains) — search for the component/const name directly (e.g. `AlloFlowContent`, `GEMINI_MODELS`, `export default function WrappedApp`).
+- **Do NOT split** the core file into standard React components (e.g., `Button.jsx`). AlloFlow must remain deployable as a single unified bundle for offline School Box instances. If you want to reduce the core, extract a *spoke module*; that is the supported direction and the reason there are 139 of them.
+- **Navigate by symbol.** The old `// @section` markers are essentially gone (two remain) — search for the component/const name directly (e.g. `AlloFlowContent`, `GEMINI_MODELS`, `export default function WrappedApp`).
 
 **Finding code:**
 ```bash
@@ -51,10 +66,21 @@ grep -n "AlloFlowContent" AlloFlowANTI.txt
 
 Heavy modules load dynamically at runtime. Each spoke is a self-contained JS file that registers itself on `window.AlloModules`.
 
+**The loader contract.** `loadModule(name, url)` dedupes against `window.AlloModules[name]`, tracks in-flight loads in a registry with load generations so a re-entrant call cannot double-fetch, and appends `?v=<hash>` so every deploy invalidates both browser and CDN edge caches. A spoke is fetched the first time it is needed and never again — which is the whole point, because a school Chromebook cannot hold every simulation in one bundle.
+
+**Where the module files come from.** Most spokes are *built*, not hand-edited:
+
+```
+<name>_source.jsx   →   _build_<name>_module.js   →   <name>_module.js
+   (you edit this)          (the build script)          (what ships)
+```
+
+There are 139 `*_source.jsx` sources and 146 `_build_*.js` scripts. **Edit the `_source.jsx` and re-run its build script**; a change made directly to a generated `*_module.js` is overwritten on the next build. Files with no `_source.jsx` counterpart (including the `stem_lab/stem_tool_*.js` plugins) are authored directly.
+
 | Module File | Purpose | Access |
 |-------------|---------|--------|
 | `word_sounds_module.js` | Phonemic awareness, 8 activity types, ORF | All users |
-| `stem_lab/stem_lab_module.js` | STEM Lab host (122 tool files / 123 registered IDs) | All users |
+| `stem_lab/stem_lab_module.js` | STEM Lab host (141 tool files / 142 registered IDs) | All users |
 | `behavior_lens_module.js` | FBA/BIP clinical suite, ABC data, IOA | TeacherGate |
 | `report_writer_module.js` | Psychoeducational report wizard | TeacherGate |
 | `symbol_studio_module.js` | AAC boards, visual schedules, social stories | TeacherGate |
@@ -84,9 +110,13 @@ STEM Lab tools use a **plugin pattern** — each tool is a self-contained IIFE t
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
 
   window.StemLab.registerTool('yourToolId', {
-    name: 'Your Tool Name',
+    label: 'Your Tool Name',   // `name` and `title` still work; `label` is canonical
+    desc: 'One line shown on the tile',  // `description` is the legacy alias
     icon: '🔬',
-    category: 'science', // math | science | tech | creative | social
+    // Free-form string. 26 distinct values are in use; the common ones are
+    // science (56), math (22), creative (8), applied (7), life-skills (7).
+    // Prefer an existing lower-case value over inventing a near-duplicate.
+    category: 'science',
     render: function (ctx) {
       var React = ctx.React;
       var el = React.createElement;
@@ -124,8 +154,10 @@ Spoke modules are served from **Cloudflare Pages** (`https://alloflow-cdn.pages.
 - Cloudflare rebuilds from `main` on push (async, ~1-2 min); the `?v=` param + service-worker timestamp force clients to pick up new code.
 
 ```js
-// In AlloFlowANTI.txt the source looks like this — a bare base, no hash:
-var pluginCdnBase = 'https://alloflow-cdn.pages.dev/';
+// In AlloFlowANTI.txt the source looks like this — a bare base, no hash.
+// The desktop build resolves to a relative path instead, because a bundled
+// offline install has no CDN to reach:
+var pluginCdnBase = isDesktopBundledApp ? './' : 'https://alloflow-cdn.pages.dev/';
 // build.js handles versioning. Do NOT paste commit hashes into URLs by hand.
 ```
 
@@ -177,6 +209,24 @@ In Canvas mode, `apiKey` is intentionally empty (`""`). Canvas's proxy intercept
 - **Don't hand-edit CDN URLs** — `build.js` resolves modules to the Cloudflare base + a `?v=` cache-buster automatically (see §4).
 - **Restorative language** — Clinical tools must use person-first, affirming language throughout.
 - **FERPA-aligned by design** — Do not add hidden student-data flows. Any cloud or third-party data path must be explicit, minimized, and school-controlled wherever possible.
+
+---
+
+## Contributors
+
+AlloFlow is built and maintained by:
+
+- **Dr. Aaron Pomeranz, PsyD** — creator and maintainer. School psychologist; sets the pedagogical, clinical, and privacy direction, and writes most of the code.
+- **Tyler Despain** — cybersecurity and IT. Security review, infrastructure, and deployment.
+
+New contributors are genuinely welcome, and the plugin architecture in §3 exists precisely so that a first contribution can be one self-contained file. If you land a change, add yourself here in the same pull request.
+
+Good first areas, if you want somewhere to start:
+
+- **Write a STEM tool.** One file, one `registerTool` call (§3).
+- **In-app help coverage.** `help_strings.js` covers the shell, sidebar, and hubs thoroughly, and currently covers none of the STEM Lab tools. `tool_index.json` already carries an id, label, description, topics, and keywords for every tool, so a baseline is generatable.
+- **Screen-reader testing.** Automated checks and keyboard passes are not the same as someone who uses a screen reader daily.
+- **Translation review.** 63 hand-translated language packs live in `lang/`, including several that rarely get support (Karen, Tigrinya, Marshallese, Maay Maay, Chin Hakha, Acholi). Reviewing one pack as a native speaker is a high-value hour.
 
 ---
 
