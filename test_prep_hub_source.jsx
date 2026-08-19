@@ -3802,6 +3802,10 @@ function TestPrepHub(props) {
       itemCount: pack ? pack.items.length : entry.itemCount,
       pack,
       manifestEntry: entry,
+      // Carried onto the card so the study-first entry point below can render.
+      // It was gated on card.learningLibraryUrl from the start but never
+      // populated here, so that button was dead for every pack.
+      learningLibraryUrl: testPrepNormalizeRepoAssetUrl(entry.learningLibraryUrl || (pack && pack.learningLibraryUrl) || ''),
       unreleased: entry.visibility === 'internal',
     };
   }).concat(
@@ -3820,6 +3824,7 @@ function TestPrepHub(props) {
       itemCount: pack.items.length,
       pack,
       manifestEntry: null,
+      learningLibraryUrl: testPrepNormalizeRepoAssetUrl(pack.learningLibraryUrl || ''),
       unreleased: false,
     })),
   );
@@ -6416,16 +6421,21 @@ function TestPrepHub(props) {
                 <div>
                   <p className="text-xs font-black uppercase tracking-wider text-indigo-700">Native learning catalog</p>
                   <h3 className="text-xl font-black text-slate-900">{(learningLibrary && learningLibrary.title) || selectedPack.shortTitle + ' learning library'}</h3>
-                  <p className="mt-1 max-w-3xl text-sm leading-relaxed text-slate-700">{learningLibrary ? learningLibrary.description : 'Loading chapters, study cards, and memory aids for this pack.'}</p>
+                  <p className="mt-1 max-w-3xl text-sm leading-relaxed text-slate-700">{learningLibrary ? learningLibrary.description : selectedPack.learningLibraryUrl ? 'Loading chapters, study cards, and memory aids for this pack.' : 'This pack ships practice questions only. Packs with a learning library open to chapters, flashcards, and memory aids here.'}</p>
                   {learningLibrary && <p className="mt-1 text-xs font-bold text-emerald-800">{learningLibrary.summary.sourceReviewedChapters || 0} source reviewed · {(learningLibrary.summary.chapters || 0) - (learningLibrary.summary.sourceReviewedChapters || 0)} review required · independent expert validation pending</p>}
                 </div>
                 {libraryChapterId && <div className="flex flex-wrap gap-2"><button type="button" onClick={() => beginAnnotation({ targetType: 'chapter', targetId: libraryChapterId, targetLabel: 'Chapter: ' + (((learningLibrary && learningLibrary.chapters || []).find((chapter) => chapter.id === libraryChapterId) || {}).title || libraryChapterId) })} className="rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-sm font-bold text-amber-950 focus:ring-2 focus:ring-amber-600">Add chapter note</button><button type="button" onClick={() => setLibraryChapterId('')} className="rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-indigo-600">Back to chapter catalog</button></div>}
               </div>
 
-              <nav className="flex flex-wrap gap-2" aria-label="Learning library modes">
+              {selectedPack.learningLibraryUrl && <nav className="flex flex-wrap gap-2" aria-label="Learning library modes">
                 {([['search', 'Search all'], ['chapters', 'Chapters'], ['flashcards', 'Flashcards'], ['memory-aids', 'Memory aids']].concat(learningLibrary && Array.isArray(learningLibrary.glossary) && learningLibrary.glossary.length ? [['glossary', 'Glossary']] : []).concat(learningLibrary && Array.isArray(learningLibrary.constructedResponseWorkshops) && learningLibrary.constructedResponseWorkshops.length ? [['constructed-response', learningLibrary.workshopLabel || 'Written-response workshops']] : [])).map(([id, label]) => <button key={id} type="button" aria-pressed={libraryMode === id} onClick={() => { setLibraryMode(id); setLibraryChapterId(''); setFlashcardRevealed(false); setMemoryAidOpen(''); }} className={'rounded-lg border px-4 py-2 text-sm font-black focus:ring-2 focus:ring-indigo-600 ' + (libraryMode === id ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-400 bg-white text-slate-800')}>{label}</button>)}
-              </nav>
+              </nav>}
 
+              {!selectedPack.learningLibraryUrl && <div className="rounded-xl border border-slate-300 bg-white p-5 text-sm text-slate-800">
+                <p className="font-black text-slate-900">{selectedPack.shortTitle || selectedPack.title} does not include a learning library.</p>
+                <p className="mt-2 leading-relaxed">Its practice questions are available from the Practice tab. Other packs include full study chapters, flashcards, and memory aids; open the pack catalog to find one.</p>
+                <button type="button" onClick={() => setTab('explore')} className="mt-4 rounded-lg bg-indigo-700 px-4 py-2 font-black text-white hover:bg-indigo-800 focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2">Browse packs with study chapters</button>
+              </div>}
               {learningLibraryStatus === 'loading' && <p className="rounded-xl border border-indigo-200 bg-white p-5 text-sm font-bold text-indigo-900" role="status">Loading the learning library…</p>}
               {learningLibraryStatus === 'unavailable' && <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-rose-300 bg-rose-50 p-5 text-sm text-rose-950" role="alert"><p>The learning catalog could not be loaded from AlloFlow's content network. Practice questions remain available from the Practice tab.</p><button type="button" onClick={() => setLearningLibraryRetry((value) => value + 1)} className="rounded-lg border border-rose-400 bg-white px-3 py-2 font-black text-rose-950 hover:bg-rose-100 focus:ring-2 focus:ring-rose-700 focus:ring-offset-2">Retry learning library</button></div>}
 

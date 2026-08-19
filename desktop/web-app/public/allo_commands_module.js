@@ -3725,6 +3725,7 @@ const micLevelMonitor = /* @__PURE__ */ (function() {
         wire(provided, false);
         return release;
       }
+      if (typeof window !== "undefined" && window._isCanvasEnv === true) return release;
       const nav = typeof navigator !== "undefined" ? navigator : null;
       if (!nav || !nav.mediaDevices || typeof nav.mediaDevices.getUserMedia !== "function") return release;
       starting = true;

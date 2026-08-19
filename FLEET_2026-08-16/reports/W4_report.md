@@ -1589,3 +1589,89 @@ fixed threshold in a test that measures work-in-progress is a trap.
 additionally needs new prompts, because its items are bank 1's behind "In a parallel school," and
 stripping that prefix collides with bank 1 in 74 of 100 cases. The ledger and generator extend to
 both; the work is now mechanical rather than exploratory.
+
+## §22 — EPPP chapters were unreachable, and Canvas reloaded on every mic use (2026-08-18)
+
+Two user reports, both root-caused to code rather than content.
+
+### 22.1 "No way to access the textbook chapters in the UI"
+
+The content and its whole delivery path were healthy, which is what made this
+confusing to look at. Verified in order: the local library and the CDN copy both
+hash to the manifest pin `44c037a0…`; the pack hashes to `77fbb8ee…`; the pack
+carries `learningLibraryUrl`; all 49 chapters clear
+`testPrepNativeChapterIsComplete`; `contentMigration.completeSections` is 278 of
+278. Driving the built hub in jsdom, Explore → open pack → Learning library →
+"Open chapter workspace" renders `native-complete` with ~30 k characters.
+
+The defect was the *entry point*. `test_prep_hub_source.jsx` has a "Study the
+learning library" button on each catalog card, added 2026-07-31 with the comment
+"the learning library was only reachable AFTER committing to a practice set."
+It renders behind `card.learningLibraryUrl` — and `catalogCards` never set that
+field, on either card shape. The button has therefore been dead for every pack
+since it was written: the fix was authored but its data was never plumbed, so
+the regression it targeted never actually lifted. A probe confirmed the EPPP
+card offered exactly one button, "Load practice pack".
+
+Second dead end found while probing the path a user actually takes. Clicking
+"Learning library" *before* loading a pack silently falls back to the bundled
+demo pack, which has no library. That rendered: a heading reading "Safety
+Foundations learning library", the line "Loading chapters, study cards, and
+memory aids for this pack." — permanently, since nothing was ever fetched — four
+mode buttons that switch between four empty views, and zero content. Only
+`loading` and `unavailable` had states; `idle` rendered nothing at all.
+
+Fixed: `learningLibraryUrl` carried onto both card shapes; the description no
+longer claims a load that will not happen; the mode nav is suppressed when there
+is no library; and an explicit empty state names the pack, says it has no
+library, and offers a button back to the catalog. One click from the catalog now
+reaches the chapter list, verified against the rebuilt module.
+
+Built with `--skip-pack-rebuild --skip-eppp-preview-rebuild
+--skip-review-refresh`. The full build is blocked by a **pre-existing** hard
+finding: `parapro-writing-skills-023` (item 167, inside the reviewed first 200)
+was re-authored after `non_eppp_eppp_guided_qa_group_b.review.json` was bound,
+so `sourceItemsSha256` no longer matches. **Left untouched deliberately.**
+Re-recording that hash would bless re-authored content under evidence that never
+covered it — the same trap as the snapshot guard in §17. It needs either a
+re-review of parapro or a revert of that item, and it is a content decision, not
+a build chore.
+
+### 22.2 Canvas reloads every time the microphone is used
+
+Reported as a Canvas behaviour to work around. It is ours, and it is two days
+old. Commit `944237f7c` (2026-08-16) added a shared microphone **level meter**
+whose `acquire()` opens its **own** `getUserMedia` when the caller does not hand
+it a stream — and the Web Speech path calls `startMicMeter(null)`.
+
+On Canvas the document is a `blob:`/one-shot URL, so microphone permission
+cannot persist against its origin: every acquisition re-prompts, and answering
+the prompt reloads the frame, which there destroys the session rather than
+restarting it (the same property already documented at AlloFlowANTI.txt:36364).
+Before the meter, a voice session made exactly one acquisition — the
+recognizer's own — hence one reload the first time and none after. The meter
+added a second, independent acquisition on every start. That is the regression,
+and it matches the report precisely: "in the past it just caused one refresh the
+first time."
+
+Fixed by suppressing **only** the self-acquiring branch under
+`window._isCanvasEnv`. A caller-provided stream still gets a live meter on
+Canvas, because reusing a held stream costs no prompt; every non-Canvas surface
+is untouched.
+
+Deliberately **not** done: making the mic stay warm across sessions generally.
+That would quietly undo `75773926b`, which made `pause()` release the microphone
+so the browser recording indicator goes dark — "a muted-but-still-held mic is
+not a pause a teacher can trust in a room with children." Restoring one reload
+is not worth silently weakening that.
+
+`tests/canvas_mic_meter_no_second_stream.test.js` pins all three behaviours and
+was calibrated against the pre-fix module: with the guard removed it fails.
+
+**Gates:** 174 voice/command tests, 65 hub tests, mic-feedback suite. The three
+`check_free_vars` findings (`isGlobalMuted`, `define`, `global`) are byte-identical
+at HEAD and are not from this work.
+
+**Unverified:** neither fix has been exercised in Canvas itself. The mic fix is
+reasoned from the reload mechanism plus the commit that introduced the second
+acquisition, and pinned by unit test; confirming it needs a Canvas session.

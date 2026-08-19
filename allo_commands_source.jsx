@@ -3240,6 +3240,21 @@ const micLevelMonitor = (function () {
       if (refs > 1 || analyser || starting) return release;
       const provided = acquireOpts && acquireOpts.stream;
       if (provided) { wire(provided, false); return release; }
+      // Canvas: NEVER open a second getUserMedia just to draw a level bar.
+      // A Gemini Canvas document is a blob:/one-shot URL, so microphone
+      // permission cannot persist against its origin — every acquisition
+      // re-prompts, and answering the prompt reloads the frame, which on
+      // Canvas is not a refresh but the loss of the session. Before this
+      // meter existed there was one acquisition per voice session (the
+      // recognizer's own), so users saw a single reload the first time.
+      // The meter added a SECOND, independent acquisition on every start,
+      // which is why the reload came back on every use.
+      //
+      // Scoped deliberately to the self-acquiring branch: the caller-provided
+      // stream above is free (the Whisper engine already holds it) and still
+      // gets a live meter on Canvas. Only the standalone request is dropped,
+      // and only there — every other surface keeps the meter.
+      if (typeof window !== 'undefined' && window._isCanvasEnv === true) return release;
       const nav = typeof navigator !== 'undefined' ? navigator : null;
       if (!nav || !nav.mediaDevices || typeof nav.mediaDevices.getUserMedia !== 'function') return release;
       starting = true;
