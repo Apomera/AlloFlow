@@ -1,6 +1,6 @@
 # ParaPro diagnostic-bank QA report
 
-Generated: 2026-08-16T22:55:32.859Z
+Generated: 2026-08-18T20:47:09.911Z
 
 Pack: ParaPro Assessment (1755) - 200 Source Questions + 300 Independent Practice Questions v0.7.0
 
@@ -246,6 +246,5 @@ The official blueprint has 30 questions in each domain, with approximately two-t
 | parapro-writing-application-020 | writing | application | pass | 2 |
 | parapro-writing-application-021 | writing | application | pass | 2 |
 | parapro-writing-application-022 | writing | application | pass | 2 |
-
 
 - Independent-batch audit: 200 original source questions plus 300 assistant-authored independent practice questions produce 500 distinct independent content kernels. 0 additional activities remain guided review only. 0 new independent questions remain to reach 500.

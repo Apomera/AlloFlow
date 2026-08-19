@@ -1,6 +1,6 @@
 # Praxis Core Combined (5752) learning-library QA
 
-Generated: 2026-08-16T22:55:47.857Z
+Generated: 2026-08-18T20:47:11.383Z
 
 - Status: **PASS**
 - Chapters: 12

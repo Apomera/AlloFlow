@@ -6,8 +6,8 @@
   "status": "reviewed-target-not-met",
   "snapshot": {
     "algorithm": "sha256",
-    "generatedAt": "2026-08-17T21:52:07.652Z",
-    "hash": "eb7a4de351ae23cb8dbf77797bdf0d726275659479eb86aed05de3a9cc010ba4"
+    "generatedAt": "2026-08-18T20:47:48.864Z",
+    "hash": "9a6d53ead23c59183b249232c64a0ce109193ae8fd02fb6c0bc27f9247bfa6b4"
   },
   "standard": {
     "target": "500 genuinely distinct exam-style questions per non-EPPP pack",
@@ -127,7 +127,7 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 296,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "d8f61df57ed847ce0d262078603554db038bd3fbbc9d5668a54c1fbe6a5b4b05",
+      "packSha256": "df8b9ddb6d9da92897b4a13423817da1990334389eba8961caba349e7e2e239b",
       "itemsSha256": "9894da8379a5963a73b86194c84179a61421b09a762c5c3a4a2d951e5f0e1429"
     },
     {
@@ -146,7 +146,7 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 295,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "aad848ddb8ce901b0469c9a58e9572a0cc44d3a6863c052d14383818c12ab1bd",
+      "packSha256": "99d7d386620f2ce572b4d5534a060dc577ea0001f683b43cc8699ec1e267fb95",
       "itemsSha256": "6cfdc7cca19c12804e1eab2b5fdaf00427e6dd4bc8f11e2cf5d9fbbb8959ed1c"
     },
     {
@@ -165,7 +165,7 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 300,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "59a00531818866f2ff00fd2612599fb11c5c5ed514e8da4985d1dfdde76173b4",
+      "packSha256": "185e910b08add3da642d4f49dd8e0d606d895da21d3ea93aa23a36e4098bf416",
       "itemsSha256": "7fa8331c523b650c88df9eabdc8b58fc862f2fd7d1d9096eb77f1481ad54f4ed"
     },
     {
@@ -203,8 +203,8 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 0,
       "verdict": "reviewed-target-met",
-      "packSha256": "576723a01fb78af87e7f6057878723ceb920a77c76a244c74a025fe2a5871dbd",
-      "itemsSha256": "a6f855c7352eb8b3332d68a2889b8bda25693091e8ed4ce189ceaf9bc2341019"
+      "packSha256": "91cef4a2a38e243423edd63c5f837ce923b946945212b2c804057e8e18c48f28",
+      "itemsSha256": "39c016af4d7f0849f9194537adbe7152d7a64519101706e54309a824034c90f3"
     },
     {
       "stem": "plt_5_9_5623",
@@ -355,7 +355,7 @@
       "independentQuestionTarget": 500,
       "newIndependentItemsNeeded": 365,
       "verdict": "reviewed-target-not-met",
-      "packSha256": "02650e2c7f756eeb62e3a910c2001df860b62ec25e6e5de0cf61e94cd146ed99",
+      "packSha256": "86f962fac2d4aa3eb72ece063051dda5483f2b40b03de1ff8664c367bba268d6",
       "itemsSha256": "8941238fedea371635805cca5228cabb3dd8d7e6104f1c3494c8b482cfc01323"
     },
     {

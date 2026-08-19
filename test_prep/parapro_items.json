@@ -6132,15 +6132,15 @@
     "type": "single-choice",
     "domainId": "writing",
     "difficulty": "foundation",
-    "prompt": "Which sentence correctly matches the verb to its subject when the subjects are joined by a conjunction?",
+    "prompt": "Which sentence has correct subject-verb agreement?",
     "choices": [
-      "Neither the coaches nor the captain plan to attend the assembly.",
-      "The teacher and the aide prepares the materials each morning.",
-      "Either the students or the teacher are leading the discussion.",
-      "Neither the posters nor the banner was ready before the assembly."
+      "The box of donated books are beside the office door.",
+      "The students in the reading group meets every Tuesday.",
+      "The list of new volunteers include three family members.",
+      "The box of donated books is beside the office door."
     ],
     "answerIndex": 3,
-    "rationale": "When subjects are joined by the correlative conjunctions neither/nor or either/or, the verb agrees with whichever subject is nearer to it. In the correct sentence the nearer subject \"banner\" is singular, so the singular verb \"was\" is required. A compound subject joined by \"and\" is a separate rule and takes a plural verb.",
+    "rationale": "The phrase of donated books does not change the number of the subject box. Because box is singular, the correct verb is is; the other sentences mismatch their subjects and verbs.",
     "references": [
       "https://www.ets.org/pdfs/parapro/1755.pdf",
       "https://openstax.org/books/writing-guide/pages/handbook"
@@ -6152,10 +6152,10 @@
     "qaStatus": "qa-passed",
     "qaReviewedAt": "2026-07-13",
     "choiceRationales": [
-      "Not the best answer. With neither/nor the verb agrees with the nearer subject, and \"captain\" is singular, so \"plans\" is required. When subjects are joined by the correlative conjunctions neither/nor or either/or, the verb agrees with whichever subject is nearer to it. In the correct sentence the nearer subject \"banner\" is singular, so the singular verb \"was\" is required. A compound subject joined by \"and\" is a separate rule and takes a plural verb.",
-      "Not the best answer. Two subjects joined by \"and\" form a plural compound subject, so \"prepare\" is required rather than \"prepares\". When subjects are joined by the correlative conjunctions neither/nor or either/or, the verb agrees with whichever subject is nearer to it. In the correct sentence the nearer subject \"banner\" is singular, so the singular verb \"was\" is required. A compound subject joined by \"and\" is a separate rule and takes a plural verb.",
-      "Not the best answer. With either/or the verb agrees with the nearer subject, and \"teacher\" is singular, so \"is leading\" is required. When subjects are joined by the correlative conjunctions neither/nor or either/or, the verb agrees with whichever subject is nearer to it. In the correct sentence the nearer subject \"banner\" is singular, so the singular verb \"was\" is required. A compound subject joined by \"and\" is a separate rule and takes a plural verb.",
-      "Correct. When subjects are joined by the correlative conjunctions neither/nor or either/or, the verb agrees with whichever subject is nearer to it. In the correct sentence the nearer subject \"banner\" is singular, so the singular verb \"was\" is required. A compound subject joined by \"and\" is a separate rule and takes a plural verb."
+      "This option does not fit because the singular subject box requires is rather than are. The stated information or governing rule points to a different result.",
+      "This option does not fit because the plural subject students requires meet rather than meets. The stated information or governing rule points to a different result.",
+      "This option does not fit because the singular subject list requires includes rather than include. The stated information or governing rule points to a different result.",
+      "The subject is the singular noun box, so the singular verb is agrees with it. It is the only option that satisfies every part of the prompt."
     ],
     "skillIds": [
       "writing-revision-clarity"

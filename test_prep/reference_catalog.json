@@ -838,10 +838,11 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1002/ejsp.2420010202": {
+    "url": "https://doi.org/10.1002/ejsp.2420010202",
     "title": "Social Categorization and Intergroup Behaviour",
     "organization": "European Journal of Social Psychology",
-    "summary": "Tajfel and colleagues found that assignment to arbitrary, meaningless categories was sufficient to produce allocation favouring the in-group, even where participants gained nothing personally and the groups had no history, contact, or competing interest.",
-    "credibility": "This peer-reviewed study is the primary minimal-group experiment underlying social identity theory and is indexed through a DOI. It is the evidence that separates a categorization account of intergroup bias from a resource-competition account.",
+    "summary": "Tajfel, Billig, Bundy, and Flament report minimal-group experiments in which arbitrary classification influenced allocation of real rewards, including choices favoring one's assigned category over another category.",
+    "credibility": "This DOI identifies the peer-reviewed foundational minimal-group experiment published by Wiley in the European Journal of Social Psychology, making it a primary empirical source for the allocation effect tested.",
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1002/j.1556-6676.1992.tb01642.x": {
@@ -1211,6 +1212,7 @@
     "metadataSource": "pack-authored"
   },
   "https://doi.org/10.1016/S0022-5371(74)80011-3": {
+    "url": "https://doi.org/10.1016/S0022-5371(74)80011-3",
     "title": "Reconstruction of Automobile Destruction: An Example of the Interaction Between Language and Memory",
     "organization": "Journal of Verbal Learning and Verbal Behavior",
     "summary": "Loftus and Palmer showed that the verb used in a post-event question changed both speed estimates and later reports of broken glass that had never been present, demonstrating that information supplied after an event can be integrated into a witness memory of it.",
@@ -3836,6 +3838,7 @@
     "metadataSource": "pack-authored"
   },
   "https://openstax.org/books/psychology-2e/pages/10-introduction": {
+    "url": "https://openstax.org/books/psychology-2e/pages/10-introduction",
     "title": "Emotion and Motivation — Psychology 2e",
     "organization": "OpenStax, Rice University",
     "summary": "This chapter distinguishes intrinsic motivation, sustained by interest and satisfaction inherent in an activity, from extrinsic motivation driven by separable consequences, and describes the overjustification pattern in which salient external reward reduces later interest in an activity that was already intrinsically motivating.",
@@ -4078,6 +4081,7 @@
     "metadataSource": "pack-authored"
   },
   "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories": {
+    "url": "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories",
     "title": "Lifespan Theories — Psychology 2e",
     "organization": "OpenStax, Rice University",
     "summary": "This section sets out Erikson psychosocial theory as a sequence of stage-specific conflicts across the lifespan, describing the developmental task of each period and the way resolution of an earlier conflict shapes the resources a person brings to later ones.",
@@ -4085,6 +4089,7 @@
     "metadataSource": "pack-authored"
   },
   "https://openstax.org/books/psychology-2e/pages/9-3-stages-of-development": {
+    "url": "https://openstax.org/books/psychology-2e/pages/9-3-stages-of-development",
     "title": "Stages of Development — Psychology 2e",
     "organization": "OpenStax, Rice University",
     "summary": "This chapter describes Piagetian stages in developmental sequence, including sensorimotor coordination of action with perception, the emergence of symbolic thought together with egocentrism and centration in the preoperational period, and the later arrival of conservation and reversible operations.",
@@ -7908,6 +7913,7 @@
     "metadataSource": "pack-authored"
   },
   "https://www.itl.nist.gov/div898/handbook/glossary.htm": {
+    "url": "https://www.itl.nist.gov/div898/handbook/glossary.htm",
     "title": "NIST/SEMATECH e-Handbook of Statistical Methods Glossary",
     "organization": "National Institute of Standards and Technology",
     "summary": "The handbook glossary defines statistical significance in terms of the probability of the observed data under a null hypothesis, and separates that probability from the magnitude of an observed effect and from the sample size that influences whether a small effect reaches significance.",
@@ -9647,10 +9653,11 @@
     "metadataSource": "pack-authored"
   },
   "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf": {
+    "url": "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf",
     "title": "Standards for Educational and Psychological Testing",
-    "organization": "American Educational Research Association, American Psychological Association, and National Council on Measurement in Education",
-    "summary": "The Standards define validity as the degree to which evidence and theory support the interpretations of test scores for proposed uses, and require that interpretation rest on convergent evidence rather than on a single instrument or protocol considered in isolation.",
-    "credibility": "This is the joint professional standard for testing practice in the United States, published by the three organizations that govern educational and psychological measurement. It directly governs how much interpretive weight a single projective protocol may carry in an evaluation.",
+    "organization": "AERA, American Psychological Association, and NCME",
+    "summary": "The joint professional Standards organize validity evidence around the intended interpretation and use of scores, including evidence from internal structure and relations with other variables such as convergent and discriminant patterns.",
+    "credibility": "AERA, APA, and NCME jointly publish the principal U.S. professional consensus standards for educational and psychological testing. This primary source is authoritative for the validity-evidence framework used in the item.",
     "metadataSource": "pack-authored"
   },
   "https://www.thebowencenter.org/differentiation-of-self": {

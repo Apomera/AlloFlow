@@ -1,6 +1,6 @@
 # Praxis Speech-Language Pathology (5331) QA report
 
-Generated: 2026-08-16T22:55:44.762Z
+Generated: 2026-08-18T20:47:10.628Z
 
 ## Result
 

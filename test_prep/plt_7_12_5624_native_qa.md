@@ -7,6 +7,4 @@
 
 > Not ETS or CCSSO approval; independent grades 7–12 educator, accessibility, legal, and psychometric validation remain pending.
 
-
-
-- Independent-batch audit: 200 original source questions plus 0 assistant-authored independent practice questions produce 100 distinct independent content kernels. 300 additional activities remain guided review only. 400 new independent questions remain to reach 500.
+- Assistant audit: 200 source questions contain 100 distinct source content kernels and 100 parallel variants under the normalized answer-set/rationale/reference test. 300 activities are source-derived guided review, not independent exam-item banks. The 500-distinct-question target is not met.
