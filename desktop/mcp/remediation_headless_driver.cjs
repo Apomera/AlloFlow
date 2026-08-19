@@ -921,10 +921,19 @@ function createDriver(options) {
 
   async function newPipelinePage(runOpts) {
     requireModuleFiles();
-    const resolved = resolveGeminiApiKey();
-    const apiKey = resolved.key;
-    if (!apiKey) throw new Error('GEMINI_API_KEY is not set (and no key file was found). The remediation pipeline needs a Gemini API key — set the env var or point ALLOFLOW_MCP_ENV_PATH at an env file containing one.');
-    if (resolved.source !== 'env:GEMINI_API_KEY') log('using Gemini key from ' + resolved.source);
+    // Agent bridge: when the caller supplies modelBridge, the MCP CLIENT's own model answers
+    // the pipeline's calls instead of Gemini. No key is required and no Gemini request is made
+    // — the prompts (which carry document-derived content) go to the client conversation.
+    const modelBridge = typeof runOpts.modelBridge === 'function' ? runOpts.modelBridge : null;
+    let apiKey = null;
+    if (modelBridge) {
+      log('model transport: agent bridge — the MCP client\'s model answers pipeline calls (no Gemini key, no Gemini egress)');
+    } else {
+      const resolved = resolveGeminiApiKey();
+      apiKey = resolved.key;
+      if (!apiKey) throw new Error('GEMINI_API_KEY is not set (and no key file was found). The remediation pipeline needs a Gemini API key — set the env var or point ALLOFLOW_MCP_ENV_PATH at an env file containing one.');
+      if (resolved.source !== 'env:GEMINI_API_KEY') log('using Gemini key from ' + resolved.source);
+    }
     // Per-run log sink: job-based callers route a run's telemetry into that job's record;
     // everything still lands on the driver-level log (stderr) too via the caller's sink.
     const rlog = typeof runOpts.onLog === 'function' ? runOpts.onLog : log;
@@ -966,9 +975,30 @@ function createDriver(options) {
     // no listener, DNS, network request, cookie scope, or document data leaves the machine.
     await abortablePromise(installVendorRuntime(page, { loadCore: true }), signal);
 
+    // Bridge failures cross back to the page in the same envelope shape the Gemini transport
+    // uses, so the pipeline's retry/degradation taxonomy applies unchanged.
+    const bridgeCall = (kind, prompt, parts) => trackTransport(async () => {
+      try {
+        if (runOpts.signal && runOpts.signal.aborted) throw Object.assign(new Error('Run cancelled'), { isAbort: true });
+        const text = await modelBridge({ kind, prompt: String(prompt), parts });
+        if (typeof text !== 'string' || !text.length) throw new Error('agent bridge returned an empty reply');
+        return { ok: true, text };
+      } catch (e) {
+        return {
+          ok: false,
+          error: {
+            message: (e && e.message) || String(e),
+            code: (e && e.code) || 'agent_bridge_error',
+            isAbort: !!(e && (e.isAbort || e.name === 'AbortError')) || !!(runOpts.signal && runOpts.signal.aborted),
+          },
+        };
+      }
+    });
     await page.exposeFunction('__mcpGeminiText', async (prompt) => {
+      const parts = [{ text: String(prompt) }];
+      if (modelBridge) return bridgeCall('text', prompt, parts);
       return trackTransport(() => geminiCallWithFallback({
-        apiKey, model: DEFAULT_MODEL, parts: [{ text: String(prompt) }], log: rlog,
+        apiKey, model: DEFAULT_MODEL, parts, log: rlog,
         signal: runOpts.signal, transportState,
       }));
     });
@@ -978,18 +1008,14 @@ function createDriver(options) {
       // — audio/video transcription and already-image payloads pass through untouched, since the
       // point is to remove the PDF content type, not to re-encode everything.
       const pageImages = runOpts.pageImages;
-      if (pageImages && pageImages.length && mime === 'application/pdf') {
-        return trackTransport(() => geminiCallWithFallback({
-          apiKey, model: DEFAULT_MODEL, log: rlog,
-          parts: [{ text: String(prompt) }].concat(
-            pageImages.map((p) => ({ inline_data: { mime_type: 'image/png', data: p } }))
-          ),
-          signal: runOpts.signal, transportState,
-        }));
-      }
+      const parts = (pageImages && pageImages.length && mime === 'application/pdf')
+        ? [{ text: String(prompt) }].concat(
+          pageImages.map((p) => ({ inline_data: { mime_type: 'image/png', data: p } }))
+        )
+        : [{ text: String(prompt) }, { inline_data: { mime_type: mime, data: String(base64Data || '') } }];
+      if (modelBridge) return bridgeCall('vision', prompt, parts);
       return trackTransport(() => geminiCallWithFallback({
-        apiKey, model: DEFAULT_MODEL, log: rlog,
-        parts: [{ text: String(prompt) }, { inline_data: { mime_type: mime, data: String(base64Data || '') } }],
+        apiKey, model: DEFAULT_MODEL, log: rlog, parts,
         signal: runOpts.signal, transportState,
       }));
     });
@@ -1010,6 +1036,19 @@ function createDriver(options) {
       const w = window;
       // Host-state slot the OCR path reads (language picker parity).
       w.__docPipelineState = { pdfOcrLanguage: cfg.ocrLanguage || '', pdfDocumentEpoch: cfg.documentEpoch };
+      if (cfg.agentBridge) {
+        // Declare the transport's latency character to the pipeline (supported host knob, not a
+        // fork): the "model" is a conversational client that reads a 15–20KB prompt and composes
+        // its reply over a tool-call round trip, so per-call deadlines tuned for an HTTP socket
+        // (180s text / 120s vision) misread healthy calls as failures, and there is no Gemini
+        // quota for pacing or calm probes to protect.
+        w.__alloHostTransportProfile = {
+          kind: 'agent-bridge',
+          textInitialMs: 600000, textRetryMs: 600000,
+          visionInitialMs: 600000, visionRetryMs: 600000,
+          pacingExempt: true, probeExempt: true,
+        };
+      }
       // ── Document ownership stamp (required since the pipeline's ownership-epoch gate) ──
       // fixAndVerifyPdf refuses to start an "unstamped" run: an unowned document means a
       // completion could be attributed to a document that was swapped mid-run. In the app the
@@ -1062,7 +1101,7 @@ function createDriver(options) {
       });
       w.__mcpRunAbortController = new AbortController();
       w.__alloPdfAbortSignal = w.__mcpRunAbortController.signal;
-    }, { ocrLanguage: runOpts.ocrLanguage || '', fileName: runOpts.fileName || '', documentEpoch: ++documentEpochSeq });
+    }, { ocrLanguage: runOpts.ocrLanguage || '', fileName: runOpts.fileName || '', documentEpoch: ++documentEpochSeq, agentBridge: !!modelBridge });
 
     return { page, context };
   }
@@ -2756,6 +2795,11 @@ function createDriver(options) {
     auditWithBothEngines, htmlDerivatives, exportAltFormat, auditHtml,
     cancelActiveRun, close,
     takeLastRunDiagnostics: () => lastRunDiagnostics,
+    // Test-only surfaces for the agent-bridge end-to-end test: the same scripted replies and
+    // one-page PDF the keyless selftest uses, so a bridge-transported run can be driven to
+    // completion without any model. Not part of the tool surface.
+    _selfTestScriptedReply: selfTestReply,
+    _buildSelfTestPdf: buildSelfTestPdf,
   };
 }
 

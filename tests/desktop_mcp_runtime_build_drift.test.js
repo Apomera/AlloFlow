@@ -17,6 +17,7 @@ function startDisposableServer(root) {
     'alloflow-remediation-mcp-stdio.cjs',
     'remediation_headless_driver.cjs',
     'zip_writer.cjs',
+    'connector_version.cjs',
   ]) copyFileSync(join(MCP_DIR, name), join(serverDir, name));
   cpSync(join(MCP_DIR, 'vendor'), join(serverDir, 'vendor'), { recursive: true });
 
@@ -116,7 +117,11 @@ describe('desktop MCP runtime build fencing', function () {
       const capability = capabilityReply.result.structuredContent;
       expect(capabilityReply.result.isError).toBe(false);
       expect(capability.runtimeBuild.current).toBe(false);
-      expect(capability.onboarding.state).toBe('reinstall-required');
+      // 'restart-required', NOT 'reinstall-required': post-boot drift means the running
+      // process is stale while the install itself is intact — telling the user to reinstall
+      // an extension they just correctly updated was the wrong instruction.
+      expect(capability.onboarding.state).toBe('restart-required');
+      expect(capability.onboarding.message).toMatch(/quitting the app completely/i);
 
       const selfTest = await server.request('tools/call', {
         name: 'remediation_selftest', arguments: {},

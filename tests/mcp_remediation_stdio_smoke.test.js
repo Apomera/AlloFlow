@@ -145,16 +145,18 @@ describe('remediation MCP: protocol + tool registry', () => {
     expect((await request('prompts/get', { name: 'remediate_document', arguments: {} })).error.code).toBe(-32602);
     expect((await request('prompts/get', { name: 'unknown', arguments: { document: 'x' } })).error.code).toBe(-32602);
   });
-  it('lists exactly the twenty-nine tools, underscore-named, each with title + annotations', async () => {
+  it('lists exactly the registered tools, underscore-named, each with title + annotations', async () => {
     const { tools } = (await request('tools/list', {})).result;
     expect(tools.map((t) => t.name).sort()).toEqual([
       'apply_form_fields', 'audit_html', 'audit_two_engines', 'check_document_structure', 'describe_images', 'detect_form_fields',
       'export_accessible_office', 'export_alt_format',
       'extract_document_text', 'fix_contrast', 'generate_conformance_report', 'generate_resource_pack',
       'pdf_audit', 'pdf_batch_audit_start', 'pdf_batch_remediate_start', 'pdf_remediate',
+      'pdf_remediate_agent_start',
       'pdf_remediate_from_scoreboard_start', 'pdf_remediate_start',
       'pdf_validate_ua',
       'redact_document',
+      'remediation_agent_cancel', 'remediation_agent_requests', 'remediation_agent_respond',
       'remediation_capabilities', 'remediation_job_cancel', 'remediation_job_diagnostics', 'remediation_job_result', 'remediation_job_status',
       'remediation_selftest', 'remediation_setup', 'remediation_verify_key',
       'simplify_accessible_html', 'transcribe_media', 'translate_accessible_html',
@@ -224,7 +226,12 @@ describe('remediation MCP: protocol + tool registry', () => {
     expect(cap.geminiRequiredToolNames).toContain('pdf_remediate');
     expect(cap.geminiRequiredToolNames).not.toContain('pdf_validate_ua');
     expect(cap.keylessToolNames).toContain('generate_resource_pack');
-    expect(new Set([...cap.keylessToolNames, ...cap.geminiRequiredToolNames]).size).toBe(31);
+    expect(new Set([...cap.keylessToolNames, ...cap.geminiRequiredToolNames]).size).toBe(35);
+    // The agent-bridge lane is keyless by construction — the client's model is the engine —
+    // and its description-level honesty (prompts surface to the client) rides the note field.
+    expect(cap.keylessToolNames).toContain('pdf_remediate_agent_start');
+    expect(cap.dataHandling.offlineToolNames).toContain('remediation_agent_requests');
+    expect(cap.dataHandling.note).toMatch(/agent-bridge tools .* surface document-derived prompts to the MCP CLIENT/i);
     expect(cap.dataHandling.publicDependencyDownloadToolNames.sort()).toEqual([
       'export_accessible_office', 'export_alt_format', 'remediation_setup',
     ]);
@@ -239,8 +246,8 @@ describe('remediation MCP: protocol + tool registry', () => {
       cap.dataHandling.credentialCheckToolNames,
       cap.dataHandling.geminiDocumentEgressToolNames,
     ];
-    expect(new Set(privacyGroups.flat()).size).toBe(31);
-    expect(privacyGroups.reduce((sum, group) => sum + group.length, 0)).toBe(31); // disjoint, not merely exhaustive
+    expect(new Set(privacyGroups.flat()).size).toBe(35);
+    expect(privacyGroups.reduce((sum, group) => sum + group.length, 0)).toBe(35); // disjoint, not merely exhaustive
     // A key check contacts Gemini but sends no document content, so it must be in
     // neither the offline list nor the document-egress list.
     expect(cap.dataHandling.credentialCheckToolNames).toEqual(['remediation_verify_key']);
@@ -286,13 +293,16 @@ describe('remediation MCP: protocol + tool registry', () => {
     const registry = requireCjs(resolve(process.cwd(), 'desktop/mcp/build_registry_metadata.cjs'));
     const artifact = join(tmp, 'registry-fixture.mcpb');
     writeFileSync(artifact, Buffer.alloc(2048, 0x41));
-    const metadata = registry.buildRegistryMetadata({ artifactPath: artifact, tag: 'mcpb-v0.3.5' });
+    // The version comes from the single source (desktop/mcp/connector_version.cjs) so this
+    // test can never pin a stale number again — that drift failed releases 0.3.1–0.3.5.
+    const connectorVersion = requireCjs(resolve(process.cwd(), 'desktop/mcp/connector_version.cjs'));
+    const metadata = registry.buildRegistryMetadata({ artifactPath: artifact, tag: 'mcpb-v' + connectorVersion });
     expect(metadata.$schema).toBe('https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json');
     expect(metadata.name).toBe('io.github.Apomera/alloflow-remediation');
-    expect(metadata.version).toBe('0.3.5');
+    expect(metadata.version).toBe(connectorVersion);
     expect(metadata.packages).toHaveLength(1);
     expect(metadata.packages[0].registryType).toBe('mcpb');
-    expect(metadata.packages[0].identifier).toBe('https://github.com/Apomera/AlloFlow/releases/download/mcpb-v0.3.5/alloflow-remediation.mcpb');
+    expect(metadata.packages[0].identifier).toBe('https://github.com/Apomera/AlloFlow/releases/download/mcpb-v' + connectorVersion + '/alloflow-remediation.mcpb');
     expect(metadata.packages[0].fileSha256).toBe('3a34c8dc4aec1554c04e0d0e61179d08362b329029db4632f5f086c37be74caa');
     expect(metadata.packages[0].transport.type).toBe('stdio');
   });
@@ -309,7 +319,7 @@ describe('remediation MCP: protocol + tool registry', () => {
     const staged = join(tmp, 'clean-mcpb-layout');
     built.stageBundle(staged);
     const manifest = JSON.parse(readFileSync(join(staged, 'manifest.json'), 'utf8'));
-    expect(manifest.tools).toHaveLength(31);
+    expect(manifest.tools).toHaveLength(35);
     expect(readFileSync(join(staged, 'server', 'vendor', 'manifest.json'), 'utf8')).toContain('"schema": 1');
     expect(readFileSync(join(staged, 'server', 'vendor', 'THIRD_PARTY_NOTICES.md'), 'utf8')).toMatch(/axe-core/i);
 
@@ -350,7 +360,7 @@ describe('remediation MCP: protocol + tool registry', () => {
       const initialized = await rpc(1, 'initialize', { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'clean-stage', version: '1' } });
       expect(initialized.result.serverInfo.name).toBe('alloflow-remediation');
       const listed = await rpc(2, 'tools/list', {});
-      expect(listed.result.tools).toHaveLength(31);
+      expect(listed.result.tools).toHaveLength(35);
       const capabilities = await rpc(3, 'tools/call', { name: 'remediation_capabilities', arguments: {} });
       const cleanCap = capabilities.result.structuredContent;
       expect(cleanCap.vendorAssets.present).toBe(true);

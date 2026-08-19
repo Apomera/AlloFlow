@@ -39,7 +39,9 @@ tool is left unclassified.
 
 `onboarding` is the machine-readable first-run decision. A client should follow its `nextTool`
 when `actionRequired` is true. `setup-required` means call `remediation_setup` once;
-`reinstall-required` means the package or its integrity-checked assets are incomplete.
+`reinstall-required` means the package or its integrity-checked assets are incomplete;
+`restart-required` means the install is fine but the files changed after the server process
+started (a just-updated extension) — quit the client app completely and reopen it.
 `keyless-ready` is a usable state, not a failure. `remediation_selftest` is recommended but
 optional once the browser is installed.
 
@@ -49,7 +51,7 @@ a time; concurrent calls get a clean busy error.
 
 ## Setup
 
-From the repo root (`UDL-Tool-Updated`):
+From the repo root (the folder your clone lives in — `AlloFlow` for a fresh GitHub clone):
 
 ```bash
 npm install                          # playwright is already a devDependency
@@ -204,6 +206,58 @@ pipeline's prompts and OCR flow. Those calls can't ride the Claude subscription:
 **The practical answer:** a free Google AI Studio key (aistudio.google.com → "Get API key",
 ~2 minutes). The free tier of the flash models is generous enough for real remediation runs.
 The Canvas app never needs this — only this connector does.
+
+**The other answer — no key at all:** the agent-bridge lane below runs the same pipeline with
+the MCP client's own model as the engine.
+
+## The agent-bridge lane: your Claude subscription as the engine (no key)
+
+`pdf_remediate_agent_start` runs the full canonical pipeline — same audits, same honesty
+gates, same tagged-PDF safety verdicts — but every internal model call **pauses and is
+published as a pending request** that the MCP client answers:
+
+```
+pdf_remediate_agent_start   → { runId }
+remediation_agent_requests  → run state + pending prompts (long-poll; vision requests
+                              include the rendered page images as image content)
+remediation_agent_respond   → the client's reply for one request; the pipeline continues
+remediation_agent_cancel    → abort; files already written stay
+```
+
+The client's model — for most people, the Claude subscription they already have — plays the
+role Gemini normally plays. Since MCP sampling is not yet supported by Claude's clients, this
+is the same idea implemented over ordinary tool calls: the server never contacts Gemini, needs
+no key, and makes no external model request at all.
+
+Honesty notes, because this lane moves the data boundary rather than removing it:
+
+- **Document-derived prompts are surfaced to the client conversation.** That content goes to
+  whatever provider the client's model runs on (e.g. Anthropic under the user's own account) —
+  the same place every keyless tool's *results* already go, but at prompt-level granularity.
+  `dataHandling.note` states this; so do the tool descriptions.
+- **The reply contract is the pipeline's, not the client's.** Each pending request embeds the
+  pipeline's own prompt; the strict parsers discard malformed replies and re-ask, so a client
+  that ignores the format contract wastes its own turns.
+- **The verdict stays honesty-gated.** A client that answers the audit prompts carelessly gets
+  a degraded, disclosed verdict — exactly as a misbehaving Gemini would. The result carries
+  `modelTransport: "agent-bridge"` and `modelCallsAnswered` so nobody can mistake the engine.
+- Expect roughly 10–40 requests per document (more with `auto_continue` or scanned pages).
+  Text-first documents are the sweet spot; scanned pages surface as images to describe. Agent
+  runs are conversation-scoped: they hold the single-flight lane, default to a 60-minute wall
+  clock (`max_run_minutes`, cap 180), and do not survive a server restart — the conversation
+  driving one is its state.
+- **The transport is latency-tuned for a conversational client** (2026-08-19 perf report): the
+  driver publishes a host transport profile that widens the pipeline's per-call deadlines to
+  600s (vs 180s text / 120s vision tuned for HTTP sockets) and exempts the run from Gemini
+  quota pacing and calm probes, since nothing goes to Gemini. If the pipeline ever does re-ask,
+  re-asks are idempotent at the bridge: a re-ask of a still-pending prompt coalesces onto the
+  same `requestId`, and a re-ask of an already-answered prompt is served from the delivered
+  answer — client work is never destroyed. The result's `bridgeStats` reports published
+  requests, coalesced re-asks, replayed answers, and measured per-request client latency.
+
+End-to-end proof: `tests/mcp_agent_bridge_e2e.test.js` drives a real run through this exact
+tool sequence with the selftest's scripted replies standing in for the client — no key in the
+environment, tagged PDF delivery-verified.
 
 ## Tools
 
@@ -502,7 +556,8 @@ hash-verified `vendor/` browser runtime plus its third-party notices, `PRIVACY.m
 `io.modelcontextprotocol/skills` extension and serves that file through `skills/list`,
 `skills/get`, `resources/list`, and `resources/read` with a SHA-256 digest. Supporting clients can
 therefore import the safe workflow without a separately maintained copy; other clients ignore the
-extension and keep using the same 29 tools. The installer may accept an optional Gemini API key
+extension and keep using the same tools (the registry and the MCPB manifest are pinned to
+each other by `tests/mcp_remediation_stdio_smoke.test.js`, so the count lives there, not here). The installer may accept an optional Gemini API key
 (stored by Claude Desktop and injected as `GEMINI_API_KEY`; never embedded in the bundle).
 Install by dragging the `.mcpb` into Claude Desktop Settings > Extensions. Host machines
 still need Node 18+ on PATH and a one-time `npx playwright install chromium`; capabilities

@@ -88,7 +88,7 @@ const zlib = require('zlib');
 
 const Driver = require(path.join(__dirname, 'remediation_headless_driver.cjs'));
 
-const SERVER_INFO = { name: 'alloflow-remediation', title: 'AlloFlow PDF Remediation (local)', version: '0.3.0' };
+const SERVER_INFO = { name: 'alloflow-remediation', title: 'AlloFlow PDF Remediation (local)', version: require('./connector_version.cjs') };
 const SUPPORTED_PROTOCOL_VERSIONS = ['2025-06-18', '2025-03-26', '2024-11-05'];
 const MAX_LINE_CHARS = 4000000;
 const MAX_PDF_BYTES = 200 * 1024 * 1024; // mirrors the app's per-file batch preflight
@@ -598,7 +598,7 @@ function currentBuildFingerprint() {
       checkedAt: new Date().toISOString(),
       error: disk.digest === CHECKPOINT_ENGINE_DIGEST_AT_BOOT
         ? undefined
-        : 'The desktop remediation files changed after this MCP server started. Restart the connector before running or resuming work.',
+        : 'The installed remediation files changed after this MCP server process started (for example, the extension was just updated), so the running server is STALE — its tool list and behavior are the old version\'s. Fix: restart the server process. In Claude Desktop that means quitting the app completely (Cmd+Q / Alt+F4, not just closing the window) and reopening it; in Claude Code, start a new session. Nothing is broken and no reinstall or key change is needed.',
     };
     return { ...checkpointBuildVerification };
   } catch (error) {
@@ -1320,6 +1320,170 @@ function enqueueJob(job, runner) {
 }
 
 const JOB_NOT_FOUND = 'No job with that job_id. Records are kept for ' + Math.round(JOB_RECORD_TTL_MS / 86400000) + ' days and survive a server restart, so this id is unknown, expired, or was evicted once ' + MAX_JOBS + ' newer jobs accumulated.';
+
+// ── Agent-bridge runs (client-model transport) ───────────────────────────────
+// One interactive run at a time: the pipeline runs unmodified, but every internal model call
+// pauses as a pending request the MCP client answers. Deliberately NOT a durable job — the
+// conversation driving it IS its state, so a server restart honestly kills the run instead of
+// resuming against a client context that no longer exists. The run holds the single-flight
+// lane (busyWith) for its whole life; queued jobs wait behind it via enqueueJob's lane loop.
+
+let agentRun = null; // the current (or most recent terminal) run — kept until the next start
+const AGENT_REQUEST_PROMPT_CAP = 2 * 1024 * 1024; // chars of prompt surfaced per request
+const AGENT_IMAGE_BYTES_CAP = 4 * 1024 * 1024;    // inline image budget per requests response
+
+function flushAgentWaiters(run) {
+  const waiters = run.waiters.splice(0);
+  for (const w of waiters) { clearTimeout(w.timer); w.resolve(); }
+}
+
+function agentRunView(run) {
+  return {
+    runId: run.runId,
+    status: run.status,
+    file: run.filePath,
+    startedAt: run.startedAt,
+    modelCallsSoFar: run.modelCalls,
+    pendingCount: run.pending.size,
+    log: run.log.slice(-JOB_LOG_LINES),
+  };
+}
+
+function requireAgentRun(args) {
+  if (typeof args.run_id !== 'string' || !args.run_id.trim()) throw invalidParams('arguments.run_id is required');
+  if (!agentRun || agentRun.runId !== args.run_id) {
+    throw invalidParams('No agent-bridge run with that run_id. Agent runs are conversation-scoped: they do not survive a server restart, and only the most recent run is retained.');
+  }
+  return agentRun;
+}
+
+function startAgentRun(filePath, outDir, opts) {
+  const run = {
+    runId: 'arun-' + crypto.randomUUID(),
+    status: 'running',
+    filePath,
+    outDir,
+    startedAt: new Date().toISOString(),
+    updatedAt: Date.now(),
+    modelCalls: 0,
+    requestSeq: 0,
+    coalesced: 0,
+    cacheHits: 0,
+    latenciesMs: [],
+    answeredCache: new Map(),
+    pending: new Map(),
+    waiters: [],
+    log: [],
+    result: null,
+    error: null,
+    abortController: new AbortController(),
+  };
+  const rlog = (line) => {
+    run.log.push(String(line).slice(0, 500));
+    if (run.log.length > 200) run.log.splice(0, run.log.length - 200);
+    log('[' + run.runId.slice(0, 13) + '] ' + String(line).slice(0, 500));
+  };
+  run.rlog = rlog;
+  // Idempotent re-asks (perf report 2026-08-19, finding 2): when the pipeline's per-call
+  // deadline fires it abandons its promise and re-asks with a NEW call — but the client may
+  // already be composing (or have delivered) the answer to the original. Keying requests by
+  // content lets a re-ask (a) coalesce onto the still-pending original, so one client answer
+  // satisfies both, or (b) replay a recently delivered answer instantly, so no client work is
+  // ever destroyed. The wider agent-bridge deadlines make this rare; this makes it free.
+  const requestKey = (req) => {
+    const h = crypto.createHash('sha256');
+    h.update(String(req.kind || '')).update(' ').update(String(req.prompt || ''));
+    for (const part of req.parts || []) {
+      const inline = part && (part.inline_data || part.inlineData);
+      if (inline && inline.data) h.update(' ').update(String(inline.mime_type || inline.mimeType || '')).update(String(inline.data));
+    }
+    return h.digest('hex');
+  };
+  const ANSWER_REPLAY_TTL_MS = 10 * 60 * 1000;
+  const modelBridge = (req) => new Promise((resolveReply, rejectReply) => {
+    if (run.abortController.signal.aborted) {
+      rejectReply(Object.assign(new Error('Run cancelled'), { isAbort: true }));
+      return;
+    }
+    run.modelCalls += 1;
+    const key = requestKey(req);
+    const replay = run.answeredCache.get(key);
+    if (replay && Date.now() - replay.at < ANSWER_REPLAY_TTL_MS) {
+      run.cacheHits += 1;
+      rlog('re-ask of an already-answered request served from the delivered answer (no client work)');
+      resolveReply(replay.text);
+      return;
+    }
+    for (const existing of run.pending.values()) {
+      if (existing.key === key) {
+        run.coalesced += 1;
+        existing.resolvers.push({ resolve: resolveReply, reject: rejectReply });
+        rlog('re-ask coalesced onto pending ' + existing.requestId + ' — one client answer satisfies both');
+        return;
+      }
+    }
+    run.requestSeq += 1;
+    const entry = {
+      requestId: 'mreq-' + run.requestSeq,
+      key,
+      kind: req.kind,
+      prompt: String(req.prompt || ''),
+      parts: req.parts || [],
+      createdAt: Date.now(),
+      resolvers: [{ resolve: resolveReply, reject: rejectReply }],
+    };
+    run.pending.set(entry.requestId, entry);
+    run.updatedAt = Date.now();
+    flushAgentWaiters(run);
+  });
+  const failPending = (reason) => {
+    for (const entry of run.pending.values()) {
+      for (const r of entry.resolvers) r.reject(Object.assign(new Error(reason), { isAbort: true }));
+    }
+    run.pending.clear();
+  };
+  run.abortController.signal.addEventListener('abort', () => failPending('Run cancelled'), { once: true });
+  busyWith = 'pdf_remediate_agent';
+  run.settled = (async () => {
+    try {
+      rlog('agent-bridge run started: ' + path.basename(filePath) + ' — the client model answers all pipeline calls');
+      const summary = await remediateOneFile(
+        filePath, outDir,
+        Object.assign({}, opts, { modelBridge }),
+        rlog,
+        { signal: run.abortController.signal },
+      );
+      run.status = 'completed';
+      const lat = run.latenciesMs;
+      run.result = Object.assign({}, summary, {
+        modelTransport: 'agent-bridge',
+        modelCallsAnswered: run.modelCalls,
+        bridgeStats: {
+          pipelineModelCalls: run.modelCalls,
+          requestsPublished: run.requestSeq,
+          coalescedReasks: run.coalesced,
+          replayedAnswers: run.cacheHits,
+          clientLatencySeconds: lat.length ? {
+            count: lat.length,
+            mean: Math.round(lat.reduce((a, b) => a + b, 0) / lat.length / 1000),
+            max: Math.round(Math.max(...lat) / 1000),
+          } : null,
+        },
+      });
+      rlog('completed: verdict ' + (summary && summary.verdict && summary.verdict.level ? summary.verdict.level : 'unavailable'));
+    } catch (e) {
+      run.status = run.abortController.signal.aborted ? 'cancelled' : 'failed';
+      run.error = (e && e.message) || String(e);
+      rlog(run.status + ': ' + run.error);
+    } finally {
+      failPending('Run finished');
+      if (busyWith === 'pdf_remediate_agent') busyWith = null;
+      run.updatedAt = Date.now();
+      flushAgentWaiters(run);
+    }
+  })();
+  return run;
+}
 
 function requireJob(args) {
   assertAllowedKeys(args, ['job_id'], 'arguments');
@@ -2660,6 +2824,71 @@ const TOOLS = [
         inputSchema: JOB_ID_SCHEMA,
         annotations: { title: 'Cancel a remediation job', readOnlyHint: false, destructiveHint: false, openWorldHint: false },
       },
+      // ── Agent-bridge remediation (client-model transport) ──────────────────────────────
+      // The same canonical pipeline, but the MCP CLIENT's own model is the engine: every
+      // internal model call pauses and is published as a pending request the client answers.
+      // No Gemini key, no Gemini egress. Document-derived content flows to the CLIENT's model
+      // provider instead — i.e. into this very conversation — which is the same place every
+      // keyless tool's results already go, but at prompt-level granularity; the descriptions
+      // say so because a teacher choosing this lane for student documents should know.
+      {
+        name: 'pdf_remediate_agent_start',
+        title: 'Start a client-model remediation',
+        description: "Run the full remediation pipeline with YOUR model (the MCP client's) as the engine — NO Gemini key and NO Gemini egress. The pipeline pauses at each internal model call and publishes it as a pending request; fetch them with remediation_agent_requests and answer each with remediation_agent_respond, following the embedded prompt's format contract exactly. Expect roughly 10-40 requests per document (more with auto_continue or scanned pages; scanned pages arrive as images). Document-derived content is surfaced to the client conversation instead of being sent to Gemini. Writes the same outputs and honesty-gated report as pdf_remediate. The run occupies the single-flight lane until it finishes, fails, is cancelled, or hits max_run_minutes.",
+        inputSchema: {
+          type: 'object', required: ['file_path'],
+          properties: Object.assign(
+            {
+              file_path: { type: 'string', description: 'Absolute path to a local .pdf, .docx, .pptx, image (.png/.jpg/.webp), text (.md/.txt/.csv/.tsv), or spreadsheet (.xlsx/.xls/.xlsb/.ods) file (max 200MB)' },
+              max_run_minutes: { type: 'number', minimum: 1, maximum: 180, description: 'Wall-clock limit for this interactive run (default 60; the env default of 30 is usually too tight for a conversation-paced run)' },
+            },
+            REMEDIATE_OPTION_PROPS,
+          ),
+          additionalProperties: false,
+        },
+        annotations: { title: 'Start a client-model remediation', readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+      },
+      {
+        name: 'remediation_agent_requests',
+        title: 'Fetch pending model requests',
+        description: "Fetch the agent-bridge run's state and any model calls waiting for an answer. Long-polls up to wait_seconds (default 20) so a quiet poll returns as soon as the pipeline asks for something. Each pending request carries the pipeline's own prompt (answer its format contract EXACTLY — malformed replies are retried and waste turns) and, for vision requests, the rendered page images as image content. When status is 'completed' the final report is included. Answer honestly from the document content provided: fabricated audit evidence poisons the honesty-gated verdict that teachers rely on.",
+        inputSchema: {
+          type: 'object', required: ['run_id'],
+          properties: {
+            run_id: { type: 'string', minLength: 1, maxLength: 200 },
+            wait_seconds: { type: 'number', minimum: 0, maximum: 30, description: 'Long-poll window when nothing is pending yet (default 20)' },
+            include_images: { type: 'boolean', description: 'Attach vision-request images as image content blocks (default true; capped at ~4MB per response)' },
+          },
+          additionalProperties: false,
+        },
+        annotations: { title: 'Fetch pending model requests', readOnlyHint: true, destructiveHint: false, openWorldHint: false },
+      },
+      {
+        name: 'remediation_agent_respond',
+        title: 'Answer a pending model request',
+        description: "Supply the model reply for one pending agent-bridge request. The text must satisfy the request prompt's own format contract (strict JSON where it asks for JSON, raw HTML where it asks for HTML) — the pipeline's strict parsers discard anything less and re-ask. Empty replies are rejected.",
+        inputSchema: {
+          type: 'object', required: ['run_id', 'request_id', 'text'],
+          properties: {
+            run_id: { type: 'string', minLength: 1, maxLength: 200 },
+            request_id: { type: 'string', minLength: 1, maxLength: 200 },
+            text: { type: 'string', minLength: 1, maxLength: 8000000, description: 'The reply, exactly as the model answer (no wrapper, no commentary)' },
+          },
+          additionalProperties: false,
+        },
+        annotations: { title: 'Answer a pending model request', readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+      },
+      {
+        name: 'remediation_agent_cancel',
+        title: 'Cancel a client-model remediation',
+        description: 'Cancel the agent-bridge run: pending model requests are rejected, the browser context closes, and the single-flight lane frees. Output files already written stay on disk.',
+        inputSchema: {
+          type: 'object', required: ['run_id'],
+          properties: { run_id: { type: 'string', minLength: 1, maxLength: 200 } },
+          additionalProperties: false,
+        },
+        annotations: { title: 'Cancel a client-model remediation', readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+      },
     ];
   })(),
 ].flat();
@@ -2853,7 +3082,7 @@ const OUTPUT_SCHEMAS = {
       note: S_STR,
     }, ['offlineToolNames', 'publicDependencyDownloadToolNames', 'credentialCheckToolNames', 'geminiDocumentEgressToolNames', 'dependencyDownloadsSendDocumentContent', 'note']),
     onboarding: strictObj({
-      state: { type: 'string', enum: ['busy', 'setup-required', 'reinstall-required', 'keyless-ready', 'key-present-untested', 'key-invalid', 'key-unreachable', 'key-quota-exhausted', 'full-ai-ready'] },
+      state: { type: 'string', enum: ['busy', 'setup-required', 'reinstall-required', 'restart-required', 'keyless-ready', 'key-present-untested', 'key-invalid', 'key-unreachable', 'key-quota-exhausted', 'full-ai-ready'] },
       nextTool: { type: ['string', 'null'] },
       actionRequired: S_BOOL,
       message: S_STR,
@@ -2980,6 +3209,42 @@ const OUTPUT_SCHEMAS = {
   }),
   remediation_job_diagnostics: obj({ ok: S_BOOL, error: S_STR, jobId: S_STR, source: { type: 'string', enum: ['job', 'last-run'] }, capturedAt: S_STR, fileName: S_STR, diagnostics: {} }, ['ok']),
   remediation_job_cancel: obj({ ok: S_BOOL, error: S_STR, jobId: S_STR, status: S_STR, wasRunning: S_BOOL, killedRun: S_BOOL, durabilityWarning: S_STR }),
+  pdf_remediate_agent_start: obj({
+    runId: S_STR,
+    status: { type: 'string', enum: ['running'] },
+    modelTransport: { type: 'string', enum: ['agent-bridge'] },
+    note: S_STR,
+  }, ['runId', 'status', 'modelTransport']),
+  remediation_agent_requests: obj({
+    runId: S_STR,
+    status: { type: 'string', enum: ['running', 'completed', 'failed', 'cancelled'] },
+    file: S_STR, startedAt: S_STR,
+    modelCallsSoFar: S_NUM, pendingCount: S_NUM,
+    log: { type: 'array', items: S_STR },
+    pendingRequests: {
+      type: 'array',
+      items: obj({
+        requestId: S_STR,
+        kind: { type: 'string', enum: ['text', 'vision'] },
+        ageSeconds: S_NUM,
+        imageCount: S_NUM,
+        images: { type: 'array', items: obj({ mimeType: S_STR, bytes: S_NUM }) },
+        promptTruncated: S_BOOL,
+        prompt: S_STR,
+      }, ['requestId', 'kind', 'prompt']),
+    },
+    imagesTruncated: S_BOOL,
+    result: {},
+    error: S_STR,
+    note: S_STR,
+  }, ['runId', 'status', 'pendingRequests']),
+  remediation_agent_respond: obj({
+    ok: S_BOOL, runId: S_STR, answered: S_STR,
+    satisfiedCalls: { type: 'number', description: '>1 when a timed-out pipeline re-ask was coalesced onto this request and one answer satisfied both' },
+    clientLatencySeconds: S_NUM,
+    remainingPending: S_NUM, note: S_STR,
+  }, ['ok']),
+  remediation_agent_cancel: obj({ ok: S_BOOL, runId: S_STR, status: S_STR, killedRun: S_BOOL, error: S_STR, note: S_STR }, ['ok']),
 };
 
 for (const t of TOOLS) {
@@ -3095,10 +3360,20 @@ const TOOL_HANDLERS = {
         state: 'busy', nextTool: null, actionRequired: true,
         message: 'A run is already active. Wait for it to finish or use the job id already returned by a background start tool with remediation_job_status.',
       };
-    } else if (!playwrightAvailable || !vendorAssets.hashVerified || !modulesReady || !runtimeBuild.current) {
+    } else if (!runtimeBuild.current) {
+      // Checked BEFORE the completeness checks, and distinct from reinstall-required: the
+      // running process is stale, so it cannot honestly judge the (possibly just-updated)
+      // install — and naming this 'reinstall-required' made clients tell users to reinstall
+      // an extension they had just correctly updated (observed 2026-08-19). Restart first;
+      // the fresh process re-evaluates everything else.
+      onboarding = {
+        state: 'restart-required', nextTool: null, actionRequired: true,
+        message: runtimeBuild.error,
+      };
+    } else if (!playwrightAvailable || !vendorAssets.hashVerified || !modulesReady) {
       onboarding = {
         state: 'reinstall-required', nextTool: null, actionRequired: true,
-        message: runtimeBuild.current ? 'The connector package is incomplete or failed its local asset integrity check. Reinstall this connector; adding a Gemini key will not fix it.' : runtimeBuild.error,
+        message: 'The connector package is incomplete or failed its local asset integrity check. Reinstall this connector; adding a Gemini key will not fix it.',
       };
     } else if (!chrome.installed) {
       onboarding = {
@@ -3154,7 +3429,7 @@ const TOOL_HANDLERS = {
         credentialCheckToolNames: CREDENTIAL_CHECK_TOOL_NAMES,
         geminiDocumentEgressToolNames: GEMINI_REQUIRED_TOOL_NAMES,
         dependencyDownloadsSendDocumentContent: false,
-        note: 'Offline tools make no external network request. Dependency-download tools fetch Chromium or pinned public JavaScript libraries; AlloFlow does not intentionally include document content in those requests, though the provider can observe ordinary connection metadata such as IP address and timing. Credential-check tools contact the Gemini API with the configured key only, to test whether it works, and send no document content. Gemini tools send the document or derived content to Gemini under the user-provided key.',
+        note: 'Offline tools make no external network request. Dependency-download tools fetch Chromium or pinned public JavaScript libraries; AlloFlow does not intentionally include document content in those requests, though the provider can observe ordinary connection metadata such as IP address and timing. Credential-check tools contact the Gemini API with the configured key only, to test whether it works, and send no document content. Gemini tools send the document or derived content to Gemini under the user-provided key. The agent-bridge tools (pdf_remediate_agent_start and its requests/respond/cancel companions) are offline for the server, but they surface document-derived prompts to the MCP CLIENT as tool results, so that content reaches whatever model provider the client conversation runs on.',
       },
       onboarding,
       alloflowAccountRequired: false,
@@ -3830,6 +4105,137 @@ const TOOL_HANDLERS = {
     }
     return { ok: true, jobId: job.jobId, status: job.status, wasRunning, killedRun };
   },
+
+  pdf_remediate_agent_start(args) {
+    assertAllowedKeys(args, ['file_path', 'output_dir', 'target_score', 'fix_passes', 'polish_passes', 'tagged_pdf', 'auto_continue', 'auto_continue_rounds', 'validate_ua', 'ocr_language', 'page_range', 'max_run_minutes'], 'arguments');
+    const filePath = requireDocPath(args);
+    const opts = validateRemediateOptions(args);
+    const maxRunMinutes = optionalBoundedNumber(args, 'max_run_minutes', 1, 180);
+    opts.maxRunMinutes = maxRunMinutes === undefined ? Math.max(60, opts.maxRunMinutes) : maxRunMinutes;
+    const outDir = resolveOutputDir(args, filePath);
+    // No requireGeminiKey(): the client's model is the engine. The single-flight lane must be
+    // free — an agent run cannot queue behind hours of batch work while a conversation waits.
+    if (busyWith) {
+      const e = new Error('A ' + busyWith + ' run is already in progress; the pipeline is single-flight per server. Wait for it (or cancel it), then start the agent run.');
+      e.busy = true;
+      throw e;
+    }
+    if (agentRun && agentRun.status === 'running') {
+      throw invalidParams('Agent-bridge run ' + agentRun.runId + ' is still running. Answer its requests, wait, or cancel it first.');
+    }
+    fs.mkdirSync(outDir, { recursive: true });
+    const run = startAgentRun(filePath, outDir, opts);
+    agentRun = run;
+    return {
+      runId: run.runId,
+      status: run.status,
+      modelTransport: 'agent-bridge',
+      note: 'YOU are the model for this run. Poll remediation_agent_requests (long-poll, default 20s) and answer every pending request with remediation_agent_respond, following each embedded prompt\'s format contract exactly. Expect roughly 10-40 requests. No Gemini key is used and nothing is sent to Gemini; prompts containing document content are surfaced to this conversation instead.',
+    };
+  },
+
+  async remediation_agent_requests(args) {
+    assertAllowedKeys(args, ['run_id', 'wait_seconds', 'include_images'], 'arguments');
+    const run = requireAgentRun(args);
+    const waitSeconds = optionalBoundedNumber(args, 'wait_seconds', 0, 30);
+    const includeImages = args.include_images !== false;
+    if (args.include_images !== undefined && typeof args.include_images !== 'boolean') throw invalidParams('arguments.include_images must be a boolean');
+    if (run.status === 'running' && run.pending.size === 0 && (waitSeconds === undefined ? 20 : waitSeconds) > 0) {
+      await new Promise((resolveWait) => {
+        const waiter = { resolve: resolveWait, timer: null };
+        waiter.timer = setTimeout(() => {
+          const i = run.waiters.indexOf(waiter);
+          if (i !== -1) run.waiters.splice(i, 1);
+          resolveWait();
+        }, (waitSeconds === undefined ? 20 : waitSeconds) * 1000);
+        waiter.timer.unref?.();
+        run.waiters.push(waiter);
+      });
+    }
+    const extraContent = [];
+    let imageBytes = 0;
+    let imagesTruncated = false;
+    const pendingRequests = [];
+    for (const entry of run.pending.values()) {
+      const images = [];
+      for (const part of entry.parts) {
+        const inline = part && (part.inline_data || part.inlineData);
+        if (!inline || !inline.data) continue;
+        images.push({ mimeType: inline.mime_type || inline.mimeType || 'image/png', bytes: Math.round(String(inline.data).length * 0.75) });
+        if (!includeImages) continue;
+        const approx = Math.round(String(inline.data).length * 0.75);
+        if (imageBytes + approx > AGENT_IMAGE_BYTES_CAP) { imagesTruncated = true; continue; }
+        imageBytes += approx;
+        extraContent.push({ type: 'image', data: String(inline.data), mimeType: inline.mime_type || inline.mimeType || 'image/png' });
+      }
+      pendingRequests.push({
+        requestId: entry.requestId,
+        kind: entry.kind,
+        ageSeconds: Math.round((Date.now() - entry.createdAt) / 1000),
+        imageCount: images.length,
+        images,
+        promptTruncated: entry.prompt.length > AGENT_REQUEST_PROMPT_CAP || undefined,
+        prompt: entry.prompt.slice(0, AGENT_REQUEST_PROMPT_CAP),
+      });
+    }
+    const out = Object.assign(agentRunView(run), {
+      pendingRequests,
+      imagesTruncated: imagesTruncated || undefined,
+      result: run.status === 'completed' ? run.result : undefined,
+      error: run.error || undefined,
+      note: run.status === 'running'
+        ? (pendingRequests.length
+          ? 'Answer each request with remediation_agent_respond, matching its prompt\'s format contract exactly.'
+          : 'Nothing pending — the pipeline is working. Poll again.')
+        : 'Run is ' + run.status + '.',
+    });
+    if (extraContent.length) out._mcpExtraContent = extraContent;
+    return out;
+  },
+
+  remediation_agent_respond(args) {
+    assertAllowedKeys(args, ['run_id', 'request_id', 'text'], 'arguments');
+    const run = requireAgentRun(args);
+    if (typeof args.request_id !== 'string' || !args.request_id.trim()) throw invalidParams('arguments.request_id is required');
+    if (typeof args.text !== 'string' || !args.text.length) throw invalidParams('arguments.text must be a non-empty string (the model reply itself)');
+    const entry = run.pending.get(args.request_id);
+    if (!entry) {
+      throw invalidParams('No pending request ' + args.request_id + ' on this run — it was already answered, or the run moved on. Fetch remediation_agent_requests for the current set.');
+    }
+    run.pending.delete(args.request_id);
+    run.updatedAt = Date.now();
+    const latencyMs = Date.now() - entry.createdAt;
+    run.latenciesMs.push(latencyMs);
+    // Instrumentation the perf report asked for: per-request publish → respond latency, so the
+    // transport deadline can be tuned from data. Also feed the replay cache for late re-asks.
+    run.rlog('client answered ' + entry.requestId + ' (' + entry.kind + ') in ' + Math.round(latencyMs / 1000) + 's'
+      + (entry.resolvers.length > 1 ? ' — satisfied ' + entry.resolvers.length + ' coalesced asks' : ''));
+    run.answeredCache.set(entry.key, { text: args.text, at: Date.now() });
+    if (run.answeredCache.size > 32) {
+      const oldest = run.answeredCache.keys().next().value;
+      run.answeredCache.delete(oldest);
+    }
+    for (const r of entry.resolvers) r.resolve(args.text);
+    return {
+      ok: true,
+      runId: run.runId,
+      answered: args.request_id,
+      satisfiedCalls: entry.resolvers.length,
+      clientLatencySeconds: Math.round(latencyMs / 1000),
+      remainingPending: run.pending.size,
+      note: 'Reply accepted. Poll remediation_agent_requests for the pipeline\'s next request.',
+    };
+  },
+
+  async remediation_agent_cancel(args) {
+    assertAllowedKeys(args, ['run_id'], 'arguments');
+    const run = requireAgentRun(args);
+    if (run.status !== 'running') return { ok: false, runId: run.runId, status: run.status, error: 'Run already finished; nothing to cancel.' };
+    run.abortController.abort(new Error('Agent-bridge run cancelled'));
+    let killedRun = false;
+    if (driver) killedRun = await driver.cancelActiveRun();
+    return { ok: true, runId: run.runId, status: run.status, killedRun, note: 'Output files already written stay on disk.' };
+  },
 };
 
 // ── JSON-RPC plumbing (same NDJSON transport as alloflow-mcp-stdio.cjs) ────
@@ -3938,7 +4344,11 @@ async function handleRequest(msg) {
         // Cancelled mid-run: the spec says not to answer a cancelled request, and a
         // late success would contradict the cancel the caller already acted on.
         if (entry.cancelled) return;
-        sendResult(id, { content: [{ type: 'text', text: JSON.stringify(output, null, 2) }], structuredContent: output, isError: false });
+        // _mcpExtraContent: additional non-text content blocks (agent-bridge vision images).
+        // Rides beside the JSON, never inside structuredContent.
+        const extraContent = Array.isArray(output && output._mcpExtraContent) ? output._mcpExtraContent : null;
+        if (extraContent) delete output._mcpExtraContent;
+        sendResult(id, { content: [{ type: 'text', text: JSON.stringify(output, null, 2) }].concat(extraContent || []), structuredContent: output, isError: false });
       } catch (e) {
         if (entry.cancelled) return; // the failure IS the cancellation (closed context) — stay silent
         if (e && e.rpcCode) { sendError(id, e.rpcCode, e.message); return; }

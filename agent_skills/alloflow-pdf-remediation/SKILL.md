@@ -100,6 +100,33 @@ installed connector's local tools.
    file didn't earn it — report it as "not claiming conformance", not as a
    defect it forgot.
 
+## Agent-bridge flow (no Gemini key: YOU are the model)
+
+When no Gemini key is configured (or the user prefers not to use one),
+`pdf_remediate_agent_start` runs the same pipeline with you as the engine.
+The pipeline pauses at each internal model call and publishes it as a pending
+request; you answer, it continues.
+
+1. Start the run, then loop: `remediation_agent_requests` (long-poll,
+   `wait_seconds: 20`) → answer every entry in `pendingRequests` with
+   `remediation_agent_respond` → repeat until `status` is `completed`.
+2. **Follow each embedded prompt's format contract exactly.** Strict JSON
+   where it asks for JSON (no code fences, no commentary), raw HTML where it
+   asks for HTML. Malformed replies are discarded by the pipeline's strict
+   parsers and re-asked — they waste your own turns.
+3. **Answer honestly from the provided content.** The audit prompts are
+   evidence collection for the honesty-gated verdict teachers rely on. Never
+   invent issues, scores, or passes; if the content shown doesn't support a
+   claim, don't make it. Vision requests include the rendered page images —
+   describe what is actually there.
+4. Tell the user before starting that document content will pass through this
+   conversation (that is where the "model calls" go), and expect roughly
+   10–40 requests. Text-first documents are the sweet spot.
+5. The result carries `modelTransport: "agent-bridge"` — relay that the
+   engine was your model, plus the same honesty fields as any run.
+6. `remediation_agent_cancel` aborts; written files stay. Runs do not survive
+   a server restart.
+
 ## Batch flow
 
 `pdf_batch_remediate_start` on a folder (non-recursive, ≤60 PDFs, skips
