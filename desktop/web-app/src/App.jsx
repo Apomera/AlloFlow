@@ -1353,9 +1353,10 @@ function _alloCleanMailboxUrl(value) {
     if (!raw) return '';
     try {
         const url = new URL(raw);
-        if (url.protocol !== 'https:') return '';
+        if (url.protocol !== 'https:' || url.port || url.username || url.password || url.search || url.hash) return '';
         const host = String(url.hostname || '').toLowerCase();
-        if (!/(^|\.)script\.google\.com$/.test(host) && !/(^|\.)googleusercontent\.com$/.test(host)) return '';
+        if (host !== 'script.google.com' && host !== 'script.googleusercontent.com') return '';
+        if (!/^\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(url.pathname)) return '';
         return url.toString();
     } catch (_) {
         return '';
@@ -15460,6 +15461,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const liveHostConnectionState = !isTeacherMode && activeSessionCode
     ? getLiveHostConnectionState(sessionData?.hostPresence, liveHostNow)
     : 'online';
+  // This lease is an operational heartbeat, not proof that the Firestore
+  // snapshot or a separate WebRTC channel is disconnected. A backgrounded or
+  // throttled teacher tab can miss the lease while the student remains live.
+  const [dismissedLiveHostWarningKey, setDismissedLiveHostWarningKey] = useState('');
+  const liveHostWarningKey = String(activeSessionCode || '') + '|' + String(sessionData?.hostPresence?.expiresAt || 0);
+  const showLiveHostWarning = !isTeacherMode && !!activeSessionCode && !!sessionData
+    && (liveHostConnectionState === 'reconnecting' || liveHostConnectionState === 'stale')
+    && dismissedLiveHostWarningKey !== liveHostWarningKey;
   const havenRecognitionConfig = getAlloHavenRecognitionConfig(sessionData && sessionData.havenRecognitionConfig);
   // Auto-open the Pictionary guest overlay on students once the teacher has
   // assigned them a role (drawer or guesser) in the live session. We watch the
@@ -47403,15 +47412,16 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           </div>
         </div>
       )}
-      {!isTeacherMode && activeSessionCode && sessionData && (liveHostConnectionState === 'reconnecting' || liveHostConnectionState === 'stale') && (
+      {showLiveHostWarning && (
         <div role={liveHostConnectionState === 'stale' ? 'alert' : 'status'} aria-live="polite" className={
           'fixed top-20 left-1/2 -translate-x-1/2 z-[146] flex max-w-[calc(100vw-24px)] flex-wrap items-center justify-center gap-2 rounded-xl border px-4 py-3 text-center text-sm font-semibold shadow-xl backdrop-blur no-print ' +
           (liveHostConnectionState === 'stale' ? 'border-rose-300 bg-rose-50/95 text-rose-900' : 'border-amber-300 bg-amber-50/95 text-amber-900')
         }>
           <span>{liveHostConnectionState === 'stale'
-            ? 'Teacher connection is unavailable. Your work stays on this device; you can leave and rejoin when the teacher resumes.'
+            ? 'Teacher status check is stale - the live session may still be connected. Your work stays on this device.'
             : 'Teacher connection paused — keeping your place while AlloFlow reconnects.'}</span>
           {liveHostConnectionState === 'stale' && <button type="button" onClick={leaveLiveSession} className="rounded-lg border border-rose-400 bg-white px-3 py-1.5 text-xs font-bold text-rose-900 hover:bg-rose-100">{t('mailbox.leave_session') || 'Leave session'}</button>}
+          <button type="button" onClick={() => setDismissedLiveHostWarningKey(liveHostWarningKey)} className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 focus-visible:ring-offset-2" aria-label="Dismiss teacher status warning">Dismiss</button>
         </div>
       )}
       {!isTeacherMode && activeSessionCode && liveHostConnectionState !== 'stale' && (liveResourceLoadState.status === 'loading' || liveResourceLoadState.status === 'failed') && (
@@ -52108,7 +52118,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           // Presence gating (Tier-1 livePolling leaf): only dial the WebRTC
           // host while the teacher's polling panel is actually open; a new
           // hostOpenedAt re-arms guests' auto-rejoin budget.
-          hostActive: !!(sessionData && sessionData.livePolling && sessionData.livePolling.hostActive) && liveHostConnectionState !== 'stale',
+          hostActive: !!(sessionData && sessionData.livePolling && sessionData.livePolling.hostActive),
           hostNonce: (sessionData && sessionData.livePolling && sessionData.livePolling.hostOpenedAt) || 0,
         })
       }

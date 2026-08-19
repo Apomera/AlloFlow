@@ -44,9 +44,10 @@ describe('teacher host liveness lease', () => {
 
   it('surfaces a recoverable student state without changing resource-targeting precedence', () => {
     expect(anti).toContain('Teacher connection paused — keeping your place while AlloFlow reconnects.');
-    expect(anti).toContain('Teacher connection is unavailable. Your work stays on this device');
+    expect(anti).toContain('Teacher status check is stale - the live session may still be connected. Your work stays on this device.');
     expect(anti).toContain('const leaveLiveSession = React.useCallback');
-    expect(anti).toContain("hostActive: !!(sessionData && sessionData.livePolling && sessionData.livePolling.hostActive) && liveHostConnectionState !== 'stale'");
+    expect(anti).toContain("hostActive: !!(sessionData && sessionData.livePolling && sessionData.livePolling.hostActive)");
+    expect(anti).not.toContain("hostActive: !!(sessionData && sessionData.livePolling && sessionData.livePolling.hostActive) && liveHostConnectionState !== 'stale'");
     expect(anti).toContain('individual > group > class');
   });
 

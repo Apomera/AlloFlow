@@ -355,6 +355,45 @@ inputText.substring(0, 6000) + '\n' +
     };
 
     // ── launchCollaborativeEscapeRoom ──
+    // Collaborative rooms use the same six interaction types as the solo
+    // escape room. Keep the generated mix explicit so a model cannot silently
+    // fall back to the MCQ-only example in the output schema.
+    var normalizeCollaborativePuzzleType = function(type) {
+      var normalized = String(type || '').toLowerCase().replace(/[^a-z]/g, '');
+      var aliases = {
+        'multiplechoice': 'mcq',
+        'multiplechoicequestion': 'mcq',
+        'ordering': 'sequence',
+        'order': 'sequence',
+        'matchingpairs': 'matching',
+        'match': 'matching',
+        'fillintheblank': 'fillin',
+        'fillintheblanks': 'fillin',
+        'wordriddle': 'cipher',
+        'wordscramble': 'scramble'
+      };
+      return aliases[normalized] || normalized;
+    };
+    var validateCollaborativePuzzleMix = function(puzzles) {
+      var requiredTypes = ['mcq', 'sequence', 'cipher', 'matching', 'scramble', 'fillin'];
+      var expectedCounts = { mcq: 2, sequence: 2, matching: 2, fillin: 2, cipher: 1, scramble: 1 };
+      if (!Array.isArray(puzzles) || puzzles.length !== 10) {
+        return { valid: false, reason: 'exactly 10 puzzles are required' };
+      }
+      var counts = {};
+      for (var i = 0; i < puzzles.length; i++) {
+        var type = normalizeCollaborativePuzzleType(puzzles[i] && puzzles[i].type);
+        if (requiredTypes.indexOf(type) === -1) {
+          return { valid: false, reason: 'unsupported puzzle type: ' + (puzzles[i] && puzzles[i].type) };
+        }
+        counts[type] = (counts[type] || 0) + 1;
+      }
+      var incorrectType = requiredTypes.find(function(type) { return counts[type] !== expectedCounts[type]; });
+      if (incorrectType) return { valid: false, reason: 'expected ' + expectedCounts[incorrectType] + ' ' + incorrectType + ' puzzles' };
+      if ((counts.mcq || 0) > 2) return { valid: false, reason: 'MCQs may not exceed two of ten puzzles' };
+      return { valid: true, counts: counts };
+    };
+
     var launchCollaborativeEscapeRoom = async function() {
       var state = getState();
       var inputText = state.inputText;
@@ -384,32 +423,60 @@ inputText.substring(0, 6000) + '\n' +
 'SOURCE CONTENT:\n' +
 inputText.substring(0, 6000) + '\n' +
 'TASK:\n' +
-'Generate a themed escape room with 10 interactive objects. Each object hides a puzzle.\n' +
+'Generate a themed escape room with exactly 10 interactive objects and exactly 10 puzzles. Each object hides one puzzle.\n' +
+'BALANCED PUZZLE MIX - this is mandatory: use exactly 2 "mcq", 2 "sequence", 2 "matching", 2 "fillin", 1 "cipher", and 1 "scramble". Every listed type must appear at least once, and MCQs must never exceed 2 of the 10 puzzles. Do not convert non-MCQ puzzles into multiple choice.\n' +
+'TYPE CONTRACT: "mcq" has options + correctIndex; "sequence" has items + correctOrder; "matching" has pairs with left/right values; "fillin" has sentence + answer + wordbank; "cipher" has encodedText + answer + wordbank; "scramble" has scrambledWord + answer. Use these exact lowercase type names.\n' +
 'Return ONLY valid JSON:\n' +
 '{\n' +
 '  "room": { "theme": "string", "description": "2-3 sentence description" },\n' +
-'  "objects": [{ "id": "obj1", "emoji": "\\ud83d\\udcd6", "name": "Old Book" }],\n' +
-'  "puzzles": [{ "id": "p1", "type": "mcq", "linkedObjectId": "obj1", "question": "?", "options": ["A","B","C","D"], "correctIndex": 0, "hint": "" }]\n' +
+'  "objects": [\n' +
+'    { "id": "obj1", "emoji": "\ud83d\udcd6", "name": "Object 1" }, { "id": "obj2", "emoji": "\ud83d\udd2d", "name": "Object 2" }, { "id": "obj3", "emoji": "\ud83c\udf1f", "name": "Object 3" }, { "id": "obj4", "emoji": "\ud83d\udd11", "name": "Object 4" }, { "id": "obj5", "emoji": "\ud83d\udcdc", "name": "Object 5" },\n' +
+'    { "id": "obj6", "emoji": "\ud83e\udde9", "name": "Object 6" }, { "id": "obj7", "emoji": "\ud83c\udfdb", "name": "Object 7" }, { "id": "obj8", "emoji": "\ud83d\udee0", "name": "Object 8" }, { "id": "obj9", "emoji": "\ud83d\udca1", "name": "Object 9" }, { "id": "obj10", "emoji": "\ud83c\udf81", "name": "Object 10" }\n' +
+'  ],\n' +
+'  "puzzles": [\n' +
+'    { "id": "p1", "type": "mcq", "linkedObjectId": "obj1", "question": "?", "options": ["A","B","C","D"], "correctIndex": 0, "hint": "" },\n' +
+'    { "id": "p2", "type": "sequence", "linkedObjectId": "obj2", "question": "Put these in order", "items": ["A","B","C","D"], "correctOrder": [0,1,2,3], "hint": "" },\n' +
+'    { "id": "p3", "type": "matching", "linkedObjectId": "obj3", "question": "Match the pairs", "pairs": [{ "left": "A", "right": "1" }, { "left": "B", "right": "2" }, { "left": "C", "right": "3" }, { "left": "D", "right": "4" }], "hint": "" },\n' +
+'    { "id": "p4", "type": "fillin", "linkedObjectId": "obj4", "question": "Complete the sentence", "sentence": "The _____ is important.", "answer": "term", "wordbank": ["term","decoy1","decoy2","decoy3"], "hint": "" },\n' +
+'    { "id": "p5", "type": "cipher", "linkedObjectId": "obj5", "question": "Solve the riddle", "encodedText": "A content-based riddle", "answer": "term", "wordbank": ["term","decoy1","decoy2","decoy3"], "hint": "" },\n' +
+'    { "id": "p6", "type": "scramble", "linkedObjectId": "obj6", "question": "Unscramble the term", "scrambledWord": "MRET", "answer": "TERM", "hint": "" },\n' +
+'    { "id": "p7", "type": "mcq", "linkedObjectId": "obj7", "question": "?", "options": ["A","B","C","D"], "correctIndex": 0, "hint": "" },\n' +
+'    { "id": "p8", "type": "sequence", "linkedObjectId": "obj8", "question": "Put these in order", "items": ["A","B","C","D"], "correctOrder": [0,1,2,3], "hint": "" },\n' +
+'    { "id": "p9", "type": "matching", "linkedObjectId": "obj9", "question": "Match the pairs", "pairs": [{ "left": "A", "right": "1" }, { "left": "B", "right": "2" }, { "left": "C", "right": "3" }, { "left": "D", "right": "4" }], "hint": "" },\n' +
+'    { "id": "p10", "type": "fillin", "linkedObjectId": "obj10", "question": "Complete the sentence", "sentence": "The _____ is important.", "answer": "term", "wordbank": ["term","decoy1","decoy2","decoy3"], "hint": "" }\n' +
+'  ]\n' +
 '}';
       try {
         var response = await callGemini(escapeRoomPrompt, true);
         var jsonText = response.replace(/```json\n?/gi, '').replace(/```\n?/gi, '').trim();
         var data = JSON.parse(jsonText);
-        if (data.room && data.objects && data.puzzles) {
+        if (data.room && Array.isArray(data.objects) && data.objects.length === 10 && Array.isArray(data.puzzles)) {
+          var collaborativeMix = validateCollaborativePuzzleMix(data.puzzles);
+          if (!collaborativeMix.valid) throw new Error("Unbalanced collaborative puzzle mix: " + collaborativeMix.reason);
           var processedPuzzles = data.puzzles.map(function(p, i) {
+            var normalizedType = normalizeCollaborativePuzzleType(p.type);
             var shuffledItems = null;
             var correctOrder = p.correctOrder || null;
-            if (p.type === 'sequence' && p.items) {
+            if (normalizedType === 'sequence' && p.items) {
               var indices = p.items.map(function(_, idx) { return idx; });
               shuffledItems = derangeShuffle(indices);
               correctOrder = p.items.map(function(_, idx) { return idx; });
             }
-            return Object.assign({}, p, {
+            var processed = Object.assign({}, p, {
+              type: normalizedType,
               linkedObject: data.objects.find(function(o) { return o.id === p.linkedObjectId; }) || data.objects[i],
               shuffledItems: shuffledItems,
               correctOrder: correctOrder,
-              displayLetters: p.type === 'scramble' && p.scrambledWord ? derangeShuffle(p.scrambledWord.split('')) : null
+              displayLetters: normalizedType === 'scramble' && p.scrambledWord ? derangeShuffle(p.scrambledWord.split('').filter(function(c) { return c.trim(); })) : null
             });
+            if (normalizedType === 'matching' && p.pairs) {
+              processed.leftColumn = derangeShuffle(p.pairs.map(function(pair) { return pair.left; }));
+              processed.rightColumn = derangeShuffle(p.pairs.map(function(pair) { return pair.right; }));
+            }
+            if ((normalizedType === 'fillin' || normalizedType === 'cipher') && p.wordbank) {
+              processed.wordbank = derangeShuffle(p.wordbank);
+            }
+            return processed;
           });
           if (doc && db && updateDoc) {
             var appId = activeSessionAppId;
@@ -969,7 +1036,7 @@ inputText.substring(0, 6000) + '\n' +
         var processed = Object.assign({}, p, {
           linkedObject: (config.objects && config.objects.find(function(o) { return o.id === p.linkedObjectId; })) || (config.objects && config.objects[i]) || { emoji: '\uD83D\uDD2E', name: 'Puzzle ' + (i+1) }
         });
-        if (p.type === 'sequence' && p.items) {
+        if (normalizedType === 'sequence' && p.items) {
           var indices = p.items.map(function(_, idx) { return idx; });
           processed.shuffledItems = derangeShuffle(indices);
         }

@@ -448,6 +448,10 @@ describe('ANTI mailbox client helpers', () => {
     it('accepts only https Apps Script hosts', () => {
         const H = buildClientHelpers({});
         expect(H._alloCleanMailboxUrl('https://script.google.com/macros/s/ABC/exec')).toContain('script.google.com');
+        expect(H._alloCleanMailboxUrl('https://script.google.com/macros/s/ABC')).toBe('');
+        expect(H._alloCleanMailboxUrl('https://script.google.com/macros/s/ABC/dev')).toBe('');
+        expect(H._alloCleanMailboxUrl('https://script.google.com/macros/s/ABC/exec?x=1')).toBe('');
+        expect(H._alloCleanMailboxUrl('https://script.googleusercontent.com/macros/s/ABC/exec')).toContain('script.googleusercontent.com');
         expect(H._alloCleanMailboxUrl('http://script.google.com/macros/s/ABC/exec')).toBe('');
         expect(H._alloCleanMailboxUrl('https://evil.example.com/exec')).toBe('');
         expect(H._alloCleanMailboxUrl('')).toBe('');
