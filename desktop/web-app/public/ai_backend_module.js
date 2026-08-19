@@ -1353,12 +1353,23 @@ class AIProvider {
         const providerTextDefault = this.backend === 'openai'
             ? 'gpt-4o-mini'
             : (this.backend === 'claude' ? 'claude-sonnet-5' : 'gemini-3-flash-preview');
+        const _retiredImageModels = new Set([
+            'imagen-4.0-generate-001',
+            'imagen-4.0-ultra-generate-001',
+            'imagen-4.0-fast-generate-001',
+            'gemini-2.5-flash-image-preview',
+            'gemini-3.1-flash-image-preview',
+        ]);
+        const _normalizeImageModel = (model) => {
+            const value = String(model || '').trim();
+            return _retiredImageModels.has(value) ? 'gemini-3.1-flash-image' : value;
+        };
         this.models = {
             default: config.models?.default || providerTextDefault,
             fallback: config.models?.fallback || providerTextDefault,
             flash: config.models?.flash || config.models?.default || providerTextDefault,
-            image: config.models?.image || 'gemini-2.5-flash-image',
-            imagen: config.models?.imagen || 'imagen-4.0-generate-001',
+            image: _normalizeImageModel(config.models?.image) || 'gemini-3.1-flash-image',
+            imagen: _normalizeImageModel(config.models?.imagen) || 'gemini-3.1-flash-image',
             tts: config.models?.tts || 'gemini-3-flash-preview',
             safety: config.models?.safety || 'gemini-2.5-flash-lite',
             vision: config.models?.vision || config.models?.default || 'gemini-3-flash-preview',
@@ -2189,23 +2200,23 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     }
 
     async _geminiGenerateImage(prompt, width, quality, signal = null) {
-        const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
+        const keyParam = '';
         const throwIfAborted = () => {
             if (!signal || !signal.aborted) return;
             const abortError = new Error('Image generation cancelled.'); abortError.name = 'AbortError'; throw abortError;
         };
         throwIfAborted();
-        const url = `${this.baseUrl}/models/${this.models.imagen}:predict${keyParam}`;
+        const url = `${this.baseUrl}/models/${this.models.image || this.models.imagen}:generateContent${keyParam}`;
         const payload = {
-            instances: [{ prompt }],
-            parameters: { sampleCount: 1 },
+            contents: [{ parts: [{ text: String(prompt || '') }] }],
+            generationConfig: { responseModalities: ['TEXT', 'IMAGE'] },
         };
 
         const executeRequest = async () => {
             throwIfAborted();
             const response = await fetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', ...(this.apiKey ? { 'x-goog-api-key': this.apiKey } : {}) },
                 body: JSON.stringify(payload),
                 ... (signal ? { signal } : {})
             });
@@ -2219,17 +2230,18 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             }
             if (!response.ok) {
                 const errBody = await response.text().catch(() => '');
-                throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
+                throw new Error(`HTTP Error: ${response.status} ${response.statusText}${errBody ? ` - ${errBody.slice(0, 200)}` : ""}`);
             }
 
             const data = await response.json();
             if (data.error) {
-                throw new Error(`Imagen API Error: ${data.error.message || JSON.stringify(data.error)}`);
+                throw new Error(`Gemini image API Error: ${data.error.message || JSON.stringify(data.error)}`);
             }
 
-            const base64 = data.predictions?.[0]?.bytesBase64Encoded;
+            const imagePart = data.candidates?.[0]?.content?.parts?.find((part) => part.inlineData || part.inline_data);
+            const base64 = imagePart?.inlineData?.data || imagePart?.inline_data?.data;
             if (!base64) {
-                throw new Error('No image generated (Likely Safety Block)');
+                throw new Error('No image generated in response (Likely Safety Block)');
             }
 
             this._debugLog(`[AIProvider] ✅ Image generated: ${base64.length} chars`);

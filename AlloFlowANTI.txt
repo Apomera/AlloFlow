@@ -4003,7 +4003,7 @@ const _isDesktopBundledApp = (() => {
 })();
 const GEMINI_MODELS = {
   default: _isCanvasEnv ? 'gemini-3-flash-preview' : 'gemini-3-flash-preview',
-  image: _isCanvasEnv ? 'gemini-2.5-flash-image-preview' : 'gemini-3.1-flash-image-preview',
+  image: 'gemini-3.1-flash-image',
   fallback: 'gemini-2.5-flash-lite', // genuinely DIFFERENT from default so the callGemini/callGeminiVision fallback (gemini_api_module ~400/594, gated on fallback!==default) ACTUALLY activates when gemini-3-flash-preview is unavailable/404 — was identical to default = dead code = every doc failed if the one model went down
   flash: _isCanvasEnv ? 'gemini-3-flash-preview' : 'gemini-3-flash-preview',
   tts: 'gemini-2.5-flash-preview-tts',
@@ -4021,8 +4021,8 @@ const _CANVAS_MODELS = {
   default: 'gemini-3-flash-preview',
   fallback: 'gemini-2.5-flash-lite', // genuinely different from default so the fallback path actually activates
   flash: 'gemini-3-flash-preview',
-  image: 'gemini-2.5-flash-image-preview',
-  imagen: 'imagen-4.0-generate-001',
+  image: 'gemini-3.1-flash-image',
+  imagen: 'gemini-3.1-flash-image', // compatibility alias; Google retired Imagen 4
   tts: 'gemini-3-flash-preview',
   safety: 'gemini-2.5-flash-lite',
   vision: 'gemini-3-flash-preview',
@@ -4032,8 +4032,8 @@ const _DEPLOY_MODELS = {
   default: 'gemini-3-flash-preview',
   fallback: 'gemini-2.5-flash-lite', // genuinely different from default so the fallback path actually activates
   flash: 'gemini-3-flash-preview',
-  image: 'gemini-3.1-flash-image-preview',
-  imagen: 'imagen-4.0-generate-001',
+  image: 'gemini-3.1-flash-image',
+  imagen: 'gemini-3.1-flash-image', // compatibility alias; Google retired Imagen 4
   tts: 'gemini-2.5-flash-preview-tts',
   safety: 'gemini-2.5-flash-lite',
   vision: 'gemini-3-flash-preview',
@@ -4050,12 +4050,24 @@ const _DEPLOY_MODELS = {
 // in both Canvas and deploy; in Canvas, the dropdown is gated to Canvas's
 // catalog so a fat-fingered override can't pick a model that 404s.
 try {
+  const _RETIRED_IMAGE_MODELS = new Set([
+    'imagen-4.0-generate-001',
+    'imagen-4.0-ultra-generate-001',
+    'imagen-4.0-fast-generate-001',
+    'gemini-2.5-flash-image-preview',
+    'gemini-3.1-flash-image-preview',
+  ]);
+  const _normalizeImageModel = (_slot, _value) => (
+    (_slot === 'image' || _slot === 'imagen') && _RETIRED_IMAGE_MODELS.has(_value)
+      ? 'gemini-3.1-flash-image'
+      : _value
+  );
   const _stored = (typeof localStorage !== 'undefined') ? localStorage.getItem('alloflow_ai_config') : null;
   if (_stored) {
     const _cfg = JSON.parse(_stored);
     if (_cfg && _cfg.models && typeof _cfg.models === 'object') {
       for (const _slot of Object.keys(_cfg.models)) {
-        const _val = _cfg.models[_slot];
+        const _val = _normalizeImageModel(_slot, _cfg.models[_slot]);
         if (typeof _val === 'string' && _val) {
           GEMINI_MODELS[_slot] = _val;
           if (_CANVAS_MODELS[_slot] !== undefined) _CANVAS_MODELS[_slot] = _val;
@@ -29676,123 +29688,24 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       _sdTurboMaybeOffer(configErr);
       throw configErr;
     }
-    console.log("[Imagen] Calling Imagen API for:", prompt.substring(0, 50));
-    const url = 'https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict';
-    const payload = {
-      instances: [{ prompt: prompt }],
-      parameters: { sampleCount: 1 }
-    };
-    const executeRequest = async () => {
-      const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(effectiveImagenKey ? { 'x-goog-api-key': effectiveImagenKey } : {}) }, body: JSON.stringify(payload), ...(_signal ? { signal: _signal } : {}) });
-      console.log("[Imagen] Response status:", response.status, response.statusText);
-      if (response.status === 401 || response.status === 429 || response.status === 503) {
-        imagenRateLimitedRef.current = true;
-        console.warn(`[Imagen] ⚠️ Rate limited (${response.status}), switching to serialized mode...`);
-        const error = new Error(`Rate limited: ${response.status}`);
-        error.isRateLimited = true;
-        throw error;
+    // Google retired the Imagen 4 predict endpoints on 2026-08-17. Keep
+    // callImagen as the compatibility API used throughout the app, but route
+    // cloud generation through the native Gemini image model instead.
+    const runGeminiImage = async () => {
+      const imageRunner = (typeof callGeminiImageEdit === 'function' && callGeminiImageEdit)
+        || (typeof window !== 'undefined' && typeof window.callGeminiImageEdit === 'function' && window.callGeminiImageEdit);
+      if (!imageRunner) {
+        const err = new Error('Gemini image generation is unavailable until the image module finishes loading.');
+        err.isConfigState = true;
+        throw err;
       }
-      if (!response.ok) {
-        const errBody = await response.text().catch(() => '');
-        if (response.status === 400 && /API key not valid|API_KEY_INVALID/i.test(errBody)) {
-          imagenKeyNotice('The image API key was rejected by Google — image generation is paused. Check the key in AI Settings. Everything else keeps working.');
-          const keyErr = new Error('HTTP Error: 400 (image API key rejected)');
-          keyErr.isConfigState = true;
-          throw keyErr;
-        }
-        if (response.status === 404) {
-          // Google closed the imagen-4.0 predict family to new users
-          // (2026-08 field report: every image burned 3 retries on a
-          // permanent 404). Remember for the whole session and let the
-          // caller fall back to the Gemini image model instead.
-          window.__alloImagenGone = true;
-          console.warn('[Imagen] Model retired for this key (' + errBody.substring(0, 120) + ') — switching to the Gemini image model for this session.');
-          const goneErr = new Error('HTTP Error: 404 (Imagen unavailable on this key)');
-          goneErr.isConfigState = true;
-          goneErr.isImagenGone = true;
-          throw goneErr;
-        }
-        console.error("[Imagen] HTTP Error:", response.status, errBody.substring(0, 200));
-        throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
-      }
-      const data = await response.json();
-      if (data.error) {
-        console.error("[Imagen] API Error:", data.error.message || JSON.stringify(data.error));
-        throw new Error(`Imagen API Error: ${data.error.message || JSON.stringify(data.error)}`);
-      }
-      const base64 = data.predictions?.[0]?.bytesBase64Encoded;
-      if (!base64) {
-        console.error("[Imagen] No base64 in response. Keys:", Object.keys(data), JSON.stringify(data).substring(0, 200));
-        throw new Error("No image generated (Likely Safety Block)");
-      }
-      console.log("[Imagen] ✅ Image generated successfully!", base64.length, "chars");
-      _sdTurboNoteCloudImageSuccess();
-      if (imagenRateLimitedRef.current) {
-        setTimeout(() => { imagenRateLimitedRef.current = false; }, 30000);
-      }
-      const rawUrl = `data:image/png;base64,${base64}`;
-      const optimized = await optimizeImage(rawUrl, width, qual);
       _throwIfImageAborted();
-      return optimized;
-    };
-    const waitForImagenRetry = (delayMs) => new Promise((resolve, reject) => {
-      let timer = null;
-      const cleanup = () => { if (_signal) _signal.removeEventListener('abort', onAbort); };
-      const onAbort = () => {
-        if (timer) clearTimeout(timer);
-        cleanup();
-        const abortError = new Error('Image generation aborted');
-        abortError.name = 'AbortError';
-        reject(abortError);
-      };
-      if (_signal && _signal.aborted) return onAbort();
-      if (_signal) _signal.addEventListener('abort', onAbort, { once: true });
-      timer = setTimeout(() => { cleanup(); resolve(); }, Math.max(0, delayMs));
-    });
-    const executeWithRetry = async (attempt = 0, maxAttempts = 3) => {
-      try {
-        return await executeRequest();
-      } catch (err) {
-        if ((err && err.name === 'AbortError') || (_signal && _signal.aborted)) throw err;
-        if (err.isConfigState || (err.message && (err.message.includes("Safety") || err.message.includes("Block") || err.message.includes("400")))) {
-          throw err;
-        }
-        if (attempt < maxAttempts - 1) {
-          const retryAfterMs = Number(err && err.retryAfterMs);
-          const exponentialMs = Math.min(8000, Math.pow(2, attempt) * 1000);
-          const jitterMs = Math.floor(Math.random() * 350);
-          const delay = Number.isFinite(retryAfterMs) && retryAfterMs > 0 ? retryAfterMs : exponentialMs + jitterMs;
-          warnLog(`Imagen retry ${attempt + 1}/${maxAttempts} in ${delay}ms...`);
-          await waitForImagenRetry(delay);
-          _throwIfImageAborted();
-          return executeWithRetry(attempt + 1, maxAttempts);
-        }
-        console.error("[Imagen] All retries exhausted:", err.message);
-        throw err;
-      }
-    };    const runWithGeminiImageFallback = async (runner) => {
-      // Imagen already known-gone this session: skip the doomed predict call
-      // entirely (and its retries) and draw with the Gemini image model.
-      const geminiDraw = async () => {
-        if (typeof window.callGeminiImageEdit !== 'function') return null;
-        const drawn = await window.callGeminiImageEdit(prompt, null, width, qual, null, _signal ? { signal: _signal } : null);
-        if (drawn) console.log('[Imagen] ✅ Generated via ' + ((typeof GEMINI_MODELS !== 'undefined' && GEMINI_MODELS.image) || 'the Gemini image model') + ' (Imagen unavailable on this key).');
-        return drawn;
-      };
-      if (window.__alloImagenGone) {
-        const drawn = await geminiDraw();
-        if (drawn) return drawn;
-      }
-      try {
-        return await runner();
-      } catch (err) {
-        if ((err && err.name === 'AbortError') || (_signal && _signal.aborted)) throw err;
-        if (err && err.isImagenGone) {
-          const drawn = await geminiDraw();
-          if (drawn) return drawn;
-        }
-        throw err;
-      }
+      const drawn = await imageRunner(prompt, null, width, qual, null, _signal ? { signal: _signal } : null);
+      _throwIfImageAborted();
+      if (!drawn) throw new Error('No image generated in response');
+      console.log('[Image] Generated via ' + ((typeof GEMINI_MODELS !== 'undefined' && GEMINI_MODELS.image) || 'gemini-3.1-flash-image'));
+      _sdTurboNoteCloudImageSuccess();
+      return drawn;
     };
     const runWithLocalFallback = async (runner) => {
       try {
@@ -29802,7 +29715,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
         if (!_sdTurboEligibleError(err)) throw err; // safety/content refusals stay refused
         const local = await _sdTurboTryLocal(prompt, width, qual, _signal);
         if (local) {
-          console.warn('[Imagen] Cloud image generation unavailable (' + (err?.message || 'error') + ') — used the local image generator instead.');
+          console.warn('[Image] Cloud image generation unavailable (' + (err?.message || 'error') + ') - used the local image generator instead.');
           return local;
         }
         _sdTurboMaybeOffer(err);
@@ -29812,12 +29725,12 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     if (imagenRateLimitedRef.current) {
       // imagenQueueRef.current never rejects (it is always assigned with a
       // trailing .catch(() => {})), so a single fulfillment handler suffices.
-      const queuedRequest = imagenQueueRef.current.then(() => { _throwIfImageAborted(); return runWithGeminiImageFallback(() => runWithLocalFallback(executeWithRetry)); });
+      const queuedRequest = imagenQueueRef.current.then(() => { _throwIfImageAborted(); return runWithLocalFallback(runGeminiImage); });
       imagenQueueRef.current = queuedRequest.catch(() => {});
       return queuedRequest;
     } else {
       _throwIfImageAborted();
-      return runWithGeminiImageFallback(() => runWithLocalFallback(executeWithRetry));
+      return runWithLocalFallback(runGeminiImage);
     }
   };
   // Browsers render animated GIFs natively in <img> tags, so panels that

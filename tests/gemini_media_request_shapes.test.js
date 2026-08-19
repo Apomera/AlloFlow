@@ -95,11 +95,11 @@ describe('Gemini request-shape regression fixtures', () => {
     );
   });
 
-  it('pins the existing Imagen generation endpoint and payload', async () => {
+  it('pins the Gemini image generation endpoint and payload', async () => {
     const calls = [];
     const fetchMock = vi.fn(async (url, options) => {
       calls.push({ url, options });
-      return response({ predictions: [{ bytesBase64Encoded: 'aW1hZ2U=' }] });
+      return response({ candidates: [{ content: { parts: [{ inlineData: { data: 'aW1hZ2U=' } }] } }] });
     });
     globalThis.fetch = fetchMock;
     window.fetch = fetchMock;
@@ -109,7 +109,7 @@ describe('Gemini request-shape regression fixtures', () => {
     );
     expect(result).toBe('data:image/png;base64,aW1hZ2U=');
     expect(calls[0].url).toBe(fixture.imageGeneration.url);
-    expect(calls[0].options.headers).toEqual({ 'Content-Type': 'application/json' });
+    expect(calls[0].options.headers).toEqual({ 'Content-Type': 'application/json', 'x-goog-api-key': 'fixture-key' });
     expect(JSON.parse(calls[0].options.body)).toEqual(fixture.imageGeneration.body);
   });
 

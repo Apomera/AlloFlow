@@ -18,10 +18,10 @@
     }
   },
   "imageGeneration": {
-    "url": "https://generativelanguage.googleapis.com/v1beta/models/imagen-fixture:predict?key=fixture-key",
+    "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-image-fixture:generateContent",
     "body": {
-      "instances": [{ "prompt": "A labeled-free water-cycle illustration." }],
-      "parameters": { "sampleCount": 1 }
+      "contents": [{ "parts": [{ "text": "A labeled-free water-cycle illustration." }] }],
+      "generationConfig": { "responseModalities": ["TEXT", "IMAGE"] }
     }
   },
   "imageEditing": {
