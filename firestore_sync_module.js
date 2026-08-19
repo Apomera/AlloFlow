@@ -184,7 +184,10 @@
     return out;
   }
 
-  const SESSION_RESOURCE_SYNC_MAX_BYTES = 850 * 1024;
+  // This is a budget for the resource manifest, not the Firestore hard cap.
+  // Media and full resource bodies live in session_assets; leave substantial
+  // headroom for roster, poll, group, and presence fields in the session doc.
+  const SESSION_RESOURCE_SYNC_MAX_BYTES = 256 * 1024;
   const SESSION_RESOURCE_STRING_MAX_CHARS = 120000;
   const SESSION_BINARY_FIELD_RE = /(?:image|imageUrl|sceneImage|avatarUrl|audio|audioRecording|recording|blob|base64|dataUrl)$/i;
 

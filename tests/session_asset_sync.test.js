@@ -120,7 +120,7 @@ describe('session resource asset sync', () => {
     expect(hydrated[0].data.questions[0].optionImageUrls).toEqual(optionImages);
   });
 
-  it('uses a chunked manifest when even the resource-ref index is too large', async () => {
+  it('bounds manifest metadata while preserving full resource bodies in assets', async () => {
     const resources = Array.from({ length: 30 }, (_, index) => ({
       id: `resource-${index}`,
       type: 'resource',
@@ -128,14 +128,14 @@ describe('session resource asset sync', () => {
       data: { text: `resource ${index}` },
     }));
 
-    const manifestPointer = await window.uploadSessionAssets('app-test', resources, 'A4RT');
+    const manifest = await window.uploadSessionAssets('app-test', resources, 'A4RT');
 
-    expect(manifestPointer).toHaveLength(1);
-    expect(manifestPointer[0].__alloResourcesManifestRef).toBeTruthy();
-    expect([...store.values()].some((entry) => entry.kind === 'sessionResourcesManifestChunks')).toBe(true);
-    expect(JSON.stringify(manifestPointer).length).toBeLessThan(2000);
+    expect(manifest).toHaveLength(30);
+    expect(manifest.every((item) => item.title.length <= 180)).toBe(true);
+    expect(JSON.stringify(manifest).length).toBeLessThan(20000);
+    expect([...store.values()].some((entry) => entry.kind === 'sessionResource')).toBe(true)
 
-    const hydrated = await window.hydrateSessionAssets('app-test', manifestPointer);
+    const hydrated = await window.hydrateSessionAssets('app-test', manifest);
     expect(hydrated).toEqual(resources);
   });
 
@@ -359,4 +359,58 @@ describe('session resource asset sync', () => {
     expect(hydrated[0].data[0].image).toBe(packWord.image);
     expect(hydrated[0].data[0].activityItems).toEqual(packWord.activityItems);
   });
+  it('keeps teacher read-aloud audio while excluding the private student lane', async () => {
+    const teacherAudio = 'TEACHER_TTS_BASE64_' + 'T'.repeat(5000);
+    const studentAudio = 'PRIVATE_STUDENT_RECORDING_' + 'S'.repeat(5000);
+    const resources = [{
+      id: 'read-aloud',
+      type: 'leveled-text',
+      title: 'Read aloud',
+      karaokeAudio: {
+        format: 'per-entry',
+        version: 4,
+        entries: {
+          hello: { audio: teacherAudio, mime: 'audio/mpeg', source: 'ai' },
+        },
+      },
+      karaokeStudentAudio: {
+        format: 'per-entry',
+        version: 4,
+        entries: {
+          hello: { audio: studentAudio, mime: 'audio/webm', source: 'human-student' },
+        },
+      },
+      data: { text: 'Hello class' },
+    }];
+
+    const manifest = await window.uploadSessionAssets('app-test', resources, 'AUDIOPRIV');
+    expect(JSON.stringify(manifest)).not.toContain(teacherAudio);
+    expect(JSON.stringify(manifest)).not.toContain(studentAudio);
+
+    const hydrated = await window.hydrateSessionAssets('app-test', manifest);
+    expect(hydrated[0].karaokeAudio.entries.hello.audio).toBe(teacherAudio);
+    expect(hydrated[0].karaokeStudentAudio).toBeUndefined();
+    expect(JSON.stringify([...store.values()])).toContain(teacherAudio);
+    expect(JSON.stringify([...store.values()])).not.toContain(studentAudio);
+  });
+
+  it('keeps oversized previews and media out of the session manifest', async () => {
+    const preview = 'data:image/png;base64,' + 'P'.repeat(280000);
+    const resources = [{
+      id: 'meta-heavy',
+      type: 'document',
+      title: 'A'.repeat(500000),
+      meta: { preview, audioMap: { hello: 'AUDIO_' + 'Q'.repeat(10000) } },
+      data: { text: 'The resource body remains in session_assets.' },
+    }];
+
+    const manifest = await window.uploadSessionAssets('app-test', resources, 'MANIFEST');
+    const manifestJson = JSON.stringify(manifest);
+    expect(manifestJson).not.toContain(preview);
+    expect(manifestJson).not.toContain('AUDIO_');
+    expect(manifestJson.length).toBeLessThan(5000);
+
+    await expect(window.hydrateSessionAssets('app-test', manifest)).resolves.toEqual(resources);
+  });
+
 });

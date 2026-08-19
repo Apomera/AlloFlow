@@ -220,7 +220,12 @@ class ErrorBoundary extends React.Component {
 // Firestore deps (doc, db, setDoc, getDoc) are mirrored to window.* by the host;
 // the build-script preamble aliases them as locals.
 
-const SESSION_RESOURCE_INLINE_LIMIT = 700 * 1024;
+// Keep the resource index deliberately small. Firestore's hard document cap
+// applies to the whole live-session document, not just resources; roster,
+// poll, group, and presence state need room beside this manifest. Resource
+// bodies and their media live in session_assets, so a smaller index has no
+// effect on the student-facing resource size.
+const SESSION_RESOURCE_INLINE_LIMIT = 256 * 1024;
 const SESSION_RESOURCE_CHUNK_SIZE = 180 * 1024;
 const SESSION_ASSET_WRITE_CONCURRENCY = 3;
 const stripUndefinedForFirestore = (obj) => {
@@ -336,18 +341,135 @@ const enqueueSessionResourceAsset = (appId, assetId, item, itemJson, writeTasks,
     })));
   }
 };
-const stripUnsafeLiveSessionFields = (value, keyName = "") => {
+const sanitizePortableAacImage = (value) => {
+  if (typeof value !== "string") return null;
+  if (/^data:image\/(?:png|jpe?g|webp|gif|avif);base64,[A-Za-z0-9+/]*={0,2}$/i.test(value)) return value;
+  const match = value.match(/^data:image\/svg\+xml;base64,([A-Za-z0-9+/]*={0,2})$/i);
+  if (!match || typeof atob !== "function") return null;
+  try {
+    const svg = atob(match[1]);
+    if (!/<svg(?:\s|>)/i.test(svg)) return null;
+    if (/<\s*(?:script|foreignObject|iframe|object|embed|link|style|image|audio|video)\b/i.test(svg)
+      || /<!\s*(?:DOCTYPE|ENTITY)\b|<\?xml-stylesheet\b/i.test(svg)
+      || /\son[a-z]+\s*=/i.test(svg)
+      || /(?:href|xlink:href)\s*=\s*['"]\s*(?:https?:|\/\/|blob:|data:|javascript:)/i.test(svg)
+      || /(?:url\s*\(|@import|javascript:|expression\s*\()/i.test(svg)) return null;
+    return value;
+  } catch (_) {
+    return null;
+  }
+};
+const sanitizePortableAacAudio = (audio, allowPrepared) => {
+  if (!allowPrepared || !audio || typeof audio !== "object" || Array.isArray(audio) || audio.kind !== "prepared") return null;
+  const data = typeof audio.data === "string" ? audio.data : "";
+  const match = data.match(/^data:(audio\/(?:mpeg|mp3|mp4|aac|ogg|wav|webm|flac|x-wav));base64,[A-Za-z0-9+/]*={0,2}$/i);
+  const mime = String(audio.mime || "").toLowerCase();
+  if (!match || mime !== match[1].toLowerCase()) return null;
+  const clean = { kind: "prepared", mime, data, __alloPortablePreparedAudio: true };
+  if (audio.profile && typeof audio.profile === "object" && !Array.isArray(audio.profile)) {
+    const profile = {};
+    ["voice", "language", "provider", "engine", "model", "voiceResolverVersion"].forEach((key) => {
+      const value = String(audio.profile[key] == null ? "" : audio.profile[key]).trim().slice(0, 80);
+      if (value) profile[key] = value;
+    });
+    const rate = Number(audio.profile.synthesisRate);
+    if (Number.isFinite(rate)) profile.synthesisRate = Math.max(0.25, Math.min(4, rate));
+    if (Object.keys(profile).length) clean.profile = profile;
+  }
+  return clean;
+};
+const sanitizePortableAacResource = (item) => {
+  if (!item || item.type !== "aac-board" || !item.data || typeof item.data !== "object") return item;
+  const source = item.data;
+  const privacy = source.metadata && source.metadata.privacy && typeof source.metadata.privacy === "object"
+    ? source.metadata.privacy : {};
+  let omittedImages = Math.max(0, Number(source.metadata && source.metadata.omittedNonportableImages) || 0);
+  let omittedCustom = Math.max(0, Number(source.metadata && source.metadata.omittedCustomAudio) || 0);
+  let omittedPrepared = Math.max(0, Number(source.metadata && source.metadata.omittedPreparedAudio) || 0);
+  let preparedIncluded = false;
+  const pages = (Array.isArray(source.pages) ? source.pages : []).slice(0, 12).map((page, pageIndex) => {
+    const cells = (Array.isArray(page && page.cells) ? page.cells : []).slice(0, 64).map((cell, cellIndex) => {
+      if (!cell || typeof cell !== "object") return null;
+      const clean = {
+        id: String(cell.id || "cell-" + (pageIndex + 1) + "-" + (cellIndex + 1)).slice(0, 96),
+        index: Number.isFinite(Number(cell.index)) ? Math.max(0, Math.min(999, Math.round(Number(cell.index)))) : cellIndex,
+        row: Number.isFinite(Number(cell.row)) ? Math.max(0, Math.min(99, Math.round(Number(cell.row)))) : 0,
+        col: Number.isFinite(Number(cell.col)) ? Math.max(0, Math.min(99, Math.round(Number(cell.col)))) : 0,
+        displayLabel: String(cell.displayLabel || "").slice(0, 160),
+        vocalLabel: String(cell.vocalLabel || cell.displayLabel || "").slice(0, 240),
+        originalLabel: String(cell.originalLabel || cell.displayLabel || "").slice(0, 160),
+        description: String(cell.description || "").slice(0, 400),
+        category: String(cell.category || "").slice(0, 80),
+        image: sanitizePortableAacImage(cell.image),
+      };
+      if (cell.image && !clean.image) omittedImages += 1;
+      if (cell.audio && cell.audio.kind === "custom") {
+        omittedCustom += 1;
+      } else if (cell.audio && cell.audio.kind === "prepared") {
+        const audio = sanitizePortableAacAudio(cell.audio, privacy.preparedAudioIncluded === true);
+        if (audio) {
+          clean.audio = audio;
+          preparedIncluded = true;
+        } else {
+          omittedPrepared += 1;
+        }
+      }
+      return clean;
+    }).filter(Boolean);
+    return {
+      id: String(page && page.id || "page-" + (pageIndex + 1)).slice(0, 96),
+      title: String(page && page.title || "Page " + (pageIndex + 1)).slice(0, 160),
+      cols: Number.isFinite(Number(page && page.cols)) ? Math.max(1, Math.min(12, Math.round(Number(page.cols)))) : 4,
+      cells,
+    };
+  });
+  return {
+    id: item.id,
+    type: item.type,
+    title: item.title,
+    data: {
+      format: source.format,
+      version: source.version,
+      exportedAt: String(source.exportedAt || "").slice(0, 80),
+      board: source.board && typeof source.board === "object" ? {
+        id: String(source.board.id || "board").slice(0, 96),
+        title: String(source.board.title || "AAC Board").slice(0, 160),
+        locale: String(source.board.locale || "en-US").slice(0, 40),
+        direction: source.board.direction === "rtl" ? "rtl" : "ltr",
+      } : null,
+      pages,
+      metadata: {
+        privacy: { customAudioIncluded: false, preparedAudioIncluded: preparedIncluded },
+        omittedNonportableImages: omittedImages,
+        omittedCustomAudio: omittedCustom,
+        omittedPreparedAudio: omittedPrepared,
+        warnings: Array.isArray(source.metadata && source.metadata.warnings)
+          ? source.metadata.warnings.map((warning) => String(warning).slice(0, 240)).filter(Boolean).slice(0, 20) : [],
+      },
+    },
+  };
+};
+const stripUnsafeLiveSessionFields = (value, keyName = "", options = {}) => {
   if (value == null) return value;
+  const allowPreparedAudio = options.allowPreparedAudio === true || value.__alloPortablePreparedAudio === true;
   if (typeof value === "string") {
-    if (/^(audioRecording|rawAudio|voiceClip|recording)$/i.test(keyName) || /^data:audio/i.test(value)) return null;
+    if (/^(audioRecording|rawAudio|voiceClip|recording|karaokeStudentAudio)$/i.test(keyName)
+      || (/^data:audio/i.test(value) && !allowPreparedAudio)) return null;
     return value;
   }
-  if (Array.isArray(value)) return value.map((entry) => stripUnsafeLiveSessionFields(entry, keyName));
+  if (Array.isArray(value)) return value.map((entry) => stripUnsafeLiveSessionFields(entry, keyName, options));
   if (typeof value === "object" && !(value instanceof Date)) {
     const out = {};
     Object.keys(value).forEach((key) => {
-      if (/^(audioRecording|rawAudio|voiceClip|recording|mimeType)$/i.test(key)) return;
-      out[key] = stripUnsafeLiveSessionFields(value[key], key);
+      // The reference/teacher lane may contain vetted generated or teacher-
+      // recorded clips. The student lane is private human work and must never
+      // enter a class-wide asset, even though both lanes share the resource
+      // object on the teacher device.
+      if (/^(audioRecording|rawAudio|voiceClip|recording|mimeType|karaokeStudentAudio)$/i.test(key)
+        || key === "__alloPortablePreparedAudio") return;
+      const childOptions = (key === "audio" && value[key] && value[key].__alloPortablePreparedAudio)
+        ? { ...options, allowPreparedAudio: true } : options;
+      out[key] = stripUnsafeLiveSessionFields(value[key], key, childOptions);
     });
     return out;
   }
@@ -383,10 +505,12 @@ const compactLargeSessionResources = (appId, resources, writeTasks, options = {}
     const assetId = makeSessionAssetId("res", [sessionCode, index, item && item.id || item && item.type || "resource"]);
     enqueueSessionResourceAsset(appId, assetId, item, itemJson, writeTasks, securityMetadata);
     return stripUndefinedForFirestore({
-      id: item && item.id || assetId,
-      type: item && item.type || "resource",
-      title: item && item.title || "",
-      meta: item && item.meta,
+      // Manifest fields are identifiers only. In particular, never copy
+      // resource meta here: some generators attach previews or audio maps
+      // there, which would put binary payload back into the session document.
+      id: String(item && item.id || assetId).slice(0, 240),
+      type: String(item && item.type || "resource").slice(0, 80),
+      title: String(item && item.title || "").slice(0, 180),
       __alloResourceRef: assetId,
       __alloResourceBytes: jsonByteLength(itemJson),
       __alloResourceHash: itemHash,
@@ -465,7 +589,7 @@ const uploadSessionAssets = async (appId, resources, sessionCode) => {
     console.error("[SESSION DEBUG] Pre-check error:", preCheckErr);
   }
   const securityMetadata = getSessionAssetSecurityMetadata(sessionCode);
-  const safeResources = structuredClone(stripUnsafeLiveSessionFields(resources));
+  const safeResources = structuredClone(stripUnsafeLiveSessionFields(resources.map(sanitizePortableAacResource)));
   const writeTasks = [];
   const processField = (obj, key, assetSeed) => {
     const val = obj[key];
