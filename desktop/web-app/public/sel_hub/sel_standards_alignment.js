@@ -199,6 +199,24 @@
       ],
       crewPrompt: 'Three minutes of breath together. End with one word naming what you noticed.'
     },
+    'somaticReset': {
+      construct: 'Noticing body tension or restlessness and choosing a brief, choice-based comfort practice.',
+      casel: [
+        { area: 'Self-Awareness', sub: 'noticing body signals without assigning a diagnosis' },
+        { area: 'Self-Management', sub: 'stress management, self-regulation, making a safe choice' }
+      ],
+      howl: [{ area: 'Habits of Mind', note: 'metacognition and reflection on what helps' }],
+      other: [
+        { framework: 'Trauma-Informed Practice', area: 'choice, eyes-open options, user-controlled motion, still alternatives, optional ratings, no-count and no-visual modes, and opt-out' },
+        { framework: 'MTSS', area: 'Tier 1 universal wellbeing practice' }
+      ],
+      pairsWith: [
+        { id: 'mindfulness', why: 'pairs present-moment attention with a short body-based choice' },
+        { id: 'coping', why: 'adds a structured, chair-friendly reset to a broader coping toolkit' },
+        { id: 'sensoryRegulation', why: 'connects a brief reset with longer-term understanding of sensory preferences' }
+      ],
+      crewPrompt: 'Offer still-motion, natural-breathing, no-visual, no-number, and gentle movement options. Students practice privately and may share one word or pass.'
+    },
     'quietQuestions': {
       construct: 'Sitting with one open-ended question for a week, without forcing an answer.',
       casel: [{ area: 'Self-Awareness', sub: 'self-reflection, accurate self-perception' }],

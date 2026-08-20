@@ -248,7 +248,7 @@
 
   // ── Blueprint ──────────────────────────────────────────────────────────
 
-  var BLUEPRINT_KNOWN_FIELDS = ['schemaVersion', 'blueprintId', 'audience', 'standards', 'standardsContext', 'sourcePolicy',
+  var BLUEPRINT_KNOWN_FIELDS = ['schemaVersion', 'blueprintId', 'audience', 'standards', 'standardsContext', 'instructionalContext', 'sourcePolicy',
     'lessonDNA', 'globalSettings', 'plan', 'configs', 'requiredCapabilities', 'warnings', 'review', 'provenance'];
   var REVIEW_STATES = ['draft', 'approved'];
   // Keep the structured standards snapshot bounded at the contract boundary.
@@ -261,6 +261,24 @@
       if (value === undefined || value === null) return '';
       return String(value).replace(/\s+/g, ' ').trim().slice(0, limit || 600);
     };
+    var normalizeInstructionalConstraints = function (value) {
+      var source = isPlainObject(value) ? value : {};
+      var expectation = cap(
+        source.textAccessExpectation || source.primaryTextPolicy || source.expectation,
+        80
+      );
+      var allowed = ['unspecified', 'preserve-primary', 'supplemental-adaptation-permitted', 'educator-directed'];
+      if (allowed.indexOf(expectation) === -1) expectation = 'unspecified';
+      var basis = cap(source.basis || source.source || source.authority, 240);
+      var sourceUrl = cap(source.sourceUrl || source.url, 600);
+      return {
+        textAccessExpectation: expectation,
+        basis: basis,
+        sourceUrl: sourceUrl,
+        notes: cap(source.notes || source.description, 600),
+        sourced: !!(basis || sourceUrl)
+      };
+    };
     var out = {
       version: cap(input.version, 80),
       inputText: cap(input.inputText || input.rawInput, 2400),
@@ -271,7 +289,10 @@
       resolutionStatus: cap(input.resolutionStatus || input.status, 80),
       attribution: cap(input.attribution || (input.provenance && input.provenance.attribution), 600),
       sourceUrls: [],
-      standards: []
+      standards: [],
+      instructionalConstraints: normalizeInstructionalConstraints(
+        input.instructionalConstraints || input.textAccessPolicy
+      )
     };
     var urls = Array.isArray(input.sourceUrls) ? input.sourceUrls : [];
     for (var u = 0; u < urls.length && out.sourceUrls.length < 12; u++) {
@@ -293,6 +314,9 @@
         subject: cap(raw.subject || raw.discipline, 160),
         sourceUrl: cap(raw.sourceUrl || raw.url || raw.officialUrl, 600),
         sourceUrls: Array.isArray(raw.sourceUrls) ? raw.sourceUrls.slice(0, 12).map(function (v) { return cap(v, 600); }).filter(Boolean) : [],
+        instructionalConstraints: normalizeInstructionalConstraints(
+          raw.instructionalConstraints || raw.textAccessPolicy
+        ),
         relationships: Array.isArray(raw.relationships) ? raw.relationships.slice(0, 12).map(function (rel) {
           if (typeof rel === 'string') return { label: cap(rel, 600) };
           if (!isPlainObject(rel)) return null;
@@ -304,6 +328,15 @@
         }).filter(Boolean) : []
       };
       if (entry.id || entry.code || entry.label || entry.text) out.standards.push(entry);
+    }
+    if (out.instructionalConstraints.textAccessExpectation === 'unspecified') {
+      for (var s = 0; s < out.standards.length; s++) {
+        var entryConstraints = out.standards[s].instructionalConstraints;
+        if (entryConstraints && entryConstraints.textAccessExpectation !== 'unspecified') {
+          out.instructionalConstraints = entryConstraints;
+          break;
+        }
+      }
     }
     if (isPlainObject(input.provenance)) {
       out.provenance = {
@@ -320,6 +353,79 @@
     return out;
   }
 
+  // Dependency-free fallbacks for the shared InstructionalContext module.
+  // Contract modules also run headlessly in Node/MCP processes, so they cannot
+  // assume the browser module is loaded. These normalizers deliberately mirror
+  // its bounded v1 shape and keep the contract transport-neutral.
+  function instructionalFingerprint(value) {
+    var serialized = '';
+    try { serialized = JSON.stringify(value === undefined ? null : value); }
+    catch (_) { serialized = String(value || ''); }
+    var hash = 2166136261;
+    for (var i = 0; i < serialized.length; i++) {
+      hash ^= serialized.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return 'txt-' + (hash >>> 0).toString(16).padStart(8, '0') + '-' + serialized.length;
+  }
+
+  function normalizeInstructionalText(input, tool) {
+    var source = isPlainObject(input) ? input : {};
+    var complexity = isPlainObject(source.complexity) ? source.complexity : {};
+    var cap = function (value, limit) {
+      if (value === undefined || value === null) return '';
+      return String(value).replace(/\s+/g, ' ').trim().slice(0, limit || 160);
+    };
+    var roles = ['primary', 'supplemental', 'unspecified'];
+    var forms = ['original', 'same-text-supported', 'adapted'];
+    var designationSources = ['educator', 'workflow-default', 'legacy-inferred'];
+    var role = cap(source.role, 40);
+    var form = cap(source.form, 40);
+    var designationSource = cap(source.designationSource, 40);
+    if (roles.indexOf(role) === -1) role = 'unspecified';
+    if (forms.indexOf(form) === -1) form = tool === 'simplified' ? 'adapted' : 'original';
+    if (designationSources.indexOf(designationSource) === -1) designationSource = 'legacy-inferred';
+    var rawAuthorization = isPlainObject(source.replacementAuthorization) ? source.replacementAuthorization : {};
+    var authorized = rawAuthorization.authorized === true && rawAuthorization.source === 'educator';
+    var rawMeasured = complexity.measuredGrade;
+    var measured = rawMeasured === null || rawMeasured === undefined || rawMeasured === '' ? NaN : Number(rawMeasured);
+    return {
+      schemaVersion: 1,
+      role: role,
+      form: form,
+      sourceArtifactId: cap(source.sourceArtifactId || source.sourceResourceId, 160) || null,
+      primaryArtifactId: cap(source.primaryArtifactId || source.primaryResourceId, 160) || null,
+      designationSource: designationSource,
+      replacementAuthorization: { authorized: authorized, source: authorized ? 'educator' : 'none' },
+      complexity: {
+        requestedGrade: cap(complexity.requestedGrade || complexity.targetGrade, 80),
+        calibrationTarget: cap(complexity.calibrationTarget, 80),
+        measuredGrade: Number.isFinite(measured) ? measured : null,
+        method: cap(complexity.method, 80),
+        status: cap(complexity.status, 40) || 'unavailable',
+        contentFingerprint: cap(complexity.contentFingerprint, 120),
+        measuredAt: cap(complexity.measuredAt, 80),
+        language: cap(complexity.language || 'English', 80)
+      }
+    };
+  }
+
+  function normalizeInstructionalContext(input, fallback) {
+    var source = isPlainObject(input) ? input : {};
+    var opts = isPlainObject(fallback) ? fallback : {};
+    var standardsContext = normalizeStandardsContext(source.standardsContext || opts.standardsContext);
+    var policy = source.primaryTextPolicy === 'educator-directed' ? 'educator-directed' : 'preserve-primary';
+    var grade = String(source.instructionalGrade || opts.instructionalGrade || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+    var suppliedFingerprint = String(source.standardsFingerprint || '').replace(/\s+/g, ' ').trim().slice(0, 120);
+    return {
+      schemaVersion: 1,
+      instructionalGrade: grade,
+      primaryTextPolicy: policy,
+      standardsContext: standardsContext,
+      standardsFingerprint: suppliedFingerprint || instructionalFingerprint(standardsContext || null)
+    };
+  }
+
   function normalizePlanItems(rawPlan, toolDirectives) {
     var items = [];
     var list = Array.isArray(rawPlan) ? rawPlan : [];
@@ -334,7 +440,12 @@
       // (round-trips are idempotent), minted from the PRE-REORDER index
       // otherwise so it travels with the item through the sort below.
       var uiId = (item && typeof item === 'object' && (item.uiId || item.stepId)) || (String(tool) + '-' + i);
-      items.push({ tool: String(tool), directive: String(directive || ''), uiId: String(uiId) });
+      items.push({
+        tool: String(tool),
+        directive: String(directive || ''),
+        uiId: String(uiId),
+        instructionalText: normalizeInstructionalText(item && typeof item === 'object' ? item.instructionalText : null, String(tool))
+      });
     }
     // Ordering invariant shared with phase_k/phase_o/ANTI: analysis first,
     // lesson-plan last.
@@ -418,12 +529,20 @@
 
     if (errors.length) return { ok: false, errors: errors, warnings: warnings, value: null };
 
+    var blueprintInstructionalInput = isPlainObject(input.instructionalContext) ? input.instructionalContext : {};
+    var blueprintStandardsContext = normalizeStandardsContext(
+      blueprintInstructionalInput.standardsContext || input.standardsContext
+    );
     var value = {
       schemaVersion: SCHEMA_VERSION,
       blueprintId: input.blueprintId,
       audience: isPlainObject(input.audience) ? input.audience : {},
       standards: typeof input.standards === 'string' ? input.standards : '',
-      standardsContext: normalizeStandardsContext(input.standardsContext),
+      standardsContext: blueprintStandardsContext,
+      instructionalContext: normalizeInstructionalContext(input.instructionalContext, {
+        instructionalGrade: input.audience && input.audience.gradeLevel,
+        standardsContext: blueprintStandardsContext
+      }),
       sourcePolicy: isPlainObject(input.sourcePolicy) ? input.sourcePolicy : { kind: 'workspace-source' },
       lessonDNA: isPlainObject(input.lessonDNA) ? input.lessonDNA : {},
       globalSettings: isPlainObject(input.globalSettings) ? input.globalSettings : {},
@@ -443,7 +562,8 @@
 
   /**
    * Wrap the live autoConfigureSettings output in a versioned Blueprint.
-   * context: { blueprintId, gradeLevel, language, standards, standardsContext, interests }.
+   * context: { blueprintId, gradeLevel, language, standards, standardsContext,
+   *            instructionalContext, interests }.
    */
   function fromLegacyConfig(config, context) {
     var c = isPlainObject(config) ? config : {};
@@ -452,8 +572,30 @@
       Array.isArray(c.resourcePlan) && c.resourcePlan.length ? c.resourcePlan : c.recommendedResources,
       c.toolDirectives
     );
+    // A Blueprint is a forward-looking workflow, not a migration of an
+    // already-authored artifact. Give its source-analysis and adapted-text
+    // rows explicit safe defaults while leaving legacy history migration to
+    // the shared artifact inferencer (`unspecified` there by design).
+    plan = plan.map(function (row) {
+      if (!row || (row.tool !== 'analysis' && row.tool !== 'simplified')) return row;
+      var existing = row.instructionalText || {};
+      if (existing.designationSource === 'educator') return row;
+      return Object.assign({}, row, {
+        instructionalText: normalizeInstructionalText(Object.assign({}, existing, {
+          role: row.tool === 'analysis' ? 'primary' : 'supplemental',
+          form: row.tool === 'analysis' ? 'original' : 'adapted',
+          designationSource: 'workflow-default'
+        }), row.tool)
+      });
+    });
     var configs = {};
     LEGACY_CONFIG_KEYS.forEach(function (k) { if (isPlainObject(c[k])) configs[k] = c[k]; });
+    var legacyInstructionalInput = isPlainObject(ctx.instructionalContext)
+      ? ctx.instructionalContext
+      : (isPlainObject(c.instructionalContext) ? c.instructionalContext : {});
+    var legacyStandardsContext = normalizeStandardsContext(
+      legacyInstructionalInput.standardsContext || ctx.standardsContext || c.standardsContext
+    );
     return {
       schemaVersion: SCHEMA_VERSION,
       blueprintId: String(ctx.blueprintId || 'bp-' + Math.abs(JSON.stringify(plan).split('').reduce(function (a, ch) { return ((a << 5) - a + ch.charCodeAt(0)) | 0; }, 0))),
@@ -462,9 +604,14 @@
         language: ctx.language || '',
         interests: ctx.interests || ''
       },
-      standards: ctx.standards || '',
-      standardsContext: normalizeStandardsContext(ctx.standardsContext),
-      sourcePolicy: { kind: 'workspace-source' },
+      standards: ctx.standards || c.standards || '',
+      standardsContext: legacyStandardsContext,
+      instructionalContext: normalizeInstructionalContext(ctx.instructionalContext || c.instructionalContext, {
+        instructionalGrade: (c.globalSettings && c.globalSettings.gradeLevel) || ctx.gradeLevel || '',
+        standardsContext: legacyStandardsContext
+      }),
+      sourcePolicy: isPlainObject(ctx.sourcePolicy) ? ctx.sourcePolicy
+        : (isPlainObject(c.sourcePolicy) ? c.sourcePolicy : { kind: 'workspace-source' }),
       lessonDNA: isPlainObject(c.lessonDNA) ? c.lessonDNA : {},
       globalSettings: isPlainObject(c.globalSettings) ? c.globalSettings : {},
       plan: plan,
@@ -482,12 +629,22 @@
   function toLegacyConfig(blueprint) {
     var b = isPlainObject(blueprint) ? blueprint : {};
     var plan = normalizePlanItems(b.plan, null);
+    var legacyStandardsContext = normalizeStandardsContext(
+      (isPlainObject(b.instructionalContext) && b.instructionalContext.standardsContext) || b.standardsContext
+    );
     var legacy = {
-      resourcePlan: plan.map(function (r) { return { tool: r.tool, directive: r.directive, uiId: r.uiId }; }),
+      resourcePlan: plan.map(function (r) { return { tool: r.tool, directive: r.directive, uiId: r.uiId, instructionalText: r.instructionalText }; }),
       recommendedResources: plan.map(function (r) { return r.tool; }),
       toolDirectives: plan.reduce(function (acc, r) { if (!acc[r.tool]) acc[r.tool] = r.directive || ''; return acc; }, {}),
       lessonDNA: isPlainObject(b.lessonDNA) ? b.lessonDNA : {},
-      globalSettings: isPlainObject(b.globalSettings) ? b.globalSettings : {}
+      globalSettings: isPlainObject(b.globalSettings) ? b.globalSettings : {},
+      standards: typeof b.standards === 'string' ? b.standards : '',
+      standardsContext: legacyStandardsContext,
+      instructionalContext: normalizeInstructionalContext(b.instructionalContext, {
+        instructionalGrade: b.audience && b.audience.gradeLevel,
+        standardsContext: legacyStandardsContext
+      }),
+      sourcePolicy: isPlainObject(b.sourcePolicy) ? b.sourcePolicy : { kind: 'workspace-source' }
     };
     var configs = isPlainObject(b.configs) ? b.configs : {};
     LEGACY_CONFIG_KEYS.forEach(function (k) { if (isPlainObject(configs[k])) legacy[k] = configs[k]; });
@@ -677,7 +834,7 @@
 
   // ── Artifact ───────────────────────────────────────────────────────────
 
-  var ARTIFACT_KNOWN_FIELDS = ['schemaVersion', 'artifactId', 'type', 'title', 'language', 'data', 'provenance'];
+  var ARTIFACT_KNOWN_FIELDS = ['schemaVersion', 'artifactId', 'type', 'title', 'language', 'data', 'instructionalText', 'provenance'];
   var ARTIFACT_MAX_DATA_CHARS = 2000000; // ~2MB serialized; larger payloads belong in files, not contract messages
 
   /**
@@ -739,6 +896,7 @@
         title: typeof input.title === 'string' ? input.title.slice(0, 300) : '',
         language: typeof input.language === 'string' ? input.language.slice(0, 100) : '',
         data: input.data === undefined ? null : input.data,
+        instructionalText: normalizeInstructionalText(input.instructionalText, input.type),
         provenance: provenance
       }
     };
@@ -765,6 +923,8 @@
     validateBlueprint: validateBlueprint,
     validateCommandWorkflow: validateCommandWorkflow,
     normalizePlanItems: normalizePlanItems,
+    normalizeInstructionalText: normalizeInstructionalText,
+    normalizeInstructionalContext: normalizeInstructionalContext,
     requiredCapabilitiesForPlan: requiredCapabilitiesForPlan,
     fromLegacyConfig: fromLegacyConfig,
     toLegacyConfig: toLegacyConfig,

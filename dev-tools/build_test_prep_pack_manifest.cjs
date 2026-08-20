@@ -11,6 +11,8 @@ const registryPath = path.join(root, 'test_prep', 'pack_registry.json');
 const manifestPath = path.join(root, 'test_prep', 'pack_manifest.json');
 const deployManifestPath = path.join(root, 'desktop', 'web-app', 'public', 'test_prep', 'pack_manifest.json');
 const apPsychologyQaScriptPath = path.join(root, 'dev-tools', 'qa_ap_psychology_pilot.cjs');
+const apBiologyBuildPath = path.join(root, 'dev-tools', 'build_ap_biology_50_bank.cjs');
+const apBiologyQaScriptPath = path.join(root, 'dev-tools', 'qa_ap_biology_foundation.cjs');
 const epppPartOnePackBuildPath = path.join(root, 'dev-tools', 'build_eppp_part_one_pack.cjs');
 const epppNativeQaScriptPath = path.join(root, 'dev-tools', 'qa_eppp_native_pack.cjs');
 const allowedCategories = new Set([
@@ -320,12 +322,18 @@ if (manifestOnly) {
   manifest = buildManifest();
 } else {
   if (!fs.existsSync(epppPartOnePackBuildPath) || !fs.existsSync(epppNativeQaScriptPath)) fail('EPPP Part 1 pack/QA builder is missing.');
+  if (!fs.existsSync(apBiologyBuildPath) || !fs.existsSync(apBiologyQaScriptPath)) fail('AP Biology foundation pilot builder/QA generator is missing.');
   execFileSync(process.execPath, [epppPartOnePackBuildPath], { cwd: root, stdio: 'inherit' });
   execFileSync(process.execPath, [epppNativeQaScriptPath], { cwd: root, stdio: 'inherit' });
+  execFileSync(process.execPath, [apBiologyBuildPath], { cwd: root, stdio: 'inherit' });
   manifest = buildManifest({ allowMissingNativeQa: true });
   if (manifest.entries.some((entry) => entry.id === 'ap-psychology-pilot')) {
     if (!fs.existsSync(apPsychologyQaScriptPath)) fail('AP Psychology QA generator is missing.');
     execFileSync(process.execPath, [apPsychologyQaScriptPath], { cwd: root, stdio: 'inherit' });
+  }
+  if (manifest.entries.some((entry) => entry.id === 'ap-biology-foundation-pilot')) {
+    if (!fs.existsSync(apBiologyQaScriptPath)) fail('AP Biology foundation pilot QA generator is missing.');
+    execFileSync(process.execPath, [apBiologyQaScriptPath], { cwd: root, stdio: 'inherit' });
   }
   manifest = buildManifest();
 }

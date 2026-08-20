@@ -490,7 +490,8 @@
       ,'.wc-climate-control[data-wc-delta=true]{box-shadow:0 0 0 1px rgba(124,58,237,.24),0 6px 14px rgba(124,58,237,.08)}.wc-climate-delta{display:block;margin-top:4px;color:#6d28d9;font-size:11px;font-weight:900;line-height:1.25}.dark .wc-climate-control[data-wc-delta=true]{box-shadow:0 0 0 1px rgba(196,181,253,.34),0 8px 16px rgba(99,102,241,.16)}.dark .wc-climate-delta{color:#c4b5fd}@media(forced-colors:active){.wc-climate-control[data-wc-delta=true]{outline:2px solid Highlight}.wc-climate-delta{color:CanvasText}}',
       ,'@media(max-width:700px){.wc-start-path-grid{grid-template-columns:1fr}.wc-start-action{min-height:46px}.wc-science-story-chain{grid-template-columns:1fr}.wc-science-story-arrow{transform:rotate(90deg);justify-self:center;margin:-3px 0}.wc-climate-response{grid-template-columns:1fr}}@media(prefers-reduced-motion:reduce){.wc-cycle-brief::after{display:none}.wc-start-action,.wc-metric,.wc-stage-rack button,.wc-evap-meter-track span{transition:none!important}.wc-start-action:hover,.wc-metric:hover,.wc-stage-rack button:hover{transform:none!important}}@media(forced-colors:active){.wc-start-path,.wc-start-action,.wc-start-number,.wc-science-story,.wc-science-story-step,.wc-climate-control,.wc-climate-value,.wc-climate-response,.wc-evap-meter-track{border:1px solid CanvasText;background:Canvas;color:CanvasText}.wc-start-path-head strong,.wc-start-path-head span,.wc-start-action strong,.wc-start-action small,.wc-science-story-title,.wc-science-story-step span,.wc-science-story-step strong,.wc-climate-response-kicker,.wc-climate-response strong,.wc-climate-response p,.wc-control-effect,.wc-climate-model-note,.wc-evap-meter-head{color:CanvasText}.wc-evap-meter-track span{background:Highlight}}'
       ,'.wc-steward-card{transition:transform 170ms ease,box-shadow 170ms ease;box-shadow:0 2px 8px rgba(15,23,42,.06)}.wc-steward-card:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(15,23,42,.15)}.wc-steward-card button:hover{filter:brightness(1.1)}.wc-steward-cta{transition:transform 160ms ease,box-shadow 160ms ease,filter 160ms ease}.wc-steward-cta:hover{transform:translateY(-1px);filter:brightness(1.06)}.wc-steward-cta:active{transform:scale(.99)}'
-      ,'.wc-precip-view-toggle{display:inline-flex;align-items:stretch;gap:0;overflow:hidden;border:1px solid rgba(14,116,144,.38);border-radius:9px;background:rgba(255,255,255,.72)}.wc-precip-view-choice{min-height:38px;padding:6px 9px;border:0;border-right:1px solid rgba(14,116,144,.22);background:transparent;color:#075985;font-size:10px;font-weight:900;white-space:nowrap}.wc-precip-view-choice:last-child{border-right:0}.wc-precip-view-choice:hover{background:rgba(224,242,254,.84)}.wc-precip-view-choice[aria-pressed=true]{background:#0369a1;color:#fff}.wc-precip-3d-canvas{display:block;width:100%;height:clamp(300px,42vw,520px);min-height:300px;background:#061a2c;touch-action:none}.wc-precip-3d-key{position:absolute;left:10px;right:10px;bottom:58px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;pointer-events:none}.wc-precip-3d-key>span,.wc-precip-3d-reset{display:inline-flex;align-items:center;gap:5px;min-height:25px;padding:4px 7px;border:1px solid rgba(186,230,253,.3);border-radius:999px;background:rgba(3,18,31,.72);color:#e0f2fe;font-size:10px;font-weight:900;line-height:1}.wc-precip-3d-key i{display:inline-block;width:8px;height:8px;border-radius:50%;background:#7dd3fc;box-shadow:0 0 8px rgba(125,211,252,.8)}.wc-precip-3d-key i.is-updraft{background:#fde68a;box-shadow:0 0 8px rgba(253,230,138,.8)}.wc-precip-3d-key i.is-thermal{background:#fb7185;box-shadow:0 0 8px rgba(251,113,133,.72)}.wc-precip-3d-reset{pointer-events:auto;margin-left:auto;border-color:rgba(125,211,252,.46);background:rgba(7,89,133,.88);color:#fff;cursor:pointer}.wc-precip-3d-reset:hover{background:#0e7490}.wc-precip-3d-science{margin:6px 0 0;padding:7px 9px;border:1px solid rgba(56,189,248,.22);border-left:3px solid #38bdf8;border-radius:8px;background:rgba(224,242,254,.58);color:#075985;font-size:10px;line-height:1.38}.dark .wc-precip-3d-science{background:rgba(8,47,73,.52);border-color:rgba(125,211,252,.24);border-left-color:#7dd3fc;color:#bae6fd}.dark .wc-precip-view-toggle{border-color:rgba(125,211,252,.34);background:rgba(15,23,42,.76)}.dark .wc-precip-view-choice{border-color:rgba(125,211,252,.22);color:#bae6fd}.dark .wc-precip-view-choice:hover{background:rgba(8,47,73,.86)}.dark .wc-precip-view-choice[aria-pressed=true]{background:#0ea5e9;color:#082f49}@media(max-width:560px){.wc-precip-head-actions{display:grid;grid-template-columns:1fr 1fr;align-items:stretch;width:100%}.wc-precip-head-actions>.wc-precip-view-toggle{grid-column:1/-1;grid-row:2}.wc-precip-head-actions>.wc-precip-btn:first-child{grid-column:1;grid-row:1}.wc-precip-head-actions>.wc-precip-btn.is-primary{grid-column:2;grid-row:1}.wc-precip-view-toggle{min-width:0}.wc-precip-view-choice{flex:1;padding-inline:6px}.wc-precip-3d-canvas{height:clamp(300px,78vw,430px);min-height:300px}.wc-precip-3d-key{left:7px;right:7px;bottom:57px}.wc-precip-3d-key>span,.wc-precip-3d-reset{font-size:9px;padding-inline:6px}}@media(prefers-reduced-motion:reduce){.wc-precip-3d-canvas{animation:none}.wc-precip-view-choice,.wc-precip-3d-reset{transition:none!important}}@media(forced-colors:active){.wc-precip-view-toggle,.wc-precip-view-choice,.wc-precip-3d-key>span,.wc-precip-3d-reset,.wc-precip-3d-science{border:1px solid CanvasText;background:Canvas;color:CanvasText}.wc-precip-view-choice[aria-pressed=true],.wc-precip-3d-reset{background:Highlight;color:HighlightText}.wc-precip-3d-key i{background:Highlight;box-shadow:none}}'
+      ,'.wc-precip-view-toggle{display:inline-flex;align-items:stretch;gap:0;overflow:hidden;border:1px solid rgba(14,116,144,.38);border-radius:9px;background:rgba(255,255,255,.72)}.wc-precip-view-choice{min-height:38px;padding:6px 9px;border:0;border-right:1px solid rgba(14,116,144,.22);background:transparent;color:#075985;font-size:10px;font-weight:900;white-space:nowrap}.wc-precip-view-choice:last-child{border-right:0}.wc-precip-view-choice:hover{background:rgba(224,242,254,.84)}.wc-precip-view-choice[aria-pressed=true]{background:#0369a1;color:#fff}.wc-precip-3d-canvas{display:block;width:100%;height:clamp(300px,42vw,520px);min-height:300px;background:#061a2c;touch-action:none}.wc-precip-3d-key{position:absolute;left:10px;right:10px;bottom:58px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;pointer-events:none}.wc-precip-3d-key>span,.wc-precip-3d-reset{display:inline-flex;align-items:center;gap:5px;min-height:25px;padding:4px 7px;border:1px solid rgba(186,230,253,.3);border-radius:999px;background:rgba(3,18,31,.72);color:#e0f2fe;font-size:11px;font-weight:900;line-height:1}.wc-precip-3d-gesture{opacity:.8;font-size:11px!important;font-weight:700!important;letter-spacing:.01em!important}.wc-precip-3d-key i{display:inline-block;width:8px;height:8px;border-radius:50%;background:#7dd3fc;box-shadow:0 0 8px rgba(125,211,252,.8)}.wc-precip-3d-key i.is-updraft{background:#fde68a;box-shadow:0 0 8px rgba(253,230,138,.8)}.wc-precip-3d-key i.is-thermal{background:#fb7185;box-shadow:0 0 8px rgba(251,113,133,.72)}.wc-precip-3d-key i.is-charge{background:linear-gradient(90deg,#fde68a 0 50%,#fb7185 50%);box-shadow:0 0 8px rgba(251,113,133,.68)}.wc-precip-3d-reset{pointer-events:auto;margin-left:auto;border-color:rgba(125,211,252,.46);background:rgba(7,89,133,.88);color:#fff;cursor:pointer}.wc-precip-3d-reset:hover{background:#0e7490}.wc-precip-3d-science{margin:6px 0 0;padding:7px 9px;border:1px solid rgba(56,189,248,.22);border-left:3px solid #38bdf8;border-radius:8px;background:rgba(224,242,254,.58);color:#075985;font-size:10px;line-height:1.38}.dark .wc-precip-3d-science{background:rgba(8,47,73,.52);border-color:rgba(125,211,252,.24);border-left-color:#7dd3fc;color:#bae6fd}.dark .wc-precip-view-toggle{border-color:rgba(125,211,252,.34);background:rgba(15,23,42,.76)}.dark .wc-precip-view-choice{border-color:rgba(125,211,252,.22);color:#bae6fd}.dark .wc-precip-view-choice:hover{background:rgba(8,47,73,.86)}.dark .wc-precip-view-choice[aria-pressed=true]{background:#0ea5e9;color:#082f49}@media(max-width:560px){.wc-precip-head-actions{display:grid;grid-template-columns:1fr 1fr;align-items:stretch;width:100%}.wc-precip-head-actions>.wc-precip-view-toggle{grid-column:1/-1;grid-row:2}.wc-precip-head-actions>.wc-precip-btn:first-child{grid-column:1;grid-row:1}.wc-precip-head-actions>.wc-precip-btn.is-primary{grid-column:2;grid-row:1}.wc-precip-view-toggle{min-width:0}.wc-precip-view-choice{flex:1;padding-inline:6px}.wc-precip-3d-canvas{height:clamp(300px,78vw,430px);min-height:300px}.wc-precip-3d-key{left:7px;right:7px;bottom:57px}.wc-precip-3d-key>span,.wc-precip-3d-reset{font-size:11px;padding-inline:6px}.wc-precip-3d-gesture{display:none!important}}@media(prefers-reduced-motion:reduce){.wc-precip-3d-canvas{animation:none}.wc-precip-view-choice,.wc-precip-3d-reset{transition:none!important}}@media(forced-colors:active){.wc-precip-view-toggle,.wc-precip-view-choice,.wc-precip-3d-key>span,.wc-precip-3d-reset,.wc-precip-3d-science{border:1px solid CanvasText;background:Canvas;color:CanvasText}.wc-precip-view-choice[aria-pressed=true],.wc-precip-3d-reset{background:Highlight;color:HighlightText}.wc-precip-3d-key i{background:Highlight;box-shadow:none}}'
+      ,'.wc-precip-3d-focus{position:absolute;z-index:3;top:10px;left:10px;display:inline-flex;overflow:hidden;border:1px solid rgba(186,230,253,.34);border-radius:9px;background:rgba(3,18,31,.78);backdrop-filter:blur(9px)}.wc-precip-3d-focus-choice{min-height:36px;padding:6px 9px;border:0;border-right:1px solid rgba(186,230,253,.18);background:transparent;color:#dff6ff;font-size:11px;font-weight:900;white-space:nowrap}.wc-precip-3d-focus-choice:last-child{border-right:0}.wc-precip-3d-focus-choice:hover{background:rgba(14,116,144,.48)}.wc-precip-3d-focus-choice[aria-pressed=true]{background:#0ea5e9;color:#082f49}.wc-precip-3d-thermal-rail{position:absolute;z-index:2;top:58px;right:10px;display:grid;gap:5px;width:116px;padding:7px;border:1px solid rgba(186,230,253,.28);border-radius:10px;background:rgba(3,18,31,.72);color:#e0f2fe;backdrop-filter:blur(9px);pointer-events:none}.wc-precip-3d-thermal-rail>strong{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#bae6fd}.wc-precip-3d-thermal-level{display:grid;grid-template-columns:9px minmax(0,1fr) auto;align-items:center;gap:5px;font-size:11px;line-height:1.15}.wc-precip-3d-thermal-level i{display:block;width:8px;height:8px;border-radius:50%;background:#fbbf24;box-shadow:0 0 7px rgba(251,191,36,.72)}.wc-precip-3d-thermal-level[data-temperature-phase=frozen] i{background:#7dd3fc;box-shadow:0 0 7px rgba(125,211,252,.8)}.wc-precip-3d-thermal-level b{font-weight:800}.wc-precip-3d-thermal-level em{font-style:normal;font-weight:900;color:#fff}.wc-precip-3d-thermal-rail small{padding-top:4px;border-top:1px solid rgba(186,230,253,.2);font-size:11px;line-height:1.2;color:#bae6fd}.dark .wc-precip-3d-focus,.dark .wc-precip-3d-thermal-rail{background:rgba(2,6,23,.8)}@media(max-width:560px){.wc-precip-3d-focus{top:7px;left:7px;right:7px;display:flex}.wc-precip-3d-focus-choice{flex:1;min-height:34px;padding-inline:5px;font-size:11px}.wc-precip-3d-thermal-rail{top:48px;right:7px;width:102px;padding:6px}.wc-precip-3d-thermal-rail>strong{display:none}.wc-precip-3d-thermal-level{grid-template-columns:8px minmax(0,1fr) auto;gap:3px;font-size:11px}.wc-precip-3d-thermal-rail small{font-size:11px}.wc-precip-3d-key{padding-right:0}}@media(prefers-reduced-motion:reduce){.wc-precip-3d-focus-choice{transition:none!important}}@media(forced-colors:active){.wc-precip-3d-focus,.wc-precip-3d-focus-choice,.wc-precip-3d-thermal-rail{border-color:CanvasText;background:Canvas;color:CanvasText}.wc-precip-3d-focus-choice[aria-pressed=true]{background:Highlight;color:HighlightText}.wc-precip-3d-thermal-level i{background:CanvasText;box-shadow:none}.wc-precip-3d-thermal-level em,.wc-precip-3d-thermal-rail>strong,.wc-precip-3d-thermal-rail small{color:CanvasText}}'
     ].join('');
     if (document.head) document.head.appendChild(st);
   })();
@@ -1572,6 +1573,7 @@
     lightningStudyStep: 'auto',
     paused: false,
     viewMode: '2d',
+    cameraFocus: 'storm',
     preset: 'gentleRain'
   };
 
@@ -1698,6 +1700,8 @@
       ? normalized.lightningStudyStep : 'auto';
     normalized.paused = !!normalized.paused;
     normalized.viewMode = normalized.viewMode === '3d' ? '3d' : '2d';
+    normalized.cameraFocus = normalized.cameraFocus === 'cloud' || normalized.cameraFocus === 'surface'
+      ? normalized.cameraFocus : 'storm';
     return normalized;
   }
 
@@ -3852,6 +3856,21 @@ const d = labToolData.waterCycle || {};
               }
             }
 
+            function setPrecipCameraFocus(nextFocus) {
+              var focusMode = nextFocus === 'cloud' || nextFocus === 'surface' ? nextFocus : 'storm';
+              setIQ({ cameraFocus: focusMode });
+              if (precip3dCanvasNode && precip3dCanvasNode._wcPrecip3dFocusCamera) {
+                precip3dCanvasNode._wcPrecip3dFocusCamera(focusMode);
+              }
+              if (typeof announceToSR === 'function') {
+                announceToSR(focusMode === 'cloud'
+                  ? 'Cloud interior viewpoint selected. Condensation nuclei, droplets, ice, and charge separation are emphasized.'
+                  : focusMode === 'surface'
+                    ? 'Surface pathway viewpoint selected. Falling particles, melting layers, and accumulation are emphasized.'
+                    : 'Whole storm viewpoint selected. Cloud structure, airflow, and the ground pathway are visible together.');
+              }
+            }
+
             function applyPrecipPreset(presetId) {
               if (presetId === 'custom') {
                 setIQ({ preset: 'custom' });
@@ -5212,6 +5231,10 @@ const d = labToolData.waterCycle || {};
               var cameraPrecip3d = new THREE.PerspectiveCamera(42, 1, 0.1, 40);
               cameraPrecip3d.position.set(0, 1.15, 8.8);
               var cameraTargetPrecip3d = new THREE.Vector3(0, 0.85, 0);
+              var cameraGoalPositionPrecip3d = cameraPrecip3d.position.clone();
+              var cameraGoalTargetPrecip3d = cameraTargetPrecip3d.clone();
+              var activeCameraFocusPrecip3d = 'storm';
+              var cameraTransitionPrecip3d = false;
               var controlsPrecip3d = null;
               if (THREE.OrbitControls) {
                 controlsPrecip3d = new THREE.OrbitControls(cameraPrecip3d, canvasEl);
@@ -5222,6 +5245,31 @@ const d = labToolData.waterCycle || {};
                 controlsPrecip3d.maxDistance = 13;
                 controlsPrecip3d.maxPolarAngle = Math.PI * 0.86;
                 controlsPrecip3d.target.copy(cameraTargetPrecip3d);
+                controlsPrecip3d.addEventListener('start', function() { cameraTransitionPrecip3d = false; });
+              }
+
+              function focusPrecip3dCamera(focusModePrecip3d, immediatePrecip3d) {
+                activeCameraFocusPrecip3d = focusModePrecip3d === 'cloud' || focusModePrecip3d === 'surface'
+                  ? focusModePrecip3d : 'storm';
+                if (activeCameraFocusPrecip3d === 'cloud') {
+                  cameraGoalPositionPrecip3d.set(0.15, 2.02, 5.45);
+                  cameraGoalTargetPrecip3d.set(0, 1.78, 0);
+                } else if (activeCameraFocusPrecip3d === 'surface') {
+                  cameraGoalPositionPrecip3d.set(0.1, -0.08, 6.65);
+                  cameraGoalTargetPrecip3d.set(0, -0.9, 0.2);
+                } else {
+                  cameraGoalPositionPrecip3d.set(0, 1.15, 8.8);
+                  cameraGoalTargetPrecip3d.set(0, 0.85, 0);
+                }
+                if (immediatePrecip3d || motionReducedPrecip3d) {
+                  cameraPrecip3d.position.copy(cameraGoalPositionPrecip3d);
+                  cameraTargetPrecip3d.copy(cameraGoalTargetPrecip3d);
+                  if (controlsPrecip3d) controlsPrecip3d.target.copy(cameraGoalTargetPrecip3d);
+                  cameraTransitionPrecip3d = false;
+                } else {
+                  cameraTransitionPrecip3d = true;
+                }
+                canvasEl.dataset.precipitationCameraFocus = activeCameraFocusPrecip3d;
               }
 
               var hemiPrecip3d = new THREE.HemisphereLight(0xbde9ff, 0x0b1f30, 1.2);
@@ -5236,9 +5284,152 @@ const d = labToolData.waterCycle || {};
               lightningLightPrecip3d.position.set(0, 0.1, 1.8);
               scenePrecip3d.add(lightningLightPrecip3d);
 
+              function makePrecip3dParticleTexture(kindPrecip3d) {
+                var particleCanvasPrecip3d = document.createElement('canvas');
+                particleCanvasPrecip3d.width = 64;
+                particleCanvasPrecip3d.height = 64;
+                var particleContextPrecip3d = particleCanvasPrecip3d.getContext('2d');
+                particleContextPrecip3d.clearRect(0, 0, 64, 64);
+                particleContextPrecip3d.save();
+                particleContextPrecip3d.translate(32, 32);
+                if (kindPrecip3d === 'snow') {
+                  particleContextPrecip3d.strokeStyle = 'rgba(255,255,255,.96)';
+                  particleContextPrecip3d.lineWidth = 2.4;
+                  particleContextPrecip3d.lineCap = 'round';
+                  particleContextPrecip3d.shadowColor = 'rgba(186,230,253,.8)';
+                  particleContextPrecip3d.shadowBlur = 5;
+                  for (var snowArmIndexPrecip3d = 0; snowArmIndexPrecip3d < 3; snowArmIndexPrecip3d++) {
+                    particleContextPrecip3d.save();
+                    particleContextPrecip3d.rotate(snowArmIndexPrecip3d * Math.PI / 3);
+                    particleContextPrecip3d.beginPath();
+                    particleContextPrecip3d.moveTo(-23, 0);
+                    particleContextPrecip3d.lineTo(23, 0);
+                    particleContextPrecip3d.moveTo(13, 0);
+                    particleContextPrecip3d.lineTo(18, -5);
+                    particleContextPrecip3d.moveTo(13, 0);
+                    particleContextPrecip3d.lineTo(18, 5);
+                    particleContextPrecip3d.moveTo(-13, 0);
+                    particleContextPrecip3d.lineTo(-18, -5);
+                    particleContextPrecip3d.moveTo(-13, 0);
+                    particleContextPrecip3d.lineTo(-18, 5);
+                    particleContextPrecip3d.stroke();
+                    particleContextPrecip3d.restore();
+                  }
+                } else if (kindPrecip3d === 'drop') {
+                  var dropGradientPrecip3d = particleContextPrecip3d.createLinearGradient(-10, -25, 12, 22);
+                  dropGradientPrecip3d.addColorStop(0, 'rgba(240,249,255,.98)');
+                  dropGradientPrecip3d.addColorStop(0.46, 'rgba(125,211,252,.94)');
+                  dropGradientPrecip3d.addColorStop(1, 'rgba(14,165,233,.24)');
+                  particleContextPrecip3d.fillStyle = dropGradientPrecip3d;
+                  particleContextPrecip3d.shadowColor = 'rgba(56,189,248,.72)';
+                  particleContextPrecip3d.shadowBlur = 7;
+                  particleContextPrecip3d.beginPath();
+                  particleContextPrecip3d.moveTo(0, -27);
+                  particleContextPrecip3d.bezierCurveTo(15, -8, 18, 6, 0, 25);
+                  particleContextPrecip3d.bezierCurveTo(-18, 6, -15, -8, 0, -27);
+                  particleContextPrecip3d.fill();
+                  particleContextPrecip3d.fillStyle = 'rgba(255,255,255,.78)';
+                  particleContextPrecip3d.beginPath();
+                  particleContextPrecip3d.ellipse(-5, -7, 3, 8, 0.42, 0, Math.PI * 2);
+                  particleContextPrecip3d.fill();
+                } else {
+                  var dotGradientPrecip3d = particleContextPrecip3d.createRadialGradient(-8, -9, 2, 0, 0, 28);
+                  dotGradientPrecip3d.addColorStop(0, 'rgba(255,255,255,.98)');
+                  dotGradientPrecip3d.addColorStop(kindPrecip3d === 'hail' ? 0.32 : 0.22,
+                    kindPrecip3d === 'hail' ? 'rgba(224,242,254,.96)' : 'rgba(186,230,253,.9)');
+                  dotGradientPrecip3d.addColorStop(0.72,
+                    kindPrecip3d === 'air' ? 'rgba(125,211,252,.28)' : 'rgba(56,189,248,.4)');
+                  dotGradientPrecip3d.addColorStop(1, 'rgba(14,165,233,0)');
+                  particleContextPrecip3d.fillStyle = dotGradientPrecip3d;
+                  particleContextPrecip3d.beginPath();
+                  particleContextPrecip3d.arc(0, 0, 29, 0, Math.PI * 2);
+                  particleContextPrecip3d.fill();
+                }
+                particleContextPrecip3d.restore();
+                var particleTexturePrecip3d = new THREE.CanvasTexture(particleCanvasPrecip3d);
+                particleTexturePrecip3d.minFilter = THREE.LinearFilter;
+                particleTexturePrecip3d.magFilter = THREE.LinearFilter;
+                particleTexturePrecip3d.generateMipmaps = false;
+                particleTexturePrecip3d.needsUpdate = true;
+                return particleTexturePrecip3d;
+              }
+              function makePrecip3dChargeTexture(signPrecip3d) {
+                var chargeCanvasPrecip3d = document.createElement('canvas');
+                chargeCanvasPrecip3d.width = 64;
+                chargeCanvasPrecip3d.height = 64;
+                var chargeContextPrecip3d = chargeCanvasPrecip3d.getContext('2d');
+                var chargeGlowPrecip3d = chargeContextPrecip3d.createRadialGradient(32, 32, 3, 32, 32, 30);
+                chargeGlowPrecip3d.addColorStop(0, 'rgba(255,255,255,.72)');
+                chargeGlowPrecip3d.addColorStop(0.5, 'rgba(255,255,255,.2)');
+                chargeGlowPrecip3d.addColorStop(1, 'rgba(255,255,255,0)');
+                chargeContextPrecip3d.fillStyle = chargeGlowPrecip3d;
+                chargeContextPrecip3d.fillRect(0, 0, 64, 64);
+                chargeContextPrecip3d.strokeStyle = 'rgba(255,255,255,.98)';
+                chargeContextPrecip3d.lineWidth = 6;
+                chargeContextPrecip3d.lineCap = 'round';
+                chargeContextPrecip3d.shadowColor = 'rgba(255,255,255,.85)';
+                chargeContextPrecip3d.shadowBlur = 5;
+                chargeContextPrecip3d.beginPath();
+                chargeContextPrecip3d.moveTo(20, 32);
+                chargeContextPrecip3d.lineTo(44, 32);
+                if (signPrecip3d === 'positive') {
+                  chargeContextPrecip3d.moveTo(32, 20);
+                  chargeContextPrecip3d.lineTo(32, 44);
+                }
+                chargeContextPrecip3d.stroke();
+                var chargeTexturePrecip3d = new THREE.CanvasTexture(chargeCanvasPrecip3d);
+                chargeTexturePrecip3d.minFilter = THREE.LinearFilter;
+                chargeTexturePrecip3d.magFilter = THREE.LinearFilter;
+                chargeTexturePrecip3d.generateMipmaps = false;
+                chargeTexturePrecip3d.needsUpdate = true;
+                return chargeTexturePrecip3d;
+              }
+              function makePrecip3dAtmosphereTexture() {
+                var atmosphereCanvasPrecip3d = document.createElement('canvas');
+                atmosphereCanvasPrecip3d.width = 32;
+                atmosphereCanvasPrecip3d.height = 256;
+                var atmosphereContextPrecip3d = atmosphereCanvasPrecip3d.getContext('2d');
+                var atmosphereGradientPrecip3d = atmosphereContextPrecip3d.createLinearGradient(0, 0, 0, 256);
+                if (isDark) {
+                  atmosphereGradientPrecip3d.addColorStop(0, '#020617');
+                  atmosphereGradientPrecip3d.addColorStop(0.48, '#0b2940');
+                  atmosphereGradientPrecip3d.addColorStop(0.78, '#155e75');
+                  atmosphereGradientPrecip3d.addColorStop(1, '#0b3447');
+                } else {
+                  atmosphereGradientPrecip3d.addColorStop(0, '#061a2c');
+                  atmosphereGradientPrecip3d.addColorStop(0.46, '#0e3d59');
+                  atmosphereGradientPrecip3d.addColorStop(0.8, '#277a88');
+                  atmosphereGradientPrecip3d.addColorStop(1, '#164e63');
+                }
+                atmosphereContextPrecip3d.fillStyle = atmosphereGradientPrecip3d;
+                atmosphereContextPrecip3d.fillRect(0, 0, 32, 256);
+                var horizonGlowPrecip3d = atmosphereContextPrecip3d.createLinearGradient(0, 150, 0, 236);
+                horizonGlowPrecip3d.addColorStop(0, 'rgba(186,230,253,0)');
+                horizonGlowPrecip3d.addColorStop(0.55, 'rgba(186,230,253,.12)');
+                horizonGlowPrecip3d.addColorStop(1, 'rgba(186,230,253,0)');
+                atmosphereContextPrecip3d.fillStyle = horizonGlowPrecip3d;
+                atmosphereContextPrecip3d.fillRect(0, 150, 32, 86);
+                var atmosphereTexturePrecip3d = new THREE.CanvasTexture(atmosphereCanvasPrecip3d);
+                atmosphereTexturePrecip3d.minFilter = THREE.LinearFilter;
+                atmosphereTexturePrecip3d.magFilter = THREE.LinearFilter;
+                atmosphereTexturePrecip3d.needsUpdate = true;
+                return atmosphereTexturePrecip3d;
+              }
+              var softDotTexturePrecip3d = makePrecip3dParticleTexture('soft');
+              var airflowTexturePrecip3d = makePrecip3dParticleTexture('air');
+              var rainDropTexturePrecip3d = makePrecip3dParticleTexture('drop');
+              var snowFlakeTexturePrecip3d = makePrecip3dParticleTexture('snow');
+              var hailStoneTexturePrecip3d = makePrecip3dParticleTexture('hail');
+              var positiveChargeTexturePrecip3d = makePrecip3dChargeTexture('positive');
+              var negativeChargeTexturePrecip3d = makePrecip3dChargeTexture('negative');
+              var atmosphereTexturePrecip3d = makePrecip3dAtmosphereTexture();
+
               var horizonPrecip3d = new THREE.Mesh(
                 new THREE.PlaneGeometry(11, 5.4),
-                new THREE.MeshBasicMaterial({ color: isDark ? 0x0b2940 : 0x0e3d59, transparent: true, opacity: 0.76, depthWrite: false })
+                new THREE.MeshBasicMaterial({
+                  color: 0xffffff, map: atmosphereTexturePrecip3d,
+                  transparent: true, opacity: 0.94, depthWrite: false
+                })
               );
               horizonPrecip3d.position.set(0, 0.55, -2.8);
               scenePrecip3d.add(horizonPrecip3d);
@@ -5249,6 +5440,17 @@ const d = labToolData.waterCycle || {};
               floorPrecip3d.rotation.x = -Math.PI / 2;
               floorPrecip3d.position.y = -2.18;
               scenePrecip3d.add(floorPrecip3d);
+              var cloudShadowPrecip3d = new THREE.Mesh(
+                new THREE.CircleGeometry(2.45, 48),
+                new THREE.MeshBasicMaterial({
+                  color: 0x0f172a, map: softDotTexturePrecip3d, alphaTest: 0.01,
+                  transparent: true, opacity: 0.12, side: THREE.DoubleSide, depthWrite: false
+                })
+              );
+              cloudShadowPrecip3d.rotation.x = -Math.PI / 2;
+              cloudShadowPrecip3d.scale.set(1.36, 0.58, 1);
+              cloudShadowPrecip3d.position.set(0, -2.155, -0.3);
+              scenePrecip3d.add(cloudShadowPrecip3d);
               var floorGlowPrecip3d = new THREE.Mesh(
                 new THREE.RingGeometry(0.7, 3.2, 48),
                 new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.12, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending })
@@ -5256,6 +5458,183 @@ const d = labToolData.waterCycle || {};
               floorGlowPrecip3d.rotation.x = -Math.PI / 2;
               floorGlowPrecip3d.position.set(0, -2.14, 0.25);
               scenePrecip3d.add(floorGlowPrecip3d);
+
+              var mountainTerrainGroupPrecip3d = new THREE.Group();
+              var mountainGeometryPrecip3d = new THREE.ConeGeometry(0.86, 1.55, 7);
+              var mountainSnowGeometryPrecip3d = new THREE.ConeGeometry(0.34, 0.52, 7);
+              var mountainSnowMaterialPrecip3d = new THREE.MeshStandardMaterial({
+                color: 0xdbeafe, roughness: 0.98, metalness: 0
+              });
+              var mountainSnowCapsPrecip3d = [];
+              for (var mountainIndexPrecip3d = 0; mountainIndexPrecip3d < 6; mountainIndexPrecip3d++) {
+                var mountainMaterialPrecip3d = new THREE.MeshStandardMaterial({
+                  color: mountainIndexPrecip3d % 2 ? 0x334155 : 0x475569,
+                  roughness: 1, metalness: 0
+                });
+                var mountainPrecip3d = new THREE.Mesh(mountainGeometryPrecip3d, mountainMaterialPrecip3d);
+                var mountainScalePrecip3d = 0.72 + (mountainIndexPrecip3d % 3) * 0.2;
+                var mountainHeightScalePrecip3d = 0.78 + (mountainIndexPrecip3d % 2) * 0.3;
+                mountainPrecip3d.scale.set(mountainScalePrecip3d, mountainHeightScalePrecip3d, mountainScalePrecip3d);
+                mountainPrecip3d.position.set(-2.7 + mountainIndexPrecip3d * 1.08, -1.47, -1.1 - (mountainIndexPrecip3d % 2) * 0.42);
+                mountainPrecip3d.rotation.y = mountainIndexPrecip3d * 0.62;
+                mountainTerrainGroupPrecip3d.add(mountainPrecip3d);
+                var mountainSnowCapPrecip3d = new THREE.Mesh(mountainSnowGeometryPrecip3d, mountainSnowMaterialPrecip3d);
+                mountainSnowCapPrecip3d.position.set(
+                  mountainPrecip3d.position.x,
+                  mountainPrecip3d.position.y + 1.55 * mountainHeightScalePrecip3d / 2 - 0.24,
+                  mountainPrecip3d.position.z
+                );
+                mountainSnowCapPrecip3d.rotation.y = mountainPrecip3d.rotation.y;
+                var mountainSnowScalePrecip3d = mountainScalePrecip3d * 0.82 / mountainHeightScalePrecip3d;
+                mountainSnowCapPrecip3d.scale.set(mountainSnowScalePrecip3d, 1, mountainSnowScalePrecip3d);
+                mountainTerrainGroupPrecip3d.add(mountainSnowCapPrecip3d);
+                mountainSnowCapsPrecip3d.push(mountainSnowCapPrecip3d);
+              }
+              scenePrecip3d.add(mountainTerrainGroupPrecip3d);
+
+              var coastTerrainGroupPrecip3d = new THREE.Group();
+              var coastWaterPrecip3d = new THREE.Mesh(
+                new THREE.PlaneGeometry(5.2, 6.8),
+                new THREE.MeshPhysicalMaterial({ color: 0x0e7490, roughness: 0.16, metalness: 0.04, transparent: true, opacity: 0.88 })
+              );
+              coastWaterPrecip3d.rotation.x = -Math.PI / 2;
+              coastWaterPrecip3d.position.set(-2.45, -2.11, 0);
+              coastTerrainGroupPrecip3d.add(coastWaterPrecip3d);
+              var coastFoamPrecip3d = new THREE.Mesh(
+                new THREE.PlaneGeometry(0.12, 6.5),
+                new THREE.MeshBasicMaterial({ color: 0xe0f2fe, transparent: true, opacity: 0.66, side: THREE.DoubleSide, depthWrite: false })
+              );
+              coastFoamPrecip3d.rotation.x = -Math.PI / 2;
+              coastFoamPrecip3d.position.set(0.12, -2.075, 0);
+              coastTerrainGroupPrecip3d.add(coastFoamPrecip3d);
+              scenePrecip3d.add(coastTerrainGroupPrecip3d);
+
+              var surfaceAccumulationGroupPrecip3d = new THREE.Group();
+              var puddlePatchesPrecip3d = [];
+              var snowPatchesPrecip3d = [];
+              for (var accumulationPatchIndexPrecip3d = 0; accumulationPatchIndexPrecip3d < 6; accumulationPatchIndexPrecip3d++) {
+                var accumulationPatchXPrecip3d = -1.75 + accumulationPatchIndexPrecip3d * 0.7;
+                var accumulationPatchZPrecip3d = 0.2 + ((accumulationPatchIndexPrecip3d * 37) % 11) / 11 * 1.45;
+                var puddlePatchPrecip3d = new THREE.Mesh(
+                  new THREE.CircleGeometry(0.42 + (accumulationPatchIndexPrecip3d % 3) * 0.1, 30),
+                  new THREE.MeshPhysicalMaterial({
+                    color: 0x38bdf8, roughness: 0.12, metalness: 0.08,
+                    transparent: true, opacity: 0, depthWrite: false
+                  })
+                );
+                puddlePatchPrecip3d.rotation.x = -Math.PI / 2;
+                puddlePatchPrecip3d.scale.set(1.45, 0.56 + (accumulationPatchIndexPrecip3d % 2) * 0.12, 1);
+                puddlePatchPrecip3d.position.set(accumulationPatchXPrecip3d, -2.125, accumulationPatchZPrecip3d);
+                surfaceAccumulationGroupPrecip3d.add(puddlePatchPrecip3d);
+                puddlePatchesPrecip3d.push(puddlePatchPrecip3d);
+
+                var snowPatchGeometryPrecip3d = new THREE.CircleGeometry(
+                  0.38 + (accumulationPatchIndexPrecip3d % 2) * 0.11, 24
+                );
+                var snowPatchPositionAttributePrecip3d = snowPatchGeometryPrecip3d.attributes.position;
+                for (var snowEdgeIndexPrecip3d = 1; snowEdgeIndexPrecip3d < snowPatchPositionAttributePrecip3d.count; snowEdgeIndexPrecip3d++) {
+                  var snowEdgeFactorPrecip3d = 0.83 +
+                    Math.sin(snowEdgeIndexPrecip3d * 2.17 + accumulationPatchIndexPrecip3d * 1.31) * 0.11 +
+                    Math.cos(snowEdgeIndexPrecip3d * 0.73) * 0.06;
+                  snowPatchPositionAttributePrecip3d.setX(snowEdgeIndexPrecip3d,
+                    snowPatchPositionAttributePrecip3d.getX(snowEdgeIndexPrecip3d) * snowEdgeFactorPrecip3d);
+                  snowPatchPositionAttributePrecip3d.setY(snowEdgeIndexPrecip3d,
+                    snowPatchPositionAttributePrecip3d.getY(snowEdgeIndexPrecip3d) * snowEdgeFactorPrecip3d);
+                }
+                var snowPatchPrecip3d = new THREE.Mesh(
+                  snowPatchGeometryPrecip3d,
+                  new THREE.MeshBasicMaterial({
+                    color: accumulationPatchIndexPrecip3d % 2 ? 0xcfe8f4 : 0xe2edf3,
+                    transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide
+                  })
+                );
+                snowPatchPrecip3d.rotation.x = -Math.PI / 2;
+                snowPatchPrecip3d.rotation.z = accumulationPatchIndexPrecip3d * 0.47;
+                snowPatchPrecip3d.scale.set(1.22, 0.58, 1);
+                snowPatchPrecip3d.position.set(accumulationPatchXPrecip3d + 0.16, -2.115, accumulationPatchZPrecip3d - 0.16);
+                surfaceAccumulationGroupPrecip3d.add(snowPatchPrecip3d);
+                snowPatchesPrecip3d.push(snowPatchPrecip3d);
+              }
+              var hailCoverCountPrecip3d = 42;
+              var hailCoverPositionsPrecip3d = new Float32Array(hailCoverCountPrecip3d * 3);
+              for (var hailCoverIndexPrecip3d = 0; hailCoverIndexPrecip3d < hailCoverCountPrecip3d; hailCoverIndexPrecip3d++) {
+                hailCoverPositionsPrecip3d[hailCoverIndexPrecip3d * 3] = -2.15 + ((hailCoverIndexPrecip3d * 47) % 97) / 97 * 4.3;
+                hailCoverPositionsPrecip3d[hailCoverIndexPrecip3d * 3 + 1] = -2.08;
+                hailCoverPositionsPrecip3d[hailCoverIndexPrecip3d * 3 + 2] = -0.2 + ((hailCoverIndexPrecip3d * 31) % 79) / 79 * 2.3;
+              }
+              var hailCoverGeometryPrecip3d = new THREE.BufferGeometry();
+              hailCoverGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(hailCoverPositionsPrecip3d, 3));
+              var hailCoverPrecip3d = new THREE.Points(hailCoverGeometryPrecip3d, new THREE.PointsMaterial({
+                color: 0xf8fafc, map: hailStoneTexturePrecip3d, alphaTest: 0.025,
+                size: 0.095, transparent: true, opacity: 0,
+                depthWrite: false, blending: THREE.AdditiveBlending
+              }));
+              surfaceAccumulationGroupPrecip3d.add(hailCoverPrecip3d);
+              var runoffGeometryPrecip3d = new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(-0.3, -2.09, 0.35), new THREE.Vector3(0.35, -2.085, 0.55),
+                new THREE.Vector3(1.05, -2.08, 0.9), new THREE.Vector3(1.85, -2.075, 1.32),
+                new THREE.Vector3(2.75, -2.07, 1.65)
+              ]);
+              var runoffPrecip3d = new THREE.Line(runoffGeometryPrecip3d, new THREE.LineBasicMaterial({
+                color: 0x38bdf8, transparent: true, opacity: 0, depthWrite: false,
+                blending: THREE.AdditiveBlending
+              }));
+              surfaceAccumulationGroupPrecip3d.add(runoffPrecip3d);
+              scenePrecip3d.add(surfaceAccumulationGroupPrecip3d);
+
+              var impactRippleGroupPrecip3d = new THREE.Group();
+              var impactRipplesPrecip3d = [];
+              for (var impactRippleIndexPrecip3d = 0; impactRippleIndexPrecip3d < 14; impactRippleIndexPrecip3d++) {
+                var impactRipplePrecip3d = new THREE.Mesh(
+                  new THREE.RingGeometry(0.07, 0.1, 28),
+                  new THREE.MeshBasicMaterial({
+                    color: 0x7dd3fc, transparent: true, opacity: 0,
+                    side: THREE.DoubleSide, depthWrite: false,
+                    blending: THREE.NormalBlending
+                  })
+                );
+                impactRipplePrecip3d.rotation.x = -Math.PI / 2;
+                impactRipplePrecip3d.position.set(
+                  -2.25 + ((impactRippleIndexPrecip3d * 43) % 89) / 89 * 4.5,
+                  -2.09,
+                  -0.35 + ((impactRippleIndexPrecip3d * 29) % 67) / 67 * 2.65
+                );
+                impactRipplePrecip3d.userData.phase = ((impactRippleIndexPrecip3d * 31) % 71) / 71;
+                impactRipplePrecip3d.userData.size = 0.78 + (impactRippleIndexPrecip3d % 4) * 0.12;
+                impactRippleGroupPrecip3d.add(impactRipplePrecip3d);
+                impactRipplesPrecip3d.push(impactRipplePrecip3d);
+              }
+              scenePrecip3d.add(impactRippleGroupPrecip3d);
+
+              var windShearGroupPrecip3d = new THREE.Group();
+              var windShearLinesPrecip3d = [];
+              for (var windLineIndexPrecip3d = 0; windLineIndexPrecip3d < 3; windLineIndexPrecip3d++) {
+                var windLinePointsPrecip3d = [];
+                for (var windPointIndexPrecip3d = 0; windPointIndexPrecip3d < 18; windPointIndexPrecip3d++) {
+                  var windProgressPrecip3d = windPointIndexPrecip3d / 17;
+                  windLinePointsPrecip3d.push(new THREE.Vector3(
+                    -3.5 + windProgressPrecip3d * 7,
+                    1.25 + windLineIndexPrecip3d * 0.72 + Math.sin(windProgressPrecip3d * Math.PI * 2 + windLineIndexPrecip3d) * 0.1,
+                    0.95 + windLineIndexPrecip3d * 0.18
+                  ));
+                }
+                var windLineGeometryPrecip3d = new THREE.BufferGeometry().setFromPoints(windLinePointsPrecip3d);
+                var windLinePrecip3d = new THREE.Line(windLineGeometryPrecip3d, new THREE.LineBasicMaterial({
+                  color: 0xbae6fd, transparent: true, opacity: 0.26, depthWrite: false, blending: THREE.AdditiveBlending
+                }));
+                windShearGroupPrecip3d.add(windLinePrecip3d);
+                windShearLinesPrecip3d.push(windLinePrecip3d);
+              }
+              var windMarkerCountPrecip3d = 30;
+              var windMarkerPositionsPrecip3d = new Float32Array(windMarkerCountPrecip3d * 3);
+              var windMarkerGeometryPrecip3d = new THREE.BufferGeometry();
+              windMarkerGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(windMarkerPositionsPrecip3d, 3));
+              var windMarkersPrecip3d = new THREE.Points(windMarkerGeometryPrecip3d, new THREE.PointsMaterial({
+                color: 0xe0f2fe, map: airflowTexturePrecip3d, alphaTest: 0.02,
+                size: 0.075, transparent: true, opacity: 0.7, depthWrite: false, blending: THREE.AdditiveBlending
+              }));
+              windShearGroupPrecip3d.add(windMarkersPrecip3d);
+              scenePrecip3d.add(windShearGroupPrecip3d);
 
               var thermalGroupPrecip3d = new THREE.Group();
               scenePrecip3d.add(thermalGroupPrecip3d);
@@ -5270,9 +5649,79 @@ const d = labToolData.waterCycle || {};
                 thermalGroupPrecip3d.add(band);
                 thermalBandsPrecip3d.push(band);
               });
+              var phaseChangePlanesPrecip3d = [];
+              for (var phasePlaneIndexPrecip3d = 0; phasePlaneIndexPrecip3d < 2; phasePlaneIndexPrecip3d++) {
+                var phasePlaneMaterialPrecip3d = new THREE.MeshBasicMaterial({
+                  color: 0x67e8f9, transparent: true, opacity: 0.12, side: THREE.DoubleSide,
+                  depthWrite: false, blending: THREE.AdditiveBlending
+                });
+                var phasePlanePrecip3d = new THREE.Mesh(new THREE.RingGeometry(1.25, 3.35, 48), phasePlaneMaterialPrecip3d);
+                phasePlanePrecip3d.rotation.x = -Math.PI / 2;
+                phasePlanePrecip3d.visible = false;
+                thermalGroupPrecip3d.add(phasePlanePrecip3d);
+                phaseChangePlanesPrecip3d.push(phasePlanePrecip3d);
+              }
 
               var cloudGroupPrecip3d = new THREE.Group();
               scenePrecip3d.add(cloudGroupPrecip3d);
+              function makeSoftCloudTexturePrecip3d() {
+                var textureCanvasPrecip3d = document.createElement('canvas');
+                textureCanvasPrecip3d.width = 128;
+                textureCanvasPrecip3d.height = 128;
+                var textureContextPrecip3d = textureCanvasPrecip3d.getContext('2d');
+                textureContextPrecip3d.clearRect(0, 0, 128, 128);
+                [
+                  { x: 48, y: 68, radius: 48, alpha: 0.82 },
+                  { x: 76, y: 64, radius: 45, alpha: 0.78 },
+                  { x: 63, y: 43, radius: 40, alpha: 0.72 },
+                  { x: 66, y: 82, radius: 42, alpha: 0.58 }
+                ].forEach(function(softLobePrecip3d) {
+                  var softGradientPrecip3d = textureContextPrecip3d.createRadialGradient(
+                    softLobePrecip3d.x, softLobePrecip3d.y, 3,
+                    softLobePrecip3d.x, softLobePrecip3d.y, softLobePrecip3d.radius
+                  );
+                  softGradientPrecip3d.addColorStop(0, 'rgba(255,255,255,' + softLobePrecip3d.alpha + ')');
+                  softGradientPrecip3d.addColorStop(0.42, 'rgba(248,250,252,' + (softLobePrecip3d.alpha * 0.76) + ')');
+                  softGradientPrecip3d.addColorStop(0.76, 'rgba(226,232,240,' + (softLobePrecip3d.alpha * 0.28) + ')');
+                  softGradientPrecip3d.addColorStop(1, 'rgba(148,163,184,0)');
+                  textureContextPrecip3d.fillStyle = softGradientPrecip3d;
+                  textureContextPrecip3d.fillRect(0, 0, 128, 128);
+                });
+                var softTexturePrecip3d = new THREE.CanvasTexture(textureCanvasPrecip3d);
+                softTexturePrecip3d.minFilter = THREE.LinearFilter;
+                softTexturePrecip3d.magFilter = THREE.LinearFilter;
+                softTexturePrecip3d.needsUpdate = true;
+                return softTexturePrecip3d;
+              }
+              var cloudSoftTexturePrecip3d = makeSoftCloudTexturePrecip3d();
+              var cloudVolumeSpritesPrecip3d = [];
+              for (var cloudVolumeIndexPrecip3d = 0; cloudVolumeIndexPrecip3d < 30; cloudVolumeIndexPrecip3d++) {
+                var cloudVolumeRowPrecip3d = Math.floor(cloudVolumeIndexPrecip3d / 8);
+                var cloudVolumeColumnPrecip3d = cloudVolumeIndexPrecip3d % 8;
+                var cloudVolumeSeedPrecip3d = ((cloudVolumeIndexPrecip3d * 61) % 103) / 103;
+                var cloudVolumeMaterialPrecip3d = new THREE.SpriteMaterial({
+                  map: cloudSoftTexturePrecip3d,
+                  color: cloudVolumeRowPrecip3d <= 1 ? 0xf8fafc : cloudVolumeRowPrecip3d === 2 ? 0xdbeafe : 0x94a3b8,
+                  transparent: true, opacity: 0.2, depthWrite: false
+                });
+                var cloudVolumeSpritePrecip3d = new THREE.Sprite(cloudVolumeMaterialPrecip3d);
+                cloudVolumeSpritePrecip3d.position.set(
+                  (cloudVolumeColumnPrecip3d - 3.5) * 0.57 + Math.sin(cloudVolumeIndexPrecip3d * 1.31) * 0.17,
+                  1.28 + cloudVolumeRowPrecip3d * 0.43 + Math.cos(cloudVolumeIndexPrecip3d * 0.93) * 0.11,
+                  -0.2 + cloudVolumeSeedPrecip3d * 1.08
+                );
+                cloudVolumeSpritePrecip3d.scale.set(
+                  1.35 + cloudVolumeSeedPrecip3d * 0.8,
+                  0.86 + ((cloudVolumeIndexPrecip3d * 17) % 23) / 23 * 0.48,
+                  1
+                );
+                cloudVolumeSpritePrecip3d.userData.baseX = cloudVolumeSpritePrecip3d.position.x;
+                cloudVolumeSpritePrecip3d.userData.baseY = cloudVolumeSpritePrecip3d.position.y;
+                cloudVolumeSpritePrecip3d.userData.phase = cloudVolumeIndexPrecip3d * 0.29;
+                cloudVolumeSpritePrecip3d.userData.row = cloudVolumeRowPrecip3d;
+                cloudGroupPrecip3d.add(cloudVolumeSpritePrecip3d);
+                cloudVolumeSpritesPrecip3d.push(cloudVolumeSpritePrecip3d);
+              }
               var cloudPuffsPrecip3d = [];
               var cloudPuffGeometryPrecip3d = new THREE.SphereGeometry(1, 20, 14);
               for (var puffIndexPrecip3d = 0; puffIndexPrecip3d < 28; puffIndexPrecip3d++) {
@@ -5307,6 +5756,22 @@ const d = labToolData.waterCycle || {};
               cloudCorePrecip3d.scale.set(2.25, 1.12, 1.06);
               cloudCorePrecip3d.position.set(0, 1.75, 0);
               cloudGroupPrecip3d.add(cloudCorePrecip3d);
+              var anvilGroupPrecip3d = new THREE.Group();
+              var anvilPuffsPrecip3d = [];
+              for (var anvilIndexPrecip3d = 0; anvilIndexPrecip3d < 7; anvilIndexPrecip3d++) {
+                var anvilMaterialPrecip3d = new THREE.MeshPhysicalMaterial({
+                  color: anvilIndexPrecip3d < 3 ? 0xe2e8f0 : 0x94a3b8,
+                  roughness: 1, metalness: 0, transparent: true, opacity: 0.2, depthWrite: false
+                });
+                var anvilPuffPrecip3d = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 10), anvilMaterialPrecip3d);
+                anvilPuffPrecip3d.position.set((anvilIndexPrecip3d - 3) * 0.68, 2.62 + Math.cos(anvilIndexPrecip3d * 0.8) * 0.09, -0.06 + (anvilIndexPrecip3d % 2) * 0.24);
+                anvilPuffPrecip3d.scale.set(0.9 + (anvilIndexPrecip3d % 3) * 0.18, 0.24 + (anvilIndexPrecip3d % 2) * 0.06, 0.58 + (anvilIndexPrecip3d % 2) * 0.12);
+                anvilPuffPrecip3d.userData.phase = anvilIndexPrecip3d * 0.46;
+                anvilGroupPrecip3d.add(anvilPuffPrecip3d);
+                anvilPuffsPrecip3d.push(anvilPuffPrecip3d);
+              }
+              anvilGroupPrecip3d.position.set(0, 0.06, -0.06);
+              cloudGroupPrecip3d.add(anvilGroupPrecip3d);
 
               var nucleusPositionsPrecip3d = new Float32Array(210 * 3);
               var dropletPositionsPrecip3d = new Float32Array(180 * 3);
@@ -5335,16 +5800,48 @@ const d = labToolData.waterCycle || {};
               }
               var nucleusGeometryPrecip3d = new THREE.BufferGeometry();
               nucleusGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(nucleusPositionsPrecip3d, 3));
-              var nucleusPointsPrecip3d = new THREE.Points(nucleusGeometryPrecip3d, new THREE.PointsMaterial({ color: 0xe0f2fe, size: 0.028, transparent: true, opacity: 0.58, depthWrite: false, blending: THREE.AdditiveBlending }));
+              var nucleusPointsPrecip3d = new THREE.Points(nucleusGeometryPrecip3d, new THREE.PointsMaterial({ color: 0xe0f2fe, map: softDotTexturePrecip3d, alphaTest: 0.02, size: 0.028, transparent: true, opacity: 0.58, depthWrite: false, blending: THREE.AdditiveBlending }));
               cloudGroupPrecip3d.add(nucleusPointsPrecip3d);
               var dropletGeometryPrecip3d = new THREE.BufferGeometry();
               dropletGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(dropletPositionsPrecip3d, 3));
-              var dropletPointsPrecip3d = new THREE.Points(dropletGeometryPrecip3d, new THREE.PointsMaterial({ color: 0x7dd3fc, size: 0.052, transparent: true, opacity: 0.72, depthWrite: false, blending: THREE.AdditiveBlending }));
+              var dropletPointsPrecip3d = new THREE.Points(dropletGeometryPrecip3d, new THREE.PointsMaterial({ color: 0x7dd3fc, map: rainDropTexturePrecip3d, alphaTest: 0.025, size: 0.052, transparent: true, opacity: 0.72, depthWrite: false, blending: THREE.AdditiveBlending }));
               cloudGroupPrecip3d.add(dropletPointsPrecip3d);
               var iceGeometryPrecip3d = new THREE.BufferGeometry();
               iceGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(icePositionsPrecip3d, 3));
-              var icePointsPrecip3d = new THREE.Points(iceGeometryPrecip3d, new THREE.PointsMaterial({ color: 0xfef3c7, size: 0.068, transparent: true, opacity: 0.86, depthWrite: false, blending: THREE.AdditiveBlending }));
+              var icePointsPrecip3d = new THREE.Points(iceGeometryPrecip3d, new THREE.PointsMaterial({ color: 0xfef3c7, map: snowFlakeTexturePrecip3d, alphaTest: 0.025, size: 0.068, transparent: true, opacity: 0.86, depthWrite: false, blending: THREE.AdditiveBlending }));
               cloudGroupPrecip3d.add(icePointsPrecip3d);
+
+              var chargeParticleCountPrecip3d = 18;
+              var positiveChargePositionsPrecip3d = new Float32Array(chargeParticleCountPrecip3d * 3);
+              var negativeChargePositionsPrecip3d = new Float32Array(chargeParticleCountPrecip3d * 3);
+              for (var chargeParticleIndexPrecip3d = 0; chargeParticleIndexPrecip3d < chargeParticleCountPrecip3d; chargeParticleIndexPrecip3d++) {
+                var chargeParticleXPrecip3d = -1.58 + ((chargeParticleIndexPrecip3d * 37) % 73) / 73 * 3.16;
+                var chargeParticleZPrecip3d = -0.62 + ((chargeParticleIndexPrecip3d * 29) % 61) / 61 * 1.24;
+                positiveChargePositionsPrecip3d[chargeParticleIndexPrecip3d * 3] = chargeParticleXPrecip3d;
+                positiveChargePositionsPrecip3d[chargeParticleIndexPrecip3d * 3 + 1] = 2.12 + ((chargeParticleIndexPrecip3d * 19) % 41) / 41 * 0.68;
+                positiveChargePositionsPrecip3d[chargeParticleIndexPrecip3d * 3 + 2] = chargeParticleZPrecip3d;
+                negativeChargePositionsPrecip3d[chargeParticleIndexPrecip3d * 3] = chargeParticleXPrecip3d * 0.92;
+                negativeChargePositionsPrecip3d[chargeParticleIndexPrecip3d * 3 + 1] = 1.08 + ((chargeParticleIndexPrecip3d * 23) % 43) / 43 * 0.62;
+                negativeChargePositionsPrecip3d[chargeParticleIndexPrecip3d * 3 + 2] = -chargeParticleZPrecip3d * 0.88;
+              }
+              var positiveChargeGeometryPrecip3d = new THREE.BufferGeometry();
+              positiveChargeGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(positiveChargePositionsPrecip3d, 3));
+              var positiveChargePointsPrecip3d = new THREE.Points(positiveChargeGeometryPrecip3d, new THREE.PointsMaterial({
+                color: 0xfde68a, map: positiveChargeTexturePrecip3d, alphaTest: 0.025,
+                size: 0.17, transparent: true, opacity: 0, depthTest: false,
+                depthWrite: false, blending: THREE.AdditiveBlending
+              }));
+              positiveChargePointsPrecip3d.renderOrder = 4;
+              cloudGroupPrecip3d.add(positiveChargePointsPrecip3d);
+              var negativeChargeGeometryPrecip3d = new THREE.BufferGeometry();
+              negativeChargeGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(negativeChargePositionsPrecip3d, 3));
+              var negativeChargePointsPrecip3d = new THREE.Points(negativeChargeGeometryPrecip3d, new THREE.PointsMaterial({
+                color: 0xfb7185, map: negativeChargeTexturePrecip3d, alphaTest: 0.025,
+                size: 0.17, transparent: true, opacity: 0, depthTest: false,
+                depthWrite: false, blending: THREE.AdditiveBlending
+              }));
+              negativeChargePointsPrecip3d.renderOrder = 4;
+              cloudGroupPrecip3d.add(negativeChargePointsPrecip3d);
 
               var updraftGroupPrecip3d = new THREE.Group();
               scenePrecip3d.add(updraftGroupPrecip3d);
@@ -5368,7 +5865,7 @@ const d = labToolData.waterCycle || {};
               var updraftMarkerPositionsPrecip3d = new Float32Array(34 * 3);
               var updraftMarkerGeometryPrecip3d = new THREE.BufferGeometry();
               updraftMarkerGeometryPrecip3d.setAttribute('position', new THREE.BufferAttribute(updraftMarkerPositionsPrecip3d, 3));
-              var updraftMarkersPrecip3d = new THREE.Points(updraftMarkerGeometryPrecip3d, new THREE.PointsMaterial({ color: 0xfde68a, size: 0.09, transparent: true, opacity: 0.86, depthWrite: false, blending: THREE.AdditiveBlending }));
+              var updraftMarkersPrecip3d = new THREE.Points(updraftMarkerGeometryPrecip3d, new THREE.PointsMaterial({ color: 0xfde68a, map: airflowTexturePrecip3d, alphaTest: 0.02, size: 0.09, transparent: true, opacity: 0.86, depthWrite: false, blending: THREE.AdditiveBlending }));
               updraftGroupPrecip3d.add(updraftMarkersPrecip3d);
 
               var precipParticleCount3d = 220;
@@ -5384,7 +5881,11 @@ const d = labToolData.waterCycle || {};
               }
               var precipPointGeometry3d = new THREE.BufferGeometry();
               precipPointGeometry3d.setAttribute('position', new THREE.BufferAttribute(precipPositions3d, 3));
-              var precipPointMaterial3d = new THREE.PointsMaterial({ color: 0xbae6fd, size: 0.06, transparent: true, opacity: 0.86, depthWrite: false, blending: THREE.AdditiveBlending });
+              var precipPointMaterial3d = new THREE.PointsMaterial({
+                color: 0xbae6fd, map: rainDropTexturePrecip3d, alphaTest: 0.025,
+                size: 0.06, transparent: true, opacity: 0.86,
+                depthWrite: false, blending: THREE.AdditiveBlending
+              });
               var precipPoints3d = new THREE.Points(precipPointGeometry3d, precipPointMaterial3d);
               scenePrecip3d.add(precipPoints3d);
               var precipLineGeometry3d = new THREE.BufferGeometry();
@@ -5395,15 +5896,53 @@ const d = labToolData.waterCycle || {};
 
               var lightningGroupPrecip3d = new THREE.Group();
               scenePrecip3d.add(lightningGroupPrecip3d);
-              var lightningBoltGeometryPrecip3d = new THREE.BufferGeometry();
-              lightningBoltGeometryPrecip3d.setFromPoints([
+              var lightningMainPointsPrecip3d = [
                 new THREE.Vector3(0.35, 1.28, 0.72), new THREE.Vector3(0.18, 0.72, 0.73),
                 new THREE.Vector3(0.3, 0.23, 0.74), new THREE.Vector3(-0.02, -0.22, 0.75),
                 new THREE.Vector3(0.14, -0.9, 0.76), new THREE.Vector3(-0.05, -1.72, 0.77)
-              ]);
-              var lightningBoltMaterialPrecip3d = new THREE.LineBasicMaterial({ color: 0xfef9c3, transparent: true, opacity: 0, linewidth: 2, depthWrite: false, blending: THREE.AdditiveBlending });
+              ];
+              var lightningBoltGeometryPrecip3d = new THREE.BufferGeometry();
+              lightningBoltGeometryPrecip3d.setFromPoints(lightningMainPointsPrecip3d);
+              var lightningBoltMaterialPrecip3d = new THREE.LineBasicMaterial({ color: 0xe0f2fe, transparent: true, opacity: 0, linewidth: 2, depthWrite: false, blending: THREE.AdditiveBlending });
               var lightningBoltPrecip3d = new THREE.Line(lightningBoltGeometryPrecip3d, lightningBoltMaterialPrecip3d);
               lightningGroupPrecip3d.add(lightningBoltPrecip3d);
+              var lightningCoreMaterialPrecip3d = new THREE.MeshBasicMaterial({
+                color: 0xfff7cc, transparent: true, opacity: 0,
+                depthWrite: false, blending: THREE.AdditiveBlending
+              });
+              var lightningCorePrecip3d = new THREE.Mesh(
+                new THREE.TubeGeometry(new THREE.CatmullRomCurve3(lightningMainPointsPrecip3d), 42, 0.014, 5, false),
+                lightningCoreMaterialPrecip3d
+              );
+              lightningGroupPrecip3d.add(lightningCorePrecip3d);
+              var lightningBranchMaterialsPrecip3d = [];
+              [
+                [new THREE.Vector3(0.22, 0.66, 0.735), new THREE.Vector3(-0.22, 0.43, 0.74), new THREE.Vector3(-0.48, 0.06, 0.745)],
+                [new THREE.Vector3(0.28, 0.2, 0.745), new THREE.Vector3(0.63, -0.02, 0.75), new THREE.Vector3(0.82, -0.36, 0.755)],
+                [new THREE.Vector3(0.02, -0.24, 0.755), new THREE.Vector3(-0.38, -0.54, 0.76), new THREE.Vector3(-0.58, -0.9, 0.765)],
+                [new THREE.Vector3(0.12, -0.88, 0.765), new THREE.Vector3(0.48, -1.13, 0.77), new THREE.Vector3(0.6, -1.42, 0.775)]
+              ].forEach(function(lightningBranchPointsPrecip3d) {
+                var lightningBranchMaterialPrecip3d = new THREE.LineBasicMaterial({
+                  color: 0xbae6fd, transparent: true, opacity: 0,
+                  depthWrite: false, blending: THREE.AdditiveBlending
+                });
+                var lightningBranchPrecip3d = new THREE.Line(
+                  new THREE.BufferGeometry().setFromPoints(lightningBranchPointsPrecip3d),
+                  lightningBranchMaterialPrecip3d
+                );
+                lightningGroupPrecip3d.add(lightningBranchPrecip3d);
+                lightningBranchMaterialsPrecip3d.push(lightningBranchMaterialPrecip3d);
+              });
+              var lightningCloudFlashMaterialPrecip3d = new THREE.SpriteMaterial({
+                map: cloudSoftTexturePrecip3d, color: 0xfef08a, transparent: true,
+                opacity: 0, depthTest: false, depthWrite: false,
+                blending: THREE.AdditiveBlending
+              });
+              var lightningCloudFlashPrecip3d = new THREE.Sprite(lightningCloudFlashMaterialPrecip3d);
+              lightningCloudFlashPrecip3d.position.set(0.05, 0.82, 0.38);
+              lightningCloudFlashPrecip3d.scale.set(3.4, 2.35, 1);
+              lightningCloudFlashPrecip3d.renderOrder = 6;
+              lightningGroupPrecip3d.add(lightningCloudFlashPrecip3d);
               var lightningHaloPrecip3d = new THREE.Mesh(
                 new THREE.RingGeometry(0.55, 0.62, 36),
                 new THREE.MeshBasicMaterial({ color: 0xfde047, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending })
@@ -5425,6 +5964,18 @@ const d = labToolData.waterCycle || {};
               } catch (e) {}
 
               function setPrecip3dCanvasData() {
+                var accumulationDataPrecip3d = modelPrecip3d.lifecycle.accumulation;
+                var surfaceEvidencePrecip3d = [];
+                if (accumulationDataPrecip3d.puddling > 2) surfaceEvidencePrecip3d.push('puddles');
+                if (accumulationDataPrecip3d.snow > 2) surfaceEvidencePrecip3d.push('snow-cover');
+                if (accumulationDataPrecip3d.glaze > 2) surfaceEvidencePrecip3d.push('ice-glaze');
+                if (accumulationDataPrecip3d.hail > 2) surfaceEvidencePrecip3d.push('hail-cover');
+                if (accumulationDataPrecip3d.runoff > 2) surfaceEvidencePrecip3d.push('runoff');
+                var surfaceImpactModePrecip3d = !modelPrecip3d.reachesGround ? 'none'
+                  : modelPrecip3d.visualType === 'snow' ? 'soft-snow-bed'
+                    : modelPrecip3d.visualType === 'hail' ? 'hail-and-ripples'
+                      : modelPrecip3d.visualType === 'rain' || modelPrecip3d.visualType === 'freezing-rain' || modelPrecip3d.visualType === 'mix'
+                        ? 'animated-ripples' : 'surface-contact';
                 canvasEl.dataset.precipitationType = modelPrecip3d.visualType;
                 canvasEl.dataset.precipitationCloudPhase = modelPrecip3d.cloudPhase;
                 canvasEl.dataset.precipitationThermalProfile = modelPrecip3d.profileLabel;
@@ -5436,6 +5987,25 @@ const d = labToolData.waterCycle || {};
                 canvasEl.dataset.precipitationUpdraft = String(modelPrecip3d.config.updraft);
                 canvasEl.dataset.precipitationTemperaturePath = modelPrecip3d.phasePathLabel;
                 canvasEl.dataset.precipitationThermalCrossings = String(modelPrecip3d.thermalLayers.crossings.length);
+                canvasEl.dataset.precipitationPhasePlanes = String(Math.min(2, modelPrecip3d.thermalLayers.crossings.length));
+                canvasEl.dataset.precipitationTerrain = modelPrecip3d.config.terrain;
+                canvasEl.dataset.precipitationWindField = modelPrecip3d.config.showAirflow && modelPrecip3d.config.wind > 2
+                  ? modelPrecip3d.config.windDirection : 'hidden';
+                canvasEl.dataset.precipitationRainShadow = modelPrecip3d.config.terrain === 'mountains' && modelPrecip3d.config.wind > 2
+                  ? 'leeward-thinning' : 'none';
+                canvasEl.dataset.precipitationCloudMorphology = modelPrecip3d.lightningEligible && modelPrecip3d.config.updraft >= 58
+                  ? 'cumulonimbus-anvil' : modelPrecip3d.config.cloudDepth >= 7 ? 'deep-layered' : 'shallow';
+                canvasEl.dataset.precipitationCloudRendering = 'soft-volume-plus-lit-mesh';
+                canvasEl.dataset.precipitationParticleRendering = 'procedural-soft-textures';
+                canvasEl.dataset.precipitationAtmosphere = 'gradient-haze-and-cloud-shadow';
+                canvasEl.dataset.precipitationLightningRendering = 'branched-channel-core-and-cloud-flash';
+                canvasEl.dataset.precipitationChargeRegions = modelPrecip3d.config.showStormAnatomy &&
+                  modelPrecip3d.stormAnatomy && modelPrecip3d.stormAnatomy.chargeSeparation.active
+                  ? 'upper-positive-lower-negative' : 'hidden';
+                canvasEl.dataset.precipitationSurfaceEvidence = surfaceEvidencePrecip3d.length
+                  ? surfaceEvidencePrecip3d.join(',') : 'none';
+                canvasEl.dataset.precipitationSurfaceImpacts = surfaceImpactModePrecip3d;
+                canvasEl.dataset.precipitationCameraFocus = activeCameraFocusPrecip3d;
                 canvasEl.dataset.rendered = 'true';
               }
 
@@ -5443,33 +6013,140 @@ const d = labToolData.waterCycle || {};
                 var cfg3d = modelPrecip3d.config;
                 var depthFactor3d = 0.74 + cfg3d.cloudDepth / 12 * 0.52;
                 var moistureFactor3d = 0.64 + cfg3d.moisture / 100 * 0.52;
+                var lifecycleCloudFactor3d = modelPrecip3d.lifecycle && isFinite(modelPrecip3d.lifecycle.cloudFactor)
+                  ? modelPrecip3d.lifecycle.cloudFactor : 1;
+                var cloudPresence3d = modelPrecip3d.visualType === 'clear'
+                  ? 0.08 : (0.52 + cfg3d.moisture / 190) * lifecycleCloudFactor3d;
+                var stormShade3d = modelPrecip3d.relativeIntensity / 100;
+                horizonPrecip3d.material.opacity = 0.9 + Math.min(0.08, stormShade3d * 0.08);
+                hemiPrecip3d.intensity = 1.32 - stormShade3d * 0.3;
+                keyLightPrecip3d.intensity = 1.7 - stormShade3d * 0.42;
+                cloudShadowPrecip3d.material.opacity = modelPrecip3d.visualType === 'clear'
+                  ? 0.02 : Math.min(0.18, 0.055 + cloudPresence3d * 0.075 + stormShade3d * 0.04);
+                cloudShadowPrecip3d.scale.set(
+                  0.96 + cfg3d.cloudDepth / 25,
+                  0.4 + cfg3d.moisture / 350,
+                  1
+                );
+                cloudShadowPrecip3d.position.x = (cfg3d.windDirection === 'west' ? -1 : 1) * cfg3d.wind / 140;
                 cloudGroupPrecip3d.scale.set(depthFactor3d, 0.78 + depthFactor3d * 0.2, 0.82 + moistureFactor3d * 0.22);
-                cloudCorePrecip3d.material.opacity = 0.045 + cfg3d.moisture / 100 * 0.06;
+                cloudVolumeSpritesPrecip3d.forEach(function(cloudVolumeSprite3d) {
+                  var cloudVolumeShade3d = cloudVolumeSprite3d.userData.row === 0 ? 0.82
+                    : cloudVolumeSprite3d.userData.row === 1 ? 1 : cloudVolumeSprite3d.userData.row === 2 ? 0.9 : 0.72;
+                  cloudVolumeSprite3d.material.opacity = Math.max(0.025, Math.min(0.42,
+                    (0.06 + cloudPresence3d * 0.32) * cloudVolumeShade3d));
+                  cloudVolumeSprite3d.material.color.setHex(
+                    modelPrecip3d.lightningEligible && cloudVolumeSprite3d.userData.row >= 2
+                      ? 0x94a3b8 : cloudVolumeSprite3d.userData.row <= 1 ? 0xf8fafc : 0xcbd5e1
+                  );
+                });
+                cloudPuffsPrecip3d.forEach(function(puff3d) {
+                  var rowShade3d = puff3d.position.y > 2.1 ? 0.84 : puff3d.position.y > 1.6 ? 1 : 0.76;
+                  puff3d.material.opacity = Math.max(0.012, Math.min(0.16, (0.018 + cloudPresence3d * 0.105) * rowShade3d));
+                });
+                cloudCorePrecip3d.material.opacity = Math.max(0.015, Math.min(0.14, 0.02 + cloudPresence3d * 0.085));
                 cloudLightPrecip3d.intensity = 0.7 + cfg3d.moisture / 100 * 1.3;
                 nucleusPointsPrecip3d.material.opacity = 0.24 + cfg3d.moisture / 100 * 0.66;
                 dropletPointsPrecip3d.material.opacity = 0.22 + modelPrecip3d.growthIndex / 100 * 0.7;
                 var iceVisible3d = modelPrecip3d.cloudPhase.indexOf('ice') !== -1 || cfg3d.tempC <= 0 || modelPrecip3d.lightningEligible;
                 icePointsPrecip3d.visible = iceVisible3d;
                 icePointsPrecip3d.material.opacity = iceVisible3d ? 0.32 + Math.min(0.58, modelPrecip3d.electrificationIndex / 100) : 0;
+                var chargeRegionsActive3d = cfg3d.showStormAnatomy && modelPrecip3d.stormAnatomy &&
+                  modelPrecip3d.stormAnatomy.chargeSeparation && modelPrecip3d.stormAnatomy.chargeSeparation.active;
+                positiveChargePointsPrecip3d.visible = !!chargeRegionsActive3d;
+                negativeChargePointsPrecip3d.visible = !!chargeRegionsActive3d;
+                positiveChargePointsPrecip3d.material.opacity = chargeRegionsActive3d
+                  ? Math.min(0.72, 0.26 + modelPrecip3d.electrificationIndex / 210) : 0;
+                negativeChargePointsPrecip3d.material.opacity = chargeRegionsActive3d
+                  ? Math.min(0.76, 0.29 + modelPrecip3d.electrificationIndex / 195) : 0;
                 updraftGroupPrecip3d.visible = cfg3d.showAirflow && cfg3d.updraft > 5;
                 updraftCurvesPrecip3d.forEach(function(curve3d) {
-                  curve3d.material.opacity = updraftGroupPrecip3d.visible ? 0.2 + cfg3d.updraft / 100 * 0.55 : 0;
+                  curve3d.material.opacity = updraftGroupPrecip3d.visible ? 0.14 + cfg3d.updraft / 100 * 0.38 : 0;
                 });
+                updraftMarkersPrecip3d.material.opacity = updraftGroupPrecip3d.visible
+                  ? Math.min(0.72, 0.3 + cfg3d.updraft / 190) : 0;
+                windShearGroupPrecip3d.visible = cfg3d.showAirflow && cfg3d.wind > 2;
+                windShearLinesPrecip3d.forEach(function(windLine3d) {
+                  windLine3d.material.opacity = windShearGroupPrecip3d.visible ? 0.14 + cfg3d.wind / 100 : 0;
+                });
+                windMarkersPrecip3d.material.opacity = windShearGroupPrecip3d.visible ? 0.4 + cfg3d.wind / 100 * 0.5 : 0;
+                mountainTerrainGroupPrecip3d.visible = cfg3d.terrain === 'mountains';
+                coastTerrainGroupPrecip3d.visible = cfg3d.terrain === 'coast';
+                mountainSnowCapsPrecip3d.forEach(function(mountainSnowCap3d) {
+                  mountainSnowCap3d.visible = cfg3d.surfaceTempC <= 4 || cfg3d.tempC <= -4 ||
+                    modelPrecip3d.visualType === 'snow' || modelPrecip3d.visualType === 'sleet';
+                });
+                floorPrecip3d.material.color.setHex(cfg3d.terrain === 'mountains'
+                  ? 0x193c34 : cfg3d.terrain === 'coast' ? 0x294912 : 0x1d4a32);
+                var accumulation3d = modelPrecip3d.lifecycle.accumulation;
+                surfaceAccumulationGroupPrecip3d.visible = modelPrecip3d.reachesGround;
+                puddlePatchesPrecip3d.forEach(function(puddlePatch3d, puddlePatchIndex3d) {
+                  puddlePatch3d.visible = modelPrecip3d.reachesGround && accumulation3d.puddling > 2;
+                  puddlePatch3d.material.opacity = puddlePatch3d.visible
+                    ? Math.min(0.56, 0.12 + accumulation3d.puddling / 180 + puddlePatchIndex3d * 0.012) : 0;
+                });
+                snowPatchesPrecip3d.forEach(function(snowPatch3d, snowPatchIndex3d) {
+                  snowPatch3d.visible = modelPrecip3d.reachesGround && accumulation3d.snow > 2;
+                  snowPatch3d.material.opacity = snowPatch3d.visible
+                    ? Math.min(0.62, 0.1 + accumulation3d.snow / 205 + snowPatchIndex3d * 0.006) : 0;
+                });
+                var activeHailCoverCount3d = Math.max(0, Math.min(hailCoverCountPrecip3d,
+                  Math.round(hailCoverCountPrecip3d * accumulation3d.hail / 100)));
+                hailCoverGeometryPrecip3d.setDrawRange(0, activeHailCoverCount3d);
+                hailCoverPrecip3d.visible = modelPrecip3d.reachesGround && activeHailCoverCount3d > 0;
+                hailCoverPrecip3d.material.opacity = hailCoverPrecip3d.visible
+                  ? Math.min(0.94, 0.42 + accumulation3d.hail / 170) : 0;
+                runoffPrecip3d.visible = modelPrecip3d.reachesGround && accumulation3d.runoff > 2;
+                runoffPrecip3d.material.opacity = runoffPrecip3d.visible
+                  ? Math.min(0.92, 0.18 + accumulation3d.runoff / 110) : 0;
+                impactRippleGroupPrecip3d.visible = modelPrecip3d.reachesGround &&
+                  (modelPrecip3d.visualType === 'rain' || modelPrecip3d.visualType === 'freezing-rain' ||
+                    modelPrecip3d.visualType === 'hail' || modelPrecip3d.visualType === 'mix') &&
+                  Math.max(accumulation3d.puddling, accumulation3d.glaze, accumulation3d.hail) > 2;
+                impactRipplesPrecip3d.forEach(function(impactRipple3d) {
+                  impactRipple3d.material.color.setHex(modelPrecip3d.visualType === 'freezing-rain'
+                    ? 0xa5f3fc : modelPrecip3d.visualType === 'hail' ? 0xe0f2fe : 0x7dd3fc);
+                });
+                floorGlowPrecip3d.material.color.setHex(accumulation3d.glaze > accumulation3d.puddling
+                  ? 0xa5f3fc : 0x38bdf8);
                 thermalBandsPrecip3d.forEach(function(band3d, bandIndex3d) {
                   var temperaturePoint3d = modelPrecip3d.thermalLayers.temperaturePoints[bandIndex3d];
                   var temp3d = temperaturePoint3d ? temperaturePoint3d.temperatureC : 0;
                   band3d.material.opacity = 0.035 + (bandIndex3d === 1 && modelPrecip3d.thermalLayers.crossings.length ? 0.055 : 0.02);
                   band3d.material.color.setHex(temp3d <= 0 ? 0x7dd3fc : 0xfbbf24);
                 });
+                phaseChangePlanesPrecip3d.forEach(function(phasePlane3d, phasePlaneIndex3d) {
+                  var thermalCrossing3d = modelPrecip3d.thermalLayers.crossings[phasePlaneIndex3d];
+                  phasePlane3d.visible = !!thermalCrossing3d;
+                  if (!thermalCrossing3d) return;
+                  phasePlane3d.position.set(0, 0.95 - thermalCrossing3d.progress * 2.98, 0.05);
+                  phasePlane3d.material.color.setHex(thermalCrossing3d.kind === 'melting' ? 0xfde68a : 0x67e8f9);
+                  phasePlane3d.material.opacity = thermalCrossing3d.kind === 'melting' ? 0.12 : 0.16;
+                });
                 var precipitationVisible3d = modelPrecip3d.visualType !== 'clear';
                 precipPoints3d.visible = precipitationVisible3d;
                 precipLines3d.visible = precipitationVisible3d && modelPrecip3d.visualType !== 'snow';
+                var precipitationTexture3d = modelPrecip3d.visualType === 'snow' ? snowFlakeTexturePrecip3d
+                  : modelPrecip3d.visualType === 'hail' || modelPrecip3d.visualType === 'sleet'
+                    ? hailStoneTexturePrecip3d : rainDropTexturePrecip3d;
+                if (precipPointMaterial3d.map !== precipitationTexture3d) {
+                  precipPointMaterial3d.map = precipitationTexture3d;
+                  precipPointMaterial3d.needsUpdate = true;
+                }
                 precipPointMaterial3d.color.setHex(modelPrecip3d.visualType === 'snow' ? 0xf8fafc : modelPrecip3d.visualType === 'hail' ? 0xe0f2fe : 0x7dd3fc);
-                precipPointMaterial3d.size = modelPrecip3d.visualType === 'hail' ? 0.105 : modelPrecip3d.visualType === 'snow' ? 0.09 : 0.052 + modelPrecip3d.relativeIntensity / 1000;
+                precipPointMaterial3d.size = modelPrecip3d.visualType === 'hail' ? 0.115 : modelPrecip3d.visualType === 'snow' ? 0.125 : 0.058 + modelPrecip3d.relativeIntensity / 920;
                 precipLineMaterial3d.color.setHex(modelPrecip3d.visualType === 'freezing-rain' ? 0x67e8f9 : 0x7dd3fc);
                 precipLineMaterial3d.opacity = modelPrecip3d.visualType === 'virga' ? 0.2 : 0.38 + modelPrecip3d.relativeIntensity / 250;
                 var lightningStudy3d = cfg3d.showStormAnatomy && cfg3d.lightningStudyStep !== 'auto';
                 lightningGroupPrecip3d.visible = cfg3d.showStormAnatomy && (modelPrecip3d.lightningEligible || lightningStudy3d);
+                anvilGroupPrecip3d.visible = cfg3d.showStormAnatomy && modelPrecip3d.lightningEligible && cfg3d.updraft >= 58;
+                anvilGroupPrecip3d.scale.set(0.78 + cfg3d.updraft / 160, 0.8 + lifecycleCloudFactor3d * 0.2, 0.78 + cfg3d.cloudDepth / 26);
+                anvilPuffsPrecip3d.forEach(function(anvilPuff3d) {
+                  anvilPuff3d.material.opacity = anvilGroupPrecip3d.visible ? Math.min(0.19, 0.065 + cfg3d.updraft / 760) : 0;
+                });
+                if (cfg3d.cameraFocus !== activeCameraFocusPrecip3d) {
+                  focusPrecip3dCamera(cfg3d.cameraFocus, false);
+                }
                 setPrecip3dCanvasData();
               }
 
@@ -5488,6 +6165,9 @@ const d = labToolData.waterCycle || {};
                   var fallBottom3d = type3d === 'virga' ? -0.55 - (cfg3d.lowLevelHumidity / 100) * 1.12 : -2.03;
                   var y3d = 0.95 - progress3d * (0.95 - fallBottom3d);
                   if (type3d === 'snow' || type3d === 'mix') x3d += Math.sin(time3d * 1.2 + seed3d.phase * 7) * 0.08;
+                  var leewardParticle3d = cfg3d.terrain === 'mountains' && cfg3d.wind > 2 &&
+                    (cfg3d.windDirection === 'west' ? x3d < -0.62 : x3d > 0.62);
+                  if (leewardParticle3d && ((particleIndex3d * 17) % 10) < 6) y3d = -9;
                   precipPositions3d[particleIndex3d * 3] = x3d;
                   precipPositions3d[particleIndex3d * 3 + 1] = y3d;
                   precipPositions3d[particleIndex3d * 3 + 2] = z3d;
@@ -5511,9 +6191,43 @@ const d = labToolData.waterCycle || {};
                   updraftMarkerPositionsPrecip3d[markerIndex3d * 3 + 2] = 0.32 + Math.sin(markerAngle3d) * (0.24 + (markerIndex3d % 3) * 0.13);
                 }
                 updraftMarkerGeometryPrecip3d.attributes.position.needsUpdate = true;
+                var windDirectionSignPrecip3d = cfg3d.windDirection === 'west' ? -1 : 1;
+                for (var windMarkerIndex3d = 0; windMarkerIndex3d < windMarkerCountPrecip3d; windMarkerIndex3d++) {
+                  var windSeedPrecip3d = ((windMarkerIndex3d * 23) % 31) / 31;
+                  var windBandPrecip3d = windMarkerIndex3d % 3;
+                  var windTravelPrecip3d = (windSeedPrecip3d + time3d * (0.06 + cfg3d.wind / 260)) % 1;
+                  windMarkerPositionsPrecip3d[windMarkerIndex3d * 3] = windDirectionSignPrecip3d * (-3.35 + windTravelPrecip3d * 6.7);
+                  windMarkerPositionsPrecip3d[windMarkerIndex3d * 3 + 1] = 1.25 + windBandPrecip3d * 0.72 + Math.sin(windTravelPrecip3d * Math.PI * 2 + windBandPrecip3d) * 0.1;
+                  windMarkerPositionsPrecip3d[windMarkerIndex3d * 3 + 2] = 0.95 + windBandPrecip3d * 0.18;
+                }
+                windMarkerGeometryPrecip3d.attributes.position.needsUpdate = true;
                 cloudPuffsPrecip3d.forEach(function(puff3d) {
                   puff3d.position.y = puff3d.userData.baseY + (motionReducedPrecip3d ? 0 : Math.sin(time3d * 0.34 + puff3d.userData.phase) * 0.035);
                   puff3d.rotation.y = motionReducedPrecip3d ? 0 : time3d * 0.012 + puff3d.userData.phase * 0.08;
+                });
+                cloudVolumeSpritesPrecip3d.forEach(function(cloudVolumeSprite3d) {
+                  cloudVolumeSprite3d.position.x = cloudVolumeSprite3d.userData.baseX +
+                    (motionReducedPrecip3d ? 0 : Math.sin(time3d * 0.12 + cloudVolumeSprite3d.userData.phase) * 0.026);
+                  cloudVolumeSprite3d.position.y = cloudVolumeSprite3d.userData.baseY +
+                    (motionReducedPrecip3d ? 0 : Math.cos(time3d * 0.17 + cloudVolumeSprite3d.userData.phase) * 0.018);
+                  cloudVolumeSprite3d.material.rotation = motionReducedPrecip3d ? 0 :
+                    Math.sin(time3d * 0.07 + cloudVolumeSprite3d.userData.phase) * 0.025;
+                });
+                anvilPuffsPrecip3d.forEach(function(anvilPuff3d) {
+                  anvilPuff3d.position.y = 2.62 + Math.cos(anvilPuff3d.userData.phase + time3d * 0.24) * 0.025;
+                });
+                phaseChangePlanesPrecip3d.forEach(function(phasePlane3d, phasePlaneIndex3d) {
+                  if (!phasePlane3d.visible) return;
+                  var phasePulse3d = motionReducedPrecip3d ? 1 : 1 + Math.sin(time3d * 0.7 + phasePlaneIndex3d) * 0.025;
+                  phasePlane3d.scale.setScalar(phasePulse3d);
+                });
+                impactRipplesPrecip3d.forEach(function(impactRipple3d) {
+                  var impactProgress3d = motionReducedPrecip3d ? impactRipple3d.userData.phase
+                    : (impactRipple3d.userData.phase + time3d * (0.48 + intensity3d * 0.72)) % 1;
+                  var impactScale3d = (0.3 + impactProgress3d * (1.12 + intensity3d * 0.38)) * impactRipple3d.userData.size;
+                  impactRipple3d.scale.setScalar(impactScale3d);
+                  impactRipple3d.material.opacity = impactRippleGroupPrecip3d.visible
+                    ? (1 - impactProgress3d) * (0.09 + intensity3d * 0.19) : 0;
                 });
                 var stormEligible3d = modelPrecip3d.lightningEligible && modelPrecip3d.config.showStormAnatomy;
                 var studyStep3d = modelPrecip3d.config.lightningStudyStep;
@@ -5526,10 +6240,25 @@ const d = labToolData.waterCycle || {};
                 } else {
                   lightningBoltMaterialPrecip3d.opacity = flash3d ? 0.98 : (stormEligible3d ? 0.2 : 0);
                 }
-                lightningLightPrecip3d.intensity = flash3d ? 3.6 : 0;
+                lightningCoreMaterialPrecip3d.opacity = flash3d
+                  ? 1 : lightningBoltMaterialPrecip3d.opacity * 0.32;
+                lightningBranchMaterialsPrecip3d.forEach(function(lightningBranchMaterial3d, lightningBranchIndex3d) {
+                  lightningBranchMaterial3d.opacity = flash3d
+                    ? 0.68 - lightningBranchIndex3d * 0.06 : lightningBoltMaterialPrecip3d.opacity * 0.42;
+                });
+                lightningCloudFlashMaterialPrecip3d.opacity = flash3d ? 0.13
+                  : studyStep3d === 'charge-separation' && modelPrecip3d.config.showStormAnatomy ? 0.075 : 0;
+                lightningLightPrecip3d.intensity = flash3d ? 2.1 : 0;
+                cloudLightPrecip3d.intensity = 0.7 + cfg3d.moisture / 100 * 1.3 + (flash3d ? 0.45 : 0);
+                horizonPrecip3d.material.color.setHex(flash3d ? 0xdff7ff : 0xffffff);
                 lightningHaloPrecip3d.material.opacity = flash3d ? 0.22 : 0;
                 if (flash3d) lightningHaloPrecip3d.scale.setScalar(1 + Math.sin(time3d * 3) * 0.12);
-                floorGlowPrecip3d.material.opacity = Math.min(0.24, 0.08 + modelPrecip3d.lifecycle.accumulation.puddling / 520);
+                var accumulationGlow3d = Math.max(
+                  modelPrecip3d.lifecycle.accumulation.puddling,
+                  modelPrecip3d.lifecycle.accumulation.glaze * 0.88,
+                  modelPrecip3d.lifecycle.accumulation.snow * 0.38
+                );
+                floorGlowPrecip3d.material.opacity = Math.min(0.26, 0.055 + accumulationGlow3d / 470);
               }
 
               function resizePrecip3d() {
@@ -5570,6 +6299,18 @@ const d = labToolData.waterCycle || {};
                 lastTimestampPrecip3d = timestamp3d;
                 if (!modelPrecip3d.config.paused && !motionReducedPrecip3d) visualTimePrecip3d += elapsed3d;
                 updatePrecip3dParticles(visualTimePrecip3d);
+                if (cameraTransitionPrecip3d) {
+                  var cameraEasePrecip3d = motionReducedPrecip3d ? 1 : Math.min(1, Math.max(0.08, elapsed3d * 5.4));
+                  cameraPrecip3d.position.lerp(cameraGoalPositionPrecip3d, cameraEasePrecip3d);
+                  cameraTargetPrecip3d.lerp(cameraGoalTargetPrecip3d, cameraEasePrecip3d);
+                  if (controlsPrecip3d) controlsPrecip3d.target.copy(cameraTargetPrecip3d);
+                  if (cameraPrecip3d.position.distanceTo(cameraGoalPositionPrecip3d) < 0.018 &&
+                      cameraTargetPrecip3d.distanceTo(cameraGoalTargetPrecip3d) < 0.018) {
+                    cameraPrecip3d.position.copy(cameraGoalPositionPrecip3d);
+                    cameraTargetPrecip3d.copy(cameraGoalTargetPrecip3d);
+                    cameraTransitionPrecip3d = false;
+                  }
+                }
                 if (controlsPrecip3d) {
                   controlsPrecip3d.update();
                 } else {
@@ -5585,13 +6326,13 @@ const d = labToolData.waterCycle || {};
                 else { lastTimestampPrecip3d = 0; animatePrecip3d(performance.now()); }
               }
               function resetPrecip3dCamera() {
-                cameraPrecip3d.position.set(0, 1.15, 8.8);
-                if (controlsPrecip3d) {
-                  controlsPrecip3d.target.copy(cameraTargetPrecip3d);
-                  controlsPrecip3d.update();
-                } else cameraPrecip3d.lookAt(cameraTargetPrecip3d);
+                focusPrecip3dCamera('storm', motionReducedPrecip3d);
+                if (modelPrecip3d.config.cameraFocus !== 'storm') setIQ({ cameraFocus: 'storm' });
               }
               canvasEl._wcPrecip3dResetCamera = resetPrecip3dCamera;
+              canvasEl._wcPrecip3dFocusCamera = function(focusModePrecip3d) {
+                focusPrecip3dCamera(focusModePrecip3d, motionReducedPrecip3d);
+              };
               canvasEl._wcPrecip3dAdvanceLifecycle = function(nextTime3d, keepPlaying3d) {
                 setIQ({ stormTime: nextTime3d, stormAutoPlay: keepPlaying3d });
               };
@@ -5618,10 +6359,17 @@ const d = labToolData.waterCycle || {};
                     materials3d.forEach(function(material3d) { if (material3d && material3d.dispose) material3d.dispose(); });
                   }
                 });
+                [cloudSoftTexturePrecip3d, softDotTexturePrecip3d, airflowTexturePrecip3d,
+                  rainDropTexturePrecip3d, snowFlakeTexturePrecip3d, hailStoneTexturePrecip3d,
+                  positiveChargeTexturePrecip3d, negativeChargeTexturePrecip3d,
+                  atmosphereTexturePrecip3d].forEach(function(texture3d) {
+                  if (texture3d && texture3d.dispose) texture3d.dispose();
+                });
                 renderer3d.dispose();
                 canvasEl._wcPrecip3dSync = null;
                 canvasEl._wcPrecip3dAdvanceLifecycle = null;
                 canvasEl._wcPrecip3dResetCamera = null;
+                canvasEl._wcPrecip3dFocusCamera = null;
                 canvasEl._wcPrecip3dCleanup = null;
               };
               if (typeof ResizeObserver !== 'undefined') {
@@ -5665,6 +6413,15 @@ const d = labToolData.waterCycle || {};
                     : ' Storm anatomy: this setup lacks organized mixed-phase charge separation. ') +
                     precipModel.stormAnatomy.lightningPathway.label + '. ' + precipModel.stormAnatomy.thunderWave.label + '.'
                   : '');
+
+            var precip3dScienceCopy = precipConfig.cameraFocus === 'cloud'
+              ? 'Inside-cloud lens: vapor condenses on tiny nuclei, droplets collide and grow, and ice interacting with graupel can separate electric charge. Updraft strength controls how long particles remain aloft.'
+              : precipConfig.cameraFocus === 'surface'
+                ? 'Surface-path lens: follow particles through every 0°C crossing. The floor shows modeled snow cover, ice glaze, hail, puddling, and runoff as the storm matures.' +
+                  (precipModel.reachesGround && ['rain', 'freezing-rain', 'hail', 'mix'].indexOf(precipModel.visualType) !== -1
+                    ? ' Expanding rings reveal individual surface impacts.' : '') +
+                  (precipConfig.terrain === 'mountains' ? ' Windward lift increases precipitation while the leeward side sits in a rain shadow.' : '')
+                : 'Whole-storm lens: soft cloud volume, horizontal wind, rising air, phase-change layers, falling particles, and surface accumulation are all tied to the current controls.';
 
             function precipSlider(spec) {
               var value = precipConfig[spec.key];
@@ -5935,17 +6692,51 @@ const d = labToolData.waterCycle || {};
                     'data-storm-stage': precipModel.lifecycle.stageKey },
                     precipViewMode === '3d'
                       ? h('canvas', { id: 'wcPrecip3dCanvas', ref: precip3dRef, className: 'wc-precip-3d-canvas', role: 'img',
-                          'aria-label': precipCanvasLabel.replace('2.5D', '3D cloud chamber'), 'data-precipitation-chamber': '3d-cloud',
+                          'aria-label': precipCanvasLabel.replace('2.5D', '3D cloud chamber') + ' Drag to orbit and scroll to zoom.', 'data-precipitation-chamber': '3d-cloud',
                           'data-precipitation-view': '3d' },
                           'Interactive 3D cloud chamber showing cloud formation, airflow, thermal layers, and precipitation.')
                       : h('canvas', { id: 'wcPrecipCanvas', ref: precipCanvasRef, className: 'wc-precip-canvas', role: 'img',
                           'aria-label': precipCanvasLabel, 'data-precipitation-chamber': '2.5d',
                           'data-precipitation-view': '2d' },
                           'Animated cross-section of cloud growth, airflow, and precipitation.'),
+                    precipViewMode === '3d' && h('div', { className: 'wc-precip-3d-focus', role: 'group',
+                      'aria-label': 'Choose a 3D science viewpoint' },
+                      [
+                        { key: 'storm', label: 'Whole storm' },
+                        { key: 'cloud', label: 'Inside cloud' },
+                        { key: 'surface', label: 'Surface path' }
+                      ].map(function(focusOption) {
+                        return h('button', { key: focusOption.key, type: 'button', className: 'wc-precip-3d-focus-choice',
+                          'aria-pressed': precipConfig.cameraFocus === focusOption.key,
+                          onClick: function() { setPrecipCameraFocus(focusOption.key); } }, focusOption.label);
+                      })),
+                    precipViewMode === '3d' && h('div', { className: 'wc-precip-3d-thermal-rail', role: 'group',
+                      'aria-label': 'Vertical air temperature column. Cloud ' + precipConfig.tempC.toFixed(0) +
+                        ' degrees Celsius, middle ' + precipConfig.midLevelTempC.toFixed(0) +
+                        ' degrees Celsius, surface ' + precipConfig.surfaceTempC.toFixed(0) + ' degrees Celsius.' },
+                      h('strong', null, 'Air column'),
+                      [
+                        { key: 'cloud', label: 'Cloud', value: precipConfig.tempC },
+                        { key: 'middle', label: 'Middle', value: precipConfig.midLevelTempC },
+                        { key: 'surface', label: 'Surface', value: precipConfig.surfaceTempC }
+                      ].map(function(thermalLevel) {
+                        return h('span', { key: thermalLevel.key, className: 'wc-precip-3d-thermal-level',
+                          'data-temperature-phase': thermalLevel.value <= 0 ? 'frozen' : 'warm' },
+                          h('i', { 'aria-hidden': 'true' }),
+                          h('b', null, thermalLevel.label),
+                          h('em', null, thermalLevel.value.toFixed(0) + '\u00B0C'));
+                      }),
+                      h('small', null, precipModel.thermalLayers.crossings.length
+                        ? precipModel.thermalLayers.crossings.length + ' phase-change ' +
+                          (precipModel.thermalLayers.crossings.length === 1 ? 'layer' : 'layers')
+                        : 'No 0\u00B0C crossing')),
                     precipViewMode === '3d' && h('div', { className: 'wc-precip-3d-key', role: 'group', 'aria-label': '3D cloud chamber visual key' },
                       h('span', null, h('i', { className: 'is-nuclei', 'aria-hidden': 'true' }), 'Nuclei + droplets'),
                       h('span', null, h('i', { className: 'is-updraft', 'aria-hidden': 'true' }), 'Updraft'),
                       h('span', null, h('i', { className: 'is-thermal', 'aria-hidden': 'true' }), '0°C layers'),
+                      precipConfig.showStormAnatomy && precipModel.lightningEligible &&
+                        h('span', null, h('i', { className: 'is-charge', 'aria-hidden': 'true' }), 'Charge zones'),
+                      h('span', { className: 'wc-precip-3d-gesture' }, 'Drag to orbit · scroll to zoom'),
                       h('button', { type: 'button', className: 'wc-precip-3d-reset', onClick: function() {
                         if (precip3dCanvasNode && precip3dCanvasNode._wcPrecip3dResetCamera) precip3dCanvasNode._wcPrecip3dResetCamera();
                       }, 'aria-label': 'Reset the 3D cloud chamber camera' }, 'Reset view')),
@@ -5973,9 +6764,8 @@ const d = labToolData.waterCycle || {};
                         precipMotionReduced ? 'Static' : (precipConfig.paused ? 'Resume' : 'Pause'))
                     )
                   ),
-                  precipViewMode === '3d' && h('p', { className: 'wc-precip-3d-science', role: 'note' },
-                    'Science lens: vapor condenses on nuclei; droplets collide and grow; mixed-phase ice and updrafts decide whether particles survive the thermal layers as ' +
-                    precipModel.displayLabel.toLowerCase() + '.'),
+                  precipViewMode === '3d' && h('p', { className: 'wc-precip-3d-science', role: 'note',
+                    'data-camera-focus': precipConfig.cameraFocus }, precip3dScienceCopy),
                   h('div', { className: 'wc-precip-path-strip', role: 'group',
                     'data-path-outcome': precipModel.visualType,
                     'aria-label': 'Precipitation fall sequence: ' + precipModel.cloudPhase + ', ' +

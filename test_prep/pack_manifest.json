@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "catalogVersion": "2026.07.29",
+  "catalogVersion": "2026.08.20",
   "categories": [
     {
       "id": "professional-school-personnel",
@@ -842,7 +842,7 @@
       "disclaimer": "Independent, unofficial AP Psychology preparation material for internal development only. Not affiliated with, endorsed by, or authored by College Board. AP and Advanced Placement are trademarks of College Board. All questions, answer options, explanations, and feedback in this file are independently authored; no secure AP Classroom, Question Bank, Progress Check, practice-exam, or teacher-only content was used or reproduced. Practice results are not official AP scores, score predictions, psychometric estimates, or determinations of college credit or placement. Psychology examples are educational and are not diagnosis, treatment, or medical advice.",
       "credentialOwner": "College Board",
       "status": "preview",
-      "version": "0.2.0-internal-preview",
+      "version": "0.5.0-internal-preview",
       "blueprintLabel": "AP Psychology Course and Exam Description, effective Fall 2025, Course Framework V.1",
       "blueprintEffective": "Fall 2025 CED with clarifications implemented October 2025; current official exam-format reference is the 2026 fully digital exam.",
       "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
@@ -856,12 +856,46 @@
         "fully-digital"
       ],
       "packUrl": "./test_prep/ap_psychology_pilot.json",
-      "sha256": "f093c5e9f04f0650b56a0f7e0f6b4a5b7f60d660e182de71205d791c76f833a8",
+      "sha256": "bdaacfbcc20dd2cb6bae3a5ca665092a5372abc0fa71988d7758ac43e010427d",
       "learningLibraryUrl": "./test_prep/ap_psychology_pilot_learning_library.json",
       "learningLibraryQaUrl": "",
       "nativeQaUrl": "./test_prep/ap_psychology_pilot_qa.json",
-      "learningLibrarySha256": "aec2708489fb4ce308c71b5d53df4bd53e017c98c62147eab1734173ada8b04f",
-      "nativeQaSha256": "60ae234e8b85865e181132cb6745a8f328f881afb11afe727dacaa9fd48d0551"
+      "learningLibrarySha256": "adb370d048c1e22b8279fd1465db62e14b7d9bfe3d2ea3b90ab514c9ab89e2c6",
+      "nativeQaSha256": "05225eb205ff754bdcad7327093dada35a8553872fd043070dcb232b330a5fbf"
+    },
+    {
+      "id": "ap-biology-foundation-pilot",
+      "loadMode": "lazy",
+      "visibility": "internal",
+      "portfolioCategories": [
+        "k12-college-readiness"
+      ],
+      "title": "AP Biology Independent Foundation Pilot",
+      "shortTitle": "AP Biology Foundation Pilot",
+      "description": "An independently authored 50-question AP Biology foundation pilot spanning all eight current units. It tests the blueprint crosswalk, science-practice metadata, native chapter architecture, and internal QA before any full-bank expansion.",
+      "disclaimer": "",
+      "credentialOwner": "College Board",
+      "status": "preview",
+      "version": "0.1.0-internal-preview",
+      "blueprintLabel": "AP Biology Course and Exam Description, effective Fall 2025, Course Framework V.1",
+      "blueprintEffective": "Fall 2025 CED; current official public reference reviewed 2026-08-20.",
+      "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+      "itemCount": 50,
+      "domainCount": 8,
+      "itemSchemaVersion": 2,
+      "responseTypes": [
+        "single-choice"
+      ],
+      "examModes": [
+        "fully-digital"
+      ],
+      "packUrl": "./test_prep/ap_biology_foundation_pilot.json",
+      "sha256": "05d8bcdec6a0b1d99af9c5f717f85940412159eab43ff2a16bcc16ad7a4f893d",
+      "learningLibraryUrl": "./test_prep/ap_biology_foundation_pilot_learning_library.json",
+      "learningLibraryQaUrl": "",
+      "nativeQaUrl": "./test_prep/ap_biology_foundation_pilot_qa.json",
+      "learningLibrarySha256": "ec1af4b158f2d8722fe6b95ff06cd6643924d90674547a0a8aa29e24eaf79bf2",
+      "nativeQaSha256": "f1f333c478ed136104e63f778901272979758d8a5e6d13de531cddc7c566dd4b"
     }
   ]
 }

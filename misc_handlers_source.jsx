@@ -1109,9 +1109,13 @@ const handleLoadProject = (e, deps) => {
                 } else {
                      addToast(t('toasts.project_loaded'), "success");
                 }
-                if (loadedHistory.length > 0) {
-                    const lastItem = loadedHistory[loadedHistory.length - 1];
-                    setGeneratedContent({ type: lastItem.type, data: lastItem.data, id: lastItem.id });
+                if (hydratedHistory.length > 0) {
+                    const lastItem = hydratedHistory[hydratedHistory.length - 1];
+                    // Restore the whole artifact envelope. Narrowing this to
+                    // type/data/id discarded text role, source linkage,
+                    // standards context, and complexity evidence immediately
+                    // after a successful project load.
+                    setGeneratedContent({ ...lastItem });
                     setActiveView(lastItem.type);
                     setIsMapLocked(false);
                 } else {

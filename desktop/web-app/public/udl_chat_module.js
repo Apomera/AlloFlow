@@ -80,18 +80,51 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
           modifyBlueprint: (legacyConfig, instruction) => modifyBlueprintWithAI(legacyConfig, instruction),
       });
   };
-  const _agentCoreContext = () => ({
-      gradeLevel,
-      language: leveledTextLanguage,
-      standards: standardsInput,
-      interests: studentInterests,
-  });
+  const _agentCoreContext = (overrides = {}) => {
+      const owns = (key) => Object.prototype.hasOwnProperty.call(overrides, key);
+      const requestedGrade = owns('gradeLevel') ? overrides.gradeLevel : gradeLevel;
+      const requestedStandards = owns('standards') ? overrides.standards : standardsInput;
+      const standardsModule = window.AlloModules && window.AlloModules.StandardsContext;
+      const instructionalModule = window.AlloModules && window.AlloModules.InstructionalContext;
+      const resolvedStandardsContext = overrides.standardsContext
+          || (standardsModule && typeof standardsModule.resolve === 'function'
+              ? standardsModule.resolve(requestedStandards)
+              : null);
+      const instructionalContext = instructionalModule && typeof instructionalModule.normalizeInstructionalContext === 'function'
+          ? instructionalModule.normalizeInstructionalContext(overrides.instructionalContext, {
+              instructionalGrade: requestedGrade,
+              standardsContext: resolvedStandardsContext,
+          })
+          : (overrides.instructionalContext || {
+              schemaVersion: 1,
+              instructionalGrade: requestedGrade,
+              primaryTextPolicy: 'preserve-primary',
+              standardsContext: resolvedStandardsContext,
+              standardsFingerprint: '',
+          });
+      return {
+          gradeLevel: requestedGrade,
+          language: owns('language') ? overrides.language : leveledTextLanguage,
+          standards: requestedStandards,
+          standardsContext: resolvedStandardsContext,
+          instructionalContext,
+          interests: owns('interests') ? overrides.interests : studentInterests,
+      };
+  };
   const _createAgentCoreLegacyDraft = async (request) => {
-      const result = await _getAgentCoreUIAdapter().createDraft(request);
+      const normalizedRequest = Object.assign({}, request || {}, _agentCoreContext(request || {}));
+      const result = await _getAgentCoreUIAdapter().createDraft(normalizedRequest);
       return result.legacyConfig;
   };
   const _reviseAgentCoreLegacyBlueprint = async (legacyConfig, instruction) => {
-      const result = await _getAgentCoreUIAdapter().reviseLegacy(legacyConfig, instruction, _agentCoreContext());
+      const plan = legacyConfig && typeof legacyConfig === 'object' ? legacyConfig : {};
+      const result = await _getAgentCoreUIAdapter().reviseLegacy(legacyConfig, instruction, _agentCoreContext({
+          gradeLevel: plan.globalSettings && plan.globalSettings.gradeLevel,
+          language: plan.globalSettings && (plan.globalSettings.language || plan.globalSettings.leveledTextLanguage),
+          standards: plan.standards,
+          standardsContext: plan.standardsContext,
+          instructionalContext: plan.instructionalContext,
+      }));
       return result.legacyConfig;
   };
   // ── Guided-flow answer chips ──────────────────────────────────────────

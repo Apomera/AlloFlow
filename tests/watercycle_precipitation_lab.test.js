@@ -199,13 +199,36 @@ describe('Water Cycle Precipitation Lab', () => {
     expect(html).toContain('Nuclei + droplets');
     expect(html).toContain('0°C layers');
     expect(html).toContain('Reset the 3D cloud chamber camera');
+    expect(html).toContain('Choose a 3D science viewpoint');
+    expect(html).toContain('Whole storm');
+    expect(html).toContain('Inside cloud');
+    expect(html).toContain('Surface path');
+    expect(html).toContain('Vertical air temperature column');
 
     WATER_CYCLE_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
       expect(source).toContain("viewMode: '2d'");
+      expect(source).toContain("cameraFocus: 'storm'");
       expect(source).toContain('var precip3dRef = function(canvasEl)');
       expect(source).toContain('canvasEl._wcPrecip3dCleanup = function()');
+      expect(source).toContain('canvasEl._wcPrecip3dFocusCamera = function(focusModePrecip3d)');
       expect(source).toContain('canvasEl.dataset.precipitationView = \'3d-cloud-chamber\';');
+      expect(source).toContain('canvasEl.dataset.precipitationPhasePlanes');
+      expect(source).toContain('canvasEl.dataset.precipitationTerrain');
+      expect(source).toContain("canvasEl.dataset.precipitationCloudRendering = 'soft-volume-plus-lit-mesh';");
+      expect(source).toContain('canvasEl.dataset.precipitationSurfaceEvidence');
+      expect(source).toContain('var mountainTerrainGroupPrecip3d = new THREE.Group();');
+      expect(source).toContain('var windShearGroupPrecip3d = new THREE.Group();');
+      expect(source).toContain('function makeSoftCloudTexturePrecip3d()');
+      expect(source).toContain('var surfaceAccumulationGroupPrecip3d = new THREE.Group();');
+      expect(source).toContain('function makePrecip3dParticleTexture(kindPrecip3d)');
+      expect(source).toContain('function makePrecip3dChargeTexture(signPrecip3d)');
+      expect(source).toContain('function makePrecip3dAtmosphereTexture()');
+      expect(source).toContain('var impactRippleGroupPrecip3d = new THREE.Group();');
+      expect(source).toContain("canvasEl.dataset.precipitationParticleRendering = 'procedural-soft-textures';");
+      expect(source).toContain("canvasEl.dataset.precipitationLightningRendering = 'branched-channel-core-and-cloud-flash';");
+      expect(source).toContain('canvasEl.dataset.precipitationChargeRegions');
+      expect(source).toContain('new THREE.TubeGeometry(new THREE.CatmullRomCurve3(lightningMainPointsPrecip3d)');
       expect(source).toContain('precipLineGeometry3d.setDrawRange(0, activeCount3d * 2);');
     });
   });

@@ -16,7 +16,11 @@ const helpers = new Function(helperPrefix + `
     computeReadinessScore,
     normalizeStandardsDimension,
     selectCurriculumArtifacts,
-    normalizeAuditLanguageTag
+    normalizeAuditLanguageTag,
+    collectAuditText,
+    _auditTextAccessEvidence,
+    _auditFingerprint,
+    _auditContentFingerprint
   };
 `)();
 
@@ -254,6 +258,68 @@ describe('curriculum audit audio, language, scope, and standards', () => {
     expect(helpers.normalizeAuditLanguageTag('fr-CA')).toBe('fr-CA');
     expect(helpers.normalizeAuditLanguageTag('All Selected Languages')).toBe('und');
   });
+
+  it('prefers a designated primary over a supplemental adaptation for audit source evidence', () => {
+    const artifacts = [
+      {
+        id: 'primary-1', type: 'analysis', data: { originalText: 'Primary grade-level source.' },
+        instructionalText: { role: 'primary', form: 'original', replacementAuthorization: { authorized: false, source: 'none' } },
+      },
+      {
+        id: 'adapted-1', type: 'simplified', data: 'Short adapted companion.',
+        instructionalText: { role: 'supplemental', form: 'adapted', sourceArtifactId: 'primary-1', replacementAuthorization: { authorized: false, source: 'none' } },
+      },
+    ];
+    const collected = helpers.collectAuditText(artifacts);
+    expect(collected.sourceText).toBe('Primary grade-level source.');
+    expect(collected.sourceArtifactId).toBe('primary-1');
+    expect(collected.sourceSelection).toBe('designated-primary');
+    const access = helpers._auditTextAccessEvidence(artifacts);
+    expect(access.hasPrimary).toBe(true);
+    expect(access.supplementalArtifactIds).toEqual(['adapted-1']);
+  });
+
+  it('flags a supplemental adapted text without a primary and never infers authorization', () => {
+    const artifacts = [{
+      id: 'adapted-only', type: 'simplified', data: 'Adapted text.',
+      instructionalText: { role: 'supplemental', form: 'adapted', replacementAuthorization: { authorized: true, source: 'model' } },
+    }];
+    const access = helpers._auditTextAccessEvidence(artifacts);
+    expect(access.status).toBe('Not Aligned');
+    expect(access.hasSupplementalWithoutPrimary).toBe(true);
+    expect(access.authorizedModifiedArtifactIds).toEqual([]);
+    expect(helpers.collectAuditText(artifacts).sourceSelection).toBe('adapted-fallback-not-primary');
+  });
+
+  it('changes the audit fingerprint when instructional role changes', () => {
+    const base = { id: 'text-1', type: 'simplified', data: 'Same bytes.' };
+    const supplemental = { ...base, instructionalText: { role: 'supplemental', form: 'adapted' } };
+    const primary = { ...base, instructionalText: { role: 'primary', form: 'adapted', replacementAuthorization: { authorized: true, source: 'educator' } } };
+    expect(helpers._auditFingerprint([supplemental], '5th Grade')).not.toBe(helpers._auditFingerprint([primary], '5th Grade'));
+  });
+
+  it('accepts grade evidence only when its fingerprint matches the current primary text', () => {
+    const text = 'Current designated primary text.';
+    const base = {
+      id: 'primary-freshness', type: 'analysis', data: { originalText: text },
+      instructionalText: {
+        role: 'primary', form: 'original',
+        complexity: { status: 'within-target', contentFingerprint: helpers._auditContentFingerprint(text) },
+      },
+    };
+    const fresh = helpers._auditTextAccessEvidence([base]);
+    expect(fresh.primaryWithCurrentComplexityEvidenceIds).toEqual(['primary-freshness']);
+    expect(fresh.stalePrimaryComplexityEvidenceIds).toEqual([]);
+    expect(fresh.status).toBe('Aligned');
+
+    const stale = helpers._auditTextAccessEvidence([{
+      ...base,
+      instructionalText: { ...base.instructionalText, complexity: { status: 'within-target', contentFingerprint: 'txt-stale' } },
+    }]);
+    expect(stale.primaryWithCurrentComplexityEvidenceIds).toEqual([]);
+    expect(stale.stalePrimaryComplexityEvidenceIds).toEqual(['primary-freshness']);
+    expect(stale.status).toBe('Partially Aligned');
+  });
 });
 
 describe('curriculum audit report WCAG regressions', () => {
@@ -272,13 +338,16 @@ describe('curriculum audit report WCAG regressions', () => {
     expect(reportSource).toContain('Selection: ');
     expect(reportSource).toContain('print:h-auto');
     expect(reportSource).toContain('var seenRecommendations = new Set()');
-    expect(dispatcherSource).toContain('schemaVersion: 4');
+    expect(dispatcherSource).toContain('schemaVersion: 5');
     expect(dispatcherSource).toContain('auditLanguageTag = normalizeAuditLanguageTag');
     expect(reportSource).toContain('function NotEvaluatedCard');
     expect(reportSource).toContain('function MissingDimensionCard');
     expect(reportSource).toContain('saved audit. Regenerate the audit');
     expect(reportSource).toContain('c.vocabulary.notEvaluated');
     expect(reportSource).toContain('c.accuracy.notEvaluated');
+    expect(reportSource).toContain('Primary-text access evidence');
+    expect(reportSource).toContain('Adapted text available (reported only)');
+    expect(reportSource).toContain('Scored access paths');
     expect(reportSource).not.toContain('of 5 comprehensive');
     expect(reportSource).not.toMatch(/opacity:\s*0\.(?:65|7|8)/);
   });

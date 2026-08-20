@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "catalogVersion": "2026.07.29",
+  "catalogVersion": "2026.08.20",
   "categories": [
     {
       "id": "professional-school-personnel",
@@ -270,6 +270,16 @@
     {
       "id": "ap-psychology-pilot",
       "sourcePath": "test_prep/ap_psychology_pilot.json",
+      "pipelineFamily": "ap-native",
+      "loadMode": "lazy",
+      "visibility": "internal",
+      "portfolioCategories": [
+        "k12-college-readiness"
+      ]
+    },
+    {
+      "id": "ap-biology-foundation-pilot",
+      "sourcePath": "test_prep/ap_biology_foundation_pilot.json",
       "pipelineFamily": "ap-native",
       "loadMode": "lazy",
       "visibility": "internal",

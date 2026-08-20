@@ -1007,7 +1007,7 @@ const alloBotGenerationFamily = (generationType, activeView) => {
     || 'generic';
 };
 
-const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, onHide, isListening, isIdleDisabled = false, disableAnimations = false, stemLabTool = null, showStemLab = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voiceVolume = 1, onGenerateAudio, theme = 'light', colorOverlay = 'none', onSpeechEnd, onSpeechStart, activeView, generationType = null, generationProgress = null, generationError = null, isFlying = false, isSystemAudioActive = false, history = [], isParentMode = false, isStudentMode = false, isEducatorMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic, canPlayIntro = true, aimAt = null, idleSleepMs = 180000 }, ref) => {
+const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, onHide, isListening, isIdleDisabled = false, disableAnimations = false, stemLabTool = null, showStemLab = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voiceVolume = 1, onGenerateAudio, theme = 'light', colorOverlay = 'none', onSpeechEnd, onSpeechStart, activeView, generationType = null, generationProgress = null, generationError = null, generationStep = '', generationStage: generationStageSignal = null, generationBatchType = null, isFlying = false, isSystemAudioActive = false, history = [], isParentMode = false, isStudentMode = false, isEducatorMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic, canPlayIntro = true, aimAt = null, idleSleepMs = 180000 }, ref) => {
   const motionDisabled = useAlloMotionDisabled(disableAnimations);
   const coarsePointer = useAlloCoarsePointer();
   // Touch build: always shown (there is no hover to reveal them with), pushed
@@ -1032,7 +1032,6 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
   // the container never sees it, so the tap resolves into a normal click.
   const stopTouch = (e) => e.stopPropagation();
   const satelliteIconSize = coarsePointer ? 16 : 12;
-  useEffect(() => { try { var _bot = containerRef.current; var _svg = _bot && _bot.querySelector("svg"); if (!_svg || typeof _svg.pauseAnimations !== "function") return; try { if (motionDisabled) { _svg.pauseAnimations(); _svg.setCurrentTime(0); } else { _svg.unpauseAnimations(); } } catch (e) {} } catch (e) {} }, [motionDisabled]);
   const { t } = useContext(LanguageContext);
   const [position, setPosition] = useState(() => {
       try {
@@ -1058,6 +1057,29 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
   const [eyePosition, setEyePosition] = useState({ x: 0, y: 0 });
   const [visorPosition, setVisorPosition] = useState({ x: 0, y: 0 });
   const containerRef = useRef(null);
+  const [isDocumentHidden, setIsDocumentHidden] = useState(() => {
+      try { return typeof document !== 'undefined' && document.visibilityState === 'hidden'; } catch (e) { return false; }
+  });
+  const [isGenerationOffscreen, setIsGenerationOffscreen] = useState(false);
+  const generationMotionPaused = isDocumentHidden || isGenerationOffscreen;
+  useEffect(() => { try { var _bot = containerRef.current; var _svg = _bot && _bot.querySelector("svg"); if (!_svg || typeof _svg.pauseAnimations !== "function") return; try { if (motionDisabled) { _svg.pauseAnimations(); _svg.setCurrentTime(0); } else if (generationMotionPaused) { _svg.pauseAnimations(); } else { _svg.unpauseAnimations(); } } catch (e) {} } catch (e) {} }, [motionDisabled, generationMotionPaused]);
+  useEffect(() => {
+      if (typeof document === 'undefined') return undefined;
+      const handleVisibilityChange = () => setIsDocumentHidden(document.visibilityState === 'hidden');
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      handleVisibilityChange();
+      return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+  useEffect(() => {
+      const element = containerRef.current;
+      if (!element || typeof IntersectionObserver === 'undefined') return undefined;
+      const observer = new IntersectionObserver((entries) => {
+          const entry = entries && entries[0];
+          setIsGenerationOffscreen(!entry || !entry.isIntersecting || entry.intersectionRatio < 0.05);
+      }, { threshold: [0, 0.05] });
+      observer.observe(element);
+      return () => observer.disconnect();
+  }, []);
   // ── Flashlight aiming + muzzle reporting (2026-07-29) ──
   // The flashlight was drawn at a fixed rotate(45) no matter where the light was
   // supposed to be pointing, and nothing outside this component could find out
@@ -1159,9 +1181,22 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
   const generationOutcome = generationError
       ? (/(?:cancel|abort)/i.test(String(generationError?.message || generationError)) ? 'cancelled' : 'error')
       : 'success';
+  const isFullPackGeneration = String(generationBatchType || '').trim().toLowerCase() === 'full-pack';
   const generationHistorySignature = Array.isArray(history)
       ? history.slice(-32).map(item => `${item?.id || ''}:${item?.type || ''}:${item?.data == null ? 'empty' : 'ready'}`).join('|')
       : '';
+  const generationStepText = String(generationStep || '').trim().toLowerCase();
+  const normalizedGenerationStageSignal = ['analyze', 'build', 'finalize'].includes(String(generationStageSignal || '').trim().toLowerCase())
+      ? String(generationStageSignal).trim().toLowerCase()
+      : null;
+  const generationStageFromStep = /finaliz|validat|finish|complete|ready|saving|publish|assembling|formatting/.test(generationStepText)
+      ? 'finalize'
+      : /generat|draft|adapt|translat|construct|design|brainstorm|create|build|render|compose|refin|write|visual/.test(generationStepText)
+          ? 'build'
+          : /analy|search|extract|inspect|plan|review|audit|verif|identif|categor|prepar|synthes|structure|solv/.test(generationStepText)
+              ? 'analyze'
+              : null;
+  const generationStage = normalizedGenerationStageSignal || generationStageFromStep;
   const [generationPhase, setGenerationPhase] = useState(0);
   useEffect(() => {
       if (effectiveMood !== 'thinking' || motionDisabled) {
@@ -1173,8 +1208,15 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       }, 3200);
       return () => clearInterval(phaseTimer);
   }, [effectiveMood, motionDisabled]);
+  const generationAnimationPhase = generationStage === 'analyze'
+      ? 0
+      : generationStage === 'build'
+          ? 1
+          : generationStage === 'finalize'
+              ? 2
+              : generationPhase;
   const generationProgressDasharray = generationProgressFraction === null
-      ? ['18 82', '26 74', '12 88'][generationPhase]
+      ? ['18 82', '26 74', '12 88'][generationAnimationPhase]
       : '100 0';
   const [viseme, setViseme] = useState('neutral');
   const [blinkScale, setBlinkScale] = useState(1);
@@ -1184,6 +1226,9 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
   const lastGenerationFamilyRef = useRef('generic');
   const generationHistoryBaselineRef = useRef('');
   const generationSessionActiveRef = useRef(false);
+  const generationMilestoneActiveRef = useRef(false);
+  const generationMilestoneSignatureRef = useRef('');
+  const generationMilestoneTimerRef = useRef(null);
   const [displayedAccessory, setDisplayedAccessory] = useState(null);
   const [accExiting, setAccExiting] = useState(false);
   const prevMoodRef = useRef('idle');
@@ -1390,6 +1435,48 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       generationSessionActiveRef.current = false;
   }, [effectiveMood, generationHistorySignature]);
   useEffect(() => {
+      // Full Pack keeps AlloBot in the thinking state across several resources.
+      // Show a short family-specific handoff each time a ready resource lands,
+      // while leaving single-resource generations to their normal final cue.
+      if (effectiveMood !== 'thinking') {
+          generationMilestoneActiveRef.current = false;
+          generationMilestoneSignatureRef.current = '';
+          if (generationMilestoneTimerRef.current) {
+              clearTimeout(generationMilestoneTimerRef.current);
+              generationMilestoneTimerRef.current = null;
+          }
+          return;
+      }
+      if (!isFullPackGeneration) {
+          generationMilestoneActiveRef.current = false;
+          generationMilestoneSignatureRef.current = generationHistorySignature;
+          if (generationMilestoneTimerRef.current) {
+              clearTimeout(generationMilestoneTimerRef.current);
+              generationMilestoneTimerRef.current = null;
+          }
+          return;
+      }
+      if (!generationMilestoneActiveRef.current) {
+          generationMilestoneActiveRef.current = true;
+          generationMilestoneSignatureRef.current = generationHistorySignature;
+          return;
+      }
+      if (generationMilestoneSignatureRef.current === generationHistorySignature) return;
+      generationMilestoneSignatureRef.current = generationHistorySignature;
+      const latestResource = Array.isArray(history) ? history[history.length - 1] : null;
+      if (!latestResource || !latestResource.id || latestResource.data == null) return;
+      setCompletedGenerationFamily(alloBotGenerationFamily(latestResource.type, activeView));
+      setCompletedGenerationOutcome('success');
+      setAccPop(true);
+      if (generationMilestoneTimerRef.current) clearTimeout(generationMilestoneTimerRef.current);
+      generationMilestoneTimerRef.current = setTimeout(() => {
+          setAccPop(false);
+          setCompletedGenerationFamily(null);
+          setCompletedGenerationOutcome(null);
+          generationMilestoneTimerRef.current = null;
+      }, 650);
+  }, [effectiveMood, isFullPackGeneration, generationHistorySignature, history, activeView]);
+  useEffect(() => {
       if (effectiveMood !== 'thinking') return;
       lastGenerationFamilyRef.current = alloBotGenerationFamily(generationType, activeView);
       setAccPop(false);
@@ -1401,7 +1488,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       const prev = prevMoodRef.current;
       prevMoodRef.current = effectiveMood;
       const hasVisibleResource = generationHistoryBaselineRef.current !== generationHistorySignature;
-      if (prev === 'thinking' && effectiveMood !== 'thinking' && !isSleeping && !motionDisabled
+      if (prev === 'thinking' && effectiveMood !== 'thinking' && !isSleeping
           && (generationOutcome !== 'success' || hasVisibleResource)) {
           setCompletedGenerationFamily(lastGenerationFamilyRef.current || 'generic');
           setCompletedGenerationOutcome(generationOutcome);
@@ -1413,7 +1500,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           }, 650);
           return () => clearTimeout(t);
       }
-  }, [effectiveMood, isSleeping, motionDisabled, generationHistorySignature, generationOutcome]);
+  }, [effectiveMood, isSleeping, generationHistorySignature, generationOutcome]);
   useEffect(() => {
       if (!isTalking || motionDisabled) {
           setViseme('neutral');
@@ -3070,6 +3157,9 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
 [data-allo-generation-phase="2"] .animate-hologram-3d { animation-duration: 6.5s; }
 [data-allo-generation-phase="1"] .animate-allobot-generation-scan { animation-duration: 1.9s; }
 [data-allo-generation-phase="2"] .animate-allobot-generation-spark { animation-duration: 1.8s; }
+[data-allo-generation-stage="analyze"] .animate-allobot-generation-scan { animation-duration: 1.25s; }
+[data-allo-generation-stage="build"] .animate-allobot-generation-card, [data-allo-generation-stage="build"] .animate-allobot-generation-spark { animation-duration: 1.15s; }
+[data-allo-generation-stage="finalize"] .animate-allobot-generation-line, [data-allo-generation-stage="finalize"] .animate-allobot-generation-check { animation-duration: 1.1s; }
 @keyframes allobotGenerationCard { 0%, 100% { transform: translateY(2px); opacity: 0.45; } 50% { transform: translateY(-2px); opacity: 1; } }
 .animate-allobot-generation-card { transform-box: fill-box; transform-origin: center; animation: allobotGenerationCard 1.8s ease-in-out infinite; }
 @keyframes allobotGenerationResolve { 0%, 100% { transform: scaleX(0.65); opacity: 0.3; } 50% { transform: scaleX(1); opacity: 1; } }
@@ -3090,6 +3180,9 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
 .animate-allobot-generation-complete { transform-box: fill-box; transform-origin: center; animation: allobotGenerationComplete 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) 1 both; }
 @keyframes allobotGenerationCompletionCheck { 0% { stroke-dashoffset: 24; opacity: 0; } 35% { opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 1; } }
 .animate-allobot-generation-completion-check { animation: allobotGenerationCompletionCheck 0.45s ease-out 0.08s 1 both; }
+.allobot-generation-complete-static { opacity: 1 !important; }
+.allobot-generation-complete-static .animate-allobot-generation-completion-check { stroke-dashoffset: 0 !important; opacity: 1 !important; }
+.allobot-generation-paused, .allobot-generation-paused * { animation-play-state: paused !important; }
 /* Exit transition: the outgoing accessory fades up briefly before the new enters. */
 @keyframes allobotExit { to { opacity: 0; transform: translateY(-3px); } }
 .allobot-exiting > * { animation: allobotExit 0.2s ease-in forwards; }
@@ -3340,8 +3433,8 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                     </g>
                 )}
                 {effectiveMood === 'thinking' && !isSleeping && !motionDisabled && (
-                    <g className="animate-allobot-generation-enter">
-                    <g data-allo-generation-family={alloBotGenerationFamily(generationType, activeView)} data-allo-generation-phase={generationPhase} className="animate-pulse motion-reduce:animate-none" style={{ animationDuration: '2s' }}>
+                    <g className={`animate-allobot-generation-enter${generationMotionPaused ? ' allobot-generation-paused' : ''}`}>
+                    <g data-allo-generation-family={alloBotGenerationFamily(generationType, activeView)} data-allo-generation-stage={generationStage || 'working'} data-allo-generation-phase={generationAnimationPhase} className="animate-pulse motion-reduce:animate-none" style={{ animationDuration: '2s' }}>
                         <circle
                             cx="50"
                             cy="-25"
@@ -3383,9 +3476,9 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                     </g>
                     </g>
                 )}
-                {accPop && completedGenerationFamily && !isSleeping && !motionDisabled && (
+                {accPop && completedGenerationFamily && !isSleeping && (
                     <g transform="translate(50, -25)" data-allo-generation-complete={completedGenerationFamily} data-allo-generation-outcome={completedGenerationOutcome} aria-hidden="true">
-                        <g className="animate-allobot-generation-complete">
+                        <g className={motionDisabled ? 'allobot-generation-complete-static' : 'animate-allobot-generation-complete'}>
                             {renderGenerationCompletion(completedGenerationFamily, completedGenerationOutcome)}
                         </g>
                     </g>

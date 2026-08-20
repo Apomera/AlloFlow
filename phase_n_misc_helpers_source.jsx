@@ -408,9 +408,65 @@ const handleCheckLevel = async (deps) => {
     try {
         const textToCheck = typeof generatedContent?.data === 'string' ? generatedContent?.data : '';
         if (!textToCheck) return;
+        // A saved resource owns the context it was generated with. Universal
+        // settings are only a legacy fallback; otherwise changing the sidebar
+        // after generation would silently make Check Level evaluate an old
+        // artifact against a new grade, language, or standards selection.
+        const contextModule = typeof window !== 'undefined' && window.AlloModules
+            ? window.AlloModules.InstructionalContext
+            : null;
+        const ambientStandards = standardsInput || targetStandards || null;
+        const artifactContext = contextModule && typeof contextModule.resolveArtifactContext === 'function'
+            ? contextModule.resolveArtifactContext(generatedContent, {
+                grade: gradeLevel,
+                language: leveledTextLanguage,
+                standards: ambientStandards
+            })
+            : {
+                grade: generatedContent?.instructionalText?.complexity?.requestedGrade
+                    || generatedContent?.targetGradeLevel
+                    || generatedContent?.config?.grade
+                    || gradeLevel,
+                language: generatedContent?.instructionalText?.complexity?.language
+                    || generatedContent?.config?.language
+                    || leveledTextLanguage
+                    || 'English',
+                standards: generatedContent?.config?.standardsContext
+                    || generatedContent?.config?.standards
+                    || ambientStandards,
+                instructionalText: generatedContent?.instructionalText || null
+            };
+        const targetGrade = artifactContext.grade || gradeLevel;
+        const artifactLanguage = artifactContext.language || leveledTextLanguage || 'English';
+        const standardsValue = artifactContext.standards;
+        const standardsForPrompt = (() => {
+            if (!standardsValue) return '';
+            if (typeof standardsValue === 'string') return standardsValue.trim();
+            if (typeof standardsValue.promptText === 'string' && standardsValue.promptText.trim()) {
+                return standardsValue.promptText.trim();
+            }
+            if (Array.isArray(standardsValue.standards)) {
+                return standardsValue.standards.map(entry => {
+                    if (typeof entry === 'string') return entry;
+                    return [entry?.code || entry?.id, entry?.text || entry?.label].filter(Boolean).join(': ');
+                }).filter(Boolean).join('; ');
+            }
+            if (Array.isArray(standardsValue)) {
+                return standardsValue.map(entry => typeof entry === 'string'
+                    ? entry
+                    : [entry?.code || entry?.id, entry?.text || entry?.label].filter(Boolean).join(': ')
+                ).filter(Boolean).join('; ');
+            }
+            return '';
+        })().slice(0, 2400);
+        const standardsContextLine = standardsForPrompt
+            ? `Instructional Standards Context: ${standardsForPrompt}\nUse this only when considering qualitative knowledge and language demands; do not treat standards alignment as a readability formula.`
+            : '';
         const prompt1 = `
             You are a literacy expert. Analyze the text below to determine its text complexity.
-            Target Level: ${gradeLevel}
+            Target Level: ${targetGrade}
+            Text Language: ${artifactLanguage}
+            ${standardsContextLine}
             Task:
             1. Estimate the actual Grade Level equivalent (e.g., "3rd Grade", "5th-6th Grade").
             2. Assess alignment with the target level.
@@ -429,7 +485,9 @@ const handleCheckLevel = async (deps) => {
             You are a senior curriculum verifier. Review the following text and the initial complexity analysis.
             Text: "${textToCheck.substring(0, 3000)}"
             Initial Estimate: ${analysis1.estimatedLevel}
-            Target Level: ${gradeLevel}
+            Target Level: ${targetGrade}
+            Text Language: ${artifactLanguage}
+            ${standardsContextLine}
             Task:
             1. VERIFY the Grade Level estimate. Is it accurate?
             2. Generate a COMPLEXITY RUBRIC to show nuances.
@@ -450,12 +508,83 @@ const handleCheckLevel = async (deps) => {
         `;
         const result2 = await callGemini(prompt2, true);
         const analysis2 = JSON.parse(cleanJson(result2));
+        const bilingualText = /---\s*ENGLISH TRANSLATION\s*---/i.test(textToCheck)
+            || /---\s*TRANSLATION\s*---/i.test(textToCheck);
+        const supportsEnglishMeasurement = !bilingualText && (
+            contextModule && typeof contextModule.isEnglishLanguage === 'function'
+                ? contextModule.isEnglishLanguage(artifactLanguage)
+                : /^(?:english|en)$/i.test(String(artifactLanguage || '').trim())
+        );
+        const localStats = supportsEnglishMeasurement ? calculateReadability(textToCheck) : null;
+        const fallbackFingerprint = (value) => {
+            const input = String(value == null ? '' : value).replace(/\r\n?/g, '\n');
+            let hash = 2166136261;
+            for (let index = 0; index < input.length; index++) {
+                hash ^= input.charCodeAt(index);
+                hash = Math.imul(hash, 16777619);
+            }
+            return `txt-${(hash >>> 0).toString(16).padStart(8, '0')}-${input.length}`;
+        };
+        const contentFingerprint = contextModule && typeof contextModule.fingerprintText === 'function'
+            ? contextModule.fingerprintText(textToCheck)
+            : fallbackFingerprint(textToCheck);
+        const baseInstructionalText = contextModule && typeof contextModule.getInstructionalText === 'function'
+            ? contextModule.getInstructionalText(generatedContent, {
+                complexity: { requestedGrade: targetGrade, language: artifactLanguage }
+            })
+            : (artifactContext.instructionalText || generatedContent.instructionalText || {
+                role: 'unspecified',
+                form: 'adapted',
+                designationSource: 'legacy-inferred',
+                complexity: { requestedGrade: targetGrade, language: artifactLanguage }
+            });
+        let nextInstructionalText;
+        if (localStats && contextModule && typeof contextModule.withComplexityEvidence === 'function') {
+            nextInstructionalText = contextModule.withComplexityEvidence(baseInstructionalText, {
+                requestedGrade: targetGrade,
+                measuredGrade: Number(localStats.score),
+                method: 'flesch-kincaid-en',
+                language: artifactLanguage
+            }, textToCheck);
+        } else if (!localStats && contextModule && typeof contextModule.invalidateComplexityEvidence === 'function') {
+            nextInstructionalText = contextModule.invalidateComplexityEvidence(
+                baseInstructionalText,
+                textToCheck,
+                supportsEnglishMeasurement ? 'unavailable' : 'not-applicable'
+            );
+        } else {
+            nextInstructionalText = {
+                ...baseInstructionalText,
+                complexity: {
+                    ...(baseInstructionalText?.complexity || {}),
+                    requestedGrade: targetGrade,
+                    measuredGrade: localStats ? Number(localStats.score) : null,
+                    method: localStats ? 'flesch-kincaid-en' : '',
+                    status: localStats ? 'measured' : (supportsEnglishMeasurement ? 'unavailable' : 'not-applicable'),
+                    contentFingerprint,
+                    measuredAt: localStats ? new Date().toISOString() : '',
+                    language: artifactLanguage
+                }
+            };
+        }
         const finalAnalysis = {
             ...analysis1,
             ...analysis2,
-            localStats: calculateReadability(textToCheck)
+            targetGradeLevel: targetGrade,
+            language: artifactLanguage,
+            standards: standardsForPrompt,
+            contentFingerprint,
+            measurementStatus: localStats ? 'measured' : 'not-evaluated',
+            ...(localStats ? { localStats } : {})
         };
-        const updatedContent = { ...generatedContent, levelCheck: finalAnalysis };
+        const updatedContent = {
+            ...generatedContent,
+            targetGradeLevel: targetGrade,
+            instructionalText: nextInstructionalText,
+            levelCheck: finalAnalysis,
+            ...(localStats ? { localStats } : {})
+        };
+        if (!localStats && updatedContent.localStats) delete updatedContent.localStats;
         setGeneratedContent(updatedContent);
         setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
         addToast(t('toasts.level_analysis_complete'), "success");

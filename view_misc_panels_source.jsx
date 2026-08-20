@@ -2126,6 +2126,42 @@ function SurpriseTopicLauncher(props) {
   );
 }
 
+function _normalizeSourceGradeLabel(value) {
+  try {
+    const api = window.AlloModules && window.AlloModules.InstructionalContext;
+    if (api && typeof api.normalizeGradeLabel === 'function') {
+      const normalized = api.normalizeGradeLabel(value, '');
+      if (normalized) return normalized;
+    }
+  } catch (_) {}
+  const raw = String(value == null ? '' : value).replace(/\s+/g, ' ').trim();
+  if (!raw) return '';
+  if (/^(k|kg|grade k|kindergarten)$/i.test(raw)) return 'Kindergarten';
+  if (/^(college|college level|undergraduate)$/i.test(raw)) return 'College';
+  if (/^(graduate|graduate level|postgraduate)$/i.test(raw)) return 'Graduate Level';
+  const match = raw.match(/(?:^|\b)(?:grade\s*)?(\d{1,2})(?:st|nd|rd|th)?(?:\s*grade)?(?:$|\b)/i);
+  if (!match) return raw;
+  const number = Number(match[1]);
+  if (!Number.isFinite(number) || number < 1 || number > 12) return raw;
+  const mod100 = number % 100;
+  const suffix = mod100 >= 11 && mod100 <= 13 ? 'th'
+    : number % 10 === 1 ? 'st'
+    : number % 10 === 2 ? 'nd'
+    : number % 10 === 3 ? 'rd'
+    : 'th';
+  return `${number}${suffix} Grade`;
+}
+
+function _getSourceGradeMismatch(sourceGrade, instructionalGrade) {
+  const normalizedSource = _normalizeSourceGradeLabel(sourceGrade);
+  const normalizedInstructional = _normalizeSourceGradeLabel(instructionalGrade);
+  if (!normalizedSource || !normalizedInstructional || normalizedSource === normalizedInstructional) return null;
+  return {
+    sourceGrade: normalizedSource,
+    instructionalGrade: normalizedInstructional
+  };
+}
+
 function SourceGenPanel(props) {
   const {
     addToast, aiStandardQuery, aiStandardRegion, gradeLevel,
@@ -2148,6 +2184,7 @@ function SourceGenPanel(props) {
   // already see and change the grade this uses, it is the "Target Level" select
   // in this same panel, so no second control is needed here.
   const finderGrade = sourceLevel || gradeLevel;
+  const sourceGradeMismatch = _getSourceGradeMismatch(sourceLevel, gradeLevel);
   return (
                   <div className="p-4 bg-indigo-50/50 border-b border-indigo-100 animate-in slide-in-from-top-2 space-y-3">
                       <div>
@@ -2208,6 +2245,22 @@ function SourceGenPanel(props) {
                             </select>
                           </div>
                       </div>
+                      {sourceGradeMismatch && (
+                        <div role="status" data-source-grade-mismatch="true" className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-950">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <p className="min-w-0 flex-1">
+                              <strong>Check the instructional grade:</strong> this source is set to {sourceGradeMismatch.sourceGrade}, while Universal Settings are {sourceGradeMismatch.instructionalGrade}. Generation and standards search in this panel use {sourceGradeMismatch.sourceGrade}. If this will be the primary grade-level text, align the two settings.
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => setSourceLevel(sourceGradeMismatch.instructionalGrade)}
+                              className="shrink-0 rounded-md border border-amber-400 bg-white px-2.5 py-1.5 font-bold text-amber-950 hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-500/40"
+                            >
+                              Use {sourceGradeMismatch.instructionalGrade}
+                            </button>
+                          </div>
+                        </div>
+                      )}
                       <div className="bg-slate-50 p-2 rounded-lg border border-slate-400">
                             <div className="flex justify-between items-center mb-2">
                                 <label className="text-xs text-slate-600 font-bold flex items-center gap-1">
@@ -2404,6 +2457,7 @@ function SourceGenPanel(props) {
                   </div>
   );
 }
+SourceGenPanel.getGradeMismatch = _getSourceGradeMismatch;
 
 // ── TourOverlay: JSX from AlloFlowANTI.txt L27802-L28035 ──
 function TourOverlay(props) {

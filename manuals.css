@@ -248,7 +248,7 @@
     padding: 20px;
     border: 1px solid rgba(199, 210, 254, .35);
     border-radius: 14px;
-    background: rgba(255, 255, 255, .08);
+    background: #302d59;
 }
 
 .manuals-roadmap__current p {
@@ -260,7 +260,7 @@
     margin-top: 10px;
 }
 
-.manuals-roadmap a {
+main .manuals-roadmap p a:not(.btn-primary):not(.btn-secondary) {
     color: #99f6e4;
     font-weight: 800;
 }

@@ -11558,7 +11558,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // safety net for other components.
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
-    var pluginCdnVersion = 'fc723139c';
+    var pluginCdnVersion = '1787248278864';
     var isDesktopBundledApp = typeof window !== 'undefined'
       && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || '')
       && (window.location.pathname || '').startsWith('/app/');
@@ -11872,32 +11872,32 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=fc723139c');
-    loadModule('MailboxScriptSource', 'https://alloflow-cdn.pages.dev/mailbox_script_source_module.js?v=fc723139c');
-    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=fc723139c');
-    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=fc723139c');
-    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=fc723139c');
-    loadModule('DeviceAccessCode', 'https://alloflow-cdn.pages.dev/device_access_code_module.js?v=fc723139c');
-    loadModule('AlloDeviceVault', 'https://alloflow-cdn.pages.dev/allo_device_vault_module.js?v=fc723139c');
-    loadModule('AlloRecoveryVaultIntegration', 'https://alloflow-cdn.pages.dev/allo_recovery_vault_integration_module.js?v=fc723139c');
+    loadModule('AlloData', './allo_data_module.js');
+    loadModule('MailboxScriptSource', './mailbox_script_source_module.js');
+    loadModule('ToolCatalog', './tool_catalog_module.js');
+    loadModule('SubmissionCrypto', './submission_crypto_module.js');
+    loadModule('AlloCrypto', './allo_crypto_module.js');
+    loadModule('DeviceAccessCode', './device_access_code_module.js');
+    loadModule('AlloDeviceVault', './allo_device_vault_module.js');
+    loadModule('AlloRecoveryVaultIntegration', './allo_recovery_vault_integration_module.js');
     // Shared quest/goal vocabulary for directions goals, STEAM Lab and SEL Hub
     // quests. Tiny and dependency-free; every consumer degrades gracefully if it
     // has not landed yet, so load order is not load-bearing.
     loadModule('AlloQuestContract', 'https://alloflow-cdn.pages.dev/allo_quest_contract_module.js?v=355fa3d9a');
-    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=fc723139c');
-    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=14ef7ab2');
-    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=fc723139c');
-    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=fc723139c');
-    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=fc723139c');
-    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=fc723139c');
-    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=fc723139c');
-    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=fc723139c');
-    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=8405ef04');
-    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=e4ee2e66');
-    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=e78ad41b');
-    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=fc723139c');
-    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=fc723139c');
-    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=fc723139c');
+    loadModule('SubmissionInbox', './view_submission_inbox_module.js');
+    loadModule('FirestoreSync', './firestore_sync_module.js');
+    loadModule('SafetyChecker', './safety_checker_module.js');
+    loadModule('Fluency', './fluency_module.js');
+    loadModule('LargeFileModule', './large_file_module.js');
+    loadModule('KeyConceptMapModule', './key_concept_map_module.js');
+    loadModule('UtilsPure', './utils_pure_module.js');
+    loadModule('GeminiAPI', './gemini_api_module.js');
+    loadModule('TTS', './tts_module.js');
+    loadModule('Personas', './personas_module.js');
+    loadModule('Export', './export_module.js');
+    loadModule('MiscComponents', './misc_components_module.js');
+    loadModule('RemediationAudio', './remediation_audio_module.js');
+    loadModule('StemLab', './stem_lab/stem_lab_module.js');
     // Word Sounds is the largest CDN module in the app (~744KB) and was loaded
     // eagerly here for EVERY user at boot, including the majority who never open
     // it. It registers exactly one component, WordSoundsModal, and the only
@@ -11910,40 +11910,40 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // The render site already has a "Loading Word Sounds..." fallback with a
     // Close escape, and the module registry re-renders the app when the load
     // lands, so the fallback resolves on its own.
-    window.__alloLazyWordSounds = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=fc723139c'); }; })();
-    loadModule('AlloSheetTransferAdapter', 'https://alloflow-cdn.pages.dev/allo_sheet/transfer_adapter.js?v=fc723139c');
-    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=fc723139c');
-    loadModule('AlloSheetHostBridge', 'https://alloflow-cdn.pages.dev/allo_sheet/host_bridge.js?v=fc723139c');
+    window.__alloLazyWordSounds = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WordSoundsModal', './word_sounds_module.js'); }; })();
+    loadModule('AlloSheetTransferAdapter', './allo_sheet/transfer_adapter.js');
+    loadModule('StudentAnalytics', './student_analytics_module.js');
+    loadModule('AlloSheetHostBridge', './allo_sheet/host_bridge.js');
     (function queueBehaviorLensModules() {
       const startBehaviorLens = function() {
         if (!(window.AlloModules && window.AlloModules.BehaviorLensWorkspace)) return false;
         window.removeEventListener('alloflow:module-registry-changed', startBehaviorLens);
-        loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=fc723139c');
+        loadModule('BehaviorLens', './behavior_lens_module.js');
         return true;
       };
       if (!startBehaviorLens()) {
         window.addEventListener('alloflow:module-registry-changed', startBehaviorLens);
-        loadModule('BehaviorLensWorkspace', 'https://alloflow-cdn.pages.dev/behavior_lens_workspace_module.js?v=fc723139c');
+        loadModule('BehaviorLensWorkspace', './behavior_lens_workspace_module.js');
       }
     })();
-    loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=fc723139c');
-    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=fc723139c');
-    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=fc723139c');
+    loadModule('ReportWriter', './report_writer_module.js');
+    loadModule('CinematicStudio', './cinematic_studio_module.js');
+    loadModule('BrandProfile', './brand_profile_module.js');
     // Pyodide is ~10MB on first hit; load lazily so non–Report-Writer users
     // don't pay the cost at boot. Report Writer's generateReport() calls
     // window.__alloLazyPyodide() as soon as the user clicks Generate.
     window.__alloLazyPyodide = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PyodideRuntime', 'https://alloflow-cdn.pages.dev/pyodide_runtime_module.js'); }; })();
-    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=fc723139c'); }; })();
+    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', './symbol_studio_module.js'); }; })();
     window.__alloLazyVideoStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TutorialCompilerModule', 'https://alloflow-cdn.pages.dev/tutorial_compiler_module.js?v=1e5f07c6'); loadModule('VideoStudio', 'https://alloflow-cdn.pages.dev/video_studio_module.js?v=1e5f07c6'); }; })();
-    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=fc723139c'); }; })();
-    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=fc723139c'); }; })();
+    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', './studio_module.js'); }; })();
+    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', './allohaven_module.js'); }; })();
     // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
     // School-psych workflow: pretest → AI-mediated or clinician-led mediation
     // → posttest with graduated prompt hierarchies + modifiability scoring.
     window.__alloLazyDynamicAssessment = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DynamicAssessment', 'https://alloflow-cdn.pages.dev/dynamic_assessment_module.js'); }; })();
     // Seating Chart (Ring 0+1, July 21 2026) — teacher-only roster tool,
     // lazy-loaded from the Roster panel's Seating Chart button.
-    window.__alloLazySeatingChart = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SeatingChart', 'https://alloflow-cdn.pages.dev/seating_chart_module.js?v=fc723139c'); }; })();
+    window.__alloLazySeatingChart = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SeatingChart', './seating_chart_module.js'); }; })();
     // UDL Walkthrough (Aug 3 2026) — admin/coach classroom-visit tool,
     // lazy-loaded from the Educator Hub card.
     window.__alloLazyUdlWalkthrough = (function() { var L=false; return function() { if(L)return; L=true; loadModule('UdlWalkthrough', 'https://alloflow-cdn.pages.dev/udl_walkthrough_module.js?v=uw080306'); }; })();
@@ -11955,111 +11955,111 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // Meeting Documentation is its third tool (needs callGemini).
     window.__alloLazyAdminHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AdminHub', 'https://alloflow-cdn.pages.dev/admin_hub_module.js?v=29e9a817'); }; })();
     // Educator Growth & Evaluation (Aug 13 2026) — Act 13 workflow prototype.
-    window.__alloLazyEducatorEvaluation = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorEvaluation', 'https://alloflow-cdn.pages.dev/educator_evaluation_module.js?v=fc723139c'); }; })();
+    window.__alloLazyEducatorEvaluation = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorEvaluation', './educator_evaluation_module.js'); }; })();
     // Math Studio (Aug 17 2026) — the former STEM Lab Create tab, math-owned.
-    window.__alloLazyMathCreate = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MathCreate', 'https://alloflow-cdn.pages.dev/math_create_module.js?v=fc723139c'); }; })();
+    window.__alloLazyMathCreate = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MathCreate', './math_create_module.js'); }; })();
     window.__alloLazyMeetingDocs = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MeetingDocs', 'https://alloflow-cdn.pages.dev/meeting_docs_module.js?v=md080302'); }; })();
     window.__alloLazySpedTimelines = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SpedTimelines', 'https://alloflow-cdn.pages.dev/sped_timelines_module.js?v=st080301'); }; })();
-    window.__alloLazyDiagnosisEligibility = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DiagnosisEligibility', 'https://alloflow-cdn.pages.dev/stem_lab/stem_tool_eligibility.js?v=fc723139c'); }; })();
+    window.__alloLazyDiagnosisEligibility = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DiagnosisEligibility', './stem_lab/stem_tool_eligibility.js'); }; })();
     window.__alloLazyFamilyAnnouncements = (function() { var L=false; return function() { if(L)return; L=true; loadModule('FamilyAnnouncements', 'https://alloflow-cdn.pages.dev/family_announcements_module.js?v=fa080301'); }; })();
     window.__alloLazyMtssTriage = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MtssTriage', 'https://alloflow-cdn.pages.dev/mtss_triage_module.js?v=mt080301'); }; })();
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=fc723139c');
-    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=fc723139c');
-    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=fc723139c');
-    loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=fc723139c');
-    loadModule('AccessibilityEvidence', 'https://alloflow-cdn.pages.dev/accessibility_evidence_module.js?v=fc723139c');
-    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=fc723139c');
-    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=fc723139c');
-    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=fc723139c');
-    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=fc723139c');
-    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=fc723139c');
-    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=fc723139c');
-    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=fc723139c');
-    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=fc723139c');
-    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=fc723139c');
-    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=fc723139c'); }; })();
-    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=fc723139c'); }; })();
-    window.__alloLazyLearningWebExplorer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningWebExplorer', 'https://alloflow-cdn.pages.dev/learning_web_explorer_module.js?v=fc723139c'); }; })();
-    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=fc723139c'); }; })();
-    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=fc723139c'); }; })();
+    loadModule('Voice', './voice_module.js');
+    loadModule('SelHub', './sel_hub/sel_hub_module.js');
+    loadModule('CommunityCatalog', './catalog_module.js');
+    loadModule('ReadingLibrary', './reading_library_module.js');
+    loadModule('AccessibilityEvidence', './accessibility_evidence_module.js');
+    loadModule('AccessibilityLab', './accessibility_lab_module.js');
+    loadModule('AuditRemediator', './audit_remediator_module.js');
+    loadModule('QuizModeStrategies', './quiz_mode_strategies.js');
+    loadModule('QuizAIHelpers', './quiz_ai_helpers.js');
+    loadModule('QuizLiveAggregators', './quiz_live_aggregators.js');
+    loadModule('GamesBundle', './games_module.js');
+    loadModule('QuickStartWizard', './quickstart_module.js');
+    loadModule('AlloBot', './allobot_module.js');
+    loadModule('TeacherModule', './teacher_module.js');
+    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', './story_forge_module.js'); }; })();
+    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', './story_stage_module.js'); }; })();
+    window.__alloLazyLearningWebExplorer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningWebExplorer', './learning_web_explorer_module.js'); }; })();
+    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', './mind_map_module.js'); }; })();
+    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', './poet_tree_module.js'); }; })();
     window.__alloLazyResearchHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ResearchHub', 'https://alloflow-cdn.pages.dev/research_hub_module.js'); loadModule('ResearchLaneScientific', 'https://alloflow-cdn.pages.dev/research_lane_scientific_module.js'); loadModule('ResearchLaneEngineering', 'https://alloflow-cdn.pages.dev/research_lane_engineering_module.js'); loadModule('ResearchLaneHumanities', 'https://alloflow-cdn.pages.dev/research_lane_humanities_module.js'); loadModule('ResearchHubEducator', 'https://alloflow-cdn.pages.dev/research_hub_educator_module.js'); }; })();
-    loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=fc723139c');
-    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=fc723139c');
-    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=fc723139c');
-    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=0be128c6');
-    loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=fc723139c');
-    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=fc723139c');
-    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=fc723139c');
-    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=fc723139c');
-    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=fc723139c');
+    loadModule('VisualPanelModule', './visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
+    loadModule('AdventureModule', './adventure_module.js');
+    loadModule('StudentInteractionModule', './student_interaction_module.js');
+    loadModule('MathFluency', './math_fluency_module.js');
+    loadModule('UIModalsModule', './ui_modals_module.js');
+    loadModule('UIFontLibrary', './ui_font_library_module.js');
+    loadModule('VoiceConfig', './voice_config_module.js');
+    loadModule('CanvasTips', './canvas_tips_module.js');
     // ── Lazy-loaded modal modules (May 12 2026) ──
     // Each modal is gated by a wrapped setter that fires its ensure-loader on
     // first true. Until that happens the script is not fetched, cutting ~9
     // requests off cold boot. The embedded loadModule(...) call still matches
     // build.js's URL rewriter regex, so hashes auto-update on deploy.
-    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=fc723139c'); }; })();
+    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', './view_kokoro_offer_modal_module.js'); }; })();
     // Process Provenance (Work Story). Stable label pin, like the storage
     // module: this file is not in build.js MODULES, so a hash pin would freeze.
     window.__alloLazyProvenance = (function() { var L=false; return function() { if(L)return; L=true; loadModule('Provenance', 'https://alloflow-cdn.pages.dev/allo_provenance_module.js?v=prov-p1'); }; })();
     // ConfirmDialog stays eager — used by many widgets (delete unit, end session, clear edges, etc.).
-    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=fc723139c');
+    loadModule('ConfirmDialog', './view_confirm_dialog_module.js');
     // PromptDialog (May 2026 polish pass): polished replacement for window.prompt(); shared by AlloFlowUX.
-    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=fc723139c');
-    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=fc723139c'); }; })();
-    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=fc723139c'); }; })();
-    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=059104c5'); }; })();
-    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=fc723139c'); }; })();
-    window.__alloLazyVideoLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoLibrary', 'https://alloflow-cdn.pages.dev/view_video_library_module.js?v=fc723139c'); }; })();
-    window.__alloLazyVideoRefPlayer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoRefPlayer', 'https://alloflow-cdn.pages.dev/view_video_ref_player_module.js?v=fc723139c'); }; })();
-    window.__alloLazyEndSessionPreview = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EndSessionPreview', 'https://alloflow-cdn.pages.dev/view_end_session_preview_module.js?v=fc723139c'); }; })();
-    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=fc723139c'); try { window.__alloLazyEndSessionPreview(); } catch (_) {} }; })();
-    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=0b3560bb'); }; })();
-    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=fc723139c'); }; })();
-    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=fc723139c');
-    loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=fc723139c');
-    loadModule('LiveLessonRun', 'https://alloflow-cdn.pages.dev/view_live_lesson_run_module.js?v=fc723139c');
-    loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=d4463f3d');
-    loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=ae1abf00');
-    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=fc723139c');
-    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=fc723139c');
-    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=fc723139c');
-    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=fc723139c');
-    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=fc723139c');
-    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=fc723139c'); }; })();
-    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=fc723139c'); }; })();
-    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=fc723139c'); }; })();
-    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=fc723139c'); }; })();
-    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=fc723139c'); }; })();
-    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=fc723139c'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=fc723139c'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=fc723139c'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=fc723139c'); }; })();
-    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=fc723139c'); }; })();
-    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LexicalGraph', 'https://alloflow-cdn.pages.dev/lexical_graph_module.js?v=fc723139c'); loadModule('LinguaPractice', 'https://alloflow-cdn.pages.dev/lingua_practice_module.js?v=fc723139c'); }; })();
-    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', 'https://alloflow-cdn.pages.dev/test_prep_hub_module.js?v=fc723139c'); }; })();
-    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=fc723139c');
-    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=fc723139c');
-    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=fc723139c');
+    loadModule('PromptDialog', './view_prompt_dialog_module.js');
+    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', './view_hints_modal_module.js'); }; })();
+    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', './view_xp_modal_module.js'); }; })();
+    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', './view_storybook_export_modal_module.js'); }; })();
+    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', './view_info_modal_module.js'); }; })();
+    window.__alloLazyVideoLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoLibrary', './view_video_library_module.js'); }; })();
+    window.__alloLazyVideoRefPlayer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoRefPlayer', './view_video_ref_player_module.js'); }; })();
+    window.__alloLazyEndSessionPreview = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EndSessionPreview', './view_end_session_preview_module.js'); }; })();
+    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', './view_session_modal_module.js'); try { window.__alloLazyEndSessionPreview(); } catch (_) {} }; })();
+    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', './view_socratic_chat_module.js'); }; })();
+    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', './view_global_level_up_module.js'); }; })();
+    loadModule('HeaderBar', './view_header_module.js');
+    loadModule('GuidedModeBanner', './view_guided_mode_banner_module.js');
+    loadModule('LiveLessonRun', './view_live_lesson_run_module.js');
+    loadModule('StudentJoinPanel', './view_student_join_panel_module.js');
+    loadModule('StudentSaveAdventurePanel', './view_student_save_adventure_module.js');
+    loadModule('SidebarTabsNav', './view_sidebar_tabs_nav_module.js');
+    loadModule('UDLGuideButton', './view_udl_guide_button_module.js');
+    loadModule('TeacherHistoryTab', './view_teacher_history_tab_module.js');
+    loadModule('HistoryPanel', './view_history_panel_module.js');
+    loadModule('FabStack', './view_fab_stack_module.js');
+    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', './view_study_timer_modal_module.js'); }; })();
+    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', './view_educator_hub_modal_module.js'); }; })();
+    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', './brand_profile_editor_module.js'); }; })();
+    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', './view_visual_supports_modal_module.js'); }; })();
+    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', './view_learning_hub_modal_module.js'); }; })();
+    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', './music_studio/open_groove_core.js'); loadModule('OpenGrooveScheduler', './music_studio/open_groove_scheduler.js'); loadModule('OpenGrooveAudio', './music_studio/open_groove_audio.js'); loadModule('OpenGrooveStudio', './music_studio/open_groove_module.js'); }; })();
+    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', './timeline_studio_module.js'); }; })();
+    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LexicalGraph', './lexical_graph_module.js'); loadModule('LinguaPractice', './lingua_practice_module.js'); }; })();
+    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', './test_prep_hub_module.js'); }; })();
+    loadModule('ClozeInteractionPanel', './view_cloze_interaction_panel_module.js');
+    loadModule('LabelPositions', './label_positions_module.js');
+    loadModule('UILanguageSelector', './ui_language_selector_module.js');
     // Fuzzy-match user-typed language strings against known packs (typos, endonyms, variants)
     loadModule('LanguageMatcher', 'https://alloflow-cdn.pages.dev/language_matcher_module.js');
-    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=fc723139c');
-    loadModule('VerificationPolicy', 'https://alloflow-cdn.pages.dev/verification_policy_module.js?v=fc723139c');
-    loadModule('DocBuilderRenderer', 'https://alloflow-cdn.pages.dev/doc_builder_renderer_module.js?v=fc723139c');
-    loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=fc723139c');
-    loadModule('SemanticReview', 'https://alloflow-cdn.pages.dev/semantic_review_module.js?v=fc723139c');
-    loadModule('ReviewDocumentSession', 'https://alloflow-cdn.pages.dev/review_document_session_module.js?v=fc723139c');
-    loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=fc723139c');
-    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=fc723139c');
-    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=fc723139c');
-    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=fc723139c');
-    loadModule('AppStyles', 'https://alloflow-cdn.pages.dev/app_styles_module.js?v=fc723139c');
-    loadModule('LiveAac', 'https://alloflow-cdn.pages.dev/live_aac_module.js?v=fc723139c');
-    loadModule('SharedActivity', 'https://alloflow-cdn.pages.dev/shared_activity_module.js?v=fc723139c');
-    loadModule('GuidedModeConfig', 'https://alloflow-cdn.pages.dev/guided_mode_config_module.js?v=fc723139c');
-    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=fc723139c');
-    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=fc723139c');
-    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=fc723139c');
+    loadModule('AudioBanks', './audio_banks_module.js');
+    loadModule('VerificationPolicy', './verification_policy_module.js');
+    loadModule('DocBuilderRenderer', './doc_builder_renderer_module.js');
+    loadModule('PdfAuditView', './view_pdf_audit_module.js');
+    loadModule('SemanticReview', './semantic_review_module.js');
+    loadModule('ReviewDocumentSession', './review_document_session_module.js');
+    loadModule('ExportPreviewView', './view_export_preview_module.js');
+    loadModule('MiscModals', './view_misc_modals_module.js');
+    loadModule('GeminiBridge', './view_gemini_bridge_module.js');
+    loadModule('MiscPanels', './view_misc_panels_module.js');
+    loadModule('AppStyles', './app_styles_module.js');
+    loadModule('LiveAac', './live_aac_module.js');
+    loadModule('SharedActivity', './shared_activity_module.js');
+    loadModule('GuidedModeConfig', './guided_mode_config_module.js');
+    loadModule('UIPolish', './ui_polish_module.js');
+    loadModule('SidebarPanels', './view_sidebar_panels_module.js');
+    loadModule('ModuleScopeExtras', './module_scope_extras_module.js');
     // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
     // Current module builds invoke _upgradeModuleScopeExtras after registration.
     // Keep this short poll only for stale cached module copies that predate the
@@ -12080,13 +12080,13 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
-    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=d02240b3');
-    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=fc723139c');
-    loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=fc723139c');
+    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
+    loadModule('PersonaUIModule', './persona_ui_module.js');
+    loadModule('DocPipelineModule', './doc_pipeline_module.js');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
-    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=fc723139c');
-    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=fc723139c');
-    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=fc723139c');
+    loadModule('ContentEngineModule', './content_engine_module.js');
+    loadModule('TimelineRevisionModule', './timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', './prompts_library_module.js');
     // Capability index (dev-tools/build_tool_index.cjs): what each STEM tool
     // actually DOES, ~110 KB for 139 tools. The lesson-plan prompt ranks and
     // caps against this instead of dumping every tool name, and unlike
@@ -12109,20 +12109,21 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           .catch(function () {});
       } catch (_) {}
     })();
-    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=fc723139c');
-    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=fc723139c');
-    loadModule('StandardsContext', 'https://alloflow-cdn.pages.dev/standards_context_module.js?v=fc723139c');
-    loadModule('StandardsProvider', 'https://alloflow-cdn.pages.dev/standards_provider_module.js?v=fc723139c');
+    loadModule('TextPipelineHelpersModule', './text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', './adaptive_controller_module.js');
+    loadModule('StandardsContext', './standards_context_module.js');
+    loadModule('InstructionalContext', './instructional_context_module.js');
+    loadModule('StandardsProvider', './standards_provider_module.js');
     // Learning Web owns durable cross-view graph snapshots; domain modules keep
     // their richer standards, audit, unit, and lexical records. The engine is
     // eager here because the Alignment Map can render before Throughline opens.
-    loadModule('ConceptGraphEngine', 'https://alloflow-cdn.pages.dev/concept_graph_engine_module.js?v=fc723139c');
-    loadModule('LearningWebRegistry', 'https://alloflow-cdn.pages.dev/learning_web_registry_module.js?v=fc723139c');
+    loadModule('ConceptGraphEngine', './concept_graph_engine_module.js');
+    loadModule('LearningWebRegistry', './learning_web_registry_module.js');
     // Driving Questions Board. The contract carries the invariants both
     // transports enforce; the view module is inert until a surface mounts it.
-    loadModule('QuestionBoardContract', 'https://alloflow-cdn.pages.dev/question_board_contract_module.js?v=fc723139c');
-    loadModule('QuestionBoardView', 'https://alloflow-cdn.pages.dev/question_board_view_module.js?v=fc723139c');
-    loadModule('QuestionBoardTransport', 'https://alloflow-cdn.pages.dev/question_board_transport_module.js?v=fc723139c');
+    loadModule('QuestionBoardContract', './question_board_contract_module.js');
+    loadModule('QuestionBoardView', './question_board_view_module.js');
+    loadModule('QuestionBoardTransport', './question_board_transport_module.js');
 
     // Reviewed local standards snapshots (Learning Commons v1.11.0, CC BY 4.0).
     // DELIBERATE enablement per LEARNING_COMMONS_SNAPSHOT_IMPORT.md: publishing a
@@ -12134,68 +12135,68 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('StandardsSnapshotMaScienceG5', 'https://alloflow-cdn.pages.dev/standards_snapshots/ma-science-grade-5.js?v=e805fe3c7');
     loadModule('StandardsSnapshotCcssMath', 'https://alloflow-cdn.pages.dev/standards_snapshots/ccss-math.js?v=e805fe3c7');
     loadModule('StandardsSnapshotCcssEla', 'https://alloflow-cdn.pages.dev/standards_snapshots/ccss-ela.js?v=e805fe3c7');
-    loadModule('AgentCoreContracts', 'https://alloflow-cdn.pages.dev/agent_core_contracts_module.js?v=fc723139c');
-    loadModule('AgentCoreBlueprintService', 'https://alloflow-cdn.pages.dev/agent_core_blueprint_service_module.js?v=fc723139c');
-    loadModule('AgentCoreUIAdapter', 'https://alloflow-cdn.pages.dev/agent_core_ui_adapter_module.js?v=fc723139c');
-    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=fc723139c');
-    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=fc723139c');
-    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=fc723139c');
-    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=fc723139c');
-    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=fc723139c');
-    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=398e7a6a');
+    loadModule('AgentCoreContracts', './agent_core_contracts_module.js');
+    loadModule('AgentCoreBlueprintService', './agent_core_blueprint_service_module.js');
+    loadModule('AgentCoreUIAdapter', './agent_core_ui_adapter_module.js');
+    loadModule('UdlChatModule', './udl_chat_module.js');
+    loadModule('AdventureHandlersModule', './adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', './glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', './view_renderers_module.js');
+    loadModule('AudioHelpersModule', './audio_helpers_module.js');
+    loadModule('KaraokeAudioStoreModule', './karaoke_audio_store_module.js');
     // Word-by-word karaoke timing (deterministic envelope + valley snapping).
-    loadModule('WordTimingModule', 'https://alloflow-cdn.pages.dev/word_timing_module.js?v=df764e1d');
+    loadModule('WordTimingModule', './word_timing_module.js');
     // Unified live-session content channel (SessionTransport stage 1).
-    loadModule('SessionTransportModule', 'https://alloflow-cdn.pages.dev/session_transport_module.js?v=b57c8bf0');
-    loadModule('ReadAloudAudioServiceModule', 'https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=74d2bdc6');
-    loadModule('ReadAloudArtifactContractModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_contract_module.js?v=501639a2');
-    loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=3a046659');
-    loadModule('PersonaSessionArtifactModule', 'https://alloflow-cdn.pages.dev/persona_session_artifact_module.js?v=b41bcb0a');
-    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=fc723139c');
-    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=fc723139c');
-    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=fc723139c');
-    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=fc723139c');
-    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=fc723139c');
-    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=fc723139c');
-    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=709cc2a8');
-    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=fc723139c');
-    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=fc723139c');
-    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=fc723139c');
-    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=fc723139c');
-    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=fc723139c');
-    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=fc723139c');
-    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=7c43afe4');
-    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=fc723139c');
-    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=fc723139c');
-    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=fc723139c');
-    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=fc723139c');
-    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=fc723139c');
-    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=471f48e1');
-    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=fc723139c');
-    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=fc723139c');
-    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=fc723139c');
-    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=fc723139c');
-    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=fc723139c');
-    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=fc723139c');
-    loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=75192785');
-    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=fc723139c');
-    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=fc723139c');
-    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=fc723139c');
+    loadModule('SessionTransportModule', './session_transport_module.js');
+    loadModule('ReadAloudAudioServiceModule', './read_aloud_audio_service_module.js');
+    loadModule('ReadAloudArtifactContractModule', './read_aloud_artifact_contract_module.js');
+    loadModule('ReadAloudArtifactAudioModule', './read_aloud_artifact_audio_module.js');
+    loadModule('PersonaSessionArtifactModule', './persona_session_artifact_module.js');
+    loadModule('GenerationHelpersModule', './generation_helpers_module.js');
+    loadModule('MiscHandlersModule', './misc_handlers_module.js');
+    loadModule('PureHelpersModule', './pure_helpers_module.js');
+    loadModule('MathHelpersModule', './math_helpers_module.js');
+    loadModule('CmapHandlersModule', './concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', './generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', './phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', './adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', './text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', './view_dbq_module.js');
+    loadModule('ViewTimelineModule', './view_timeline_module.js');
+    loadModule('ViewGlossaryModule', './view_glossary_module.js');
+    loadModule('ViewOutlineModule', './view_outline_module.js');
+    loadModule('ViewFaqModule', './view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', './view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', './view_brainstorm_module.js');
+    loadModule('ViewImageModule', './view_image_module.js');
+    loadModule('ViewAnalysisModule', './view_analysis_module.js');
+    loadModule('ViewQuizModule', './view_quiz_module.js');
+    loadModule('ViewSimplifiedModule', './view_simplified_module.js');
+    loadModule('ViewMathModule', './view_math_module.js');
+    loadModule('ViewLessonPlanModule', './view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', './view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', './view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', './view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', './view_concept_sort_module.js');
+    loadModule('ViewPersonaChatModule', './view_persona_chat_module.js');
+    loadModule('ViewSpotlightTourModule', './view_spotlight_tour_module.js');
+    loadModule('ViewProjectSettingsModule', './view_project_settings_module.js');
+    loadModule('ViewLaunchPadModule', './view_launch_pad_module.js');
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
-    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=fc723139c');
-    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=fc723139c');
-    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=fc723139c');
-    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=fc723139c');
-    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=fc723139c');
-    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=fc723139c');
-    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=fc723139c');
-    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=fc723139c');
-    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=fc723139c');
-    loadModule('ConceptQuestEngineModule', 'https://alloflow-cdn.pages.dev/concept_quest_engine.js?v=fc723139c');
-    loadModule('ConceptQuestTeacherModule', 'https://alloflow-cdn.pages.dev/concept_quest_teacher_module.js?v=fc723139c');
-    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=fc723139c');
+    loadModule('ViewAdventureModule', './view_adventure_module.js');
+    loadModule('PhaseNHelpersModule', './phase_n_misc_helpers_module.js');
+    loadModule('PhaseOHandlersModule', './phase_o_misc_handlers_module.js');
+    loadModule('ExportHandlersModule', './export_handlers_module.js');
+    loadModule('AnnotationSuiteModule', './annotation_suite_module.js');
+    loadModule('NoteTakingTemplatesModule', './note_taking_templates_module.js');
+    loadModule('AnchorChartsModule', './anchor_charts_module.js');
+    loadModule('LivePolling', './live_polling_module.js');
+    loadModule('ConceptPictionaryModule', './concept_pictionary_module.js');
+    loadModule('ConceptQuestEngineModule', './concept_quest_engine.js');
+    loadModule('ConceptQuestTeacherModule', './concept_quest_teacher_module.js');
+    loadModule('EscapeRoomModule', './escape_room_module.js');
     (function() {
       var s = document.createElement('script');
       s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/13.2.0/math.min.js';
@@ -12376,7 +12377,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'sel_hub/sel_safety_layer.js', // load first so other SEL tools can hook the safety layer
         'sel_hub/sel_tool_zones.js',
         'sel_hub/sel_tool_coping.js', 'sel_hub/sel_tool_emotions.js',
-        'sel_hub/sel_tool_mindfulness.js', 'sel_hub/sel_tool_social.js',
+        'sel_hub/sel_tool_mindfulness.js', 'sel_hub/sel_tool_somaticreset.js', 'sel_hub/sel_tool_social.js',
         'sel_hub/sel_tool_perspective.js',
         'sel_hub/sel_tool_decisions.js',
         'sel_hub/sel_tool_conflict.js',
@@ -17920,12 +17921,18 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   };
   const [isProcessing, setIsProcessing] = useState(false);
   const [alloGenerationType, setAlloGenerationType] = useState(null);
+  const [generationBatchType, setGenerationBatchType] = useState(null);
   const [processingProgress, setProcessingProgress] = useState({ current: 0, total: 0 });
   const [generationStep, setGenerationStep] = useState(t('common.processing') || 'Processing...');
+  const [generationStage, setGenerationStage] = useState(null);
   const [localStreamActivity, setLocalStreamActivity] = useState(null);
   const [error, setError] = useState(null);
   useEffect(() => {
-    if (!isProcessing) setAlloGenerationType(null);
+    if (!isProcessing) {
+      setAlloGenerationType(null);
+      setGenerationStage(null);
+      setGenerationBatchType(null);
+    }
   }, [isProcessing]);
   const guidedAttemptStepRef = useRef(null);
   useEffect(() => {
@@ -20276,7 +20283,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           if (sequence.length > 0) setWsActivitySequence(sequence);
           // Re-set with the full resource shape — the generic sync open drops
           // lessonPlanConfig/lessonPlanSequence, which the modal reads.
-          setGeneratedContent({ type: target.type, data: target.data, id: target.id, lessonPlanConfig: target.lessonPlanConfig || null, lessonPlanSequence: sequence });
+          setGeneratedContent({ ...target, lessonPlanConfig: target.lessonPlanConfig || null, lessonPlanSequence: sequence });
           if (!isTeacherMode) {
               setCurrentWordSoundsWord(null);
               setWordSoundsPhonemes(null);
@@ -20687,7 +20694,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                                   if (_maybeOpenReadingBookSync(target, targetResourceId)) {
                                       addToast(t('toasts.synced_resource', { title: target.title || getDefaultTitle(target.type) }) || `Synced: ${target.title || getDefaultTitle(target.type)}`, "info");
                                   } else {
-                                  setGeneratedContent({ type: target.type, data: target.data, id: target.id });
+                                  setGeneratedContent({ ...target });
                                   setActiveView(target.type);
                                   hydrateWordSoundsFromSync(target);
                                   if (audioRef.current) {
@@ -20713,7 +20720,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                           if (_maybeOpenReadingBookSync(target, myEntry.resourceId)) {
                               addToast(t('toasts.individual_resource', { title: target.title || getDefaultTitle(target.type) }) || `For you: ${target.title || getDefaultTitle(target.type)}`, "info");
                           } else {
-                          setGeneratedContent({ type: target.type, data: target.data, id: target.id });
+                          setGeneratedContent({ ...target });
                           setActiveView(target.type);
                           hydrateWordSoundsFromSync(target);
                           if (audioRef.current) {
@@ -20740,7 +20747,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                               if (_maybeOpenReadingBookSync(target, groupResourceId)) {
                                   addToast(t('toasts.group_resource', { title: target.title || getDefaultTitle(target.type) }) || `Group Resource: ${target.title || getDefaultTitle(target.type)}`, "info");
                               } else {
-                              setGeneratedContent({ type: target.type, data: target.data, id: target.id });
+                              setGeneratedContent({ ...target });
                               setActiveView(target.type);
                               hydrateWordSoundsFromSync(target);
                               if (audioRef.current) {
@@ -21382,6 +21389,16 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                 if (item.levelCheck) serializedItem.levelCheck = item.levelCheck;
                 if (item.alignmentCheck) serializedItem.alignmentCheck = item.alignmentCheck;
                 if (item.posData) serializedItem.posData = item.posData;
+                // Preserve the frozen instructional/standards context and complexity
+                // evidence that make restored reading artifacts auditable. These are
+                // small JSON envelopes, unlike the binary payloads stripped below.
+                if (item.config) serializedItem.config = item.config;
+                if (item.instructionalContext) serializedItem.instructionalContext = item.instructionalContext;
+                if (item.standardsContext) serializedItem.standardsContext = item.standardsContext;
+                if (item.instructionalText) serializedItem.instructionalText = item.instructionalText;
+                if (item.localStats) serializedItem.localStats = item.localStats;
+                if (item.targetGradeLevel) serializedItem.targetGradeLevel = item.targetGradeLevel;
+                if (item.sourceProvenance) serializedItem.sourceProvenance = item.sourceProvenance;
                 // Vetted read-aloud audio (and student practice takes) must survive
                 // the browser-session autosave, not just explicit project-file saves —
                 // otherwise a plain refresh silently deletes prepped TTS and recorded
@@ -27457,6 +27474,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [isExecutingBlueprint, setIsExecutingBlueprint] = useState(false);
   const [blueprintExecutionResult, setBlueprintExecutionResult] = useState(null);
   const [fullPackRun, setFullPackRun] = useState(null);
+  const [fullPackAddType, setFullPackAddType] = useState('glossary');
   const [showCompletedFullPackRows, setShowCompletedFullPackRows] = useState(true);
   useEffect(() => { setShowCompletedFullPackRows(true); }, [fullPackRun?.runId]);
   // A row frozen at 'running' is a spinner that never resolves on a row that
@@ -28803,6 +28821,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       callGemini,
       cleanJson,
       safeJsonParse,
+      calculateReadability,
       warnLog,
       verifyMathProblems,
       flyToElement,
@@ -29960,7 +29979,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
         }
         if (translateScope === 'single' && newItems.length > 0) {
             const newItem = newItems[0];
-            setGeneratedContent({ type: newItem.type, data: newItem.data, id: newItem.id });
+            setGeneratedContent({ ...newItem });
             setActiveView(newItem.type);
         }
         addToast(t('toasts.translated_resources', { count: newItems.length }) || `Successfully translated ${newItems.length} resources!`, "success");
@@ -31547,7 +31566,13 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     selectedFont, includeSourceCitations,
     interactionMode, revisionData, selectedVoice, voiceSpeed,
     standardsPromptString: targetStandards.join('; '),
-    ai, webSearchProvider: WebSearchProvider,
+    standardsContext: activeResolvedStandardsContext,
+    ai,
+    aiProviderProfile: {
+      provider: String(_aiConfig?.backend || 'gemini').toLowerCase(),
+      model: String(_aiConfig?.models?.default || _aiConfig?.models?.text || _aiConfig?.models?.flash || ''),
+    },
+    webSearchProvider: WebSearchProvider,
     alloBotRef, isBotVisible, isPlayingRef, isSystemAudioActiveRef,
     audioRef, playbackTimeoutRef, playbackSessionRef, activeBlobUrlsRef,
     setActiveView, setConceptInput, setError, setGeneratedContent,
@@ -31557,6 +31582,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     setCustomReviseInstruction, setDefinitionData, setIsCustomReviseOpen,
     setPhonicsData, setRevisionData, setSelectionMenu,
     setPlayingContentId, setPlaybackState, setIsPlaying, setIsPaused,
+    recordSourceProvenance, calculateReadability,
   };
   const _contentEngineRef = { current: null };
   window.__contentEngineState = contentEngineStateRef.current;
@@ -43627,13 +43653,49 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       opts = opts || {}; lessonSpec = lessonSpec || {};
       const _po = window.AlloModules && window.AlloModules.PhaseOHandlers;
       if (!_po || typeof _po.executeOneBlueprint !== 'function') throw new Error('blueprint engine unavailable');
+      const _ic = window.AlloModules && window.AlloModules.InstructionalContext;
+      const _scm = window.AlloModules && window.AlloModules.StandardsContext;
+      const _unitGrade = _ic && typeof _ic.normalizeGradeLabel === 'function'
+          ? _ic.normalizeGradeLabel((dna && dna.grade) || gradeLevel || '', gradeLevel || '')
+          : String((dna && dna.grade) || gradeLevel || '');
+      const _unitSourceRequestedGrade = _ic && typeof _ic.normalizeGradeLabel === 'function'
+          ? _ic.normalizeGradeLabel((dna && dna.sourceConfig && dna.sourceConfig.readingLevel) || _unitGrade, _unitGrade)
+          : String((dna && dna.sourceConfig && dna.sourceConfig.readingLevel) || _unitGrade);
+      const _unitStandardsRaw = activeResolvedStandardsContext || (dna && dna.standard) || standardsInput || targetStandards;
+      const _unitStandardsContext = _scm && typeof _scm.resolve === 'function'
+          ? _scm.resolve(_unitStandardsRaw)
+          : _unitStandardsRaw;
+      const _unitInstructionalContext = _ic && typeof _ic.normalizeInstructionalContext === 'function'
+          ? _ic.normalizeInstructionalContext(null, {
+              instructionalGrade: _unitGrade,
+              standardsContext: _unitStandardsContext,
+              primaryTextPolicy: 'preserve-primary'
+          })
+          : {
+              schemaVersion: 1,
+              instructionalGrade: _unitGrade,
+              primaryTextPolicy: 'preserve-primary',
+              standardsContext: _unitStandardsContext || null,
+              standardsFingerprint: ''
+          };
       let types = (Array.isArray(lessonSpec.suggestedResourceTypes) && lessonSpec.suggestedResourceTypes.length) ? lessonSpec.suggestedResourceTypes.slice() : ['analysis','glossary','lesson-plan'];
       // teaching order: foundational analysis first, synthesizing lesson-plan last (stable sort)
       types.sort((a, b) => { const rank = (tp) => (tp === 'analysis' ? 0 : (tp === 'lesson-plan' ? 2 : 1)); return rank(a) - rank(b); });
       // ground every resource in the unit's enduring understandings (UbD backward design)
       const _eu = (dna && Array.isArray(dna.desiredResults)) ? dna.desiredResults.filter(Boolean) : [];
       const _lessonFocus = (lessonSpec.focus || '') + (_eu.length ? ' Unit enduring understandings: ' + _eu.join('; ') : '');
-      const resourcePlan = types.map(tp => ({ tool: tp, directive: _lessonFocus }));
+      const resourcePlan = types.map(tp => ({
+          tool: tp,
+          directive: _lessonFocus,
+          instructionalText: _ic && typeof _ic.normalizeInstructionalText === 'function'
+              ? _ic.normalizeInstructionalText(null, {
+                  role: tp === 'simplified' ? 'supplemental' : (tp === 'analysis' ? 'primary' : 'unspecified'),
+                  form: tp === 'simplified' ? 'adapted' : 'original',
+                  designationSource: 'workflow-default',
+                  complexity: { requestedGrade: tp === 'analysis' ? _unitSourceRequestedGrade : _unitGrade, language: leveledTextLanguage || 'English' }
+              })
+              : null
+      }));
       const blueprint = {
           resourcePlan,
           recommendedResources: resourcePlan.map(r => r.tool),
@@ -43641,12 +43703,20 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
               if (!a[item.tool]) a[item.tool] = item.directive;
               return a;
           }, {}),
-          globalSettings: {}
+          globalSettings: {
+              gradeLevel: _unitGrade,
+              targetStandards: targetStandards,
+              standardsContext: _unitStandardsContext,
+              instructionalContext: _unitInstructionalContext
+          },
+          standardsContext: _unitStandardsContext,
+          instructionalContext: _unitInstructionalContext,
+          sourcePolicy: { primaryTextPolicy: _unitInstructionalContext.primaryTextPolicy || 'preserve-primary' }
       };
       const seedDna = {
-          grade: (dna && dna.grade) || gradeLevel || '',
+          grade: _unitGrade,
           topic: lessonSpec.title || (dna && dna.topic) || '',
-          standard: (dna && dna.standard) || standardsInput || '',
+          standard: (_unitStandardsContext && _unitStandardsContext.promptText) || (dna && dna.standard) || standardsInput || '',
           concepts: (dna && Array.isArray(dna.concepts)) ? dna.concepts.slice() : [],
           keyTerms: (dna && Array.isArray(dna.keyTerms)) ? dna.keyTerms.slice() : [],
           visualContext: '', essentialQuestion: (dna && dna.essentialQuestion) || '',
@@ -43655,6 +43725,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       let initialSourceText = inputText;
       const existingAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
       if (existingAnalysis && existingAnalysis.data && existingAnalysis.data.originalText) initialSourceText = existingAnalysis.data.originalText;
+      let _generatedUnitSource = false;
       if (!initialSourceText || !initialSourceText.trim()) {
           // Topic-based unit (no source loaded): write a grounded reading passage
           // for THIS lesson using the teacher-editable source settings, so the
@@ -43664,15 +43735,81 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           const sc = (dna && dna.sourceConfig) || {};
           const _len = Math.max(100, Math.min(1500, parseInt(sc.lengthWords, 10) || 350));
           const _tone = sc.tone || 'Informative';
-          const _level = sc.readingLevel || (dna && dna.grade) || gradeLevel || 'middle-school';
+          const _level = _unitSourceRequestedGrade || 'middle-school';
+          const _sourceCalibration = _ic && typeof _ic.getSourceCalibrationTarget === 'function'
+              ? _ic.getSourceCalibrationTarget(_level)
+              : { requestedGrade: _level, promptGrade: _level, policyVersion: 'legacy' };
+          const _unitStandardsDirective = _scm && typeof _scm.buildResourceDirective === 'function'
+              ? _scm.buildResourceDirective(_unitStandardsContext, { resourceType: 'source', textRole: 'primary' })
+              : '';
           const _euLine = (_eu && _eu.length) ? ('\nReinforce these enduring understandings: ' + _eu.join('; ') + '.') : '';
-          const _srcPrompt = 'Write an original, factually careful ' + String(_tone).toLowerCase() + ' reading passage of about ' + _len + ' words for a ' + _level + ' reader.\nLesson: "' + (lessonSpec.title || '') + '".\nFocus: ' + (lessonSpec.focus || lessonSpec.objective || '') + '.' + _euLine + '\nWrite ONLY the passage prose — no title, headings, labels, or meta-commentary. Define any domain-specific term in-line with a concrete analogy a ' + _level + ' student would understand.';
+          const _srcPrompt = 'Write an original, factually careful ' + String(_tone).toLowerCase() + ' reading passage of about ' + _len + ' words.\nREQUESTED INSTRUCTIONAL TARGET: ' + _sourceCalibration.requestedGrade + '.\nINTERNAL GENERATION CALIBRATION: ' + _sourceCalibration.promptGrade + '. This internal calibration compensates for model overshoot and is not the educator-facing grade label. Prefer shorter accurate sentences and direct vocabulary.\nLesson: "' + (lessonSpec.title || '') + '".\nFocus: ' + (lessonSpec.focus || lessonSpec.objective || '') + '.' + _euLine + (_unitStandardsDirective ? ('\n' + _unitStandardsDirective) : '') + '\nWrite ONLY the passage prose — no title, headings, labels, or meta-commentary. Define any domain-specific term in-line with a concrete analogy a ' + _sourceCalibration.requestedGrade + ' student would understand.';
           try {
               const _srcText = await callGemini(_srcPrompt, false, false, null, null, opts.signal || null);
-              if (_srcText && String(_srcText).trim()) initialSourceText = String(_srcText).trim();
+              if (_srcText && String(_srcText).trim()) {
+                  initialSourceText = String(_srcText).trim();
+                  _generatedUnitSource = true;
+              }
           } catch (e) { warnLog('unit lesson source generation failed', e); }
       }
-      const res = await _po.executeOneBlueprint(blueprint, { handleGenerate, historyOverride: [...history], dna: seedDna, initialSourceText, signal: opts.signal || null, onResource: opts.onResource });
+      let _unitSourceProfile = null;
+      let _unitSourceStats = null;
+      if (initialSourceText && initialSourceText.trim() && _ic) {
+          const _sourceLanguage = (existingAnalysis && existingAnalysis.config && existingAnalysis.config.language) || leveledTextLanguage || 'English';
+          const _sourceCalibration = typeof _ic.getSourceCalibrationTarget === 'function'
+              ? _ic.getSourceCalibrationTarget(_unitSourceRequestedGrade)
+              : { requestedGrade: _unitSourceRequestedGrade, promptGrade: _unitSourceRequestedGrade, policyVersion: 'legacy' };
+          _unitSourceProfile = typeof _ic.normalizeInstructionalText === 'function'
+              ? _ic.normalizeInstructionalText(existingAnalysis && existingAnalysis.instructionalText, {
+                  role: 'primary', form: 'original', designationSource: 'workflow-default',
+                  complexity: { requestedGrade: _unitSourceRequestedGrade, calibrationTarget: _sourceCalibration.promptGrade, language: _sourceLanguage }
+              })
+              : null;
+          const _canMeasure = typeof _ic.isEnglishLanguage !== 'function' || _ic.isEnglishLanguage(_sourceLanguage);
+          _unitSourceStats = _canMeasure ? calculateReadability(initialSourceText) : null;
+          if (_unitSourceProfile && _unitSourceStats && typeof _ic.withComplexityEvidence === 'function') {
+              _unitSourceProfile = _ic.withComplexityEvidence(_unitSourceProfile, {
+                  requestedGrade: _unitSourceRequestedGrade,
+                  calibrationTarget: _sourceCalibration.promptGrade,
+                  measuredGrade: Number(_unitSourceStats.score),
+                  method: 'flesch-kincaid-en',
+                  language: _sourceLanguage
+              }, initialSourceText);
+          }
+          resourcePlan.forEach(item => {
+              if (item.tool === 'analysis' && _unitSourceProfile) item.instructionalText = _unitSourceProfile;
+          });
+          if (_generatedUnitSource) {
+              recordSourceProvenance({
+                  title: lessonSpec.title || seedDna.topic || 'Unit lesson source',
+                  type: 'generated', importMethod: 'unit-path-generation',
+                  provider: String(_aiConfig?.backend || 'gemini').toLowerCase(),
+                  model: String(_aiConfig?.models?.default || _aiConfig?.models?.text || _aiConfig?.models?.flash || ''),
+                  requestedGrade: _unitSourceRequestedGrade,
+                  calibrationTarget: _sourceCalibration.promptGrade,
+                  calibrationPolicy: _sourceCalibration.policyVersion,
+                  measuredGrade: _unitSourceStats ? Number(_unitSourceStats.score) : null,
+                  standardsContext: _unitStandardsContext || null
+              }, initialSourceText);
+          }
+      }
+      const _unitSettingsSnapshot = Object.freeze({
+          gradeLevel: _unitGrade,
+          leveledTextLanguage: leveledTextLanguage || 'English',
+          targetStandards: Array.isArray(targetStandards) ? targetStandards.slice() : [],
+          standardsInput: (_unitStandardsContext && _unitStandardsContext.promptText) || standardsInput || '',
+          standardsContext: _unitStandardsContext,
+          instructionalContext: _unitInstructionalContext
+      });
+      const res = await _po.executeOneBlueprint(blueprint, {
+          handleGenerate,
+          historyOverride: [...history],
+          dna: seedDna,
+          initialSourceText,
+          settingsSnapshot: _unitSettingsSnapshot,
+          signal: opts.signal || null,
+          onResource: opts.onResource
+      });
       let anchorItem = null;
       if (Array.isArray(res.items) && res.items.length) anchorItem = res.items.find(it => it && it.type === 'lesson-plan') || res.items[res.items.length - 1];
       return { items: res.items, dnaOut: res.dnaOut, anchorItem, nulls: res.nulls };
@@ -44042,6 +44179,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         setIsMapLocked,
         setIsProcessing,
         setGenerationStep,
+        setGenerationStage,
         setInteractionMode,
         setDefinitionData,
         setSelectionMenu,
@@ -44281,16 +44419,46 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
   const handleGenerateFullPack = async (chatContextOverride = null) => {
     const _m = window.AlloModules && window.AlloModules.GenerationHelpers;
     setAlloGenerationType('full-pack');
+    setGenerationBatchType('full-pack');
     if (_m && typeof _m.handleGenerateFullPack === "function") return _m.handleGenerateFullPack(chatContextOverride, _alloGenerationHelpersDeps());
     throw new Error("[handleGenerateFullPack] GenerationHelpers module not loaded - reload the page");
   };
   const handlePlanFullPack = async () => {
     const _m = window.AlloModules && window.AlloModules.GenerationHelpers;
+    setGenerationBatchType('full-pack');
     if (_m && typeof _m.handlePlanFullPack === 'function') return _m.handlePlanFullPack(_alloGenerationHelpersDeps());
     return handleGenerateFullPack({ __fullPackPreflightOnly: true });
   };
+  const handleRemoveFullPackPlanResource = (resourceKey, groupId = null) => {
+    const _m = window.AlloModules && window.AlloModules.GenerationHelpers;
+    if (_m && typeof _m.handleRemoveFullPackPlanResource === 'function') {
+      return _m.handleRemoveFullPackPlanResource(fullPackRun, resourceKey, _alloGenerationHelpersDeps(), groupId);
+    }
+    addToast(t('fullpack.remove_unavailable') || 'This plan could not be edited. Refresh it and try again.', 'warning');
+    return fullPackRun;
+  };
+  const _applyFullPackPlanEdit = (method, ...args) => {
+    const _m = window.AlloModules && window.AlloModules.GenerationHelpers;
+    if (!_m || typeof _m[method] !== 'function') {
+      addToast(t('fullpack.edit_unavailable') || 'This plan could not be edited. Refresh it and try again.', 'warning');
+      return false;
+    }
+    setFullPackRun(previous => _m[method](previous, ...args));
+    return true;
+  };
+  const handleAddFullPackPlanResource = (resource, groupId = null) =>
+    _applyFullPackPlanEdit('addFullPackPlanResource', resource, groupId);
+  const handleChangeFullPackPlanResourceType = (resourceKey, nextType, groupId = null) =>
+    _applyFullPackPlanEdit('changeFullPackPlanResourceType', resourceKey, nextType, groupId);
+  const handleEditFullPackPlanResourceDirective = (resourceKey, directive, groupId = null) =>
+    _applyFullPackPlanEdit('editFullPackPlanResourceDirective', resourceKey, directive, groupId);
+  const handleMoveFullPackPlanResource = (resourceKey, toIndex, groupId = null) =>
+    _applyFullPackPlanEdit('moveFullPackPlanResource', resourceKey, toIndex, groupId);
+  const handleSetFullPackPlanPrimaryTextPolicy = (policy, groupId = null) =>
+    _applyFullPackPlanEdit('setFullPackPlanPrimaryTextPolicy', policy, groupId);
   const handleApproveFullPack = async () => {
     const _m = window.AlloModules && window.AlloModules.GenerationHelpers;
+    setGenerationBatchType('full-pack');
     if (_m && typeof _m.handleApproveFullPack === 'function') return _m.handleApproveFullPack(fullPackRun, _alloGenerationHelpersDeps());
     addToast('Create or refresh the Full Pack plan before generating.', 'info');
     return false;
@@ -44302,6 +44470,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
   };
   const handleRetryFailedFullPack = async () => {
     const _m = window.AlloModules && window.AlloModules.GenerationHelpers;
+    setGenerationBatchType('full-pack');
     if (_m && typeof _m.handleRetryFailedFullPack === 'function') {
       return _m.handleRetryFailedFullPack(fullPackRun, _alloGenerationHelpersDeps());
     }
@@ -45413,12 +45582,114 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       setMovingItemId(null);
       addToast(t('process.resource_moved'), "success");
   };
+  const _getFreshTextComplexityEvidence = (item, exactContent) => {
+    const contextModule = window.AlloModules && window.AlloModules.InstructionalContext;
+    const context = contextModule && typeof contextModule.resolveArtifactContext === 'function'
+      ? contextModule.resolveArtifactContext(item, {
+          grade: gradeLevel,
+          language: leveledTextLanguage,
+          standardsContext: activeResolvedStandardsContext,
+          standards: standardsInput || targetStandards || null
+        })
+      : {
+          grade: item?.instructionalText?.complexity?.requestedGrade
+            || item?.targetGradeLevel || item?.config?.grade || gradeLevel,
+          language: item?.instructionalText?.complexity?.language
+            || item?.config?.language || leveledTextLanguage || 'English',
+          instructionalText: item?.instructionalText || null
+        };
+    const targetGrade = context.grade || gradeLevel;
+    const artifactLanguage = context.language || leveledTextLanguage || 'English';
+    const value = String(exactContent == null ? '' : exactContent);
+    let measurementText = value;
+    let bilingual = /---\s*ENGLISH TRANSLATION\s*---/i.test(value)
+      || /---\s*TRANSLATION\s*---/i.test(value);
+    try {
+      const parts = splitReferencesFromBody(value);
+      const extraction = extractSourceTextForProcessing(parts.body, false);
+      bilingual = bilingual || !!extraction?.isBilingual;
+      measurementText = extraction?.text || parts.body || value;
+    } catch (_) {}
+    const englishLanguage = contextModule && typeof contextModule.isEnglishLanguage === 'function'
+      ? contextModule.isEnglishLanguage(artifactLanguage)
+      : /^(?:english|en)$/i.test(String(artifactLanguage || '').trim());
+    const canMeasure = englishLanguage && !bilingual && typeof calculateReadability === 'function';
+    let localStats = null;
+    if (canMeasure) {
+      try { localStats = calculateReadability(measurementText); } catch (_) { localStats = null; }
+    }
+    const baseInstructionalText = contextModule && typeof contextModule.getInstructionalText === 'function'
+      ? contextModule.getInstructionalText(item, {
+          complexity: { requestedGrade: targetGrade, language: artifactLanguage }
+        })
+      : (context.instructionalText || item?.instructionalText || {
+          role: item?.type === 'analysis' ? 'primary' : 'unspecified',
+          form: item?.type === 'simplified' ? 'adapted' : 'original',
+          designationSource: item?.type === 'analysis' ? 'workflow-default' : 'legacy-inferred',
+          complexity: { requestedGrade: targetGrade, language: artifactLanguage }
+        });
+    const fallbackFingerprint = (text) => {
+      const input = String(text == null ? '' : text).replace(/\r\n?/g, '\n');
+      let hash = 2166136261;
+      for (let index = 0; index < input.length; index++) {
+        hash ^= input.charCodeAt(index);
+        hash = Math.imul(hash, 16777619);
+      }
+      return `txt-${(hash >>> 0).toString(16).padStart(8, '0')}-${input.length}`;
+    };
+    let instructionalText;
+    if (localStats && contextModule && typeof contextModule.withComplexityEvidence === 'function') {
+      instructionalText = contextModule.withComplexityEvidence(baseInstructionalText, {
+        requestedGrade: targetGrade,
+        measuredGrade: Number(localStats.score),
+        method: 'flesch-kincaid-en',
+        language: artifactLanguage
+      }, value);
+    } else if (contextModule && typeof contextModule.invalidateComplexityEvidence === 'function') {
+      instructionalText = contextModule.invalidateComplexityEvidence(
+        baseInstructionalText,
+        value,
+        canMeasure ? 'unavailable' : 'not-applicable'
+      );
+    } else {
+      instructionalText = {
+        ...baseInstructionalText,
+        complexity: {
+          ...(baseInstructionalText?.complexity || {}),
+          requestedGrade: targetGrade,
+          measuredGrade: localStats ? Number(localStats.score) : null,
+          method: localStats ? 'flesch-kincaid-en' : '',
+          status: localStats ? 'measured' : (canMeasure ? 'unavailable' : 'not-applicable'),
+          contentFingerprint: contextModule && typeof contextModule.fingerprintText === 'function'
+            ? contextModule.fingerprintText(value)
+            : fallbackFingerprint(value),
+          measuredAt: localStats ? new Date().toISOString() : '',
+          language: artifactLanguage
+        }
+      };
+    }
+    return { targetGrade, artifactLanguage, localStats, instructionalText };
+  };
+  const _applySimplifiedTextMutation = (item, value) => {
+    const evidence = _getFreshTextComplexityEvidence(item, value);
+    const updated = {
+      ...item,
+      data: value,
+      targetGradeLevel: evidence.targetGrade,
+      instructionalText: evidence.instructionalText,
+      ...(evidence.localStats ? { localStats: evidence.localStats } : {})
+    };
+    if (!evidence.localStats && updated.localStats) delete updated.localStats;
+    if (updated.levelCheck) delete updated.levelCheck;
+    if (updated.alignmentCheck) delete updated.alignmentCheck;
+    return updated;
+  };
   const handleSimplifiedTextChange = (value) => {
     if (!generatedContent || generatedContent.type !== 'simplified') return;
     _recordTextChange('simplified', generatedContent.id, typeof generatedContent.data === 'string' ? generatedContent.data : '', value);
-    const updatedContent = { ...generatedContent, data: value };
+    const updatedContent = _applySimplifiedTextMutation(generatedContent, value);
     setGeneratedContent(updatedContent);
-    setHistory(prev => prev.map(item => item.id === generatedContent.id ? { ...item, data: value } : item));
+    setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
   };
   const getFilteredHistory = () => {
       if (!Array.isArray(history)) return [];
@@ -45478,7 +45749,10 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   if (container) container.scrollTop = 0;
               }, 50);
           }
-          setGeneratedContent({ type: targetItem.type, data: targetItem.data, id: targetItem.id });
+          // Preserve the artifact-owned grade, standards, role, source links, and
+          // complexity evidence when navigating history. Rebuilding three fields
+          // here made later checks silently fall back to ambient Universal settings.
+          setGeneratedContent({ ...targetItem });
           setActiveView(targetItem.type);
           setStickers([]);
           stopPlayback();
@@ -45744,11 +46018,44 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
   };
   const handleCheckAlignment = async () => {
     if (!generatedContent || generatedContent.type !== 'simplified') return;
+    const _contextModule = window.AlloModules && window.AlloModules.InstructionalContext;
+    const _alignmentContext = _contextModule && typeof _contextModule.resolveArtifactContext === 'function'
+      ? _contextModule.resolveArtifactContext(generatedContent, {
+          grade: gradeLevel,
+          language: leveledTextLanguage,
+          standardsContext: activeResolvedStandardsContext,
+          standards: standardsInput || targetStandards || null
+        })
+      : {
+          grade: generatedContent?.targetGradeLevel || generatedContent?.config?.grade || gradeLevel,
+          standards: generatedContent?.config?.standardsContext
+            || generatedContent?.config?.standards
+            || activeResolvedStandardsContext
+            || standardsInput
+            || targetStandards
+            || null
+        };
+    const _alignmentGrade = _alignmentContext.grade || gradeLevel;
+    const _alignmentStandardsValue = _alignmentContext.standards;
+    const _alignmentStandardsText = (() => {
+      if (!_alignmentStandardsValue) return '';
+      if (typeof _alignmentStandardsValue === 'string') return _alignmentStandardsValue.trim();
+      if (typeof _alignmentStandardsValue.promptText === 'string' && _alignmentStandardsValue.promptText.trim()) {
+        return _alignmentStandardsValue.promptText.trim();
+      }
+      const entries = Array.isArray(_alignmentStandardsValue.standards)
+        ? _alignmentStandardsValue.standards
+        : (Array.isArray(_alignmentStandardsValue) ? _alignmentStandardsValue : []);
+      return entries.map(entry => typeof entry === 'string'
+        ? entry
+        : [entry?.code || entry?.id, entry?.text || entry?.label].filter(Boolean).join(': ')
+      ).filter(Boolean).join('; ');
+    })().slice(0, 4000);
     if (alloBotRef.current) {
-         let contextMsg = t('bot_events.feedback_audit_start').replace('{standard}', targetStandards[0]?.id || "Standard");
+         let contextMsg = t('bot_events.feedback_audit_start').replace('{standard}', _alignmentStandardsText || "Standard");
          alloBotRef.current.speak(contextMsg);
     }
-    if (targetStandards.length === 0) {
+    if (!_alignmentStandardsText) {
         addToast(t('alignment.notifications.no_standard_error'), "error");
         return;
     }
@@ -45757,8 +46064,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         const textToCheck = typeof generatedContent?.data === 'string' ? generatedContent?.data : '';
         const prompt = `
             You are a curriculum specialist. Evaluate the rigor of the following text against ALL provided standards.
-            Target Standards: "${standardsPromptString}"
-            Target Grade Level: ${gradeLevel}
+            Target Standards: "${_alignmentStandardsText}"
+            Target Grade Level: ${_alignmentGrade}
             Text to Evaluate:
             "${textToCheck.substring(0, 3000)}",
             Task:
@@ -45775,7 +46082,23 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             }
         `;
         const result = await callGemini(prompt, true);
-        const analysis = JSON.parse(cleanJson(result));
+        const parsedAnalysis = JSON.parse(cleanJson(result));
+        const _fingerprintText = _contextModule && typeof _contextModule.fingerprintText === 'function'
+            ? _contextModule.fingerprintText(textToCheck)
+            : String(textToCheck.length) + '|' + textToCheck.slice(0, 64) + '|' + textToCheck.slice(-64);
+        const _fingerprintStandards = _contextModule && typeof _contextModule.fingerprintValue === 'function'
+            ? _contextModule.fingerprintValue(_alignmentStandardsValue)
+            : '';
+        const analysis = {
+            ...parsedAnalysis,
+            contentFingerprint: _fingerprintText,
+            checkedAt: new Date().toISOString(),
+            contextSnapshot: {
+                grade: _alignmentGrade,
+                standardsFingerprint: _fingerprintStandards,
+                standardsText: _alignmentStandardsText
+            }
+        };
         const updatedContent = { ...generatedContent, alignmentCheck: analysis };
         setGeneratedContent(updatedContent);
         setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
@@ -45875,6 +46198,48 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             }
         };
 
+        const contextModule = typeof window !== 'undefined' && window.AlloModules
+            ? window.AlloModules.InstructionalContext
+            : null;
+        const ambientStandardsContext = typeof activeResolvedStandardsContext !== 'undefined'
+            ? activeResolvedStandardsContext
+            : null;
+        const ambientStandards = typeof standardsInput !== 'undefined'
+            ? standardsInput
+            : (typeof targetStandards !== 'undefined' ? targetStandards : null);
+        const rigorContext = contextModule && typeof contextModule.resolveArtifactContext === 'function'
+            ? contextModule.resolveArtifactContext(generatedContent, {
+                grade: gradeLevel,
+                language: leveledTextLanguage,
+                standardsContext: ambientStandardsContext,
+                standards: ambientStandards
+            })
+            : {
+                grade: generatedContent?.instructionalText?.complexity?.requestedGrade
+                    || generatedContent?.targetGradeLevel || generatedContent?.config?.grade || gradeLevel,
+                language: generatedContent?.instructionalText?.complexity?.language
+                    || generatedContent?.config?.language || leveledTextLanguage || 'English',
+                standards: generatedContent?.config?.standardsContext
+                    || generatedContent?.config?.standards
+                    || ambientStandardsContext || ambientStandards || null
+            };
+        const rigorGrade = rigorContext.grade || gradeLevel;
+        const rigorLanguage = rigorContext.language || leveledTextLanguage || 'English';
+        const rigorStandardsValue = rigorContext.standards;
+        const rigorStandards = (() => {
+            if (!rigorStandardsValue) return '';
+            if (typeof rigorStandardsValue === 'string') return rigorStandardsValue.trim();
+            if (typeof rigorStandardsValue.promptText === 'string' && rigorStandardsValue.promptText.trim()) {
+                return rigorStandardsValue.promptText.trim();
+            }
+            const entries = Array.isArray(rigorStandardsValue.standards)
+                ? rigorStandardsValue.standards
+                : (Array.isArray(rigorStandardsValue) ? rigorStandardsValue : []);
+            return entries.map(entry => typeof entry === 'string'
+                ? entry
+                : [entry?.code || entry?.id, entry?.text || entry?.label].filter(Boolean).join(': ')
+            ).filter(Boolean).join('; ');
+        })().slice(0, 2400);
         const suggestion = generatedContent.alignmentCheck.improvement;
         const prompt = `
             Rewrite the following educational text to address specific feedback regarding standard alignment.
@@ -45882,16 +46247,24 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             "${currentText}",
             Feedback/Suggestion to Implement:
             "${suggestion}",
-            Target Audience: ${gradeLevel} students.
+            Target Audience: ${rigorGrade} students.
+            ${rigorStandards ? `Standards Context: ${rigorStandards}` : ''}
             Instructions:
             - Incorporate the suggestion to increase rigor or alignment.
-            - Maintain the appropriate reading level for ${gradeLevel}.
-            - Write the rewritten text in ${leveledTextLanguage}.
+            - Maintain the appropriate reading level for ${rigorGrade}.
+            - Preserve the disciplinary concepts and cognitive demand in the recorded standards context.
+            - Write the rewritten text in ${rigorLanguage}.
             ${isLeveledText ? `- Preserve every inline Markdown citation exactly as written, including its superscript number, URL, occurrence count, and order.
             - Keep each citation attached to the same supported claim; never add, remove, duplicate, rename, reorder, or alter a citation.
             - Do not produce a Sources, References, Bibliography, or Works Cited section. AlloFlow appends the preserved reference trailer after validation.` : ''}
         `;
-        let newText = await generateBilingualText(prompt, leveledTextLanguage, callGemini, resolveTranslationPolicy(translationMode, leveledTextLanguage, currentUiLanguage, translationTargetChoices(leveledTextLanguage, currentUiLanguage, selectedLanguages)));
+        const rigorTranslationChoices = typeof translationTargetChoices === 'function'
+            ? translationTargetChoices(rigorLanguage, currentUiLanguage, typeof selectedLanguages !== 'undefined' ? selectedLanguages : [])
+            : [];
+        const rigorTranslationPolicy = typeof resolveTranslationPolicy === 'function'
+            ? resolveTranslationPolicy(translationMode, rigorLanguage, currentUiLanguage, rigorTranslationChoices)
+            : { enabled: false, target: 'English', mode: 'off' };
+        let newText = await generateBilingualText(prompt, rigorLanguage, callGemini, rigorTranslationPolicy);
         let rigorCitationAudit = null;
         if (isLeveledText) {
             const candidateParts = splitReferencesFromBody(newText);
@@ -45906,7 +46279,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 : candidateTarget;
             let conservation = validateRigorCitations(originalForValidation, candidateForValidation);
             const shouldValidateGeneratedEnglish = !sourceExtraction.isBilingual
-                && (candidateExtraction.isBilingual || String(leveledTextLanguage || '').trim().toLowerCase() !== 'english');
+                && (candidateExtraction.isBilingual || String(rigorLanguage || '').trim().toLowerCase() !== 'english');
             if (shouldValidateGeneratedEnglish) {
                 const englishConservation = validateRigorCitations(
                     candidateTarget,
@@ -45958,13 +46331,35 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 stages: [...(Array.isArray(priorAudit?.stages) ? priorAudit.stages : []), rigorCitationAudit]
             }
         } : generatedContent.config;
-        const updatedContent = {
+        let updatedContent = {
             ...generatedContent,
             data: newText,
             ...(rigorCitationAudit ? { config: updatedConfig } : {})
         };
-        delete updatedContent.alignmentCheck;
-        if (updatedContent.levelCheck) delete updatedContent.levelCheck;
+        // Keep readability and AI-check evidence tied to the exact rewritten
+        // bytes, just as manual edits and undo/redo do.
+        if (isLeveledText && typeof _applySimplifiedTextMutation === 'function') {
+            updatedContent = _applySimplifiedTextMutation(updatedContent, newText);
+        } else {
+            delete updatedContent.localStats;
+            const fallbackContextModule = typeof window !== 'undefined' && window.AlloModules
+                ? window.AlloModules.InstructionalContext
+                : null;
+            if (fallbackContextModule && typeof fallbackContextModule.getInstructionalText === 'function'
+                && typeof fallbackContextModule.invalidateComplexityEvidence === 'function') {
+                const baseInstructionalText = fallbackContextModule.getInstructionalText(updatedContent, {
+                    complexity: { requestedGrade: rigorGrade, language: rigorLanguage }
+                });
+                updatedContent.instructionalText = fallbackContextModule.invalidateComplexityEvidence(
+                    baseInstructionalText,
+                    newText,
+                    'stale'
+                );
+                updatedContent.targetGradeLevel = rigorGrade;
+            }
+            delete updatedContent.alignmentCheck;
+            if (updatedContent.levelCheck) delete updatedContent.levelCheck;
+        }
         setGeneratedContent(updatedContent);
         setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
         addToast(t('alignment.notifications.regenerated_success'), "success");
@@ -45984,13 +46379,21 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
   const handleAnalysisTextChange = (value) => {
     if (!generatedContent || generatedContent.type !== 'analysis') return;
     _recordTextChange('analysis', generatedContent.id, (generatedContent.data && generatedContent.data.originalText) || '', value);
-    const newStats = calculateReadability(value);
+    const evidence = _getFreshTextComplexityEvidence(generatedContent, value);
     const newData = {
         ...generatedContent?.data,
         originalText: value,
-        localStats: newStats
+        ...(evidence.localStats ? { localStats: evidence.localStats } : {})
     };
-    const updatedContent = { ...generatedContent, data: newData };
+    if (!evidence.localStats && newData.localStats) delete newData.localStats;
+    const updatedContent = {
+        ...generatedContent,
+        data: newData,
+        targetGradeLevel: evidence.targetGrade,
+        instructionalText: evidence.instructionalText
+    };
+    if (updatedContent.levelCheck) delete updatedContent.levelCheck;
+    if (updatedContent.alignmentCheck) delete updatedContent.alignmentCheck;
     setGeneratedContent(updatedContent);
     setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
   };
@@ -46048,9 +46451,25 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       setInputText(entry.value);
       return;
     }
-    const patch = (item) => entry.domain === 'analysis'
-      ? { ...item, data: { ...item.data, originalText: entry.value, localStats: calculateReadability(entry.value) } }
-      : { ...item, data: entry.value };
+    const patch = (item) => {
+      if (entry.domain !== 'analysis') return _applySimplifiedTextMutation(item, entry.value);
+      const evidence = _getFreshTextComplexityEvidence(item, entry.value);
+      const data = {
+        ...item.data,
+        originalText: entry.value,
+        ...(evidence.localStats ? { localStats: evidence.localStats } : {})
+      };
+      if (!evidence.localStats && data.localStats) delete data.localStats;
+      const updated = {
+        ...item,
+        data,
+        targetGradeLevel: evidence.targetGrade,
+        instructionalText: evidence.instructionalText
+      };
+      if (updated.levelCheck) delete updated.levelCheck;
+      if (updated.alignmentCheck) delete updated.alignmentCheck;
+      return updated;
+    };
     setHistory(prev => prev.map(item => (item && item.id === entry.id && item.type === entry.domain) ? patch(item) : item));
     setGeneratedContent(prev => (prev && prev.id === entry.id && prev.type === entry.domain) ? patch(prev) : prev);
   };
@@ -49854,15 +50273,26 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                         interrupted: 'border-amber-200 bg-amber-50 text-amber-900',
                         stopped: 'border-slate-300 bg-slate-100 text-slate-700',
                     };
+                    const _generationHelpersModule = window.AlloModules && window.AlloModules.GenerationHelpers;
+                    const fullPackEditableTypes = (() => {
+                        const fallback = ['analysis', 'simplified', 'glossary', 'image', 'outline', 'sentence-frames', 'faq', 'timeline', 'persona', 'concept-sort', 'brainstorm', 'quiz', 'lesson-plan', 'adventure', 'dbq', 'note-taking', 'anchor-chart', 'alignment-report', 'math', 'gemini-bridge'];
+                        const supplied = _generationHelpersModule && typeof _generationHelpersModule.getFullPackEditableResourceTypes === 'function'
+                            ? _generationHelpersModule.getFullPackEditableResourceTypes()
+                            : fallback;
+                        const cleaned = Array.isArray(supplied) ? supplied.map(type => String(type || '').trim()).filter(Boolean) : fallback;
+                        return Array.from(new Set(cleaned.length ? cleaned : fallback));
+                    })();
                     const buildRows = (run) => {
                         const resources = run && run.resources || {};
                         const actual = Object.values(resources);
                         const selected = run && run.preflight && Array.isArray(run.preflight.selected) ? run.preflight.selected : [];
                         const used = new Set();
                         const planned = selected.map((item, index) => {
-                            const match = actual.find(resource => resource && resource.type === item.type && Number(resource.index) === Number(item.index == null ? index : item.index));
+                            const stableKey = item && item.uiId ? String(item.uiId) : '';
+                            const match = (stableKey ? actual.find(resource => resource && String(resource.key || '') === stableKey) : null)
+                                || actual.find(resource => resource && resource.type === item.type && Number(resource.index) === Number(item.index == null ? index : item.index));
                             if (match && match.key) used.add(match.key);
-                            return Object.assign({ key: item.type + '-' + index, type: item.type, index, directive: item.directive || '', status: 'queued' }, match || {});
+                            return Object.assign({ key: item.uiId || item.type + '-' + index, uiId: item.uiId || null, type: item.type, index, directive: item.directive || '', status: 'queued' }, match || {});
                         });
                         actual.forEach(resource => { if (resource && !used.has(resource.key)) planned.push(resource); });
                         return planned;
@@ -49974,9 +50404,87 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                 {sections.map((section, sectionIndex) => {
                                     const rows = buildRows(section);
                                     const visibleRows = showCompletedFullPackRows ? rows : rows.filter(row => row && !['landed', 'completed'].includes(row.status));
+                                    const sectionGroupId = groupRuns.length > 0 ? section.groupId : null;
+                                    const sectionInstructionalContext = section?.planPayload?.instructionalContext || section?.settingsSnapshot?.instructionalContext || {};
+                                    const sectionPrimaryTextPolicy = sectionInstructionalContext.primaryTextPolicy === 'educator-directed' ? 'educator-directed' : 'preserve-primary';
+                                    const sectionAdaptedCount = rows.filter(row => row && row.type === 'simplified').length;
+                                    const sectionHasPrimary = rows.some(row => row && (row.type === 'analysis' || row.instructionalText?.role === 'primary'))
+                                        || history.some(item => item && (item.type === 'analysis' || item.instructionalText?.role === 'primary'))
+                                        || Boolean(String(inputText || '').trim());
+                                    const sectionHasStandards = Boolean(
+                                        (Array.isArray(sectionInstructionalContext?.standardsContext?.standards) && sectionInstructionalContext.standardsContext.standards.length)
+                                        || (Array.isArray(targetStandards) && targetStandards.length)
+                                        || String(sectionInstructionalContext?.standardsContext?.promptText || '').trim()
+                                    );
+                                    const sectionStandardsFrozen = Boolean(section?.preflight?.standardsFingerprint || sectionInstructionalContext.standardsFingerprint);
                                     return (
                                         <div key={section.groupId || section.runId || sectionIndex}>
                                             {groupRuns.length > 0 && <div className="mb-1.5 text-[10px] font-black uppercase tracking-wide text-indigo-800">{section.groupName || `Group ${sectionIndex + 1}`}</div>}
+                                            {fullPackRun.status === 'ready' && (
+                                                <div data-testid="full-pack-text-access-summary" data-group-id={sectionGroupId || ''} role="status" aria-live="polite" className="mb-2 rounded-xl border border-indigo-200 bg-indigo-50/70 px-2.5 py-2 text-[10px] leading-relaxed text-indigo-950">
+                                                    <div className="flex flex-wrap items-start justify-between gap-2">
+                                                        <div className="min-w-0 flex-1">
+                                                            <div className="font-black">{t('fullpack.text_access_summary') || 'Text access summary'}</div>
+                                                            <div className="mt-0.5">
+                                                                {sectionHasPrimary ? (t('fullpack.primary_available') || 'The primary/source text remains available to anchor this pack.') : (t('fullpack.primary_missing') || 'No primary/source text is identified in this plan.')}
+                                                            </div>
+                                                            <div className="mt-0.5">
+                                                                {sectionAdaptedCount > 0
+                                                                    ? `${sectionAdaptedCount} ${sectionAdaptedCount === 1 ? (t('fullpack.adapted_companion_one') || 'supplemental Adapted Text companion') : (t('fullpack.adapted_companion_many') || 'supplemental Adapted Text companions')}.`
+                                                                    : (t('fullpack.no_adapted_companion') || 'No Adapted Text companion is included.')}
+                                                                {' '}{t('fullpack.no_inferred_replacement') || 'No primary-text replacement or IEP modification is inferred.'}
+                                                            </div>
+                                                            {sectionStandardsFrozen && <div className="mt-0.5 font-semibold">{t('fullpack.standards_frozen') || 'The standards context is frozen to this reviewed plan.'}</div>}
+                                                        </div>
+                                                        <label className="min-w-[12rem] text-[9px] font-bold uppercase tracking-wide text-indigo-900">
+                                                            <span className="block mb-1">{t('fullpack.adapted_policy') || 'Adapted-text plan policy'}</span>
+                                                            <select
+                                                                data-testid="full-pack-primary-policy"
+                                                                data-group-id={sectionGroupId || ''}
+                                                                value={sectionPrimaryTextPolicy}
+                                                                onChange={event => handleSetFullPackPlanPrimaryTextPolicy(event.target.value, sectionGroupId)}
+                                                                className="w-full rounded-lg border border-indigo-300 bg-white px-2 py-1.5 text-[10px] font-bold normal-case tracking-normal text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                                                aria-label={(t('fullpack.adapted_policy') || 'Adapted-text plan policy') + (section.groupName ? `: ${section.groupName}` : '')}
+                                                            >
+                                                                <option value="preserve-primary" disabled={rows.length > 0 && sectionAdaptedCount === rows.length}>{t('fullpack.policy_preserve_primary') || 'Preserve primary (recommended)'}</option>
+                                                                <option value="educator-directed">{t('fullpack.policy_educator_directed') || 'Include supplemental Adapted Text'}</option>
+                                                            </select>
+                                                            {rows.length > 0 && sectionAdaptedCount === rows.length && <span className="mt-1 block normal-case font-medium tracking-normal">{t('fullpack.keep_non_adapted_first') || 'Add a non-adapted resource before turning this off.'}</span>}
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {fullPackRun.status === 'ready' && (
+                                                <div className="mb-2 flex flex-wrap items-end gap-2 rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-2">
+                                                    <label className="min-w-0 flex-1 text-[9px] font-bold uppercase tracking-wide text-slate-700">
+                                                        <span className="mb-1 block">{t('fullpack.add_resource') || 'Add resource'}</span>
+                                                        <select
+                                                            data-testid="full-pack-add-resource-select"
+                                                            data-group-id={sectionGroupId || ''}
+                                                            value={fullPackAddType}
+                                                            onChange={event => setFullPackAddType(event.target.value)}
+                                                            className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-[10px] font-semibold normal-case tracking-normal text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                                        >
+                                                            {fullPackEditableTypes.map(type => {
+                                                                const disabled = type === 'alignment-report' && !sectionHasStandards;
+                                                                const label = type === 'simplified' ? (t('common.adapted_text') || 'Adapted text') : (getDefaultTitle(type) || String(type).replace(/-/g, ' '));
+                                                                return <option key={type} value={type} disabled={disabled}>{label}{disabled ? ` (${t('fullpack.requires_standards') || 'requires standards'})` : ''}</option>;
+                                                            })}
+                                                        </select>
+                                                    </label>
+                                                    <button
+                                                        type="button"
+                                                        data-testid="full-pack-add-resource"
+                                                        data-group-id={sectionGroupId || ''}
+                                                        onClick={() => handleAddFullPackPlanResource({ type: fullPackAddType, directive: '' }, sectionGroupId)}
+                                                        disabled={!fullPackAddType || (fullPackAddType === 'alignment-report' && !sectionHasStandards)}
+                                                        className="inline-flex items-center gap-1 rounded-lg bg-indigo-700 px-2.5 py-1.5 text-[10px] font-bold text-white hover:bg-indigo-800 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+                                                    >
+                                                        <Plus size={12} aria-hidden="true" />
+                                                        {t('fullpack.add_resource_action') || 'Add to plan'}
+                                                    </button>
+                                                </div>
+                                            )}
                                             <div className="space-y-1.5">
                                                 {rows.length === 0 && <div className="rounded-lg border border-dashed border-slate-200 px-2.5 py-2 text-[10px] text-slate-500">{t('fullpack.waiting_group') || 'Waiting to plan this group…'}</div>}
                                                 {rows.length > 0 && visibleRows.length === 0 && <div className="rounded-lg border border-dashed border-emerald-200 bg-emerald-50/60 px-2.5 py-2 text-[10px] text-emerald-800">{t('fullpack.completed_hidden') || 'Completed resources are hidden.'}</div>}
@@ -50002,6 +50510,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                                         const snapshot = section.settingsSnapshot || originalPlanSettings;
                                                         const differentiation = section.preflight?.differentiation;
                                                         const isDifferentiated = Array.isArray(differentiation?.types) && differentiation.types.includes(row.type);
+                                                        const planResourceKey = row.uiId || rowKey;
+                                                        const rowTypeOptions = fullPackEditableTypes.includes(row.type) ? fullPackEditableTypes : [row.type, ...fullPackEditableTypes];
                                                         return (
                                                             <details key={rowKey} className="group/plan overflow-hidden rounded-lg border border-slate-200 bg-slate-50/70">
                                                                 <summary className="flex min-w-0 cursor-pointer list-none items-center justify-between gap-2 px-2.5 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500 [&::-webkit-details-marker]:hidden">
@@ -50009,10 +50519,86 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                                                     <span className="min-w-0 truncate text-[11px] font-bold text-slate-800">{rowTitle}</span>
                                                                     <span className="flex shrink-0 items-center gap-1.5">{rowStatus}<ChevronDown size={13} aria-hidden="true" className="text-slate-500 transition-transform motion-reduce:transition-none group-open/plan:rotate-180" /></span>
                                                                 </summary>
-                                                                <div className="space-y-1 border-t border-slate-200 bg-white px-2.5 py-2 text-[10px] leading-relaxed text-slate-700">
-                                                                    <div className="break-words"><span className="font-bold text-slate-900">{t('fullpack.instruction') || 'Instruction'}:</span> {row.directive || (t('fullpack.standard_guidance') || 'Standard generation guidance')}</div>
+                                                                <div className="space-y-2 border-t border-slate-200 bg-white px-2.5 py-2 text-[10px] leading-relaxed text-slate-700">
+                                                                    <label className="block font-bold text-slate-900">
+                                                                        <span className="mb-1 block">{t('fullpack.resource_type') || 'Resource type'}</span>
+                                                                        <select
+                                                                            data-testid="full-pack-resource-type"
+                                                                            data-resource-key={planResourceKey}
+                                                                            data-group-id={sectionGroupId || ''}
+                                                                            value={row.type}
+                                                                            onChange={event => handleChangeFullPackPlanResourceType(planResourceKey, event.target.value, sectionGroupId)}
+                                                                            className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-[10px] font-semibold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                                                            aria-label={(t('fullpack.resource_type') || 'Resource type') + ': ' + rowTitle}
+                                                                        >
+                                                                            {rowTypeOptions.map(type => {
+                                                                                const disabled = type === 'alignment-report' && !sectionHasStandards && type !== row.type;
+                                                                                const label = type === 'simplified' ? (t('common.adapted_text') || 'Adapted text') : (getDefaultTitle(type) || String(type).replace(/-/g, ' '));
+                                                                                return <option key={type} value={type} disabled={disabled}>{label}{disabled ? ` (${t('fullpack.requires_standards') || 'requires standards'})` : ''}</option>;
+                                                                            })}
+                                                                        </select>
+                                                                    </label>
+                                                                    <label className="block font-bold text-slate-900">
+                                                                        <span className="mb-1 block">{t('fullpack.instruction') || 'Instruction'}</span>
+                                                                        <textarea
+                                                                            data-testid="full-pack-resource-directive"
+                                                                            data-resource-key={planResourceKey}
+                                                                            data-group-id={sectionGroupId || ''}
+                                                                            rows={2}
+                                                                            maxLength={4000}
+                                                                            value={row.directive || ''}
+                                                                            onChange={event => handleEditFullPackPlanResourceDirective(planResourceKey, event.target.value, sectionGroupId)}
+                                                                            placeholder={t('fullpack.standard_guidance') || 'Standard generation guidance'}
+                                                                            className="w-full resize-y rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-[10px] font-medium leading-relaxed text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                                                            aria-label={(t('fullpack.instruction') || 'Instruction') + ': ' + rowTitle}
+                                                                        />
+                                                                    </label>
                                                                     <div><span className="font-bold text-slate-900">{t('fullpack.audience') || 'Audience'}:</span> {snapshot.gradeLevel || (t('fullpack.current_grade') || 'Current grade')} · {snapshot.leveledTextLanguage || (t('fullpack.default_language') || 'Default language')}</div>
                                                                     <div><span className="font-bold text-slate-900">{t('fullpack.differentiation') || 'Differentiation'}:</span> {isDifferentiated ? `${Math.max(1, differentiation.levelCount || 1)} ${t('fullpack.levels') || 'levels'}` : (t('fullpack.single_version') || 'Single version')}</div>
+                                                                    {row.type === 'analysis' && index > 0 && <div className="rounded-lg bg-amber-50 px-2 py-1 text-amber-900">{t('fullpack.analysis_first_hint') || 'Analyze Source works best before resources that depend on the source analysis.'}</div>}
+                                                                    {row.type === 'lesson-plan' && index < rows.length - 1 && <div className="rounded-lg bg-amber-50 px-2 py-1 text-amber-900">{t('fullpack.lesson_last_hint') || 'Lesson Plan works best last so it can incorporate earlier resources.'}</div>}
+                                                                    <div className="flex flex-wrap justify-end gap-1.5 pt-1">
+                                                                        <button
+                                                                            type="button"
+                                                                            data-testid="full-pack-move-up"
+                                                                            data-resource-key={planResourceKey}
+                                                                            data-group-id={sectionGroupId || ''}
+                                                                            disabled={index <= 0}
+                                                                            onClick={() => handleMoveFullPackPlanResource(planResourceKey, index - 1, sectionGroupId)}
+                                                                            className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-2 py-1 text-[9px] font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                                                            aria-label={(t('fullpack.move_up') || 'Move up') + ': ' + rowTitle}
+                                                                        >
+                                                                            <ArrowUp size={11} aria-hidden="true" />
+                                                                            {t('fullpack.move_up') || 'Move up'}
+                                                                        </button>
+                                                                        <button
+                                                                            type="button"
+                                                                            data-testid="full-pack-move-down"
+                                                                            data-resource-key={planResourceKey}
+                                                                            data-group-id={sectionGroupId || ''}
+                                                                            disabled={index >= rows.length - 1}
+                                                                            onClick={() => handleMoveFullPackPlanResource(planResourceKey, index + 1, sectionGroupId)}
+                                                                            className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-2 py-1 text-[9px] font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                                                                            aria-label={(t('fullpack.move_down') || 'Move down') + ': ' + rowTitle}
+                                                                        >
+                                                                            <ArrowDown size={11} aria-hidden="true" />
+                                                                            {t('fullpack.move_down') || 'Move down'}
+                                                                        </button>
+                                                                        <button
+                                                                            type="button"
+                                                                            data-testid="full-pack-remove-plan-row"
+                                                                            data-resource-key={planResourceKey}
+                                                                            data-group-id={sectionGroupId || ''}
+                                                                            disabled={rows.length <= 1}
+                                                                            onClick={() => handleRemoveFullPackPlanResource(planResourceKey, sectionGroupId)}
+                                                                            className="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-white px-2 py-1 text-[9px] font-bold text-rose-700 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
+                                                                            aria-label={(t('fullpack.remove_resource_aria') || 'Remove resource from plan') + ': ' + rowTitle}
+                                                                            title={rows.length <= 1 ? (t('fullpack.keep_one_resource') || 'Keep at least one resource in the plan') : (t('fullpack.remove_resource') || 'Remove from plan')}
+                                                                        >
+                                                                            <Trash2 size={11} aria-hidden="true" />
+                                                                            {t('fullpack.remove_resource') || 'Remove from plan'}
+                                                                        </button>
+                                                                    </div>
                                                                 </div>
                                                             </details>
                                                         );
@@ -51222,7 +51808,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     setFocusedParagraphIndex,
                     setIsCustomReviseOpen, setCustomReviseInstruction,
                     setComplexityLevel, setSaveOriginalOnAdjust,
-                    setReadingTheme, setGeneratedContent,
+                    setReadingTheme, setGeneratedContent, setHistory,
                     chunkReaderSweepAudioRef, chunkReaderSweepRafRef, textEditorRef,
                     handleCloseImmersiveReader, handleGeneratePOSData, handleCloseSpeedReader,
                     handleSpeak, handleWordClick, handlePhonicsClick,
@@ -53200,6 +53786,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                     : wsAudioStatus === 'unsupported' ? 'Audio unsupported'
                                       : wsAudioStatus === 'damaged' ? 'Audio damaged'
                                         : ('Audio missing ' + (entry.wsProgress?.audioReady || 0) + '/' + (entry.wsProgress?.audioTotal || 0));
+                          const wsAudioPrimaryLabel = wsAudioStatus === 'damaged' ? 'Resend audio' : wsAudioLabel;
                           return (
                             <div key={uid} style={{display:'flex',alignItems:'center',gap:6,padding:'0.3rem 0.45rem',background:'#f8fafc',border:'1px solid #e2e8f0',borderRadius:8,fontSize:'0.75rem'}}>
                               <span role="img" aria-label={presence.label} title={presence.label} style={{width:8,height:8,borderRadius:'50%',background:presence.color,flexShrink:0,display:'inline-block'}}></span>
@@ -53215,9 +53802,11 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                 >🎵 {entry.wsProgress.correct}/{entry.wsProgress.total}{entry.wsProgress.done ? ' ✓' : ''}</span>
                               ) : null}
                               {entry.wsProgress && wsAudioNeedsAttention ? (
+                                <span style={{display:'inline-flex',alignItems:'center',gap:4}}>
                                 <button
                                   type="button"
                                   disabled={wsAudioBusy}
+                                  aria-label={wsAudioPrimaryLabel + ' for ' + (entry.name || 'student')}
                                   title={wsAudioStatus === 'unsupported' ? 'This learner browser cannot play the prepared format. Open audio review and regenerate compatible clips.' : wsAudioStatus === 'blocked' && !wsAudioStalled ? 'The learner must tap Try sound again on their device.' : 'Resend prepared audio to this learner, or open audio review if the source pack is incomplete.'}
                                   onClick={async () => {
                                     const resourceId = entry.viewingResourceId || entry.resourceId || sessionData?.currentResourceId || null;
@@ -53244,7 +53833,30 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                                     }, 0);
                                   }}
                                   style={{whiteSpace:'nowrap',fontWeight:800,fontSize:'0.68rem',color:wsAudioBusy?'#1d4ed8':'#9a3412',background:wsAudioBusy?'#dbeafe':'#ffedd5',border:'1px solid '+(wsAudioBusy?'#93c5fd':'#fdba74'),borderRadius:6,padding:'0.05rem 0.3rem',cursor:wsAudioBusy?'wait':'pointer'}}
-                                >{wsAudioLabel}</button>
+                                >{wsAudioPrimaryLabel}</button>
+                                {wsAudioStatus === 'damaged' ? (
+                                  <button
+                                    type="button"
+                                    aria-label={'Review and repair audio for ' + (entry.name || 'student')}
+                                    title="Open the Word Sounds audio review to replace a persistently damaged clip."
+                                    onClick={() => {
+                                      const resourceId = entry.viewingResourceId || entry.resourceId || sessionData?.currentResourceId || null;
+                                      const resource = (generatedContent?.id === resourceId ? generatedContent : history.find(item => item && item.id === resourceId)) || null;
+                                      if (!resource || resource.type !== 'word-sounds') {
+                                        addToast('Open the Word Sounds resource, then review its audio.', 'info');
+                                        return;
+                                      }
+                                      handleRestoreView(resource, { suppressLiveFollow: true });
+                                      setTimeout(() => {
+                                        setWordSoundsAutoReview(true);
+                                        setIsWordSoundsMode(true);
+                                        setActiveView('word-sounds');
+                                      }, 0);
+                                    }}
+                                    style={{whiteSpace:'nowrap',fontWeight:800,fontSize:'0.68rem',color:'#6d28d9',background:'#f5f3ff',border:'1px solid #c4b5fd',borderRadius:6,padding:'0.05rem 0.3rem',cursor:'pointer'}}
+                                  >Review audio</button>
+                                ) : null}
+                                </span>
                               ) : null}
                               {entry.wsProbeResult && entry.wsProbeResult.total ? (
                                 <span
@@ -54651,6 +55263,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             generationType={isProcessing ? (alloGenerationType || activeView) : (isChatProcessing ? 'chat' : null)}
             generationProgress={isProcessing ? processingProgress : null}
             generationError={isProcessing ? null : error}
+            generationStep={isProcessing ? generationStep : ''}
+            generationStage={isProcessing ? generationStage : null}
             accessory={botAccessory}
             holdingPointer={isSpotlightMode}
             aimAt={(isSpotlightMode && tourRect)

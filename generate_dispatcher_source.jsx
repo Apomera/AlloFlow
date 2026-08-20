@@ -3,6 +3,14 @@
 // Switch-on-type router for simplified/glossary/quiz/outline/image/etc.
 
 const ADAPTED_CITATION_AUDIT_VERSION = 1;
+const GENERATION_STAGE_BY_TYPE = Object.freeze({
+  source: 'analyze', glossary: 'analyze', analysis: 'analyze', image: 'analyze',
+  faq: 'analyze', 'concept-sort': 'analyze', dbq: 'analyze', 'alignment-report': 'analyze',
+  simplified: 'build', translation: 'build', quiz: 'build', outline: 'build',
+  'lesson-plan': 'build', 'note-taking': 'build', 'anchor-chart': 'build',
+  'sentence-frames': 'build', brainstorm: 'build', adventure: 'build', persona: 'build',
+  timeline: 'build', 'word-sounds': 'build',
+});
 const ADAPTED_REFERENCES_HEADER_RE = /(?:^|\r?\n)[ \t]*#{1,6}[ \t]+(?:Source\s+Text\s+References|Accuracy\s+Check\s+References|(?:Referenced|Verified)\s+Sources|Sources?(?:[ \t]*\/[^\r\n]*)?|References|Bibliography|Works\s+Cited|Références|Sources\s+du\s+texte|Referencias|Quellen)[ \t]*:?[ \t]*(?=\r?\n|$)/i;
 const ADAPTED_CITATION_START_RE = /\[⁽[⁰¹²³⁴⁵⁶⁷⁸⁹]+⁾\]\(/g;
 
@@ -336,6 +344,168 @@ function extractAuditArtifactText(artifact) {
   return chunks.join('\n').replace(/\n{3,}/g, '\n\n').trim();
 }
 
+// Text role is instructional metadata, not a synonym for the legacy resource
+// type. In particular, `simplified` remains the internal type while its role can
+// be supplemental, primary (only after an explicit educator designation), or
+// unspecified for legacy work. Keep the fallback deliberately conservative:
+// old resources must never acquire replacement authorization merely because of
+// their type or title.
+function _auditInstructionalText(artifact) {
+  const item = artifact && typeof artifact === 'object' ? artifact : {};
+  const config = item.config && typeof item.config === 'object' ? item.config : {};
+  const raw = item.instructionalText
+    || config.instructionalText
+    || item.textProfile
+    || config.textProfile
+    || null;
+  const inferredForm = item.type === 'simplified' ? 'adapted' : 'original';
+  let shared = null;
+  try {
+    const api = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.InstructionalContext;
+    if (raw && api && typeof api.normalizeInstructionalText === 'function') {
+      shared = api.normalizeInstructionalText(raw, { defaultForm: inferredForm });
+    }
+  } catch (_) { shared = null; }
+  const value = shared && typeof shared === 'object' ? shared : (raw && typeof raw === 'object' ? raw : {});
+  const role = ['primary', 'supplemental', 'unspecified'].includes(value.role) ? value.role : 'unspecified';
+  const form = ['original', 'same-text-supported', 'adapted'].includes(value.form) ? value.form : inferredForm;
+  const auth = value.replacementAuthorization && typeof value.replacementAuthorization === 'object'
+    ? value.replacementAuthorization
+    : {};
+  // Both fields must be explicit. `authorized: true` from an older or unknown
+  // producer is insufficient evidence of an educator decision.
+  const educatorAuthorized = auth.authorized === true && auth.source === 'educator';
+  const complexity = value.complexity && typeof value.complexity === 'object' ? value.complexity : {};
+  return {
+    schemaVersion: 1,
+    role,
+    form,
+    sourceArtifactId: value.sourceArtifactId == null ? null : String(value.sourceArtifactId),
+    primaryArtifactId: value.primaryArtifactId == null ? null : String(value.primaryArtifactId),
+    designationSource: ['educator', 'workflow-default', 'legacy-inferred'].includes(value.designationSource)
+      ? value.designationSource
+      : 'legacy-inferred',
+    replacementAuthorization: {
+      authorized: educatorAuthorized,
+      source: educatorAuthorized ? 'educator' : 'none',
+    },
+    complexity: {
+      requestedGrade: complexity.requestedGrade || item.targetGradeLevel || config.grade || '',
+      calibrationTarget: complexity.calibrationTarget || '',
+      measuredGrade: complexity.measuredGrade != null
+        ? complexity.measuredGrade
+        : (item.localStats && item.localStats.gradeLevel != null ? item.localStats.gradeLevel : null),
+      method: complexity.method || (item.localStats ? 'flesch-kincaid' : ''),
+      status: complexity.status || '',
+      contentFingerprint: complexity.contentFingerprint || '',
+      measuredAt: complexity.measuredAt || null,
+      language: complexity.language || config.language || '',
+    },
+  };
+}
+
+function _auditPrimaryTextValue(artifact) {
+  if (!artifact) return '';
+  const data = artifact.data;
+  if (artifact.type === 'analysis') {
+    return String(artifact.originalText || (data && data.originalText) || artifact.rawEnglishText || '').trim();
+  }
+  if (typeof data === 'string') return data.trim();
+  if (data && typeof data === 'object') {
+    return String(data.originalText || data.sourceText || data.text || data.simplifiedText || '').trim();
+  }
+  return '';
+}
+
+function _auditContentFingerprint(text) {
+  const input = String(text == null ? '' : text).replace(/\r\n?/g, '\n');
+  try {
+    const api = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.InstructionalContext;
+    if (api && typeof api.fingerprintText === 'function') return api.fingerprintText(input);
+  } catch (_) { /* use the contract-compatible fallback */ }
+  let hash = 2166136261;
+  for (let index = 0; index < input.length; index++) {
+    hash ^= input.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return 'txt-' + (hash >>> 0).toString(16).padStart(8, '0') + '-' + input.length;
+}
+
+function _auditTextAccessEvidence(artifacts) {
+  const safe = Array.isArray(artifacts) ? artifacts : [];
+  const evidence = {
+    primaryArtifactIds: [],
+    supportedPrimaryArtifactIds: [],
+    supplementalArtifactIds: [],
+    adaptedArtifactIds: [],
+    authorizedModifiedArtifactIds: [],
+    unauthorizedPrimaryAdaptationIds: [],
+    unspecifiedArtifactIds: [],
+    legacySourceArtifactIds: [],
+    primaryWithCurrentComplexityEvidenceIds: [],
+    stalePrimaryComplexityEvidenceIds: [],
+  };
+  safe.forEach(function (artifact) {
+    if (!artifact) return;
+    const id = artifact.id == null ? null : String(artifact.id);
+    const profile = _auditInstructionalText(artifact);
+    const primaryText = _auditPrimaryTextValue(artifact);
+    const isAuthorizedAdaptedPrimary = profile.form !== 'adapted' || profile.replacementAuthorization.authorized === true;
+    if (profile.role === 'primary' && isAuthorizedAdaptedPrimary && primaryText && id) evidence.primaryArtifactIds.push(id);
+    if (profile.role === 'primary' && profile.form === 'adapted' && !profile.replacementAuthorization.authorized && id) {
+      evidence.unauthorizedPrimaryAdaptationIds.push(id);
+    }
+    if (profile.role === 'primary' && profile.form === 'same-text-supported' && id) evidence.supportedPrimaryArtifactIds.push(id);
+    if (profile.role === 'supplemental' && id) evidence.supplementalArtifactIds.push(id);
+    if (profile.form === 'adapted' && id) evidence.adaptedArtifactIds.push(id);
+    if (profile.form === 'adapted' && profile.replacementAuthorization.authorized && id) evidence.authorizedModifiedArtifactIds.push(id);
+    if (profile.role === 'unspecified' && id) evidence.unspecifiedArtifactIds.push(id);
+    if (artifact.type === 'analysis' && _auditPrimaryTextValue(artifact) && id) evidence.legacySourceArtifactIds.push(id);
+    if (profile.role === 'primary' && primaryText && profile.complexity
+      && (profile.complexity.status === 'within-target' || profile.complexity.status === 'verified')
+      && profile.complexity.contentFingerprint && id) {
+      const currentFingerprint = _auditContentFingerprint(primaryText);
+      if (profile.complexity.contentFingerprint === currentFingerprint) {
+        evidence.primaryWithCurrentComplexityEvidenceIds.push(id);
+      } else {
+        evidence.stalePrimaryComplexityEvidenceIds.push(id);
+      }
+    }
+  });
+  const hasPrimary = evidence.primaryArtifactIds.length > 0;
+  const hasLegacySource = evidence.legacySourceArtifactIds.length > 0;
+  const hasSupplementalWithoutPrimary = evidence.supplementalArtifactIds.length > 0 && !hasPrimary && !hasLegacySource;
+  let status = 'Aligned';
+  const recommendations = [];
+  if (evidence.unauthorizedPrimaryAdaptationIds.length > 0) {
+    status = 'Not Aligned';
+    recommendations.push('An adapted text is designated as primary without an explicit educator replacement decision. Keep it supplemental or record the educator decision before treating it as the primary text.');
+  }
+  if (hasSupplementalWithoutPrimary) {
+    status = 'Not Aligned';
+    recommendations.push('A supplemental adapted text is present without a designated primary or analyzed source text. Add or designate the primary text before sharing the companion version by itself.');
+  } else if (!hasPrimary && hasLegacySource) {
+    if (status === 'Aligned') status = 'Partially Aligned';
+    recommendations.push('A source text is available through analysis, but its instructional role is unspecified. Confirm which artifact is the primary text and verify its grade-level complexity.');
+  } else if (!hasPrimary && !hasLegacySource) {
+    if (status === 'Aligned') status = 'Not evaluated';
+    recommendations.push('No primary text was identified in the audit scope. Add or designate the primary text before evaluating grade-level access.');
+  } else if (evidence.primaryWithCurrentComplexityEvidenceIds.length === 0) {
+    if (status === 'Aligned') status = 'Partially Aligned';
+    recommendations.push(evidence.stalePrimaryComplexityEvidenceIds.length > 0
+      ? 'The stored complexity result no longer matches the designated primary text. Run Check Level or source analysis again after the final edit.'
+      : 'A primary text is designated, but the audit has no current fingerprint-bound complexity evidence for it. Run Check Level or source analysis after the final edit.');
+  }
+  return Object.assign(evidence, {
+    status,
+    hasPrimary,
+    hasLegacySource,
+    hasSupplementalWithoutPrimary,
+    recommendations,
+    notes: 'Text role and authorization come only from stored instructional metadata. Legacy resources remain unspecified; this audit never infers an IEP, legal modification, or educator authorization.',
+  });
+}
+
 const DEDICATED_READ_ALOUD_TYPES = new Set(['adventure', 'dbq', 'faq', 'glossary', 'image', 'persona', 'quiz', 'simplified']);
 const AUDIT_EXCLUDED_TYPES = new Set(['alignment-report', 'remediated', 'audit-remediation']);
 
@@ -534,11 +704,20 @@ function selectCurriculumArtifacts(history, config) {
       requestedArtifactIds: requestedIds,
       includedArtifactIds: selected.map(function (artifact) { return artifact.id || null; }).filter(Boolean),
       includedArtifacts: selected.map(function (artifact) {
+        const instructionalText = _auditInstructionalText(artifact);
         return {
           id: artifact.id || null,
           title: String(artifact.title || formatAuditArtifactTitle(artifact) || artifact.type || 'Artifact').slice(0, 160),
           type: String(artifact.type || 'unknown').slice(0, 80),
           timestamp: artifact.timestamp || null,
+          textRole: instructionalText.role,
+          textForm: instructionalText.form,
+          sourceArtifactId: instructionalText.sourceArtifactId,
+          primaryArtifactId: instructionalText.primaryArtifactId,
+          requestedGrade: instructionalText.complexity.requestedGrade || null,
+          measuredGrade: instructionalText.complexity.measuredGrade,
+          complexityStatus: instructionalText.complexity.status || null,
+          complexityFingerprint: instructionalText.complexity.contentFingerprint || null,
         };
       }).filter(function (artifact) { return artifact.id; }).slice(0, 100),
       includedTypes: Array.from(new Set(selected.map(function (artifact) { return artifact.type; }))),
@@ -571,7 +750,10 @@ function _auditFingerprint(artifacts, ...extras) {
         if (!a) return '?';
         let dataHash = '0';
         try { dataHash = _hashStr(JSON.stringify(a.data || null)); } catch (e) { dataHash = 'circ'; }
-        return (a.id || '?') + ':' + (a.type || '?') + ':' + dataHash;
+        const profile = _auditInstructionalText(a);
+        let roleHash = '0';
+        try { roleHash = _hashStr(JSON.stringify(profile)); } catch (e) { roleHash = 'circ'; }
+        return (a.id || '?') + ':' + (a.type || '?') + ':' + dataHash + ':' + roleHash;
     });
     return _hashStr(parts.join('|') + '||' + extras.join('|'));
 }
@@ -591,6 +773,7 @@ function harvestExistingAuditSignals(artifacts) {
     scaffoldCounts: { sentenceFrames: 0, simplifiedTexts: 0, leveledGlossary: 0 },
     multimodal: { text: false, image: false, audio: false, interactive: false },
     distinctTypes: new Set(),
+    textAccess: _auditTextAccessEvidence(artifacts),
   };
   artifacts.forEach(item => {
     if (!item || !item.type) return;
@@ -619,20 +802,26 @@ function harvestExistingAuditSignals(artifacts) {
     } else if (item.type === 'simplified') {
       out.scaffoldCounts.simplifiedTexts++;
       out.multimodal.text = true;
-      // Simplified data shape varies; record what we can.
-      if (typeof d === 'object' && d) {
-        const original = d.originalText || d.original || '';
-        const simplified = d.simplifiedText || d.text || (typeof d === 'string' ? d : '');
-        if (original && simplified) {
-          const origWords = (original.match(/\S+/g) || []).length;
-          const simpWords = (simplified.match(/\S+/g) || []).length;
-          out.simplifiedShifts.push({
-            originalWords: origWords,
-            simplifiedWords: simpWords,
-            ratio: origWords > 0 ? +(simpWords / origWords).toFixed(2) : null,
-            targetGrade: d.targetGrade || d.grade || null,
-          });
-        }
+      // Adapted data is usually a string, while target/measurement evidence
+      // lives on the artifact or its config. Read both shapes and never imply a
+      // word-count shift unless a real linked/original value is present.
+      const profile = _auditInstructionalText(item);
+      const objectData = typeof d === 'object' && d ? d : {};
+      const original = objectData.originalText || objectData.original || '';
+      const adapted = typeof d === 'string' ? d : (objectData.simplifiedText || objectData.text || '');
+      if (adapted) {
+        const origWords = (String(original).match(/\S+/g) || []).length;
+        const adaptedWords = (String(adapted).match(/\S+/g) || []).length;
+        out.simplifiedShifts.push({
+          originalWords: origWords || null,
+          simplifiedWords: adaptedWords,
+          ratio: origWords > 0 ? +(adaptedWords / origWords).toFixed(2) : null,
+          targetGrade: profile.complexity.requestedGrade || null,
+          measuredGrade: profile.complexity.measuredGrade,
+          complexityStatus: profile.complexity.status || null,
+          role: profile.role,
+          sourceArtifactId: profile.sourceArtifactId,
+        });
       }
     } else if (item.type === 'quiz' && d.questions) {
       out.multimodal.interactive = true;
@@ -693,7 +882,7 @@ function computeEngagementVariety(harvest, artifacts) {
   const recommendations = [];
   if (distinctTypeCount < 3) {
     status = 'Partially Aligned';
-    recommendations.push(`Only ${distinctTypeCount} artifact type(s) present. Consider adding at least 2 more formats (e.g., visual organizer, sentence frames, quiz, leveled text) for engagement variety.`);
+    recommendations.push(`Only ${distinctTypeCount} artifact type(s) present. Consider adding at least 2 more formats (e.g., visual organizer, sentence frames, quiz, or an audio path) for engagement variety.`);
   }
   if (modalitiesPresent.length < 2) {
     if (status === 'Aligned') status = 'Partially Aligned';
@@ -703,9 +892,9 @@ function computeEngagementVariety(harvest, artifacts) {
     if (status === 'Aligned') status = 'Partially Aligned';
     recommendations.push(`Quiz DOK skews heavily to recall (Level 1: ${dokPercent.L1}%). Add Level 2-3 questions that require application or strategic thinking.`);
   }
-  if (harvest.scaffoldCounts.sentenceFrames + harvest.scaffoldCounts.simplifiedTexts === 0 && totalArtifacts >= 3) {
+  if (harvest.scaffoldCounts.sentenceFrames + harvest.scaffoldCounts.simplifiedTexts + harvest.scaffoldCounts.leveledGlossary === 0 && totalArtifacts >= 3) {
     if (status === 'Aligned') status = 'Partially Aligned';
-    recommendations.push('No scaffolds detected (sentence frames, simplified text, leveled glossary). Consider adding scaffolds to support diverse learners.');
+    recommendations.push('No language-access scaffolds detected. Consider same-text supports first (annotation, chunking, glossary, audio, or sentence frames); add a supplemental adapted text only when instructionally appropriate.');
   }
 
   return {
@@ -904,11 +1093,14 @@ function computeContentAccessibility(artifacts, harvest, gradeLevel) {
 // across the artifact bundle.
 function computeDifferentiationCoverage(artifacts, harvest, language) {
   const has = function (type) { return artifacts.some(function (a) { return a && a.type === type; }); };
-  const simplifiedLevels = new Set();
+  const adaptedLevels = new Set();
   const audioCoverage = computeAudioCoverage(artifacts, language);
+  const textAccess = harvest && harvest.textAccess ? harvest.textAccess : _auditTextAccessEvidence(artifacts);
   const flags = {
-    leveledReadingText: false,    // simplified text exists
-    multipleReadingLevels: false, // simplified at multiple levels (look at differentiationGrades)
+    primaryTextAvailable: !!(textAccess.hasPrimary || textAccess.hasLegacySource),
+    primaryRoleConfirmed: !!textAccess.hasPrimary,
+    sameTextSupport: false,
+    supplementalAdaptedText: false,
     glossarySupport: has('glossary'),
     sentenceFrames: has('sentence-frames'),
     visualOrganizer: has('outline') || has('concept-sort') || has('timeline'),
@@ -918,26 +1110,38 @@ function computeDifferentiationCoverage(artifacts, harvest, language) {
     audioPath: audioCoverage.readAloudCapableArtifacts > 0 || audioCoverage.embeddedAudioArtifacts > 0 || audioCoverage.preparedAudioArtifacts > 0,
   };
   artifacts.forEach(function (a) {
-    if (a && a.type === 'simplified') {
-      flags.leveledReadingText = true;
-      var d = a.data || {};
-      [d.targetGrade, d.grade, a.targetGrade, a.gradeLevel].filter(Boolean).forEach(function (level) { simplifiedLevels.add(String(level).trim().toLowerCase()); });
+    if (!a) return;
+    const profile = _auditInstructionalText(a);
+    if (profile.form === 'same-text-supported') flags.sameTextSupport = true;
+    if (profile.role === 'supplemental' && profile.form === 'adapted') flags.supplementalAdaptedText = true;
+    if (a.type === 'simplified' || profile.form === 'adapted') {
+      var d = a.data && typeof a.data === 'object' ? a.data : {};
+      [profile.complexity.requestedGrade, d.targetGrade, d.grade, a.targetGradeLevel, a.targetGrade, a.gradeLevel, a.config && a.config.grade]
+        .filter(Boolean).forEach(function (level) { adaptedLevels.add(String(level).trim().toLowerCase()); });
       if (Array.isArray(d.versions)) d.versions.forEach(function (version) {
         var level = version && (version.targetGrade || version.grade || version.level);
-        if (level) simplifiedLevels.add(String(level).trim().toLowerCase());
+        if (level) adaptedLevels.add(String(level).trim().toLowerCase());
       });
       if (Array.isArray(d.differentiationGrades)) d.differentiationGrades.filter(Boolean).forEach(function (level) {
-        simplifiedLevels.add(String(level).trim().toLowerCase());
+        adaptedLevels.add(String(level).trim().toLowerCase());
       });
     }
   });
-  flags.multipleReadingLevels = simplifiedLevels.size > 1;
+  // Back-compatible fields are kept for report renderers, but no longer count
+  // toward coverage. Additional lowered versions are not evidence that a
+  // primary grade-level text remains available.
+  flags.leveledReadingText = textAccess.adaptedArtifactIds.length > 0;
+  flags.multipleReadingLevels = adaptedLevels.size > 1;
   // Reuse harvest scaffold counts where available
   var sf = harvest && harvest.scaffoldCounts ? harvest.scaffoldCounts : {};
   if ((sf.sentenceFrames || 0) > 0) flags.sentenceFrames = true;
   if ((sf.leveledGlossary || 0) > 0) flags.glossarySupport = true;
 
-  const dims = Object.keys(flags);
+  const dims = [
+    'primaryTextAvailable', 'sameTextSupport', 'glossarySupport',
+    'sentenceFrames', 'visualOrganizer', 'quizScaffold',
+    'interactiveOrAdventure', 'visualOrImage', 'audioPath'
+  ];
   const presentCount = dims.reduce(function (n, k) { return n + (flags[k] ? 1 : 0); }, 0);
   const coverage = dims.length > 0 ? Math.round((presentCount / dims.length) * 100) : 0;
   // Status thresholds: 70%+ Aligned, 40-69% Partial, <40% Not Aligned.
@@ -945,10 +1149,13 @@ function computeDifferentiationCoverage(artifacts, harvest, language) {
   if (coverage >= 70) status = 'Aligned';
   else if (coverage >= 40) status = 'Partially Aligned';
   else status = 'Not Aligned';
+  if (textAccess.status === 'Not Aligned') status = 'Not Aligned';
+  else if (textAccess.status === 'Not evaluated' && !flags.primaryTextAvailable) status = 'Not evaluated';
+  else if (textAccess.status === 'Partially Aligned' && status === 'Aligned') status = 'Partially Aligned';
   // Per-row recommendation list
   const labelMap = {
-    leveledReadingText: 'Leveled / simplified text',
-    multipleReadingLevels: 'Multi-level versions (more than one reading level)',
+    primaryTextAvailable: 'Primary text',
+    sameTextSupport: 'Same-text support (annotation / chunking / guided access)',
     glossarySupport: 'Glossary / vocabulary support',
     sentenceFrames: 'Sentence frames (writing scaffold)',
     visualOrganizer: 'Visual organizer (outline / concept sort / timeline)',
@@ -958,24 +1165,24 @@ function computeDifferentiationCoverage(artifacts, harvest, language) {
     audioPath: 'Audio narration path',
   };
   const missing = dims.filter(function (k) { return !flags[k]; }).map(function (k) { return labelMap[k]; });
-  const recommendations = [];
+  const recommendations = (textAccess.recommendations || []).slice();
   if (missing.length > 0 && coverage < 70) {
     recommendations.push('Differentiation gaps: missing ' + missing.slice(0, 4).join(', ') + (missing.length > 4 ? ', and more' : '') + '. Generate at least one of these to broaden access for learners with different needs.');
   }
-  if (!flags.multipleReadingLevels && flags.leveledReadingText) {
-    recommendations.push('Source text exists at one level only. Generate a second simplified version to support a wider reader range.');
-  }
   return {
     status,
+    notEvaluated: status === 'Not evaluated',
     coverage,
     presentCount,
     totalAccommodationTypes: dims.length,
-    simplifiedLevels: Array.from(simplifiedLevels),
+    simplifiedLevels: Array.from(adaptedLevels),
+    adaptedLevels: Array.from(adaptedLevels),
     audioCoverage,
+    textAccess,
     flags,
     missing,
     recommendations,
-    notes: 'Detects ' + dims.length + ' UDL accommodation types: leveled text, multi-level versions, glossary, sentence frames, visual organizer, quiz, interactive/adventure, image, audio. Coverage = % of types present. Heuristic — does not assess accommodation quality.',
+    notes: 'Detects ' + dims.length + ' access paths while checking primary-text presence separately. Supplemental adaptations and additional lowered versions are reported but do not increase the score by themselves. This heuristic does not assess accommodation quality or legal authorization.',
   };
 }
 
@@ -1204,20 +1411,45 @@ function computeReadinessScore(comprehensive) {
 }
 
 function collectAuditText(artifacts) {
-  const out = { text: '', sourceText: '', glossaryTerms: [] };
-  let simplifiedText = '';
+  const out = {
+    text: '',
+    sourceText: '',
+    sourceArtifactId: null,
+    sourceSelection: 'none',
+    glossaryTerms: [],
+  };
+  let legacyAnalysisText = '';
+  let legacyAnalysisId = null;
+  let adaptedFallbackText = '';
+  let adaptedFallbackId = null;
   (Array.isArray(artifacts) ? artifacts : []).forEach(function (item) {
     if (!item) return;
     const artifactText = extractAuditArtifactText(item);
     if (artifactText) out.text += artifactText + '\n';
     const d = item.data;
+    const profile = _auditInstructionalText(item);
+    const candidateText = _auditPrimaryTextValue(item);
+    const primaryIsUsable = profile.role === 'primary'
+      && (profile.form !== 'adapted' || profile.replacementAuthorization.authorized === true);
+    if (primaryIsUsable && candidateText) {
+      // Iteration order is history order, so a later explicit designation wins.
+      out.sourceText = candidateText;
+      out.sourceArtifactId = item.id || null;
+      out.sourceSelection = 'designated-primary';
+    }
     if (item.type === 'analysis') {
       const source = item.originalText || (d && d.originalText) || '';
-      if (source) out.sourceText = String(source);
+      if (source) {
+        legacyAnalysisText = String(source);
+        legacyAnalysisId = item.id || null;
+      }
     }
-    if (item.type === 'simplified') {
-      const simplified = typeof d === 'string' ? d : d && (d.simplifiedText || d.text);
-      if (simplified) simplifiedText = String(simplified);
+    if (profile.form === 'adapted' || item.type === 'simplified') {
+      const adapted = typeof d === 'string' ? d : d && (d.simplifiedText || d.text);
+      if (adapted) {
+        adaptedFallbackText = String(adapted);
+        adaptedFallbackId = item.id || null;
+      }
     }
     if (item.type === 'glossary') {
       const entries = Array.isArray(d) ? d : d && Array.isArray(d.items) ? d.items : [];
@@ -1227,7 +1459,18 @@ function collectAuditText(artifacts) {
       });
     }
   });
-  out.sourceText = out.sourceText || simplifiedText || '';
+  if (!out.sourceText && legacyAnalysisText) {
+    out.sourceText = legacyAnalysisText;
+    out.sourceArtifactId = legacyAnalysisId;
+    out.sourceSelection = 'analyzed-source-fallback';
+  } else if (!out.sourceText && adaptedFallbackText) {
+    // Vocabulary counts can still be useful when the only available text is an
+    // adaptation, but the selection label prevents downstream code or reports
+    // from describing this fallback as the primary source.
+    out.sourceText = adaptedFallbackText;
+    out.sourceArtifactId = adaptedFallbackId;
+    out.sourceSelection = 'adapted-fallback-not-primary';
+  }
   return out;
 }
 
@@ -1245,7 +1488,7 @@ function _tokenizeAuditWords(text, language) {
 }
 
 function computeVocabularyFit(artifacts, gradeLevel, language) {
-  const { text, sourceText, glossaryTerms } = collectAuditText(artifacts);
+  const { text, sourceText, sourceArtifactId, sourceSelection, glossaryTerms } = collectAuditText(artifacts);
   const effectiveLanguage = String(language || 'en');
   // sourceWords: count of words in the primary source text only (matches teacher intuition).
   // auditedTextWords: count across the full bundle (every artifact's content).
@@ -1267,6 +1510,8 @@ function computeVocabularyFit(artifacts, gradeLevel, language) {
       language: effectiveLanguage,
       sourceWords,
       auditedTextWords,
+      sourceArtifactId,
+      sourceSelection,
       totalWords: auditedTextWords,
       uniqueWords: uniqueSet.size,
       tier1Count: null,
@@ -1340,6 +1585,8 @@ function computeVocabularyFit(artifacts, gradeLevel, language) {
     scoreBasis: 'Deterministic English-language length, glossary, and suffix heuristics; teacher review is required.',
     sourceWords,
     auditedTextWords,
+    sourceArtifactId,
+    sourceSelection,
     totalWords: auditedTextWords, // legacy alias for backward compat with old saved audits
     uniqueWords: uniqueSet.size,
     tier1Count: tier1,
@@ -1634,7 +1881,13 @@ const describeActivityItem = (item, labels) => {
 };
 
 const handleGenerate = async (type, langOverride = null, keepLoading = false, textOverride = null, configOverride = {}, switchView = true, deps) => {
-  const { gradeLevel, outlineType, visualStyle, visualCustomStyle, visualLayoutMode, quizMcqCount, persistedLessonDNA, leveledTextCustomInstructions, quizCustomInstructions, glossaryCustomInstructions, frameCustomInstructions, adventureCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, lessonCustomAdditions, timelineTopic, sourceTopic, history, inputText, differentiationRange, leveledTextLanguage, translationMode, resolveTranslationPolicy, selectedLanguages, studentInterests: _ambientStudentInterests, guidedMode, guidedStep, standardsInput, standardsContext: _ambientStandardsContext, targetStandards, dokLevel, sourceLength, sourceTone, textFormat, useEmojis, fullPackTargetGroup, rosterKey, imageGenerationStyle, imageAspectRatio, enableEmojiInline, cellGameDifficulty, includeSourceCitations, includeBibliography, currentUiLanguage, sourceCustomInstructions, sourceVocabulary, sourceLevel, generatedContent, mathSubject, mathMode, mathInput, mathQuantity, isAutoConfigEnabled, resourceCount, isParentMode, isIndependentMode, isTeacherMode, frameType, fillInTheBlank, vocabularyType, enableFactionResources, factionResourceMode, isAdventureStoryMode, isSocialStoryMode, isImmersiveMode, adventureChanceMode, adventureConsistentCharacters, adventureFreeResponseEnabled, adventureLanguageMode, adventureInputMode, apiKey, setIsMapLocked, setIsProcessing, setGenerationStep, setInteractionMode, setDefinitionData, setSelectionMenu, setRevisionData, setIsReviewGame, setReviewGameState, setGuidedStep, setGeneratedContent, setActiveView, setHistory, setError, setShowKokoroOfferModal, alloBotRef, pdfFixResult, addToast, t, warnLog, debugLog, callGemini: callGeminiBase, cleanJson, safeJsonParse, callImagen, extractSourceTextForProcessing, formatLessonDNA, getDifferentiationGrades, getGroupDifferentiationContext, flyToElement, fisherYatesShuffle, sanitizeTruncatedCitations, normalizeCitationPlacement, fixCitationPlacement, generateBibliographyString, processGrounding, parseFlowChartData, verifyMathProblems, normalizeResourceLinks, detectClimaxArchetype, handleGenerateLessonPlan, handleGenerateMath, handleGenerateSource, autoConfigureSettings, applyDetailedAutoConfig, getAssetManifest, getLessonContext, buildLessonPlanPrompt, buildStudyGuidePrompt, buildParentGuidePrompt, GUIDED_STEPS, LENGTH_THRESHOLDS, TIMELINE_MODE_DEFINITIONS, audioRef, autoRemoveWords, bridgeSimType, bridgeStepCount, conceptImageMode, conceptItemCount, conceptSortImageStyle, creativeMode, faqCount, glossaryDefinitionLevel, glossaryImageStyle, glossaryTier2Count, glossaryTier3Count, includeCharts, includeEtymology, includeTimelineVisuals, isBotVisible, isMathGraphEnabled, keepCitations, leveledTextLength, noText, passAnalysisToQuiz, quizReflectionCount, selectedConcepts: _ambientSelectedConcepts, standardsPromptString: _ambientStandardsPromptString, timelineImageStyle, timelineItemCount, timelineMode, useLowQualityVisuals, setGameMode, setGlossarySearchTerm, setIsConceptMapReady, setIsEditingAnalysis, setIsEditingBrainstorm, setIsEditingFaq, setIsEditingGlossary, setIsEditingLeveledText, setIsEditingOutline, setIsEditingQuiz, setIsEditingScaffolds, setIsGeneratingPersona, setIsInteractiveVenn, setIsMatchingGame, setIsMemoryGame, setIsPlaying, setIsPresentationMode, setIsSideBySide, setIsStudentBingoGame, setIsVennPlaying, setPersonaState, setPresentationState, setProcessingProgress, setShowQuizAnswers, setStickers, calculateReadability, callGeminiImageEdit, checkAccuracyWithSearch, chunkText, countWords, executeVisualPlan, filterEducationalSources, formatMathQuestion, generateHelpfulHint, generateVisualPlan, getDefaultTitle, performDeepVerification, repairGeneratedText, resetPersonaInterviewState, validateSequenceStructure, universalImageStyle, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, personaCustomInstructions, differentiationTypes, differentiationCustomGrades } = deps;
+  const { gradeLevel, outlineType, visualStyle, visualCustomStyle, visualLayoutMode, quizMcqCount, persistedLessonDNA, leveledTextCustomInstructions, quizCustomInstructions, glossaryCustomInstructions, frameCustomInstructions, adventureCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, lessonCustomAdditions, timelineTopic, sourceTopic, history, inputText, differentiationRange, leveledTextLanguage, translationMode, resolveTranslationPolicy, selectedLanguages, studentInterests: _ambientStudentInterests, guidedMode, guidedStep, standardsInput, standardsContext: _ambientStandardsContext, targetStandards, dokLevel, sourceLength, sourceTone, textFormat, useEmojis, fullPackTargetGroup, rosterKey, imageGenerationStyle, imageAspectRatio, enableEmojiInline, cellGameDifficulty, includeSourceCitations, includeBibliography, currentUiLanguage, sourceCustomInstructions, sourceVocabulary, sourceLevel, generatedContent, mathSubject, mathMode, mathInput, mathQuantity, isAutoConfigEnabled, resourceCount, isParentMode, isIndependentMode, isTeacherMode, frameType, fillInTheBlank, vocabularyType, enableFactionResources, factionResourceMode, isAdventureStoryMode, isSocialStoryMode, isImmersiveMode, adventureChanceMode, adventureConsistentCharacters, adventureFreeResponseEnabled, adventureLanguageMode, adventureInputMode, apiKey, setIsMapLocked, setIsProcessing, setGenerationStep, setGenerationStage, setInteractionMode, setDefinitionData, setSelectionMenu, setRevisionData, setIsReviewGame, setReviewGameState, setGuidedStep, setGeneratedContent, setActiveView, setHistory, setError, setShowKokoroOfferModal, alloBotRef, pdfFixResult, addToast, t, warnLog, debugLog, callGemini: callGeminiBase, cleanJson, safeJsonParse, callImagen, extractSourceTextForProcessing, formatLessonDNA, getDifferentiationGrades, getGroupDifferentiationContext, flyToElement, fisherYatesShuffle, sanitizeTruncatedCitations, normalizeCitationPlacement, fixCitationPlacement, generateBibliographyString, processGrounding, parseFlowChartData, verifyMathProblems, normalizeResourceLinks, detectClimaxArchetype, handleGenerateLessonPlan, handleGenerateMath, handleGenerateSource, autoConfigureSettings, applyDetailedAutoConfig, getAssetManifest, getLessonContext, buildLessonPlanPrompt, buildStudyGuidePrompt, buildParentGuidePrompt, GUIDED_STEPS, LENGTH_THRESHOLDS, TIMELINE_MODE_DEFINITIONS, audioRef, autoRemoveWords, bridgeSimType, bridgeStepCount, conceptImageMode, conceptItemCount, conceptSortImageStyle, creativeMode, faqCount, glossaryDefinitionLevel, glossaryImageStyle, glossaryTier2Count, glossaryTier3Count, includeCharts, includeEtymology, includeTimelineVisuals, isBotVisible, isMathGraphEnabled, keepCitations, leveledTextLength, noText, passAnalysisToQuiz, quizReflectionCount, selectedConcepts: _ambientSelectedConcepts, standardsPromptString: _ambientStandardsPromptString, timelineImageStyle, timelineItemCount, timelineMode, useLowQualityVisuals, setGameMode, setGlossarySearchTerm, setIsConceptMapReady, setIsEditingAnalysis, setIsEditingBrainstorm, setIsEditingFaq, setIsEditingGlossary, setIsEditingLeveledText, setIsEditingOutline, setIsEditingQuiz, setIsEditingScaffolds, setIsGeneratingPersona, setIsInteractiveVenn, setIsMatchingGame, setIsMemoryGame, setIsPlaying, setIsPresentationMode, setIsSideBySide, setIsStudentBingoGame, setIsVennPlaying, setPersonaState, setPresentationState, setProcessingProgress, setShowQuizAnswers, setStickers, calculateReadability, callGeminiImageEdit, checkAccuracyWithSearch, chunkText, countWords, executeVisualPlan, filterEducationalSources, formatMathQuestion, generateHelpfulHint, generateVisualPlan, getDefaultTitle, performDeepVerification, repairGeneratedText, resetPersonaInterviewState, validateSequenceStructure, universalImageStyle, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, personaCustomInstructions, differentiationTypes, differentiationCustomGrades } = deps;
+  const setGenerationStatus = (label, stage = null) => {
+    if (stage && typeof setGenerationStage === 'function') setGenerationStage(stage);
+    if (typeof setGenerationStep === 'function') setGenerationStep(label);
+  };
+  const initialGenerationStage = GENERATION_STAGE_BY_TYPE[String(type || '').trim().toLowerCase()] || 'build';
+  if (typeof setGenerationStage === 'function') setGenerationStage(initialGenerationStage);
   try { if (window._DEBUG_GEN_DISPATCHER) console.log("[GenDispatcher] handleGenerate fired:", type); } catch(_) {}
     // Batch callers pass a run-local history snapshot so later resources see
     // earlier resources even though React state updates are asynchronous.
@@ -1694,6 +1947,9 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
     const _isolatedContext = !!(configOverride && configOverride.isolatedContext);
     const _standardsContextModule = typeof window !== 'undefined' && window.AlloModules
         ? window.AlloModules.StandardsContext
+        : null;
+    const _instructionalContextModule = typeof window !== 'undefined' && window.AlloModules
+        ? window.AlloModules.InstructionalContext
         : null;
     const _standardsContextInput = configOverride && configOverride.standardsContext
         ? configOverride.standardsContext
@@ -1818,7 +2074,27 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         return items.slice(-limit).map(h => `- ${(h && h.type) || 'resource'}: ${(h && h.title) || 'Untitled'}`).join('\n');
     };
     setIsMapLocked(false);
-    const effectiveGrade = configOverride.grade || gradeLevel;
+    // Canonicalize every ingress (buttons, Blueprint, Full Pack, voice/palette).
+    // Command parsing historically passed "6" while prompt tables and the UI
+    // expected "6th Grade", silently bypassing the entire grade policy.
+    const effectiveGrade = _instructionalContextModule
+        && typeof _instructionalContextModule.normalizeGradeLabel === 'function'
+        ? _instructionalContextModule.normalizeGradeLabel(configOverride.grade || gradeLevel, gradeLevel || '3rd Grade')
+        : (configOverride.grade || gradeLevel);
+    const _activeInstructionalContext = _instructionalContextModule
+        && typeof _instructionalContextModule.normalizeInstructionalContext === 'function'
+        ? _instructionalContextModule.normalizeInstructionalContext(configOverride.instructionalContext, {
+            instructionalGrade: effectiveGrade,
+            fallbackGrade: gradeLevel || effectiveGrade,
+            standardsContext: _activeStandardsContext,
+            primaryTextPolicy: configOverride.primaryTextPolicy || 'preserve-primary'
+        })
+        : (configOverride.instructionalContext || {
+            schemaVersion: 1,
+            instructionalGrade: effectiveGrade,
+            primaryTextPolicy: 'preserve-primary',
+            standardsContext: _activeStandardsContext || null
+        });
     const effectiveOutlineType = configOverride.outlineType || outlineType;
     // visualStyle === 'custom' means "use the user-typed phrase in visualCustomStyle"
     // (revealed by the dropdown when 'Custom' is selected). Empty custom field
@@ -1901,6 +2177,16 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         if (configOverride && configOverride.rethrowErrors) throw noSourceError;
         return;
     }
+    const _designatedPrimaryItem = generationHistory.slice().reverse().find(item => {
+        if (!item) return false;
+        if (item.type === 'analysis' && item.data && (item.data.originalText || item.data.rawEnglishText)) return true;
+        if (!_instructionalContextModule || typeof _instructionalContextModule.getInstructionalText !== 'function') return false;
+        try { return _instructionalContextModule.getInstructionalText(item).role === 'primary'; } catch (_) { return false; }
+    });
+    const _primarySourceArtifactId = configOverride.primaryArtifactId
+        || configOverride.sourceArtifactId
+        || (_designatedPrimaryItem && _designatedPrimaryItem.id)
+        || null;
     if (textToProcess.includes('--- ENGLISH TRANSLATION ---')) {
         const bilingualReferenceParts = splitAdaptationReferences(textToProcess);
         if (!carriedInputReferences && bilingualReferenceParts.references) {
@@ -1941,7 +2227,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                 for (let i = 0; i < gradesToGen.length; i++) {
                     const grade = gradesToGen[i];
                     const isLast = i === gradesToGen.length - 1;
-                    setGenerationStep(`Generating version for ${grade}...`);
+                    setGenerationStatus(`Generating version for ${grade}...`, 'build');
                     // Thread langOverride through: callers that name a language
                     // (e.g. Reading Library generating in the book's language)
                     // must not have differentiated versions silently revert to
@@ -2011,8 +2297,16 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
     // branches interpolate, not a central assembler. Coverage is measured, not
     // assumed: dev-tools/check_local_llm_resource_matrix.cjs --capabilities
     // regenerates docs/resource_setting_coverage.md after any prompt change.
+    const _standardsResourceDirective = _activeStandardsContext
+        && _standardsContextModule
+        && typeof _standardsContextModule.buildResourceDirective === 'function'
+        ? _standardsContextModule.buildResourceDirective(_activeStandardsContext, {
+            resourceType: type,
+            textRole: type === 'simplified' ? 'supplemental' : ''
+        })
+        : '';
     const standardsDirective = standardsPromptString
-        ? `TARGET STANDARDS: Align content emphasis and skill focus to: "${standardsPromptString}".`
+        ? `TARGET STANDARDS: Align content emphasis and skill focus to: "${standardsPromptString}".${_standardsResourceDirective ? `\n${_standardsResourceDirective}` : ''}`
         : '';
     const interestsDirective = (studentInterests && studentInterests.length > 0)
         ? `STUDENT INTERESTS: Where it fits naturally, frame examples and contexts using: ${studentInterests.join(', ')}. Never force relevance or distort factual content.`
@@ -2034,6 +2328,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         grade: effectiveGrade,
         language: effectiveLanguage,
         standards: standardsPromptString || "",
+        standardsContext: _activeStandardsContext,
+        instructionalContext: _activeInstructionalContext,
         interests: studentInterests,
         dok: dokLevel || "",
         useEmojis: !!useEmojis,
@@ -2092,7 +2388,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                 const lang = uniqueLangs[i];
                 const isLastLang = i === uniqueLangs.length - 1;
                 const batchKeepLoading = !isLastLang || keepLoading;
-                setGenerationStep(`${t('status.generating')} ${type} (${lang})...`);
+                setGenerationStatus(`${t('status.generating')} ${type} (${lang})...`, 'build');
                 _lastLangItem = (await handleGenerate(type, lang, batchKeepLoading, textToProcess, configOverride, switchView, deps)) || _lastLangItem;
                 await new Promise(r => setTimeout(r, 500));
             }
@@ -2118,7 +2414,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         return _lastLangItem;
     }
     setIsProcessing(true);
-    setGenerationStep(t('status_steps.initializing'));
+    setGenerationStatus(t('status_steps.initializing'), initialGenerationStage);
     setGenerationTaskProgress(0, 0, t('status_steps.initializing'));
     setError(null);
     setGlossarySearchTerm('');
@@ -2227,7 +2523,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               ${localExcerpt(textToProcess, 6000)}
               """
             `;
-            setGenerationStep(t('status_steps.extracting_vocab'));
+            setGenerationStatus(t('status_steps.extracting_vocab'), 'analyze');
             setGenerationTaskProgress(0, 2, t('status_steps.extracting_vocab'));
             assertLocalTaskSupported('strict-json', 'The glossary');
             const result = await callGemini(prompt, true, false, null, null, null, localSchemaArg('glossary'));
@@ -2338,7 +2634,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             `;
             metaInfo = `${t2Count} T2 / ${t3Count} T3 Terms - English Only`;
         }
-        setGenerationStep(t('status_steps.extracting_vocab'));
+        setGenerationStatus(t('status_steps.extracting_vocab'), 'analyze');
         const result = await callGemini(prompt, true);
         try {
             let parsedContent = JSON.parse(cleanJson(result));
@@ -2374,7 +2670,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                 })();
             }
             addToast(autoRemoveWords ? t('status_steps.refining_icons') : t('status_steps.generating_icons'), "info");
-            setGenerationStep(autoRemoveWords ? t('status_steps.refining_icons') : t('status_steps.generating_icons'));
+            setGenerationStatus(autoRemoveWords ? t('status_steps.refining_icons') : t('status_steps.generating_icons'), 'build');
             const BATCH_SIZE = 3;
             const BATCH_DELAY_MS = 500;
             const MAX_RETRIES = 1;
@@ -2528,21 +2824,15 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         //
         // No regeneration loop: this shapes the single generation, it does not
         // retry it.
-        const _gradeCalibration = {
-            'Kindergarten':   { asl: 6,  asw: 1.15, fk: '0 to 1' },
-            '1st Grade':      { asl: 8,  asw: 1.20, fk: '1 to 2' },
-            '2nd Grade':      { asl: 10, asw: 1.25, fk: '2 to 3' },
-            '3rd Grade':      { asl: 12, asw: 1.30, fk: '3 to 4' },
-            '4th Grade':      { asl: 14, asw: 1.35, fk: '4 to 5' },
-            '5th Grade':      { asl: 15, asw: 1.40, fk: '5 to 6' },
-            '6th Grade':      { asl: 16, asw: 1.45, fk: '6 to 7' },
-            '7th Grade':      { asl: 17, asw: 1.50, fk: '7 to 8' },
-            '8th Grade':      { asl: 18, asw: 1.55, fk: '8 to 9' },
-            '9th Grade':      { asl: 19, asw: 1.60, fk: '9 to 10' },
-            '10th Grade':     { asl: 20, asw: 1.62, fk: '10 to 11' },
-            '11th Grade':     { asl: 21, asw: 1.65, fk: '11 to 12' },
-            '12th Grade':     { asl: 22, asw: 1.68, fk: '11 to 13' },
-        }[effectiveGrade];
+        const _sharedGradeTarget = _instructionalContextModule
+            && typeof _instructionalContextModule.getComplexityTarget === 'function'
+            ? _instructionalContextModule.getComplexityTarget(effectiveGrade)
+            : null;
+        const _gradeCalibration = _sharedGradeTarget ? {
+            asl: _sharedGradeTarget.averageSentenceLengthMax,
+            asw: _sharedGradeTarget.averageSyllablesPerWordMax,
+            fk: _sharedGradeTarget.fkLabel
+        } : null;
         if (_gradeCalibration) {
             complexityGuide += `
             MEASURABLE TARGETS FOR ${effectiveGrade} (these are checked after generation):
@@ -2705,6 +2995,30 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
       //      prompts on the local vs cloud path (several branches ship twin prompts),
       //      so "which model built this" is part of the configuration, not metadata.
       const _itemConfig = _buildItemConfig({ citationAudit: citationAuditSnapshot() });
+      const _baseInstructionalText = _instructionalContextModule
+          && typeof _instructionalContextModule.normalizeInstructionalText === 'function'
+          ? _instructionalContextModule.normalizeInstructionalText(configOverride.instructionalText, {
+              role: 'supplemental',
+              form: 'adapted',
+              designationSource: 'workflow-default',
+              sourceArtifactId: _primarySourceArtifactId,
+              primaryArtifactId: _primarySourceArtifactId,
+              complexity: {
+                  requestedGrade: effectiveGrade,
+                  language: effectiveLanguage,
+                  status: 'unavailable'
+              }
+          })
+          : {
+              schemaVersion: 1,
+              role: 'supplemental',
+              form: 'adapted',
+              sourceArtifactId: _primarySourceArtifactId,
+              primaryArtifactId: _primarySourceArtifactId,
+              designationSource: 'workflow-default',
+              replacementAuthorization: { authorized: false, source: 'none' },
+              complexity: { requestedGrade: effectiveGrade, language: effectiveLanguage, status: 'unavailable' }
+          };
       const tempItem = {
           id: newId,
           type,
@@ -2712,7 +3026,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           meta: metaInfo,
           title: type === 'simplified' ? `Adapted Text (${effectiveGrade})` : getDefaultTitle(type),
           timestamp: new Date(),
-          config: _itemConfig
+          config: _itemConfig,
+          instructionalText: _baseInstructionalText
       };
       setHistory(prev => [...prev, tempItem]);
       if (switchView || !generatedContent) {
@@ -2778,10 +3093,10 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
       for (let i = 0; i < chunks.length; i++) {
           const isLast = i === chunks.length - 1;
           if (isMultiChunk) {
-              setGenerationStep(`Adapting section ${i + 1} of ${chunks.length}...`);
+              setGenerationStatus(`Adapting section ${i + 1} of ${chunks.length}...`, 'build');
               setGenerationTaskProgress(i + 1, chunks.length, `Adapting section ${i + 1} of ${chunks.length}...`);
           } else {
-              setGenerationStep(t('status_steps.adapting_text'));
+              setGenerationStatus(t('status_steps.adapting_text'), 'build');
               if (usesLocalTextBackend) {
                   setGenerationTaskProgress(0, 1, t('status_steps.adapting_text'));
               }
@@ -2825,8 +3140,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           // spent at all, not merely discarded. On a five-chunk adaptation that
           // is five fewer calls.
           if (_xlate.enabled) {
-              if (isMultiChunk) setGenerationStep(`Translating section ${i + 1} of ${chunks.length}...`);
-              else setGenerationStep(t('status_steps.translating') || 'Translating...');
+              if (isMultiChunk) setGenerationStatus(`Translating section ${i + 1} of ${chunks.length}...`, 'build');
+              else setGenerationStatus(t('status_steps.translating') || 'Translating...', 'build');
               const translation = await translateCitationSafe(targetResult, `translate-section-${i + 1}`);
               if (translation.valid && bilingualTranslationValid) {
                   fullEnglishText += translation.text + "\n\n";
@@ -2884,10 +3199,10 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           const repairCtx = `Grade: ${effectiveGrade}, Topic: ${sourceTopic || "General"}, Format: ${textFormat}`;
           let repairIssue = null;
           if (wc < minWords) {
-              setGenerationStep(t('status.text_expanding'));
+              setGenerationStatus(t('status.text_expanding'), 'finalize');
               repairIssue = 'too_short';
           } else if (wc > maxWords) {
-              setGenerationStep(t('status.text_condensing') || 'Condensing text...');
+              setGenerationStatus(t('status.text_condensing') || 'Condensing text...', 'finalize');
               repairIssue = 'too_long';
           }
           if (repairIssue) {
@@ -2915,7 +3230,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           let repairedEnglish = '';
           if (repaired) {
               if (_xlate.enabled) {
-                  setGenerationStep(t('status_steps.translating') || 'Translating refined text...');
+                  setGenerationStatus(t('status_steps.translating') || 'Translating refined text...', 'finalize');
                   const repairedTranslation = await translateCitationSafe(repaired, 'length-repair-translation');
                   if (repairedTranslation.valid) {
                       repairedEnglish = repairedTranslation.text;
@@ -2973,7 +3288,36 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
       // and sentence statistics; running it over Spanish or Vietnamese would return
       // a number that looks authoritative and means nothing. When the adaptation is
       // not in English, no measurement is claimed.
-      if (effectiveLanguage === 'English') {
+      if (_instructionalContextModule && typeof _instructionalContextModule.withComplexityEvidence === 'function') {
+          const _englishOutput = typeof _instructionalContextModule.isEnglishLanguage === 'function'
+              ? _instructionalContextModule.isEnglishLanguage(effectiveLanguage)
+              : effectiveLanguage === 'English';
+          const _measured = _englishOutput ? calculateReadability(fullTargetText) : null;
+          finalAdaptedItem = {
+              ...finalAdaptedItem,
+              instructionalText: _instructionalContextModule.withComplexityEvidence(
+                  finalAdaptedItem.instructionalText || _baseInstructionalText,
+                  {
+                      requestedGrade: effectiveGrade,
+                      measuredGrade: _measured && _measured.gradeLevel !== undefined
+                          ? _measured.gradeLevel
+                          : (_measured && _measured.score),
+                      method: _measured ? 'flesch-kincaid-en' : '',
+                      language: effectiveLanguage,
+                      status: _measured ? '' : 'unavailable'
+                  },
+                  fullTargetText
+              )
+          };
+          if (_measured) {
+              finalAdaptedItem.localStats = _measured;
+              finalAdaptedItem.targetGradeLevel = effectiveGrade;
+          }
+          if (switchView || (generatedContent && generatedContent.id === newId)) {
+              setGeneratedContent(finalAdaptedItem);
+          }
+          setHistory(prev => prev.map(item => item.id === newId ? finalAdaptedItem : item));
+      } else if (effectiveLanguage === 'English') {
           const _measured = calculateReadability(fullTargetText);
           if (_measured) {
               finalAdaptedItem = {
@@ -3107,7 +3451,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         metaInfo = `${effectiveGrade} - ${effectiveLanguage} - ${effectiveOutlineType}${usesLocalTextBackend ? ' - Local' : ''}`;
       } else if (type === 'image') {
         console.log('[VisualDebug] dispatcher routing to image branch; effectiveVisualStyle=', effectiveVisualStyle, 'visualLayoutMode=', typeof visualLayoutMode !== 'undefined' ? visualLayoutMode : '(undefined)');
-        setGenerationStep(t('status_steps.analyzing_visuals'));
+        setGenerationStatus(t('status_steps.analyzing_visuals'), 'analyze');
         const imageSourceText = usesLocalTextBackend ? localExcerpt(textToProcess, 4500) : textToProcess;
         const promptGenPrompt = `
             Analyze the following text to create a visual plan for an educational diagram: "${imageSourceText}".
@@ -3166,7 +3510,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             }
         }
         if (visualPlan && visualPlan.layout !== 'single' && visualPlan.panels.length > 1) {
-            setGenerationStep(t('visual_director.generating_panels') || 'Generating multi-panel illustration...');
+            setGenerationStatus(t('visual_director.generating_panels') || 'Generating multi-panel illustration...', 'build');
             const executedPlan = await executeVisualPlan(visualPlan, targetWidth, targetQual, effectiveVisualStyle, generationSignal);
             if (!executedPlan?.panels?.some(p => p?.imageUrl)) {
                 console.error('[VisualDebug] executeVisualPlan returned all-null panels:', executedPlan);
@@ -3180,7 +3524,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             };
             metaInfo = t('visual_director.multi_panel', { count: executedPlan.panels.length }) || `Multi-Panel (${executedPlan.panels.length} panels)`;
         } else {
-        setGenerationStep(t('status_steps.rendering_diagram'));
+        setGenerationStatus(t('status_steps.rendering_diagram'), 'build');
         let imageBase64;
         try {
             imageBase64 = await callImagenWithSignal(finalPrompt, targetWidth, targetQual);
@@ -3197,7 +3541,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         }
         if (fillInTheBlank || noText || creativeMode) {
              try {
-                 setGenerationStep(t('status.refining_image'));
+                 setGenerationStatus(t('status.refining_image'), 'finalize');
                  const rawBase64 = imageBase64.split(',')[1];
                  let refinePrompt = "";
                  if (fillInTheBlank) {
@@ -3467,7 +3811,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           ${localExcerpt(textToProcess, 6500)}
           """
         `;
-        setGenerationStep(t('status_steps.drafting_quiz'));
+        setGenerationStatus(t('status_steps.drafting_quiz'), 'build');
         setGenerationTaskProgress(0, 1, t('status_steps.drafting_quiz'));
         result = await callGemini(prompt, true);
         setGenerationTaskProgress(1, 1, t('status_steps.drafting_quiz'));
@@ -3511,7 +3855,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           Source text:
           "${textToProcess}"
         `;
-        setGenerationStep(t('status_steps.drafting_quiz'));
+        setGenerationStatus(t('status_steps.drafting_quiz'), 'build');
         result = await callGemini(prompt, true);
         }
         try {
@@ -3600,7 +3944,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                     // Only fact-check MCQ items — fill-blank and short-answer have their
                     // own grader at student-response time, no pre-grading needed.
                     if (q.type && q.type !== 'mcq') return q;
-                    setGenerationStep(`${t('status_steps.verifying_answers')} (${idx + 1}/${content.questions.length})...`);
+                    setGenerationStatus(`${t('status_steps.verifying_answers')} (${idx + 1}/${content.questions.length})...`, 'finalize');
                     await new Promise(resolve => setTimeout(resolve, idx * 200));
                     const checkPrompt = `
                         Verify the factual accuracy of this multiple choice question designed for a ${effectiveGrade} student.
@@ -3652,7 +3996,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             try {
                 const _mcqItems = content.questions.filter(function (q) { return q && (q.type === 'mcq' || !q.type); });
                 if (_mcqItems.length > 0) {
-                    setGenerationStep && setGenerationStep('Generating MCQ visuals (' + _mcqItems.length + ' question' + (_mcqItems.length === 1 ? '' : 's') + ')...');
+                    setGenerationStatus('Generating MCQ visuals (' + _mcqItems.length + ' question' + (_mcqItems.length === 1 ? '' : 's') + ')...', 'build');
                     // Build a flat list of image generation tasks
                     const _imgTasks = [];
                     _mcqItems.forEach(function (q) {
@@ -3719,7 +4063,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                     .map((q, qIdx) => ({ q, qIdx }))
                     .filter(entry => entry.q && (entry.q.type === 'mcq' || !entry.q.type) && Array.isArray(entry.q.options) && entry.q.correctAnswer != null);
                 if (_mcqsForReview.length > 0) {
-                    setGenerationStep && setGenerationStep('Reviewing distractor quality...');
+                    setGenerationStatus('Reviewing distractor quality...', 'finalize');
                     const _itemsBlock = _mcqsForReview.map(entry => {
                         const distractors = entry.q.options.filter(o => o !== entry.q.correctAnswer);
                         return `Q${entry.qIdx + 1}: "${entry.q.question}"\n  Correct: "${entry.q.correctAnswer}"\n  Distractors: ${distractors.map((d, di) => `(${di + 1}) "${d}"`).join(' / ')}`;
@@ -3866,7 +4210,7 @@ ${_itemsBlock}`;
                 isSearchActive = false;
             }
         }
-        setGenerationStep(isSearchActive ? t('status_steps.synthesizing_analysis') : t('status_steps.analyzing_structure'));
+        setGenerationStatus(isSearchActive ? t('status_steps.synthesizing_analysis') : t('status_steps.analyzing_structure'), 'analyze');
         // 2026-08-16 (L4): this read currentUiLanguage, which meant the whole
         // analysis came back in the app's INTERFACE language and ignored the
         // Output language setting entirely. It is the leak Aaron suspected.
@@ -3948,7 +4292,7 @@ ${_itemsBlock}`;
              if (!analysisData) throw new Error("Response format is not JSON");
         } catch (parseError) {
              warnLog("Analysis JSON parse issue. Attempting AI Repair...", parseError);
-             setGenerationStep('Formatting analysis results...');
+             setGenerationStatus('Formatting analysis results...', 'finalize');
              if (!usesLocalTextBackend) try {
                  const safeSnippet = String(resultText).substring(0, 20000);
                  const repairPrompt = `
@@ -4141,7 +4485,7 @@ ${_itemsBlock}`;
                 ${localExcerpt(textToProcess, 6000)}
                 """
             `;
-            setGenerationStep(t('status_steps.identifying_misconceptions'));
+            setGenerationStatus(t('status_steps.identifying_misconceptions'), 'analyze');
             setGenerationTaskProgress(0, 1, t('status_steps.identifying_misconceptions'));
             assertLocalTaskSupported('strict-json', 'The FAQ');
             const result = await callGemini(prompt, true, false, null, null, null, localSchemaArg('faq'));
@@ -4174,7 +4518,7 @@ ${_itemsBlock}`;
             ${differentiationContext}
             Text: "${textToProcess}"
         `;
-        setGenerationStep(t('status_steps.identifying_misconceptions'));
+        setGenerationStatus(t('status_steps.identifying_misconceptions'), 'analyze');
         const result = await callGemini(prompt, true);
         try {
             let parsed = JSON.parse(cleanJson(result));
@@ -4199,7 +4543,7 @@ ${_itemsBlock}`;
          if (activityMode === 'discussion') {
              const protocol = DISCUSSION_PROTOCOLS.includes(String(activityConfig.protocol || '').toLowerCase()) ? String(activityConfig.protocol).toLowerCase() : 'think-pair-share';
              const stepLabel = t('status_steps.building_discussion') || 'Building discussion kit...';
-             setGenerationStep(stepLabel);
+             setGenerationStatus(stepLabel, 'build');
              if (usesLocalTextBackend) setGenerationTaskProgress(0, 1, stepLabel);
              const discussionContext = usesLocalTextBackend ? localExcerpt(textToProcess, 5500) : textToProcess;
              const prompt = `
@@ -4513,11 +4857,23 @@ ${_itemsBlock}`;
              }
          };
          const failedTypes = [];
-         const auditArtifactRoster = artifactsToAudit.map((item) => JSON.stringify({
-             id: item && item.id ? String(item.id) : '',
-             title: String(item && (item.title || getDefaultTitle(item.type)) || item.type || 'Artifact'),
-             type: String(item && item.type || 'unknown')
-         })).filter(Boolean).join("\n");
+         const auditArtifactRoster = artifactsToAudit.map((item) => {
+             const textProfile = _auditInstructionalText(item);
+             return JSON.stringify({
+                 id: item && item.id ? String(item.id) : '',
+                 title: String(item && (item.title || getDefaultTitle(item.type)) || item.type || 'Artifact'),
+                 type: String(item && item.type || 'unknown'),
+                 textRole: textProfile.role,
+                 textForm: textProfile.form,
+                 sourceArtifactId: textProfile.sourceArtifactId,
+                 primaryArtifactId: textProfile.primaryArtifactId,
+                 requestedGrade: textProfile.complexity.requestedGrade || null,
+                 measuredGrade: textProfile.complexity.measuredGrade,
+                 complexityStatus: textProfile.complexity.status || null,
+                 complexityFingerprint: textProfile.complexity.contentFingerprint || null,
+                 replacementAuthorizedByEducator: textProfile.replacementAuthorization.authorized === true,
+             });
+         }).filter(Boolean).join("\n");
          const safeGetAuditText = (item) => {
              try {
                  const txt = getAuditText(item);
@@ -4539,9 +4895,11 @@ ${_itemsBlock}`;
          artifactsToAudit.forEach((item, index) => {
              if (contextOverflowed) return;
              const label = item.title || getDefaultTitle(item.type);
+             const textProfile = _auditInstructionalText(item);
              let contentStr = safeGetAuditText(item);
              if (contentStr.length > 2500) contentStr = contentStr.substring(0, 2500) + "... [truncated]";
-             const chunk = `\n--- ARTIFACT ${index + 1}: ${label.toUpperCase()} (${item.type}) ---\n${contentStr}\n`;
+             const roleLine = `TEXT ROLE: ${textProfile.role}; FORM: ${textProfile.form}; REQUESTED GRADE: ${textProfile.complexity.requestedGrade || 'not recorded'}; MEASURED GRADE: ${textProfile.complexity.measuredGrade == null ? 'not recorded' : textProfile.complexity.measuredGrade}; MEASUREMENT STATUS: ${textProfile.complexity.status || 'not recorded'}`;
+             const chunk = `\n--- ARTIFACT ${index + 1}: ${label.toUpperCase()} (${item.type}) ---\n${roleLine}\n${contentStr}\n`;
              if (comprehensiveContext.length + chunk.length > MAX_TOTAL_CONTEXT) {
                  comprehensiveContext += `\n--- [Additional ${artifactsToAudit.length - index} artifact(s) omitted to fit audit window] ---\n`;
                  contextOverflowed = true;
@@ -4554,10 +4912,10 @@ ${_itemsBlock}`;
              warnLog(`[Alignment] ${failedTypes.length} artifact(s) could not be serialized. Types: ${uniq.join(', ')}`);
          }
          const prompt = `
-            Act as a strict District Curriculum Administrator conducting a **Holistic Lesson Plan Audit**.
-            Your goal is to certify if the ENTIRE COLLECTION of generated resources aligns with the Target Standards.
+            Act as a careful curriculum reviewer conducting a **Holistic Lesson Plan Audit**.
+            Your goal is to evaluate the evidence in the collection against the Target Standards. Do not claim legal compliance, IEP authorization, district approval, or certification.
             TARGET STANDARDS: "${standardsPromptString}"
-            TARGET GRADE LEVEL: ${gradeLevel}
+            TARGET GRADE LEVEL: ${effectiveGrade}
             --- EXACT ARTIFACT ID ROSTER (use these IDs only) ---
             ${auditArtifactRoster}
             Use artifactIds only when evidence clearly comes from those exact artifacts. Never invent or guess IDs; return [] when attribution is unclear.
@@ -4572,7 +4930,8 @@ ${_itemsBlock}`;
                - **Instructional Alignment:** Does the Lesson Plan and Text teach the required content?
                - **Activity Alignment:** Do the Scaffolds, Organizers, and Games (Timeline/Sorts) force students to practice the specific skills?
                - **Assessment Alignment:** Does the Quiz or Adventure outcome verify mastery of the standard?
-            3. GAP ANALYSIS: If a standard requires "Analysis," but the resources only provide "Recall" (Glossary/Basic Quiz), mark it as Partially Aligned.
+            3. TEXT ACCESS: Treat only a designated primary text (or an analyzed source explicitly identified as a legacy fallback) as primary-text evidence. A supplemental adapted text can provide access support, but must not substitute for primary grade-level-text evidence unless replacementAuthorizedByEducator is true. Never infer authorization from a lower measured grade, resource type, title, or student need.
+            4. GAP ANALYSIS: If a standard requires "Analysis," but the resources only provide "Recall" (Glossary/Basic Quiz), mark it as Partially Aligned.
             Return ONLY JSON with this structure:
             {
               "reports": [
@@ -4646,12 +5005,14 @@ ${_itemsBlock}`;
          content.comprehensive = content.comprehensive || {};
          auditScopeSelection.metadata.contextTruncated = contextOverflowed;
          auditScopeSelection.metadata.serializationFailures = Array.from(new Set(failedTypes));
+         auditScopeSelection.metadata.textAccess = auditHarvest.textAccess;
          content.comprehensive.auditScope = auditScopeSelection.metadata;
+         content.comprehensive.textAccess = auditHarvest.textAccess;
          const auditLanguage = String(effectiveLanguage || currentUiLanguage || 'en');
          content.comprehensive.auditLanguage = auditLanguage;
          content.comprehensive.auditLanguageTag = normalizeAuditLanguageTag(auditLanguage);
          content.comprehensive.auditMetadata = {
-             schemaVersion: 4,
+             schemaVersion: 5,
              generatedAt: new Date().toISOString(),
              gradeLevel: String(effectiveGrade || gradeLevel || ''),
          };
@@ -4678,7 +5039,7 @@ ${_itemsBlock}`;
 
          let vocabFit = null;
          try {
-             vocabFit = computeVocabularyFit(artifactsToAudit, gradeLevel, effectiveLanguage || currentUiLanguage || 'en');
+             vocabFit = computeVocabularyFit(artifactsToAudit, effectiveGrade, effectiveLanguage || currentUiLanguage || 'en');
              vocabFit.readingLevels = auditHarvest.readingLevels;
              content.comprehensive.vocabulary = vocabFit;
          } catch (vocabErr) {
@@ -4697,7 +5058,7 @@ ${_itemsBlock}`;
 
          let accessibility = null;
          try {
-             accessibility = computeContentAccessibility(artifactsToAudit, auditHarvest, gradeLevel);
+             accessibility = computeContentAccessibility(artifactsToAudit, auditHarvest, effectiveGrade);
              content.comprehensive.accessibility = accessibility;
          } catch (accErr) {
              warnLog('[Alignment] Accessibility computation failed:', accErr);
@@ -4726,7 +5087,7 @@ ${_itemsBlock}`;
          let cognitiveLoad = null;
          try {
              const sourceWords = (vocabFit && typeof vocabFit.sourceWords === 'number') ? vocabFit.sourceWords : 0;
-             cognitiveLoad = computeCognitiveLoad(artifactsToAudit, sourceWords, gradeLevel);
+             cognitiveLoad = computeCognitiveLoad(artifactsToAudit, sourceWords, effectiveGrade);
              content.comprehensive.cognitiveLoad = cognitiveLoad;
          } catch (clErr) {
              warnLog('[Alignment] Cognitive load computation failed:', clErr);
@@ -4734,7 +5095,7 @@ ${_itemsBlock}`;
          }
 
          // Shared grade band derived once for all dimensions
-         const dimGradeBand = (vocabFit && vocabFit.expected && vocabFit.expected.gradeBand) || gradeLevel;
+         const dimGradeBand = (vocabFit && vocabFit.expected && vocabFit.expected.gradeBand) || effectiveGrade;
 
          // ---- Async LLM reviews (parallel) ---------------------------------
          setGenerationStep && setGenerationStep('Running 8 audit dimensions in parallel...');
@@ -4743,7 +5104,7 @@ ${_itemsBlock}`;
          // Tasks return null on any failure; failures are logged but don't
          // block other dimensions or the overall audit.
          const vocabTask = (vocabFit && !vocabFit.notEvaluated) ? (async () => {
-             const fp = 'vocab:' + _auditFingerprint(artifactsToAudit, gradeLevel);
+             const fp = 'vocab:' + _auditFingerprint(artifactsToAudit, effectiveGrade);
              const cached = _auditLLMCache.get(fp);
              if (cached) { content.comprehensive.vocabulary.llmReview = cached; applyAuditReviewStatus(content.comprehensive.vocabulary, cached); return; }
              try {
@@ -4922,15 +5283,16 @@ ${_itemsBlock}`;
          })() : Promise.resolve();
 
          // ---- Plan R+ Differentiation review (LLM grades the scaffold mix) ---
-         const differentiationTask = (differentiation && !differentiation.computeFailed) ? (async () => {
+         const differentiationTask = (differentiation && !differentiation.notEvaluated && !differentiation.computeFailed) ? (async () => {
              const fp = 'differentiation:' + _auditFingerprint(artifactsToAudit, dimGradeBand);
              const cached = _auditLLMCache.get(fp);
              if (cached) { content.comprehensive.differentiation.llmReview = cached; applyAuditReviewStatus(content.comprehensive.differentiation, cached); return; }
              try {
                  const flags = differentiation.flags || {};
-                 const present = Object.keys(flags).filter(function (k) { return flags[k]; });
+                 const scoredFlagNames = ['primaryTextAvailable', 'sameTextSupport', 'glossarySupport', 'sentenceFrames', 'visualOrganizer', 'quizScaffold', 'interactiveOrAdventure', 'visualOrImage', 'audioPath'];
+                 const present = scoredFlagNames.filter(function (k) { return flags[k]; });
                  const missing = differentiation.missing || [];
-                 const prompt = 'You are a UDL specialist reviewing how a curriculum supports learner variability.\n\nDeterministic scaffold inventory (' + differentiation.coverage + '% coverage):\n- Present: ' + (present.join(', ') || '(none)') + '\n- Missing: ' + (missing.join(', ') || '(none)') + '\n\nGrade band: ' + dimGradeBand + '\n\nSource excerpt (first 2000 chars):\n"""\n' + (comprehensiveContext || '').slice(0, 2000) + '\n"""\n\nProvide:\n1. "narrative": ONE paragraph (2-3 sentences) on whether the scaffold mix realistically serves the range of learners typical at this grade band. Name the most impactful missing scaffold for THIS content (some content needs visuals more than text-leveling; some needs audio more than visuals).\n2. "priorityAdditions": array of 1-3 specific scaffold-add suggestions ranked by impact for the grade band and topic. Each entry one short sentence.\n3. "qualityFlags": array of 0-2 sentences flagging any present-but-likely-thin scaffolds (e.g., "glossary present but only 4 terms — consider expanding for ELL support").\n\nReturn ONLY a single valid JSON object with exactly these three fields.';
+                 const prompt = 'You are a UDL specialist reviewing how a curriculum supports learner variability.\n\nDeterministic access-path inventory (' + differentiation.coverage + '% coverage):\n- Present: ' + (present.join(', ') || '(none)') + '\n- Missing: ' + (missing.join(', ') || '(none)') + '\n\nGrade band: ' + dimGradeBand + '\n\nSource excerpt (first 2000 chars):\n"""\n' + (comprehensiveContext || '').slice(0, 2000) + '\n"""\n\nApply these constraints: verify primary-text access first; prefer same-text supports such as annotation, chunking, glossary, audio, and guided questions. A supplemental adapted text can be useful, but its presence or the presence of multiple lowered versions is not by itself evidence of grade-level access. Never infer IEP or educator authorization.\n\nProvide:\n1. "narrative": ONE paragraph (2-3 sentences) on whether the access-path mix realistically serves the range of learners typical at this grade band. Name the most impactful missing scaffold for THIS content.\n2. "priorityAdditions": array of 1-3 specific scaffold-add suggestions ranked by impact for the grade band and topic. Each entry one short sentence.\n3. "qualityFlags": array of 0-2 sentences flagging any present-but-likely-thin scaffolds.\n\nReturn ONLY a single valid JSON object with exactly these three fields.';
                  const result = await callGemini(prompt + '\n\nAlso return a top-level "status" field: "Aligned", "Partially Aligned", or "Not Aligned".', true);
                  const review = JSON.parse(cleanJson(result));
                  const reviewShape = {

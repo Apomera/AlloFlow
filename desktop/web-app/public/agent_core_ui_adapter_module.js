@@ -33,6 +33,8 @@
       gradeLevel: ctx.gradeLevel || '',
       language: ctx.language || '',
       standards: ctx.standards || '',
+      standardsContext: ctx.standardsContext || null,
+      instructionalContext: ctx.instructionalContext || null,
       interests: String(interests),
       sourcePolicy: ctx.sourcePolicy,
       provenance: ctx.provenance

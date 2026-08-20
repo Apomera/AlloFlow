@@ -113,7 +113,14 @@ const startClassSession = async (deps) => {
                 type: r.type,
                 title: r.title,
                 meta: r.meta,
-                data: r.data
+                data: r.data,
+                config: r.config,
+                instructionalContext: r.instructionalContext,
+                standardsContext: r.standardsContext,
+                instructionalText: r.instructionalText,
+                localStats: r.localStats,
+                targetGradeLevel: r.targetGradeLevel,
+                sourceProvenance: r.sourceProvenance,
             }));
             setSessionData(stripUndefined({
                 resources: mockResources,
@@ -633,6 +640,62 @@ const handleWizardStandardLookup = async (grade, goal, region, deps) => {
 // `dna` is mutated IN PLACE (faithful to the original) and returned as dnaOut.
 // Additions are inert for the single-blueprint caller: `onResource` (per-item
 // hook) is optional; `signal` (cooperative abort) is null on that path.
+const _resolveBlueprintInstructionalContext = (blueprint, settingsSnapshot, lessonDNA) => {
+    const bp = blueprint && typeof blueprint === 'object' ? blueprint : {};
+    const snapshot = settingsSnapshot && typeof settingsSnapshot === 'object' ? settingsSnapshot : {};
+    const modules = typeof window !== 'undefined' && window.AlloModules ? window.AlloModules : {};
+    const standardsModule = modules.StandardsContext;
+    const instructionalModule = modules.InstructionalContext;
+    const rawContext = snapshot.instructionalContext || bp.instructionalContext || {};
+    const rawStandards = rawContext.standardsContext || snapshot.standardsContext || bp.standardsContext
+        || bp.standards || (lessonDNA && lessonDNA.standard) || null;
+    const standardsContext = rawStandards && Array.isArray(rawStandards.standards)
+        ? rawStandards
+        : (standardsModule && typeof standardsModule.resolve === 'function' ? standardsModule.resolve(rawStandards) : rawStandards);
+    const grade = rawContext.instructionalGrade || snapshot.gradeLevel
+        || (bp.globalSettings && bp.globalSettings.gradeLevel)
+        || (lessonDNA && lessonDNA.grade) || '';
+    if (instructionalModule && typeof instructionalModule.normalizeInstructionalContext === 'function') {
+        return instructionalModule.normalizeInstructionalContext(rawContext, {
+            instructionalGrade: grade,
+            standardsContext,
+        });
+    }
+    return {
+        schemaVersion: 1,
+        instructionalGrade: String(grade || ''),
+        primaryTextPolicy: rawContext.primaryTextPolicy === 'educator-directed' ? 'educator-directed' : 'preserve-primary',
+        standardsContext: standardsContext || null,
+        standardsFingerprint: String(rawContext.standardsFingerprint || ''),
+    };
+};
+
+const _resolveBlueprintInstructionalText = (type, raw, instructionalContext, language) => {
+    const isAdapted = type === 'simplified';
+    const defaults = {
+        schemaVersion: 1,
+        role: isAdapted ? 'supplemental' : (type === 'analysis' ? 'primary' : 'unspecified'),
+        form: isAdapted ? 'adapted' : 'original',
+        sourceArtifactId: null,
+        primaryArtifactId: null,
+        designationSource: 'workflow-default',
+        replacementAuthorization: { authorized: false, source: 'none' },
+        complexity: {
+            requestedGrade: instructionalContext && instructionalContext.instructionalGrade || '',
+            calibrationTarget: '', measuredGrade: null, method: '', status: 'unavailable',
+            contentFingerprint: '', measuredAt: '', language: language || 'English',
+        },
+    };
+    const candidate = Object.assign({}, defaults, raw && typeof raw === 'object' ? raw : {});
+    candidate.complexity = Object.assign({}, defaults.complexity,
+        raw && raw.complexity && typeof raw.complexity === 'object' ? raw.complexity : {});
+    const module = typeof window !== 'undefined' && window.AlloModules
+        ? window.AlloModules.InstructionalContext : null;
+    return module && typeof module.normalizeInstructionalText === 'function'
+        ? module.normalizeInstructionalText(candidate)
+        : candidate;
+};
+
 const getBlueprintResourcePlan = (blueprint) => {
     const toolDirectives = (blueprint && blueprint.toolDirectives) || {};
     const rawPlan = Array.isArray(blueprint?.resourcePlan) && blueprint.resourcePlan.length > 0
@@ -649,6 +712,7 @@ const getBlueprintResourcePlan = (blueprint) => {
             directive: typeof item === 'string'
                 ? (toolDirectives[type] || "")
                 : (item.directive || item.instructions || item.customInstructions || toolDirectives[type] || ""),
+            instructionalText: (typeof item === 'object' && item && item.instructionalText) || null,
             // Activities redesign (2026-08-16): a brainstorm step may carry an
             // activity mode ('ideas' | 'discussion' | 'jigsaw') plus options.
             // Optional and additive — plans without it behave exactly as before
@@ -721,6 +785,20 @@ const executeOneBlueprint = async (blueprint, ctx) => {
 
     const finalResources = getBlueprintResourcePlan(blueprint);
     const lessonDNA = dna || { grade: "", topic: "", standard: "", concepts: [], keyTerms: [], visualContext: "", essentialQuestion: "" };
+    const executionInstructionalContext = _resolveBlueprintInstructionalContext(blueprint, settingsSnapshot, lessonDNA);
+    const executionStandardsContext = executionInstructionalContext.standardsContext
+        || (settingsSnapshot && settingsSnapshot.standardsContext)
+        || (blueprint && blueprint.standardsContext)
+        || null;
+    // Unit Path and other headless callers historically omitted the snapshot.
+    // Build one from the Blueprint/DNA in that case so dispatcher resources do
+    // not fall back to the ambient Universal grade.
+    const executionSettingsSnapshot = settingsSnapshot || Object.freeze({
+        gradeLevel: executionInstructionalContext.instructionalGrade || lessonDNA.grade || '',
+        standardsInput: (executionStandardsContext && executionStandardsContext.promptText) || lessonDNA.standard || '',
+        standardsContext: executionStandardsContext,
+        instructionalContext: executionInstructionalContext,
+    });
     // NULL, not "". This is a SENTINEL, not a default.
     //
     // handleGenerate's 4th arg is textOverride, and the dispatcher branches on
@@ -742,11 +820,20 @@ const executeOneBlueprint = async (blueprint, ctx) => {
         // byte-for-byte across three copies by blueprint_mode_guardrails.
         const { type, directive: aiDirective = "" } = finalResources[i];
         const stepUiId = finalResources[i] && finalResources[i].uiId;
-        emitStep({ uiId: stepUiId, tool: type, status: 'running', index: i });
+        const stepInstructionalText = _resolveBlueprintInstructionalText(
+            type,
+            finalResources[i] && finalResources[i].instructionalText,
+            executionInstructionalContext,
+            executionSettingsSnapshot.leveledTextLanguage || 'English'
+        );
+        emitStep({ uiId: stepUiId, tool: type, status: 'running', index: i, instructionalText: stepInstructionalText });
         const stepConfig = {
             customInstructions: aiDirective,
             historyOverride: currentBlueprintHistory,
             lessonDNA: lessonDNA,
+            standardsContext: executionStandardsContext,
+            instructionalContext: executionInstructionalContext,
+            instructionalText: stepInstructionalText,
             // A blueprint is already a batch. Without this, a leveled-text step
             // with a differentiation range set entered the dispatcher's per-grade
             // fan-out, whose outer call returns undefined — so the row was marked
@@ -783,8 +870,9 @@ const executeOneBlueprint = async (blueprint, ctx) => {
         let failReason = null;
         let threw = null;
         try {
-            resultItem = await handleGenerate(type, null, i < finalResources.length - 1, currentSourceText, stepConfig, false, settingsSnapshot || null);
+            resultItem = await handleGenerate(type, null, i < finalResources.length - 1, currentSourceText, stepConfig, false, executionSettingsSnapshot);
             if (!resultItem) failReason = 'handleGenerate returned no resource (it did not throw)';
+            else if (!resultItem.instructionalText) resultItem = Object.assign({}, resultItem, { instructionalText: stepInstructionalText });
         } catch (err) {
             threw = err;
             failReason = 'threw: ' + ((err && (err.message || err.name)) || String(err));
@@ -810,6 +898,7 @@ const executeOneBlueprint = async (blueprint, ctx) => {
         emitStep({ uiId: stepUiId, tool: type, index: i,
                    status: resultItem ? 'landed' : 'failed',
                    resourceId: (resultItem && resultItem.id) || null,
+                   instructionalText: stepInstructionalText,
                    // Carried into the run record so the card can SHOW why a row
                    // failed instead of only that it did.
                    failReason: resultItem ? undefined : failReason,
@@ -915,12 +1004,21 @@ const handleExecuteBlueprint = async (deps) => {
     // run so Universal Settings cannot change between plan approval and the
     // first request, or leak into a later request while the run is active.
     const _globalSettings = activeBlueprint.globalSettings || {};
+    const _blueprintInstructionalContext = _resolveBlueprintInstructionalContext(activeBlueprint, null, {
+        grade: _globalSettings.gradeLevel || gradeLevel,
+        standard: activeBlueprint.standards || standardsInput || '',
+    });
+    const _blueprintStandardsContext = _blueprintInstructionalContext.standardsContext
+        || activeBlueprint.standardsContext || null;
     const _blueprintSettingsSnapshot = Object.freeze({
-        gradeLevel: _globalSettings.gradeLevel || gradeLevel,
+        gradeLevel: _blueprintInstructionalContext.instructionalGrade || _globalSettings.gradeLevel || gradeLevel,
         leveledTextLanguage: _globalSettings.language || _globalSettings.leveledTextLanguage || leveledTextLanguage,
         selectedLanguages: Array.isArray(selectedLanguages) ? selectedLanguages.slice() : selectedLanguages,
         studentInterests: Array.isArray(studentInterests) ? studentInterests.slice() : studentInterests,
-        standardsInput,
+        standardsInput: (_blueprintStandardsContext && _blueprintStandardsContext.promptText)
+            || activeBlueprint.standards || standardsInput,
+        standardsContext: _blueprintStandardsContext,
+        instructionalContext: _blueprintInstructionalContext,
         targetStandards: Array.isArray(targetStandards) ? targetStandards.slice() : targetStandards,
         dokLevel: _globalSettings.dokLevel || dokLevel,
         useEmojis: _globalSettings.useEmojis === undefined ? useEmojis : _globalSettings.useEmojis,
@@ -930,9 +1028,10 @@ const handleExecuteBlueprint = async (deps) => {
         differentiationCustomGrades: Array.isArray(differentiationCustomGrades) ? differentiationCustomGrades.slice() : differentiationCustomGrades,
     });
     const lessonDNA = {
-        grade: activeBlueprint.globalSettings?.gradeLevel || gradeLevel,
+        grade: _blueprintInstructionalContext.instructionalGrade || activeBlueprint.globalSettings?.gradeLevel || gradeLevel,
         topic: sourceTopic || "",
-        standard: standardsInput || "",
+        standard: (_blueprintStandardsContext && _blueprintStandardsContext.promptText)
+            || activeBlueprint.standards || standardsInput || "",
         concepts: Array.isArray(activeBlueprint.lessonDNA?.goldenThread) ? activeBlueprint.lessonDNA.goldenThread : [],
         keyTerms: Array.isArray(activeBlueprint.lessonDNA?.keyTerms) ? activeBlueprint.lessonDNA.keyTerms : [],
         visualContext: "",
@@ -943,12 +1042,23 @@ const handleExecuteBlueprint = async (deps) => {
     const _runRows = {};
     finalResources.forEach((r, i) => {
         const key = (r && r.uiId) || (String(r && r.type) + '-' + i);
-        _runRows[key] = { uiId: key, tool: r && r.type, status: 'planned', index: i };
+        _runRows[key] = {
+            uiId: key,
+            tool: r && r.type,
+            status: 'planned',
+            index: i,
+            instructionalText: _resolveBlueprintInstructionalText(
+                r && r.type,
+                r && r.instructionalText,
+                _blueprintInstructionalContext,
+                _blueprintSettingsSnapshot.leveledTextLanguage
+            )
+        };
     });
     setIsExecutingBlueprint(true);
     const _blueprintStartedAt = Date.now();
     const _blueprintRunId = 'blueprint-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
-    setBlueprintExecutionResult({ runId: _blueprintRunId, status: 'running', startedAt: new Date().toISOString(), settingsSnapshot: _blueprintSettingsSnapshot, rows: _runRows, done: false });
+    setBlueprintExecutionResult({ runId: _blueprintRunId, status: 'running', startedAt: new Date().toISOString(), settingsSnapshot: _blueprintSettingsSnapshot, instructionalContext: _blueprintInstructionalContext, rows: _runRows, done: false });
     // The chat panel used to be force-closed here, which threw away the
     // conversation the plan came out of — and, because the guided-flow stage
     // was never cleared, reopening it stranded every later message in the
@@ -1166,10 +1276,26 @@ const handleRebuildBlueprintStep = async (deps, uiId) => {
     });
   });
   try {
+    const rebuildSettingsSnapshot = (blueprintExecutionResult && blueprintExecutionResult.settingsSnapshot) || null;
+    const rebuildInstructionalContext = _resolveBlueprintInstructionalContext(activeBlueprint, rebuildSettingsSnapshot, persistedLessonDNA);
+    const rebuildDispatchSnapshot = rebuildSettingsSnapshot || Object.freeze({
+      gradeLevel: rebuildInstructionalContext.instructionalGrade || '',
+      standardsContext: rebuildInstructionalContext.standardsContext || null,
+      instructionalContext: rebuildInstructionalContext,
+    });
+    const rebuildInstructionalText = _resolveBlueprintInstructionalText(
+      row.tool,
+      row.instructionalText,
+      rebuildInstructionalContext,
+      rebuildSettingsSnapshot && rebuildSettingsSnapshot.leveledTextLanguage
+    );
     const rebuildConfig = {
       customInstructions: row.directive || '',
       historyOverride: Array.isArray(history) ? history.slice() : [],
       lessonDNA: persistedLessonDNA || null,
+      standardsContext: rebuildInstructionalContext.standardsContext || null,
+      instructionalContext: rebuildInstructionalContext,
+      instructionalText: rebuildInstructionalText,
     };
     // Activities redesign (2026-08-16): rebuilds honor the plan row's activity
     // mode, so a discussion/jigsaw step rebuilds as the same kind of activity.
@@ -1177,9 +1303,11 @@ const handleRebuildBlueprintStep = async (deps, uiId) => {
       rebuildConfig.activityMode = row.activityMode;
       if (row.activityConfig && typeof row.activityConfig === 'object') rebuildConfig.activityConfig = row.activityConfig;
     }
-    const resultItem = await handleGenerate(row.tool, null, false, null, rebuildConfig, false, (blueprintExecutionResult && blueprintExecutionResult.settingsSnapshot) || null);
+    let resultItem = await handleGenerate(row.tool, null, false, null, rebuildConfig, false, rebuildDispatchSnapshot);
+    if (resultItem && !resultItem.instructionalText) resultItem = Object.assign({}, resultItem, { instructionalText: rebuildInstructionalText });
     patch({ status: resultItem ? 'landed' : 'failed',
             resourceId: (resultItem && resultItem.id) || null,
+            instructionalText: rebuildInstructionalText,
             rebuilt: true });
     return resultItem || null;
   } catch (e) {

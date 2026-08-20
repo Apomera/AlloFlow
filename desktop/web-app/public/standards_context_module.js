@@ -16,6 +16,12 @@
   var MAX_FIELD = 600;
   var MAX_URLS = 12;
   var MAX_RELATIONSHIPS = 12;
+  var TEXT_ACCESS_EXPECTATIONS = [
+    'unspecified',
+    'preserve-primary',
+    'supplemental-adaptation-permitted',
+    'educator-directed'
+  ];
 
   function text(value, limit) {
     if (value === undefined || value === null) return '';
@@ -57,6 +63,22 @@
     return (out.id || out.relation || out.label) ? out : null;
   }
 
+  function normalizeInstructionalConstraints(value) {
+    var source = isObject(value) ? value : {};
+    var expectation = text(
+      source.textAccessExpectation || source.primaryTextPolicy || source.expectation,
+      80
+    );
+    if (TEXT_ACCESS_EXPECTATIONS.indexOf(expectation) === -1) expectation = 'unspecified';
+    return {
+      textAccessExpectation: expectation,
+      basis: text(source.basis || source.source || source.authority, 240),
+      sourceUrl: text(source.sourceUrl || source.url, MAX_FIELD),
+      notes: text(source.notes || source.description, MAX_FIELD),
+      sourced: !!(source.sourceUrl || source.url || source.basis || source.authority)
+    };
+  }
+
   function normalizeEntry(raw, index) {
     var source = typeof raw === 'string' ? { label: raw } : (isObject(raw) ? raw : {});
     var code = pick(source, ['code', 'standardCode', 'identifier', 'id', 'standardId']);
@@ -80,7 +102,10 @@
       subject: pick(source, ['subject', 'discipline']),
       sourceUrl: pick(source, ['sourceUrl', 'url', 'officialUrl']),
       sourceUrls: uniqueStrings(source.sourceUrls, MAX_URLS),
-      relationships: relationships
+      relationships: relationships,
+      instructionalConstraints: normalizeInstructionalConstraints(
+        source.instructionalConstraints || source.textAccessPolicy
+      )
     };
   }
 
@@ -156,6 +181,16 @@
       license: text(sourceObject.license || existingProvenance.license, 240),
       attribution: text(sourceObject.attribution || existingProvenance.attribution, 600)
     };
+    var sourceConstraints = normalizeInstructionalConstraints(
+      sourceObject.instructionalConstraints || sourceObject.textAccessPolicy
+    );
+    if (sourceConstraints.textAccessExpectation === 'unspecified') {
+      var constrainedEntry = entries.find(function (entry) {
+        return entry.instructionalConstraints
+          && entry.instructionalConstraints.textAccessExpectation !== 'unspecified';
+      });
+      if (constrainedEntry) sourceConstraints = constrainedEntry.instructionalConstraints;
+    }
     return {
       version: VERSION,
       inputText: inputText,
@@ -167,8 +202,33 @@
       sourceUrls: sourceUrls,
       resolutionStatus: resolutionStatus,
       attribution: provenance.attribution,
-      provenance: provenance
+      provenance: provenance,
+      instructionalConstraints: sourceConstraints
     };
+  }
+
+  function buildResourceDirective(input, options) {
+    var context = normalize(input);
+    var opts = isObject(options) ? options : {};
+    if (isEmpty(context)) return '';
+    var resourceType = text(opts.resourceType, 80) || 'resource';
+    var textRole = text(opts.textRole, 80);
+    var lines = [
+      'STANDARDS FIDELITY: Use the cited standard text as the instructional target.',
+      'Preserve its required content, cognitive verbs, and evidence or product expectations; do not reduce cognitive demand merely to simplify language.'
+    ];
+    if (resourceType === 'source' || textRole === 'primary') {
+      lines.push('PRIMARY TEXT: Build the reading around the standard at the instructional grade. Add access supports without silently replacing the primary text.');
+    } else if (resourceType === 'simplified' || textRole === 'supplemental') {
+      lines.push('ADAPTED COMPANION: Treat this as supplemental access unless the educator explicitly designates it as a replacement. Preserve the standard\'s concepts, relationships, and thinking task while making language more accessible.');
+    } else {
+      lines.push('RESOURCE-SPECIFIC ALIGNMENT: Make every task and response expectation visibly traceable to the standard rather than merely mentioning its topic.');
+    }
+    var constraints = context.instructionalConstraints || {};
+    if (constraints.sourced && constraints.textAccessExpectation === 'preserve-primary') {
+      lines.push('SOURCED TEXT-ACCESS EXPECTATION: Preserve access to the designated primary text; adaptations are supplemental unless the educator explicitly authorizes replacement.');
+    }
+    return lines.join('\n');
   }
 
   function isEmpty(context) {
@@ -179,7 +239,9 @@
     VERSION: VERSION,
     normalize: normalize,
     resolve: normalize,
-    isEmpty: isEmpty
+    isEmpty: isEmpty,
+    normalizeInstructionalConstraints: normalizeInstructionalConstraints,
+    buildResourceDirective: buildResourceDirective
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = API;

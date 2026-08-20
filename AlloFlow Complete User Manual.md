@@ -373,7 +373,8 @@ It lives at the very bottom of the tool list, under an **Auto-Configure** card, 
 
 - **The size selector** on that card controls how much gets made. **Auto (AI Decides)** is the default, or choose **Short (5)**, **Standard (8)**, **Deep (12)**, or **All Tools**.
 - **Auto-Configure** itself fills in the per-tool settings for you rather than making you set each one.
-- **Plan full pack** is the control to press first. It says what it does: review resources, settings, and estimated generations *before* creating them. Read the estimate, because that number is your AI usage for the run.
+- **Plan full pack** is the control to press first. It says what it does: review resources, settings, and estimated generations *before* creating them. In the review, you can add or remove resources, change each resource type, edit its instruction, and move it up or down. Read the updated estimate, because that number is your AI usage for the run.
+- **Text access summary** confirms whether an Adapted Text companion is included. The recommended policy preserves the primary/source text and omits adapted text by default. Choosing **Include supplemental Adapted Text** adds a companion; it does not designate that companion as a primary replacement or infer an IEP modification.
 - **Generate Full Resource Pack** then runs it. The helper text names the shape of what you get: analysis, text, glossary, visuals, quiz and more.
 
 The full pack is the fastest route from one text to a usable lesson set. It is also the easiest way to spend a lot of generations at once, which is exactly why the planner shows the estimate first.
@@ -858,6 +859,14 @@ Use a simple review loop:
 
 Prefer targeted revision requests such as “restore the explanation of evaporation in paragraph three” over “make it better.” Keep the original source available for comparison.
 
+For reading resources, check the instructional-role label before delivery:
+
+- **Primary text** is the standards-bearing text students are expected to access for this lesson.
+- **Supplemental access version** is an adapted companion; it should remain linked to its primary source.
+- **Role not designated** is a legacy or imported resource that needs educator review before the system can make a safe assumption.
+
+AlloFlow defaults newly adapted text to supplemental. Changing it to a primary replacement requires educator confirmation. The app records that decision but does not determine whether a modification is permitted; apply the student's plan, the standard, assessment conditions, and local policy.
+
 #### Apply the accuracy check for the subject
 
 Every teacher should check facts, attribution, age appropriateness, and alignment. Also use a subject-specific pass:
@@ -883,6 +892,8 @@ Students may use different representations or response modes while working towar
 - Students may type, record, or present an explanation when each mode can show the target.
 
 If a pathway changes the goal, say so explicitly and base that decision on the student's instructional plan and teacher judgment, not an automated recommendation.
+
+When standards are attached, review the Rigor Report after adaptation. Readability and rigor answer different questions: a passage can use shorter sentences while still preserving the standard's content, cognitive verbs, and evidence expectations—or it can become easier by deleting the very thinking the standard requires.
 
 #### Name pathways by function
 
@@ -975,7 +986,7 @@ Continue with [Accessibility and UDL](#accessibility-and-udl-verify-the-learner-
 
 ## Universal Settings: set it once, not per tool
 
-Universal Settings is one card that holds the choices every generator inherits. Set the grade level once and the glossary, the quiz, and the adapted text all target that grade. Set it per tool instead and the parts of one lesson pack quietly disagree with each other.
+Universal Settings is one card that holds the choices most generators inherit. Set the instructional audience once and the glossary, quiz, lesson plan, and adapted text use the same context. The Source Generator keeps its own primary-source grade control, so the app can distinguish the standard's instructional grade from an access text's language-complexity target.
 
 Open it before you generate anything. That single habit prevents most of the "why does this pack feel mismatched" problems teachers report.
 
@@ -1024,17 +1035,27 @@ Use **Image style** in Universal Settings to keep one lesson visually coherent. 
 
 Choose an override for an instructional reason—for example, a simple line-drawing style for a worksheet that must photocopy clearly—not merely because the same selector is visible. Return the resource to **Use Universal style** when the exception is no longer needed. A change affects new or regenerated images; it does not restyle images that already exist.
 
-### Choose a grade level honestly
+### Separate the requested grade from internal calibration
 
-The grade level is a target, not a guarantee. Generated text often lands above the grade you asked for, and asking for more research or more detail tends to push it higher still.
+The grade you select is the educator-facing target. It is not silently relabeled as a lower instructional grade. For source writing, AlloFlow may use a lower internal prompt target to compensate for a model's tendency to overshoot. The resource still records the grade you requested, the internal calibration target, and—when an English readability check is appropriate—the measured result as separate facts.
+
+That distinction matters:
+
+- **Instructional grade** identifies the standards and intellectual target.
+- **Requested text complexity** identifies the intended language load for this resource.
+- **Internal calibration** is a generation technique, not a recommendation about what students should read.
+- **Measured complexity** is evidence about the resulting text, not proof that it is instructionally appropriate.
+
+Flesch–Kincaid is an English screening measure based mainly on word and sentence patterns. It cannot judge knowledge demands, text structure, content accuracy, cultural context, or the reader and task. AlloFlow therefore does not show an English grade-level verdict for non-English or bilingual text.
 
 Do this before you share:
 
 - Read a paragraph aloud and listen for sentences a student would lose track of.
 - Look for words you would have to stop and define.
 - Compare the result against something you know sits at the right grade.
+- Use the recorded level check as one signal, then review content, structure, and the actual task.
 
-If it reads high, ask for a lower grade than you want and check again. Set the grade for the students who need the most access, then offer the original source to students who are ready for it. Lowering the reading load is not the same as lowering the learning goal. See [Prepare a lesson](#prepare-a-purposeful-differentiated-lesson) for how to protect the intellectual target while changing the reading level.
+If an adapted version is used as a companion, leave its role as **Supplemental access version** and keep the linked primary text available as required by the lesson, standard, and local policy. Designating an adapted version as a primary replacement requires an explicit educator choice; AlloFlow does not infer an IEP, modification, or authorization. Lowering language load is not the same as lowering the learning goal. See [Prepare a lesson](#prepare-a-purposeful-differentiated-lesson) for how to protect the intellectual target while changing text complexity.
 
 ### Set the language and decide about translations
 
@@ -1071,7 +1092,7 @@ Turn emoji on when the visual cue helps and you have previewed the result. Turn 
 
 Before you generate the first resource for a lesson:
 
-- Set the grade level for the students who need the most access.
+- Set the instructional grade to match the standards and learning target; use an adapted companion when a different language-complexity target is appropriate.
 - Set the output language your class will read.
 - Check the Translations line and confirm it says what you expect.
 - Add a standard only if you will actually use the alignment.
@@ -1659,7 +1680,7 @@ Do not replace formal notation when the notation is itself part of the goal. Tea
 
 #### Reading and decoding load
 
-Keep the original source available when appropriate. Offer read-aloud, clarified layout, chunking, vocabulary, and a version that preserves essential content. If decoding or fluency is being assessed, separate access support for directions from the text students must read independently.
+Keep the designated primary source available when required by the learning target, standard, student plan, assessment conditions, or local policy. Offer read-aloud, clarified layout, chunking, vocabulary, and a supplemental version that preserves essential content and cognitive demand. If decoding or fluency is being assessed, separate access support for directions from the text students must read independently. Treat AlloFlow's role labels and warnings as planning safeguards, not legal or eligibility determinations.
 
 #### Executive-function load
 

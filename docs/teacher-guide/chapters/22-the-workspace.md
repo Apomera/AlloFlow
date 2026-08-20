@@ -140,7 +140,8 @@ It lives at the very bottom of the tool list, under an **Auto-Configure** card, 
 
 - **The size selector** on that card controls how much gets made. **Auto (AI Decides)** is the default, or choose **Short (5)**, **Standard (8)**, **Deep (12)**, or **All Tools**.
 - **Auto-Configure** itself fills in the per-tool settings for you rather than making you set each one.
-- **Plan full pack** is the control to press first. It says what it does: review resources, settings, and estimated generations *before* creating them. Read the estimate, because that number is your AI usage for the run.
+- **Plan full pack** is the control to press first. It says what it does: review resources, settings, and estimated generations *before* creating them. In the review, you can add or remove resources, change each resource type, edit its instruction, and move it up or down. Read the updated estimate, because that number is your AI usage for the run.
+- **Text access summary** confirms whether an Adapted Text companion is included. The recommended policy preserves the primary/source text and omits adapted text by default. Choosing **Include supplemental Adapted Text** adds a companion; it does not designate that companion as a primary replacement or infer an IEP modification.
 - **Generate Full Resource Pack** then runs it. The helper text names the shape of what you get: analysis, text, glossary, visuals, quiz and more.
 
 The full pack is the fastest route from one text to a usable lesson set. It is also the easiest way to spend a lot of generations at once, which is exactly why the planner shows the estimate first.

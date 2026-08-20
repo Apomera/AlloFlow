@@ -1,0 +1,3785 @@
+{
+  "schemaVersion": 1,
+  "librarySchemaVersion": 1,
+  "libraryId": "ap-biology-foundation-pilot-learning-library",
+  "packId": "ap-biology-foundation-pilot",
+  "version": "0.1.0-internal-preview",
+  "title": "AP Biology Foundation Pilot Learning Library",
+  "description": "An independently authored AP Biology internal foundation pilot with eight unit chapter shells, two richer lesson prototypes, chapter retrieval checks, linked study cards, and reasoning aids. It is not released, official, calibrated, or score-predictive.",
+  "status": "preview",
+  "visibility": "internal",
+  "released": false,
+  "releaseEligible": false,
+  "officialItem": false,
+  "blueprint": {
+    "academicYearReference": "2025-26",
+    "cedEffectiveLabel": "Fall 2025",
+    "cedFrameworkVersion": "V.1",
+    "examFormatReferenceYear": 2026,
+    "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+    "officialCourseUrl": "https://apstudents.collegeboard.org/courses/ap-biology",
+    "pilotVersion": "ap-biology-foundation-v1",
+    "pilotNote": "Foundation pilot only: 50 original selected-response items, eight unit shells, two rich lesson prototypes, and internal remediation routes. Do not expand to a 500-item release candidate until content, rights, accessibility, and subject-expert gates advance.",
+    "bigIdeas": [
+      {
+        "id": "BI1",
+        "label": "Evolution",
+        "description": "The process of evolution drives the diversity and unity of life."
+      },
+      {
+        "id": "BI2",
+        "label": "Energetics",
+        "description": "Biological systems use energy and molecular building blocks to grow, reproduce, and maintain dynamic homeostasis."
+      },
+      {
+        "id": "BI3",
+        "label": "Information Storage and Transmission",
+        "description": "Living systems store, retrieve, transmit, and respond to information essential to life processes."
+      },
+      {
+        "id": "BI4",
+        "label": "Systems Interactions",
+        "description": "Biological systems interact, and their interactions exhibit complex properties."
+      }
+    ],
+    "sciencePractices": [
+      {
+        "id": "SP1",
+        "label": "Concept Explanation",
+        "description": "Explain biological concepts, processes, and models in written and applied contexts."
+      },
+      {
+        "id": "SP2",
+        "label": "Visual Representations",
+        "description": "Analyze and relate diagrams, models, flowcharts, and other visual representations."
+      },
+      {
+        "id": "SP3",
+        "label": "Questions and Methods",
+        "description": "Pose testable questions, identify variables and controls, and predict experimental results."
+      },
+      {
+        "id": "SP4",
+        "label": "Representing and Describing Data",
+        "description": "Describe data points, trends, patterns, and relationships from tables or graphs."
+      },
+      {
+        "id": "SP5",
+        "label": "Statistical Tests and Data Analysis",
+        "description": "Apply calculations, uncertainty, statistical tests, and evidence to evaluate hypotheses."
+      },
+      {
+        "id": "SP6",
+        "label": "Argumentation",
+        "description": "Make claims, support them with evidence, connect reasoning to theory, and predict system changes."
+      }
+    ],
+    "learningObjectiveCatalogVersion": "ap-biology-foundation-v1",
+    "learningObjectiveCatalog": [
+      {
+        "id": "ap-bio-lo-1-1",
+        "topicId": "1.1",
+        "domainId": "chemistry-of-life",
+        "chapterId": "ap-bio-ch-01",
+        "sectionId": "ap-bio-ch-01-section-01",
+        "sectionLabel": "Water, macromolecules, and biological structure",
+        "label": "Explain how water properties and macromolecular structure support biological function. Apply the target to water and hydrogen bonding.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-1-2",
+        "topicId": "1.2",
+        "domainId": "chemistry-of-life",
+        "chapterId": "ap-bio-ch-01",
+        "sectionId": "ap-bio-ch-01-section-01",
+        "sectionLabel": "Water, macromolecules, and biological structure",
+        "label": "Explain how water properties and macromolecular structure support biological function. Apply the target to elements of life.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-1-3",
+        "topicId": "1.3",
+        "domainId": "chemistry-of-life",
+        "chapterId": "ap-bio-ch-01",
+        "sectionId": "ap-bio-ch-01-section-01",
+        "sectionLabel": "Water, macromolecules, and biological structure",
+        "label": "Explain how water properties and macromolecular structure support biological function. Apply the target to macromolecules.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-1-4",
+        "topicId": "1.4",
+        "domainId": "chemistry-of-life",
+        "chapterId": "ap-bio-ch-01",
+        "sectionId": "ap-bio-ch-01-section-01",
+        "sectionLabel": "Water, macromolecules, and biological structure",
+        "label": "Explain how water properties and macromolecular structure support biological function. Apply the target to carbohydrates.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-1-5",
+        "topicId": "1.5",
+        "domainId": "chemistry-of-life",
+        "chapterId": "ap-bio-ch-01",
+        "sectionId": "ap-bio-ch-01-section-01",
+        "sectionLabel": "Water, macromolecules, and biological structure",
+        "label": "Explain how water properties and macromolecular structure support biological function. Apply the target to lipids.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-1-6",
+        "topicId": "1.6",
+        "domainId": "chemistry-of-life",
+        "chapterId": "ap-bio-ch-01",
+        "sectionId": "ap-bio-ch-01-section-01",
+        "sectionLabel": "Water, macromolecules, and biological structure",
+        "label": "Explain how water properties and macromolecular structure support biological function. Apply the target to nucleic acids.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-1-7",
+        "topicId": "1.7",
+        "domainId": "chemistry-of-life",
+        "chapterId": "ap-bio-ch-01",
+        "sectionId": "ap-bio-ch-01-section-01",
+        "sectionLabel": "Water, macromolecules, and biological structure",
+        "label": "Explain how water properties and macromolecular structure support biological function. Apply the target to proteins.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-2-1",
+        "topicId": "2.1",
+        "domainId": "cells",
+        "chapterId": "ap-bio-ch-02",
+        "sectionId": "ap-bio-ch-02-section-01",
+        "sectionLabel": "Membranes, transport, and cell size",
+        "label": "Predict how membrane structure, gradients, and surface-area-to-volume ratio affect cell exchange. Apply the target to cell structure and function.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-2-2",
+        "topicId": "2.2",
+        "domainId": "cells",
+        "chapterId": "ap-bio-ch-02",
+        "sectionId": "ap-bio-ch-02-section-01",
+        "sectionLabel": "Membranes, transport, and cell size",
+        "label": "Predict how membrane structure, gradients, and surface-area-to-volume ratio affect cell exchange. Apply the target to cell size.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-2-3",
+        "topicId": "2.3",
+        "domainId": "cells",
+        "chapterId": "ap-bio-ch-02",
+        "sectionId": "ap-bio-ch-02-section-01",
+        "sectionLabel": "Membranes, transport, and cell size",
+        "label": "Predict how membrane structure, gradients, and surface-area-to-volume ratio affect cell exchange. Apply the target to plasma membrane.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-2-4",
+        "topicId": "2.4",
+        "domainId": "cells",
+        "chapterId": "ap-bio-ch-02",
+        "sectionId": "ap-bio-ch-02-section-01",
+        "sectionLabel": "Membranes, transport, and cell size",
+        "label": "Predict how membrane structure, gradients, and surface-area-to-volume ratio affect cell exchange. Apply the target to membrane permeability.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-2-5",
+        "topicId": "2.5",
+        "domainId": "cells",
+        "chapterId": "ap-bio-ch-02",
+        "sectionId": "ap-bio-ch-02-section-01",
+        "sectionLabel": "Membranes, transport, and cell size",
+        "label": "Predict how membrane structure, gradients, and surface-area-to-volume ratio affect cell exchange. Apply the target to membrane transport.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-2-6",
+        "topicId": "2.6",
+        "domainId": "cells",
+        "chapterId": "ap-bio-ch-02",
+        "sectionId": "ap-bio-ch-02-section-01",
+        "sectionLabel": "Membranes, transport, and cell size",
+        "label": "Predict how membrane structure, gradients, and surface-area-to-volume ratio affect cell exchange. Apply the target to facilitated diffusion.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-2-7",
+        "topicId": "2.7",
+        "domainId": "cells",
+        "chapterId": "ap-bio-ch-02",
+        "sectionId": "ap-bio-ch-02-section-01",
+        "sectionLabel": "Membranes, transport, and cell size",
+        "label": "Predict how membrane structure, gradients, and surface-area-to-volume ratio affect cell exchange. Apply the target to tonicity and osmoregulation.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-2-8",
+        "topicId": "2.8",
+        "domainId": "cells",
+        "chapterId": "ap-bio-ch-02",
+        "sectionId": "ap-bio-ch-02-section-01",
+        "sectionLabel": "Membranes, transport, and cell size",
+        "label": "Predict how membrane structure, gradients, and surface-area-to-volume ratio affect cell exchange. Apply the target to mechanisms of transport.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-2-9",
+        "topicId": "2.9",
+        "domainId": "cells",
+        "chapterId": "ap-bio-ch-02",
+        "sectionId": "ap-bio-ch-02-section-01",
+        "sectionLabel": "Membranes, transport, and cell size",
+        "label": "Predict how membrane structure, gradients, and surface-area-to-volume ratio affect cell exchange. Apply the target to cell compartmentalization.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-2-10",
+        "topicId": "2.10",
+        "domainId": "cells",
+        "chapterId": "ap-bio-ch-02",
+        "sectionId": "ap-bio-ch-02-section-01",
+        "sectionLabel": "Membranes, transport, and cell size",
+        "label": "Predict how membrane structure, gradients, and surface-area-to-volume ratio affect cell exchange. Apply the target to origins of cell compartmentalization.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-3-1",
+        "topicId": "3.1",
+        "domainId": "cellular-energetics",
+        "chapterId": "ap-bio-ch-03",
+        "sectionId": "ap-bio-ch-03-section-01",
+        "sectionLabel": "Enzymes, energy, and metabolic pathways",
+        "label": "Explain how enzymes and energy-transfer pathways affect rates of biological processes. Apply the target to enzymes.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-3-2",
+        "topicId": "3.2",
+        "domainId": "cellular-energetics",
+        "chapterId": "ap-bio-ch-03",
+        "sectionId": "ap-bio-ch-03-section-01",
+        "sectionLabel": "Enzymes, energy, and metabolic pathways",
+        "label": "Explain how enzymes and energy-transfer pathways affect rates of biological processes. Apply the target to environmental impacts on enzyme function.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-3-3",
+        "topicId": "3.3",
+        "domainId": "cellular-energetics",
+        "chapterId": "ap-bio-ch-03",
+        "sectionId": "ap-bio-ch-03-section-01",
+        "sectionLabel": "Enzymes, energy, and metabolic pathways",
+        "label": "Explain how enzymes and energy-transfer pathways affect rates of biological processes. Apply the target to cellular energy.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-3-4",
+        "topicId": "3.4",
+        "domainId": "cellular-energetics",
+        "chapterId": "ap-bio-ch-03",
+        "sectionId": "ap-bio-ch-03-section-01",
+        "sectionLabel": "Enzymes, energy, and metabolic pathways",
+        "label": "Explain how enzymes and energy-transfer pathways affect rates of biological processes. Apply the target to photosynthesis.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-3-5",
+        "topicId": "3.5",
+        "domainId": "cellular-energetics",
+        "chapterId": "ap-bio-ch-03",
+        "sectionId": "ap-bio-ch-03-section-01",
+        "sectionLabel": "Enzymes, energy, and metabolic pathways",
+        "label": "Explain how enzymes and energy-transfer pathways affect rates of biological processes. Apply the target to cellular respiration.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-4-1",
+        "topicId": "4.1",
+        "domainId": "cell-communication-and-cell-cycle",
+        "chapterId": "ap-bio-ch-04",
+        "sectionId": "ap-bio-ch-04-section-01",
+        "sectionLabel": "Cell signaling and cell-cycle regulation",
+        "label": "Predict how signaling, feedback, and checkpoints alter cellular responses and division. Apply the target to cell communication.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-4-2",
+        "topicId": "4.2",
+        "domainId": "cell-communication-and-cell-cycle",
+        "chapterId": "ap-bio-ch-04",
+        "sectionId": "ap-bio-ch-04-section-01",
+        "sectionLabel": "Cell signaling and cell-cycle regulation",
+        "label": "Predict how signaling, feedback, and checkpoints alter cellular responses and division. Apply the target to introduction to signal transduction.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-4-3",
+        "topicId": "4.3",
+        "domainId": "cell-communication-and-cell-cycle",
+        "chapterId": "ap-bio-ch-04",
+        "sectionId": "ap-bio-ch-04-section-01",
+        "sectionLabel": "Cell signaling and cell-cycle regulation",
+        "label": "Predict how signaling, feedback, and checkpoints alter cellular responses and division. Apply the target to signal transduction pathways.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-4-4",
+        "topicId": "4.4",
+        "domainId": "cell-communication-and-cell-cycle",
+        "chapterId": "ap-bio-ch-04",
+        "sectionId": "ap-bio-ch-04-section-01",
+        "sectionLabel": "Cell signaling and cell-cycle regulation",
+        "label": "Predict how signaling, feedback, and checkpoints alter cellular responses and division. Apply the target to feedback.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-4-5",
+        "topicId": "4.5",
+        "domainId": "cell-communication-and-cell-cycle",
+        "chapterId": "ap-bio-ch-04",
+        "sectionId": "ap-bio-ch-04-section-01",
+        "sectionLabel": "Cell signaling and cell-cycle regulation",
+        "label": "Predict how signaling, feedback, and checkpoints alter cellular responses and division. Apply the target to cell cycle.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-4-6",
+        "topicId": "4.6",
+        "domainId": "cell-communication-and-cell-cycle",
+        "chapterId": "ap-bio-ch-04",
+        "sectionId": "ap-bio-ch-04-section-01",
+        "sectionLabel": "Cell signaling and cell-cycle regulation",
+        "label": "Predict how signaling, feedback, and checkpoints alter cellular responses and division. Apply the target to regulation of cell cycle.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-5-1",
+        "topicId": "5.1",
+        "domainId": "heredity",
+        "chapterId": "ap-bio-ch-05",
+        "sectionId": "ap-bio-ch-05-section-01",
+        "sectionLabel": "Meiosis, inheritance, and phenotype",
+        "label": "Use meiosis and probability to explain patterns of inheritance and variation. Apply the target to meiosis.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-5-2",
+        "topicId": "5.2",
+        "domainId": "heredity",
+        "chapterId": "ap-bio-ch-05",
+        "sectionId": "ap-bio-ch-05-section-01",
+        "sectionLabel": "Meiosis, inheritance, and phenotype",
+        "label": "Use meiosis and probability to explain patterns of inheritance and variation. Apply the target to meiosis and genetic diversity.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-5-3",
+        "topicId": "5.3",
+        "domainId": "heredity",
+        "chapterId": "ap-bio-ch-05",
+        "sectionId": "ap-bio-ch-05-section-01",
+        "sectionLabel": "Meiosis, inheritance, and phenotype",
+        "label": "Use meiosis and probability to explain patterns of inheritance and variation. Apply the target to mendelian genetics.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-5-4",
+        "topicId": "5.4",
+        "domainId": "heredity",
+        "chapterId": "ap-bio-ch-05",
+        "sectionId": "ap-bio-ch-05-section-01",
+        "sectionLabel": "Meiosis, inheritance, and phenotype",
+        "label": "Use meiosis and probability to explain patterns of inheritance and variation. Apply the target to non-mendelian genetics.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-5-5",
+        "topicId": "5.5",
+        "domainId": "heredity",
+        "chapterId": "ap-bio-ch-05",
+        "sectionId": "ap-bio-ch-05-section-01",
+        "sectionLabel": "Meiosis, inheritance, and phenotype",
+        "label": "Use meiosis and probability to explain patterns of inheritance and variation. Apply the target to environmental effects on phenotype.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-6-1",
+        "topicId": "6.1",
+        "domainId": "gene-expression-and-regulation",
+        "chapterId": "ap-bio-ch-06",
+        "sectionId": "ap-bio-ch-06-section-01",
+        "sectionLabel": "DNA, gene expression, and biotechnology",
+        "label": "Trace genetic information from DNA through expression and predict effects of changes in regulation or sequence. Apply the target to dna and rna structure.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-6-2",
+        "topicId": "6.2",
+        "domainId": "gene-expression-and-regulation",
+        "chapterId": "ap-bio-ch-06",
+        "sectionId": "ap-bio-ch-06-section-01",
+        "sectionLabel": "DNA, gene expression, and biotechnology",
+        "label": "Trace genetic information from DNA through expression and predict effects of changes in regulation or sequence. Apply the target to dna replication.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-6-3",
+        "topicId": "6.3",
+        "domainId": "gene-expression-and-regulation",
+        "chapterId": "ap-bio-ch-06",
+        "sectionId": "ap-bio-ch-06-section-01",
+        "sectionLabel": "DNA, gene expression, and biotechnology",
+        "label": "Trace genetic information from DNA through expression and predict effects of changes in regulation or sequence. Apply the target to transcription and rna processing.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-6-4",
+        "topicId": "6.4",
+        "domainId": "gene-expression-and-regulation",
+        "chapterId": "ap-bio-ch-06",
+        "sectionId": "ap-bio-ch-06-section-01",
+        "sectionLabel": "DNA, gene expression, and biotechnology",
+        "label": "Trace genetic information from DNA through expression and predict effects of changes in regulation or sequence. Apply the target to translation.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-6-5",
+        "topicId": "6.5",
+        "domainId": "gene-expression-and-regulation",
+        "chapterId": "ap-bio-ch-06",
+        "sectionId": "ap-bio-ch-06-section-01",
+        "sectionLabel": "DNA, gene expression, and biotechnology",
+        "label": "Trace genetic information from DNA through expression and predict effects of changes in regulation or sequence. Apply the target to regulation of gene expression.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-6-6",
+        "topicId": "6.6",
+        "domainId": "gene-expression-and-regulation",
+        "chapterId": "ap-bio-ch-06",
+        "sectionId": "ap-bio-ch-06-section-01",
+        "sectionLabel": "DNA, gene expression, and biotechnology",
+        "label": "Trace genetic information from DNA through expression and predict effects of changes in regulation or sequence. Apply the target to gene expression and cell specialization.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-6-7",
+        "topicId": "6.7",
+        "domainId": "gene-expression-and-regulation",
+        "chapterId": "ap-bio-ch-06",
+        "sectionId": "ap-bio-ch-06-section-01",
+        "sectionLabel": "DNA, gene expression, and biotechnology",
+        "label": "Trace genetic information from DNA through expression and predict effects of changes in regulation or sequence. Apply the target to mutations.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-6-8",
+        "topicId": "6.8",
+        "domainId": "gene-expression-and-regulation",
+        "chapterId": "ap-bio-ch-06",
+        "sectionId": "ap-bio-ch-06-section-01",
+        "sectionLabel": "DNA, gene expression, and biotechnology",
+        "label": "Trace genetic information from DNA through expression and predict effects of changes in regulation or sequence. Apply the target to biotechnology.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-7-1",
+        "topicId": "7.1",
+        "domainId": "natural-selection",
+        "chapterId": "ap-bio-ch-07",
+        "sectionId": "ap-bio-ch-07-section-01",
+        "sectionLabel": "Natural selection, population genetics, and speciation",
+        "label": "Use population data and evolutionary mechanisms to explain changes in allele frequencies and relatedness. Apply the target to introduction to natural selection.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-7-2",
+        "topicId": "7.2",
+        "domainId": "natural-selection",
+        "chapterId": "ap-bio-ch-07",
+        "sectionId": "ap-bio-ch-07-section-01",
+        "sectionLabel": "Natural selection, population genetics, and speciation",
+        "label": "Use population data and evolutionary mechanisms to explain changes in allele frequencies and relatedness. Apply the target to natural selection.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-7-3",
+        "topicId": "7.3",
+        "domainId": "natural-selection",
+        "chapterId": "ap-bio-ch-07",
+        "sectionId": "ap-bio-ch-07-section-01",
+        "sectionLabel": "Natural selection, population genetics, and speciation",
+        "label": "Use population data and evolutionary mechanisms to explain changes in allele frequencies and relatedness. Apply the target to artificial selection.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-7-4",
+        "topicId": "7.4",
+        "domainId": "natural-selection",
+        "chapterId": "ap-bio-ch-07",
+        "sectionId": "ap-bio-ch-07-section-01",
+        "sectionLabel": "Natural selection, population genetics, and speciation",
+        "label": "Use population data and evolutionary mechanisms to explain changes in allele frequencies and relatedness. Apply the target to population genetics.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-7-5",
+        "topicId": "7.5",
+        "domainId": "natural-selection",
+        "chapterId": "ap-bio-ch-07",
+        "sectionId": "ap-bio-ch-07-section-01",
+        "sectionLabel": "Natural selection, population genetics, and speciation",
+        "label": "Use population data and evolutionary mechanisms to explain changes in allele frequencies and relatedness. Apply the target to hardy-weinberg equilibrium.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-7-6",
+        "topicId": "7.6",
+        "domainId": "natural-selection",
+        "chapterId": "ap-bio-ch-07",
+        "sectionId": "ap-bio-ch-07-section-01",
+        "sectionLabel": "Natural selection, population genetics, and speciation",
+        "label": "Use population data and evolutionary mechanisms to explain changes in allele frequencies and relatedness. Apply the target to evidence of evolution.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-7-7",
+        "topicId": "7.7",
+        "domainId": "natural-selection",
+        "chapterId": "ap-bio-ch-07",
+        "sectionId": "ap-bio-ch-07-section-01",
+        "sectionLabel": "Natural selection, population genetics, and speciation",
+        "label": "Use population data and evolutionary mechanisms to explain changes in allele frequencies and relatedness. Apply the target to common ancestry.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-7-8",
+        "topicId": "7.8",
+        "domainId": "natural-selection",
+        "chapterId": "ap-bio-ch-07",
+        "sectionId": "ap-bio-ch-07-section-01",
+        "sectionLabel": "Natural selection, population genetics, and speciation",
+        "label": "Use population data and evolutionary mechanisms to explain changes in allele frequencies and relatedness. Apply the target to continuing evolution.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-7-9",
+        "topicId": "7.9",
+        "domainId": "natural-selection",
+        "chapterId": "ap-bio-ch-07",
+        "sectionId": "ap-bio-ch-07-section-01",
+        "sectionLabel": "Natural selection, population genetics, and speciation",
+        "label": "Use population data and evolutionary mechanisms to explain changes in allele frequencies and relatedness. Apply the target to phylogeny.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-7-10",
+        "topicId": "7.10",
+        "domainId": "natural-selection",
+        "chapterId": "ap-bio-ch-07",
+        "sectionId": "ap-bio-ch-07-section-01",
+        "sectionLabel": "Natural selection, population genetics, and speciation",
+        "label": "Use population data and evolutionary mechanisms to explain changes in allele frequencies and relatedness. Apply the target to speciation.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-7-11",
+        "topicId": "7.11",
+        "domainId": "natural-selection",
+        "chapterId": "ap-bio-ch-07",
+        "sectionId": "ap-bio-ch-07-section-01",
+        "sectionLabel": "Natural selection, population genetics, and speciation",
+        "label": "Use population data and evolutionary mechanisms to explain changes in allele frequencies and relatedness. Apply the target to variations in populations.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-7-12",
+        "topicId": "7.12",
+        "domainId": "natural-selection",
+        "chapterId": "ap-bio-ch-07",
+        "sectionId": "ap-bio-ch-07-section-01",
+        "sectionLabel": "Natural selection, population genetics, and speciation",
+        "label": "Use population data and evolutionary mechanisms to explain changes in allele frequencies and relatedness. Apply the target to origins of life on earth.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-8-1",
+        "topicId": "8.1",
+        "domainId": "ecology",
+        "chapterId": "ap-bio-ch-08",
+        "sectionId": "ap-bio-ch-08-section-01",
+        "sectionLabel": "Energy flow, populations, and ecosystems",
+        "label": "Analyze how energy, matter, population processes, and species interactions shape ecosystems. Apply the target to responses to the environment.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-8-2",
+        "topicId": "8.2",
+        "domainId": "ecology",
+        "chapterId": "ap-bio-ch-08",
+        "sectionId": "ap-bio-ch-08-section-01",
+        "sectionLabel": "Energy flow, populations, and ecosystems",
+        "label": "Analyze how energy, matter, population processes, and species interactions shape ecosystems. Apply the target to energy flow through ecosystems.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-8-3",
+        "topicId": "8.3",
+        "domainId": "ecology",
+        "chapterId": "ap-bio-ch-08",
+        "sectionId": "ap-bio-ch-08-section-01",
+        "sectionLabel": "Energy flow, populations, and ecosystems",
+        "label": "Analyze how energy, matter, population processes, and species interactions shape ecosystems. Apply the target to population ecology.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-8-4",
+        "topicId": "8.4",
+        "domainId": "ecology",
+        "chapterId": "ap-bio-ch-08",
+        "sectionId": "ap-bio-ch-08-section-01",
+        "sectionLabel": "Energy flow, populations, and ecosystems",
+        "label": "Analyze how energy, matter, population processes, and species interactions shape ecosystems. Apply the target to effect of density on populations.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-8-5",
+        "topicId": "8.5",
+        "domainId": "ecology",
+        "chapterId": "ap-bio-ch-08",
+        "sectionId": "ap-bio-ch-08-section-01",
+        "sectionLabel": "Energy flow, populations, and ecosystems",
+        "label": "Analyze how energy, matter, population processes, and species interactions shape ecosystems. Apply the target to community ecology.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-8-6",
+        "topicId": "8.6",
+        "domainId": "ecology",
+        "chapterId": "ap-bio-ch-08",
+        "sectionId": "ap-bio-ch-08-section-01",
+        "sectionLabel": "Energy flow, populations, and ecosystems",
+        "label": "Analyze how energy, matter, population processes, and species interactions shape ecosystems. Apply the target to biodiversity.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      },
+      {
+        "id": "ap-bio-lo-8-7",
+        "topicId": "8.7",
+        "domainId": "ecology",
+        "chapterId": "ap-bio-ch-08",
+        "sectionId": "ap-bio-ch-08-section-01",
+        "sectionLabel": "Energy flow, populations, and ecosystems",
+        "label": "Analyze how energy, matter, population processes, and species interactions shape ecosystems. Apply the target to disruptions in ecosystems.",
+        "practiceIds": [
+          "SP1",
+          "SP2",
+          "SP3",
+          "SP4",
+          "SP5",
+          "SP6"
+        ],
+        "nextStep": "Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.",
+        "status": "internal-remediation-route",
+        "officialItem": false,
+        "releaseEligible": false,
+        "reviewStatus": "internal-editorial-draft",
+        "references": [
+          "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+          "https://apstudents.collegeboard.org/courses/ap-biology",
+          "https://openstax.org/details/books/biology-2e"
+        ]
+      }
+    ],
+    "unitWeights": [
+      {
+        "id": "chemistry-of-life",
+        "label": "Unit 1: Chemistry of Life",
+        "officialWeightRange": [
+          0.08,
+          0.11
+        ]
+      },
+      {
+        "id": "cells",
+        "label": "Unit 2: Cells",
+        "officialWeightRange": [
+          0.1,
+          0.13
+        ]
+      },
+      {
+        "id": "cellular-energetics",
+        "label": "Unit 3: Cellular Energetics",
+        "officialWeightRange": [
+          0.12,
+          0.16
+        ]
+      },
+      {
+        "id": "cell-communication-and-cell-cycle",
+        "label": "Unit 4: Cell Communication and Cell Cycle",
+        "officialWeightRange": [
+          0.1,
+          0.15
+        ]
+      },
+      {
+        "id": "heredity",
+        "label": "Unit 5: Heredity",
+        "officialWeightRange": [
+          0.08,
+          0.11
+        ]
+      },
+      {
+        "id": "gene-expression-and-regulation",
+        "label": "Unit 6: Gene Expression and Regulation",
+        "officialWeightRange": [
+          0.12,
+          0.16
+        ]
+      },
+      {
+        "id": "natural-selection",
+        "label": "Unit 7: Natural Selection",
+        "officialWeightRange": [
+          0.13,
+          0.2
+        ]
+      },
+      {
+        "id": "ecology",
+        "label": "Unit 8: Ecology",
+        "officialWeightRange": [
+          0.1,
+          0.15
+        ]
+      }
+    ]
+  },
+  "reviewStandard": "Independent source and editorial review against the public AP Biology Course and Exam Description and openly available factual references. Independent AP Biology subject-expert, accessibility, rights, production, field-testing, and psychometric review remain required.",
+  "disclaimer": "Independent, unofficial AP Biology preparation material for internal foundation-pilot development only. Not affiliated with, endorsed by, or authored by College Board. AP and Advanced Placement are trademarks of College Board. No secure AP Classroom, Question Bank, Progress Check, practice exam, teacher-only content, official rubric, or official question was used or reproduced. This pilot does not provide official scores, score predictions, college-credit predictions, medical advice, laboratory safety instructions, or a substitute for supervised laboratory work.",
+  "prerequisiteNote": "College Board lists high school biology and chemistry as recommended prerequisites. This pilot should disclose that background expectation before study begins.",
+  "sourceCatalog": [
+    {
+      "id": "ap-bio-ced-2025",
+      "title": "AP Biology Course and Exam Description",
+      "organization": "College Board",
+      "url": "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+      "credibility": "Current public course framework, science practices, unit descriptions, exam information, and content boundaries.",
+      "sourceType": "official-blueprint",
+      "reviewedAt": "2026-08-20"
+    },
+    {
+      "id": "ap-bio-course-page",
+      "title": "AP Biology course and exam page",
+      "organization": "College Board",
+      "url": "https://apstudents.collegeboard.org/courses/ap-biology",
+      "credibility": "Current public overview of course units, prerequisites, exam weighting, and available reference resources.",
+      "sourceType": "official-course-page",
+      "reviewedAt": "2026-08-20"
+    },
+    {
+      "id": "openstax-biology-2e",
+      "title": "Biology 2e",
+      "organization": "OpenStax, Rice University",
+      "url": "https://openstax.org/details/books/biology-2e",
+      "credibility": "Open college-level biology reference used for factual cross-checking; no prose, figures, or assessment content are reproduced.",
+      "sourceType": "open-textbook-reference",
+      "reviewedAt": "2026-08-20"
+    }
+  ],
+  "skills": [
+    {
+      "id": "SP1",
+      "label": "Concept Explanation",
+      "description": "Explain biological concepts, processes, and models in written and applied contexts."
+    },
+    {
+      "id": "SP2",
+      "label": "Visual Representations",
+      "description": "Analyze and relate diagrams, models, flowcharts, and other visual representations."
+    },
+    {
+      "id": "SP3",
+      "label": "Questions and Methods",
+      "description": "Pose testable questions, identify variables and controls, and predict experimental results."
+    },
+    {
+      "id": "SP4",
+      "label": "Representing and Describing Data",
+      "description": "Describe data points, trends, patterns, and relationships from tables or graphs."
+    },
+    {
+      "id": "SP5",
+      "label": "Statistical Tests and Data Analysis",
+      "description": "Apply calculations, uncertainty, statistical tests, and evidence to evaluate hypotheses."
+    },
+    {
+      "id": "SP6",
+      "label": "Argumentation",
+      "description": "Make claims, support them with evidence, connect reasoning to theory, and predict system changes."
+    }
+  ],
+  "chapters": [
+    {
+      "id": "ap-bio-ch-01",
+      "title": "Unit 1: Chemistry of Life",
+      "domainId": "chemistry-of-life",
+      "domain": "Chemistry of Life",
+      "skillId": "SP1",
+      "topicCoverage": [
+        "1.1 Water and Hydrogen Bonding",
+        "1.2 Elements of Life",
+        "1.3 Macromolecules",
+        "1.4 Carbohydrates",
+        "1.5 Lipids",
+        "1.6 Nucleic Acids",
+        "1.7 Proteins"
+      ],
+      "summary": "Water chemistry and macromolecular structure provide the chemical vocabulary for explaining how biological systems assemble, interact, and maintain function. Focus on relationships between structure and function rather than isolated term recall.",
+      "objectives": [
+        "Relate polarity, hydrogen bonding, dehydration and hydrolysis, and macromolecular structure to biological function."
+      ],
+      "chapterTakeaways": [
+        "Unit 1 reasoning starts with the biological mechanism, not an isolated vocabulary label.",
+        "Use the relevant science practice to decide whether the task asks for explanation, method, data, calculation, or argument.",
+        "Keep the scale of the claim aligned with the evidence: molecule, cell, organism, population, or ecosystem."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/books/biology-2e/pages/4-introduction"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original AP Biology foundation chapter shell; independent subject-expert validation remains pending.",
+      "expertReviewStatus": "pending",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false,
+      "sectionCount": 1,
+      "knowledgeCheckCount": 1,
+      "referenceCount": 3,
+      "sections": [
+        {
+          "id": "ap-bio-ch-01-section-01",
+          "heading": "Water, macromolecules, and structure-function reasoning",
+          "content": "Water polarity and hydrogen bonding explain cohesion, adhesion, solvent behavior, temperature buffering, and the unusual density of ice. Carbon-based macromolecules are assembled and broken through dehydration synthesis and hydrolysis. Carbohydrates often provide short-term energy or structural material; lipids provide hydrophobic barriers and long-term energy storage; nucleic acids store and transmit information; and proteins fold into structures whose shapes support specific functions. AP Biology reasoning should connect a molecular feature to an observable consequence and distinguish a correlation from a mechanism.",
+          "keyTerms": [
+            "polarity",
+            "hydrogen bonding",
+            "hydrolysis",
+            "macromolecule",
+            "structure-function"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+            "https://apstudents.collegeboard.org/courses/ap-biology",
+            "https://openstax.org/books/biology-2e/pages/4-introduction"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original foundation lesson shell; AP Biology subject-expert, accessibility, rights, and production review remain pending.",
+          "contentComplete": true,
+          "contentEnhancementVersion": "ap-bio-foundation-v1",
+          "contentBlocks": [
+            {
+              "type": "paragraph",
+              "text": "Water polarity and hydrogen bonding explain cohesion, adhesion, solvent behavior, temperature buffering, and the unusual density of ice. Carbon-based macromolecules are assembled and broken through dehydration synthesis and hydrolysis. Carbohydrates often provide short-term energy or structural material; lipids provide hydrophobic barriers and long-term energy storage; nucleic acids store and transmit information; and proteins fold into structures whose shapes support specific functions. AP Biology reasoning should connect a molecular feature to an observable consequence and distinguish a correlation from a mechanism.",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "Water polarity and hydrogen bonding explain cohesion, adhesion, solvent behavior, temperature buffering, and the unusual density of ice. Carbon-based macromolecules are assembled and broken through dehydration synthesis and hydrolysis. Carbohydrates often provide short-term energy or structural material; lipids provide hydrophobic barriers and long-term energy storage; nucleic acids store and transmit information; and proteins fold into structures whose shapes support specific functions. AP Biology reasoning should connect a molecular feature to an observable consequence and distinguish a correlation from a mechanism."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Examples.Use these to connect a biological structure or process to an observable consequence.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Examples."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "Use these to connect a biological structure or process to an observable consequence."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                {
+                  "text": "A phospholipid bilayer uses amphipathic structure to separate aqueous compartments.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "A phospholipid bilayer uses amphipathic structure to separate aqueous compartments."
+                    }
+                  ]
+                },
+                {
+                  "text": "A protein substitution in a hydrophobic core can alter folding and activity.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "A protein substitution in a hydrophobic core can alter folding and activity."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Nonexamples and boundaries.These statements identify nearby ideas that should not be treated as equivalent.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Nonexamples and boundaries."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "These statements identify nearby ideas that should not be treated as equivalent."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                {
+                  "text": "Hydrogen bonds between water molecules are not the same as covalent bonds within a water molecule.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Hydrogen bonds between water molecules are not the same as covalent bonds within a water molecule."
+                    }
+                  ]
+                },
+                {
+                  "text": "A high-energy food molecule is not automatically a catalyst.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "A high-energy food molecule is not automatically a catalyst."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Common misconception.The word organic does not mean biologically produced, and a molecule having carbon does not by itself identify its biological function.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Common misconception."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "The word organic does not mean biologically produced, and a molecule having carbon does not by itself identify its biological function."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Worked data moment.State what the observation supports and then name the conclusion it cannot establish.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Worked data moment."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "State what the observation supports and then name the conclusion it cannot establish."
+                }
+              ]
+            },
+            {
+              "type": "table",
+              "rows": [
+                {
+                  "cells": [
+                    {
+                      "kind": "header",
+                      "text": "Observation",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Observation"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "header",
+                      "text": "Supports",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Supports"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "header",
+                      "text": "Does not establish",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Does not establish"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "cells": [
+                    {
+                      "kind": "cell",
+                      "text": "Ice floats in liquid water.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Ice floats in liquid water."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "An open hydrogen-bonded lattice lowers solid-water density.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "An open hydrogen-bonded lattice lowers solid-water density."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "That all solids are less dense than their liquids.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "That all solids are less dense than their liquids."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "cells": [
+                    {
+                      "kind": "cell",
+                      "text": "A protein loses activity after a charged substitution in its interior.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "A protein loses activity after a charged substitution in its interior."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "Interactions that support folding may have changed.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Interactions that support folding may have changed."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "That every amino-acid substitution destroys function.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "That every amino-acid substitution destroys function."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Retrieval practice.Answer before returning to the pilot items.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Retrieval practice."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "Answer before returning to the pilot items."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                {
+                  "text": "Explain how water polarity supports solvent behavior.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Explain how water polarity supports solvent behavior."
+                    }
+                  ]
+                },
+                {
+                  "text": "Compare dehydration synthesis with hydrolysis.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Compare dehydration synthesis with hydrolysis."
+                    }
+                  ]
+                },
+                {
+                  "text": "Connect one macromolecule structure to one biological function.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Connect one macromolecule structure to one biological function."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Transfer move.When a prompt names a molecule, identify the structural feature first and then predict the biological consequence that feature makes possible.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Transfer move."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "When a prompt names a molecule, identify the structural feature first and then predict the biological consequence that feature makes possible."
+                }
+              ]
+            }
+          ],
+          "examples": [
+            "A phospholipid bilayer uses amphipathic structure to separate aqueous compartments.",
+            "A protein substitution in a hydrophobic core can alter folding and activity."
+          ],
+          "nonExamples": [
+            "Hydrogen bonds between water molecules are not the same as covalent bonds within a water molecule.",
+            "A high-energy food molecule is not automatically a catalyst."
+          ],
+          "commonMisconceptions": [
+            "The word organic does not mean biologically produced, and a molecule having carbon does not by itself identify its biological function."
+          ],
+          "workedDataExample": {
+            "headers": [
+              "Observation",
+              "Supports",
+              "Does not establish"
+            ],
+            "rows": [
+              [
+                "Ice floats in liquid water.",
+                "An open hydrogen-bonded lattice lowers solid-water density.",
+                "That all solids are less dense than their liquids."
+              ],
+              [
+                "A protein loses activity after a charged substitution in its interior.",
+                "Interactions that support folding may have changed.",
+                "That every amino-acid substitution destroys function."
+              ]
+            ]
+          },
+          "retrievalPrompts": [
+            "Explain how water polarity supports solvent behavior.",
+            "Compare dehydration synthesis with hydrolysis.",
+            "Connect one macromolecule structure to one biological function."
+          ],
+          "transferMove": "When a prompt names a molecule, identify the structural feature first and then predict the biological consequence that feature makes possible."
+        }
+      ],
+      "knowledgeChecks": [
+        {
+          "id": "ap-bio-ch-01-check-01",
+          "chapterId": "ap-bio-ch-01",
+          "type": "single-choice",
+          "prompt": "Which property of water most directly explains why a small amount of heat causes relatively little change in water temperature?",
+          "choices": [
+            "Hydrogen bonding allows water to absorb substantial energy before molecules move faster",
+            "Water contains no covalent bonds",
+            "Water is nonpolar and cannot interact with itself",
+            "Water has a lower specific heat than most substances"
+          ],
+          "answerIndex": 0,
+          "rationale": "Hydrogen bonding contributes to water high specific heat, so energy can be absorbed with less immediate temperature change.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+            "https://apstudents.collegeboard.org/courses/ap-biology",
+            "https://openstax.org/books/biology-2e/pages/4-introduction"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original foundation retrieval check; AP Biology subject-expert and psychometric review remain pending."
+        }
+      ],
+      "contentComplete": true,
+      "foundationPrototype": true
+    },
+    {
+      "id": "ap-bio-ch-02",
+      "title": "Unit 2: Cells",
+      "domainId": "cells",
+      "domain": "Cells",
+      "skillId": "SP2",
+      "topicCoverage": [
+        "2.1 Cell Structure and Function",
+        "2.2 Cell Size",
+        "2.3 Plasma Membrane",
+        "2.4 Membrane Permeability",
+        "2.5 Membrane Transport",
+        "2.6 Facilitated Diffusion",
+        "2.7 Tonicity and Osmoregulation",
+        "2.8 Mechanisms of Transport",
+        "2.9 Cell Compartmentalization",
+        "2.10 Origins of Cell Compartmentalization"
+      ],
+      "summary": "Cells exchange materials while preserving internal conditions. This lesson prototype uses membrane structure, gradients, surface-area-to-volume ratio, and compartmentalization as connected explanations for why cell size and architecture matter.",
+      "objectives": [
+        "Predict movement across membranes and explain why surface-area-to-volume ratio and organelle compartmentalization affect cell function."
+      ],
+      "chapterTakeaways": [
+        "Unit 2 reasoning starts with the biological mechanism, not an isolated vocabulary label.",
+        "Use the relevant science practice to decide whether the task asks for explanation, method, data, calculation, or argument.",
+        "Keep the scale of the claim aligned with the evidence: molecule, cell, organism, population, or ecosystem."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/books/biology-2e/pages/4-introduction"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original AP Biology foundation chapter shell; independent subject-expert validation remains pending.",
+      "expertReviewStatus": "pending",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false,
+      "sectionCount": 1,
+      "knowledgeCheckCount": 1,
+      "referenceCount": 3,
+      "sections": [
+        {
+          "id": "ap-bio-ch-02-section-01",
+          "heading": "Membranes, transport, and cell size",
+          "content": "A phospholipid bilayer creates a selectively permeable boundary. Small nonpolar molecules can often diffuse through the hydrophobic interior, while ions and large polar molecules need channels, carriers, or pumps. Osmosis describes water movement driven by solute differences, and plant-cell walls help convert water movement into turgor. As a cell grows, volume increases faster than surface area, making exchange less efficient. Organelles and internal membranes create compartments that concentrate enzymes, substrates, and gradients.",
+          "keyTerms": [
+            "selective permeability",
+            "diffusion",
+            "osmosis",
+            "tonicity",
+            "surface-area-to-volume ratio"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+            "https://apstudents.collegeboard.org/courses/ap-biology",
+            "https://openstax.org/books/biology-2e/pages/4-introduction"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original foundation lesson shell; AP Biology subject-expert, accessibility, rights, and production review remain pending.",
+          "contentComplete": true,
+          "contentEnhancementVersion": "ap-bio-foundation-v1",
+          "contentBlocks": [
+            {
+              "type": "paragraph",
+              "text": "A phospholipid bilayer creates a selectively permeable boundary. Small nonpolar molecules can often diffuse through the hydrophobic interior, while ions and large polar molecules need channels, carriers, or pumps. Osmosis describes water movement driven by solute differences, and plant-cell walls help convert water movement into turgor. As a cell grows, volume increases faster than surface area, making exchange less efficient. Organelles and internal membranes create compartments that concentrate enzymes, substrates, and gradients.",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "A phospholipid bilayer creates a selectively permeable boundary. Small nonpolar molecules can often diffuse through the hydrophobic interior, while ions and large polar molecules need channels, carriers, or pumps. Osmosis describes water movement driven by solute differences, and plant-cell walls help convert water movement into turgor. As a cell grows, volume increases faster than surface area, making exchange less efficient. Organelles and internal membranes create compartments that concentrate enzymes, substrates, and gradients."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Examples.Use these to connect a biological structure or process to an observable consequence.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Examples."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "Use these to connect a biological structure or process to an observable consequence."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                {
+                  "text": "A plant cell in a hypotonic solution becomes turgid because water enters while the wall limits expansion.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "A plant cell in a hypotonic solution becomes turgid because water enters while the wall limits expansion."
+                    }
+                  ]
+                },
+                {
+                  "text": "A smaller cell can exchange materials more efficiently because it has more membrane surface per unit volume.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "A smaller cell can exchange materials more efficiently because it has more membrane surface per unit volume."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Nonexamples and boundaries.These statements identify nearby ideas that should not be treated as equivalent.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Nonexamples and boundaries."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "These statements identify nearby ideas that should not be treated as equivalent."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                {
+                  "text": "Water movement does not mean every solute crosses the membrane with water.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Water movement does not mean every solute crosses the membrane with water."
+                    }
+                  ]
+                },
+                {
+                  "text": "Negative tonicity is not a transport mechanism; tonicity describes the effect of a solution on cell water balance.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Negative tonicity is not a transport mechanism; tonicity describes the effect of a solution on cell water balance."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Common misconception.Active transport is defined by movement against a gradient and energy use, not simply by the presence of a membrane protein.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Common misconception."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "Active transport is defined by movement against a gradient and energy use, not simply by the presence of a membrane protein."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Worked data moment.State what the observation supports and then name the conclusion it cannot establish.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Worked data moment."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "State what the observation supports and then name the conclusion it cannot establish."
+                }
+              ]
+            },
+            {
+              "type": "table",
+              "rows": [
+                {
+                  "cells": [
+                    {
+                      "kind": "header",
+                      "text": "Result",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Result"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "header",
+                      "text": "Supports",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Supports"
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "header",
+                      "text": "Boundary",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Boundary"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "cells": [
+                    {
+                      "kind": "cell",
+                      "text": "A smaller model cube changes color throughout sooner than a larger cube.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "A smaller model cube changes color throughout sooner than a larger cube."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "Higher surface-area-to-volume ratio improves exchange distance.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Higher surface-area-to-volume ratio improves exchange distance."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "A model result is not a complete cell-physiology experiment.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "A model result is not a complete cell-physiology experiment."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "cells": [
+                    {
+                      "kind": "cell",
+                      "text": "A cell swells in a dilute external solution.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "A cell swells in a dilute external solution."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "Water enters because the external solution is hypotonic relative to the cell.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "Water enters because the external solution is hypotonic relative to the cell."
+                        }
+                      ]
+                    },
+                    {
+                      "kind": "cell",
+                      "text": "The observation alone does not identify every solute transporter.",
+                      "columnSpan": 1,
+                      "runs": [
+                        {
+                          "type": "text",
+                          "text": "The observation alone does not identify every solute transporter."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Retrieval practice.Answer before returning to the pilot items.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Retrieval practice."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "Answer before returning to the pilot items."
+                }
+              ]
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                {
+                  "text": "Distinguish simple diffusion, facilitated diffusion, and active transport.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Distinguish simple diffusion, facilitated diffusion, and active transport."
+                    }
+                  ]
+                },
+                {
+                  "text": "Predict a plant-cell response to a hypotonic solution.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Predict a plant-cell response to a hypotonic solution."
+                    }
+                  ]
+                },
+                {
+                  "text": "Explain why increasing cell size can limit exchange.",
+                  "runs": [
+                    {
+                      "type": "text",
+                      "text": "Explain why increasing cell size can limit exchange."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Transfer move.For a transport item, name the moving substance, compare concentrations or water potential, and then decide whether a membrane protein or energy input is required.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Transfer move."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "For a transport item, name the moving substance, compare concentrations or water potential, and then decide whether a membrane protein or energy input is required."
+                }
+              ]
+            }
+          ],
+          "examples": [
+            "A plant cell in a hypotonic solution becomes turgid because water enters while the wall limits expansion.",
+            "A smaller cell can exchange materials more efficiently because it has more membrane surface per unit volume."
+          ],
+          "nonExamples": [
+            "Water movement does not mean every solute crosses the membrane with water.",
+            "Negative tonicity is not a transport mechanism; tonicity describes the effect of a solution on cell water balance."
+          ],
+          "commonMisconceptions": [
+            "Active transport is defined by movement against a gradient and energy use, not simply by the presence of a membrane protein."
+          ],
+          "workedDataExample": {
+            "headers": [
+              "Result",
+              "Supports",
+              "Boundary"
+            ],
+            "rows": [
+              [
+                "A smaller model cube changes color throughout sooner than a larger cube.",
+                "Higher surface-area-to-volume ratio improves exchange distance.",
+                "A model result is not a complete cell-physiology experiment."
+              ],
+              [
+                "A cell swells in a dilute external solution.",
+                "Water enters because the external solution is hypotonic relative to the cell.",
+                "The observation alone does not identify every solute transporter."
+              ]
+            ]
+          },
+          "retrievalPrompts": [
+            "Distinguish simple diffusion, facilitated diffusion, and active transport.",
+            "Predict a plant-cell response to a hypotonic solution.",
+            "Explain why increasing cell size can limit exchange."
+          ],
+          "transferMove": "For a transport item, name the moving substance, compare concentrations or water potential, and then decide whether a membrane protein or energy input is required."
+        }
+      ],
+      "knowledgeChecks": [
+        {
+          "id": "ap-bio-ch-02-check-01",
+          "chapterId": "ap-bio-ch-02",
+          "type": "single-choice",
+          "prompt": "A cell placed in a hypertonic solution loses water. Which process best describes the water movement?",
+          "choices": [
+            "Osmosis toward the region with greater effective solute concentration",
+            "Active transport of water through ATP-powered pumps",
+            "Transcription of water-channel genes",
+            "Exocytosis of the entire cytoplasm"
+          ],
+          "answerIndex": 0,
+          "rationale": "Osmosis is water movement across a selectively permeable membrane in response to solute differences.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+            "https://apstudents.collegeboard.org/courses/ap-biology",
+            "https://openstax.org/books/biology-2e/pages/4-introduction"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original foundation retrieval check; AP Biology subject-expert and psychometric review remain pending."
+        }
+      ],
+      "contentComplete": true,
+      "foundationPrototype": true
+    },
+    {
+      "id": "ap-bio-ch-03",
+      "title": "Unit 3: Cellular Energetics",
+      "domainId": "cellular-energetics",
+      "domain": "Cellular Energetics",
+      "skillId": "SP1",
+      "topicCoverage": [
+        "3.1 Enzymes",
+        "3.2 Environmental Impacts on Enzyme Function",
+        "3.3 Cellular Energy",
+        "3.4 Photosynthesis",
+        "3.5 Cellular Respiration"
+      ],
+      "summary": "Cellular energetics follows energy transfer rather than a list of pathway names. Enzymes lower activation barriers, electron carriers move reducing power, and photosynthesis and respiration couple gradients to ATP production.",
+      "objectives": [
+        "Explain how enzyme activity, electron transfer, and energy coupling influence photosynthesis and cellular respiration."
+      ],
+      "chapterTakeaways": [
+        "Unit 3 reasoning starts with the biological mechanism, not an isolated vocabulary label.",
+        "Use the relevant science practice to decide whether the task asks for explanation, method, data, calculation, or argument.",
+        "Keep the scale of the claim aligned with the evidence: molecule, cell, organism, population, or ecosystem."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/details/books/biology-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original AP Biology foundation chapter shell; independent subject-expert validation remains pending.",
+      "expertReviewStatus": "pending",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false,
+      "sectionCount": 1,
+      "knowledgeCheckCount": 1,
+      "referenceCount": 3,
+      "sections": [
+        {
+          "id": "ap-bio-ch-03-section-01",
+          "heading": "Enzymes, energy, and metabolic pathways",
+          "content": "Enzymes lower activation energy and respond to substrate concentration, temperature, pH, and inhibitors. ATP couples energy-releasing reactions to energy-requiring work. In photosynthesis, light reactions generate ATP and NADPH for carbon fixation. In aerobic respiration, electrons move through membrane complexes that establish a proton gradient used by ATP synthase; oxygen accepts electrons at the end. Explanations should identify the location, input, output, and limiting condition of a process.",
+          "keyTerms": [
+            "activation energy",
+            "ATP",
+            "electron transport chain",
+            "proton gradient",
+            "redox"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+            "https://apstudents.collegeboard.org/courses/ap-biology",
+            "https://openstax.org/details/books/biology-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original foundation lesson shell; AP Biology subject-expert, accessibility, rights, and production review remain pending.",
+          "contentComplete": true,
+          "contentEnhancementVersion": "ap-bio-foundation-shell-v1",
+          "contentBlocks": [
+            {
+              "type": "paragraph",
+              "text": "Enzymes lower activation energy and respond to substrate concentration, temperature, pH, and inhibitors. ATP couples energy-releasing reactions to energy-requiring work. In photosynthesis, light reactions generate ATP and NADPH for carbon fixation. In aerobic respiration, electrons move through membrane complexes that establish a proton gradient used by ATP synthase; oxygen accepts electrons at the end. Explanations should identify the location, input, output, and limiting condition of a process.",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "Enzymes lower activation energy and respond to substrate concentration, temperature, pH, and inhibitors. ATP couples energy-releasing reactions to energy-requiring work. In photosynthesis, light reactions generate ATP and NADPH for carbon fixation. In aerobic respiration, electrons move through membrane complexes that establish a proton gradient used by ATP synthase; oxygen accepts electrons at the end. Explanations should identify the location, input, output, and limiting condition of a process."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Study objective.Explain how enzyme activity, electron transfer, and energy coupling influence photosynthesis and cellular respiration.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Study objective."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "Explain how enzyme activity, electron transfer, and energy coupling influence photosynthesis and cellular respiration."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "knowledgeChecks": [
+        {
+          "id": "ap-bio-ch-03-check-01",
+          "chapterId": "ap-bio-ch-03",
+          "type": "single-choice",
+          "prompt": "If an enzyme is denatured, which change is most directly responsible for loss of activity?",
+          "choices": [
+            "The active site shape changes so the substrate no longer binds as effectively",
+            "The enzyme becomes a nucleic acid",
+            "The reaction equilibrium disappears from the cell",
+            "The substrate is permanently removed from the environment"
+          ],
+          "answerIndex": 0,
+          "rationale": "Denaturation changes the three-dimensional structure that gives an enzyme its active-site specificity.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+            "https://apstudents.collegeboard.org/courses/ap-biology",
+            "https://openstax.org/details/books/biology-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original foundation retrieval check; AP Biology subject-expert and psychometric review remain pending."
+        }
+      ],
+      "contentComplete": true,
+      "foundationPrototype": false
+    },
+    {
+      "id": "ap-bio-ch-04",
+      "title": "Unit 4: Cell Communication and Cell Cycle",
+      "domainId": "cell-communication-and-cell-cycle",
+      "domain": "Cell Communication and Cell Cycle",
+      "skillId": "SP2",
+      "topicCoverage": [
+        "4.1 Cell Communication",
+        "4.2 Introduction to Signal Transduction",
+        "4.3 Signal Transduction Pathways",
+        "4.4 Feedback",
+        "4.5 Cell Cycle",
+        "4.6 Regulation of Cell Cycle"
+      ],
+      "summary": "Cell communication converts information outside or between cells into regulated responses. Feedback and cell-cycle checkpoints illustrate how biological systems use signals to maintain conditions and prevent uncontrolled division.",
+      "objectives": [
+        "Predict how receptor pathways, feedback loops, and checkpoints affect cellular responses."
+      ],
+      "chapterTakeaways": [
+        "Unit 4 reasoning starts with the biological mechanism, not an isolated vocabulary label.",
+        "Use the relevant science practice to decide whether the task asks for explanation, method, data, calculation, or argument.",
+        "Keep the scale of the claim aligned with the evidence: molecule, cell, organism, population, or ecosystem."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/details/books/biology-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original AP Biology foundation chapter shell; independent subject-expert validation remains pending.",
+      "expertReviewStatus": "pending",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false,
+      "sectionCount": 1,
+      "knowledgeCheckCount": 1,
+      "referenceCount": 3,
+      "sections": [
+        {
+          "id": "ap-bio-ch-04-section-01",
+          "heading": "Signal transduction and cell-cycle control",
+          "content": "Signals can act through direct contact, local regulators, or long-distance hormones. A receptor recognizes a signal and initiates a pathway whose relay proteins can amplify or modify the response. Negative feedback counteracts a deviation, while positive feedback reinforces a process. Cyclins, cyclin-dependent kinases, checkpoints, DNA repair, and apoptosis coordinate cell-cycle progression. The same signal can produce different outcomes in cells with different receptors or internal pathway components.",
+          "keyTerms": [
+            "receptor",
+            "signal transduction",
+            "negative feedback",
+            "cyclin",
+            "checkpoint"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+            "https://apstudents.collegeboard.org/courses/ap-biology",
+            "https://openstax.org/details/books/biology-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original foundation lesson shell; AP Biology subject-expert, accessibility, rights, and production review remain pending.",
+          "contentComplete": true,
+          "contentEnhancementVersion": "ap-bio-foundation-shell-v1",
+          "contentBlocks": [
+            {
+              "type": "paragraph",
+              "text": "Signals can act through direct contact, local regulators, or long-distance hormones. A receptor recognizes a signal and initiates a pathway whose relay proteins can amplify or modify the response. Negative feedback counteracts a deviation, while positive feedback reinforces a process. Cyclins, cyclin-dependent kinases, checkpoints, DNA repair, and apoptosis coordinate cell-cycle progression. The same signal can produce different outcomes in cells with different receptors or internal pathway components.",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "Signals can act through direct contact, local regulators, or long-distance hormones. A receptor recognizes a signal and initiates a pathway whose relay proteins can amplify or modify the response. Negative feedback counteracts a deviation, while positive feedback reinforces a process. Cyclins, cyclin-dependent kinases, checkpoints, DNA repair, and apoptosis coordinate cell-cycle progression. The same signal can produce different outcomes in cells with different receptors or internal pathway components."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Study objective.Predict how receptor pathways, feedback loops, and checkpoints affect cellular responses.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Study objective."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "Predict how receptor pathways, feedback loops, and checkpoints affect cellular responses."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "knowledgeChecks": [
+        {
+          "id": "ap-bio-ch-04-check-01",
+          "chapterId": "ap-bio-ch-04",
+          "type": "single-choice",
+          "prompt": "Which response is an example of negative feedback?",
+          "choices": [
+            "A rise in blood glucose stimulates insulin release that lowers blood glucose",
+            "Platelet activation recruits more platelets to a wound",
+            "A signal causes an unlimited increase in cell division",
+            "A mutation is copied during DNA replication"
+          ],
+          "answerIndex": 0,
+          "rationale": "Negative feedback counteracts the initial change and moves a regulated variable back toward its range.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+            "https://apstudents.collegeboard.org/courses/ap-biology",
+            "https://openstax.org/details/books/biology-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original foundation retrieval check; AP Biology subject-expert and psychometric review remain pending."
+        }
+      ],
+      "contentComplete": true,
+      "foundationPrototype": false
+    },
+    {
+      "id": "ap-bio-ch-05",
+      "title": "Unit 5: Heredity",
+      "domainId": "heredity",
+      "domain": "Heredity",
+      "skillId": "SP1",
+      "topicCoverage": [
+        "5.1 Meiosis",
+        "5.2 Meiosis and Genetic Diversity",
+        "5.3 Mendelian Genetics",
+        "5.4 Non-Mendelian Genetics",
+        "5.5 Environmental Effects on Phenotype"
+      ],
+      "summary": "Heredity links chromosome behavior, allele combinations, and phenotype. Meiosis creates variation through crossing over and independent assortment, while Mendelian and non-Mendelian patterns require careful use of probability and genotype evidence.",
+      "objectives": [
+        "Use meiosis, probability, and inheritance models to explain genetic variation and phenotype patterns."
+      ],
+      "chapterTakeaways": [
+        "Unit 5 reasoning starts with the biological mechanism, not an isolated vocabulary label.",
+        "Use the relevant science practice to decide whether the task asks for explanation, method, data, calculation, or argument.",
+        "Keep the scale of the claim aligned with the evidence: molecule, cell, organism, population, or ecosystem."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/details/books/biology-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original AP Biology foundation chapter shell; independent subject-expert validation remains pending.",
+      "expertReviewStatus": "pending",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false,
+      "sectionCount": 1,
+      "knowledgeCheckCount": 1,
+      "referenceCount": 3,
+      "sections": [
+        {
+          "id": "ap-bio-ch-05-section-01",
+          "heading": "Meiosis, inheritance, and phenotype",
+          "content": "Meiosis reduces chromosome number and creates genetically varied gametes. Crossing over and independent assortment generate new allele combinations, while fertilization combines gametes. Punnett squares and probability can predict genotype and phenotype frequencies when assumptions are stated. Incomplete dominance, codominance, sex-linked inheritance, and environmental effects on phenotype show why a simple dominant-recessive model is not universal. A phenotype is an observed result of genotype, environment, and their interaction.",
+          "keyTerms": [
+            "meiosis",
+            "crossing over",
+            "independent assortment",
+            "genotype",
+            "phenotype"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+            "https://apstudents.collegeboard.org/courses/ap-biology",
+            "https://openstax.org/details/books/biology-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original foundation lesson shell; AP Biology subject-expert, accessibility, rights, and production review remain pending.",
+          "contentComplete": true,
+          "contentEnhancementVersion": "ap-bio-foundation-shell-v1",
+          "contentBlocks": [
+            {
+              "type": "paragraph",
+              "text": "Meiosis reduces chromosome number and creates genetically varied gametes. Crossing over and independent assortment generate new allele combinations, while fertilization combines gametes. Punnett squares and probability can predict genotype and phenotype frequencies when assumptions are stated. Incomplete dominance, codominance, sex-linked inheritance, and environmental effects on phenotype show why a simple dominant-recessive model is not universal. A phenotype is an observed result of genotype, environment, and their interaction.",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "Meiosis reduces chromosome number and creates genetically varied gametes. Crossing over and independent assortment generate new allele combinations, while fertilization combines gametes. Punnett squares and probability can predict genotype and phenotype frequencies when assumptions are stated. Incomplete dominance, codominance, sex-linked inheritance, and environmental effects on phenotype show why a simple dominant-recessive model is not universal. A phenotype is an observed result of genotype, environment, and their interaction."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Study objective.Use meiosis, probability, and inheritance models to explain genetic variation and phenotype patterns.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Study objective."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "Use meiosis, probability, and inheritance models to explain genetic variation and phenotype patterns."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "knowledgeChecks": [
+        {
+          "id": "ap-bio-ch-05-check-01",
+          "chapterId": "ap-bio-ch-05",
+          "type": "single-choice",
+          "prompt": "Which meiotic event produces chromosomes with new combinations of alleles?",
+          "choices": [
+            "Crossing over between homologous chromosomes",
+            "Replication of one chromosome without recombination",
+            "Translation of an mRNA molecule",
+            "Binary fission of a bacterial cell"
+          ],
+          "answerIndex": 0,
+          "rationale": "Crossing over exchanges corresponding segments between homologs during meiosis I.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+            "https://apstudents.collegeboard.org/courses/ap-biology",
+            "https://openstax.org/details/books/biology-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original foundation retrieval check; AP Biology subject-expert and psychometric review remain pending."
+        }
+      ],
+      "contentComplete": true,
+      "foundationPrototype": false
+    },
+    {
+      "id": "ap-bio-ch-06",
+      "title": "Unit 6: Gene Expression and Regulation",
+      "domainId": "gene-expression-and-regulation",
+      "domain": "Gene Expression and Regulation",
+      "skillId": "SP2",
+      "topicCoverage": [
+        "6.1 DNA and RNA Structure",
+        "6.2 DNA Replication",
+        "6.3 Transcription and RNA Processing",
+        "6.4 Translation",
+        "6.5 Regulation of Gene Expression",
+        "6.6 Gene Expression and Cell Specialization",
+        "6.7 Mutations",
+        "6.8 Biotechnology"
+      ],
+      "summary": "Gene expression explains how stored information becomes cellular structure and function. DNA replication preserves information, transcription and translation use it, and regulation allows different cells to use the same genome differently.",
+      "objectives": [
+        "Trace information from DNA through RNA and protein and predict consequences of mutations or regulatory changes."
+      ],
+      "chapterTakeaways": [
+        "Unit 6 reasoning starts with the biological mechanism, not an isolated vocabulary label.",
+        "Use the relevant science practice to decide whether the task asks for explanation, method, data, calculation, or argument.",
+        "Keep the scale of the claim aligned with the evidence: molecule, cell, organism, population, or ecosystem."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/details/books/biology-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original AP Biology foundation chapter shell; independent subject-expert validation remains pending.",
+      "expertReviewStatus": "pending",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false,
+      "sectionCount": 1,
+      "knowledgeCheckCount": 1,
+      "referenceCount": 3,
+      "sections": [
+        {
+          "id": "ap-bio-ch-06-section-01",
+          "heading": "DNA, gene expression, and regulation",
+          "content": "DNA strands are complementary and antiparallel, allowing semiconservative replication. Transcription produces RNA from a DNA template, and translation uses codons to assemble a polypeptide. Promoters, transcription factors, chromatin state, RNA processing, and regulatory RNAs can change expression. Mutations may be synonymous, missense, nonsense, or frameshift, and their effects depend on location and context. Biotechnology tools such as PCR use sequence-specific primers to amplify selected DNA regions.",
+          "keyTerms": [
+            "replication",
+            "transcription",
+            "translation",
+            "promoter",
+            "mutation"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+            "https://apstudents.collegeboard.org/courses/ap-biology",
+            "https://openstax.org/details/books/biology-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original foundation lesson shell; AP Biology subject-expert, accessibility, rights, and production review remain pending.",
+          "contentComplete": true,
+          "contentEnhancementVersion": "ap-bio-foundation-shell-v1",
+          "contentBlocks": [
+            {
+              "type": "paragraph",
+              "text": "DNA strands are complementary and antiparallel, allowing semiconservative replication. Transcription produces RNA from a DNA template, and translation uses codons to assemble a polypeptide. Promoters, transcription factors, chromatin state, RNA processing, and regulatory RNAs can change expression. Mutations may be synonymous, missense, nonsense, or frameshift, and their effects depend on location and context. Biotechnology tools such as PCR use sequence-specific primers to amplify selected DNA regions.",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "DNA strands are complementary and antiparallel, allowing semiconservative replication. Transcription produces RNA from a DNA template, and translation uses codons to assemble a polypeptide. Promoters, transcription factors, chromatin state, RNA processing, and regulatory RNAs can change expression. Mutations may be synonymous, missense, nonsense, or frameshift, and their effects depend on location and context. Biotechnology tools such as PCR use sequence-specific primers to amplify selected DNA regions."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Study objective.Trace information from DNA through RNA and protein and predict consequences of mutations or regulatory changes.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Study objective."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "Trace information from DNA through RNA and protein and predict consequences of mutations or regulatory changes."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "knowledgeChecks": [
+        {
+          "id": "ap-bio-ch-06-check-01",
+          "chapterId": "ap-bio-ch-06",
+          "type": "single-choice",
+          "prompt": "A mutation changes a promoter so transcription factors bind less often. What is the most direct expected result?",
+          "choices": [
+            "Reduced transcription of the associated gene",
+            "Immediate doubling of the protein sequence length",
+            "Conversion of RNA into a lipid",
+            "Removal of every copy of the gene from the genome"
+          ],
+          "answerIndex": 0,
+          "rationale": "Promoter and transcription-factor interactions influence whether RNA polymerase initiates transcription.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+            "https://apstudents.collegeboard.org/courses/ap-biology",
+            "https://openstax.org/details/books/biology-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original foundation retrieval check; AP Biology subject-expert and psychometric review remain pending."
+        }
+      ],
+      "contentComplete": true,
+      "foundationPrototype": false
+    },
+    {
+      "id": "ap-bio-ch-07",
+      "title": "Unit 7: Natural Selection",
+      "domainId": "natural-selection",
+      "domain": "Natural Selection",
+      "skillId": "SP4",
+      "topicCoverage": [
+        "7.1 Introduction to Natural Selection",
+        "7.2 Natural Selection",
+        "7.3 Artificial Selection",
+        "7.4 Population Genetics",
+        "7.5 Hardy-Weinberg Equilibrium",
+        "7.6 Evidence of Evolution",
+        "7.7 Common Ancestry",
+        "7.8 Continuing Evolution",
+        "7.9 Phylogeny",
+        "7.10 Speciation",
+        "7.11 Variations in Populations",
+        "7.12 Origins of Life on Earth"
+      ],
+      "summary": "Evolutionary explanations connect heritable variation with population change across generations. Natural selection, genetic drift, gene flow, mutation, and nonrandom mating have different mechanisms and different predictions for allele frequencies.",
+      "objectives": [
+        "Use population data, evolutionary mechanisms, and phylogenetic evidence to explain relatedness and change."
+      ],
+      "chapterTakeaways": [
+        "Unit 7 reasoning starts with the biological mechanism, not an isolated vocabulary label.",
+        "Use the relevant science practice to decide whether the task asks for explanation, method, data, calculation, or argument.",
+        "Keep the scale of the claim aligned with the evidence: molecule, cell, organism, population, or ecosystem."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/details/books/biology-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original AP Biology foundation chapter shell; independent subject-expert validation remains pending.",
+      "expertReviewStatus": "pending",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false,
+      "sectionCount": 1,
+      "knowledgeCheckCount": 1,
+      "referenceCount": 3,
+      "sections": [
+        {
+          "id": "ap-bio-ch-07-section-01",
+          "heading": "Natural selection, population genetics, and speciation",
+          "content": "Natural selection changes trait and allele frequencies when heritable variation affects reproductive success. Genetic drift changes populations through chance, especially when populations are small. Gene flow moves alleles between populations. Hardy-Weinberg equilibrium is a model with restrictive assumptions, useful as a comparison point. Phylogenetic trees represent hypotheses of relatedness, and speciation requires reproductive isolation that reduces gene flow. Evolution acts on populations, not on an individual organism trying to meet a need.",
+          "keyTerms": [
+            "natural selection",
+            "genetic drift",
+            "gene flow",
+            "Hardy-Weinberg",
+            "speciation"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+            "https://apstudents.collegeboard.org/courses/ap-biology",
+            "https://openstax.org/details/books/biology-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original foundation lesson shell; AP Biology subject-expert, accessibility, rights, and production review remain pending.",
+          "contentComplete": true,
+          "contentEnhancementVersion": "ap-bio-foundation-shell-v1",
+          "contentBlocks": [
+            {
+              "type": "paragraph",
+              "text": "Natural selection changes trait and allele frequencies when heritable variation affects reproductive success. Genetic drift changes populations through chance, especially when populations are small. Gene flow moves alleles between populations. Hardy-Weinberg equilibrium is a model with restrictive assumptions, useful as a comparison point. Phylogenetic trees represent hypotheses of relatedness, and speciation requires reproductive isolation that reduces gene flow. Evolution acts on populations, not on an individual organism trying to meet a need.",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "Natural selection changes trait and allele frequencies when heritable variation affects reproductive success. Genetic drift changes populations through chance, especially when populations are small. Gene flow moves alleles between populations. Hardy-Weinberg equilibrium is a model with restrictive assumptions, useful as a comparison point. Phylogenetic trees represent hypotheses of relatedness, and speciation requires reproductive isolation that reduces gene flow. Evolution acts on populations, not on an individual organism trying to meet a need."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Study objective.Use population data, evolutionary mechanisms, and phylogenetic evidence to explain relatedness and change.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Study objective."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "Use population data, evolutionary mechanisms, and phylogenetic evidence to explain relatedness and change."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "knowledgeChecks": [
+        {
+          "id": "ap-bio-ch-07-check-01",
+          "chapterId": "ap-bio-ch-07",
+          "type": "single-choice",
+          "prompt": "Which situation can change allele frequencies through chance rather than differential reproductive success?",
+          "choices": [
+            "A bottleneck leaves a small random sample of a population",
+            "A helpful inherited trait increases offspring number",
+            "A population receives migrants carrying an allele",
+            "A mutation creates a new allele"
+          ],
+          "answerIndex": 0,
+          "rationale": "A bottleneck is genetic drift: chance sampling changes allele frequencies when population size is sharply reduced.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+            "https://apstudents.collegeboard.org/courses/ap-biology",
+            "https://openstax.org/details/books/biology-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original foundation retrieval check; AP Biology subject-expert and psychometric review remain pending."
+        }
+      ],
+      "contentComplete": true,
+      "foundationPrototype": false
+    },
+    {
+      "id": "ap-bio-ch-08",
+      "title": "Unit 8: Ecology",
+      "domainId": "ecology",
+      "domain": "Ecology",
+      "skillId": "SP4",
+      "topicCoverage": [
+        "8.1 Responses to the Environment",
+        "8.2 Energy Flow Through Ecosystems",
+        "8.3 Population Ecology",
+        "8.4 Effect of Density on Populations",
+        "8.5 Community Ecology",
+        "8.6 Biodiversity",
+        "8.7 Disruptions in Ecosystems"
+      ],
+      "summary": "Ecology examines energy flow, matter cycling, population limits, and interactions among organisms. Scale matters: a mechanism that explains an individual response may not explain a population or community pattern.",
+      "objectives": [
+        "Analyze energy flow, population growth, species interactions, biodiversity, and ecosystem disruption."
+      ],
+      "chapterTakeaways": [
+        "Unit 8 reasoning starts with the biological mechanism, not an isolated vocabulary label.",
+        "Use the relevant science practice to decide whether the task asks for explanation, method, data, calculation, or argument.",
+        "Keep the scale of the claim aligned with the evidence: molecule, cell, organism, population, or ecosystem."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/details/books/biology-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original AP Biology foundation chapter shell; independent subject-expert validation remains pending.",
+      "expertReviewStatus": "pending",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false,
+      "sectionCount": 1,
+      "knowledgeCheckCount": 1,
+      "referenceCount": 3,
+      "sections": [
+        {
+          "id": "ap-bio-ch-08-section-01",
+          "heading": "Energy flow, populations, and ecosystems",
+          "content": "Energy enters most ecosystems through primary producers and decreases at successive trophic levels as organisms use energy for metabolism and release heat. Population growth reflects births, deaths, immigration, emigration, and limiting factors. Density-dependent processes intensify with crowding, while community structure depends on competition, predation, mutualism, and resource partitioning. Biodiversity can support resilience, but disturbance, invasive species, climate shifts, and habitat loss can change ecosystem functions.",
+          "keyTerms": [
+            "trophic level",
+            "carrying capacity",
+            "density dependence",
+            "niche",
+            "biodiversity"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+            "https://apstudents.collegeboard.org/courses/ap-biology",
+            "https://openstax.org/details/books/biology-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original foundation lesson shell; AP Biology subject-expert, accessibility, rights, and production review remain pending.",
+          "contentComplete": true,
+          "contentEnhancementVersion": "ap-bio-foundation-shell-v1",
+          "contentBlocks": [
+            {
+              "type": "paragraph",
+              "text": "Energy enters most ecosystems through primary producers and decreases at successive trophic levels as organisms use energy for metabolism and release heat. Population growth reflects births, deaths, immigration, emigration, and limiting factors. Density-dependent processes intensify with crowding, while community structure depends on competition, predation, mutualism, and resource partitioning. Biodiversity can support resilience, but disturbance, invasive species, climate shifts, and habitat loss can change ecosystem functions.",
+              "runs": [
+                {
+                  "type": "text",
+                  "text": "Energy enters most ecosystems through primary producers and decreases at successive trophic levels as organisms use energy for metabolism and release heat. Population growth reflects births, deaths, immigration, emigration, and limiting factors. Density-dependent processes intensify with crowding, while community structure depends on competition, predation, mutualism, and resource partitioning. Biodiversity can support resilience, but disturbance, invasive species, climate shifts, and habitat loss can change ecosystem functions."
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Study objective.Analyze energy flow, population growth, species interactions, biodiversity, and ecosystem disruption.",
+              "runs": [
+                {
+                  "type": "strong",
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "Study objective."
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "Analyze energy flow, population growth, species interactions, biodiversity, and ecosystem disruption."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "knowledgeChecks": [
+        {
+          "id": "ap-bio-ch-08-check-01",
+          "chapterId": "ap-bio-ch-08",
+          "type": "single-choice",
+          "prompt": "Why does energy generally decrease between adjacent trophic levels?",
+          "choices": [
+            "Organisms use much of the captured energy for metabolism and release heat",
+            "Energy is created only by consumers and not by producers",
+            "Every trophic transfer destroys all matter in the ecosystem",
+            "Consumers convert all food energy into new plant tissue"
+          ],
+          "answerIndex": 0,
+          "rationale": "Metabolism and heat loss mean only a fraction of energy becomes biomass available to the next level.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+            "https://apstudents.collegeboard.org/courses/ap-biology",
+            "https://openstax.org/details/books/biology-2e"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original foundation retrieval check; AP Biology subject-expert and psychometric review remain pending."
+        }
+      ],
+      "contentComplete": true,
+      "foundationPrototype": false
+    }
+  ],
+  "diagrams": [],
+  "diagramPlacements": [],
+  "flashcards": [
+    {
+      "id": "ap-bio-card-01",
+      "chapterId": "ap-bio-ch-01",
+      "domainId": "chemistry-of-life",
+      "domain": "Chemistry of Life",
+      "front": "Relate polarity, hydrogen bonding, dehydration and hydrolysis, and macromolecular structure to biological function.",
+      "back": "Water polarity and hydrogen bonding explain cohesion, adhesion, solvent behavior, temperature buffering, and the unusual density of ice. Carbon-based macromolecules are assembled and broken through dehydration synthesis and hydrolysis.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/books/biology-2e/pages/4-introduction"
+      ],
+      "reviewNote": "Original foundation study card; AP Biology expert validation remains pending."
+    },
+    {
+      "id": "ap-bio-card-02",
+      "chapterId": "ap-bio-ch-02",
+      "domainId": "cells",
+      "domain": "Cells",
+      "front": "Predict movement across membranes and explain why surface-area-to-volume ratio and organelle compartmentalization affect cell function.",
+      "back": "A phospholipid bilayer creates a selectively permeable boundary. Small nonpolar molecules can often diffuse through the hydrophobic interior, while ions and large polar molecules need channels, carriers, or pumps.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/books/biology-2e/pages/4-introduction"
+      ],
+      "reviewNote": "Original foundation study card; AP Biology expert validation remains pending."
+    },
+    {
+      "id": "ap-bio-card-03",
+      "chapterId": "ap-bio-ch-03",
+      "domainId": "cellular-energetics",
+      "domain": "Cellular Energetics",
+      "front": "Explain how enzyme activity, electron transfer, and energy coupling influence photosynthesis and cellular respiration.",
+      "back": "Enzymes lower activation energy and respond to substrate concentration, temperature, pH, and inhibitors. ATP couples energy-releasing reactions to energy-requiring work.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/details/books/biology-2e"
+      ],
+      "reviewNote": "Original foundation study card; AP Biology expert validation remains pending."
+    },
+    {
+      "id": "ap-bio-card-04",
+      "chapterId": "ap-bio-ch-04",
+      "domainId": "cell-communication-and-cell-cycle",
+      "domain": "Cell Communication and Cell Cycle",
+      "front": "Predict how receptor pathways, feedback loops, and checkpoints affect cellular responses.",
+      "back": "Signals can act through direct contact, local regulators, or long-distance hormones. A receptor recognizes a signal and initiates a pathway whose relay proteins can amplify or modify the response.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/details/books/biology-2e"
+      ],
+      "reviewNote": "Original foundation study card; AP Biology expert validation remains pending."
+    },
+    {
+      "id": "ap-bio-card-05",
+      "chapterId": "ap-bio-ch-05",
+      "domainId": "heredity",
+      "domain": "Heredity",
+      "front": "Use meiosis, probability, and inheritance models to explain genetic variation and phenotype patterns.",
+      "back": "Meiosis reduces chromosome number and creates genetically varied gametes. Crossing over and independent assortment generate new allele combinations, while fertilization combines gametes.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/details/books/biology-2e"
+      ],
+      "reviewNote": "Original foundation study card; AP Biology expert validation remains pending."
+    },
+    {
+      "id": "ap-bio-card-06",
+      "chapterId": "ap-bio-ch-06",
+      "domainId": "gene-expression-and-regulation",
+      "domain": "Gene Expression and Regulation",
+      "front": "Trace information from DNA through RNA and protein and predict consequences of mutations or regulatory changes.",
+      "back": "DNA strands are complementary and antiparallel, allowing semiconservative replication. Transcription produces RNA from a DNA template, and translation uses codons to assemble a polypeptide.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/details/books/biology-2e"
+      ],
+      "reviewNote": "Original foundation study card; AP Biology expert validation remains pending."
+    },
+    {
+      "id": "ap-bio-card-07",
+      "chapterId": "ap-bio-ch-07",
+      "domainId": "natural-selection",
+      "domain": "Natural Selection",
+      "front": "Use population data, evolutionary mechanisms, and phylogenetic evidence to explain relatedness and change.",
+      "back": "Natural selection changes trait and allele frequencies when heritable variation affects reproductive success. Genetic drift changes populations through chance, especially when populations are small.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/details/books/biology-2e"
+      ],
+      "reviewNote": "Original foundation study card; AP Biology expert validation remains pending."
+    },
+    {
+      "id": "ap-bio-card-08",
+      "chapterId": "ap-bio-ch-08",
+      "domainId": "ecology",
+      "domain": "Ecology",
+      "front": "Analyze energy flow, population growth, species interactions, biodiversity, and ecosystem disruption.",
+      "back": "Energy enters most ecosystems through primary producers and decreases at successive trophic levels as organisms use energy for metabolism and release heat. Population growth reflects births, deaths, immigration, emigration, and limiting factors.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/details/books/biology-2e"
+      ],
+      "reviewNote": "Original foundation study card; AP Biology expert validation remains pending."
+    }
+  ],
+  "memoryAids": [
+    {
+      "id": "ap-bio-memory-01",
+      "chapterId": "ap-bio-ch-01",
+      "type": "reasoning cue",
+      "title": "Chemistry of Life: mechanism to evidence",
+      "content": "Name the system, identify the change, predict the mechanism, and check whether the evidence supports a molecular, cellular, organismal, population, or ecosystem claim. Start with polarity and hydrogen bonding.",
+      "tags": [
+        "polarity",
+        "hydrogen bonding",
+        "hydrolysis",
+        "macromolecule"
+      ],
+      "domain": "Chemistry of Life",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/books/biology-2e/pages/4-introduction"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original foundation retrieval aid; AP Biology and accessibility validation remain pending."
+    },
+    {
+      "id": "ap-bio-memory-02",
+      "chapterId": "ap-bio-ch-02",
+      "type": "reasoning cue",
+      "title": "Cells: mechanism to evidence",
+      "content": "Name the system, identify the change, predict the mechanism, and check whether the evidence supports a molecular, cellular, organismal, population, or ecosystem claim. Start with selective permeability and diffusion.",
+      "tags": [
+        "selective permeability",
+        "diffusion",
+        "osmosis",
+        "tonicity"
+      ],
+      "domain": "Cells",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/books/biology-2e/pages/4-introduction"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original foundation retrieval aid; AP Biology and accessibility validation remain pending."
+    },
+    {
+      "id": "ap-bio-memory-03",
+      "chapterId": "ap-bio-ch-03",
+      "type": "reasoning cue",
+      "title": "Cellular Energetics: mechanism to evidence",
+      "content": "Name the system, identify the change, predict the mechanism, and check whether the evidence supports a molecular, cellular, organismal, population, or ecosystem claim. Start with activation energy and ATP.",
+      "tags": [
+        "activation energy",
+        "ATP",
+        "electron transport chain",
+        "proton gradient"
+      ],
+      "domain": "Cellular Energetics",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/details/books/biology-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original foundation retrieval aid; AP Biology and accessibility validation remain pending."
+    },
+    {
+      "id": "ap-bio-memory-04",
+      "chapterId": "ap-bio-ch-04",
+      "type": "reasoning cue",
+      "title": "Cell Communication and Cell Cycle: mechanism to evidence",
+      "content": "Name the system, identify the change, predict the mechanism, and check whether the evidence supports a molecular, cellular, organismal, population, or ecosystem claim. Start with receptor and signal transduction.",
+      "tags": [
+        "receptor",
+        "signal transduction",
+        "negative feedback",
+        "cyclin"
+      ],
+      "domain": "Cell Communication and Cell Cycle",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/details/books/biology-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original foundation retrieval aid; AP Biology and accessibility validation remain pending."
+    },
+    {
+      "id": "ap-bio-memory-05",
+      "chapterId": "ap-bio-ch-05",
+      "type": "reasoning cue",
+      "title": "Heredity: mechanism to evidence",
+      "content": "Name the system, identify the change, predict the mechanism, and check whether the evidence supports a molecular, cellular, organismal, population, or ecosystem claim. Start with meiosis and crossing over.",
+      "tags": [
+        "meiosis",
+        "crossing over",
+        "independent assortment",
+        "genotype"
+      ],
+      "domain": "Heredity",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/details/books/biology-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original foundation retrieval aid; AP Biology and accessibility validation remain pending."
+    },
+    {
+      "id": "ap-bio-memory-06",
+      "chapterId": "ap-bio-ch-06",
+      "type": "reasoning cue",
+      "title": "Gene Expression and Regulation: mechanism to evidence",
+      "content": "Name the system, identify the change, predict the mechanism, and check whether the evidence supports a molecular, cellular, organismal, population, or ecosystem claim. Start with replication and transcription.",
+      "tags": [
+        "replication",
+        "transcription",
+        "translation",
+        "promoter"
+      ],
+      "domain": "Gene Expression and Regulation",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/details/books/biology-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original foundation retrieval aid; AP Biology and accessibility validation remain pending."
+    },
+    {
+      "id": "ap-bio-memory-07",
+      "chapterId": "ap-bio-ch-07",
+      "type": "reasoning cue",
+      "title": "Natural Selection: mechanism to evidence",
+      "content": "Name the system, identify the change, predict the mechanism, and check whether the evidence supports a molecular, cellular, organismal, population, or ecosystem claim. Start with natural selection and genetic drift.",
+      "tags": [
+        "natural selection",
+        "genetic drift",
+        "gene flow",
+        "Hardy-Weinberg"
+      ],
+      "domain": "Natural Selection",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/details/books/biology-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original foundation retrieval aid; AP Biology and accessibility validation remain pending."
+    },
+    {
+      "id": "ap-bio-memory-08",
+      "chapterId": "ap-bio-ch-08",
+      "type": "reasoning cue",
+      "title": "Ecology: mechanism to evidence",
+      "content": "Name the system, identify the change, predict the mechanism, and check whether the evidence supports a molecular, cellular, organismal, population, or ecosystem claim. Start with trophic level and carrying capacity.",
+      "tags": [
+        "trophic level",
+        "carrying capacity",
+        "density dependence",
+        "niche"
+      ],
+      "domain": "Ecology",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+        "https://apstudents.collegeboard.org/courses/ap-biology",
+        "https://openstax.org/details/books/biology-2e"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Original foundation retrieval aid; AP Biology and accessibility validation remain pending."
+    }
+  ],
+  "constructedResponseWorkshops": [],
+  "summary": {
+    "chapters": 8,
+    "sections": 8,
+    "knowledgeChecks": 8,
+    "flashcards": 8,
+    "memoryAids": 8,
+    "diagrams": 0,
+    "diagramPlacements": 0,
+    "constructedResponseWorkshops": 0,
+    "richLessonPrototypes": 2,
+    "sourceReviewedChapters": 8,
+    "sourceReviewedFlashcards": 8,
+    "sourceReviewedMemoryAids": 8,
+    "releaseEligibleRecords": 0
+  },
+  "accessibility": {
+    "contentForm": "text-first, linear lessons and single-choice items",
+    "essentialVisualItems": 0,
+    "diagramsRequiredForComprehension": false,
+    "diagramFallbackMode": "ordered-text-equivalent",
+    "independentReviewStatus": "pending",
+    "productionScreenReaderValidationStatus": "pending",
+    "productionVoiceValidationStatus": "pending"
+  },
+  "rightsPolicy": {
+    "secureCollegeBoardContentUsed": false,
+    "copiedOrRephrasedCollegeBoardQuestions": false,
+    "copiedCollegeBoardRubricText": false,
+    "sourceProseOrFiguresReproduced": false,
+    "diagramSpecificationsOriginal": true,
+    "authoringBasis": "Independent original wording informed by public blueprint metadata and factual sources.",
+    "publicSourceUse": "Blueprint alignment and factual verification only; no source prose, figures, or assessment content reproduced.",
+    "openStaxUse": "Factual cross-checking and links only; no textbook prose, figures, or assessment content reproduced.",
+    "status": "pending-independent-rights-review"
+  },
+  "releaseGates": {
+    "internalStructuralValidation": "pending-build-qa",
+    "independentRightsReview": "pending",
+    "independentAccessibilityReview": "pending",
+    "apBiologySubjectExpertReview": "pending",
+    "productionValidation": "pending",
+    "fieldTesting": "not-started",
+    "psychometricCalibration": "not-started",
+    "cedAndPolicyReverification": "required-before-release",
+    "releaseEligible": false
+  },
+  "expertReviewGate": {
+    "requiredRole": "Independent educator or faculty reviewer with current AP Biology course, laboratory, and assessment expertise",
+    "status": "pending",
+    "releaseBlocked": true
+  },
+  "transitionNotice": "Reverify the current AP Biology CED, clarifications, exam format, policies, prerequisite language, laboratory boundaries, and public-use boundaries before any release.",
+  "contentMigration": {
+    "schemaVersion": 1,
+    "contentVersion": "ap-biology-foundation-v1",
+    "sections": 8,
+    "completeSections": 8,
+    "richLessonPrototypes": 2,
+    "status": "foundation-prototype",
+    "note": "All eight unit shells are navigable; richer structured lesson blocks are intentionally limited to Units 1 and 2 until the foundation pilot receives review."
+  }
+}

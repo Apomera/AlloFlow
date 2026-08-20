@@ -1,0 +1,63 @@
+name: Notify AI and search indexes
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 4 * * *'
+  push:
+    branches: [main]
+    paths:
+      - '*.html'
+      - 'guide/**'
+      - 'docs/**'
+      - 'robots.txt'
+      - 'sitemap.xml'
+      - 'dev-tools/submit_indexnow.cjs'
+      - '.github/workflows/indexnow.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: indexnow-main
+  cancel-in-progress: true
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Validate the local sitemap and submission scope
+        run: node dev-tools/submit_indexnow.cjs --dry-run
+
+      - name: Detect live IndexNow configuration
+        id: indexnow-config
+        shell: bash
+        env:
+          INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
+          INDEXNOW_KEY_LOCATION: ${{ secrets.INDEXNOW_KEY_LOCATION }}
+        run: |
+          if [[ -n "$INDEXNOW_KEY" && -n "$INDEXNOW_KEY_LOCATION" ]]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "IndexNow is validated but inactive. Add both repository secrets to enable live submissions."
+          fi
+
+      - name: Submit the deployed sitemap to IndexNow
+        if: steps.indexnow-config.outputs.configured == 'true'
+        env:
+          INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
+          INDEXNOW_KEY_LOCATION: ${{ secrets.INDEXNOW_KEY_LOCATION }}
+          INDEXNOW_SITE_URL: https://apomera.github.io/AlloFlow/
+          INDEXNOW_SITEMAP_URL: https://apomera.github.io/AlloFlow/sitemap.xml
+          INDEXNOW_ENDPOINT: https://api.indexnow.org/indexnow
+        run: node dev-tools/submit_indexnow.cjs

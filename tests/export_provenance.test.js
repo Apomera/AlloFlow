@@ -13,7 +13,7 @@ function loadBuilder() {
     expect(end, `${name} terminates`).toBeGreaterThan(i);
     return exportSrc.slice(i, end + '\n    };'.length);
   };
-  const code = `${grab('_fnv1a32')}\n${grab('buildProvenanceRecord')}`;
+  const code = `${grab('_instructionalTextForExport')}\n${grab('_fnv1a32')}\n${grab('buildProvenanceRecord')}`;
   // eslint-disable-next-line no-new-func
   return new Function(`${code}; return buildProvenanceRecord;`)();
 }
@@ -100,6 +100,35 @@ describe('export provenance — redaction', () => {
     expect(rec.grade).toBe('5th Grade');
     expect(rec.interests).toEqual(['soccer']);
   });
+
+  it('keeps requested and measured complexity separate from instructional role', () => {
+    const rec = build({
+      type: 'simplified',
+      targetGradeLevel: '5th Grade',
+      localStats: { gradeLevel: 5.4 },
+      instructionalText: {
+        role: 'supplemental',
+        form: 'adapted',
+        sourceArtifactId: 'source-1',
+        replacementAuthorization: { authorized: false, source: 'none' },
+        complexity: { requestedGrade: '5th Grade', measuredGrade: 5.4, method: 'flesch-kincaid', status: 'within-target' },
+      },
+      config: {},
+    });
+    expect(rec.textRole).toBe('supplemental');
+    expect(rec.textForm).toBe('adapted');
+    expect(rec.sourceArtifactId).toBe('source-1');
+    expect(rec.requestedGrade).toBe('5th Grade');
+    expect(rec.measuredGrade).toBe(5.4);
+    expect(rec.instructionalText.replacementAuthorization.authorized).toBe(false);
+  });
+
+  it('never infers educator authorization from a legacy adapted resource', () => {
+    const rec = build({ type: 'simplified', config: { grade: '4th Grade' } });
+    expect(rec.textRole).toBe('unspecified');
+    expect(rec.textForm).toBe('adapted');
+    expect(rec.instructionalText.replacementAuthorization).toEqual({ authorized: false, source: 'none' });
+  });
 });
 
 describe('export provenance — the research bundle carries materials', () => {
@@ -107,7 +136,7 @@ describe('export provenance — the research bundle carries materials', () => {
     // The bundle named for research previously carried probe/survey/fidelity
     // data but no record of the artifacts those measures were about.
     expect(exportSrc).toContain('generatedResources: items.map(buildProvenanceRecord)');
-    expect(exportSrc).toContain('provenanceSchemaVersion: 1');
+    expect(exportSrc).toContain('provenanceSchemaVersion: 2');
     expect(exportSrc).toContain('appBuild: _appBuild()');
     expect(exportSrc).toMatch(/exportVersion: 2/);
   });

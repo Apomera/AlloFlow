@@ -22,13 +22,13 @@ beforeAll(() => {
 });
 
 describe('AP Psychology practiceId skill targeting', () => {
-  it('preserves raw practiceId metadata while exposing a normalized effective skill tag', () => {
+  it('preserves raw practiceId metadata while exposing an explicit normalized practice skill tag', () => {
     const rawP1 = rawPack.items.find((item) => item.practiceId === 'P1');
     const normalizedP1 = pack.items.find((item) => item.id === rawP1.id);
 
     expect(rawP1.practiceId).toBe('P1');
     expect(normalizedP1.practiceId).toBe('P1');
-    expect(normalizedP1.skillIds).toEqual([]);
+    expect(normalizedP1.skillIds).toEqual(['p1']);
     expect(Hub.itemSkillIds(normalizedP1)).toEqual(['p1']);
   });
 

@@ -55,6 +55,79 @@
     return fallback;
   };
 
+  const _alloInstructionalTextForExport = (item) => {
+    const artifact = item && typeof item === 'object' ? item : {};
+    const config = artifact.config && typeof artifact.config === 'object' ? artifact.config : {};
+    const raw = artifact.instructionalText || config.instructionalText || artifact.textProfile || config.textProfile || {};
+    const inferredForm = artifact.type === 'simplified' ? 'adapted' : 'original';
+    let normalized = raw;
+    try {
+      const api = window.AlloModules && window.AlloModules.InstructionalContext;
+      if (raw && api && typeof api.normalizeInstructionalText === 'function') normalized = api.normalizeInstructionalText(raw, { defaultForm: inferredForm });
+    } catch (_) { normalized = raw; }
+    normalized = normalized && typeof normalized === 'object' ? normalized : {};
+    const role = ['primary', 'supplemental', 'unspecified'].includes(normalized.role) ? normalized.role : 'unspecified';
+    const form = ['original', 'same-text-supported', 'adapted'].includes(normalized.form) ? normalized.form : inferredForm;
+    const auth = normalized.replacementAuthorization && typeof normalized.replacementAuthorization === 'object'
+      ? normalized.replacementAuthorization : {};
+    const authorized = auth.authorized === true && auth.source === 'educator';
+    const complexity = normalized.complexity && typeof normalized.complexity === 'object' ? normalized.complexity : {};
+    return {
+      schemaVersion: 1,
+      role,
+      form,
+      sourceArtifactId: normalized.sourceArtifactId == null ? null : String(normalized.sourceArtifactId),
+      primaryArtifactId: normalized.primaryArtifactId == null ? null : String(normalized.primaryArtifactId),
+      designationSource: ['educator', 'workflow-default', 'legacy-inferred'].includes(normalized.designationSource)
+        ? normalized.designationSource : 'legacy-inferred',
+      replacementAuthorization: { authorized, source: authorized ? 'educator' : 'none' },
+      complexity: {
+        requestedGrade: complexity.requestedGrade || artifact.targetGradeLevel || config.grade || '',
+        measuredGrade: complexity.measuredGrade != null
+          ? complexity.measuredGrade
+          : (artifact.localStats && artifact.localStats.gradeLevel != null ? artifact.localStats.gradeLevel : null),
+        method: complexity.method || (artifact.localStats ? 'flesch-kincaid' : ''),
+        status: complexity.status || '',
+        contentFingerprint: complexity.contentFingerprint || '',
+      },
+    };
+  };
+
+  const _alloArtifactTextForContext = (item) => {
+    if (!item) return '';
+    const data = item.data;
+    if (item.type === 'analysis') {
+      return String(item.originalText || (data && data.originalText) || item.rawEnglishText || '').trim();
+    }
+    if (typeof data === 'string') return data.trim();
+    if (data && typeof data === 'object') {
+      return String(data.originalText || data.sourceText || data.text || data.simplifiedText || '').trim();
+    }
+    return '';
+  };
+
+  const _alloTextAccessSummary = (items) => {
+    const list = Array.isArray(items) ? items : [];
+    const primary = [];
+    const supplemental = [];
+    const unauthorizedPrimaryAdaptations = [];
+    list.forEach((item) => {
+      if (!item) return;
+      const profile = _alloInstructionalTextForExport(item);
+      if (profile.role === 'primary' && profile.form === 'adapted' && !profile.replacementAuthorization.authorized) {
+        unauthorizedPrimaryAdaptations.push(item);
+      } else if (profile.role === 'primary') primary.push(item);
+      if (profile.role === 'supplemental') supplemental.push(item);
+    });
+    return {
+      primary,
+      supplemental,
+      unauthorizedPrimaryAdaptations,
+      hasPrimary: primary.length > 0,
+      hasSupplementalWithoutPrimary: supplemental.length > 0 && primary.length === 0,
+    };
+  };
+
   // ── downloadHtmlBlob ─────────────────────────────────────────────
   // Single-file HTML download fallback used when JSZip is unavailable.
   // Routes through the App-scope safeDownloadBlob helper so cross-browser
@@ -2136,6 +2209,17 @@
     const analysisItem = findLatest('analysis');
     const alignmentItem = findLatest('alignment-report');
     const simplifiedItem = findLatest('simplified');
+    const primaryTextItem = src.slice().reverse().find(function(item) {
+      if (!item || !_alloArtifactTextForContext(item)) return false;
+      const profile = _alloInstructionalTextForExport(item);
+      return profile.role === 'primary'
+        && (profile.form !== 'adapted' || profile.replacementAuthorization.authorized === true);
+    });
+    const supplementalTextItem = src.slice().reverse().find(function(item) {
+      if (!item || item === primaryTextItem || !_alloArtifactTextForContext(item)) return false;
+      const profile = _alloInstructionalTextForExport(item);
+      return profile.role === 'supplemental' && profile.form === 'adapted';
+    });
     const glossaryItem = findLatest('glossary');
     const imageItem = findLatest('image');
     const quizItem = findLatest('quiz');
@@ -2156,14 +2240,36 @@
     } else if (targetStandards && targetStandards.length > 0) {
       context += '\n--- CONTEXT: STANDARDS ---\nTarget Standard(s): ' + targetStandards.join(', ') + '\n';
     }
-    if (simplifiedItem && simplifiedItem.data) {
-      const text = typeof simplifiedItem.data === 'string' ? simplifiedItem.data : JSON.stringify(simplifiedItem.data);
-      context += '\n--- CONTEXT: CORE TEXT (Leveled Reading) ---\n' + text.substring(0, 2000) + (text.length > 2000 ? '...' : '') + '\n';
-    } else if (analysisItem && analysisItem.data && analysisItem.data.originalText) {
-      const text = analysisItem.data.originalText;
-      context += '\n--- CONTEXT: CORE TEXT (Verified Source) ---\n' + text.substring(0, 2000) + (text.length > 2000 ? '...' : '') + '\n';
+    if (primaryTextItem) {
+      const text = _alloArtifactTextForContext(primaryTextItem);
+      const profile = _alloInstructionalTextForExport(primaryTextItem);
+      context += '\n--- CONTEXT: PRIMARY TEXT (EDUCATOR/WORKFLOW DESIGNATED) ---\n'
+        + 'Form: ' + profile.form + '. Requested grade: ' + (profile.complexity.requestedGrade || 'not recorded')
+        + '. Measured grade: ' + (profile.complexity.measuredGrade == null ? 'not recorded' : profile.complexity.measuredGrade) + '.\n'
+        + text.substring(0, 2000) + (text.length > 2000 ? '...' : '') + '\n';
+    } else if (analysisItem && _alloArtifactTextForContext(analysisItem)) {
+      const text = _alloArtifactTextForContext(analysisItem);
+      context += '\n--- CONTEXT: PRIMARY-TEXT FALLBACK (ANALYZED SOURCE; ROLE NOT YET CONFIRMED) ---\n'
+        + 'Use this source before any adapted companion, but do not claim that its grade-level status or instructional designation has been verified.\n'
+        + text.substring(0, 2000) + (text.length > 2000 ? '...' : '') + '\n';
     } else if (inputText) {
-      context += '\n--- CONTEXT: CORE TEXT ---\n' + inputText.substring(0, 2000) + (inputText.length > 2000 ? '...' : '') + '\n';
+      context += '\n--- CONTEXT: PRIMARY-TEXT FALLBACK (CURRENT SOURCE INPUT) ---\n'
+        + 'Use this source before any adapted companion; its role and grade-level status have not been independently verified.\n'
+        + inputText.substring(0, 2000) + (inputText.length > 2000 ? '...' : '') + '\n';
+    } else {
+      context += '\n--- CONTEXT: PRIMARY TEXT NOT AVAILABLE ---\nDo not describe a supplemental or unspecified adapted text as the core or primary text.\n';
+    }
+    const adaptedSupportItem = supplementalTextItem
+      || (!primaryTextItem && simplifiedItem && simplifiedItem !== analysisItem ? simplifiedItem : null);
+    if (adaptedSupportItem && adaptedSupportItem !== primaryTextItem) {
+      const text = _alloArtifactTextForContext(adaptedSupportItem);
+      const profile = _alloInstructionalTextForExport(adaptedSupportItem);
+      if (text) {
+        context += '\n--- CONTEXT: ADAPTED TEXT ('
+          + (profile.role === 'supplemental' ? 'SUPPLEMENTAL ACCESS VERSION' : 'ROLE UNSPECIFIED')
+          + ') ---\nDo not substitute this version for the primary text unless an educator explicitly authorizes that use.\n'
+          + text.substring(0, 1600) + (text.length > 1600 ? '...' : '') + '\n';
+      }
     }
     if (glossaryItem && glossaryItem.data) {
       const terms = glossaryItem.data.map(function(t) { return t.term; }).join(', ');
@@ -2252,6 +2358,7 @@
     getChatThemeStyles,
     runGlossaryHealthCheck,
     getSlidesPreviewHTML,
+    getTextAccessSummary: _alloTextAccessSummary,
     getLessonContext,
     handleCopyToClipboard
   };

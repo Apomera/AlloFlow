@@ -55,7 +55,8 @@ export function loadSelTool(file) {
 /** Faithful stub of the ctx built by sel_hub_module.js (~2116-2222), with seedable
  *  gradeBand + toolData. Unknown ctx reads → noop (callback-safe). */
 export function makeCtx(opts = {}) {
-  const theme = new Proxy({ isDark: false, isContrast: false, reduceMotion: false, palette: palProxy }, { get: (o, p) => (p in o ? o[p] : '#888888') });
+  const themeSeed = opts.theme || {};
+  const theme = new Proxy({ isDark: false, isContrast: false, reduceMotion: false, ...themeSeed, palette: themeSeed.palette || palProxy }, { get: (o, p) => (p in o ? o[p] : '#888888') });
   const base = {
     React, toolData: opts.toolData || {}, setToolData: noop, update: noop, updateMulti: noop,
     setSelHubTool: noop, setSelHubTab: noop, selHubTab: '', selHubTool: '',
@@ -72,7 +73,7 @@ export function makeCtx(opts = {}) {
   return new Proxy(base, { get: (o, p) => (p in o ? o[p] : noop) });
 }
 
-/** SSR-render a registered SEL tool. opts: { gradeBand, toolData, gradeLevel }. */
+/** SSR-render a registered SEL tool. opts: { gradeBand, toolData, gradeLevel, theme }. */
 export function renderSelTool(id, opts = {}) {
   return ReactDOMServer.renderToStaticMarkup(React.createElement(function SelGolden() {
     return window.SelHub.renderTool(id, makeCtx(opts));

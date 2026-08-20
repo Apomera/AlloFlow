@@ -12,12 +12,14 @@ import { loadAlloModule } from './setup.js';
 let sanitize;
 let prepareResources;
 let estimateBytes;
+let hydrate;
 
 beforeAll(() => {
   loadAlloModule('firestore_sync_module.js');
   sanitize = window.sanitizeHistoryForCloud;
   prepareResources = window.prepareSessionResourcesForWrite;
   estimateBytes = window.estimateJsonBytes;
+  hydrate = window.hydrateHistory;
 });
 
 describe('sanitizeHistoryForCloud — cloud privacy boundary', () => {
@@ -179,6 +181,44 @@ describe('prepareSessionResourcesForWrite — live session Firestore size guard'
     expect(out.resources[0]).toMatchObject({ id: 'huge', type: 'document', title: 'Huge Document', syncTruncated: true });
     expect(estimateBytes(out.resources)).toBeLessThanOrEqual(out.maxBytes);
     expect(out.overLimit).toBe(false);
+  });
+
+  it('preserves instructional role and complexity metadata when compacting a large text resource', () => {
+    const out = prepareResources([{
+      id: 'adapted-large',
+      type: 'simplified',
+      title: 'Adapted Text',
+      data: 'X'.repeat(200000),
+      targetGradeLevel: '5th Grade',
+      localStats: { gradeLevel: 5.2 },
+      instructionalText: {
+        role: 'supplemental',
+        form: 'adapted',
+        sourceArtifactId: 'primary-1',
+        replacementAuthorization: { authorized: false, source: 'none' },
+        complexity: { requestedGrade: '5th Grade', measuredGrade: 5.2, status: 'within-target', contentFingerprint: 'fp-1' },
+      },
+    }], { maxBytes: 3000 });
+
+    expect(out.resources[0].syncTruncated).toBe(true);
+    expect(out.resources[0].instructionalText).toMatchObject({
+      role: 'supplemental', form: 'adapted', sourceArtifactId: 'primary-1',
+      replacementAuthorization: { authorized: false, source: 'none' },
+      complexity: { requestedGrade: '5th Grade', measuredGrade: 5.2, contentFingerprint: 'fp-1' },
+    });
+    expect(out.resources[0].targetGradeLevel).toBe('5th Grade');
+    expect(out.resources[0].localStats.gradeLevel).toBe(5.2);
+  });
+
+  it('hydrates legacy adapted text with an unspecified role and no inferred authorization', () => {
+    const [item] = hydrate([{ id: 'legacy', type: 'simplified', data: 'Legacy text', config: { grade: '4th Grade' } }]);
+    expect(item.instructionalText).toMatchObject({
+      role: 'unspecified',
+      form: 'adapted',
+      designationSource: 'legacy-inferred',
+      replacementAuthorization: { authorized: false, source: 'none' },
+      complexity: { requestedGrade: '4th Grade' },
+    });
   });
 });
 

@@ -753,6 +753,9 @@ function normalizeTestPrepItem(item, index, domainIds) {
       medicalSafety: input.editorialChecks.medicalSafety === true,
     } : null,
     learningObjectiveId: testPrepSlug(input.learningObjectiveId, ''),
+    learningObjectiveLabel: String(input.learningObjectiveLabel || '').trim().slice(0, 800),
+    learningSectionId: testPrepSlug(input.learningSectionId, ''),
+    learningSectionLabel: String(input.learningSectionLabel || '').trim().slice(0, 300),
     cognitiveProcess: String(input.cognitiveProcess || '').trim().slice(0, 60),
     skillIds: (Array.isArray(input.skillIds) ? input.skillIds : []).slice(0, 4).map((value) => testPrepSlug(value, '')).filter(Boolean),
     chapterIds: (Array.isArray(input.chapterIds) ? input.chapterIds : []).slice(0, 4).map((value) => testPrepSlug(value, '')).filter(Boolean),
@@ -1299,6 +1302,9 @@ function testPrepPackContentFingerprint(pack) {
       difficulty: item.difficulty,
       competencyTag: item.competencyTag,
       learningObjectiveId: item.learningObjectiveId,
+      learningObjectiveLabel: item.learningObjectiveLabel,
+      learningSectionId: item.learningSectionId,
+      learningSectionLabel: item.learningSectionLabel,
       prompt: item.prompt,
       choices: item.choices,
       choiceRationales: item.choiceRationales,
@@ -4931,6 +4937,13 @@ function TestPrepHub(props) {
     setTab('library');
   }
 
+  function openItemLearningTarget(item) {
+    const chapterId = item && Array.isArray(item.chapterIds) ? item.chapterIds[0] : '';
+    setLibraryMode('chapters');
+    setLibraryChapterId(chapterId || '');
+    setTab('library');
+  }
+
   function extendSimulationTime() {
     if (practiceMode !== 'simulation' || result) return;
     setTimeRemainingSeconds((seconds) => seconds + 600);
@@ -6374,6 +6387,15 @@ function TestPrepHub(props) {
                       <p className="font-black text-slate-900">{selectedChoice === currentItem.answerIndex ? 'Correct' : 'Not yet - review the reasoning'}</p>
                       {selectedChoice !== currentItem.answerIndex && <div className="mt-3 grid gap-2 rounded-lg border border-amber-300 bg-white/80 p-3 text-sm text-slate-900 sm:grid-cols-2"><p><strong>Your answer:</strong><br />{String.fromCharCode(65 + selectedChoice)}. {currentItem.choices[selectedChoice]}</p><p><strong>Supported answer:</strong><br />{String.fromCharCode(65 + currentItem.answerIndex)}. {currentItem.choices[currentItem.answerIndex]}</p></div>}
                       <p className="mt-2 text-sm leading-relaxed text-slate-800">{currentItem.rationale}</p>
+                      {(currentItem.learningObjectiveLabel || currentItem.learningObjectiveId || (Array.isArray(currentItem.chapterIds) && currentItem.chapterIds.length > 0)) && (
+                        <div className="mt-3 rounded-lg border border-indigo-300 bg-indigo-50 p-3 text-sm text-indigo-950">
+                          <p className="font-black">Next study target</p>
+                          {currentItem.learningObjectiveLabel && <p className="mt-1 leading-relaxed">{currentItem.learningObjectiveLabel}</p>}
+                          {currentItem.learningSectionLabel && <p className="mt-1 text-xs font-bold uppercase tracking-wide text-indigo-800">Lesson route: {currentItem.learningSectionLabel}</p>}
+                          <p className="mt-2 leading-relaxed">Review the linked lesson, explain the distinction in your own words, then retry a targeted practice set.</p>
+                          {selectedPack.learningLibraryUrl && Array.isArray(currentItem.chapterIds) && currentItem.chapterIds.length > 0 && <button type="button" onClick={() => openItemLearningTarget(currentItem)} className="mt-3 rounded-lg border border-indigo-500 bg-white px-3 py-2 text-sm font-black text-indigo-950 hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-600">Review linked chapter</button>}
+                        </div>
+                      )}
                       {currentItem.choiceRationales.length === currentItem.choices.length && (
                         <div className="mt-3 rounded-lg border border-slate-300 bg-white/70 p-3 text-sm text-slate-800">
                           <p className="font-black text-slate-900">Why the other options do not fit</p>
@@ -6647,6 +6669,8 @@ function TestPrepHub(props) {
                   </header>
 
                   {(chapter.objectives || []).length > 0 && <section aria-labelledby="chapter-objectives-title"><h5 id="chapter-objectives-title" className="text-lg font-black text-slate-900">Learning objectives</h5><ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-relaxed text-slate-800">{chapter.objectives.map((objective) => <li key={objective}>{objective}</li>)}</ul></section>}
+
+                  {(chapter.chapterTakeaways || []).length > 0 && <section aria-labelledby="chapter-takeaways-title"><h5 id="chapter-takeaways-title" className="text-lg font-black text-slate-900">Chapter takeaways</h5><ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-relaxed text-slate-800">{chapter.chapterTakeaways.map((takeaway) => <li key={takeaway}>{takeaway}</li>)}</ul></section>}
 
                   <nav className="rounded-xl border border-slate-300 bg-slate-50 p-4" aria-label="Chapter sections">
                     <h5 className="font-black text-slate-900">Jump to a lesson</h5>

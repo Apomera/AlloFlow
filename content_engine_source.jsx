@@ -656,8 +656,8 @@ var createContentEngine = function(deps) {
       sourceCustomInstructions, sourceLength, sourceLevel, sourceTone,
       sourceVocabulary, resourceCount, targetStandards, dokLevel,
       selectedFont, includeSourceCitations,
-      interactionMode, revisionData, standardsPromptString,
-      ai, webSearchProvider,
+      interactionMode, revisionData, standardsPromptString, standardsContext,
+      ai, aiProviderProfile, webSearchProvider,
       selectedVoice, voiceSpeed,
       setActiveView, setConceptInput, setError, setGeneratedContent,
       setGenerationStep, setInputText, setInterestInput, setIsGeneratingSource,
@@ -665,7 +665,8 @@ var createContentEngine = function(deps) {
       setSelectedLanguages, setShowSourceGen, setStudentInterests,
       setCustomReviseInstruction, setDefinitionData, setIsCustomReviseOpen,
       setPhonicsData, setRevisionData, setSelectionMenu,
-      setPlayingContentId, setPlaybackState;
+      setPlayingContentId, setPlaybackState,
+      recordSourceProvenance, calculateReadability;
   var alloBotRef = { current: null };
   var isBotVisible = false;
   var isPlayingRef = { current: false };
@@ -693,7 +694,9 @@ var createContentEngine = function(deps) {
     interactionMode = s.interactionMode;
     revisionData = s.revisionData;
     standardsPromptString = s.standardsPromptString || '';
+    standardsContext = s.standardsContext || null;
     ai = s.ai || null;
+    aiProviderProfile = s.aiProviderProfile || null;
     webSearchProvider = s.webSearchProvider || null;
     selectedVoice = s.selectedVoice || 'Kore';
     voiceSpeed = s.voiceSpeed || 1;
@@ -714,14 +717,28 @@ var createContentEngine = function(deps) {
     setPhonicsData = s.setPhonicsData; setRevisionData = s.setRevisionData;
     setSelectionMenu = s.setSelectionMenu;
     setPlayingContentId = s.setPlayingContentId; setPlaybackState = s.setPlaybackState;
+    recordSourceProvenance = s.recordSourceProvenance;
+    calculateReadability = s.calculateReadability;
   };
 
   const handleGenerateSource = async (overrides = {}, switchView = true) => {
     // Guard: if called from onClick, first arg is an event — ignore it
     if (overrides && overrides.nativeEvent) { overrides = {}; }
     const effTopic = (overrides && typeof overrides.topic === 'string') ? overrides.topic : sourceTopic;
-    const effGrade = (overrides && typeof overrides.grade === 'string') ? overrides.grade : sourceLevel;
-    const effStandards = (overrides && typeof overrides.standards === 'string') ? overrides.standards : standardsPromptString;
+    const instructionalContextModule = typeof window !== 'undefined' && window.AlloModules
+        ? window.AlloModules.InstructionalContext
+        : null;
+    const standardsContextModule = typeof window !== 'undefined' && window.AlloModules
+        ? window.AlloModules.StandardsContext
+        : null;
+    const rawGrade = (overrides && typeof overrides.grade === 'string') ? overrides.grade : sourceLevel;
+    const effGrade = instructionalContextModule && typeof instructionalContextModule.normalizeGradeLabel === 'function'
+        ? instructionalContextModule.normalizeGradeLabel(rawGrade, sourceLevel || '5th Grade')
+        : rawGrade;
+    const effStandardsContext = (overrides && overrides.standardsContext) || standardsContext || null;
+    const effStandards = (overrides && typeof overrides.standards === 'string')
+        ? overrides.standards
+        : ((effStandardsContext && effStandardsContext.promptText) || standardsPromptString);
     const effIncludeCitations = (overrides && typeof overrides.includeCitations === 'boolean') ? overrides.includeCitations : includeSourceCitations;
     const effLength = (overrides && overrides.length) ? overrides.length : sourceLength;
     const effTone = (overrides && overrides.tone) ? overrides.tone : sourceTone;
@@ -758,6 +775,35 @@ var createContentEngine = function(deps) {
     // for the dialogue/JSON path; 'Narrative' falls through to prose.
     const isDialogueMode = effTone === 'Dialogue';
     const isNarrativeMode = effTone === 'Narrative' || effTone === 'Engaging Narrative';
+    const sourceCalibration = instructionalContextModule
+        && typeof instructionalContextModule.getSourceCalibrationTarget === 'function'
+        ? instructionalContextModule.getSourceCalibrationTarget(effGrade)
+        : { requestedGrade: effGrade, promptGrade: effGrade, policyVersion: 'legacy' };
+    const calibrationStyle = sourceCalibration.promptGrade === 'Pre-K'
+        ? 'Use extremely short sentences, generally 3-5 words, and no compound sentences.'
+        : sourceCalibration.promptGrade === '1st Grade'
+        ? 'Use short declarative sentences and high-frequency vocabulary.'
+        : sourceCalibration.promptGrade === '3rd Grade'
+        ? 'Use mostly simple sentences with only limited compound sentences.'
+        : sourceCalibration.promptGrade === '5th Grade'
+        ? 'Use straightforward syntax and avoid dense academic language.'
+        : sourceCalibration.promptGrade === '8th Grade'
+        ? 'Use clear standard language without unnecessary jargon or nested clauses.'
+        : 'Use direct language and sentence structures appropriate to the calibrated target.';
+    const sourceCalibrationGuidance = `
+        REQUESTED INSTRUCTIONAL TARGET: ${effGrade}
+        INTERNAL GENERATION CALIBRATION: ${sourceCalibration.promptGrade}
+        The internal target compensates for observed model overshoot; it is not the educator-facing grade label.
+        ${calibrationStyle}
+        If a sentence is borderline, split it and prefer the shorter accurate word.
+      `;
+    const sourceStandardsDirective = effStandards && standardsContextModule
+        && typeof standardsContextModule.buildResourceDirective === 'function'
+        ? standardsContextModule.buildResourceDirective(effStandardsContext || effStandards, {
+            resourceType: 'source',
+            textRole: 'primary'
+        })
+        : '';
     // Prompt helpers hoisted up: the single-section (N=1) branch of the
     // multi-chunk pipeline merges these into its section prompt to preserve
     // the reading-level / tone / structure guidance that previously only
@@ -766,7 +812,66 @@ var createContentEngine = function(deps) {
         - HANDLING COMPLEX TOPICS: If the topic involves abstract, religious, or advanced scientific concepts (e.g. Shintoism, Quantum Mechanics), do NOT use high-level academic definitions.
         - ANALOGY REQUIREMENT: You MUST explain every abstract concept using a concrete analogy relatable to a ${effGrade} student immediately.
         - VOCABULARY GUARD: If you use a domain-specific term (Tier 3), define it simply in the same sentence.
+        ${sourceStandardsDirective}
       `;
+    const recordGeneratedSource = (content) => {
+      const finalText = String(content || '').trim();
+      if (!finalText || typeof recordSourceProvenance !== 'function') return;
+      const englishOutput = instructionalContextModule
+          && typeof instructionalContextModule.isEnglishLanguage === 'function'
+          ? instructionalContextModule.isEnglishLanguage(effectiveLanguage)
+          : effectiveLanguage === 'English';
+      const measured = englishOutput && typeof calculateReadability === 'function'
+          ? calculateReadability(finalText)
+          : null;
+      let instructionalText = instructionalContextModule
+          && typeof instructionalContextModule.normalizeInstructionalText === 'function'
+          ? instructionalContextModule.normalizeInstructionalText(null, {
+              role: 'primary',
+              form: 'original',
+              designationSource: 'workflow-default',
+              complexity: {
+                  requestedGrade: effGrade,
+                  calibrationTarget: sourceCalibration.promptGrade,
+                  language: effectiveLanguage,
+                  status: measured ? '' : 'unavailable'
+              }
+          })
+          : null;
+      if (instructionalText && instructionalContextModule
+          && typeof instructionalContextModule.withComplexityEvidence === 'function') {
+        instructionalText = instructionalContextModule.withComplexityEvidence(instructionalText, {
+          requestedGrade: effGrade,
+          calibrationTarget: sourceCalibration.promptGrade,
+          measuredGrade: measured && measured.score,
+          method: measured ? 'flesch-kincaid-en' : '',
+          language: effectiveLanguage,
+          status: measured ? '' : 'unavailable'
+        }, finalText);
+      }
+      recordSourceProvenance({
+        title: effTopic || 'Generated source text',
+        type: 'generated',
+        importMethod: 'ai-generated',
+        provider: String(aiProviderProfile && (aiProviderProfile.provider || aiProviderProfile.backend) || '').slice(0, 120) || null,
+        model: String(aiProviderProfile && (aiProviderProfile.model || aiProviderProfile.modelId) || '').slice(0, 160) || null,
+        requestedGrade: effGrade,
+        calibrationTarget: sourceCalibration.promptGrade,
+        calibrationPolicyVersion: sourceCalibration.policyVersion,
+        measuredComplexity: measured,
+        instructionalText,
+        standardsContext: effStandardsContext
+      }, finalText);
+      if (measured && instructionalContextModule
+          && typeof instructionalContextModule.complexityStatus === 'function') {
+        const status = instructionalContextModule.complexityStatus(measured.score, effGrade);
+        const label = status === 'within-target' ? 'within target'
+          : status === 'above-target' ? 'above target'
+          : status === 'below-target' ? 'below target'
+          : 'measured';
+        try { addToast(`Generated source measured ${measured.score} (${label} for ${effGrade}).`, status === 'within-target' ? 'success' : 'info'); } catch (_) {}
+      }
+    };
     const structureInstruction = getStructureForLength(targetWords);
     try {
       let researchContext = "";
@@ -982,16 +1087,7 @@ var createContentEngine = function(deps) {
                    : isNarrativeMode
                    ? 'Write an engaging narrative article that weaves facts into a story-like flow while staying factually accurate.'
                    : 'Write in a formal, expository textbook style. Focus on factual presentation with clear definitions and explanations. Avoid narrative hooks, storytelling elements, or conversational language. Present information directly and academically.';
-               const readingLevelGuidance = `
-                   STRICT READING LEVEL GUIDELINES (COMPENSATION FOR AI BIAS):
-                   - AI models typically write 1-2 grades higher than requested. You MUST compensate for this.
-                   - If "Kindergarten" or "1st Grade": Target Pre-K complexity. Use extremely short sentences (3-5 words). No compound sentences.
-                   - If "2nd Grade" or "3rd Grade": Target 1st Grade complexity. Use short, declarative sentences. High-frequency vocabulary only.
-                   - If "4th Grade" or "5th Grade": Target 3rd Grade complexity. Mostly simple sentences, limited compound sentences.
-                   - If "6th Grade" to "8th Grade": Target 5th Grade complexity. Straightforward syntax, avoid dense academic language.
-                   - If "9th Grade" to "12th Grade": Target 8th Grade complexity. Clear, standard English without unnecessary jargon.
-                   - GENERAL RULE: If in doubt, simplify further. Shorter sentences. Simpler words.
-               `;
+               const readingLevelGuidance = sourceCalibrationGuidance;
                const sectionPrompt = isSingleSection ? `
                    Write a self-contained educational article about "${effTopic}".
                    Target Audience: ${effGrade}
@@ -1339,6 +1435,7 @@ FALLBACK MODE: Web search is unavailable for this section. Do not invent citatio
            fullDocument = promoteBoldLineHeaders(fullDocument);
            fullDocument = cleanSourceMetaCommentary(fullDocument);
            fullDocument = repairSourceMarkdown(fullDocument);
+           recordGeneratedSource(fullDocument);
            setInputText(fullDocument);
            setShowSourceGen(false);
            addToast(t('input.success_long_form'), "success");
@@ -1451,10 +1548,7 @@ Return a JSON object with this exact structure:
 ✗ NO textbook-style definitions like "X is defined as..."
 ✗ Actions are optional - only include when they add meaning
 ========== READING LEVEL GUIDANCE ==========
-${effGrade === 'Kindergarten' || effGrade === '1st Grade' ? 'Use very simple words. Short sentences. Learner asks basic "what" and "why" questions.' : ''}
-${effGrade === '2nd Grade' || effGrade === '3rd Grade' ? 'Simple vocabulary. Learner is curious and asks lots of follow-ups. Guide uses kid-friendly comparisons.' : ''}
-${effGrade === '4th Grade' || effGrade === '5th Grade' ? 'Natural conversation flow. Can introduce vocabulary with immediate explanation in dialogue.' : ''}
-${effGrade === '6th Grade' || effGrade === '7th Grade' || effGrade === '8th Grade' ? 'More sophisticated dialogue. Learner can push back, express skepticism, ask deeper questions.' : ''}
+${sourceCalibrationGuidance}
 ${complexityGuard}
 ${sourceLanguageInstruction}
 Return ONLY the JSON object. Do not include any preamble, markdown code blocks, or explanation.
@@ -1493,14 +1587,7 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
         - Do NOT include any "Sources", "References", "Works Cited", "Bibliography", or similar sections. I will automatically append verified sources at the end.
         - SPECIFICALLY FORBIDDEN: Do not write a "Source Text References" heading or any numbered list of citations like "1. [Title](url) 2. [Title](url)". These will be generated from my grounding metadata — any you write will be discarded.
         ` : '')}
-        STRICT READING LEVEL GUIDELINES (COMPENSATION FOR AI BIAS):
-        - AI models typically write 1-2 grades higher than requested. You MUST compensate for this.
-        - If "Kindergarten" or "1st Grade": Target Pre-K complexity. Use extremely short sentences (3-5 words). No compound sentences.
-        - If "2nd Grade" or "3rd Grade": Target 1st Grade complexity. Use short, declarative sentences. High-frequency vocabulary only.
-        - If "4th Grade" or "5th Grade": Target 3rd Grade complexity. Mostly simple sentences, limited compound sentences.
-        - If "6th Grade" to "8th Grade": Target 5th Grade complexity. Straightforward syntax, avoid dense academic language.
-        - If "9th Grade" to "12th Grade": Target 8th Grade complexity. Clear, standard English without unnecessary jargon.
-        - GENERAL RULE: If in doubt, simplify further. Shorter sentences. Simpler words.
+        ${sourceCalibrationGuidance}
         ${complexityGuard}
         Instructions:
         - Write a well-structured text suitable for a classroom setting.
@@ -1765,6 +1852,7 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
       text = cleanSourceMetaCommentary(text);
       text = ensureTitleHeading(text);
       text = repairSourceMarkdown(text);
+      recordGeneratedSource(text);
       setInputText(text);
       setShowSourceGen(false);
     } catch (err) {
@@ -1900,6 +1988,52 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
   };
 
   // ── Text Revision + Selection handlers ──
+  const _resolveRevisionArtifactContext = () => {
+      const contextModule = typeof window !== 'undefined' && window.AlloModules
+          ? window.AlloModules.InstructionalContext
+          : null;
+      const resolved = contextModule && typeof contextModule.resolveArtifactContext === 'function'
+          ? contextModule.resolveArtifactContext(generatedContent, {
+              grade: gradeLevel,
+              language: leveledTextLanguage,
+              standardsContext: standardsContext || null,
+              standards: standardsPromptString || targetStandards || null
+          })
+          : {
+              grade: generatedContent?.instructionalText?.complexity?.requestedGrade
+                  || generatedContent?.targetGradeLevel
+                  || generatedContent?.config?.grade
+                  || gradeLevel,
+              language: generatedContent?.instructionalText?.complexity?.language
+                  || generatedContent?.config?.language
+                  || leveledTextLanguage
+                  || 'English',
+              standards: generatedContent?.config?.standardsContext
+                  || generatedContent?.config?.standards
+                  || standardsContext
+                  || standardsPromptString
+                  || targetStandards
+                  || null
+          };
+      const standardsValue = resolved.standards;
+      const standards = (() => {
+          if (!standardsValue) return '';
+          if (typeof standardsValue === 'string') return standardsValue.trim();
+          if (typeof standardsValue.promptText === 'string' && standardsValue.promptText.trim()) return standardsValue.promptText.trim();
+          const entries = Array.isArray(standardsValue.standards)
+              ? standardsValue.standards
+              : (Array.isArray(standardsValue) ? standardsValue : []);
+          return entries.map(entry => typeof entry === 'string'
+              ? entry
+              : [entry?.code || entry?.id, entry?.text || entry?.label].filter(Boolean).join(': ')
+          ).filter(Boolean).join('; ');
+      })().slice(0, 2400);
+      return {
+          grade: resolved.grade || gradeLevel,
+          language: resolved.language || leveledTextLanguage || 'English',
+          standards
+      };
+  };
   const handleTextMouseUp = () => {
       const selection = window.getSelection();
       if (!selection || selection.toString().trim().length === 0) {
@@ -1978,11 +2112,19 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
       });
       try {
           const currentFullText = typeof generatedContent?.data === 'string' ? generatedContent?.data : '';
+          const revisionContext = _resolveRevisionArtifactContext();
+          const revisionGrade = revisionContext.grade;
+          const revisionLanguage = revisionContext.language;
+          const revisionStandardsDirective = revisionContext.standards
+              ? `Standards context to preserve: ${revisionContext.standards}\nDo not reduce or replace the concepts, disciplinary content, or cognitive demand required by these standards.`
+              : '';
           const isBilingual = currentFullText.includes("--- ENGLISH TRANSLATION ---");
           if (isBilingual && (action === 'simplify' || action === 'custom')) {
                const prompt = `
                 You are an expert educational editor helping a teacher revise a bilingual text.
-                Goal: ${action === 'simplify' ? `Simplify the selected text for ${gradeLevel}.` : `Revise based on: "${customInstruction}".`}
+                Goal: ${action === 'simplify' ? `Simplify the selected text for ${revisionGrade}.` : `Revise based on: "${customInstruction}".`}
+                Recorded Resource Language: ${revisionLanguage}.
+                ${revisionStandardsDirective}
                 Context:
                 The document contains a text in a target language and its English translation, separated by "--- ENGLISH TRANSLATION ---".
                 Full Document:
@@ -2032,7 +2174,7 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
                }
           }
           let prompt;
-          const outputLang = leveledTextLanguage === 'All Selected Languages' ? 'English' : leveledTextLanguage;
+          const outputLang = revisionLanguage === 'All Selected Languages' ? 'English' : revisionLanguage;
           const dialectInstruction = outputLang !== 'English' ? `STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese' vs 'European Portuguese'), explicitly use that region's vocabulary, spelling, and grammar conventions.` : '';
           // Shared preservation rules injected into Revise/Simplify prompts so
           // Gemini keeps citation chips like [⁽1⁾](url) and markdown structure
@@ -2054,9 +2196,11 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
               `;
           if (action === 'simplify') {
               prompt = `
-                Simplify this specific sentence/phrase for a ${gradeLevel} student.
+                Simplify this specific sentence/phrase for a ${revisionGrade} student.
                 Keep the meaning but make it easier to read.
                 Context Topic: ${sourceTopic || "General"}.
+                Recorded Resource Language: ${revisionLanguage}.
+                ${revisionStandardsDirective}
                 Text to simplify: "${originalText}",
                 CRITICAL: Output the simplified text in the SAME language as the input "Text to simplify".
                 ${preservationRules}
@@ -2068,7 +2212,9 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
                 Revise the following text based on these instructions: "${customInstruction}",
                 Text to revise: "${originalText}"
                 Context Topic: ${sourceTopic || "General"}.
-                Target Audience: ${gradeLevel}.
+                Target Audience: ${revisionGrade}.
+                Recorded Resource Language: ${revisionLanguage}.
+                ${revisionStandardsDirective}
                 CRITICAL: Output the revised text in the SAME language as the input "Text to revise" unless the instructions explicitly ask to translate.
                 ${preservationRules}
                 ${dialectInstruction}
@@ -2299,8 +2445,10 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
       const BILINGUAL_DELIMITER = '--- ENGLISH TRANSLATION ---';
       const _biIdx = newFullText.indexOf(BILINGUAL_DELIMITER);
       if (_biIdx === -1 || _appliedEdits.length === 0 || !callGemini) return;
-      const targetLang = (leveledTextLanguage && leveledTextLanguage !== 'All Selected Languages' && leveledTextLanguage !== 'English')
-          ? leveledTextLanguage : null;
+      const appliedRevisionContext = _resolveRevisionArtifactContext();
+      const appliedRevisionLanguage = appliedRevisionContext.language;
+      const targetLang = (appliedRevisionLanguage && appliedRevisionLanguage !== 'All Selected Languages' && appliedRevisionLanguage !== 'English')
+          ? appliedRevisionLanguage : null;
       if (!targetLang) return; // no meaningful paired language
       const _splitIntoSentences = (txt) => {
           // Mirror the splitTextToSentences heuristic used in the renderer so indices line up.

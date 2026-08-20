@@ -84,7 +84,7 @@ requireText('remediation.html', [
     ['April 26, 2028', 'current smaller-entity date'],
     ['www.ada.gov/resources/web-rule-first-steps/', 'current DOJ source'],
     ['human judgment', 'human-review boundary'],
-    ['Why there is not an MCPB download button yet', 'MCP release gate'],
+    ['The MCPB release is built and published by the repository\'s CI', 'MCP release provenance'],
     ['alloflow-portable-remediation-agent-skill-v0.2.9.zip', 'neutral Skill download']
 ]);
 requireText('ways-to-use.html', [

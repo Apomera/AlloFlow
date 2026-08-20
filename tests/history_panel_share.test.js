@@ -26,4 +26,18 @@ describe('HistoryPanel community sharing', () => {
     expect(sanitizeIdx).toBeGreaterThan(-1);
     expect(sanitizeIdx).toBeLessThan(stagingIdx);
   });
+
+  it('preserves text-role metadata and adds a non-blocking primary-text preflight', () => {
+    expect(src).toContain('textAccessPreflight');
+    expect(src).toContain('supplementalWithoutPrimary');
+    expect(src).toContain('instructionalText: getInstructionalTextRecord(item)');
+    expect(src).toContain('config.instructionalText');
+    expect(src).toContain("item.config.instructionalContext");
+    expect(src).toContain('This pack includes a supplemental adapted text but no designated primary text.');
+    expect(src).toContain('advisoryOnly: true');
+    // Community staging must not regain the identifying free-form fields that
+    // the original allowlist intentionally omitted.
+    expect(src).not.toContain('customInstructions: item.config.customInstructions');
+    expect(src).not.toContain('rosterGroupName: item.config.rosterGroupName');
+  });
 });

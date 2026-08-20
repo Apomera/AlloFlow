@@ -38,7 +38,7 @@ const expectedTopicCoverage = {
 };
 const signalDefinitions = [
   ['asset-identity', 'Pack and library identities, versions, preview state, and cross-links are structurally consistent.'],
-  ['blueprint-and-unit-balance', 'The five current public framework units receive 100 internal-kit items each and all 37 public framework topics meet their coverage targets.'],
+  ['blueprint-and-unit-balance', 'The five current public framework units receive 100 internal-kit items each and all 35 public framework topics meet their coverage targets.'],
   ['science-practice-balance', 'The 500-item pilot preserves its declared P1/P2/P3/P4 allocation of 325/125/50/0.'],
   ['answer-key-balance', 'Answer positions are exactly balanced at 125 keys in each A-D position.'],
   ['answer-key-sequence', 'Ordered key transitions avoid a mechanically dominant modulo-four progression; sequence metrics do not establish psychometric quality.'],
@@ -50,10 +50,14 @@ const signalDefinitions = [
   ['expert-review-boundary', 'Automated QA confirms the independent AP Psychology expert gate remains pending and release-blocking.'],
   ['psychometric-boundary', 'Automated QA confirms the items remain uncalibrated, unfielded, and ineligible for score inference or release.'],
   ['prompt-originality', 'No exact or high-similarity prompt pair crosses the conservative automated duplicate threshold.'],
+  ['prompt-coherence', 'Generated item stems end at their question and do not carry dangling post-question template text.'],
+  ['feedback-specificity', 'Generated distractor explanations identify the relevant conceptual, methodological, or numerical error rather than using a generic placeholder.'],
+  ['learning-alignment', 'Every item resolves to an internal topic learning target, chapter, lesson route, and matching science-practice process for actionable remediation.'],
   ['keyed-option-length-cues', 'No severe item-level or bank-level keyed-option length cue crosses the automated threshold.'],
   ['distractor-editorial', 'Choices are distinct and substantive and avoid all/none-of-the-above; wording advisories remain human-review signals.'],
   ['library-inventory', 'Declared chapter, section, check, study-aid, and workshop counts match the actual library.'],
   ['library-content-structure', 'Chapters, study aids, references, review declarations, and release boundaries remain structurally complete.'],
+  ['library-content-depth', 'Each native AP lesson is complete, structured, and enriched with examples, nonexamples, misconception boundaries, a worked data moment, and retrieval prompts.'],
   ['diagram-integrity', 'Optional original diagram specifications have accessible text equivalents, valid graph structure, and exactly linked section placements across all five units.'],
   ['workshop-unscored-safeguards', 'AAQ- and EBQ-style workshops remain original, synthetic, unscored, non-predictive, and release-ineligible.'],
   ['deployment-parity', 'When deployment mirrors exist, they are byte-identical to source; absent pre-build mirrors are reported as deferred.'],
@@ -91,6 +95,25 @@ function normalizeText(value) {
 
 function wordCount(value) {
   return String(value || '').trim().split(/\s+/).filter(Boolean).length;
+}
+
+function nativeBlocksAreStructurallyValid(blocks) {
+  return Array.isArray(blocks) && blocks.length >= 5 && blocks.every((block) => {
+    if (!block || typeof block !== 'object') return false;
+    if (block.type === 'paragraph') {
+      return wordCount(block.text) >= 3 && Array.isArray(block.runs) && block.runs.length > 0;
+    }
+    if (block.type === 'list') {
+      return typeof block.ordered === 'boolean' && Array.isArray(block.items) && block.items.length >= 2 &&
+        block.items.every((item) => wordCount(item?.text) >= 3 && Array.isArray(item.runs) && item.runs.length > 0);
+    }
+    if (block.type === 'table') {
+      return Array.isArray(block.rows) && block.rows.length >= 3 &&
+        block.rows.every((row) => Array.isArray(row.cells) && row.cells.length >= 2 &&
+          row.cells.every((cell) => wordCount(cell?.text) >= 1 && Number.isInteger(cell.columnSpan) && cell.columnSpan >= 1));
+    }
+    return false;
+  });
 }
 
 function tokenSet(value) {
@@ -316,6 +339,38 @@ requireCondition(
   'blueprint-and-unit-balance',
   'Current-framework metadata or the intentionally unset target exam year regressed.'
 );
+const learningObjectiveCatalog = Array.isArray(pack.blueprint?.learningObjectiveCatalog)
+  ? pack.blueprint.learningObjectiveCatalog
+  : [];
+const libraryLearningObjectiveCatalog = Array.isArray(library.blueprint?.learningObjectiveCatalog)
+  ? library.blueprint.learningObjectiveCatalog
+  : [];
+const learningObjectiveById = new Map(learningObjectiveCatalog.map((objective) => [objective.id, objective]));
+const expectedCognitiveProcesses = { P1: 'apply', P2: 'analyze', P3: 'interpret' };
+const learningCatalogShape = learningObjectiveCatalog.length === Object.keys(expectedTopicCoverage).length &&
+  new Set(learningObjectiveCatalog.map((objective) => objective.id)).size === learningObjectiveCatalog.length &&
+  new Set(learningObjectiveCatalog.map((objective) => objective.topicId)).size === learningObjectiveCatalog.length &&
+  learningObjectiveCatalog.every((objective) =>
+    /^ap-psych-lo-\d-\d$/.test(String(objective.id || '')) &&
+    Object.prototype.hasOwnProperty.call(expectedTopicCoverage, objective.topicId) &&
+    /^ap-psych-ch-0[1-5]$/.test(String(objective.chapterId || '')) &&
+    /^ap-psych-ch-0[1-5]-section-0[1-3]$/.test(String(objective.sectionId || '')) &&
+    wordCount(objective.label) >= 8 &&
+    Array.isArray(objective.practiceIds) &&
+    objective.practiceIds.every((practiceId) => ['P1', 'P2', 'P3'].includes(practiceId)) &&
+    objective.officialItem === false &&
+    objective.releaseEligible === false &&
+    objective.status === 'internal-remediation-route'
+  );
+requireCondition(
+  pack.blueprint?.learningObjectiveCatalogVersion === 'internal-remediation-v1' &&
+    library.blueprint?.learningObjectiveCatalogVersion === 'internal-remediation-v1' &&
+    learningCatalogShape &&
+    libraryLearningObjectiveCatalog.length === learningObjectiveCatalog.length &&
+    JSON.stringify(libraryLearningObjectiveCatalog) === JSON.stringify(learningObjectiveCatalog),
+  'learning-alignment',
+  'Pack and library must share a complete, internal-only learning-objective remediation catalog.'
+);
 
 const packSourceCatalog = Array.isArray(pack.sourceCatalog) ? pack.sourceCatalog : [];
 const librarySourceCatalog = Array.isArray(library.sourceCatalog) ? library.sourceCatalog : [];
@@ -403,6 +458,8 @@ const optionLengthMetrics = [];
 const categoricalCueMetrics = [];
 const lexicalCueMetrics = [];
 const feedbackOpeningRestatementMetrics = [];
+const promptFlowMetrics = [];
+const genericChoiceFeedbackIds = [];
 let completeOptionFeedbackItems = 0;
 let editorialDeclarationItems = 0;
 let sourceCompleteItems = 0;
@@ -411,10 +468,15 @@ let accessibilityBoundaryItems = 0;
 let expertGateItems = 0;
 let psychometricBoundaryItems = 0;
 let uniquelyLongestKeyedOptions = 0;
+let learningAlignmentItems = 0;
+const learningAlignmentByTopic = {};
+const learningAlignmentByUnit = {};
 
 for (const item of items) {
   const recordId = item.id || '';
   const report = itemReports.get(recordId);
+  const itemNumber = Number(String(recordId).split('-').pop());
+  const generatedPilotItem = /^ap-psych-u[1-5]-\d{3}$/.test(recordId) && itemNumber > 8;
   const expectedUnitIndex = expectedUnits.indexOf(item.domainId);
   requireCondition(
     /^ap-psych-u[1-5]-\d{3}$/.test(recordId) &&
@@ -447,6 +509,23 @@ for (const item of items) {
     'Item must use template v1/schema v2 with a substantive prompt, four distinct choices, and one valid answer key.',
     { recordId }
   );
+  if (generatedPilotItem) {
+    const promptText = String(item.prompt || '').trim();
+    const questionMarkCount = (promptText.match(/\?/g) || []).length;
+    const trailingTextAfterQuestion = /\?\s+\S/.test(promptText);
+    promptFlowMetrics.push({
+      id: recordId,
+      endsWithQuestion: promptText.endsWith('?'),
+      questionMarkCount,
+      trailingTextAfterQuestion,
+    });
+    requireCondition(
+      promptText.endsWith('?') && questionMarkCount === 1 && !trailingTextAfterQuestion,
+      'prompt-coherence',
+      'Generated item prompt must contain one terminal question and no text after that question.',
+      { recordId }
+    );
+  }
   requireCondition(
     choices.every((choice) => !prohibitedChoicePattern.test(String(choice))),
     'distractor-editorial',
@@ -460,9 +539,40 @@ for (const item of items) {
       item.topicIds.length > 0 &&
       item.topicIds.every((topicId) => Object.prototype.hasOwnProperty.call(expectedTopicCoverage, topicId)),
     'science-practice-balance',
-    'Practice, skill, or topic alignment metadata is incomplete.',
+  'Practice, skill, or topic alignment metadata is incomplete.',
     { recordId }
   );
+
+  const topicId = Array.isArray(item.topicIds) ? item.topicIds[0] : '';
+  const learningObjective = learningObjectiveById.get(item.learningObjectiveId);
+  const chapterIds = Array.isArray(item.chapterIds) ? item.chapterIds : [];
+  const skillIds = Array.isArray(item.skillIds) ? item.skillIds : [];
+  const learningAlignmentComplete =
+    learningCatalogShape &&
+    learningObjective &&
+    learningObjective.topicId === topicId &&
+    learningObjective.domainId === item.domainId &&
+    learningObjective.chapterId === chapterIds[0] &&
+    learningObjective.sectionId === item.learningSectionId &&
+    learningObjective.label === item.learningObjectiveLabel &&
+    Array.isArray(learningObjective.practiceIds) &&
+    learningObjective.practiceIds.includes(item.practiceId) &&
+    chapterIds.length === 1 &&
+    skillIds.length === 1 &&
+    skillIds.includes(item.practiceId) &&
+    expectedCognitiveProcesses[item.practiceId] === item.cognitiveProcess &&
+    item.learningSectionLabel === learningObjective.sectionLabel;
+  requireCondition(
+    learningAlignmentComplete,
+    'learning-alignment',
+    'Item must link to one catalog learning target, its unit chapter and lesson, its science practice, and the expected cognitive process.',
+    { recordId }
+  );
+  if (learningAlignmentComplete) {
+    learningAlignmentItems += 1;
+    learningAlignmentByTopic[topicId] = (learningAlignmentByTopic[topicId] || 0) + 1;
+    learningAlignmentByUnit[item.domainId] = (learningAlignmentByUnit[item.domainId] || 0) + 1;
+  }
 
   const choiceRationales = Array.isArray(item.choiceRationales) ? item.choiceRationales : [];
   const feedbackComplete =
@@ -476,6 +586,17 @@ for (const item of items) {
     { recordId }
   );
   if (feedbackComplete) completeOptionFeedbackItems += 1;
+  const genericChoiceFeedback = choiceRationales.some((feedback) =>
+    /does not match the relevant evidence, variable, or method described in the scenario/i.test(String(feedback))
+  );
+  if (generatedPilotItem && genericChoiceFeedback) {
+    genericChoiceFeedbackIds.push(recordId);
+    addFinding(
+      'feedback-specificity',
+      'Generated item still contains the generic distractor-feedback placeholder.',
+      { recordId }
+    );
+  }
 
   const editorialChecks = item.editorialChecks || {};
   const editorialDeclarationComplete = [
@@ -684,6 +805,13 @@ requireCondition(
   'Observed or declared science-practice allocation is not exactly 325/125/50/0.'
 );
 requireCondition(
+  learningAlignmentItems === items.length &&
+    expectedUnits.every((unit) => learningAlignmentByUnit[unit] === expectedItemsPerUnit) &&
+    Object.entries(expectedTopicCoverage).every(([topicId, minimum]) => learningAlignmentByTopic[topicId] >= minimum),
+  'learning-alignment',
+  'Every item must have a valid remediation route, with all unit and topic coverage retained.'
+);
+requireCondition(
   Object.entries(expectedAnswerPositions).every(([position, count]) => answerPositions[position] === count) &&
     Object.entries(expectedAnswerPositions).every(
       ([position, count]) => pack.answerPositionDistribution?.[position] === count
@@ -795,10 +923,10 @@ const expectedInventory = {
   sections: 15,
   diagrams: 5,
   diagramPlacements: 5,
-  knowledgeChecks: 10,
+  knowledgeChecks: 25,
   skills: 4,
-  flashcards: 15,
-  memoryAids: 10,
+  flashcards: 30,
+  memoryAids: 15,
   constructedResponseWorkshops: 2,
 };
 requireCondition(
@@ -825,6 +953,28 @@ const sectionById = new Map(
     ])
   )
 );
+let contentCompleteSections = 0;
+let structuredContentSections = 0;
+let workedDataExamples = 0;
+let sectionRetrievalPrompts = 0;
+let textbookContentWords = 0;
+for (const objective of learningObjectiveCatalog) {
+  const chapter = chapterById.get(objective.chapterId);
+  const sectionLink = sectionById.get(objective.sectionId);
+  requireCondition(
+    chapter &&
+      sectionLink &&
+      sectionLink.chapter.id === chapter.id &&
+      objective.domainId === chapter.domainId &&
+      wordCount(objective.sectionLabel) >= 2 &&
+      Array.isArray(objective.references) &&
+      objective.references.length >= 2 &&
+      objective.references.every((url) => validHttpsUrl(url) && allowedHosts.has(new URL(url).hostname.toLowerCase())),
+    'learning-alignment',
+    'Every learning target must resolve to a declared library chapter and lesson with attributable public references.',
+    { asset: 'learning-library', recordId: objective.id || '' }
+  );
+}
 const libraryRecordIds = new Set();
 for (const chapter of chapterRecords) {
   requireCondition(
@@ -841,13 +991,17 @@ for (const chapter of chapterRecords) {
     Array.isArray(chapter.objectives) &&
       chapter.objectives.length >= 3 &&
       wordCount(chapter.summary) >= 15 &&
+      Array.isArray(chapter.chapterTakeaways) &&
+      chapter.chapterTakeaways.length >= 3 &&
       chapter.sectionCount === 3 &&
-      chapter.knowledgeCheckCount === 2 &&
+      chapter.knowledgeCheckCount === 5 &&
       chapter.referenceCount === chapter.references?.length &&
       Array.isArray(chapter.sections) &&
       chapter.sections.length === 3 &&
       Array.isArray(chapter.knowledgeChecks) &&
-      chapter.knowledgeChecks.length === 2,
+      chapter.knowledgeChecks.length === 5 &&
+      chapter.contentEnhancementVersion === 'ap-psychology-textbook-v1' &&
+      chapter.contentComplete === true,
     'library-content-structure',
     'Chapter summary, objectives, counts, sections, checks, or references are incomplete.',
     { asset: 'learning-library', recordId: chapter.id || '' }
@@ -874,21 +1028,72 @@ for (const chapter of chapterRecords) {
   for (const section of chapter.sections || []) {
     requireCondition(
       section.id &&
-        !libraryRecordIds.has(section.id) &&
+      !libraryRecordIds.has(section.id) &&
         wordCount(section.heading) >= 2 &&
-        wordCount(section.content) >= 60 &&
+        wordCount(section.content) >= 250 &&
         Array.isArray(section.keyTerms) &&
         section.keyTerms.length >= 3 &&
         section.reviewStatus === 'source-reviewed-editorial-pass' &&
         Array.isArray(section.references) &&
-        section.references.length >= 1,
+        section.references.length >= 1 &&
+        section.contentEnhancementVersion === 'ap-psychology-textbook-v1' &&
+        section.contentComplete === true &&
+        nativeBlocksAreStructurallyValid(section.contentBlocks) &&
+        Array.isArray(section.examples) &&
+        section.examples.length >= 2 &&
+        Array.isArray(section.nonExamples) &&
+        section.nonExamples.length >= 2 &&
+        Array.isArray(section.commonMisconceptions) &&
+        section.commonMisconceptions.length >= 1 &&
+        section.commonMisconceptions.every((entry) => wordCount(entry) >= 8) &&
+        Array.isArray(section.workedDataExample?.headers) &&
+        section.workedDataExample.headers.length >= 3 &&
+        Array.isArray(section.workedDataExample?.rows) &&
+        section.workedDataExample.rows.length >= 2 &&
+        section.workedDataExample.rows.every((row) => Array.isArray(row) && row.length === section.workedDataExample.headers.length) &&
+        Array.isArray(section.retrievalPrompts) &&
+        section.retrievalPrompts.length >= 3 &&
+        section.retrievalPrompts.every((prompt) => wordCount(prompt) >= 6) &&
+        wordCount(section.transferMove) >= 8,
       'library-content-structure',
       'Section ID, content, key terms, references, or review declaration is incomplete.',
       { asset: 'learning-library', recordId: section.id || '' }
     );
+    const depthValid = section.contentEnhancementVersion === 'ap-psychology-textbook-v1' &&
+      section.contentComplete === true &&
+      nativeBlocksAreStructurallyValid(section.contentBlocks) &&
+      Array.isArray(section.examples) && section.examples.length >= 2 &&
+      Array.isArray(section.nonExamples) && section.nonExamples.length >= 2 &&
+      Array.isArray(section.commonMisconceptions) && section.commonMisconceptions.length >= 1 &&
+      Array.isArray(section.workedDataExample?.rows) && section.workedDataExample.rows.length >= 2 &&
+      Array.isArray(section.retrievalPrompts) && section.retrievalPrompts.length >= 3;
+    requireCondition(
+      depthValid,
+      'library-content-depth',
+      'Native section is missing one or more expanded textbook lesson components.',
+      { asset: 'learning-library', recordId: section.id || '' }
+    );
+    if (section.contentComplete === true) contentCompleteSections += 1;
+    if (nativeBlocksAreStructurallyValid(section.contentBlocks)) structuredContentSections += 1;
+    if (Array.isArray(section.workedDataExample?.rows) && section.workedDataExample.rows.length >= 2) workedDataExamples += 1;
+    if (Array.isArray(section.retrievalPrompts)) sectionRetrievalPrompts += section.retrievalPrompts.length;
+    textbookContentWords += wordCount(section.content);
     libraryRecordIds.add(section.id);
   }
 }
+
+requireCondition(
+  library.contentMigration?.contentVersion === 'ap-psychology-textbook-v1' &&
+    library.contentMigration?.status === 'complete' &&
+    library.contentMigration?.sections === sections.length &&
+    library.contentMigration?.completeSections === sections.length &&
+    contentCompleteSections === sections.length &&
+    structuredContentSections === sections.length &&
+    workedDataExamples === sections.length,
+  'library-content-depth',
+  'The native content migration must declare every section complete and structurally enriched.',
+  { asset: 'learning-library' }
+);
 
 for (const check of knowledgeChecks) {
   promptRecords.push({ id: check.id, kind: 'knowledge-check', prompt: check.prompt });
@@ -896,6 +1101,7 @@ for (const check of knowledgeChecks) {
   requireCondition(
     check.id &&
       !libraryRecordIds.has(check.id) &&
+      (!check.sectionId || (sectionById.has(check.sectionId) && sectionById.get(check.sectionId).chapter.id === check.chapterId)) &&
       normalizeText(check.prompt).length >= 20 &&
       choices.length === 4 &&
       new Set(choices.map(normalizeText)).size === 4 &&
@@ -920,6 +1126,7 @@ for (const card of flashcards) {
       !libraryRecordIds.has(card.id) &&
       chapter &&
       card.domainId === chapter.domainId &&
+      (!card.sectionId || (sectionById.has(card.sectionId) && sectionById.get(card.sectionId).chapter.id === card.chapterId)) &&
       wordCount(card.front) >= 3 &&
       wordCount(card.back) >= 12 &&
       card.reviewStatus === 'source-reviewed-editorial-pass' &&
@@ -933,9 +1140,11 @@ for (const card of flashcards) {
 }
 
 for (const aid of memoryAids) {
+  const aidChapter = aid.chapterId ? chapterById.get(aid.chapterId) : null;
   requireCondition(
     aid.id &&
       !libraryRecordIds.has(aid.id) &&
+      (!aid.chapterId || Boolean(aidChapter)) &&
       wordCount(aid.title) >= 2 &&
       wordCount(aid.content) >= 10 &&
       Array.isArray(aid.tags) &&
@@ -1441,6 +1650,8 @@ const report = {
       bankSize: expectedBankSize,
       declaredUnitWeight: 0.2,
       officialUnitWeightRange: [0.15, 0.25],
+      learningObjectiveCatalogVersion: pack.blueprint?.learningObjectiveCatalogVersion,
+      learningObjectiveCount: learningObjectiveCatalog.length,
     },
     sciencePractices: {
       itemCounts: practiceCounts,
@@ -1479,6 +1690,16 @@ const report = {
       categoricalCueMetrics,
       lexicalCueMetrics,
       feedbackOpeningRestatementMetrics,
+      promptFlowMetrics,
+      generatedPromptQuestionEndingItems: promptFlowMetrics.filter((metric) => metric.endsWithQuestion).length,
+      generatedPromptFlowIssueItems: promptFlowMetrics.filter(
+        (metric) => !metric.endsWithQuestion || metric.questionMarkCount !== 1 || metric.trailingTextAfterQuestion
+      ).length,
+      genericChoiceFeedbackIds,
+      generatedItemsWithGenericChoiceFeedback: genericChoiceFeedbackIds.length,
+      learningAlignmentItems,
+      learningAlignmentByUnit: sortedObject(learningAlignmentByUnit, expectedUnits),
+      learningAlignmentByTopic: sortedObject(learningAlignmentByTopic, Object.keys(expectedTopicCoverage).sort()),
       heuristicDefinitions: {
         categoricalCueAdvisory: 'At least two distractor choices contain unprotected categorical terms while the key contains none; named all-or-none/only-child constructs and explicit not-necessarily or does-not-prove/show/mean/establish/imply/guarantee phrases are excluded.',
         stemKeyLexicalAdvisory: 'At least two meaningful terms occur uniquely in the stem and key, and keyed stem overlap exceeds every distractor by at least two terms.',
@@ -1504,6 +1725,15 @@ const report = {
         library.summary?.sourceReviewedConstructedResponseWorkshops,
       independentExpertReviewedChapters: library.summary?.independentExpertReviewedChapters,
       releaseEligibleRecords: library.summary?.releaseEligibleRecords,
+      learningObjectiveCatalogVersion: library.blueprint?.learningObjectiveCatalogVersion,
+      learningObjectiveCount: libraryLearningObjectiveCatalog.length,
+      contentEnhancementVersion: library.blueprint?.textbookEnhancementVersion,
+      contentCompleteSections,
+      structuredContentSections,
+      workedDataExamples,
+      sectionRetrievalChecks: knowledgeChecks.filter((check) => check.type === 'single-choice-retrieval').length,
+      sectionRetrievalPrompts,
+      textbookContentWords,
       diagramAccessibility: {
         accessibleDiagramCount,
         originalSpecificationDiagramCount,

@@ -416,6 +416,40 @@ describe('Full Pack failure diagnostics and resilience', () => {
     expect(latestRun.status).toBe('completed');
   });
 
+  it('executes the educator-edited resource order, types, and directives exactly as reviewed', async () => {
+    let latestRun = null;
+    const setFullPackRun = (next) => { latestRun = typeof next === 'function' ? next(latestRun) : next; };
+    const deps = makeDeps({
+      setFullPackRun,
+      autoConfigureSettings: vi.fn(async () => ({
+        resourcePlan: [{ tool: 'quiz', directive: 'Original direction.' }],
+      })),
+    });
+
+    await GenerationHelpers.handlePlanFullPack(deps);
+    let reviewed = latestRun;
+    const quizKey = reviewed.preflight.selected[0].uiId;
+    reviewed = GenerationHelpers.changeFullPackPlanResourceType(reviewed, quizKey, 'glossary');
+    reviewed = GenerationHelpers.editFullPackPlanResourceDirective(reviewed, quizKey, 'Define only the five essential terms.');
+    reviewed = GenerationHelpers.addFullPackPlanResource(reviewed, { type: 'outline', directive: 'Use a cause-and-effect structure.' });
+    const outlineKey = reviewed.preflight.selected.find(item => item.type === 'outline').uiId;
+    reviewed = GenerationHelpers.moveFullPackPlanResource(reviewed, outlineKey, 0);
+
+    expect(reviewed.preflight.selected.map(item => [item.type, item.directive])).toEqual([
+      ['outline', 'Use a cause-and-effect structure.'],
+      ['glossary', 'Define only the five essential terms.'],
+    ]);
+
+    await GenerationHelpers.handleApproveFullPack(reviewed, deps);
+
+    expect(deps.autoConfigureSettings).toHaveBeenCalledTimes(1);
+    expect(deps.handleGenerate.mock.calls.map(call => call[0])).toEqual(['outline', 'glossary']);
+    expect(deps.handleGenerate.mock.calls[0][4].customInstructions).toContain('Use a cause-and-effect structure.');
+    expect(deps.handleGenerate.mock.calls[1][4].customInstructions).toContain('Define only the five essential terms.');
+    expect(latestRun.approvedFrom).toBe(reviewed.runId);
+    expect(latestRun.status).toBe('completed');
+  });
+
   it('rejects an approved plan when the source changed after review', async () => {
     let latestRun = null;
     const setFullPackRun = (next) => { latestRun = typeof next === 'function' ? next(latestRun) : next; };

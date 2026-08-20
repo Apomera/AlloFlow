@@ -140,6 +140,14 @@ Use a simple review loop:
 
 Prefer targeted revision requests such as “restore the explanation of evaporation in paragraph three” over “make it better.” Keep the original source available for comparison.
 
+For reading resources, check the instructional-role label before delivery:
+
+- **Primary text** is the standards-bearing text students are expected to access for this lesson.
+- **Supplemental access version** is an adapted companion; it should remain linked to its primary source.
+- **Role not designated** is a legacy or imported resource that needs educator review before the system can make a safe assumption.
+
+AlloFlow defaults newly adapted text to supplemental. Changing it to a primary replacement requires educator confirmation. The app records that decision but does not determine whether a modification is permitted; apply the student's plan, the standard, assessment conditions, and local policy.
+
 ### Apply the accuracy check for the subject
 
 Every teacher should check facts, attribution, age appropriateness, and alignment. Also use a subject-specific pass:
@@ -165,6 +173,8 @@ Students may use different representations or response modes while working towar
 - Students may type, record, or present an explanation when each mode can show the target.
 
 If a pathway changes the goal, say so explicitly and base that decision on the student's instructional plan and teacher judgment, not an automated recommendation.
+
+When standards are attached, review the Rigor Report after adaptation. Readability and rigor answer different questions: a passage can use shorter sentences while still preserving the standard's content, cognitive verbs, and evidence expectations—or it can become easier by deleting the very thinking the standard requires.
 
 ### Name pathways by function
 

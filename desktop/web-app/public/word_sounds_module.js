@@ -3812,6 +3812,7 @@
       const modalRef = React.useRef(null);
       const probeResultsDialogRef = React.useRef(null);
       const sessionCompleteDialogRef = React.useRef(null);
+      const preparedAudioDialogRef = React.useRef(null);
       const dialogReturnFocusRef = React.useRef(null);
       React.useEffect(() => {
         if (typeof document === "undefined") return undefined;
@@ -3922,6 +3923,13 @@
           .filter(Boolean);
         return [...new Set(declaredTargets.length > 0 ? declaredTargets : wordTargets)];
       }, [preloadedWords]);
+      const preparedAudioStartupTargets = React.useMemo(() => {
+        const normalizeKey = (value) => String(value || "").trim().toLowerCase().replace(/\s+/g, " ");
+        const firstItem = preloadedWords[0];
+        const firstWord = normalizeKey(firstItem?.targetWord || firstItem?.word || firstItem?.term || firstItem?.singleWord || firstItem?.displayWord);
+        if (firstWord && preparedAudioTargets.includes(firstWord)) return [firstWord];
+        return preparedAudioTargets.slice(0, 1);
+      }, [preloadedWords, preparedAudioTargets]);
       const preparedAudioCoverage = React.useMemo(() => {
         const ready = preparedAudioTargets.reduce((count, key) => {
           const asset = portableTtsLibrary[key];
@@ -3935,6 +3943,7 @@
       const [preparedAudioRetryRequested, setPreparedAudioRetryRequested] = React.useState(false);
       const playbackPreflightEnabled = !runtimeAiAllowed && typeof onPreparedAudioStatus === "function";
       const [preparedAudioPlayback, setPreparedAudioPlayback] = React.useState({ status: "idle", ready: 0, total: 0, failed: 0 });
+      const [preparedAudioStartupReady, setPreparedAudioStartupReady] = React.useState(false);
       const safePreparedAudioDeliveryAt = Number.isFinite(Number(preparedAudioDeliveryAt)) && Number(preparedAudioDeliveryAt) > 0
         ? Number(preparedAudioDeliveryAt)
         : 0;
@@ -3946,6 +3955,7 @@
       }, [onPreparedAudioStatus, safePreparedAudioDeliveryAt]);
       React.useEffect(() => {
         if (!playbackPreflightEnabled || preparedAudioCoverage.total === 0) return undefined;
+        setPreparedAudioStartupReady(false);
         if (preparedAudioCoverage.missing > 0) {
           const report = { status: "missing", ready: preparedAudioCoverage.ready, total: preparedAudioCoverage.total, failed: preparedAudioCoverage.missing };
           publishPreparedAudioStatus(report);
@@ -3994,32 +4004,56 @@
           try { probe.src = descriptor.src; probe.load?.(); } catch (_error) { finish("damaged"); }
         });
         (async () => {
-          const results = new Array(preparedAudioTargets.length);
-          let cursor = 0;
+          const results = new Map();
           let completed = 0;
           let ready = 0;
           let progressFailed = 0;
-          const workers = Array.from({ length: Math.min(4, preparedAudioTargets.length) }, async () => {
+          const verifyAndRecord = async (key) => {
+            const result = await verifyOne(key);
+            if (cancelled) return result;
+            results.set(key, result);
+            completed += 1;
+            if (result === "ready") ready += 1;
+            else progressFailed += 1;
+            if (completed < preparedAudioTargets.length) {
+              publishPreparedAudioStatus({ status: "checking", ready, total: preparedAudioTargets.length, failed: progressFailed });
+            }
+            return result;
+          };
+          const startupResults = await Promise.all(preparedAudioStartupTargets.map(verifyAndRecord));
+          if (cancelled) return;
+          const startupUnsupported = startupResults.filter((status) => status === "unsupported").length;
+          const startupDamaged = startupResults.filter((status) => status === "damaged").length;
+          if (startupUnsupported > 0 || startupDamaged > 0) {
+            publishPreparedAudioStatus({
+              status: startupUnsupported > 0 ? "unsupported" : "damaged",
+              ready,
+              total: preparedAudioTargets.length,
+              failed: startupUnsupported + startupDamaged,
+            });
+            return;
+          }
+          // The first activity target is playable. Let the learner begin while
+          // the remaining local clips are verified in the background.
+          setPreparedAudioStartupReady(true);
+          const startupSet = new Set(preparedAudioStartupTargets);
+          const remainingTargets = preparedAudioTargets.filter((key) => !startupSet.has(key));
+          let cursor = 0;
+          const workers = Array.from({ length: Math.min(4, remainingTargets.length) }, async () => {
             while (!cancelled) {
               const index = cursor++;
-              if (index >= preparedAudioTargets.length) return;
-              results[index] = await verifyOne(preparedAudioTargets[index]);
-              if (cancelled) return;
-              completed += 1;
-              if (results[index] === "ready") ready += 1;
-              else progressFailed += 1;
-              if (completed < preparedAudioTargets.length) {
-                publishPreparedAudioStatus({ status: "checking", ready, total: preparedAudioTargets.length, failed: progressFailed });
-              }
+              if (index >= remainingTargets.length) return;
+              await verifyAndRecord(remainingTargets[index]);
             }
           });
           await Promise.all(workers);
           if (cancelled) return;
-          const unsupported = results.filter((status) => status === "unsupported").length;
-          const damaged = results.filter((status) => status === "damaged").length;
+          const resultValues = preparedAudioTargets.map((key) => results.get(key));
+          const unsupported = resultValues.filter((status) => status === "unsupported").length;
+          const damaged = resultValues.filter((status) => status === "damaged").length;
           const failed = unsupported + damaged;
           const status = unsupported > 0 ? "unsupported" : (damaged > 0 ? "damaged" : "ready");
-          const report = { status, ready: results.length - failed, total: results.length, failed };
+          const report = { status, ready: resultValues.length - failed, total: resultValues.length, failed };
           publishPreparedAudioStatus(report);
         })();
         return () => {
@@ -4029,13 +4063,15 @@
           });
           activeProbes.clear();
         };
-      }, [playbackPreflightEnabled, preparedAudioCoverage.ready, preparedAudioCoverage.total, preparedAudioCoverage.missing, preparedAudioTargets, portableTtsLibrary, preparedAudioRetryEpoch, publishPreparedAudioStatus]);
+      }, [playbackPreflightEnabled, preparedAudioCoverage.ready, preparedAudioCoverage.total, preparedAudioCoverage.missing, preparedAudioTargets, preparedAudioStartupTargets, portableTtsLibrary, preparedAudioRetryEpoch, publishPreparedAudioStatus]);
       const reportPreparedRuntimePlayback = React.useCallback((status) => {
         if (!playbackPreflightEnabled || preparedAudioCoverage.total <= 0) return;
         if (status === "ready") {
+          setPreparedAudioStartupReady(true);
           publishPreparedAudioStatus({ status: "ready", ready: preparedAudioCoverage.total, total: preparedAudioCoverage.total, failed: 0 });
           return;
         }
+        setPreparedAudioStartupReady(false);
         publishPreparedAudioStatus({
           status: status === "blocked" ? "blocked" : "damaged",
           ready: Math.max(0, preparedAudioCoverage.total - 1),
@@ -4049,7 +4085,7 @@
       const playbackPreparedAudioBlocked = playbackPreflightEnabled
         && preparedAudioCoverage.total > 0
         && preparedAudioCoverage.missing === 0
-        && preparedAudioPlayback.status !== "ready";
+        && !preparedAudioStartupReady;
       const studentPreparedAudioBlocked = structuralPreparedAudioBlocked || playbackPreparedAudioBlocked;
       const [preparedAudioWaitExpired, setPreparedAudioWaitExpired] = React.useState(false);
       React.useEffect(() => {
@@ -4134,6 +4170,7 @@
       // effect below consumes it exactly once, so a retry that also finds
       // nothing cannot spin.
       const waitingForWordsRef = React.useRef(false);
+      const waitingForPreparedAudioRef = React.useRef(null);
       React.useEffect(() => {
         if (isProbeMode && preloadedWords && preloadedWords.length > 0 && !firstWordReady) {
           debugLog("📊 Probe mode: setting firstWordReady=true for", preloadedWords.length, "preloaded probe words");
@@ -6779,7 +6816,9 @@
       const PROBE_INTERRUPTION_MS = 2000;
       React.useEffect(() => {
         if (typeof document === "undefined" || isMinimized) return undefined;
-        const dialog = showProbeResults
+        const dialog = studentPreparedAudioBlocked
+          ? preparedAudioDialogRef.current
+          : showProbeResults
           ? probeResultsDialogRef.current
           : showSessionComplete
             ? sessionCompleteDialogRef.current
@@ -6795,7 +6834,7 @@
           }
         }, 0);
         return () => clearTimeout(focusTimer);
-      }, [showProbeResults, showSessionComplete, isMinimized]);
+      }, [showProbeResults, showSessionComplete, isMinimized, studentPreparedAudioBlocked, showPreparedAudioRecovery]);
       // Per-word-difficulty accuracy for THIS probe (each history item is tagged
       // with wordDifficulty at answer time). Shared by the live session-complete
       // modal and the onProbeComplete payload so a difficulty shift between
@@ -11491,7 +11530,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           excludeWord = null,
           recursionDepth = 0,
         ) => {
-          if (studentPreparedAudioBlocked) return;
+          if (studentPreparedAudioBlocked) {
+            waitingForPreparedAudioRef.current = { activityId, forceWord, excludeWord, recursionDepth };
+            return;
+          }
+          waitingForPreparedAudioRef.current = null;
           // Language capability redirect: a pushed lesson-plan sequence or a
           // preset can name an English-only activity while the content
           // language is not English — never half-run it; swap to the first
@@ -11811,6 +11854,15 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
       // waitingForWordsRef when it finds no words; this runs the moment any
       // arrive. The flag is cleared BEFORE the retry, so a retry that also
       // finds nothing simply re-arms it rather than looping.
+      React.useEffect(() => {
+        if (studentPreparedAudioBlocked || !waitingForPreparedAudioRef.current) return undefined;
+        const pending = waitingForPreparedAudioRef.current;
+        waitingForPreparedAudioRef.current = null;
+        if (!isMountedRef.current) return undefined;
+        debugLog("Prepared audio ready — retrying activity start:", pending.activityId);
+        startActivity(pending.activityId, pending.forceWord, pending.excludeWord, pending.recursionDepth);
+        return undefined;
+      }, [studentPreparedAudioBlocked, startActivity]);
       React.useEffect(() => {
         if (!waitingForWordsRef.current) return;
         const haveWords =
@@ -14533,6 +14585,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   ? playBlending()
                   : handleAudio(currentWordSoundsWord),
               disabled: isPlayingAudio,
+              "aria-label": t("common.play_word"),
               className: `flex flex-col items-center justify-center gap-2 mx-auto p-4 rounded-2xl transition-all ${isPlayingAudio ? "bg-violet-100 scale-105" : "bg-white/60 hover:bg-violet-50 hover:scale-105"}`,
             },
             (getEffectiveTextMode() === "alwaysOn" || showWordText) &&
@@ -17493,10 +17546,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         return /*#__PURE__*/ React.createElement(
           "div",
           {
+            ref: preparedAudioDialogRef,
             className: "fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/70 p-4",
             role: "dialog",
             "aria-modal": "true",
             "aria-labelledby": "word-sounds-audio-status-title",
+            tabIndex: -1,
+            onKeyDown: (event) => handleDialogKeyDown(event, closeSessionDialog),
           },
           /*#__PURE__*/ React.createElement(
             "div",
@@ -17546,6 +17602,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   type: "button",
                   onClick: preparedAudioPlayback.status === "blocked" ? retryLastAudio : requestPreparedAudioRetry,
                   disabled: preparedAudioPlayback.status !== "blocked" && preparedAudioRetryRequested,
+                  "data-dialog-initial-focus": "true",
                   className: "min-h-11 rounded-xl bg-indigo-600 px-5 py-2 font-bold text-white hover:bg-indigo-700 disabled:cursor-wait disabled:opacity-70 focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-offset-2",
                 },
                 preparedAudioPlayback.status === "blocked"

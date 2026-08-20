@@ -1417,8 +1417,12 @@ function DifferentiationSection(p) {
   if (!d) return null;
   var flags = d.flags || {};
   var labelMap = {
-    leveledReadingText: 'Leveled text',
-    multipleReadingLevels: 'Multi-level versions',
+    primaryTextAvailable: 'Primary text available',
+    primaryRoleConfirmed: 'Primary role confirmed',
+    sameTextSupport: 'Same-text support',
+    supplementalAdaptedText: 'Supplemental adapted text',
+    leveledReadingText: 'Adapted text available (reported only)',
+    multipleReadingLevels: 'Multiple adapted levels (reported only)',
     glossarySupport: 'Glossary',
     sentenceFrames: 'Sentence frames',
     visualOrganizer: 'Visual organizer',
@@ -1440,19 +1444,17 @@ function DifferentiationSection(p) {
     className: "text-2xl font-bold text-slate-800"
   }, d.coverage + '%'), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-600"
-  }, "UDL coverage")), /*#__PURE__*/React.createElement("div", {
+  }, "Access-path coverage")), /*#__PURE__*/React.createElement("div", {
     className: "p-3 bg-slate-50 rounded text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-2xl font-bold text-slate-800"
   }, d.presentCount + '/' + d.totalAccommodationTypes), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-slate-600"
-  }, "Accommodation types")), /*#__PURE__*/React.createElement("div", {
+  }, "Scored access paths")), /*#__PURE__*/React.createElement("div", {
     className: "p-3 bg-emerald-50 rounded text-center border border-emerald-200"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-2xl font-bold text-emerald-800"
-  }, Object.keys(flags).filter(function (k) {
-    return flags[k];
-  }).length), /*#__PURE__*/React.createElement("div", {
+  }, d.presentCount), /*#__PURE__*/React.createElement("div", {
     className: "text-xs text-emerald-700"
   }, "Present")), /*#__PURE__*/React.createElement("div", {
     className: 'p-3 rounded text-center ' + (d.missing && d.missing.length > 0 ? 'bg-rose-50 border border-rose-200' : 'bg-slate-50 border border-slate-200')
@@ -1473,7 +1475,15 @@ function DifferentiationSection(p) {
     }, on ? '✓' : '○'), /*#__PURE__*/React.createElement("span", {
       className: "min-w-0 break-words"
     }, labelMap[k] || k));
-  })), d.recommendations && d.recommendations.length > 0 && /*#__PURE__*/React.createElement("div", {
+  })), d.textAccess && /*#__PURE__*/React.createElement("div", {
+    className: "p-3 bg-blue-50 border border-blue-200 rounded mb-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-xs font-semibold text-blue-950 mb-1"
+  }, "Primary-text access evidence"), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-blue-950"
+  }, d.textAccess.hasPrimary ? 'A designated primary text is present.' : d.textAccess.hasLegacySource ? 'An analyzed source is available, but its instructional role has not been confirmed.' : 'No primary text is identified in this audit scope.'), /*#__PURE__*/React.createElement("p", {
+    className: "mt-1 text-xs text-blue-900"
+  }, 'Supplemental adapted: ' + (d.textAccess.supplementalArtifactIds || []).length + ' · Same-text supported primary: ' + (d.textAccess.supportedPrimaryArtifactIds || []).length + ' · Explicit educator-authorized replacement: ' + (d.textAccess.authorizedModifiedArtifactIds || []).length + ' · Current level evidence: ' + (d.textAccess.primaryWithCurrentComplexityEvidenceIds || []).length + ' · Stale level evidence: ' + (d.textAccess.stalePrimaryComplexityEvidenceIds || []).length)), d.recommendations && d.recommendations.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "p-3 bg-amber-50 border border-amber-200 rounded mb-3"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-semibold text-amber-900 mb-1"

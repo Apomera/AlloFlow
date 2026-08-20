@@ -59,6 +59,45 @@ const createExport = (deps) => {
     };
 
     const cleanTextForPptx = (text) => text ? String(text).replace(/\*\*/g, '').replace(/\*/g, '') : '';
+    const _instructionalTextForExport = (item) => {
+        const artifact = item && typeof item === 'object' ? item : {};
+        const config = artifact.config && typeof artifact.config === 'object' ? artifact.config : {};
+        const raw = artifact.instructionalText || config.instructionalText || artifact.textProfile || config.textProfile || {};
+        const inferredForm = artifact.type === 'simplified' ? 'adapted' : 'original';
+        let normalized = raw;
+        try {
+            const api = window.AlloModules && window.AlloModules.InstructionalContext;
+            if (raw && api && typeof api.normalizeInstructionalText === 'function') normalized = api.normalizeInstructionalText(raw, { defaultForm: inferredForm });
+        } catch (_) { normalized = raw; }
+        normalized = normalized && typeof normalized === 'object' ? normalized : {};
+        const role = ['primary', 'supplemental', 'unspecified'].includes(normalized.role) ? normalized.role : 'unspecified';
+        const form = ['original', 'same-text-supported', 'adapted'].includes(normalized.form) ? normalized.form : inferredForm;
+        const auth = normalized.replacementAuthorization && typeof normalized.replacementAuthorization === 'object'
+            ? normalized.replacementAuthorization : {};
+        const authorized = auth.authorized === true && auth.source === 'educator';
+        const complexity = normalized.complexity && typeof normalized.complexity === 'object' ? normalized.complexity : {};
+        return {
+            schemaVersion: 1,
+            role,
+            form,
+            sourceArtifactId: normalized.sourceArtifactId == null ? null : String(normalized.sourceArtifactId),
+            primaryArtifactId: normalized.primaryArtifactId == null ? null : String(normalized.primaryArtifactId),
+            designationSource: ['educator', 'workflow-default', 'legacy-inferred'].includes(normalized.designationSource)
+                ? normalized.designationSource : 'legacy-inferred',
+            replacementAuthorization: { authorized, source: authorized ? 'educator' : 'none' },
+            complexity: {
+                requestedGrade: complexity.requestedGrade || artifact.targetGradeLevel || config.grade || '',
+                measuredGrade: complexity.measuredGrade != null
+                    ? complexity.measuredGrade
+                    : (artifact.localStats && artifact.localStats.gradeLevel != null ? artifact.localStats.gradeLevel : null),
+                method: complexity.method || (artifact.localStats ? 'flesch-kincaid' : ''),
+                status: complexity.status || '',
+                contentFingerprint: complexity.contentFingerprint || '',
+                measuredAt: complexity.measuredAt || null,
+                language: complexity.language || config.language || '',
+            },
+        };
+    };
     const _fallbackInteractiveObjectProfileFor = (item) => {
         const type = item && item.type ? String(item.type) : '';
         const unsupported = new Set(['adventure', 'persona', 'word-sounds', 'storyforge-config', 'storyforge-submission', 'poettree-config', 'poettree-submission', 'litlab-config', 'litlab-submission', 'math-fluency-probe', 'explore-challenge', 'stem-assessment']);
@@ -105,6 +144,7 @@ const createExport = (deps) => {
             tracking: p.tracking,
             fallback: p.fallback,
             notes: p.notes,
+            instructionalText: _instructionalTextForExport(item),
         }, extra || {});
     };
     const getInteractiveObjectProfileSummary = (items) => {
@@ -430,6 +470,10 @@ const createExport = (deps) => {
     const buildProvenanceRecord = (item) => {
         const c = (item && item.config) || {};
         const custom = typeof c.customInstructions === 'string' ? c.customInstructions.trim() : '';
+        const instructionalText = _instructionalTextForExport(item);
+        const rawInstructionalText = item && (item.instructionalText || c.instructionalText || item.textProfile || c.textProfile) || {};
+        const modelCalibrationTarget = rawInstructionalText && rawInstructionalText.complexity
+            ? rawInstructionalText.complexity.calibrationTarget || '' : '';
         return {
             id: item && item.id,
             type: item && item.type,
@@ -455,6 +499,20 @@ const createExport = (deps) => {
             customInstructionsLength: custom.length,
             customInstructionsDigest: custom ? _fnv1a32(custom) : null,
             rosterGroupId: c.rosterGroupId || null,
+            // Requested, measured, and instructional-role fields are separate
+            // so research exports never confuse the internal adaptation type or
+            // calibration target with how the educator used the text.
+            instructionalText,
+            textRole: instructionalText.role,
+            textForm: instructionalText.form,
+            sourceArtifactId: instructionalText.sourceArtifactId,
+            requestedGrade: instructionalText.complexity.requestedGrade || '',
+            measuredGrade: instructionalText.complexity.measuredGrade,
+            complexityMethod: instructionalText.complexity.method || '',
+            complexityStatus: instructionalText.complexity.status || '',
+            // Provenance-only diagnostic. This is not the educator-facing
+            // target and is intentionally absent from student package manifests.
+            modelCalibrationTarget,
         };
     };
 
@@ -466,7 +524,7 @@ const createExport = (deps) => {
         const items = Array.isArray(history) ? history : [];
         const researchBundle = {
             exportVersion: 2,
-            provenanceSchemaVersion: 1,
+            provenanceSchemaVersion: 2,
             appBuild: _appBuild(),
             exportDate: new Date().toISOString(),
             // The measurement half of a study was already here; the materials

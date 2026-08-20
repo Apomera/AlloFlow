@@ -7591,6 +7591,51 @@ function ExportPreviewView(props) {
   const hasConceptSort = (history || []).some(h => h && h.type === 'concept-sort');
   const hasAssessmentContent = (history || []).some(h => h && (h.type === 'quiz' || h.type === 'assessment' || h.type === 'stem-assessment'));
   const showDisplayModes = hasGlossary || hasTimeline || hasBrainstorm || hasConceptSort;
+  const textAccessExportReview = React.useMemo(() => {
+    const source = Array.isArray(history) ? history : [];
+    const toggleForType = {
+      analysis: 'includeAnalysis', simplified: 'includeSimplified', glossary: 'includeGlossary', quiz: 'includeQuiz',
+      outline: 'includeOutline', faq: 'includeFaq', 'sentence-frames': 'includeSentenceFrames', image: 'includeImage',
+      math: 'includeMath', dbq: 'includeDbq', 'lesson-plan': 'includeLessonPlan', 'udl-advice': 'includeUdlAdvice',
+      brainstorm: 'includeBrainstorm',
+    };
+    const selected = source.filter((item) => {
+      if (!item) return false;
+      const key = toggleForType[item.type];
+      return !key || exportConfig[key] !== false;
+    });
+    const profileFor = (item) => {
+      const config = item && item.config && typeof item.config === 'object' ? item.config : {};
+      const raw = item && (item.instructionalText || config.instructionalText || item.textProfile || config.textProfile) || {};
+      const role = ['primary', 'supplemental', 'unspecified'].includes(raw.role) ? raw.role : 'unspecified';
+      const form = ['original', 'same-text-supported', 'adapted'].includes(raw.form)
+        ? raw.form : (item && item.type === 'simplified' ? 'adapted' : 'original');
+      const auth = raw.replacementAuthorization && typeof raw.replacementAuthorization === 'object'
+        ? raw.replacementAuthorization : {};
+      return { role, form, authorized: auth.authorized === true && auth.source === 'educator' };
+    };
+    const validPrimary = selected.filter((item) => {
+      const profile = profileFor(item);
+      return profile.role === 'primary' && (profile.form !== 'adapted' || profile.authorized);
+    });
+    const supplemental = selected.filter((item) => profileFor(item).role === 'supplemental');
+    const unspecifiedAdapted = selected.filter((item) => {
+      const profile = profileFor(item);
+      return profile.role === 'unspecified' && profile.form === 'adapted';
+    });
+    const unauthorizedPrimaryAdaptations = selected.filter((item) => {
+      const profile = profileFor(item);
+      return profile.role === 'primary' && profile.form === 'adapted' && !profile.authorized;
+    });
+    return {
+      primaryCount: validPrimary.length,
+      supplementalCount: supplemental.length,
+      unspecifiedAdaptedCount: unspecifiedAdapted.length,
+      unauthorizedPrimaryAdaptationCount: unauthorizedPrimaryAdaptations.length,
+      supplementalWithoutPrimary: supplemental.length > 0 && validPrimary.length === 0,
+      unspecifiedAdaptedWithoutPrimary: unspecifiedAdapted.length > 0 && validPrimary.length === 0,
+    };
+  }, [history, exportConfig]);
 
   if (!showExportPreview) return null;
 
@@ -8129,7 +8174,7 @@ function ExportPreviewView(props) {
                       const teacherOnlyDefault = new Set(['includeAnalysis', 'includeUdlAdvice', 'includeBrainstorm']);
                       const available = [
                         ['includeAnalysis', '📊 Source Analysis', 'analysis'],
-                        ['includeSimplified', '📖 Leveled Text', 'simplified'],
+                        ['includeSimplified', '📖 Adapted Text', 'simplified'],
                         ['includeGlossary', '📚 Glossary', 'glossary'],
                         ['includeQuiz', '❓ Quiz', 'quiz'],
                         ['includeOutline', '🗂️ Graphic Organizer', 'outline'],
@@ -8177,6 +8222,22 @@ function ExportPreviewView(props) {
                     })()}
                   </div>
                 </div>
+
+                {(textAccessExportReview.supplementalWithoutPrimary || textAccessExportReview.unspecifiedAdaptedWithoutPrimary || textAccessExportReview.unauthorizedPrimaryAdaptationCount > 0) && (
+                  <div className="rounded-lg border border-amber-300 bg-amber-50 p-2" role="status" aria-live="polite">
+                    <p className="text-[11px] font-bold text-amber-950">Text-access review before sharing</p>
+                    {textAccessExportReview.supplementalWithoutPrimary && (
+                      <p className="mt-1 text-[11px] leading-snug text-amber-900">The current student selection includes {textAccessExportReview.supplementalCount} supplemental text{textAccessExportReview.supplementalCount === 1 ? '' : 's'} but no designated primary text. Confirm that students will receive the intended primary separately, or include it in this export.</p>
+                    )}
+                    {textAccessExportReview.unspecifiedAdaptedWithoutPrimary && (
+                      <p className="mt-1 text-[11px] leading-snug text-amber-900">The current student selection includes {textAccessExportReview.unspecifiedAdaptedCount} adapted text{textAccessExportReview.unspecifiedAdaptedCount === 1 ? '' : 's'} whose instructional role is not set, and no designated primary text. Confirm the intended relationship before distribution.</p>
+                    )}
+                    {textAccessExportReview.unauthorizedPrimaryAdaptationCount > 0 && (
+                      <p className="mt-1 text-[11px] leading-snug text-amber-900">An adapted text is marked primary without an explicit educator replacement decision. Keep it supplemental or update the designation before distribution.</p>
+                    )}
+                    <p className="mt-1 text-[10px] text-amber-800">This notice is advisory and does not make an IEP or legal-compliance determination.</p>
+                  </div>
+                )}
 
                 {/* Skipped interactive resources notice */}
                 {(() => {

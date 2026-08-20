@@ -394,6 +394,73 @@ function HistoryPanel(props) {
   } = props;
   const historyThemeContext = React.useContext(window.AlloThemeContext || HistoryThemeFallbackContext);
   const historyTheme = historyThemeContext && (historyThemeContext.theme === "dark" || historyThemeContext.theme === "contrast") ? historyThemeContext.theme : "light";
+  const getInstructionalTextProfile = (item) => {
+    const config = item && item.config && typeof item.config === "object" ? item.config : {};
+    const raw = item && (item.instructionalText || config.instructionalText || item.textProfile || config.textProfile) || null;
+    const inferredForm = item && item.type === "simplified" ? "adapted" : "original";
+    let value = raw;
+    try {
+      const api = window.AlloModules && window.AlloModules.InstructionalContext;
+      if (raw && api && typeof api.normalizeInstructionalText === "function") {
+        value = api.normalizeInstructionalText(raw, { defaultForm: inferredForm });
+      }
+    } catch (_) {
+      value = raw;
+    }
+    value = value && typeof value === "object" ? value : {};
+    const role = ["primary", "supplemental", "unspecified"].includes(value.role) ? value.role : "unspecified";
+    const form = ["original", "same-text-supported", "adapted"].includes(value.form) ? value.form : inferredForm;
+    const auth = value.replacementAuthorization && typeof value.replacementAuthorization === "object" ? value.replacementAuthorization : {};
+    const authorized = auth.authorized === true && auth.source === "educator";
+    const complexity = value.complexity && typeof value.complexity === "object" ? value.complexity : {};
+    return {
+      schemaVersion: 1,
+      role,
+      form,
+      sourceArtifactId: value.sourceArtifactId == null ? null : String(value.sourceArtifactId),
+      primaryArtifactId: value.primaryArtifactId == null ? null : String(value.primaryArtifactId),
+      designationSource: ["educator", "workflow-default", "legacy-inferred"].includes(value.designationSource) ? value.designationSource : "legacy-inferred",
+      replacementAuthorization: { authorized, source: authorized ? "educator" : "none" },
+      complexity: {
+        requestedGrade: complexity.requestedGrade || item && item.targetGradeLevel || config.grade || "",
+        calibrationTarget: complexity.calibrationTarget || "",
+        measuredGrade: complexity.measuredGrade != null ? complexity.measuredGrade : item && item.localStats && item.localStats.gradeLevel != null ? item.localStats.gradeLevel : null,
+        method: complexity.method || (item && item.localStats ? "flesch-kincaid" : ""),
+        status: complexity.status || "",
+        contentFingerprint: complexity.contentFingerprint || "",
+        measuredAt: complexity.measuredAt || null,
+        language: complexity.language || config.language || ""
+      },
+      explicit: !!raw,
+      authorized
+    };
+  };
+  const getInstructionalTextRecord = (item) => {
+    const profile = getInstructionalTextProfile(item);
+    const isTextArtifact = item && (item.type === "analysis" || item.type === "simplified" || profile.form === "same-text-supported");
+    if (!profile.explicit && !isTextArtifact) return void 0;
+    return {
+      schemaVersion: profile.schemaVersion,
+      role: profile.role,
+      form: profile.form,
+      sourceArtifactId: profile.sourceArtifactId,
+      primaryArtifactId: profile.primaryArtifactId,
+      designationSource: profile.designationSource,
+      replacementAuthorization: profile.replacementAuthorization,
+      complexity: profile.complexity
+    };
+  };
+  const getInstructionalTextBadge = (item) => {
+    const profile = getInstructionalTextProfile(item);
+    const isTextArtifact = item && (item.type === "analysis" || item.type === "simplified" || profile.form === "same-text-supported");
+    if (!isTextArtifact && !profile.explicit) return null;
+    if (profile.role === "primary") {
+      if (profile.form === "adapted" && !profile.authorized) return { label: "Primary designation needs review", tone: "amber" };
+      return { label: profile.form === "same-text-supported" ? "Supported primary text" : "Primary text", tone: "blue" };
+    }
+    if (profile.role === "supplemental") return { label: profile.form === "adapted" ? "Supplemental adapted text" : "Supplemental text", tone: "violet" };
+    return { label: "Text role not set", tone: "slate" };
+  };
   const shareResourcePackToCommunity = () => {
     const visibleItems = (typeof getFilteredHistory === "function" ? getFilteredHistory() : history) || [];
     if (visibleItems.length === 0) {
@@ -409,13 +476,50 @@ function HistoryPanel(props) {
       return;
     }
     try {
+      const shareProfiles = visibleItems.map((item) => ({ item, profile: getInstructionalTextProfile(item) }));
+      const validPrimaryCount = shareProfiles.filter(({ profile }) => profile.role === "primary" && (profile.form !== "adapted" || profile.authorized)).length;
+      const supplementalCount = shareProfiles.filter(({ profile }) => profile.role === "supplemental").length;
+      const unspecifiedAdaptedCount = shareProfiles.filter(({ profile }) => profile.role === "unspecified" && profile.form === "adapted").length;
+      const unauthorizedPrimaryAdaptationCount = shareProfiles.filter(({ profile }) => profile.role === "primary" && profile.form === "adapted" && !profile.authorized).length;
+      const textAccessPreflight = {
+        schemaVersion: 1,
+        primaryCount: validPrimaryCount,
+        supplementalCount,
+        unspecifiedAdaptedCount,
+        supplementalWithoutPrimary: supplementalCount > 0 && validPrimaryCount === 0,
+        unspecifiedAdaptedWithoutPrimary: unspecifiedAdaptedCount > 0 && validPrimaryCount === 0,
+        unauthorizedPrimaryAdaptationCount,
+        advisoryOnly: true
+      };
+      if (textAccessPreflight.supplementalWithoutPrimary) {
+        addToast && addToast("This pack includes a supplemental adapted text but no designated primary text. Confirm that readers will receive the primary text separately.", "warning");
+      } else if (textAccessPreflight.unspecifiedAdaptedWithoutPrimary) {
+        addToast && addToast("This pack includes an adapted text whose instructional role is not set and no designated primary text. Review the relationship before publishing.", "warning");
+      } else if (unauthorizedPrimaryAdaptationCount > 0) {
+        addToast && addToast("An adapted text is marked primary without an explicit educator replacement decision. Review its role before publishing.", "warning");
+      }
       const cleanedItems = stripU(sanitizeForCloud(visibleItems.map((item) => ({
         id: item.id,
         type: item.type,
         title: item.title,
         timestamp: item.timestamp,
         data: item.data,
-        meta: item.meta
+        meta: item.meta,
+        // Preserve instructional metadata without publishing free-form custom
+        // instructions, roster labels, interests, or other potentially
+        // identifying configuration fields to the community catalog.
+        config: item.config && typeof item.config === "object" ? {
+          grade: item.config.grade,
+          language: item.config.language,
+          standards: item.config.standards,
+          standardsContext: item.config.standardsContext,
+          instructionalContext: item.config.instructionalContext
+        } : void 0,
+        instructionalContext: item.instructionalContext || item.config && item.config.instructionalContext,
+        standardsContext: item.standardsContext,
+        instructionalText: getInstructionalTextRecord(item),
+        localStats: item.localStats,
+        targetGradeLevel: item.targetGradeLevel
       }))));
       localStorage.setItem("alloflow_pending_submission", JSON.stringify({
         title: packTitle,
@@ -429,6 +533,7 @@ function HistoryPanel(props) {
           // Media/audio were stripped by the sanitizer above; catalog UIs
           // should disclose this rather than implying full-fidelity resources.
           mediaStripped: true,
+          textAccessPreflight,
           items: cleanedItems
         }
       }));
@@ -813,6 +918,8 @@ function HistoryPanel(props) {
     const itemTitle = isTeacherMode && !isIndependentMode ? String(item.title || getDefaultTitle(item.type)) : sanitizeString(item.title || getDefaultTitle(item.type));
     const itemMeta = typeof item.meta === "string" ? item.meta.trim() : "";
     const itemTypeLabel = getResourceTypeLabel(item.type);
+    const itemTextBadge = getInstructionalTextBadge(item);
+    const itemTextBadgeClass = itemTextBadge && itemTextBadge.tone === "blue" ? "border-blue-200 bg-blue-50 text-blue-800" : itemTextBadge && itemTextBadge.tone === "violet" ? "border-violet-200 bg-violet-50 text-violet-800" : itemTextBadge && itemTextBadge.tone === "amber" ? "border-amber-300 bg-amber-50 text-amber-900" : "border-slate-200 bg-white text-slate-600";
     const itemDate = item.timestamp ? new Date(item.timestamp) : null;
     const itemDateLabel = itemDate && Number.isFinite(itemDate.getTime()) ? itemDate.toLocaleDateString(void 0, { month: "short", day: "numeric", year: "numeric" }) : "";
     const itemDateTime = itemDateLabel ? itemDate.toISOString() : void 0;
@@ -889,7 +996,7 @@ function HistoryPanel(props) {
           "aria-current": isCurrent ? "page" : void 0,
           "aria-disabled": isSyncMode || isCurrent
         },
-        /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-grow" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold leading-snug line-clamp-2", title: itemTitle }, itemTitle), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex min-w-0 flex-wrap items-center gap-1.5 text-xs text-slate-500" }, /* @__PURE__ */ React.createElement("span", { className: `rounded-full border px-2 py-0.5 font-semibold ${isCurrent ? "border-indigo-200 bg-white text-indigo-700" : "border-slate-200 bg-slate-100 text-slate-600"}` }, itemTypeLabel), itemDateLabel && /* @__PURE__ */ React.createElement("time", { dateTime: itemDateTime }, itemDateLabel)), (itemUnit || item.fromDA || itemMeta) && /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex min-w-0 items-center gap-1 truncate text-xs text-slate-500" }, itemUnit && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-0.5 rounded border border-slate-200 bg-white px-1.5 py-0.5 text-slate-600" }, /* @__PURE__ */ React.createElement(Folder, { size: 8 }), " ", itemUnit.name), item.fromDA && /* @__PURE__ */ React.createElement(
+        /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-grow" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold leading-snug line-clamp-2", title: itemTitle }, itemTitle), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex min-w-0 flex-wrap items-center gap-1.5 text-xs text-slate-500" }, /* @__PURE__ */ React.createElement("span", { className: `rounded-full border px-2 py-0.5 font-semibold ${isCurrent ? "border-indigo-200 bg-white text-indigo-700" : "border-slate-200 bg-slate-100 text-slate-600"}` }, itemTypeLabel), itemTextBadge && /* @__PURE__ */ React.createElement("span", { className: `rounded-full border px-2 py-0.5 font-semibold ${itemTextBadgeClass}` }, itemTextBadge.label), itemDateLabel && /* @__PURE__ */ React.createElement("time", { dateTime: itemDateTime }, itemDateLabel)), (itemUnit || item.fromDA || itemMeta) && /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex min-w-0 items-center gap-1 truncate text-xs text-slate-500" }, itemUnit && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-0.5 rounded border border-slate-200 bg-white px-1.5 py-0.5 text-slate-600" }, /* @__PURE__ */ React.createElement(Folder, { size: 8 }), " ", itemUnit.name), item.fromDA && /* @__PURE__ */ React.createElement(
           "span",
           {
             className: "bg-violet-100 text-violet-700 border border-violet-300 px-1 rounded font-bold",

@@ -6,11 +6,17 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const shellPages = [
-    'index.html', 'tools.html', 'features.html', 'remediation.html', 'ways-to-use.html',
+    'index.html', 'about.html', 'tools.html', 'features.html', 'remediation.html', 'ways-to-use.html',
     'for-districts.html', 'students.html', 'library.html', 'calculator.html',
     'accessibility_demo.html', 'whitepaper.html', 'feedback.html', 'manuals.html'
 ];
 const socialPages = shellPages.concat(['launch.html', 'changelog.html']);
+const canonicalBase = 'https://apomera.github.io/AlloFlow/';
+const legacyPages = new Map([
+    ['website/features.html', canonicalBase + 'features.html'],
+    ['website/library.html', canonicalBase + 'library.html'],
+    ['website/calculator.html', canonicalBase + 'calculator.html']
+]);
 const expectedPrimary = ['tools.html', 'features.html', 'remediation.html', 'ways-to-use.html', 'for-districts.html', 'manuals.html', 'launch.html'];
 const expectedImage = 'https://apomera.github.io/AlloFlow/assets/alloflow-social-preview.png';
 const errors = [];
@@ -37,11 +43,17 @@ shellPages.forEach(function (file) {
     check(html.includes('href="promotion-wave3.css"'), `${file}: promotion-wave3.css is not static`);
     check(html.includes('href="promotion-wave3-shell.css"'), `${file}: shell CSS is not static`);
     check(html.includes('class="footer-links footer-link-groups"'), `${file}: grouped footer navigation missing`);
+    check(html.includes('href="about.html"'), `${file}: official project-facts route missing from shell`);
     check(html.includes('href="feedback.html"'), `${file}: feedback route missing from shell`);
+    check(html.includes('href="./"'), `${file}: canonical homepage route missing from shell`);
+    check(!html.includes('href="index.html"'), `${file}: duplicate /index.html homepage route remains`);
 });
 
 socialPages.forEach(function (file) {
     const html = read(file);
+    const expectedCanonical = file === 'index.html' ? canonicalBase : canonicalBase + file;
+    check(attribute(html, /<link\s+rel="canonical"[^>]*>/i, 'href') === expectedCanonical, `${file}: canonical URL drifted`);
+    check(attribute(html, /<meta\s+name="robots"[^>]*>/i, 'content') === 'index, follow', `${file}: robots index directive drifted`);
     check(attribute(html, /<meta\s+property="og:image"[^>]*>/i, 'content') === expectedImage, `${file}: social preview image is not canonical`);
     check(attribute(html, /<meta\s+name="twitter:image"[^>]*>/i, 'content') === expectedImage, `${file}: Twitter image is not canonical`);
     check(attribute(html, /<meta\s+property="og:image:width"[^>]*>/i, 'content') === '1200', `${file}: og:image width missing`);
@@ -50,6 +62,12 @@ socialPages.forEach(function (file) {
     check(Boolean(attribute(html, /<meta\s+property="og:image:alt"[^>]*>/i, 'content')), `${file}: og:image alt missing`);
     check(Boolean(attribute(html, /<meta\s+name="twitter:image:alt"[^>]*>/i, 'content')), `${file}: Twitter image alt missing`);
     check(!html.includes('property="twitter:'), `${file}: legacy property=twitter metadata remains`);
+});
+
+legacyPages.forEach(function (expectedCanonical, file) {
+    const html = read(file);
+    check(attribute(html, /<meta\s+name="robots"[^>]*>/i, 'content') === 'noindex, follow', `${file}: legacy duplicate must be noindex, follow`);
+    check(attribute(html, /<link\s+rel="canonical"[^>]*>/i, 'href') === expectedCanonical, `${file}: legacy duplicate canonical URL drifted`);
 });
 
 const preview = fs.readFileSync(path.join(root, 'assets', 'alloflow-social-preview.png'));
@@ -63,11 +81,18 @@ const siteScript = read('site.js');
 });
 
 const home = read('index.html');
+check(home.includes('<title>AlloFlow | Open-Source AI Classroom Assistant</title>'), 'index.html: search title is not the canonical product identity');
+check(attribute(home, /<meta\s+name="description"[^>]*>/i, 'content').includes('open-source AI classroom assistant'), 'index.html: search description is missing the product category');
+check(home.includes('AlloFlow &middot; open-source AI classroom assistant'), 'index.html: visible hero identity is missing');
+check(home.includes('"https://github.com/Apomera/AlloFlow"') && home.includes('"https://www.youtube.com/@AlloFlow"'), 'index.html: official identity links are missing from structured data');
 check(home.includes('id="homeEntryPaths"'), 'index.html: task entry paths are not static');
 check(home.includes('id="homeToolFinder"') && home.includes('action="tools.html"') && home.includes('name="q"'), 'index.html: progressive finder form is incomplete');
 check(home.includes('id="homeRemediation"'), 'index.html: remediation overview is not static');
 check(home.includes('class="community-feedback-band"'), 'index.html: feedback invitation is not static');
-check(home.includes('data-target="142"'), 'index.html: STEM count is not synchronized to 142');
+check(home.includes('data-target="400" data-suffix="+">400+</div>'), 'index.html: static documented-feature count is not crawler-readable');
+check(home.includes('data-target="143">143</div>'), 'index.html: static STEM count is not synchronized to 143');
+check(home.includes('data-target="70">70</div>'), 'index.html: static SEL count is not synchronized to 70');
+check(home.includes('data-target="60" data-suffix="+">60+</div>'), 'index.html: static language-resource count is not crawler-readable');
 check(!home.includes('id="hero-copy-btn"'), 'index.html: old copy-link hero CTA remains');
 check(home.includes('src="tool-catalog-data.js"') && home.includes('src="tool-finder.js"'), 'index.html: finder enhancement scripts are not static');
 
@@ -78,7 +103,7 @@ check(tools.includes('id="toolCatalogNoScript"'), 'tools.html: no-JavaScript cat
 check((tools.match(/class="tool-feedback-link"/g) || []).length >= cards, 'tools.html: not every static tool has a feedback link');
 check(tools.includes('id="toolCatalogSchema"'), 'tools.html: catalog structured data missing');
 
-['index.html', 'tools.html', 'feedback.html', 'launch.html', 'manuals.html'].forEach(function (file) {
+['index.html', 'about.html', 'tools.html', 'feedback.html', 'launch.html', 'manuals.html'].forEach(function (file) {
     const html = read(file);
     const blocks = Array.from(html.matchAll(/<script(?:\s+id="[^"]+")?\s+type="application\/ld\+json">([\s\S]*?)<\/script>/gi));
     check(blocks.length > 0, `${file}: JSON-LD missing`);
@@ -99,13 +124,14 @@ check(!feedbackScript.includes('innerHTML'), 'feedback.js: innerHTML should not 
 const sitemap = read('sitemap.xml');
 check(sitemap.includes('https://apomera.github.io/AlloFlow/feedback.html'), 'sitemap.xml: feedback page missing');
 check(sitemap.includes('https://apomera.github.io/AlloFlow/manuals.html'), 'sitemap.xml: manuals hub missing');
+check(sitemap.includes('https://apomera.github.io/AlloFlow/about.html'), 'sitemap.xml: official project-facts page missing');
 check(sitemap.includes('https://apomera.github.io/AlloFlow/docs/dynamic_assessment_guide.html'), 'sitemap.xml: Dynamic Assessment guide missing');
 const manuals = read('manuals.html');
 check((manuals.match(/data-manual-card/g) || []).length >= 13, 'manuals.html: public guide catalog is incomplete');
 check(manuals.includes('data-manual-controls hidden'), 'manuals.html: progressive guide finder missing');
 check(manuals.includes('id="family-mode-guide"') && manuals.includes('id="multilingual-support-guide"'), 'manuals.html: family or multilingual audience path missing');
-check(read('launch.html').includes('href="index.html"'), 'launch.html: About AlloFlow route missing');
-check(read('changelog.html').includes('href="index.html"'), 'changelog.html: About AlloFlow route missing');
+check(read('launch.html').includes('href="about.html"'), 'launch.html: canonical About AlloFlow route missing');
+check(read('changelog.html').includes('href="about.html"'), 'changelog.html: canonical About AlloFlow route missing');
 check(read('README.md').includes('https://apomera.github.io/AlloFlow/tools.html'), 'README.md: tool finder discovery link missing');
 
 if (errors.length) {

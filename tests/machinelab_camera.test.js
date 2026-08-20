@@ -160,4 +160,11 @@ describe('Machine Lab: camera limits', () => {
     const text = fs.readFileSync(path.resolve(process.cwd(), FILE), 'utf8');
     expect(text).toContain('((ny % 360) + 360) % 360');
   });
+
+  it('continues button nudges from the latest camera cursor', () => {
+    const text = fs.readFileSync(path.resolve(process.cwd(), FILE), 'utf8');
+    expect(text).toContain('yaw = ((ny % 360) + 360) % 360;');
+    expect(text).toContain('pitch = Math.max(-70, Math.min(78, nx));');
+    expect(text).toContain('zoom = Math.max(0.5, Math.min(2.6, nz));');
+  });
 });

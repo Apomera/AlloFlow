@@ -238,6 +238,11 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'InstructionalContext',
+        filename: 'instructional_context_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'StandardsProvider',
         filename: 'standards_provider_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -1360,6 +1365,7 @@ const PLUGIN_FILES = [
     'sel_hub/sel_standards_alignment.js',  // standards alignment data + helper used by sel_tool_*.js About views
     'sel_hub/sel_tool_zones.js', 'sel_hub/sel_tool_emotions.js',
     'sel_hub/sel_tool_coping.js', 'sel_hub/sel_tool_mindfulness.js',
+    'sel_hub/sel_tool_somaticreset.js',
     'sel_hub/sel_tool_social.js',
     'sel_hub/sel_tool_perspective.js',
     'sel_hub/sel_tool_decisions.js',

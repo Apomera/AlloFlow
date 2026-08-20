@@ -28,6 +28,29 @@ describe('shared standards context', () => {
     expect(context.promptText).toContain('NGSS 5-ESS2-1');
     expect(context.resolutionStatus).toBe('unresolved');
     expect(context.provider).toBe('user-input');
+    expect(context.instructionalConstraints.textAccessExpectation).toBe('unspecified');
+  });
+
+  it('preserves sourced text-access constraints and compiles role-specific directives', () => {
+    const context = Context.resolve({
+      standards: [{ code: 'RI.5.1', text: 'Quote accurately from a text.' }],
+      instructionalConstraints: {
+        textAccessExpectation: 'preserve-primary',
+        basis: 'District adopted curriculum guidance',
+        sourceUrl: 'https://example.edu/guidance',
+      },
+    });
+    expect(context.instructionalConstraints).toMatchObject({
+      textAccessExpectation: 'preserve-primary',
+      sourced: true,
+    });
+    const directive = Context.buildResourceDirective(context, {
+      resourceType: 'simplified',
+      textRole: 'supplemental',
+    });
+    expect(directive).toContain('ADAPTED COMPANION');
+    expect(directive).toContain('Preserve access to the designated primary text');
+    expect(directive).toContain('do not reduce cognitive demand');
   });
 
   it('preserves a resolved provider snapshot through Blueprint validation and revision', async () => {
@@ -94,13 +117,14 @@ describe('standards context integration seams', () => {
     const fullPack = readFileSync(resolve(root, 'generation_helpers_module.js'), 'utf8');
     const blueprint = readFileSync(resolve(root, 'phase_o_misc_handlers_module.js'), 'utf8');
     const loader = readFileSync(resolve(root, 'AlloFlowANTI.txt'), 'utf8');
-    expect(dispatcher).toContain('standardsContext: _isolatedContext ? null');
-    expect(dispatcher).toContain('content.comprehensive.standardsContext');
-    expect(dispatcher).toContain('standardsContext: _ambientStandardsContext');
-    expect(dispatcher).toContain('_ambientStandardsContext || _ambientStandardsPromptString');
+    expect(dispatcher).toContain('const _standardsContextInput = configOverride && configOverride.standardsContext');
+    expect(dispatcher).toContain('standardsContext: _activeStandardsContext');
+    expect(dispatcher).toContain('const _activeInstructionalContext = _instructionalContextModule');
+    expect(dispatcher).toContain('standardsContext: _activeStandardsContext || null');
     expect(fullPack).toContain('standardsContext: activeStandardsContext');
     expect(fullPack).toContain('standardsContext && Array.isArray(standardsContext.standards)');
     expect(blueprint).toContain('standardsContext: standardsContext');
     expect(loader).toContain("loadModule('StandardsContext'");
+    expect(loader).toContain("loadModule('InstructionalContext'");
   });
 });

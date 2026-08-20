@@ -131,8 +131,9 @@ describe('Word Sounds live audio delivery hardening', () => {
       expect(source).toContain('audioDeliveryAt: wordSoundsAudioDeliveryAt');
       expect(source).toContain('onPreparedAudioRetry: handleWordSoundsPreparedAudioRetry');
       expect(source).toContain('preparedAudioDeliveryAt: wordSoundsAudioDeliveryAt');
-      expect(source).toContain("wsAudioStalled ? 'No audio response — resend'");
       expect(source).toContain('audioDeliveryAt: resendAt');
+      expect(source).toContain("const wsAudioPrimaryLabel = wsAudioStatus === 'damaged' ? 'Resend audio' : wsAudioLabel;");
+      expect(source).toContain('Review and repair audio for');
     }
 
     const start = mailbox.indexOf('function validWsMetricNumber');
@@ -163,7 +164,12 @@ describe('Word Sounds live audio delivery hardening', () => {
     expect(player).toContain('disabled: preparedAudioPlayback.status !== "blocked" && preparedAudioRetryRequested');
     expect(player).toContain('setTimeout(() => setPreparedAudioRetryRequested(false), 15000)');
     expect(player).toContain('publishPreparedAudioStatus({ status: "checking", ready, total: preparedAudioTargets.length, failed: progressFailed })');
+    expect(player).toContain('const preparedAudioStartupTargets = React.useMemo(() => {');
+    expect(player).toContain('setPreparedAudioStartupReady(true)');
+    expect(player).toContain('&& !preparedAudioStartupReady;');
     expect(player).toContain('reportPreparedRuntimePlayback(outcome.status)');
     expect(player).toContain('? "Try sound again"');
+    expect(player).toContain('ref: preparedAudioDialogRef');
+    expect(player).toContain('"data-dialog-initial-focus": "true"');
   });
 });

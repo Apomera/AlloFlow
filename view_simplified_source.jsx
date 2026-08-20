@@ -147,6 +147,216 @@
     if (!auditAllowsFallback || !simplifiedBodyHasCitationMarkers(adaptedBody)) return '';
     return String(inputReferences || '');
   }
+
+  // Reading resources keep their renderer type ("simplified") separate from
+  // their instructional use.  These helpers intentionally live outside the
+  // component so role changes and comparison-source selection remain pure and
+  // can be regression tested without mounting the full reader.
+  function getInstructionalContextApi() {
+    try {
+      return window.AlloModules && window.AlloModules.InstructionalContext
+        ? window.AlloModules.InstructionalContext
+        : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function fallbackInstructionalText(item) {
+    var resource = item && typeof item === 'object' ? item : {};
+    var config = resource.config && typeof resource.config === 'object' ? resource.config : {};
+    var raw = resource.instructionalText || config.instructionalText || {};
+    var rawComplexity = raw.complexity && typeof raw.complexity === 'object' ? raw.complexity : {};
+    var rawAuthorization = raw.replacementAuthorization && typeof raw.replacementAuthorization === 'object'
+      ? raw.replacementAuthorization
+      : {};
+    var role = ['primary', 'supplemental', 'unspecified'].indexOf(raw.role) >= 0
+      ? raw.role
+      : 'unspecified';
+    var form = ['original', 'same-text-supported', 'adapted'].indexOf(raw.form) >= 0
+      ? raw.form
+      : (resource.type === 'simplified' ? 'adapted' : 'original');
+    var educatorAuthorized = rawAuthorization.authorized === true && rawAuthorization.source === 'educator';
+    return {
+      schemaVersion: 1,
+      role: role,
+      form: form,
+      sourceArtifactId: raw.sourceArtifactId || null,
+      primaryArtifactId: raw.primaryArtifactId || null,
+      designationSource: ['educator', 'workflow-default', 'legacy-inferred'].indexOf(raw.designationSource) >= 0
+        ? raw.designationSource
+        : 'legacy-inferred',
+      replacementAuthorization: {
+        authorized: educatorAuthorized,
+        source: educatorAuthorized ? 'educator' : 'none'
+      },
+      complexity: {
+        requestedGrade: rawComplexity.requestedGrade || resource.targetGradeLevel || config.grade || '',
+        calibrationTarget: rawComplexity.calibrationTarget || '',
+        measuredGrade: rawComplexity.measuredGrade !== undefined
+          ? rawComplexity.measuredGrade
+          : (resource.localStats && resource.localStats.score !== undefined ? resource.localStats.score : null),
+        method: rawComplexity.method || '',
+        status: rawComplexity.status || 'unavailable',
+        contentFingerprint: rawComplexity.contentFingerprint || '',
+        measuredAt: rawComplexity.measuredAt || '',
+        language: rawComplexity.language || config.language || 'English'
+      }
+    };
+  }
+
+  function getSimplifiedInstructionalText(item) {
+    var api = getInstructionalContextApi();
+    if (api && typeof api.getInstructionalText === 'function') {
+      try { return api.getInstructionalText(item); } catch (_) {}
+    }
+    return fallbackInstructionalText(item);
+  }
+
+  function updateSimplifiedInstructionalRole(item, requestedRole) {
+    var resource = item && typeof item === 'object' ? item : {};
+    var role = ['primary', 'supplemental', 'unspecified'].indexOf(requestedRole) >= 0
+      ? requestedRole
+      : 'unspecified';
+    var current = getSimplifiedInstructionalText(resource);
+    var nextProfile = Object.assign({}, current, {
+      role: role,
+      form: resource.type === 'simplified' ? 'adapted' : current.form,
+      designationSource: 'educator',
+      replacementAuthorization: role === 'primary'
+        ? { authorized: true, source: 'educator' }
+        : { authorized: false, source: 'none' }
+    });
+    var api = getInstructionalContextApi();
+    if (api && typeof api.normalizeInstructionalText === 'function') {
+      try { nextProfile = api.normalizeInstructionalText(nextProfile); } catch (_) {}
+    }
+    return Object.assign({}, resource, { instructionalText: nextProfile });
+  }
+
+  function artifactIdentityValues(item) {
+    if (!item || typeof item !== 'object') return [];
+    return [item.id, item.uiId, item.artifactId, item.resourceId]
+      .filter(function (value) { return value !== undefined && value !== null && String(value).trim(); })
+      .map(function (value) { return String(value); });
+  }
+
+  function artifactsMatch(left, right) {
+    if (!left || !right) return false;
+    var leftIds = artifactIdentityValues(left);
+    var rightIds = artifactIdentityValues(right);
+    if (leftIds.some(function (value) { return rightIds.indexOf(value) >= 0; })) return true;
+    return left === right || (
+      !leftIds.length && !rightIds.length &&
+      left.type === right.type && left.data === right.data
+    );
+  }
+
+  function findFullHistoryArtifact(history, item) {
+    var safeHistory = Array.isArray(history) ? history : [];
+    for (var index = safeHistory.length - 1; index >= 0; index -= 1) {
+      if (artifactsMatch(safeHistory[index], item)) return safeHistory[index];
+    }
+    return item || {};
+  }
+
+  function upsertFullHistoryArtifact(history, previousItem, updatedItem) {
+    var nextHistory = Array.isArray(history) ? history.slice() : [];
+    for (var index = nextHistory.length - 1; index >= 0; index -= 1) {
+      if (!artifactsMatch(nextHistory[index], previousItem)) continue;
+      // Merge over the history record so a partially hydrated current view can
+      // never erase provenance, config, or source-link fields.
+      nextHistory[index] = Object.assign({}, nextHistory[index], updatedItem);
+      return nextHistory;
+    }
+    nextHistory.push(updatedItem);
+    return nextHistory;
+  }
+
+  function getArtifactReadingText(item) {
+    if (!item || typeof item !== 'object') return '';
+    var data = item.data;
+    if (typeof data === 'string') return data;
+    if (data && typeof data === 'object') {
+      var dataText = data.originalText || data.rawEnglishText || data.sourceText || data.text || data.simplifiedText;
+      if (dataText) return String(dataText);
+    }
+    return String(item.originalText || item.rawEnglishText || item.sourceText || '');
+  }
+
+  function resolveSimplifiedCompareSource(history, adaptedItem, fallbackText) {
+    var safeHistory = Array.isArray(history) ? history : [];
+    var profile = getSimplifiedInstructionalText(adaptedItem);
+    var linkedIds = [profile.sourceArtifactId, profile.primaryArtifactId]
+      .filter(function (value, index, values) {
+        return value !== undefined && value !== null && String(value).trim() && values.indexOf(value) === index;
+      })
+      .map(function (value) { return String(value); });
+    for (var linkIndex = 0; linkIndex < linkedIds.length; linkIndex += 1) {
+      for (var historyIndex = safeHistory.length - 1; historyIndex >= 0; historyIndex -= 1) {
+        var candidate = safeHistory[historyIndex];
+        if (artifactIdentityValues(candidate).indexOf(linkedIds[linkIndex]) < 0) continue;
+        var linkedText = getArtifactReadingText(candidate);
+        if (linkedText) return { text: linkedText, artifact: candidate, selection: 'linked-artifact' };
+      }
+    }
+    for (var index = safeHistory.length - 1; index >= 0; index -= 1) {
+      var analysis = safeHistory[index];
+      if (!analysis || analysis.type !== 'analysis') continue;
+      var analysisText = getArtifactReadingText(analysis);
+      if (analysisText) return { text: analysisText, artifact: analysis, selection: 'latest-analysis-fallback' };
+    }
+    return { text: String(fallbackText || ''), artifact: null, selection: 'input-fallback' };
+  }
+
+  function getSimplifiedComplexityDisplay(item, ambientGrade) {
+    var resource = item && typeof item === 'object' ? item : {};
+    var resourceConfig = resource.config && typeof resource.config === 'object' ? resource.config : {};
+    var hasCanonicalProfile = !!(
+      resource.instructionalText || resource.textProfile ||
+      resourceConfig.instructionalText || resourceConfig.textProfile
+    );
+    var profile = getSimplifiedInstructionalText(resource);
+    var complexity = profile.complexity && typeof profile.complexity === 'object' ? profile.complexity : {};
+    var rawMeasured = complexity.measuredGrade;
+    var hasMeasured = rawMeasured !== null && rawMeasured !== '' && rawMeasured !== undefined;
+    var measured = hasMeasured ? Number(rawMeasured) : NaN;
+    if (!hasCanonicalProfile && !Number.isFinite(measured) &&
+        resource.localStats && resource.localStats.score !== undefined) {
+      rawMeasured = resource.localStats.score;
+      measured = Number(rawMeasured);
+    }
+    var targetGrade = complexity.requestedGrade || resource.targetGradeLevel ||
+      resourceConfig.grade || ambientGrade || '';
+    var api = getInstructionalContextApi();
+    var currentFingerprint = '';
+    if (api && typeof api.fingerprintText === 'function' && typeof resource.data === 'string') {
+      try { currentFingerprint = api.fingerprintText(resource.data); } catch (_) {}
+    }
+    if (complexity.contentFingerprint && currentFingerprint && complexity.contentFingerprint !== currentFingerprint) {
+      return { measuredGrade: null, targetGrade: targetGrade, status: 'stale', target: null };
+    }
+    if (!Number.isFinite(measured)) {
+      return { measuredGrade: null, targetGrade: targetGrade, status: complexity.status || 'unavailable', target: null };
+    }
+    var languageIsEnglish = true;
+    if (api && typeof api.isEnglishLanguage === 'function') {
+      try { languageIsEnglish = api.isEnglishLanguage(complexity.language || 'English'); } catch (_) {}
+    }
+    var status = !languageIsEnglish
+      ? 'unavailable'
+      : api && typeof api.complexityStatus === 'function'
+        ? api.complexityStatus(measured, targetGrade)
+        : (['below-target', 'within-target', 'above-target'].indexOf(complexity.status) >= 0
+          ? complexity.status
+          : 'unavailable');
+    var target = null;
+    if (api && typeof api.getComplexityTarget === 'function') {
+      try { target = api.getComplexityTarget(targetGrade); } catch (_) {}
+    }
+    return { measuredGrade: measured, targetGrade: targetGrade, status: status, target: target };
+  }
+
   function SimplifiedView(props) {
     // State reads
     var t = props.t;
@@ -239,6 +449,7 @@
     var setSaveOriginalOnAdjust = props.setSaveOriginalOnAdjust;
     var setReadingTheme = props.setReadingTheme;
     var setGeneratedContent = props.setGeneratedContent;
+    var setHistory = props.setHistory;
     // Refs
     var chunkReaderSweepAudioRef = props.chunkReaderSweepAudioRef;
     var chunkReaderSweepRafRef = props.chunkReaderSweepRafRef;
@@ -1182,6 +1393,54 @@
         return <div key={key} className="rounded-xl border border-slate-200 bg-slate-50/70 p-3"><div className="flex items-start gap-2"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-orange-100 text-[11px] font-black text-orange-800" aria-hidden="true">{sentenceNumber}</span><div className="min-w-0 flex-1"><p dir="auto" className="text-sm font-medium leading-relaxed text-slate-800">{sentence}</p><div className="mt-1.5 flex items-center gap-1.5 flex-wrap" aria-label={`Sentence ${sentenceNumber} audio status: ${statusLabel}. Source: ${provenance.label}.`}><span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold ${statusClass}`}>{isMicRequest || isRecordingSave || isGenerating || isRemoving || isSaving || isLoading ? <RefreshCw size={9} className="animate-spin motion-reduce:animate-none" /> : isRecording ? <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse motion-reduce:animate-none" /> : captureIssue || needsRebuild ? <AlertCircle size={9} /> : isSaved ? <CheckCircle2 size={9} /> : <AlertCircle size={9} />}{statusLabel}</span><span className="text-[10px] font-semibold text-slate-500">{provenance.label}</span></div></div></div><div role="group" aria-label={`Audio actions for sentence ${sentenceNumber}`} className="mt-2.5 flex items-center gap-1.5 flex-wrap"><button type="button" onClick={function () { handlePlayEditAudioSentence(sentence, key, sentenceNumber, identityOptions); }} disabled={!isSaved || isLoading || controlsBlocked || anyRecordingWork || (!!editAudioLoadingKey && !isLoading)} aria-pressed={isPlayingSentence} aria-label={`${isPlayingSentence ? 'Pause' : 'Play'} audio for sentence ${sentenceNumber}`} title={!isSaved ? 'Generate or record audio first' : isPlayingSentence ? 'Pause sentence audio' : 'Play sentence audio'} className={`${actionClass} bg-white text-indigo-700 border-indigo-200 hover:bg-indigo-50`}>{isLoading ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : isPlayingSentence ? <Pause size={12} /> : <Play size={12} />}<span>{isLoading ? 'Loading' : isPlayingSentence ? 'Pause' : 'Play'}</span></button><button type="button" onClick={function () { handleRegenerateReadAloudSentence(sentence, key, sentenceNumber, identityOptions); }} disabled={!!regenAudioKey || isSaving || isRemoving || anyRecordingWork || ttsPrepState.busy} aria-label={`${needsRebuild ? 'Rebuild' : isSaved ? 'Regenerate' : 'Generate'} audio for sentence ${sentenceNumber}`} title={needsRebuild ? 'Rebuild this clip with the currently selected voice, speed, and language.' : isSaved ? 'Replace this saved clip with current voice settings.' : 'Generate audio with current voice settings.'} className={`${actionClass} bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50`}>{isGenerating ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : <Volume2 size={12} />}<span>{isGenerating ? (isSaved ? 'Regenerating' : 'Generating') : needsRebuild ? 'Rebuild' : isSaved ? 'Regenerate' : 'Generate'}</span></button><button type="button" onClick={function () { handleRecordEditAudioSentence(sentence, key, sentenceNumber, identityOptions); }} disabled={recordDisabled} aria-pressed={isRecording} aria-label={`${isRecording ? 'Stop recording' : 'Record teacher audio'} for sentence ${sentenceNumber}`} title={isRecording ? 'Stop and save this recording' : isSaved ? 'Record a teacher voice replacement' : 'Record teacher audio'} className={`${actionClass} ${isRecording ? 'bg-red-600 text-white border-red-700 hover:bg-red-700' : 'bg-white text-fuchsia-700 border-fuchsia-200 hover:bg-fuchsia-50'}`}>{isMicRequest || isRecordingSave ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : isRecording ? <StopCircle size={12} /> : <Mic size={12} />}<span>{isMicRequest ? 'Opening mic' : isRecording ? 'Stop' : isRecordingSave ? 'Saving' : 'Record'}</span></button>{isSaved && <button type="button" onClick={function () { handleRemoveReadAloudSentence(sentence, key, sentenceNumber, identityOptions); }} disabled={!!removeAudioKey || isSaving || !!regenAudioKey || anyRecordingWork || ttsPrepState.busy} aria-label={`Remove saved audio for sentence ${sentenceNumber}`} className={`${actionClass} bg-white text-rose-700 border-rose-200 hover:bg-rose-50`}>{isRemoving ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> : <Trash2 size={12} />}<span>{isRemoving ? 'Removing' : 'Remove'}</span></button>}</div></div>;
       })}</div></div>}</div>;
     };
+    var instructionalTextProfile = getSimplifiedInstructionalText(generatedContent);
+    var instructionalRole = instructionalTextProfile.role || 'unspecified';
+    var replacementIsEducatorAuthorized = !!(
+      instructionalTextProfile.replacementAuthorization &&
+      instructionalTextProfile.replacementAuthorization.authorized === true &&
+      instructionalTextProfile.replacementAuthorization.source === 'educator'
+    );
+    var instructionalRoleLabel = instructionalRole === 'supplemental'
+      ? 'Supplemental access version'
+      : instructionalRole === 'primary' && replacementIsEducatorAuthorized
+        ? 'Primary replacement — educator designated'
+        : instructionalRole === 'primary'
+          ? 'Primary replacement — authorization missing'
+          : 'Instructional role not designated';
+    var instructionalRoleTone = instructionalRole === 'supplemental'
+      ? 'bg-blue-50 text-blue-900 border-blue-200'
+      : instructionalRole === 'primary' && replacementIsEducatorAuthorized
+        ? 'bg-violet-50 text-violet-900 border-violet-200'
+        : instructionalRole === 'primary'
+          ? 'bg-red-50 text-red-900 border-red-200'
+          : 'bg-amber-50 text-amber-900 border-amber-200';
+    var isSupplementalSourceUnlinked = instructionalRole === 'supplemental' &&
+      !instructionalTextProfile.sourceArtifactId && !instructionalTextProfile.primaryArtifactId;
+    var handleInstructionalRoleChange = function (event) {
+      var nextRole = event && event.target ? event.target.value : 'unspecified';
+      if (nextRole === 'primary' && !(instructionalRole === 'primary' && replacementIsEducatorAuthorized)) {
+        var confirmed = false;
+        try {
+          confirmed = window.confirm(
+            'Designate this adapted text as the primary replacement? This records an educator-authorized replacement decision. Continue only when replacement is permitted by the student’s documented plan, the instructional target, assessment conditions, and local policy.'
+          );
+        } catch (_) {}
+        if (!confirmed) return;
+      }
+      var fullBase = findFullHistoryArtifact(history, generatedContent);
+      // The open item wins for mutable display fields, while the history copy
+      // supplies any metadata omitted by an older hydration path.
+      fullBase = Object.assign({}, fullBase || {}, generatedContent || {});
+      var updated = updateSimplifiedInstructionalRole(fullBase, nextRole);
+      if (typeof setGeneratedContent === 'function') setGeneratedContent(updated);
+      if (typeof setHistory === 'function') {
+        setHistory(function (previousHistory) {
+          return upsertFullHistoryArtifact(previousHistory, generatedContent, updated);
+        });
+      }
+    };
+    var instructionalRoleControl = !isZenMode && generatedContent ? <div className="mb-4 rounded-xl border border-slate-200 bg-white/90 px-3 py-2.5 shadow-sm" data-instructional-role={instructionalRole} data-help-key="simplified_instructional_role"><div className="flex flex-wrap items-center justify-between gap-2"><div className="flex flex-wrap items-center gap-2"><span className="text-[10px] font-bold uppercase tracking-wider text-slate-600">Instructional use</span><span className={`rounded-full border px-2.5 py-1 text-xs font-bold ${instructionalRoleTone}`}>{instructionalRoleLabel}</span></div>{isTeacherMode && <label className="flex items-center gap-2 text-xs font-semibold text-slate-700"><span className="sr-only">Set instructional text role</span><select value={instructionalRole} onChange={handleInstructionalRoleChange} aria-label="Set instructional text role" className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"><option value="supplemental">Supplemental access version</option><option value="primary">Primary replacement (educator authorization)</option><option value="unspecified">Not designated</option></select></label>}</div>{isTeacherMode && <p className="mt-1.5 text-[11px] leading-relaxed text-slate-600">Adapted text remains supplemental by default. Choosing Primary replacement records your educator authorization; use it only when the instructional plan permits replacing the primary text.</p>}{isTeacherMode && isSupplementalSourceUnlinked && <p role="status" className="mt-2 flex items-start gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-2 text-[11px] font-semibold text-amber-900"><AlertCircle size={13} className="mt-0.5 shrink-0" /><span>This supplemental version is not linked to a source or primary artifact. Keep the source text in the resource history before sharing this version.</span></p>}</div> : null;
+    var simplifiedComplexityDisplay = getSimplifiedComplexityDisplay(generatedContent, gradeLevel);
     return <div className="space-y-6">{activeReadAloudStatus && <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">{activeReadAloudStatus}</span>}{isImmersiveReaderActive && generatedContent?.immersiveData && <div ref={immersiveDialogRef} role="dialog" aria-modal="true" aria-label={t('immersive.title') || 'Immersive Reader'} tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, immersiveDialogRef.current, handleCloseImmersiveReader)} className="fixed inset-0 z-[200] overflow-y-auto animate-in motion-reduce:animate-none fade-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none flex flex-col font-sans" style={{
         backgroundColor: immersiveSettings.bgColor || '#fdfbf7'
       }} onMouseMove={e => setImmersiveRulerY(e.clientY)}><ImmersiveToolbar settings={immersiveSettings} setSettings={setImmersiveSettings} onClose={handleCloseImmersiveReader} onGeneratePOS={handleGeneratePOSData} isGeneratingPOS={isAnalyzingPos} posReady={!!generatedContent?.posEnriched} onGenerateSyllables={handleGeneratePOSData} isGeneratingSyllables={isAnalyzingPos} syllablesReady={!!generatedContent?.posEnriched} playbackRate={playbackRate} setPlaybackRate={setPlaybackRate} lineHeight={lineHeight} setLineHeight={setLineHeight} letterSpacing={letterSpacing} setLetterSpacing={setLetterSpacing} isFocusReaderActive={isFocusReaderActive} onToggleFocusReader={() => setIsFocusReaderActive(!isFocusReaderActive)} isChunkReaderActive={isChunkReaderActive} onToggleChunkReader={() => {
@@ -1372,7 +1631,7 @@
                     }
                   }} /></span>;
               });
-            })()}</div></div></div>}{interactionMode === 'cloze' && isClozeComplete && <div className="fixed inset-0 pointer-events-none z-[100] flex items-center justify-center" data-a11y-overlay="nonmodal-status" role="status" aria-live="polite" aria-atomic="true"><ConfettiExplosion /><div className="mt-40 bg-green-100 text-green-800 px-6 py-3 rounded-full font-bold border-4 border-white shadow-xl animate-in motion-reduce:animate-none zoom-in duration-500 motion-reduce:animate-none motion-reduce:transition-none flex items-center gap-2"><Trophy size={24} className="text-yellow-500 fill-current" aria-hidden="true" /> Activity Complete!</div></div>}{!isZenMode && <div className="bg-green-50 p-4 rounded-lg border border-green-100 mb-6"><p className="text-sm text-green-800"><strong>{t('simplified.udl_goal').split(':')[0]}:</strong> {t('simplified.udl_goal').split(':')[1]}</p></div>}<div className={`bg-orange-50 border-l-4 border-orange-400 shadow-sm rounded-r-lg relative ${isZenMode ? 'p-4' : 'p-8'}`}>{!isZenMode && <div className="flex justify-center items-center mb-2 flex-wrap gap-2">{(() => {
+            })()}</div></div></div>}{interactionMode === 'cloze' && isClozeComplete && <div className="fixed inset-0 pointer-events-none z-[100] flex items-center justify-center" data-a11y-overlay="nonmodal-status" role="status" aria-live="polite" aria-atomic="true"><ConfettiExplosion /><div className="mt-40 bg-green-100 text-green-800 px-6 py-3 rounded-full font-bold border-4 border-white shadow-xl animate-in motion-reduce:animate-none zoom-in duration-500 motion-reduce:animate-none motion-reduce:transition-none flex items-center gap-2"><Trophy size={24} className="text-yellow-500 fill-current" aria-hidden="true" /> Activity Complete!</div></div>}{!isZenMode && <div className="bg-green-50 p-4 rounded-lg border border-green-100 mb-6"><p className="text-sm text-green-800"><strong>{t('simplified.udl_goal').split(':')[0]}:</strong> {t('simplified.udl_goal').split(':')[1]}</p></div>}{instructionalRoleControl}<div className={`bg-orange-50 border-l-4 border-orange-400 shadow-sm rounded-r-lg relative ${isZenMode ? 'p-4' : 'p-8'}`}>{!isZenMode && <div className="flex justify-center items-center mb-2 flex-wrap gap-2">{(() => {
             const displayGrade = generatedContent?.config?.grade || gradeLevel;
             const displayLang = generatedContent?.config?.language || leveledTextLanguage;
             const displayInterests = generatedContent?.config?.interests || studentInterests;
@@ -1468,33 +1727,29 @@
              calls on Check Level. Shown as a plain measurement next to the target, with
              no regeneration and no claim beyond what the formula says. Suppressed when
              levelCheck is open so the two panels do not stack. */}
-            {generatedContent.localStats && !generatedContent.levelCheck && (() => {
-              const measured = Number(generatedContent.localStats.score);
-              if (!Number.isFinite(measured)) return null;
-              const targetGrade = generatedContent.targetGradeLevel || '';
-              const GRADE_NUMBERS = { 'Kindergarten': 0, '1st Grade': 1, '2nd Grade': 2, '3rd Grade': 3, '4th Grade': 4, '5th Grade': 5, '6th Grade': 6, '7th Grade': 7, '8th Grade': 8, '9th Grade': 9, '10th Grade': 10, '11th Grade': 11, '12th Grade': 12 };
-              const targetNumber = GRADE_NUMBERS[targetGrade];
-              // Only claim "above" or "below" when there is a numeric target to compare
-              // against. College and Graduate Level have no Flesch-Kincaid equivalent, so
-              // the number is shown without a verdict rather than judged against a guess.
-              const gap = typeof targetNumber === 'number' ? measured - targetNumber : null;
-              const isOver = gap !== null && gap > 1;
-              const isUnder = gap !== null && gap < -1;
-              const tone = gap === null ? 'bg-slate-50 border-slate-200 text-slate-700'
-                : isOver ? 'bg-amber-50 border-amber-200 text-amber-900'
-                : isUnder ? 'bg-blue-50 border-blue-200 text-blue-900'
-                : 'bg-green-50 border-green-200 text-green-900';
-              const verdict = gap === null ? ''
-                : isOver ? (t('simplified.measured_above', { grade: targetGrade }) || `Above the ${targetGrade} target`)
-                : isUnder ? (t('simplified.measured_below', { grade: targetGrade }) || `Below the ${targetGrade} target`)
-                : (t('simplified.measured_on_target', { grade: targetGrade }) || `On target for ${targetGrade}`);
-              return <div className={`mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border px-3 py-2 text-xs ${tone}`}>
+            {!generatedContent.levelCheck && simplifiedComplexityDisplay.measuredGrade !== null && (() => {
+              const measured = simplifiedComplexityDisplay.measuredGrade;
+              const targetGrade = simplifiedComplexityDisplay.targetGrade;
+              const status = simplifiedComplexityDisplay.status;
+              const tone = status === 'above-target' ? 'bg-amber-50 border-amber-200 text-amber-900'
+                : status === 'below-target' ? 'bg-blue-50 border-blue-200 text-blue-900'
+                : status === 'within-target' ? 'bg-green-50 border-green-200 text-green-900'
+                : 'bg-slate-50 border-slate-200 text-slate-700';
+              const verdict = status === 'above-target' ? `Above the target range for ${targetGrade}`
+                : status === 'below-target' ? `Below the target range for ${targetGrade}`
+                : status === 'within-target' ? `Within the target range for ${targetGrade}`
+                : '';
+              const rangeNote = simplifiedComplexityDisplay.target && simplifiedComplexityDisplay.target.fkLabel
+                ? ` Shared target range: ${simplifiedComplexityDisplay.target.fkLabel}.`
+                : '';
+              const stats = generatedContent.localStats || {};
+              return <div className={`mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border px-3 py-2 text-xs ${tone}`} data-complexity-status={status}>
                 <span className="font-bold uppercase tracking-wider">{t('simplified.measured_level_label') || 'Measured reading level'}</span>
-                <span className="font-mono font-bold text-sm" title={`${t('analysis.readability.formula') || 'Flesch-Kincaid'}: (0.39 × ASL) + (11.8 × ASW) - 15.59\n${t('analysis.readability.words') || 'Words'}: ${generatedContent.localStats.words}\n${t('analysis.readability.sentences') || 'Sentences'}: ${generatedContent.localStats.sentences}\n${t('analysis.readability.syllables') || 'Syllables'}: ${generatedContent.localStats.syllables}`}>{generatedContent.localStats.score}</span>
+                <span className="font-mono font-bold text-sm" title={`${t('analysis.readability.formula') || 'Flesch-Kincaid'}: (0.39 × ASL) + (11.8 × ASW) - 15.59\n${t('analysis.readability.words') || 'Words'}: ${stats.words || '—'}\n${t('analysis.readability.sentences') || 'Sentences'}: ${stats.sentences || '—'}\n${t('analysis.readability.syllables') || 'Syllables'}: ${stats.syllables || '—'}`}>{measured}</span>
                 {verdict && <span className="font-semibold">{verdict}</span>}
-                <span className="text-[11px] opacity-80">{t('simplified.measured_note') || 'Flesch-Kincaid, measured on this passage. Use Check Level for a fuller review.'}</span>
+                <span className="text-[11px] opacity-80">Flesch-Kincaid, measured on this passage.{rangeNote} Use Check Level for a fuller review.</span>
               </div>;
-            })()}{generatedContent.levelCheck && <div className="mb-6 bg-indigo-50 border border-indigo-100 p-4 rounded-lg animate-in motion-reduce:animate-none slide-in-from-top-2"><div className="flex items-start gap-3"><div className="bg-indigo-100 p-2 rounded-full text-indigo-600 mt-1"><Search size={16} /></div><div className="flex-grow"><h4 className="font-bold text-indigo-900 text-sm flex items-center justify-between">{t('simplified.level_analysis_title')}<span className="text-xs bg-indigo-200 text-indigo-800 px-2 py-0.5 rounded-full">{generatedContent.levelCheck.confirmedLevel || generatedContent.levelCheck.estimatedLevel}</span></h4>{generatedContent.levelCheck.rubric ? <div className="mt-3 space-y-3 bg-white p-3 rounded-lg border border-indigo-100 shadow-sm"><p className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">{t('simplified.complexity_rubric_title')}</p>{Object.entries(generatedContent.levelCheck.rubric).map(([key, data]) => {
+            })()}{!generatedContent.levelCheck && simplifiedComplexityDisplay.status === 'stale' && <div role="status" className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900"><strong>Reading-level measurement needs refresh.</strong> The text changed after it was measured; use Check Level before relying on a complexity verdict.</div>}{generatedContent.levelCheck && <div className="mb-6 bg-indigo-50 border border-indigo-100 p-4 rounded-lg animate-in motion-reduce:animate-none slide-in-from-top-2"><div className="flex items-start gap-3"><div className="bg-indigo-100 p-2 rounded-full text-indigo-600 mt-1"><Search size={16} /></div><div className="flex-grow"><h4 className="font-bold text-indigo-900 text-sm flex items-center justify-between">{t('simplified.level_analysis_title')}<span className="text-xs bg-indigo-200 text-indigo-800 px-2 py-0.5 rounded-full">{generatedContent.levelCheck.confirmedLevel || generatedContent.levelCheck.estimatedLevel}</span></h4>{generatedContent.levelCheck.rubric ? <div className="mt-3 space-y-3 bg-white p-3 rounded-lg border border-indigo-100 shadow-sm"><p className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">{t('simplified.complexity_rubric_title')}</p>{Object.entries(generatedContent.levelCheck.rubric).map(([key, data]) => {
                   const percent = (data.score + 5) / 10 * 100;
                   const isAligned = Math.abs(data.score) <= 1;
                   const colorClass = isAligned ? 'bg-green-500' : data.score < 0 ? 'bg-blue-400' : 'bg-red-400';
@@ -1515,8 +1770,8 @@
               delete updated.alignmentCheck;
               setGeneratedContent(updated);
             }} className="text-slate-600 hover:text-slate-600 p-1"><X size={14} /></button></div></div>}{isCompareMode ? <div className="w-full h-full min-h-[500px] animate-in motion-reduce:animate-none fade-in duration-300"><div className="bg-slate-50 border-b border-slate-200 p-4 mb-4 flex justify-between items-center rounded-t-lg"><span className="text-sm font-bold text-slate-700 flex items-center gap-2"><GitCompare size={16} className="text-indigo-600" /> {t('simplified.diff_view')}</span><div className="flex gap-4 text-xs font-medium"><span className="flex items-center gap-1"><div className="w-3 h-3 bg-red-100 border border-red-300 rounded" /> {t('simplified.diff_removed')}</span><span className="flex items-center gap-1"><div className="w-3 h-3 bg-green-100 border border-green-300 rounded" /> {t('simplified.diff_added')}</span></div></div>{(() => {
-            const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
-            const sourceContent = latestAnalysis && latestAnalysis.data && latestAnalysis.data.originalText ? latestAnalysis.data.originalText : inputText;
+            const compareSource = resolveSimplifiedCompareSource(history, generatedContent, inputText);
+            const sourceContent = compareSource.text;
             let originalText = sourceContent.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
             let adaptedText = generatedContent?.data;
             const sideBySide = getSideBySideContent(adaptedText);
@@ -1883,3 +2138,8 @@
   }
   SimplifiedView.resolveReferences = resolveSimplifiedReferences;
   SimplifiedView.hasCitationMarkers = simplifiedBodyHasCitationMarkers;
+  SimplifiedView.getInstructionalText = getSimplifiedInstructionalText;
+  SimplifiedView.updateInstructionalRole = updateSimplifiedInstructionalRole;
+  SimplifiedView.upsertFullHistoryArtifact = upsertFullHistoryArtifact;
+  SimplifiedView.resolveCompareSource = resolveSimplifiedCompareSource;
+  SimplifiedView.getComplexityDisplay = getSimplifiedComplexityDisplay;

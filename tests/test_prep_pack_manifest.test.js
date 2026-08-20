@@ -67,9 +67,10 @@ describe('Test Prep pack registry and generated manifest', () => {
     }
   }, 180_000);
 
-  it('keeps the AP-native pilot outside legacy *_pack.json discovery', () => {
+  it('keeps AP-native pilots outside legacy *_pack.json discovery', () => {
     const registry = readJson(registryPath);
     const apEntry = registry.entries.find((entry) => entry.id === 'ap-psychology-pilot');
+    const biologyEntry = registry.entries.find((entry) => entry.id === 'ap-biology-foundation-pilot');
 
     expect(apEntry).toMatchObject({
       pipelineFamily: 'ap-native',
@@ -79,6 +80,14 @@ describe('Test Prep pack registry and generated manifest', () => {
     });
     expect(apEntry.sourcePath).toBe('test_prep/ap_psychology_pilot.json');
     expect(apEntry.sourcePath).not.toMatch(/_pack\.json$/i);
+    expect(biologyEntry).toMatchObject({
+      pipelineFamily: 'ap-native',
+      loadMode: 'lazy',
+      visibility: 'internal',
+      portfolioCategories: ['k12-college-readiness'],
+    });
+    expect(biologyEntry.sourcePath).toBe('test_prep/ap_biology_foundation_pilot.json');
+    expect(biologyEntry.sourcePath).not.toMatch(/_pack\.json$/i);
   }, 180_000);
 
   it('generates a complete manifest whose source-backed descriptors match their packs', () => {

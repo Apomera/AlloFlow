@@ -641,6 +641,76 @@ const createAdventureMixFocus = () => {
     return { add, release, multiplier, snapshot: () => ({ active: activeTokens.size, multiplier: multiplier() }) };
 };
 
+const analyzeAdventureRenderedAudio = (rendered, sampleRate = 12000) => {
+    const data = rendered && typeof rendered.getChannelData === 'function' ? rendered.getChannelData(0) : rendered;
+    if (!data || !data.length) return { supported: true, passed: false, peak: 0, rms: 0, maxStep: 0, tailPeak: 0, nonFinite: 0 };
+    let peak = 0;
+    let sumSquares = 0;
+    let maxStep = 0;
+    let tailPeak = 0;
+    let nonFinite = 0;
+    const tailStart = Math.floor(data.length * 0.9);
+    let previous = 0;
+    for (let index = 0; index < data.length; index++) {
+        const sample = Number(data[index]);
+        if (!Number.isFinite(sample)) {
+            nonFinite += 1;
+            continue;
+        }
+        const absolute = Math.abs(sample);
+        peak = Math.max(peak, absolute);
+        sumSquares += sample * sample;
+        maxStep = Math.max(maxStep, Math.abs(sample - previous));
+        if (index >= tailStart) tailPeak = Math.max(tailPeak, absolute);
+        previous = sample;
+    }
+    const rms = Math.sqrt(sumSquares / data.length);
+    const round = value => Number(value.toFixed(5));
+    return {
+        supported: true,
+        passed: nonFinite === 0 && peak >= 0.005 && peak <= 0.98 && rms >= 0.0005 && maxStep <= 0.25 && tailPeak <= 0.002,
+        peak: round(peak),
+        rms: round(rms),
+        maxStep: round(maxStep),
+        tailPeak: round(tailPeak),
+        nonFinite,
+        sampleRate: Math.max(1, Math.floor(Number(sampleRate) || 12000))
+    };
+};
+
+const runAdventureAudioDiagnostics = async () => {
+    const scope = typeof window !== 'undefined' ? window : typeof globalThis !== 'undefined' ? globalThis : {};
+    const OfflineContext = scope.OfflineAudioContext || scope.webkitOfflineAudioContext;
+    if (typeof OfflineContext !== 'function') return { supported: false, passed: false, reason: 'Offline audio rendering is unavailable in this browser.' };
+    try {
+        const sampleRate = 12000;
+        const offline = new OfflineContext(1, Math.floor(sampleRate * 1.1), sampleRate);
+        const oscillator = offline.createOscillator();
+        const gain = offline.createGain();
+        const compressor = typeof offline.createDynamicsCompressor === 'function' ? offline.createDynamicsCompressor() : null;
+        oscillator.type = 'sine';
+        oscillator.frequency.value = 440;
+        gain.gain.setValueAtTime(0.0001, 0);
+        gain.gain.exponentialRampToValueAtTime(0.22, 0.02);
+        gain.gain.setValueAtTime(0.22, 0.42);
+        gain.gain.exponentialRampToValueAtTime(0.0001, 0.8);
+        oscillator.connect(gain);
+        if (compressor) {
+            compressor.threshold.value = -18;
+            compressor.knee.value = 16;
+            compressor.ratio.value = 5;
+            gain.connect(compressor);
+            compressor.connect(offline.destination);
+        } else gain.connect(offline.destination);
+        oscillator.start(0);
+        oscillator.stop(0.82);
+        const rendered = await offline.startRendering();
+        return analyzeAdventureRenderedAudio(rendered, sampleRate);
+    } catch (error) {
+        return { supported: true, passed: false, reason: String(error?.message || error || 'Audio diagnostic failed.') };
+    }
+};
+
 const isAdventureAudioDocumentHidden = () => {
     try { return typeof document !== 'undefined' && document.visibilityState === 'hidden'; } catch (_) { return false; }
 };
@@ -896,6 +966,7 @@ const getAdventureAudioEngine = () => {
     let ambienceBus = null;
     let sfxBus = null;
     let currentAmbience = null;
+    let currentPreview = null;
     let speechActive = false;
     let enabled = true;
     let preferences = getAdventureAudioPreferences();
@@ -908,6 +979,7 @@ const getAdventureAudioEngine = () => {
         reserves: { detail: 8, event: 5, critical: 0 }
     });
     const themeState = createAdventureThemeState();
+    const previewThemeState = createAdventureThemeState();
     const mixFocus = createAdventureMixFocus();
 
     const getSfxBusLevel = () => 0.72 * preferences.effects * (preferences.gentle ? 0.68 : 1) * (speechActive ? 0.42 : 1);
@@ -975,6 +1047,56 @@ const getAdventureAudioEngine = () => {
             stopAdventureAudioNodes(layer.nodes);
             try { layer.gain.disconnect(); } catch (_) {}
         }, Math.max(60, fadeSeconds * 1000 + 80));
+    };
+
+    const notifyPreviewState = active => {
+        try {
+            if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('alloflow-adventure-audio-preview', { detail: { active: !!active } }));
+        } catch (_) {}
+    };
+
+    const stopPreview = (fadeSeconds = 0.2, restoreLiveLayer = true) => {
+        const oldPreview = currentPreview;
+        currentPreview = null;
+        if (oldPreview?.previewTimer) clearTimeout(oldPreview.previewTimer);
+        stopLayer(oldPreview, fadeSeconds);
+        if (restoreLiveLayer && currentAmbience && !currentAmbience.stopping) rampGain(currentAmbience.gain, currentAmbience.volume, 0.32);
+        if (oldPreview) notifyPreviewState(false);
+    };
+
+    const playPreview = (params, options = {}) => {
+        const audioCtx = resume() || ensureGraph();
+        if (!audioCtx || !ambienceBus) return null;
+        stopPreview(0.08, false);
+        const profile = normalizeAdventureSoundParams(params, options.sceneText || 'Adventure Sound Lab');
+        const themeProfile = createAdventureThemeProfile(options.themeSeed || 'adventure-sound-lab');
+        const gain = audioCtx.createGain();
+        const volume = clampAdventureAudio(options.volume == null ? 0.16 : options.volume, 0, 0.32);
+        gain.gain.value = 0.0001;
+        gain.connect(ambienceBus);
+        const layer = {
+            signature: 'preview:' + [profile.atmosphere, profile.element, profile.acousticSpace, profile.motion, profile.intensity.toFixed(2), themeProfile.key].join(':'),
+            profile,
+            themeProfile,
+            gain,
+            nodes: playGenerativeSoundscape(audioCtx, gain, profile, {
+                sceneText: options.sceneText || 'Adventure Sound Lab',
+                gentle: preferences.gentle,
+                themeProfile,
+                themeState: previewThemeState,
+                voiceBudget
+            }),
+            volume,
+            stopping: false,
+            previewTimer: null
+        };
+        currentPreview = layer;
+        if (currentAmbience && !currentAmbience.stopping) rampGain(currentAmbience.gain, Math.max(0.0001, currentAmbience.volume * 0.16), 0.12);
+        rampGain(gain, volume, 0.18);
+        const durationMs = Math.max(1200, Math.min(12000, Number(options.durationMs) || 8000));
+        layer.previewTimer = setTimeout(() => { if (currentPreview === layer) stopPreview(0.35); }, durationMs);
+        notifyPreviewState(true);
+        return layer;
     };
 
     const playAmbience = (params, options = {}) => {
@@ -1067,15 +1189,18 @@ const getAdventureAudioEngine = () => {
         getMixFocusSnapshot: () => mixFocus.snapshot(),
         getSfxBus: () => sfxBus,
         getPreferences: () => ({ ...preferences }),
-        getSceneProfile: () => currentAmbience ? { ...currentAmbience.profile } : null,
-        getThemeProfile: () => currentAmbience ? { ...currentAmbience.themeProfile } : null,
+        getSceneProfile: () => currentPreview ? { ...currentPreview.profile } : currentAmbience ? { ...currentAmbience.profile } : null,
+        getThemeProfile: () => currentPreview ? { ...currentPreview.themeProfile } : currentAmbience ? { ...currentAmbience.themeProfile } : null,
         getVoiceBudgetSnapshot: () => voiceBudget.snapshot(),
         playAmbience,
+        playPreview,
         releaseVoice: token => voiceBudget.release(token),
         resume,
+        runDiagnostics: runAdventureAudioDiagnostics,
         setEnabled: value => { enabled = value !== false; },
         setPreferences: value => applyPreferences(value, true),
-        stopAmbience
+        stopAmbience,
+        stopPreview
     };
     return adventureAudioEngineSingleton;
 };
@@ -1375,6 +1500,9 @@ const AdventureAmbience = React.memo(({ sceneText, soundParams, themeSeed, activ
 const AdventureAudioControls = React.memo(({ soundEnabled = true, t = key => key }) => {
     const [preferences, setPreferences] = useState(() => getAdventureAudioPreferences());
     const [open, setOpen] = useState(false);
+    const [previewActive, setPreviewActive] = useState(false);
+    const [diagnostic, setDiagnostic] = useState({ status: 'idle', result: null });
+    const [labProfile, setLabProfile] = useState({ atmosphere: 'calm', element: 'nature', acousticSpace: 'open', motion: 'steady', intensity: 0.4 });
     const triggerRef = useRef(null);
     const dialogRef = useRef(null);
     const update = (patch) => {
@@ -1388,8 +1516,32 @@ const AdventureAudioControls = React.memo(({ soundEnabled = true, t = key => key
         } catch (_) { return fallback; }
     };
     const closeDialog = () => {
+        getAdventureAudioEngine().stopPreview(0.18);
         setOpen(false);
         setTimeout(() => { try { triggerRef.current?.focus(); } catch (_) {} }, 0);
+    };
+    const updateLabProfile = (field, value) => setLabProfile(current => ({ ...current, [field]: value }));
+    const playSelectedLabProfile = engine => engine.playPreview(labProfile, {
+        sceneText: 'Adventure Sound Lab ' + [labProfile.atmosphere, labProfile.element, labProfile.acousticSpace, labProfile.motion].join(' '),
+        themeSeed: 'adventure-sound-lab',
+        volume: 0.16,
+        durationMs: 8000
+    });
+    const startLabPreview = () => {
+        const engine = getAdventureAudioEngine();
+        engine.setEnabled(true);
+        playSelectedLabProfile(engine);
+    };
+    const previewLabEvent = type => {
+        const engine = getAdventureAudioEngine();
+        engine.setEnabled(true);
+        playSelectedLabProfile(engine);
+        playAdventureEventSound(type);
+    };
+    const runLabDiagnostic = async () => {
+        setDiagnostic({ status: 'running', result: null });
+        const result = await getAdventureAudioEngine().runDiagnostics();
+        setDiagnostic({ status: 'complete', result });
     };
     useEffect(() => {
         if (!open) return;
@@ -1409,6 +1561,7 @@ const AdventureAudioControls = React.memo(({ soundEnabled = true, t = key => key
     useEffect(() => {
         if (typeof window === 'undefined') return;
         const onPreferences = event => setPreferences(normalizeAdventureAudioPreferences(event?.detail || getAdventureAudioPreferences()));
+        const onPreview = event => setPreviewActive(!!event?.detail?.active);
         const onStorage = event => {
             if (event.key !== ADVENTURE_AUDIO_PREFS_KEY) return;
             let next = null;
@@ -1418,9 +1571,12 @@ const AdventureAudioControls = React.memo(({ soundEnabled = true, t = key => key
             getAdventureAudioEngine().setPreferences(adventureAudioPreferencesCache);
         };
         window.addEventListener('alloflow-adventure-audio-preferences', onPreferences);
+        window.addEventListener('alloflow-adventure-audio-preview', onPreview);
         window.addEventListener('storage', onStorage);
         return () => {
+            getAdventureAudioEngine().stopPreview(0.08);
             window.removeEventListener('alloflow-adventure-audio-preferences', onPreferences);
+            window.removeEventListener('alloflow-adventure-audio-preview', onPreview);
             window.removeEventListener('storage', onStorage);
         };
     }, []);
@@ -1444,7 +1600,7 @@ const AdventureAudioControls = React.memo(({ soundEnabled = true, t = key => key
                 <span className="hidden xl:inline">{translate('adventure.audio_short', 'Sound mix')}</span>
             </button>
             {open && <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/55 p-4 backdrop-blur-sm" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) closeDialog(); }}>
-            <div ref={dialogRef} tabIndex={-1} className="relative w-full max-w-sm rounded-2xl border-2 border-indigo-300 bg-white p-5 text-slate-800 shadow-2xl focus:outline-none" role="dialog" aria-modal="true" aria-labelledby="adventure-audio-dialog-title">
+            <div ref={dialogRef} tabIndex={-1} className="relative max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-2xl border-2 border-indigo-300 bg-white p-5 text-slate-800 shadow-2xl focus:outline-none" role="dialog" aria-modal="true" aria-labelledby="adventure-audio-dialog-title">
                 <button type="button" onClick={closeDialog} className="absolute right-2 top-2 flex min-h-11 min-w-11 items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700" aria-label={translate('common.close', 'Close')}><X size={18} aria-hidden="true" /></button>
                 <div className="mb-3 flex items-start justify-between gap-3">
                     <div>
@@ -1465,6 +1621,56 @@ const AdventureAudioControls = React.memo(({ soundEnabled = true, t = key => key
                     <input type="checkbox" checked={preferences.gentle} onChange={event => update({ gentle: event.target.checked })} className="h-5 w-5 accent-indigo-700" />
                     <span><span className="block">{translate('adventure.audio_gentle', 'Gentle sound mode')}</span><span className="block font-normal text-indigo-700">{translate('adventure.audio_gentle_note', 'Softer effects and calmer motion.')}</span></span>
                 </label>
+                <details className="mt-3 rounded-xl border border-violet-200 bg-violet-50/70 p-3">
+                    <summary className="min-h-11 cursor-pointer select-none py-2 text-sm font-black text-violet-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700">
+                        {translate('adventure.audio_sound_lab', 'Adventure Sound Lab')}
+                    </summary>
+                    <div className="mt-2 space-y-3 border-t border-violet-200 pt-3">
+                        <p className="text-[11px] leading-snug text-violet-900">{translate('adventure.audio_sound_lab_note', 'Audition procedural scene profiles without replacing the live adventure ambience.')}</p>
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                            <label className="text-xs font-bold text-slate-800" htmlFor="adventure-lab-atmosphere">
+                                <span className="mb-1 block">{translate('adventure.audio_atmosphere', 'Atmosphere')}</span>
+                                <select id="adventure-lab-atmosphere" value={labProfile.atmosphere} onChange={event => updateLabProfile('atmosphere', event.target.value)} className="min-h-11 w-full rounded-lg border border-slate-400 bg-white px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700">
+                                    {['calm', 'joyful', 'ethereal', 'dark', 'tense'].map(value => <option key={value} value={value}>{value.charAt(0).toUpperCase() + value.slice(1)}</option>)}
+                                </select>
+                            </label>
+                            <label className="text-xs font-bold text-slate-800" htmlFor="adventure-lab-element">
+                                <span className="mb-1 block">{translate('adventure.audio_environment', 'Environment')}</span>
+                                <select id="adventure-lab-element" value={labProfile.element} onChange={event => updateLabProfile('element', event.target.value)} className="min-h-11 w-full rounded-lg border border-slate-400 bg-white px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700">
+                                    {['nature', 'water', 'rain', 'ocean', 'wind', 'fire', 'cave', 'city', 'machinery', 'laboratory', 'space', 'crowd', 'silence'].map(value => <option key={value} value={value}>{value.charAt(0).toUpperCase() + value.slice(1)}</option>)}
+                                </select>
+                            </label>
+                            <label className="text-xs font-bold text-slate-800" htmlFor="adventure-lab-space">
+                                <span className="mb-1 block">{translate('adventure.audio_space', 'Acoustic space')}</span>
+                                <select id="adventure-lab-space" value={labProfile.acousticSpace} onChange={event => updateLabProfile('acousticSpace', event.target.value)} className="min-h-11 w-full rounded-lg border border-slate-400 bg-white px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700">
+                                    {['open', 'room', 'cave', 'void'].map(value => <option key={value} value={value}>{value.charAt(0).toUpperCase() + value.slice(1)}</option>)}
+                                </select>
+                            </label>
+                            <label className="text-xs font-bold text-slate-800" htmlFor="adventure-lab-motion">
+                                <span className="mb-1 block">{translate('adventure.audio_motion', 'Motion')}</span>
+                                <select id="adventure-lab-motion" value={labProfile.motion} onChange={event => updateLabProfile('motion', event.target.value)} className="min-h-11 w-full rounded-lg border border-slate-400 bg-white px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700">
+                                    {['still', 'steady', 'travel', 'chase', 'urgent'].map(value => <option key={value} value={value}>{value.charAt(0).toUpperCase() + value.slice(1)}</option>)}
+                                </select>
+                            </label>
+                        </div>
+                        <label className="block text-xs font-bold text-slate-800" htmlFor="adventure-lab-intensity">
+                            <span className="mb-1 flex justify-between"><span>{translate('adventure.audio_intensity', 'Intensity')}</span><output>{Math.round(labProfile.intensity * 100)}%</output></span>
+                            <input id="adventure-lab-intensity" type="range" min="10" max="100" step="10" value={Math.round(labProfile.intensity * 100)} onChange={event => updateLabProfile('intensity', Number(event.target.value) / 100)} className="min-h-11 w-full accent-violet-700" />
+                        </label>
+                        <div className="grid grid-cols-2 gap-2">
+                            <button type="button" disabled={!soundEnabled} onClick={startLabPreview} className="min-h-11 rounded-xl bg-violet-700 px-3 py-2 text-xs font-black text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2">{previewActive ? translate('adventure.audio_restart_preview', 'Restart preview') : translate('adventure.audio_start_preview', 'Preview ambience')}</button>
+                            <button type="button" disabled={!previewActive} onClick={() => getAdventureAudioEngine().stopPreview(0.2)} className="min-h-11 rounded-xl border border-violet-400 bg-white px-3 py-2 text-xs font-black text-violet-900 hover:bg-violet-100 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700">{translate('adventure.audio_stop_preview', 'Stop preview')}</button>
+                        </div>
+                        <div role="group" aria-label={translate('adventure.audio_event_previews', 'Event cue previews')} className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                            {[['transition', 'Transition'], ['success', 'Success'], ['failure', 'Failure'], ['item_get', 'Item']].map(([type, text]) => <button key={type} type="button" disabled={!soundEnabled} onClick={() => previewLabEvent(type)} className="min-h-11 rounded-lg border border-violet-300 bg-white px-2 py-2 text-[11px] font-bold text-violet-900 hover:bg-violet-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700">{text}</button>)}
+                        </div>
+                        <div role="status" aria-live="polite" className="min-h-5 text-[11px] font-bold text-violet-900">{previewActive ? translate('adventure.audio_preview_active', 'Preview playing for up to 8 seconds.') : translate('adventure.audio_preview_idle', 'Preview stopped.')}</div>
+                        <div className="rounded-lg border border-slate-300 bg-white p-2">
+                            <button type="button" disabled={diagnostic.status === 'running'} onClick={runLabDiagnostic} className="min-h-11 w-full rounded-lg border border-slate-400 px-3 py-2 text-xs font-black text-slate-800 hover:bg-slate-100 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700">{diagnostic.status === 'running' ? translate('adventure.audio_check_running', 'Rendering audio check…') : translate('adventure.audio_run_check', 'Run waveform check')}</button>
+                            {diagnostic.status === 'complete' && diagnostic.result && <div role="status" aria-live="polite" className={`mt-2 rounded-md px-2 py-1.5 text-[11px] font-bold ${diagnostic.result.passed ? 'bg-emerald-50 text-emerald-900' : 'bg-amber-50 text-amber-950'}`}>{diagnostic.result.supported === false ? diagnostic.result.reason : diagnostic.result.passed ? `Passed · peak ${diagnostic.result.peak} · RMS ${diagnostic.result.rms} · quiet tail ${diagnostic.result.tailPeak}` : `Needs review${diagnostic.result.reason ? ` · ${diagnostic.result.reason}` : ` · peak ${diagnostic.result.peak} · step ${diagnostic.result.maxStep} · tail ${diagnostic.result.tailPeak}`}`}</div>}
+                        </div>
+                    </div>
+                </details>
                 <button type="button" onClick={() => update(ADVENTURE_AUDIO_PREFS_DEFAULTS)} className="mt-3 min-h-11 w-full rounded-xl border border-indigo-300 px-3 py-2 text-xs font-bold text-indigo-800 transition-colors hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700">{translate('adventure.audio_reset', 'Reset sound settings')}</button>
             </div>
             </div>}

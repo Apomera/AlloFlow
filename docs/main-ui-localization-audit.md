@@ -6,21 +6,21 @@ Audited on 2026-08-20 with Playwright by comparing the English and Spanish (Lati
 
 | Surface | Main-shell keys | Missing pack entries | Packs affected |
 | --- | ---: | ---: | ---: |
-| Reading Library | 373 | 7,699 | 24 |
-| AI setup | 123 | 2,105 | 24 |
-| Tool finder | 25 | 526 | 24 |
-| Documents / export menu | 29 | 467 | 24 |
-| Quick Start | 6 | 73 | 24 |
-| Student tools | 5 | 98 | 24 |
-| Canvas local storage | 3 | 72 | 24 |
-| Header voice controls | 2 | 11 | 9 |
-| AlloBot landmark / movement help | 2 | 48 | 24 |
-| Header recall hint | 1 | 24 | 24 |
-| Pane-resize accessibility text | 1 | 24 | 24 |
-| Error reporter badge | 1 | 24 | 24 |
-| **Total** | **571** | **11,171** | **24 packs with gaps** |
+| Reading Library | 373 | 4,535 | 14 |
+| AI setup | 123 | 1,231 | 14 |
+| Tool finder | 25 | 306 | 14 |
+| Documents / export menu | 29 | 274 | 14 |
+| Quick Start | 6 | 44 | 14 |
+| Student tools | 5 | 56 | 14 |
+| Canvas local storage | 3 | 42 | 14 |
+| Header voice controls | 2 | 9 | 7 |
+| AlloBot landmark / movement help | 2 | 28 | 14 |
+| Header recall hint | 1 | 14 | 14 |
+| Pane-resize accessibility text | 1 | 14 | 14 |
+| Error reporter badge | 1 | 14 | 14 |
+| **Total** | **571** | **6,567** | **14 packs with gaps** |
 
-Counts represent missing key/pack combinations, not unique English phrases. Exact translations already present elsewhere in the same pack filled 2,779 entries, and compatible regional-pack reuse plus reviewed text filled another 7,846. Thirty-nine packs now cover all 571 audited keys: Acholi, Amharic, Arabic, Bengali, Burmese, both Chinese variants, Hakha Chin, Dari, Dutch, Esperanto, Farsi, French, French Canadian, German, Greek, Gujarati, Haitian Creole, Hebrew, Hindi, Hmong, Indonesian, Italian, Japanese, Korean, Polish, all three Portuguese variants, Romanian, Russian, Castilian Spanish, Latin American Spanish, Somali, Swahili, Tagalog, Turkish, Ukrainian, and Vietnamese. Twenty-four packs still have at least one Reading Library gap and need broader catalog work.
+Counts represent missing key/pack combinations, not unique English phrases. Exact translations already present elsewhere in the same pack filled 2,789 entries, and compatible regional-pack reuse plus reviewed text filled another 12,440. Forty-nine packs now cover all 571 audited keys: Acholi, Amharic, Arabic, Bengali, Burmese, both Chinese variants, Hakha Chin, Dari, Dutch, Esperanto, Farsi, French, French Canadian, German, Greek, Gujarati, Haitian Creole, Hebrew, Hindi, Hmong, Indonesian, Italian, Japanese, Kannada, Korean, Malayalam, Marathi, Nepali, Pashto, Polish, all three Portuguese variants, Punjabi, Romanian, Russian, Castilian Spanish, Latin American Spanish, Somali, Swahili, Tagalog, Tamil, Telugu, Thai, Turkish, Ukrainian, Urdu, and Vietnamese. Fourteen packs still have at least one Reading Library gap and need broader catalog work.
 
 ## Source fixes made
 

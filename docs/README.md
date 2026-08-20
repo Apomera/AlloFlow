@@ -9,6 +9,7 @@ This directory contains both maintained guidance and dated review artifacts. Use
 - [Teacher-guide source](teacher-guide/guide.json)
 - [Searchable teacher guide](../guide/index.html)
 - [Architecture](../architecture.md)
+- [Instructional text and standards contract](instructional-text-and-standards-contract.md)
 - [Feature inventory](../FEATURE_INVENTORY.md)
 - [Contributing guide](../CONTRIBUTING.md)
 - [Deployment guide](../DEPLOY_YOUR_OWN.md)

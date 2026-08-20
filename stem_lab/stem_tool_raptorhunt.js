@@ -60,6 +60,8 @@
   var st = document.createElement('style');
   st.id = 'raptorhunt-experience-css';
   st.textContent = [
+    '.rh-flight-heading{position:absolute;z-index:13;top:122px;left:10px;display:inline-flex;align-items:center;gap:5px;min-height:22px;max-width:46%;padding:4px 7px;border:1px solid rgba(125,211,252,.58);border-radius:7px;background:rgba(2,6,23,.76);color:#cffafe;font:800 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.04em;box-shadow:0 4px 12px rgba(0,0,0,.2);pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.rh-flight-heading::before{content:"HDG";color:#67e8f9;font:900 8px/1 ui-sans-serif,system-ui;letter-spacing:.08em;}.rh-flight-heading[data-heading-state="left"],.rh-flight-heading[data-heading-state="right"]{border-color:rgba(251,191,36,.72);color:#fef3c7;}.rh-flight-heading[data-heading-state="aligned"]{border-color:rgba(74,222,128,.72);color:#dcfce7;}.rh-flight-heading[data-heading-state="none"]{border-color:rgba(148,163,184,.52);color:#cbd5e1;}.rh-flight-heading[data-heading-state="left"]::before,.rh-flight-heading[data-heading-state="right"]::before{color:#fbbf24;}.rh-flight-heading[data-heading-state="aligned"]::before{color:#4ade80;} ',
+    '@media(max-width:760px){.rh-flight-heading{top:122px;max-width:calc(50% - 12px);}.rh-flight-heading::before{content:"HDG";}}@media(max-width:430px){.rh-flight-heading{top:126px;max-width:calc(50% - 10px);font-size:8px;letter-spacing:0;}.rh-flight-heading::before{font-size:7px;}}',
     '[data-raptorhunt-root="true"]{--rh-ink:#f8fafc;--rh-muted:#cbd5e1;--rh-amber:#fbbf24;--rh-cyan:#67e8f9;position:relative;color:var(--rh-ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}',
     '[data-raptorhunt-root="true"] button,[data-raptorhunt-root="true"] input,[data-raptorhunt-root="true"] select{font:inherit;}',
     '[data-raptorhunt-root="true"] button:focus-visible,[data-raptorhunt-root="true"] input:focus-visible,[data-raptorhunt-root="true"] select:focus-visible,[data-raptorhunt-root="true"] summary:focus-visible{outline:3px solid var(--rh-cyan)!important;outline-offset:3px!important;box-shadow:0 0 0 5px rgba(8,47,73,.72);}',
@@ -101,6 +103,9 @@
   var st = document.createElement('style');
   st.id = 'raptorhunt-simulator-css';
   st.textContent = [
+    '@media(prefers-reduced-motion:reduce){.rh-flight-attitude-horizon{transition:none;}}',
+    '.rh-flight-attitude{position:absolute;z-index:13;top:150px;left:10px;display:inline-flex;align-items:center;gap:6px;min-height:24px;max-width:46%;padding:4px 7px;border:1px solid rgba(125,211,252,.48);border-radius:7px;background:rgba(2,6,23,.76);color:#cbd5e1;font:800 8px/1 ui-monospace,Menlo,monospace;letter-spacing:.03em;box-shadow:0 4px 12px rgba(0,0,0,.2);pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.rh-flight-attitude::before{content:"ATT";color:#67e8f9;font:900 8px/1 ui-sans-serif,system-ui;letter-spacing:.08em;}.rh-flight-attitude-track{position:relative;flex:0 0 45px;width:45px;height:15px;overflow:hidden;border:1px solid rgba(148,163,184,.62);border-radius:4px;background:linear-gradient(180deg,rgba(8,47,73,.72) 0 49%,rgba(120,53,15,.38) 50% 100%);}.rh-flight-attitude-track::before{content:"";position:absolute;left:4px;right:4px;top:50%;border-top:1px solid rgba(248,250,252,.82);box-shadow:0 0 3px rgba(0,0,0,.8);}.rh-flight-attitude-horizon{position:absolute;left:5px;right:5px;top:50%;height:2px;border-radius:99px;background:#fef3c7;box-shadow:0 0 5px rgba(251,191,36,.75);transform:translateY(0) rotate(0deg);transform-origin:center;transition:transform .16s linear,background-color .16s linear;}.rh-flight-attitude-value{min-width:78px;color:#e2e8f0;font:800 8px/1 ui-monospace,Menlo,monospace;text-align:left;white-space:nowrap;}.rh-flight-attitude[data-attitude-state="climb"]{border-color:rgba(74,222,128,.72);color:#dcfce7;}.rh-flight-attitude[data-attitude-state="dive"]{border-color:rgba(248,113,113,.78);color:#fee2e2;}.rh-flight-attitude[data-attitude-state="bank"]{border-color:rgba(251,191,36,.72);color:#fef3c7;}.rh-flight-attitude[data-attitude-state="climb"] .rh-flight-attitude-horizon{background:#4ade80;}.rh-flight-attitude[data-attitude-state="dive"] .rh-flight-attitude-horizon{background:#f87171;}.rh-flight-attitude[data-attitude-state="bank"] .rh-flight-attitude-horizon{background:#fbbf24;}',
+    '@media(max-width:760px){.rh-flight-attitude{top:150px;max-width:calc(50% - 12px);}.rh-flight-attitude-value{min-width:68px;}}@media(max-width:430px){.rh-flight-attitude{top:154px;max-width:calc(50% - 10px);font-size:7px;letter-spacing:0;}.rh-flight-attitude::before{font-size:7px;}.rh-flight-attitude-track{flex-basis:38px;width:38px;height:14px;}.rh-flight-attitude-value{min-width:60px;font-size:7px;}}',
     '[data-raptor-sim-shell="true"]{overflow:hidden;}',
     '[data-raptor-flight-stage="true"]{position:relative;isolation:isolate;height:clamp(460px,62vh,760px);min-height:460px;background:linear-gradient(180deg,#0c4a6e,#0f172a);}',
     '[data-raptor-flight-stage="true"] canvas{touch-action:none;}',
@@ -132,7 +137,9 @@
     '.rh-flight-species-profile-label{display:block;color:#a5f3fc;font:800 9px/1.1 ui-sans-serif,system-ui;letter-spacing:.08em;text-transform:uppercase;}',
     '.rh-flight-species-profile-value{display:block;margin-top:3px;color:#fff;font:900 12px/1.15 ui-monospace,Menlo,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
     '.rh-flight-telemetry-strip{position:absolute;z-index:12;top:10px;left:50%;transform:translateX(-50%);display:flex;max-width:calc(100% - 20px);overflow:hidden;border:1px solid rgba(103,232,249,.72);border-radius:11px;background:rgba(2,6,23,.86);box-shadow:0 8px 24px rgba(0,0,0,.28);backdrop-filter:blur(6px);pointer-events:none;}',
-    '.rh-flight-state{position:absolute;z-index:13;top:64px;left:10px;display:inline-flex;align-items:center;gap:6px;min-height:25px;padding:5px 8px;border:1px solid rgba(148,163,184,.62);border-radius:999px;background:rgba(2,6,23,.84);color:#e2e8f0;font:900 9px/1 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase;box-shadow:0 5px 14px rgba(0,0,0,.24);pointer-events:none;}.rh-flight-state::before{content:"";width:6px;height:6px;border-radius:50%;background:#94a3b8;box-shadow:0 0 8px currentColor;}.rh-flight-state[data-flight-state="glide"]{border-color:rgba(103,232,249,.68);color:#cffafe;}.rh-flight-state[data-flight-state="glide"]::before{background:#67e8f9;}.rh-flight-state[data-flight-state="climb"]{border-color:rgba(74,222,128,.72);color:#dcfce7;}.rh-flight-state[data-flight-state="climb"]::before{background:#4ade80;}.rh-flight-state[data-flight-state="dive"],.rh-flight-state[data-flight-state="descent"]{border-color:rgba(251,191,36,.82);color:#fef3c7;}.rh-flight-state[data-flight-state="dive"]::before,.rh-flight-state[data-flight-state="descent"]::before{background:#fbbf24;}.rh-flight-state[data-flight-state="pull-up"]{border-color:rgba(244,114,182,.78);color:#fce7f3;}.rh-flight-state[data-flight-state="pull-up"]::before{background:#f472b6;}.rh-flight-state[data-flight-state="landed"],.rh-flight-state[data-flight-state="stunned"]{border-color:rgba(251,146,60,.78);color:#ffedd5;}.rh-flight-state[data-flight-state="landed"]::before,.rh-flight-state[data-flight-state="stunned"]::before{background:#fb923c;}.rh-flight-state[data-flight-state="paused"]{border-color:rgba(148,163,184,.78);color:#e2e8f0;}.rh-flight-state[data-flight-state="paused"]::before{background:#cbd5e1;}',
+    '.rh-flight-state{position:absolute;z-index:13;top:64px;left:10px;display:inline-flex;align-items:center;gap:6px;min-height:25px;padding:5px 8px;border:1px solid rgba(148,163,184,.62);border-radius:999px;background:rgba(2,6,23,.84);color:#e2e8f0;font:900 9px/1 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase;box-shadow:0 5px 14px rgba(0,0,0,.24);pointer-events:none;}.rh-flight-state::before{content:"";width:6px;height:6px;border-radius:50%;background:#94a3b8;box-shadow:0 0 8px currentColor;}.rh-flight-state[data-flight-state="glide"]{border-color:rgba(103,232,249,.68);color:#cffafe;}.rh-flight-state[data-flight-state="glide"]::before{background:#67e8f9;}.rh-flight-state[data-flight-state="climb"],.rh-flight-state[data-flight-state="thermal"]{border-color:rgba(74,222,128,.72);color:#dcfce7;}.rh-flight-state[data-flight-state="climb"]::before,.rh-flight-state[data-flight-state="thermal"]::before{background:#4ade80;}.rh-flight-state[data-flight-state="thermal"]::after{content:" · LIFT";font-size:8px;letter-spacing:.06em;color:#86efac;}.rh-flight-state[data-flight-state="dive"],.rh-flight-state[data-flight-state="descent"]{border-color:rgba(251,191,36,.82);color:#fef3c7;}.rh-flight-state[data-flight-state="dive"]::before,.rh-flight-state[data-flight-state="descent"]::before{background:#fbbf24;}.rh-flight-state[data-flight-state="pull-up"]{border-color:rgba(244,114,182,.78);color:#fce7f3;}.rh-flight-state[data-flight-state="pull-up"]::before{background:#f472b6;}.rh-flight-state[data-flight-state="landed"],.rh-flight-state[data-flight-state="stunned"]{border-color:rgba(251,146,60,.78);color:#ffedd5;}.rh-flight-state[data-flight-state="landed"]::before,.rh-flight-state[data-flight-state="stunned"]::before{background:#fb923c;}.rh-flight-state[data-flight-state="paused"]{border-color:rgba(148,163,184,.78);color:#e2e8f0;}.rh-flight-state[data-flight-state="paused"]::before{background:#cbd5e1;}',
+    '.rh-flight-wind{position:absolute;z-index:13;top:94px;left:10px;display:inline-flex;align-items:center;gap:5px;min-height:22px;padding:4px 7px;border:1px solid rgba(103,232,249,.48);border-radius:7px;background:rgba(2,6,23,.72);color:#bae6fd;font:800 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.04em;box-shadow:0 4px 12px rgba(0,0,0,.2);pointer-events:none;}.rh-flight-wind::before{content:"↗";color:#67e8f9;font-size:11px;}.rh-flight-wind[data-wind-state="thermal"]{border-color:rgba(74,222,128,.72);color:#dcfce7;}.rh-flight-wind[data-wind-state="thermal"]::before{content:"↑";color:#4ade80;}',
+    '.rh-flight-altitude-gauge{position:absolute;z-index:13;top:50%;right:10px;display:flex;flex-direction:column;align-items:center;gap:4px;transform:translateY(-50%);pointer-events:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.8));}.rh-flight-altitude-label{color:#bae6fd;font:900 8px/1 ui-sans-serif,system-ui;letter-spacing:.12em;}.rh-flight-altitude-track{position:relative;width:8px;height:112px;border:1px solid rgba(148,163,184,.72);border-radius:999px;background:rgba(2,6,23,.78);overflow:visible;}.rh-flight-altitude-track::before,.rh-flight-altitude-track::after{content:"";position:absolute;left:12px;width:5px;border-top:1px solid rgba(148,163,184,.62);}.rh-flight-altitude-track::before{top:25%;}.rh-flight-altitude-track::after{top:50%;}.rh-flight-altitude-fill{position:absolute;right:0;bottom:0;left:0;height:0;border-radius:inherit;background:linear-gradient(0deg,#f97316,#fbbf24 48%,#67e8f9);transition:height .18s linear,background .18s linear;}.rh-flight-altitude-marker{position:absolute;left:50%;bottom:0;width:16px;height:3px;transform:translate(-50%,50%);border-radius:99px;background:#fff7ed;box-shadow:0 0 8px rgba(251,191,36,.85);transition:bottom .18s linear,background .18s linear;}.rh-flight-altitude-value{min-width:36px;color:#f8fafc;font:800 9px/1 ui-monospace,Menlo,monospace;text-align:center;white-space:nowrap;}.rh-flight-altitude-gauge[data-altitude-state="low"] .rh-flight-altitude-track{border-color:rgba(248,113,113,.92);}.rh-flight-altitude-gauge[data-altitude-state="low"] .rh-flight-altitude-fill{background:#f87171;}.rh-flight-altitude-gauge[data-altitude-state="low"] .rh-flight-altitude-marker{background:#fecaca;box-shadow:0 0 10px rgba(248,113,113,.9);}.rh-flight-altitude-gauge[data-altitude-state="high"] .rh-flight-altitude-track{border-color:rgba(103,232,249,.82);}',
     '.rh-flight-metric{min-width:84px;padding:7px 10px;text-align:center;border-right:1px solid rgba(100,116,139,.55);}',
     '.rh-flight-metric:last-child{border-right:0;}.rh-flight-metric-label{display:block;color:#a5f3fc;font:800 9px/1.1 ui-sans-serif,system-ui;text-transform:uppercase;letter-spacing:.08em;}.rh-flight-metric-value{display:block;margin-top:3px;color:#fff;font:800 13px/1.1 ui-monospace,Menlo,monospace;white-space:nowrap;}.rh-flight-energy-bars{display:grid;gap:2px;margin-top:4px;}.rh-flight-energy-track{display:block;height:3px;border-radius:999px;background:rgba(15,23,42,.92);overflow:hidden;}.rh-flight-energy-fill{display:block;width:0;height:100%;border-radius:inherit;transition:width .16s linear,background-color .16s linear;}.rh-flight-energy-fill-calories{background:#fbbf24;}.rh-flight-energy-fill-stamina{background:#67e8f9;}.rh-flight-metric[data-energy-state="low"] .rh-flight-energy-fill-calories{background:#fb923c;}.rh-flight-metric[data-energy-state="critical"] .rh-flight-energy-fill-calories{background:#f87171;}.rh-flight-metric[data-energy-state="fatigued"] .rh-flight-energy-fill-stamina{background:#facc15;}',
     '.rh-flight-metric[data-raptor-weather="true"]{transition:background-color .25s,border-color .25s;}.rh-flight-metric[data-raptor-weather="true"][data-day-period="night"]{background:rgba(49,46,129,.28);}.rh-flight-metric[data-raptor-weather="true"][data-day-period="dawn"],.rh-flight-metric[data-raptor-weather="true"][data-day-period="dusk"]{background:rgba(120,53,15,.24);}.rh-flight-metric[data-raptor-weather="true"][data-cloud-band="overcast"]{border-bottom:2px solid rgba(148,163,184,.8);}.rh-flight-metric[data-raptor-weather="true"][data-precipitation="rain"]{border-bottom:2px solid rgba(56,189,248,.85);}.rh-flight-metric[data-raptor-weather="true"][data-precipitation="snow"]{border-bottom:2px solid rgba(226,232,240,.95);}.rh-flight-metric[data-raptor-mission-metric="true"][data-mission-state="success"]{background:rgba(6,78,59,.45);}.rh-flight-metric[data-raptor-mission-metric="true"][data-mission-state="failed"]{background:rgba(127,29,29,.42);}',
@@ -140,6 +147,7 @@
     '.rh-flight-performance{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:1 1 100%;padding:7px 8px;border:1px solid rgba(100,116,139,.65);border-radius:8px;background:rgba(15,23,42,.7);color:#cbd5e1;font:800 10px/1.2 ui-sans-serif,system-ui;}.rh-flight-performance[data-performance-state="good"]{border-color:rgba(52,211,153,.75);color:#bbf7d0;}.rh-flight-performance[data-performance-state="warn"]{border-color:rgba(251,191,36,.85);color:#fef3c7;}.rh-flight-performance-label{color:#a5f3fc;text-transform:uppercase;letter-spacing:.08em;}.rh-flight-performance-value{font-family:ui-monospace,Menlo,monospace;white-space:nowrap;}',
     '.rh-flight-result{position:absolute;inset:0;z-index:25;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(2,6,23,.66);backdrop-filter:blur(4px);}.rh-flight-result-card{max-width:460px;border:2px solid #fbbf24;border-radius:16px;background:rgba(15,23,42,.98);padding:22px;color:#f8fafc;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.5);}.rh-flight-debrief{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:0 0 16px;text-align:left;}.rh-flight-debrief-stat{min-width:0;padding:7px 8px;border:1px solid rgba(100,116,139,.6);border-radius:8px;background:rgba(2,6,23,.48);}.rh-flight-debrief-label{display:block;color:#a5f3fc;font:800 9px/1.1 ui-sans-serif,system-ui;text-transform:uppercase;letter-spacing:.07em;}.rh-flight-debrief-value{display:block;margin-top:3px;color:#fff;font:900 13px/1.1 ui-monospace,Menlo,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
     '.rh-flight-coach{position:absolute;left:10px;bottom:12px;z-index:18;width:min(330px,calc(100% - 20px));border:2px solid #67e8f9;border-radius:12px;background:rgba(2,6,23,.95);padding:12px;color:#f8fafc;box-shadow:0 14px 40px rgba(0,0,0,.4);}.rh-flight-coach-head{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#a5f3fc;font:800 11px/1.2 ui-sans-serif,system-ui;text-transform:uppercase;letter-spacing:.06em;}.rh-flight-coach-title{margin-top:5px;color:#fff;font:800 15px/1.25 ui-sans-serif,system-ui;}.rh-flight-coach-copy{margin-top:4px;color:#dbeafe;font:600 12px/1.4 ui-sans-serif,system-ui;}.rh-flight-coach-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:9px;}.rh-flight-target-cue{position:absolute;left:50%;top:58px;z-index:14;transform:translateX(-50%);max-width:calc(100% - 24px);border:1px solid #fca5a5;border-radius:9px;background:rgba(15,23,42,.9);padding:6px 10px;color:#fee2e2;font:800 11px/1.25 ui-sans-serif,system-ui;text-align:center;pointer-events:none;}.rh-flight-target-cue[data-target-state="search"]{border-color:#67e8f9;color:#cffafe;background:rgba(8,47,73,.94);}.rh-flight-target-cue[data-target-state="recovering"]{border-color:#fbbf24;color:#fef3c7;background:rgba(120,53,15,.94);}.rh-flight-target-cue[data-target-state="off"]{border-color:#94a3b8;color:#e2e8f0;background:rgba(15,23,42,.92);}.rh-flight-target-cue[data-target-state="ready"]{border-color:#86efac;color:#dcfce7;background:rgba(20,83,45,.94);}.rh-flight-target-cue[data-target-state="close"]{border-color:#fde047;color:#fef9c3;}.rh-flight-target-cue[data-target-state="stoop"]{border-color:#67e8f9;color:#cffafe;background:rgba(8,51,68,.94);}.rh-flight-lock-meters{position:absolute;left:50%;top:106px;z-index:14;transform:translateX(-50%);display:flex;flex-direction:column;gap:3px;width:min(190px,calc(100% - 28px));pointer-events:none;}.rh-lock-meter{display:flex;align-items:center;gap:6px;}.rh-lock-meter-label{flex:0 0 40px;color:#e2e8f0;font:800 9px/1 ui-sans-serif,system-ui;letter-spacing:.08em;text-shadow:0 1px 3px rgba(0,0,0,.9);}.rh-lock-meter-track{position:relative;flex:1 1 auto;height:6px;border-radius:999px;background:rgba(15,23,42,.85);border:1px solid rgba(148,163,184,.55);overflow:hidden;}.rh-lock-meter-fill{display:block;height:100%;border-radius:999px;background:#fbbf24;transition:width .12s linear;}.rh-lock-meter-fill[data-full="true"]{background:#4ade80;}.rh-flight-reticle{position:absolute;left:50%;top:50%;z-index:13;width:74px;height:74px;transform:translate(-50%,-50%);pointer-events:none;opacity:.78;transition:opacity .15s linear,transform .15s ease-out;filter:drop-shadow(0 0 1.5px rgba(0,0,0,.95)) drop-shadow(0 0 3px rgba(0,0,0,.5));}.rh-flight-reticle[data-target-state="ready"]{opacity:1;transform:translate(-50%,-50%) scale(.86);}.rh-flight-reticle[data-target-state="off"]{opacity:.28;}.rh-reticle-ring{position:absolute;inset:12px;border:2px solid rgba(248,250,252,.92);border-radius:50%;box-shadow:0 0 6px rgba(0,0,0,.65);}.rh-reticle-dot{position:absolute;left:50%;top:50%;width:4px;height:4px;margin:-2px 0 0 -2px;border-radius:50%;background:rgba(226,232,240,.95);box-shadow:0 0 4px rgba(0,0,0,.8);}.rh-reticle-tick{position:absolute;background:rgba(248,250,252,.92);box-shadow:0 0 4px rgba(0,0,0,.75);}.rh-reticle-tick-n,.rh-reticle-tick-s{left:50%;width:2px;height:9px;margin-left:-1px;}.rh-reticle-tick-n{top:0;}.rh-reticle-tick-s{bottom:0;}.rh-reticle-tick-e,.rh-reticle-tick-w{top:50%;height:2px;width:9px;margin-top:-1px;}.rh-reticle-tick-w{left:0;}.rh-reticle-tick-e{right:0;}.rh-flight-reticle[data-target-state="stoop"] .rh-reticle-ring{border-color:#67e8f9;box-shadow:0 0 10px rgba(103,232,249,.55);}.rh-flight-reticle[data-target-state="stoop"] .rh-reticle-tick{background:#67e8f9;}.rh-flight-reticle[data-target-state="stoop"] .rh-reticle-dot{background:#67e8f9;}.rh-flight-reticle[data-target-state="close"] .rh-reticle-ring,.rh-flight-reticle[data-target-state="align"] .rh-reticle-ring{border-color:#fbbf24;}.rh-flight-reticle[data-target-state="close"] .rh-reticle-tick,.rh-flight-reticle[data-target-state="align"] .rh-reticle-tick{background:#fbbf24;}.rh-flight-reticle[data-target-state="ready"] .rh-reticle-ring{border-color:#4ade80;box-shadow:0 0 12px rgba(74,222,128,.65);}.rh-flight-reticle[data-target-state="ready"] .rh-reticle-tick{background:#4ade80;}.rh-flight-reticle[data-target-state="ready"] .rh-reticle-dot{background:#4ade80;}.rh-flight-acuity{position:absolute;inset:0;z-index:12;pointer-events:none;}.rh-acuity-vignette{position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 38%,rgba(0,0,0,.34) 72%,rgba(0,0,0,.62) 100%);}.rh-acuity-bracket{position:absolute;width:26px;height:26px;border:2px solid rgba(125,211,252,.85);}.rh-acuity-bracket-tl{top:14px;left:14px;border-right:0;border-bottom:0;}.rh-acuity-bracket-tr{top:14px;right:14px;border-left:0;border-bottom:0;}.rh-acuity-bracket-bl{bottom:14px;left:14px;border-right:0;border-top:0;}.rh-acuity-bracket-br{bottom:14px;right:14px;border-left:0;border-top:0;}.rh-acuity-badge{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);color:#e0f2fe;background:rgba(8,47,73,.82);border:1px solid rgba(125,211,252,.7);border-radius:999px;padding:3px 10px;font:800 10px/1.2 ui-sans-serif,system-ui;letter-spacing:.08em;}',
+    '.rh-flight-reticle[data-offscreen="true"]::after{content:"";position:absolute;left:50%;top:50%;width:0;height:0;transform:translate(-50%,-50%);border:7px solid transparent;filter:drop-shadow(0 0 2px rgba(0,0,0,.9));}.rh-flight-reticle[data-offscreen="true"][data-target-edge*="left"]::after{left:-7px;border-right-color:currentColor;}.rh-flight-reticle[data-offscreen="true"][data-target-edge*="right"]::after{left:calc(100% + 7px);border-left-color:currentColor;}.rh-flight-reticle[data-offscreen="true"][data-target-edge*="top"]::after{top:-7px;border-bottom-color:currentColor;}.rh-flight-reticle[data-offscreen="true"][data-target-edge*="bottom"]::after{top:calc(100% + 7px);border-top-color:currentColor;}.rh-flight-reticle[data-offscreen="true"]{color:#f87171;}.rh-flight-reticle[data-offscreen="true"][data-lock-state="close"]{color:#fbbf24;}.rh-flight-reticle[data-offscreen="true"][data-lock-state="ready"]{color:#4ade80;}',
     '.rh-flight-marker{position:absolute;left:50%;top:50%;z-index:7;width:88px;height:32px;transform:translate(-50%,-50%);pointer-events:none;}',
     '.rh-flight-marker::before{content:"";position:absolute;left:0;right:0;top:15px;border-top:2px solid rgba(254,240,138,.9);box-shadow:0 1px 3px rgba(0,0,0,.8);}',
     '.rh-flight-marker::after{content:"";position:absolute;left:43px;top:5px;height:20px;border-left:2px solid rgba(254,240,138,.95);}',
@@ -149,9 +157,9 @@
     '[data-raptor-sim-shell="true"]:fullscreen .rh-flight-controls,[data-raptor-sim-shell="true"]:-webkit-full-screen .rh-flight-controls,[data-raptor-sim-shell="true"][data-allo-fullscreen-active="true"] .rh-flight-controls{flex:0 0 auto;}',
     '[data-raptor-flight-stage="true"]:fullscreen,[data-raptor-flight-stage="true"]:-webkit-full-screen,[data-raptor-flight-stage="true"][data-allo-fullscreen-active="true"]{width:100vw!important;height:100vh!important;min-height:0!important;max-height:none!important;background:#020617;}',
     '[data-raptor-flight-stage="true"]:fullscreen canvas,[data-raptor-flight-stage="true"]:-webkit-full-screen canvas,[data-raptor-flight-stage="true"][data-allo-fullscreen-active="true"] canvas{width:100%!important;height:100%!important;}',
-    '@media(max-width:760px){[data-raptor-flight-stage="true"]{height:58vh;min-height:390px;}.rh-flight-controls{display:grid;grid-template-columns:1fr;align-items:stretch;gap:8px;max-height:42vh;overflow-y:auto;overscroll-behavior:contain;}.rh-flight-controls-group{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));width:100%;gap:7px;}.rh-flight-controls-run{grid-template-columns:repeat(3,minmax(0,1fr));}.rh-flight-control-label{grid-column:1/-1;}.rh-flight-btn{width:100%;min-width:0;padding-left:6px;padding-right:6px;}.rh-flight-mission-hud{top:104px;left:auto;right:8px;bottom:auto;max-width:min(280px,calc(100% - 16px));}.rh-flight-coach{left:8px;right:8px;bottom:8px;width:auto;}}',
+    '@media(max-width:760px){[data-raptor-flight-stage="true"]{height:58vh;min-height:390px;}.rh-flight-controls{display:grid;grid-template-columns:1fr;align-items:stretch;gap:8px;max-height:42vh;overflow-y:auto;overscroll-behavior:contain;}.rh-flight-controls-group{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));width:100%;gap:7px;}.rh-flight-controls-run{grid-template-columns:repeat(3,minmax(0,1fr));}.rh-flight-control-label{grid-column:1/-1;}.rh-flight-btn{width:100%;min-width:0;padding-left:6px;padding-right:6px;}.rh-flight-mission-hud{top:104px;left:auto;right:8px;bottom:auto;max-width:calc(50% - 12px);}.rh-flight-wind{max-width:calc(47% - 8px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.rh-flight-altitude-gauge{right:7px;top:54%;}.rh-flight-altitude-track{height:96px;}.rh-flight-coach{left:8px;right:8px;bottom:8px;width:auto;}}',
     '@media(max-width:760px){.rh-flight-telemetry-strip{top:8px;}.rh-flight-metric{min-width:68px;padding:6px 7px;}.rh-flight-metric:nth-child(6){display:none;}.rh-flight-settings{width:100%;}.rh-flight-settings>summary{width:100%;}.rh-flight-settings-panel{position:static;width:100%;margin-top:8px;}.rh-active-flight-bar{align-items:flex-start;}}',
-    '@media(prefers-reduced-motion:reduce){.rh-flight-reticle{transition:none;}.rh-flight-reticle[data-target-state="ready"]{transform:translate(-50%,-50%);}}@media(max-width:760px){.rh-flight-species-profile{grid-template-columns:1fr;gap:9px;}.rh-flight-species-profile-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}@media(max-width:430px){[data-raptor-flight-stage="true"]{height:54vh;min-height:350px;}.rh-flight-btn{font-size:11px;padding:8px 4px;}.rh-flight-target-cue{top:54px;font-size:10px;}.rh-flight-lock-meters{top:98px;width:min(160px,calc(100% - 24px));}.rh-flight-mission-hud{top:91px;font-size:10px;}.rh-flight-coach-copy{font-size:11px;}.rh-flight-coach-actions .rh-flight-btn{width:auto;min-width:68px;}.rh-flight-species-profile-grid{gap:5px;}.rh-flight-species-profile-stat{padding:6px;}.rh-flight-debrief{grid-template-columns:repeat(2,minmax(0,1fr));}}',
+    '@media(prefers-reduced-motion:reduce){.rh-flight-reticle{transition:none;}.rh-flight-reticle[data-target-state="ready"]{transform:translate(-50%,-50%);}}@media(max-width:760px){.rh-flight-species-profile{grid-template-columns:1fr;gap:9px;}.rh-flight-species-profile-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}@media(max-width:430px){[data-raptor-flight-stage="true"]{height:54vh;min-height:350px;}.rh-flight-btn{font-size:11px;padding:8px 4px;}.rh-flight-target-cue{top:54px;font-size:10px;}.rh-flight-lock-meters{top:98px;width:min(160px,calc(100% - 24px));}.rh-flight-mission-hud{top:91px;font-size:10px;}.rh-flight-wind{font-size:8px;letter-spacing:0;}.rh-flight-altitude-gauge{right:5px;}.rh-flight-altitude-label{font-size:7px;}.rh-flight-altitude-track{height:84px;width:7px;}.rh-flight-altitude-value{font-size:8px;min-width:30px;}.rh-flight-coach-copy{font-size:11px;}.rh-flight-coach-actions .rh-flight-btn{width:auto;min-width:68px;}.rh-flight-species-profile-grid{gap:5px;}.rh-flight-species-profile-stat{padding:6px;}.rh-flight-debrief{grid-template-columns:repeat(2,minmax(0,1fr));}}',
     '@media(max-width:430px){.rh-flight-metric{min-width:61px}.rh-flight-metric:nth-child(4),.rh-flight-metric:nth-child(6){display:none;}.rh-flight-metric-value{font-size:12px;}}',
     '@media(prefers-reduced-motion:reduce){.rh-flight-btn{transition:none;}.rh-flight-metric[data-raptor-weather="true"]{transition:none;}.rh-flight-energy-fill{transition:none;}.rh-flight-pause{backdrop-filter:none;}}'
   ].join('');
@@ -2699,7 +2707,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         name: 'Peregrine falcon',
         urbanStatus: 'Booming. ~700 NYC pairs (2024). Possibly highest urban density of any raptor.',
         nest: 'Skyscraper ledges + bridge support beams + church steeples + cell towers. Sometimes provided artificial nest boxes (Univ. Pittsburgh, Riverside Cathedral).',
-        diet: 'Pigeons, starlings, sparrows. Urban prey species mirror wild prey base.',
+        diet: 'Pigeons, starlings, sparrows. Urban prey species mirror wild prey base; climate stresses + lead synergize.',
         hazards: 'Window strikes (most common mortality), territorial fights, building demolition.',
         success: 'Urban populations now exceed wild cliff populations in many cities. New York City has more peregrines than any wild area in the world.',
         viewingSite: 'Cathedral of Learning, Pittsburgh; Verrazzano Bridge, NYC; Pacific Center, San Diego.'
@@ -2822,9 +2830,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     ]
   };
 
-  // ───────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────────
   // NEW v0.37: CLIMATE CHANGE IMPACTS ON RAPTORS
-  // ───────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────────
   var CLIMATE_IMPACT = {
     intro: 'Climate change is the largest 21st-century threat to many raptor species. Range shifts, timing decoupling, prey crashes, + extreme weather are accelerating. Below is the current state of knowledge — what we know, what we suspect, + what conservation action might preserve species.',
     rangeShifts: [
@@ -11580,7 +11588,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
         function updateFlightState(nextState) {
           if (!flightStateEl || (nextState === lastFlightState && flightStateEl.dataset.flightState === nextState)) return;
-          var labels = { glide: 'Glide', climb: 'Climb', descent: 'Descent', dive: 'Stoop', 'pull-up': 'Pull-up', landed: 'Landed', stunned: 'Stunned', paused: 'Paused' };
+          var labels = { glide: 'Glide', climb: 'Climb', thermal: 'Thermal', descent: 'Descent', dive: 'Stoop', 'pull-up': 'Pull-up', landed: 'Landed', stunned: 'Stunned', paused: 'Paused' };
           lastFlightState = nextState;
           flightStateEl.dataset.flightState = nextState;
           flightStateEl.textContent = labels[nextState] || nextState;
@@ -12376,6 +12384,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         flightStateEl.setAttribute('aria-atomic', 'true');
         flightStateEl.textContent = 'Glide';
         hudParent.appendChild(flightStateEl);
+        var flightWindEl = document.createElement('div');
+        flightWindEl.className = 'rh-flight-wind';
+        flightWindEl.dataset.raptorWind = 'true';
+        flightWindEl.dataset.windState = 'air';
+        flightWindEl.setAttribute('aria-hidden', 'true');
+        flightWindEl.textContent = 'WIND —';
+        hudParent.appendChild(flightWindEl);
+        var flightHeadingEl = document.createElement('div');
+        flightHeadingEl.className = 'rh-flight-heading';
+        flightHeadingEl.dataset.raptorHeading = 'true';
+        flightHeadingEl.dataset.headingState = 'none';
+        flightHeadingEl.setAttribute('aria-hidden', 'true');
+        flightHeadingEl.textContent = '000° · TGT —';
+        hudParent.appendChild(flightHeadingEl);
+        var flightAttitudeEl = document.createElement('div');
+        flightAttitudeEl.className = 'rh-flight-attitude';
+        flightAttitudeEl.dataset.raptorAttitude = 'true';
+        flightAttitudeEl.dataset.attitudeState = 'level';
+        flightAttitudeEl.setAttribute('aria-hidden', 'true');
+        var flightAttitudeTrack = document.createElement('span');
+        flightAttitudeTrack.className = 'rh-flight-attitude-track';
+        var flightAttitudeHorizon = document.createElement('span');
+        flightAttitudeHorizon.className = 'rh-flight-attitude-horizon';
+        flightAttitudeTrack.appendChild(flightAttitudeHorizon);
+        var flightAttitudeValue = document.createElement('span');
+        flightAttitudeValue.className = 'rh-flight-attitude-value';
+        flightAttitudeValue.textContent = 'P +00° · B +00°';
+        flightAttitudeEl.appendChild(flightAttitudeTrack);
+        flightAttitudeEl.appendChild(flightAttitudeValue);
+        hudParent.appendChild(flightAttitudeEl);
+        var flightAltitudeGauge = document.createElement('div');
+        flightAltitudeGauge.className = 'rh-flight-altitude-gauge';
+        flightAltitudeGauge.dataset.raptorAltitude = 'true';
+        flightAltitudeGauge.dataset.altitudeState = 'cruise';
+        flightAltitudeGauge.setAttribute('aria-hidden', 'true');
+        var flightAltitudeLabel = document.createElement('span');
+        flightAltitudeLabel.className = 'rh-flight-altitude-label';
+        flightAltitudeLabel.textContent = 'ALT';
+        var flightAltitudeTrack = document.createElement('span');
+        flightAltitudeTrack.className = 'rh-flight-altitude-track';
+        var flightAltitudeFill = document.createElement('span');
+        flightAltitudeFill.className = 'rh-flight-altitude-fill';
+        var flightAltitudeMarker = document.createElement('span');
+        flightAltitudeMarker.className = 'rh-flight-altitude-marker';
+        flightAltitudeTrack.appendChild(flightAltitudeFill);
+        flightAltitudeTrack.appendChild(flightAltitudeMarker);
+        var flightAltitudeValue = document.createElement('span');
+        flightAltitudeValue.className = 'rh-flight-altitude-value';
+        flightAltitudeValue.textContent = 'â€”';
+        flightAltitudeGauge.appendChild(flightAltitudeLabel);
+        flightAltitudeGauge.appendChild(flightAltitudeTrack);
+        flightAltitudeGauge.appendChild(flightAltitudeValue);
+        hudParent.appendChild(flightAltitudeGauge);
 
         // Visual event messages are not a live region; discrete events already
         // use the tool's dedicated announcement channel.
@@ -12392,6 +12453,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var fpsValue = 0;
         var lastPublishedFps = 0;
         var lastFlightState = 'glide';
+        var lastWindDisplay = '';
         var lastHudPaint = 0;
         function setRaptorCanvasData(key, value) {
           var nextValue = String(value);
@@ -13456,21 +13518,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             setRaptorCanvasData('raptorCameraFloorClearance', cameraFloorClearance.toFixed(2));
             setRaptorCanvasData('raptorAudioOneShotActive', activeFlightOneShots.length);
             setRaptorCanvasData('raptorReducedMotion', _rmFX ? 'true' : 'false');
-            var nextFlightState = raptor.crashed ? 'stunned' : raptor.landed ? 'landed' : raptor.pullingUp ? 'pull-up' : raptor.diving ? 'dive' : keys.e ? 'climb' : keys.q ? 'descent' : 'glide';
+            var nextFlightState = raptor.crashed ? 'stunned' : raptor.landed ? 'landed' : raptor.pullingUp ? 'pull-up' : raptor.diving ? 'dive' : thermalActive ? 'thermal' : keys.e ? 'climb' : keys.q ? 'descent' : 'glide';
             updateFlightState(nextFlightState);
             updateMissionHud();
             var mph = (raptor.speed * 2.237).toFixed(0);
-          var alt = (raptor.y - groundY).toFixed(0);
-          var calPct = Math.max(0, Math.min(100, (raptor.calories / raptor.caloriesMax) * 100));
-          var stamPct = Math.max(0, Math.min(100, (raptor.stamina / raptor.staminaMax) * 100));
-          var telemetryTargetInfo = targetLockOn ? acquireTarget() : null;
-          telemetrySpeed.textContent = mph + ' mph';
-          telemetryAltitude.textContent = alt + ' m';
-          telemetryEnergy.textContent = Math.round(calPct) + '% / ' + Math.round(stamPct) + '%';
-          telemetryCaloriesFill.style.width = Math.round(calPct) + '%';
-          telemetryStaminaFill.style.width = Math.round(stamPct) + '%';
-          telemetryEnergy.parentElement.dataset.energyState = calPct < 20 ? 'critical' : calPct < 40 ? 'low' : stamPct < 20 ? 'fatigued' : 'stable';
-          telemetryEnergy.parentElement.setAttribute('aria-label', 'Energy: calories ' + Math.round(calPct) + ' percent, stamina ' + Math.round(stamPct) + ' percent');
+            var alt = (raptor.y - groundY).toFixed(0);
+            var altitudeAboveGround = Math.max(0, raptor.y - groundY);
+            var altitudeRatio = Math.max(0, Math.min(1, altitudeAboveGround / Math.max(1, missionCeiling)));
+            var altitudePercent = Math.round(altitudeRatio * 100);
+            flightAltitudeFill.style.height = altitudePercent + '%';
+            flightAltitudeMarker.style.bottom = altitudePercent + '%';
+            flightAltitudeValue.textContent = alt + 'm';
+            flightAltitudeGauge.dataset.altitudeState = altitudeAboveGround < 12 ? 'low' : altitudeRatio > 0.82 ? 'high' : 'cruise';
+            var calPct = Math.max(0, Math.min(100, (raptor.calories / raptor.caloriesMax) * 100));
+            var stamPct = Math.max(0, Math.min(100, (raptor.stamina / raptor.staminaMax) * 100));
+            var telemetryTargetInfo = targetLockOn ? acquireTarget() : null;
+            var headingDegrees = ((raptor.yaw * 180 / Math.PI) % 360 + 360) % 360;
+            var headingCompass = headingDegrees < 22.5 || headingDegrees >= 337.5 ? 'N' :
+              headingDegrees < 67.5 ? 'NE' : headingDegrees < 112.5 ? 'E' :
+              headingDegrees < 157.5 ? 'SE' : headingDegrees < 202.5 ? 'S' :
+              headingDegrees < 247.5 ? 'SW' : headingDegrees < 292.5 ? 'W' : 'NW';
+            var targetBearingText = '—';
+            var headingState = 'none';
+            var targetRelativeBearing = null;
+            if (telemetryTargetInfo && telemetryTargetInfo.prey && telemetryTargetInfo.prey.mesh) {
+              var targetDx = telemetryTargetInfo.prey.mesh.position.x - raptor.x;
+              var targetDz = telemetryTargetInfo.prey.mesh.position.z - raptor.z;
+              var targetBearingDegrees = ((Math.atan2(targetDx, -targetDz) * 180 / Math.PI) % 360 + 360) % 360;
+              targetRelativeBearing = ((targetBearingDegrees - headingDegrees + 540) % 360) - 180;
+              var targetRelativeRounded = Math.round(targetRelativeBearing);
+              targetBearingText = (targetRelativeRounded < -1 ? 'L ' : targetRelativeRounded > 1 ? 'R ' : 'A ') + Math.abs(targetRelativeRounded) + '°';
+              headingState = Math.abs(targetRelativeRounded) <= 8 ? 'aligned' : targetRelativeRounded < 0 ? 'left' : 'right';
+            }
+            var headingDisplay = headingCompass + ' ' + Math.round(headingDegrees).toString().padStart(3, '0') + '° · TGT ' + targetBearingText;
+            if (flightHeadingEl.textContent !== headingDisplay || flightHeadingEl.dataset.headingState !== headingState) {
+              flightHeadingEl.textContent = headingDisplay;
+              flightHeadingEl.dataset.headingState = headingState;
+            }
+            var pitchDegrees = Math.max(-89, Math.min(89, Math.round(raptor.pitch * 180 / Math.PI)));
+            var bankDegrees = Math.max(-45, Math.min(45, Math.round((raptor.cameraRoll || 0) * 180 / Math.PI)));
+            var pitchSign = pitchDegrees > 0 ? '+' : '';
+            var bankSign = bankDegrees > 0 ? '+' : '';
+            var attitudeState = Math.abs(pitchDegrees) >= 8 ? (pitchDegrees > 0 ? 'climb' : 'dive') :
+              Math.abs(bankDegrees) >= 8 ? 'bank' : 'level';
+            var attitudeDisplay = 'P ' + pitchSign + pitchDegrees + '° · B ' + bankSign + bankDegrees + '°';
+            var attitudeShift = Math.max(-4, Math.min(4, -pitchDegrees * 0.12));
+            var attitudeRotation = Math.max(-24, Math.min(24, bankDegrees * 0.6));
+            flightAttitudeHorizon.style.transform = 'translateY(' + attitudeShift.toFixed(2) + 'px) rotate(' + attitudeRotation.toFixed(1) + 'deg)';
+            if (flightAttitudeValue.textContent !== attitudeDisplay || flightAttitudeEl.dataset.attitudeState !== attitudeState) {
+              flightAttitudeValue.textContent = attitudeDisplay;
+              flightAttitudeEl.dataset.attitudeState = attitudeState;
+            }
+            telemetrySpeed.textContent = mph + ' mph';
+            telemetryAltitude.textContent = alt + ' m';
+            telemetryEnergy.textContent = Math.round(calPct) + '% / ' + Math.round(stamPct) + '%';
+            telemetryCaloriesFill.style.width = Math.round(calPct) + '%';
+            telemetryStaminaFill.style.width = Math.round(stamPct) + '%';
+            telemetryEnergy.parentElement.dataset.energyState = calPct < 20 ? 'critical' : calPct < 40 ? 'low' : stamPct < 20 ? 'fatigued' : 'stable';
+            telemetryEnergy.parentElement.setAttribute('aria-label', 'Energy: calories ' + Math.round(calPct) + ' percent, stamina ' + Math.round(stamPct) + ' percent');
            telemetryTarget.textContent = telemetryTargetInfo ? telemetryTargetInfo.distance.toFixed(0) + ' m' : 'None';
            telemetryMission.textContent = missionProgressText();
            telemetryMission.parentElement.dataset.missionState = missionOutcome;
@@ -13483,6 +13588,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                             windDirDeg < 67 ? 'NE' : windDirDeg < 112 ? 'E' :
                             windDirDeg < 157 ? 'SE' : windDirDeg < 202 ? 'S' :
                             windDirDeg < 247 ? 'SW' : windDirDeg < 292 ? 'W' : 'NW';
+          var windSummary = 'WIND ' + windCompass + ' ' + weather.windSpeed.toFixed(1) + ' m/s' + (thermalActive ? ' / LIFT' : '');
+          if (windSummary !== lastWindDisplay) {
+            lastWindDisplay = windSummary;
+            flightWindEl.textContent = windSummary;
+            flightWindEl.dataset.windState = thermalActive ? 'thermal' : 'air';
+          }
           var dayPeriod = dayPhase < 0.18 || dayPhase >= 0.78 ? 'night' :
                           dayPhase < 0.30 ? 'dawn' : dayPhase < 0.62 ? 'day' : 'dusk';
           var cloudBand = weather.cloudCover < 0.3 ? 'clear' : weather.cloudCover < 0.7 ? 'mixed' : 'overcast';
@@ -13576,7 +13687,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             strikeFeedbackEl,
             eventLogEl,
             telemetryStrip,
-            flightStateEl
+            flightStateEl,
+            flightWindEl,
+            flightHeadingEl,
+            flightAttitudeEl,
+            flightAltitudeGauge
           ].forEach(function(node) {
             if (node && node.parentElement) node.parentElement.removeChild(node);
           });

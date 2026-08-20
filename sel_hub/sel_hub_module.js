@@ -105,6 +105,7 @@
       emotions: { mode: 'Name it', note: 'Build precise feeling words and notice intensity.' },
       coping: { mode: 'Calm now', note: 'Try one body or grounding strategy, then notice what changed.' },
       mindfulness: { mode: 'Calm now', note: 'A low-writing pause for breathing, attention, or body awareness.' },
+      somaticReset: { mode: 'Body reset', note: 'Choose a body area, then try a short stillness, breathing, or gentle movement practice. Visuals can be previewed, enlarged, made still, or turned off; breath counts and number ratings are optional.', boundary: 'This is not treatment or diagnosis. Keep movement small and pain-free; stop for pain, dizziness, or numbness and tell a trusted adult or health professional.' },
       anxietyToolkit: { mode: 'Make a plan', note: 'Sort worry from action and choose one practical next step.' },
       windowOfTolerance: { mode: 'Understand patterns', note: 'Map arousal signs and supports over time; it is not a diagnosis.' },
       stressBucket: { mode: 'Make a plan', note: 'Look at pressures and supports together, including pressures outside your control.' },
@@ -158,6 +159,11 @@
             time: '2-10 min',
             purpose: 'Pause, breathe, and practice attention without needing to write anything.',
             next: 'Choose one short practice, follow it through, then notice what changed.'
+          },
+          somaticReset: {
+            time: '3-8 min',
+            purpose: 'Use a private body-zone check-in to choose a short, chair-friendly reset.',
+            next: 'Choose a body area, try one stillness, breath, or gentle movement option, then notice what changed.'
           },
           thoughtRecord: {
             time: '8-15 min',
@@ -614,7 +620,7 @@
     // Each pathway filters the tool grid to show only relevant tools.
     var SEL_PATHWAYS = [
       { id: 'morning_check', name: 'Morning Check-In', icon: '\uD83C\uDF05', desc: 'Start the day with a mood check, breathing, and goal setting', tools: ['zones', 'mindfulness', 'goals', 'journal'], casel: 'self-awareness' },
-      { id: 'calm_down', name: 'Calm Down Corner', icon: '\uD83E\uDDD8', desc: 'Regulation strategies for when emotions run high', tools: ['zones', 'coping', 'mindfulness'], casel: 'self-management' },
+      { id: 'calm_down', name: 'Calm Down Corner', icon: '\uD83E\uDDD8', desc: 'Regulation strategies for when emotions run high', tools: ['zones', 'coping', 'mindfulness', 'somaticReset'], casel: 'self-management' },
       { id: 'conflict_unit', name: 'Conflict Resolution Unit', icon: '\u2696\uFE0F', desc: 'Practice resolving disagreements and building repair skills', tools: ['conflict', 'conflicttheater', 'perspective', 'social', 'restorativeCircle'], casel: 'relationship-skills' },
       { id: 'empathy_week', name: 'Empathy & Perspective Week', icon: '\uD83D\uDC53', desc: 'Build empathy through perspective-taking and cultural awareness', tools: ['perspective', 'emotions', 'community', 'cultureExplorer'], casel: 'social-awareness' },
       { id: 'decision_making', name: 'Decision-Making Deep Dive', icon: '\uD83E\uDD14', desc: 'Practice ethical reasoning and responsible choices', tools: ['decisions', 'ethicalReasoning', 'safety'], casel: 'responsible-decision-making' },
@@ -628,6 +634,7 @@
       emotions: { time: '5-8 min', format: 'Solo or pair', cue: 'Good vocabulary warm-up.' },
       coping: { time: '3-10 min', format: 'Solo or group', cue: 'Best for a regulation reset.' },
       mindfulness: { time: '2-10 min', format: 'Whole class', cue: 'Low-writing regulation option.' },
+      somaticReset: { time: '3-8 min', format: 'Solo or whole class', cue: 'Offer still-motion, no-visual, natural-breathing, and no-number choices; never require ratings or explanations of body sensations.' },
       journal: { time: '5-12 min', format: 'Solo', cue: 'Private reflection. Sharing should be optional.' },
       goals: { time: '5-10 min', format: 'Solo or advisory', cue: 'Good closing step after reflection.' },
       conflict: { time: '8-12 min', format: 'Pair or small group', cue: 'Preview norms before role-play.' },
@@ -676,7 +683,7 @@
         studentView: 'Students notice their current body state and choose one calm-body practice.',
         teacherMove: 'Keep the routine low-talk and time-boxed. Offer movement, breathing, or quiet alternatives.',
         privacyBoundary: 'Students can save a checkpoint for themselves; no one has to explain why they needed a reset.',
-        tools: ['zones', 'coping', 'mindfulness'],
+        tools: ['zones', 'coping', 'mindfulness', 'somaticReset'],
         note: 'Keep this low-talk. Students choose one regulation practice and notice what changed.',
         quests: [
           { type: 'manualComplete', toolRef: 'first', label: 'Check your current zone', params: {} },
@@ -1854,6 +1861,7 @@
       ];
       // Append dynamically registered tools into the correct category positions
       var _dynamicTools = [
+        { id: 'somaticReset', icon: '\uD83C\uDF3F', label: 'Body & Breath Reset', desc: 'Choose a body zone and follow a short, chair-friendly stillness, breathing, or gentle movement reset with a private before-and-after check-in.', color: 'teal', recommendedRange: 'K-12', _cat: 'self-regulation' },
         { id: 'restorativeCircle', icon: '\uD83E\uDEB6', label: 'Restorative Circle', desc: 'Facilitate restorative and community-building circles with established norms, adult guidance, and care around cultural roots. Not for forced disclosure or active safety risk.', color: 'amber', recommendedRange: '3-12', _cat: 'relationship-skills' },
         { id: 'compassion', icon: '\uD83E\uDD7A', label: 'Compassion & Self-Talk', desc: 'Practice self-compassion, reframe inner critic, and build a kinder inner voice.', color: 'rose', recommendedRange: 'K-12', _cat: 'care-of-self' },
         { id: 'friendship', icon: '\uD83E\uDD1D', label: 'Friendship Builder', desc: 'Explore friendship styles, repair strategies, and healthy relationship patterns.', color: 'amber', recommendedRange: 'K-12', _cat: 'relationship-skills' },
@@ -1972,6 +1980,7 @@
         growthmindset: { tier: 'emerging', note: 'Mindset interventions are popular; effects are real but small and debated (Sisk et al. 2018 meta-analysis; Yeager et al. 2019 found small, targeted effects).' },
         execfunction: { tier: 'emerging', note: 'Executive-function strategy instruction has real but modest, mixed support (Dawson & Guare; Barkley); this is a structured scaffold, not a clinical intervention.' },
         // Practice: structured practice / heuristic, not an empirical efficacy claim
+        somaticReset: { tier: 'practice', note: 'A choice-based collection of gentle movement, stillness, and paced-breathing practices; it makes no diagnostic or treatment claim.' },
         strengths: { tier: 'practice' },
         viaStrengths: { tier: 'practice', note: 'Reflective self-sort, not the validated VIA survey at viacharacter.org.' },
         wheelOfLife: { tier: 'practice', note: 'Coaching heuristic, not a validated psychometric.' },
@@ -2017,6 +2026,7 @@
         emotions: 'feeling feelings emotion emotions mood identify name vocabulary faces sad mad worried happy',
         coping: 'calm breathe breathing grounding panic anxious anxiety worried stress overwhelmed regulate body',
         mindfulness: 'calm breathe breathing body scan mindful still focus quiet attention',
+        somaticReset: 'body breath breathing tension restlessness shoulders jaw back hips legs hands feet chair movement still reset calm',
         journal: 'write writing private reflect reflection feelings diary think process',
         thoughtRecord: 'thought thoughts thinking worry anxious anxiety stuck evidence balanced reframe',
         anxietyToolkit: 'anxiety anxious worry worried panic nervous fear calm',

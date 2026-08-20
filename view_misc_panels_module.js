@@ -1700,6 +1700,37 @@ function SurpriseTopicLauncher(props) {
     miss.code
   )), /* @__PURE__ */ React.createElement("span", { className: "block mt-0.5" }, "No graph is available for these, so no grounded directions can be proposed from them.")), codeState === "done" && !codeHits.length && !codeMisses.length && /* @__PURE__ */ React.createElement("div", { role: "status", className: "mt-1 text-slate-600" }, "No standard code came back for that seed either."), resolution && resolution.status === "error" && /* @__PURE__ */ React.createElement("div", { role: "alert", className: "mt-1 text-red-700" }, "The local snapshot could not resolve this entry."), surpriseState === "ready" && resolvedMatch && hood && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-violet-900" }, "Graph context: ", hood.prerequisites.length, " prerequisite(s), ", hood.leadsTo.length, " next, ", hood.related.length, " related", hood.dataset && hood.dataset.provider ? " \u2014 " + hood.dataset.provider : "", ". Directions are AI proposals grounded in these source edges, for educator judgment \u2014 not certification."), surpriseState === "ready" && directions.length > 0 && window.AlloModules && window.AlloModules.SurpriseMeCompare && React.createElement(window.AlloModules.SurpriseMeCompare, { directions, hood, onUse: useDirection }));
 }
+function _normalizeSourceGradeLabel(value) {
+  try {
+    const api = window.AlloModules && window.AlloModules.InstructionalContext;
+    if (api && typeof api.normalizeGradeLabel === "function") {
+      const normalized = api.normalizeGradeLabel(value, "");
+      if (normalized) return normalized;
+    }
+  } catch (_) {
+  }
+  const raw = String(value == null ? "" : value).replace(/\s+/g, " ").trim();
+  if (!raw) return "";
+  if (/^(k|kg|grade k|kindergarten)$/i.test(raw)) return "Kindergarten";
+  if (/^(college|college level|undergraduate)$/i.test(raw)) return "College";
+  if (/^(graduate|graduate level|postgraduate)$/i.test(raw)) return "Graduate Level";
+  const match = raw.match(/(?:^|\b)(?:grade\s*)?(\d{1,2})(?:st|nd|rd|th)?(?:\s*grade)?(?:$|\b)/i);
+  if (!match) return raw;
+  const number = Number(match[1]);
+  if (!Number.isFinite(number) || number < 1 || number > 12) return raw;
+  const mod100 = number % 100;
+  const suffix = mod100 >= 11 && mod100 <= 13 ? "th" : number % 10 === 1 ? "st" : number % 10 === 2 ? "nd" : number % 10 === 3 ? "rd" : "th";
+  return `${number}${suffix} Grade`;
+}
+function _getSourceGradeMismatch(sourceGrade, instructionalGrade) {
+  const normalizedSource = _normalizeSourceGradeLabel(sourceGrade);
+  const normalizedInstructional = _normalizeSourceGradeLabel(instructionalGrade);
+  if (!normalizedSource || !normalizedInstructional || normalizedSource === normalizedInstructional) return null;
+  return {
+    sourceGrade: normalizedSource,
+    instructionalGrade: normalizedInstructional
+  };
+}
 function SourceGenPanel(props) {
   const {
     addToast,
@@ -1743,6 +1774,7 @@ function SourceGenPanel(props) {
   } = props;
   if (!showSourceGen) return null;
   const finderGrade = sourceLevel || gradeLevel;
+  const sourceGradeMismatch = _getSourceGradeMismatch(sourceLevel, gradeLevel);
   return /* @__PURE__ */ React.createElement("div", { className: "p-4 bg-indigo-50/50 border-b border-indigo-100 animate-in slide-in-from-top-2 space-y-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "allo-source-topic", className: "block text-xs font-medium text-indigo-900 mb-1" }, t("input.topic")), /* @__PURE__ */ React.createElement(
     "input",
     {
@@ -1793,6 +1825,15 @@ function SourceGenPanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "12th Grade" }, t("input.level_options.g12")),
     /* @__PURE__ */ React.createElement("option", { value: "College" }, t("input.level_options.college")),
     /* @__PURE__ */ React.createElement("option", { value: "Graduate Level" }, t("input.level_options.grad"))
+  ))), sourceGradeMismatch && /* @__PURE__ */ React.createElement("div", { role: "status", "data-source-grade-mismatch": "true", className: "rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-950" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("p", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("strong", null, "Check the instructional grade:"), " this source is set to ", sourceGradeMismatch.sourceGrade, ", while Universal Settings are ", sourceGradeMismatch.instructionalGrade, ". Generation and standards search in this panel use ", sourceGradeMismatch.sourceGrade, ". If this will be the primary grade-level text, align the two settings."), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: () => setSourceLevel(sourceGradeMismatch.instructionalGrade),
+      className: "shrink-0 rounded-md border border-amber-400 bg-white px-2.5 py-1.5 font-bold text-amber-950 hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-500/40"
+    },
+    "Use ",
+    sourceGradeMismatch.instructionalGrade
   ))), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-2 rounded-lg border border-slate-400" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs text-slate-600 font-bold flex items-center gap-1" }, /* @__PURE__ */ React.createElement(CheckCircle, { size: 12, className: "text-green-600" }), " ", isIndependentMode ? t("wizard.learning_goal_header") : t("standards.target_standard")), !isIndependentMode && /* @__PURE__ */ React.createElement("div", { className: "flex bg-white rounded-md border border-slate-400 p-0.5 shadow-sm" }, /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -1939,6 +1980,7 @@ function SourceGenPanel(props) {
     isGeneratingSource ? t("input.writing") : t("input.generate")
   ));
 }
+SourceGenPanel.getGradeMismatch = _getSourceGradeMismatch;
 function TourOverlay(props) {
   const {
     botSpotlightPos,

@@ -16,7 +16,7 @@ const cedUrl = 'https://apcentral.collegeboard.org/media/pdf/ap-psychology-cours
 const clarificationsUrl = 'https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description-clarifications.pdf';
 const examUrl = 'https://apcentral.collegeboard.org/courses/ap-psychology/exam';
 const verifiedAt = '2026-08-20';
-const version = '0.2.0-internal-preview';
+const version = '0.5.0-internal-preview';
 
 const unitIds = [
   'biological-bases-of-behavior',
@@ -73,6 +73,104 @@ const topicPlans = [
 }));
 
 const topicPlanById = new Map(topicPlans.map((plan) => [plan.id, plan]));
+
+// These are internal remediation routes, not claims that the library's
+// chapter titles are official College Board learning-objective labels. They
+// give every item a stable topic-level target and a usable chapter/lesson
+// destination after feedback.
+const topicSectionById = {
+  '1.1': 'ap-psych-ch-01-section-01',
+  '1.2': 'ap-psych-ch-01-section-02',
+  '1.3': 'ap-psych-ch-01-section-02',
+  '1.4': 'ap-psych-ch-01-section-02',
+  '1.5': 'ap-psych-ch-01-section-03',
+  '1.6': 'ap-psych-ch-01-section-03',
+  '2.1': 'ap-psych-ch-02-section-01',
+  '2.2': 'ap-psych-ch-02-section-01',
+  '2.3': 'ap-psych-ch-02-section-02',
+  '2.4': 'ap-psych-ch-02-section-02',
+  '2.5': 'ap-psych-ch-02-section-02',
+  '2.6': 'ap-psych-ch-02-section-02',
+  '2.7': 'ap-psych-ch-02-section-02',
+  '2.8': 'ap-psych-ch-02-section-03',
+  '3.1': 'ap-psych-ch-03-section-01',
+  '3.2': 'ap-psych-ch-03-section-01',
+  '3.3': 'ap-psych-ch-03-section-01',
+  '3.4': 'ap-psych-ch-03-section-01',
+  '3.5': 'ap-psych-ch-03-section-01',
+  '3.6': 'ap-psych-ch-03-section-01',
+  '3.7': 'ap-psych-ch-03-section-02',
+  '3.8': 'ap-psych-ch-03-section-02',
+  '3.9': 'ap-psych-ch-03-section-03',
+  '4.1': 'ap-psych-ch-04-section-01',
+  '4.2': 'ap-psych-ch-04-section-01',
+  '4.3': 'ap-psych-ch-04-section-01',
+  '4.4': 'ap-psych-ch-04-section-02',
+  '4.5': 'ap-psych-ch-04-section-02',
+  '4.6': 'ap-psych-ch-04-section-03',
+  '4.7': 'ap-psych-ch-04-section-03',
+  '5.1': 'ap-psych-ch-05-section-01',
+  '5.2': 'ap-psych-ch-05-section-01',
+  '5.3': 'ap-psych-ch-05-section-02',
+  '5.4': 'ap-psych-ch-05-section-02',
+  '5.5': 'ap-psych-ch-05-section-03',
+};
+
+const topicObjectiveLabels = {
+  '1.1': 'Explain how inherited variation and environmental context jointly influence behavior and development.',
+  '1.2': 'Explain how endocrine signals and hormones influence behavior and body processes.',
+  '1.3': 'Explain how neurons communicate and how neural signals support behavior.',
+  '1.4': 'Relate brain systems and structures to behavior while respecting localization limits.',
+  '1.5': 'Explain sleep architecture and circadian processes and their effects on behavior.',
+  '1.6': 'Apply sensation and perception concepts to thresholds, transduction, and sensory adaptation.',
+  '2.1': 'Explain how perceptual processes organize and interpret sensory input.',
+  '2.2': 'Apply cognitive concepts to problem solving, judgment, and decision making.',
+  '2.3': 'Explain how memory is encoded and represented across memory systems.',
+  '2.4': 'Apply attention and encoding strategies to memory performance.',
+  '2.5': 'Explain how memories are stored and consolidated over time.',
+  '2.6': 'Apply retrieval cues and retrieval processes to remembering.',
+  '2.7': 'Explain forgetting, interference, and memory reconstruction errors in context.',
+  '2.8': 'Evaluate intelligence and achievement measures using reliability, validity, and context.',
+  '3.1': 'Explain how developmental research distinguishes stability, change, continuity, and stages.',
+  '3.2': 'Apply physical-development concepts to prenatal and lifespan change.',
+  '3.3': 'Explain gender and sexual orientation as developmental and social phenomena without reducing identity to a single cause.',
+  '3.4': 'Apply cognitive-development theories to changes in reasoning across development.',
+  '3.5': 'Explain how language develops and how social context supports communication.',
+  '3.6': 'Apply social-emotional development concepts to relationships and behavior.',
+  '3.7': 'Identify classical-conditioning components and processes in new situations.',
+  '3.8': 'Identify operant-conditioning consequences and schedules in new situations.',
+  '3.9': 'Apply observational and cognitive-learning concepts to behavior and performance.',
+  '4.1': 'Explain how attributions and person perception shape social judgments.',
+  '4.2': 'Apply attitudes, persuasion, and dissonance concepts to behavior change.',
+  '4.3': 'Explain how social situations and group processes influence individual behavior.',
+  '4.4': 'Compare psychodynamic and humanistic perspectives when explaining personality.',
+  '4.5': 'Apply trait and social-cognitive perspectives to personality across settings.',
+  '4.6': 'Explain how motives, incentives, arousal, and goals influence behavior.',
+  '4.7': 'Apply emotion theories to the interaction of arousal, appraisal, and experience.',
+  '5.1': 'Explain how stress, coping, and health interact across biological, psychological, and social factors.',
+  '5.2': 'Apply positive-psychology and well-being concepts to behavior and life satisfaction.',
+  '5.3': 'Explain psychological disorders using symptoms, functioning, and biopsychosocial models without diagnosing from a vignette.',
+  '5.4': 'Distinguish disorder categories using patterns of symptoms and impairment while recognizing diagnostic limits.',
+  '5.5': 'Evaluate psychological treatment claims using evidence, ethics, risk, fit, and access.',
+};
+
+const sectionHeadings = {
+  'ap-psych-ch-01-section-01': 'Heredity, environment, and research claims',
+  'ap-psych-ch-01-section-02': 'Neural communication, nervous systems, and the brain',
+  'ap-psych-ch-01-section-03': 'Sleep and sensation',
+  'ap-psych-ch-02-section-01': 'Perception, attention, and judgment',
+  'ap-psych-ch-02-section-02': 'Memory as encoding, storage, retrieval, and reconstruction',
+  'ap-psych-ch-02-section-03': 'Intelligence, achievement, and responsible measurement',
+  'ap-psych-ch-03-section-01': 'Lifespan development and its evidence',
+  'ap-psych-ch-03-section-02': 'Classical and operant conditioning',
+  'ap-psych-ch-03-section-03': 'Observational, cognitive, and biological factors in learning',
+  'ap-psych-ch-04-section-01': 'Attribution, attitudes, and social situations',
+  'ap-psych-ch-04-section-02': 'Personality perspectives and measurement',
+  'ap-psych-ch-04-section-03': 'Motivation and emotion',
+  'ap-psych-ch-05-section-01': 'Stress, coping, and well-being',
+  'ap-psych-ch-05-section-02': 'Classification and selected disorder categories',
+  'ap-psych-ch-05-section-03': 'Treatment evidence, ethics, and access',
+};
 
 const sourceUrls = {
   '1.1': 'https://openstax.org/books/psychology-2e/pages/3-introduction',
@@ -150,19 +248,19 @@ const researchContexts = [
 ];
 
 const researchVariationFrames = [
-  'The protocol was preregistered before recruitment began.',
-  'The team counterbalanced the order of its measurement tasks.',
-  'The investigators trained two independent observers before data collection.',
+  'Before recruitment began, the team preregistered its primary comparison.',
+  'The investigators used identical written instructions across conditions.',
+  'The researchers trained two independent observers with the same scoring guide.',
   'The sessions were scheduled at two different times of day.',
-  'The researchers recorded participant age as a possible descriptive variable.',
+  'The researchers recorded participant age as a descriptive variable.',
   'The team separated exploratory analyses from its planned primary comparison.',
-  'The investigators used the same written instructions for every participant.',
+  'The investigators used the same measurement procedure for every participant.',
   'The research team planned a follow-up measurement one month later.',
   'The study recruited from two course sections rather than one classroom.',
   'The team checked whether participants understood the instructions before beginning.',
   'The investigators recorded refusals and incomplete responses separately.',
-  'The protocol included a quiet comparison condition for the primary analysis.',
-  'The researchers used a blinded scorer for the behavioral outcome.',
+  'The protocol included a comparison condition for the primary analysis.',
+  'The researchers used a scorer who was unaware of each participant’s condition.',
   'The team documented the sampling frame before contacting participants.',
   'The investigators repeated the measure after a short practice period.',
   'The researchers planned to debrief participants after the final task.',
@@ -1170,20 +1268,6 @@ function topicConcepts(topicId) {
   return data.concepts;
 }
 
-function topicResearchSignature(topicId, index, plan) {
-  const concepts = topicConcepts(topicId);
-  const offset = Math.abs(index) % concepts.length;
-  const labels = [0, 2, 4].map((step) => concepts[(offset + step) % concepts.length].label);
-  const additionalLabels = [1, 3].map((step) => concepts[(offset + step) % concepts.length].label);
-  const frames = [
-    `The protocol distinguishes ${labels[0]} from ${labels[1]} and records ${labels[2]} as a secondary consideration.`,
-    `The research team treats ${labels[1]} and ${labels[2]} as related but nonidentical explanations for ${plan.subject}.`,
-    `The study notes ${labels[2]} while keeping ${labels[0]} and ${labels[1]} conceptually separate during analysis.`,
-    `The investigators compare ${labels[0]} with ${labels[2]} rather than treating every change in ${plan.outcome} as one process.`,
-  ];
-  return `${frames[index % frames.length]} The topic comparison also distinguishes ${additionalLabels[0]} from ${additionalLabels[1]}.`;
-}
-
 function conceptExamples(topicId) {
   const examples = [];
   for (const [conceptIndex, concept] of topicConcepts(topicId).entries()) {
@@ -1223,9 +1307,9 @@ function conceptChoiceRationales(topicId, answerConceptIndex, choices, stemFocus
     const concept = concepts.find((candidate) => candidate.label === choice);
     if (!concept) return `${choice} is not the best interpretation because the data or scenario requires a different construct and a more specific explanation of the observed pattern.`;
     if (concept.label === answer.label) {
-      return `${concept.label} fits because ${answer.definition} The stem supplies that defining pattern rather than merely naming a related topic.`;
+      return `${concept.label} fits because ${answer.definition}. The example's defining pattern is ${stemFocus}, which matches this concept rather than a neighboring construct.`;
     }
-    return `${concept.label} refers to ${concept.definition} It is related to the unit, but it does not best explain ${stemFocus} in this scenario.`;
+    return `${concept.label} refers to ${concept.definition}. That distinction does not match ${stemFocus}; the example instead describes ${answer.label}.`;
   });
 }
 
@@ -1234,6 +1318,59 @@ function rotateChoices(keyLabel, distractors, answerIndex, seed) {
   const keyPosition = shuffled.indexOf(keyLabel);
   [shuffled[keyPosition], shuffled[answerIndex]] = [shuffled[answerIndex], shuffled[keyPosition]];
   return shuffled;
+}
+
+function learningRouteFor(topicId, plan, practiceId) {
+  const unitNumber = unitNumbers.get(plan.unit);
+  const sectionId = topicSectionById[topicId];
+  const objectiveLabel = topicObjectiveLabels[topicId];
+  assert(unitNumber && sectionId && objectiveLabel, `Missing learning route for ${topicId}.`);
+  const cognitiveProcess = practiceId === 'P1'
+    ? 'apply'
+    : practiceId === 'P2'
+      ? 'analyze'
+      : practiceId === 'P3'
+        ? 'interpret'
+        : 'explain';
+  return {
+    learningObjectiveId: `ap-psych-lo-${topicId.replace('.', '-')}`,
+    learningObjectiveLabel: objectiveLabel,
+    learningSectionId: sectionId,
+    learningSectionLabel: sectionHeadings[sectionId],
+    cognitiveProcess,
+    skillIds: [practiceId],
+    chapterIds: [`ap-psych-ch-${String(unitNumber).padStart(2, '0')}`],
+  };
+}
+
+function buildLearningObjectiveCatalog() {
+  return topicPlans.map((plan) => {
+    const route = learningRouteFor(plan.id, plan, 'P1');
+    const practiceIds = ['P1', 'P2', 'P3'].filter((practiceId) => plan[practiceId.toLowerCase()] > 0);
+    return {
+      id: route.learningObjectiveId,
+      topicId: plan.id,
+      domainId: plan.unit,
+      chapterId: route.chapterIds[0],
+      sectionId: route.learningSectionId,
+      sectionLabel: route.learningSectionLabel,
+      label: route.learningObjectiveLabel,
+      practiceIds,
+      nextStep: 'Review the linked lesson, explain the distinction in your own words, then retry a targeted practice set.',
+      status: 'internal-remediation-route',
+      officialItem: false,
+      releaseEligible: false,
+      reviewStatus: 'internal-editorial-draft',
+      references: [...new Set([cedUrl, clarificationsUrl, sourceUrls[plan.id]])],
+    };
+  });
+}
+
+function applyLearningRoute(item) {
+  const topicId = Array.isArray(item.topicIds) ? item.topicIds[0] : '';
+  const plan = topicPlanById.get(topicId);
+  assert(plan, `Missing topic plan for item ${item.id}.`);
+  return Object.assign(item, learningRouteFor(topicId, plan, item.practiceId));
 }
 
 function baseMetadata(topicId, plan, practiceId, skillId, answerIndex, id, difficulty, cognitiveDemand) {
@@ -1247,6 +1384,7 @@ function baseMetadata(topicId, plan, practiceId, skillId, answerIndex, id, diffi
     topicIds: [topicId],
     practiceId,
     skillId,
+    ...learningRouteFor(topicId, plan, practiceId),
     difficulty,
     cognitiveDemand,
     references: [...new Set([cedUrl, clarificationsUrl, source.url])],
@@ -1295,24 +1433,30 @@ function makeConceptItem(topicId, plan, blueprint, id, answerIndex, generatedInd
     answerIndex,
     0x110000 + generatedIndex,
   );
-  const focus = plan.variable + ' and ' + plan.outcome;
+  const focus = `the defining pattern for ${answer.label}`;
   const prompt = `${blueprint.text} ${p1Frames[generatedIndex % p1Frames.length]}`;
   const item = {
     ...baseMetadata(topicId, plan, 'P1', generatedIndex % 5 === 0 ? '1.B' : '1.A', answerIndex, id, generatedIndex % 3 === 0 ? 'advanced' : 'intermediate', 'application'),
     prompt,
     choices,
     answerIndex,
-    rationale: `${answer.label} is the best answer because ${answer.definition} The example asks the learner to apply that concept to ${focus}, not simply recall an isolated vocabulary definition.`,
+    rationale: `${answer.label} is the best answer because ${answer.definition}. The example presents ${focus}, so the learner must distinguish this mechanism from related concepts rather than match a surface word.`,
     choiceRationales: conceptChoiceRationales(topicId, blueprint.conceptIndex, choices, focus),
   };
   assert(wordCount(item.rationale) >= 20, `${id} concept rationale is too short.`);
   return item;
 }
 
-function researchBlueprint(plan, index) {
-  const context = researchContexts[index % researchContexts.length];
-  const measure = `${plan.variable} measured with a defined behavioral scale`;
-  const outcome = `${plan.outcome} measured during a standardized task`;
+function researchBlueprint(plan, index, contextSeed = index) {
+  const context = researchContexts[Math.abs(contextSeed) % researchContexts.length];
+  const measureVariants = [
+    `a participant's score on a standardized task designed to assess ${plan.variable}`,
+    `the average rating across five survey items about ${plan.variable}`,
+    `the number of target responses during a ten-minute observation of ${plan.variable}`,
+    `the time in seconds needed to complete a task involving ${plan.variable}`,
+  ];
+  const measure = measureVariants[(index + contextSeed) % measureVariants.length];
+  const outcome = `a standardized score for ${plan.outcome}`;
   const patterns = [
     {
       stem: `${context} studies whether ${plan.variable} is related to ${plan.outcome}. The team defines ${plan.variable} as ${measure}. Which research term describes that definition?`,
@@ -1322,16 +1466,16 @@ function researchBlueprint(plan, index) {
       demand: 'research-design',
     },
     {
-      stem: `${context} randomly assigns participants to receive either a structured ${plan.variable} activity or a comparison activity, then measures ${outcome}. Which variable is the independent variable?`,
-      answer: 'The assigned ${plan.variable} activity',
-      distractors: ['The measured ${plan.outcome}', 'The participants’ demographic characteristics', 'The number of researchers on the team'],
-      why: `The independent variable is the condition the researchers assign or manipulate; here it is the ${plan.variable} activity.`,
+      stem: `${context} randomly assigns participants to receive either a structured activity involving ${plan.variable} or a comparison activity, then records ${outcome}. Which variable is the independent variable?`,
+      answer: 'The assigned condition involving ${plan.variable}',
+      distractors: ['The recorded ${plan.outcome} score', 'The participants’ demographic characteristics', 'The number of researchers on the team'],
+      why: `The independent variable is the condition the researchers assign or manipulate; here it is the condition involving ${plan.variable}.`,
       demand: 'research-design',
     },
     {
       stem: `${context} recruits volunteers from one introductory course to study ${plan.subject}. The researchers want to generalize to all students at the college. Which limitation is most important?`,
       answer: 'The volunteer convenience sample may not represent the college population',
-      distractors: ['Random assignment guarantees perfect generalizability', 'A dependent variable cannot be measured twice', 'A correlation automatically proves the hypothesis'],
+      distractors: ['Random assignment would solve the sampling problem without changing recruitment', 'The dependent variable cannot be measured in a volunteer sample', 'A correlation would be required before making any population claim'],
       why: `Generalizability depends on how well the sample represents the target population; volunteers from one course may differ from the whole college.`,
       demand: 'research-analysis',
     },
@@ -1366,8 +1510,8 @@ function researchBlueprint(plan, index) {
   };
 }
 
-function dataBlueprint(plan, index) {
-  const context = researchContexts[(index + 3) % researchContexts.length];
+function dataBlueprint(plan, index, contextSeed = index) {
+  const context = researchContexts[(Math.abs(contextSeed) + 3) % researchContexts.length];
   const variant = index % 5;
   if (variant === 0) {
     const r = [-0.72, -0.48, 0.36, 0.61, -0.27][index % 5];
@@ -1438,6 +1582,138 @@ function dataBlueprint(plan, index) {
   };
 }
 
+function insertBeforeFinalQuestion(stem, detail) {
+  const text = String(stem || '').trim();
+  const sentenceBreak = text.lastIndexOf('. ');
+  if (!detail || !text.endsWith('?') || sentenceBreak < 0) return text;
+  return `${text.slice(0, sentenceBreak + 1)} ${detail} ${text.slice(sentenceBreak + 2)}`;
+}
+
+function topicConceptQuad(topicId, index) {
+  const concepts = topicConcepts(topicId);
+  const offset = Math.abs(index) % concepts.length;
+  return [0, 1, 2, 3].map((step) => concepts[(offset + step) % concepts.length]);
+}
+
+function researchTopicDetail(topicId, index, demand) {
+  const [first, second, third, fourth] = topicConceptQuad(topicId, index);
+  if (demand === 'research-design') {
+    return `To distinguish ${first.label} from ${second.label}, the team kept ${third.label} separate from ${fourth.label} while specifying its variables before data collection.`;
+  }
+  if (demand === 'research-ethics') {
+    return `The consent materials described the study without treating ${first.label}, ${second.label}, ${third.label}, and ${fourth.label} as interchangeable.`;
+  }
+  return `The researchers compared ${first.label} with ${second.label} and recorded ${third.label} separately from ${fourth.label} when interpreting the outcome.`;
+}
+
+function dataTopicPrefix(topicId, index) {
+  const [first, second, third, fourth] = topicConceptQuad(topicId, index);
+  const frames = [
+    `The analysis distinguishes ${first.label} from ${second.label} and records ${third.label} separately from ${fourth.label}.`,
+    `Participants completed brief measures of ${first.label} and ${second.label}; ${third.label} and ${fourth.label} were coded separately.`,
+    `The researchers recorded ${first.label} and ${second.label} while keeping ${third.label} distinct from ${fourth.label}.`,
+    `The study compared outcomes related to ${first.label} and ${second.label} while tracking ${third.label} and ${fourth.label} separately.`,
+  ];
+  return frames[Math.abs(index) % frames.length];
+}
+
+function targetedDistractorFeedback(choice, blueprint, practiceId) {
+  const option = String(choice || '').toLowerCase();
+  const stem = String(blueprint.stem || '').toLowerCase();
+  if (practiceId === 'P2') {
+    if (option.includes('confounding')) {
+      return 'A confounding variable is an uncontrolled alternative explanation, not the measurement, sampling, or replication term requested by this stem.';
+    }
+    if (option.includes('random sample')) {
+      return 'A random sample concerns representativeness and generalizability, whereas this stem asks about a different research feature.';
+    }
+    if (option.includes('replication')) {
+      return 'Replication requires repeating the procedure with another sample; the described feature does not identify whether a finding was reproduced.';
+    }
+    if (option.includes('recorded') || option.includes('measured') || option.includes('dependent variable')) {
+      return 'This is the measured outcome rather than the condition the researchers assigned, so it is the dependent variable in this design.';
+    }
+    if (option.includes('demographic') || option.includes('number of researchers')) {
+      return 'This describes a participant or research-team characteristic, not the experimental condition that was assigned to participants.';
+    }
+    if (option.includes('random assignment')) {
+      return 'Random assignment can strengthen causal inference, but it does not make volunteers from one course representative of the target population.';
+    }
+    if (option.includes('correlation')) {
+      return 'Correlation describes an association between measures; it does not determine whether a convenience sample represents the broader population.';
+    }
+    if (option.includes('cause') || option.includes('causal')) {
+      return 'This option treats an observed association as causal, but the nonexperimental design leaves directionality and third-variable explanations unresolved.';
+    }
+    if (option.includes('no measurable')) {
+      return 'The study contains measurable variables; the issue is how the variables were observed and what conclusion that design permits.';
+    }
+    if (option.includes('necessarily randomly')) {
+      return 'The stem explicitly describes observation without assignment, so random assignment cannot be inferred from the reported correlation.';
+    }
+    if (option.includes('deception')) {
+      return 'Deception without appropriate safeguards and debriefing would not represent the informed-consent and welfare protections described in the study.';
+    }
+    if (option.includes('placebo')) {
+      return 'A placebo is a treatment-control concept; it does not identify the ethical protections involving information, refusal, and participant welfare.';
+    }
+    if (option.includes('law of effect')) {
+      return 'The law of effect concerns consequences and future behavior, not the ethical responsibilities described before collecting research data.';
+    }
+    if (option.includes('operational definition')) {
+      return 'An operational definition specifies how a construct is measured; it is not the same as repeating a study or naming an uncontrolled variable.';
+    }
+    if (option.includes('biased answer')) {
+      return 'A biased answer key is not the methodological result of repeating the same procedures with a new sample and obtaining a similar pattern.';
+    }
+    if (stem.includes('volunteers') && option.includes('population')) {
+      return 'This option does not identify the representativeness problem created by recruiting volunteers from one introductory course.';
+    }
+  }
+  if (practiceId === 'P3') {
+    if (stem.includes('correlation')) {
+      if (option.includes('cause') || option.includes('causal') || option.includes('prove')) {
+        return 'A correlation describes how two measures vary together; without manipulation or stronger design evidence, it cannot establish causation.';
+      }
+      if (option.includes('zero')) {
+        return 'A coefficient can be positive or negative and still be nonzero; the magnitude and sign, not equality with 1.00, carry the interpretation.';
+      }
+      if (option.includes('error')) {
+        return 'A correlation does not show that the measures are error-free; reliability and validity require separate evidence.';
+      }
+      return 'This choice does not correctly interpret the sign, magnitude, or noncausal limit of the reported correlation.';
+    }
+    if (stem.includes('median')) {
+      return 'This numerical choice does not identify the middle score after ordering the five observations; the mean and endpoints answer different questions.';
+    }
+    if (stem.includes('percentage')) {
+      return 'This percentage uses the wrong arithmetic relationship; divide the number showing the change by the total sample and multiply by 100.';
+    }
+    if (stem.includes('standard deviation')) {
+      if (option.includes('standard deviation') || option.includes('variability')) {
+        return 'The standard deviation describes spread, not which group has the higher mean; compare the reported means for the average level.';
+      }
+      if (option.includes('no comparison')) {
+        return 'Means can be compared directly to identify the groups’ average levels, while standard deviations separately describe variability.';
+      }
+      return 'This choice reverses the reported group means or misreads the equal standard deviations as a difference in average level.';
+    }
+    if (stem.includes('reliable') || stem.includes('validity') || stem.includes('established measure')) {
+      if (option.includes('valid because') || option.includes('guarantees')) {
+        return 'Consistency across occasions supports reliability, but it does not guarantee that the measure captures the intended construct.';
+      }
+      if (option.includes('neither')) {
+        return 'Repeatedly similar scores provide evidence of reliability even though disagreement with an established measure limits validity evidence.';
+      }
+      if (option.includes('validity but no reliability')) {
+        return 'The repeated scores support reliability, so this choice reverses the evidence supplied by the test-retest pattern.';
+      }
+      return 'This choice does not keep reliability, consistency across occasions, and validity, agreement with the intended construct, conceptually distinct.';
+    }
+  }
+  return `This option does not follow the specific evidence or calculation in the stem. ${blueprint.why}`;
+}
+
 function makeGenericItem(topicId, plan, blueprint, practiceId, skillId, id, answerIndex, generatedIndex) {
   const rawChoices = [blueprint.answer, ...blueprint.distractors];
   const longestChoiceWords = Math.max(...rawChoices.map(wordCount));
@@ -1456,15 +1732,20 @@ function makeGenericItem(topicId, plan, blueprint, practiceId, skillId, id, answ
   const answerPosition = choices.indexOf(answerChoice);
   assert(answerPosition === answerIndex, `${id} answer position did not bind.`);
   const choiceRationales = choices.map((choice) => choice === answerChoice
-    ? `${choice} is correct because ${blueprint.why} This conclusion matches the specific design or evidence described in the stem.`
-    : `${choice} is not the best answer because it does not match the relevant evidence, variable, or method described in the scenario.`);
-  const signature = topicResearchSignature(topicId, generatedIndex, plan);
-  const variation = practiceId === 'P2'
-    ? researchVariationFrames[generatedIndex % researchVariationFrames.length]
-    : '';
+    ? `"${choice}" is correct because ${blueprint.why} This conclusion matches the specific design or evidence described in the stem.`
+    : `"${choice}" is not the best answer. ${targetedDistractorFeedback(choice, blueprint, practiceId)}`);
+  const normalizedBlueprintStem = `${blueprint.stem.charAt(0).toUpperCase()}${blueprint.stem.slice(1)}`;
+  const promptStem = practiceId === 'P2'
+    ? insertBeforeFinalQuestion(
+      normalizedBlueprintStem,
+      `${researchTopicDetail(topicId, generatedIndex, blueprint.demand)} ${researchVariationFrames[generatedIndex % researchVariationFrames.length]}`
+    )
+    : practiceId === 'P3'
+      ? `${dataTopicPrefix(topicId, generatedIndex)} ${normalizedBlueprintStem}`
+      : normalizedBlueprintStem;
   const item = {
     ...baseMetadata(topicId, plan, practiceId, skillId, answerIndex, id, generatedIndex % 3 === 0 ? 'advanced' : 'intermediate', blueprint.demand || (practiceId === 'P3' ? 'data-interpretation' : 'research-analysis')),
-    prompt: `${blueprint.stem.charAt(0).toUpperCase()}${blueprint.stem.slice(1)} ${signature} ${variation}`.trim(),
+    prompt: promptStem.trim(),
     choices,
     answerIndex,
     rationale: `${blueprint.why} The interpretation is limited to the evidence and design described in this item; it does not by itself establish a broad causal or diagnostic conclusion.`,
@@ -1488,8 +1769,10 @@ function existingCounts(pack) {
 function updatePackMetadata(pack) {
   pack.version = version;
   pack.description = 'An independently authored 500-question AP Psychology internal preparation bank mapped to the current public course framework. It is not released, official, endorsed, calibrated, or score-predictive.';
-  pack.contentReview = 'Five hundred original, source-aligned draft multiple-choice items: 100 per current unit, distributed across all 37 framework topics, with 325 Practice 1 items, 125 Practice 2 items, 50 Practice 3 items, and 125 keys in each answer position. Independent AP Psychology subject-expert review, independent rights and accessibility review, production validation, field testing, and psychometric calibration remain pending.';
-  pack.blueprint.pilotAlignment = '500-item internal kit: 100 items per unit, all 37 framework topics covered, 25 balanced 20-item banks; P1/P2/P3 counts 325/125/50.';
+  pack.contentReview = 'Five hundred original, source-aligned draft multiple-choice items: 100 per current unit, distributed across all 35 framework topics, with 325 Practice 1 items, 125 Practice 2 items, and 50 Practice 3 items. This quality pass adds stable topic-level learning targets, chapter-and-lesson remediation routes, targeted distractor feedback, coherent research/data stems, and an expanded native textbook-style learning library while preserving 125 keys in each answer position. Independent AP Psychology subject-expert review, independent rights and accessibility review, production validation, field testing, and psychometric calibration remain pending.';
+  pack.blueprint.pilotAlignment = '500-item internal kit: 100 items per unit, all 35 framework topics covered, 25 balanced 20-item banks; P1/P2/P3 counts 325/125/50.';
+  pack.blueprint.learningObjectiveCatalogVersion = 'internal-remediation-v1';
+  pack.blueprint.learningObjectiveCatalog = buildLearningObjectiveCatalog();
   pack.blueprint.lastVerifiedAt = verifiedAt;
   pack.blueprint.sourceDigest = 'pending-build-generation';
   pack.releaseGates.internalStructuralValidation = `passed-${verifiedAt}`;
@@ -1550,14 +1833,14 @@ function main() {
     for (let index = 0; index < neededP2; index += 1) {
       const id = `ap-psych-u${unitNumber}-${String(nextNumberByUnit.get(plan.unit)).padStart(3, '0')}`;
       nextNumberByUnit.set(plan.unit, nextNumberByUnit.get(plan.unit) + 1);
-      const blueprint = researchBlueprint(plan, index);
+      const blueprint = researchBlueprint(plan, index, newItemCursor);
       generatedByUnit.get(plan.unit).push(makeGenericItem(topicId, plan, blueprint, 'P2', p2Skills[index % p2Skills.length], id, answerPositions[newItemCursor], newItemCursor));
       newItemCursor += 1;
     }
     for (let index = 0; index < neededP3; index += 1) {
       const id = `ap-psych-u${unitNumber}-${String(nextNumberByUnit.get(plan.unit)).padStart(3, '0')}`;
       nextNumberByUnit.set(plan.unit, nextNumberByUnit.get(plan.unit) + 1);
-      const blueprint = dataBlueprint(plan, p3Cursor);
+      const blueprint = dataBlueprint(plan, p3Cursor, newItemCursor);
       generatedByUnit.get(plan.unit).push(makeGenericItem(topicId, plan, blueprint, 'P3', p3Skills[index % p3Skills.length], id, answerPositions[newItemCursor], newItemCursor));
       newItemCursor += 1;
       p3Cursor += 1;
@@ -1573,8 +1856,12 @@ function main() {
   }
   assert(newItems.length === 460, 'Balanced bank assembly lost generated items.');
   pack.items = [...originalItems, ...newItems];
+  pack.items.forEach(applyLearningRoute);
   updatePackMetadata(pack);
   library.version = version;
+  library.blueprint.learningObjectiveCatalogVersion = 'internal-remediation-v1';
+  library.blueprint.learningObjectiveCatalog = pack.blueprint.learningObjectiveCatalog;
+  library.blueprint.remediationRouteNote = 'Internal editorial routing only. Chapter and lesson destinations support study navigation; they are not official College Board objective labels or release evidence.';
   library.blueprint.lastVerifiedAt = verifiedAt;
   library.releaseGates.internalStructuralValidation = `passed-${verifiedAt}`;
   writeJson(packPath, pack);

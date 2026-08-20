@@ -44,6 +44,8 @@ function makeStatefulHost(overrides) {
     const [score, setScore] = React.useState({ correct: 0, total: 0, streak: 0 });
     const [preloaded, setPreloaded] = React.useState(overrides.wsPreloadedWords);
     const [history, setHistory] = React.useState([]);
+    const [deliveryAt, setDeliveryAt] = React.useState(overrides.preparedAudioDeliveryAt ?? 0);
+    if (typeof overrides.captureDeliveryAtSetter === 'function') overrides.captureDeliveryAtSetter(setDeliveryAt);
     const props = {
       ...baseProps(overrides.wordSoundsActivity),
       ...overrides,
@@ -54,6 +56,7 @@ function makeStatefulHost(overrides) {
       wordSoundsScore: score, setWordSoundsScore: setScore,
       wsPreloadedWords: preloaded, setWsPreloadedWords: setPreloaded,
       wordSoundsHistory: history, setWordSoundsHistory: setHistory,
+      preparedAudioDeliveryAt: deliveryAt,
     };
     return React.createElement(WordSoundsModal, props);
   };
@@ -166,6 +169,136 @@ describe('live-session push: student lands in the activity, not the review panel
       await act(async () => { await new Promise((r) => setTimeout(r, 70)); });
       expect(statuses).toContainEqual(expect.objectContaining({ status: 'checking', ready: 1, total: 2, failed: 0, deliveryAt: 4242 }));
       expect(statuses.at(-1)).toMatchObject({ status: 'ready', ready: 2, total: 2, failed: 0, deliveryAt: 4242 });
+    } finally {
+      globalThis.Audio = window.Audio = originalAudio;
+    }
+  });
+
+  it('opens the first activity after its startup clip passes while the remaining pack checks in the background', async () => {
+    const originalAudio = globalThis.Audio;
+    class PrioritizedAudio {
+      constructor(src = '') { this.src = src; }
+      canPlayType() { return 'probably'; }
+      load() {
+        if (!this.src) return;
+        const isStartupClip = this.src.includes('QUJDRA==');
+        setTimeout(() => this.onloadedmetadata?.(), isStartupClip ? 0 : 600);
+      }
+      play() { Promise.resolve().then(() => this.onended?.()); return Promise.resolve(); }
+      pause() {}
+      removeAttribute(name) { if (name === 'src') this.src = ''; }
+    }
+    globalThis.Audio = window.Audio = PrioritizedAudio;
+    try {
+      const calls = [];
+      const statuses = [];
+      const packItem = makePackItem();
+      packItem._ttsRequiredKeys = ['cat', 'dog'];
+      packItem._ttsAssets = {
+        cat: { mime: 'audio/mpeg', base64: 'QUJDRA==' },
+        dog: { mime: 'audio/mpeg', base64: 'RUZHSA==' },
+      };
+      const Host = makeStatefulHost(studentPushOverrides(calls, {
+        wsPreloadedWords: [{ ...packItem, _audioRequested: false }],
+        onPreparedAudioStatus: (report) => statuses.push(report),
+      }));
+      const { host } = mount(React.createElement(Host));
+      await act(async () => { await new Promise((r) => setTimeout(r, 400)); });
+
+      expect(statuses).toContainEqual(expect.objectContaining({ status: 'checking', ready: 1, total: 2, failed: 0 }));
+      expect(host.querySelector('[data-testid="word-sounds-audio-preparing"]')).toBeFalsy();
+      const tiles = Array.from(host.querySelectorAll('button, [role="button"]')).map((button) => button.textContent.trim());
+      expect(tiles.some((text) => /^[0-9]+\+?$/.test(text))).toBe(true);
+
+      await act(async () => { await new Promise((r) => setTimeout(r, 300)); });
+      expect(statuses.at(-1)).toMatchObject({ status: 'ready', ready: 2, total: 2, failed: 0 });
+      expect(calls).toEqual([]);
+    } finally {
+      globalThis.Audio = window.Audio = originalAudio;
+    }
+  });
+
+  it('rechecks the mounted activity against a fresh delivery nonce after reconnect or resend', async () => {
+    const originalAudio = globalThis.Audio;
+    class ReconnectAudio {
+      constructor(src = '') { this.src = src; }
+      canPlayType() { return 'probably'; }
+      load() { if (this.src) Promise.resolve().then(() => this.onloadedmetadata?.()); }
+      play() { setTimeout(() => this.onended?.(), 0); return Promise.resolve(); }
+      pause() {}
+      removeAttribute(name) { if (name === 'src') this.src = ''; }
+    }
+    globalThis.Audio = window.Audio = ReconnectAudio;
+    try {
+      const calls = [];
+      const statuses = [];
+      let setDeliveryAt;
+      const Host = makeStatefulHost(studentPushOverrides(calls, {
+        preparedAudioDeliveryAt: 101,
+        captureDeliveryAtSetter: (setter) => { setDeliveryAt = setter; },
+        onPreparedAudioStatus: (report) => statuses.push(report),
+      }));
+      mount(React.createElement(Host));
+      await act(async () => { await new Promise((r) => setTimeout(r, 80)); });
+      expect(statuses.at(-1)).toMatchObject({ status: 'ready', deliveryAt: 101 });
+
+      await act(async () => { setDeliveryAt(202); await new Promise((r) => setTimeout(r, 80)); });
+      expect(statuses).toContainEqual(expect.objectContaining({ status: 'checking', deliveryAt: 202 }));
+      expect(statuses.at(-1)).toMatchObject({ status: 'ready', deliveryAt: 202 });
+      expect(calls).toEqual([]);
+    } finally {
+      globalThis.Audio = window.Audio = originalAudio;
+    }
+  });
+
+  it('focuses blocked-playback recovery and retries without losing the activity', async () => {
+    const originalAudio = globalThis.Audio;
+    let playbackAllowed = false;
+    let playCalls = 0;
+    class GestureAudio {
+      constructor(src = '') {
+        this.src = src;
+        if (src) setTimeout(() => this.oncanplaythrough?.(), 0);
+      }
+      canPlayType() { return 'probably'; }
+      load() { if (this.src) Promise.resolve().then(() => this.onloadedmetadata?.()); }
+      play() {
+        playCalls += 1;
+        if (!playbackAllowed) return Promise.reject(new DOMException('User gesture required', 'NotAllowedError'));
+        setTimeout(() => this.onended?.(), 0);
+        return Promise.resolve();
+      }
+      pause() {}
+      removeAttribute(name) { if (name === 'src') this.src = ''; }
+    }
+    globalThis.Audio = window.Audio = GestureAudio;
+    try {
+      const calls = [];
+      const statuses = [];
+      const Host = makeStatefulHost(studentPushOverrides(calls, {
+        playInstructions: false,
+        onPreparedAudioStatus: (report) => statuses.push(report),
+      }));
+      const { host } = mount(React.createElement(Host));
+      await act(async () => { await new Promise((r) => setTimeout(r, 400)); });
+      await act(async () => { await new Promise((r) => setTimeout(r, 1500)); });
+
+      expect(playCalls).toBeGreaterThan(0);
+      expect(statuses.at(-1)).toMatchObject({ status: 'blocked', failed: 1 });
+      const retry = Array.from(host.querySelectorAll('button')).find((button) => button.textContent.trim() === 'Try sound again');
+      expect(retry).toBeTruthy();
+      await act(async () => { await new Promise((r) => setTimeout(r, 20)); });
+      expect(document.activeElement).toBe(retry);
+
+      playbackAllowed = true;
+      await act(async () => { retry.click(); await new Promise((r) => setTimeout(r, 50)); });
+      expect(statuses.at(-1)).toMatchObject({ status: 'ready', failed: 0 });
+      expect(host.querySelector('[data-testid="word-sounds-audio-unavailable"]')).toBeFalsy();
+      const tiles = Array.from(host.querySelectorAll('button, [role="button"]')).map((button) => button.textContent.trim());
+      expect(tiles.some((text) => /^[0-9]+\+?$/.test(text))).toBe(true);
+      await act(async () => { await new Promise((r) => setTimeout(r, 20)); });
+      expect(host.contains(document.activeElement)).toBe(true);
+      expect(calls).toEqual([]);
     } finally {
       globalThis.Audio = window.Audio = originalAudio;
     }

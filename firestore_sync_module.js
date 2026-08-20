@@ -231,13 +231,71 @@
     return value;
   }
 
+  function normalizePersistedInstructionalText(item) {
+    if (!item || typeof item !== 'object') return null;
+    const config = item.config && typeof item.config === 'object' ? item.config : {};
+    const raw = item.instructionalText || config.instructionalText || item.textProfile || config.textProfile || null;
+    const isTextArtifact = item.type === 'analysis' || item.type === 'simplified';
+    if (!raw && !isTextArtifact) return null;
+    const inferredForm = item.type === 'simplified' ? 'adapted' : 'original';
+    let value = raw;
+    try {
+      const api = window.AlloModules && window.AlloModules.InstructionalContext;
+      if (raw && api && typeof api.normalizeInstructionalText === 'function') value = api.normalizeInstructionalText(raw, { defaultForm: inferredForm });
+    } catch (e) { value = raw; }
+    value = value && typeof value === 'object' ? value : {};
+    const role = ['primary', 'supplemental', 'unspecified'].includes(value.role) ? value.role : 'unspecified';
+    const form = ['original', 'same-text-supported', 'adapted'].includes(value.form) ? value.form : inferredForm;
+    const auth = value.replacementAuthorization && typeof value.replacementAuthorization === 'object'
+      ? value.replacementAuthorization : {};
+    const authorized = auth.authorized === true && auth.source === 'educator';
+    const complexity = value.complexity && typeof value.complexity === 'object' ? value.complexity : {};
+    return stripUndefined({
+      schemaVersion: 1,
+      role,
+      form,
+      sourceArtifactId: value.sourceArtifactId == null ? null : String(value.sourceArtifactId),
+      primaryArtifactId: value.primaryArtifactId == null ? null : String(value.primaryArtifactId),
+      designationSource: ['educator', 'workflow-default', 'legacy-inferred'].includes(value.designationSource)
+        ? value.designationSource : 'legacy-inferred',
+      replacementAuthorization: { authorized, source: authorized ? 'educator' : 'none' },
+      complexity: {
+        requestedGrade: complexity.requestedGrade || item.targetGradeLevel || config.grade || '',
+        calibrationTarget: complexity.calibrationTarget || '',
+        measuredGrade: complexity.measuredGrade != null
+          ? complexity.measuredGrade
+          : (item.localStats && item.localStats.gradeLevel != null ? item.localStats.gradeLevel : null),
+        method: complexity.method || (item.localStats ? 'flesch-kincaid' : ''),
+        status: complexity.status || '',
+        contentFingerprint: complexity.contentFingerprint || '',
+        measuredAt: complexity.measuredAt || null,
+        language: complexity.language || config.language || '',
+      },
+    });
+  }
+
   function compactSessionResource(item) {
     const data = item && item.data && typeof item.data === 'object' ? item.data : {};
+    const instructionalText = normalizePersistedInstructionalText(item);
+    const itemConfig = item && item.config && typeof item.config === 'object' ? item.config : {};
     return stripUndefined({
       id: item && item.id,
       type: item && item.type,
       title: (item && item.title) || data.title || data.main || 'Shared resource',
       subtitle: (item && item.subtitle) || data.subtitle || data.gradeLevel || data.language || '',
+      config: Object.keys(itemConfig).length ? {
+        grade: itemConfig.grade,
+        language: itemConfig.language,
+        standards: itemConfig.standards,
+        standardsContext: itemConfig.standardsContext,
+        instructionalContext: itemConfig.instructionalContext,
+      } : undefined,
+      instructionalContext: item && (item.instructionalContext || itemConfig.instructionalContext),
+      standardsContext: item && item.standardsContext,
+      instructionalText: instructionalText || undefined,
+      localStats: item && item.localStats,
+      targetGradeLevel: item && item.targetGradeLevel,
+      sourceProvenance: item && item.sourceProvenance,
       syncTruncated: true,
       syncNotice: 'This resource was too large for the live session document. Open the teacher device or exported pack for the full version.',
     });
@@ -309,11 +367,13 @@
                   }
               }
           }
-          return {
+          const hydratedItem = {
               ...item,
               data: parsedData,
               gameData: parsedGameData || item.gameData
           };
+          const instructionalText = normalizePersistedInstructionalText(hydratedItem);
+          return instructionalText ? { ...hydratedItem, instructionalText } : hydratedItem;
       });
   }
 
@@ -326,6 +386,7 @@
   window.stripHeavyArtwork = stripHeavyArtwork;
   window.fitArtworkToBudget = fitArtworkToBudget;
   window.prepareSessionResourcesForWrite = prepareSessionResourcesForWrite;
+  window.normalizePersistedInstructionalText = normalizePersistedInstructionalText;
   // Exposed for the student-pack serializer (mailbox/QR channels): packs must
   // apply the SAME binary-null + string-trim pass the Firebase session path
   // gets, instead of narrowing items to a five-field allowlist.

@@ -212,7 +212,7 @@ Do not replace formal notation when the notation is itself part of the goal. Tea
 
 ### Reading and decoding load
 
-Keep the original source available when appropriate. Offer read-aloud, clarified layout, chunking, vocabulary, and a version that preserves essential content. If decoding or fluency is being assessed, separate access support for directions from the text students must read independently.
+Keep the designated primary source available when required by the learning target, standard, student plan, assessment conditions, or local policy. Offer read-aloud, clarified layout, chunking, vocabulary, and a supplemental version that preserves essential content and cognitive demand. If decoding or fluency is being assessed, separate access support for directions from the text students must read independently. Treat AlloFlow's role labels and warnings as planning safeguards, not legal or eligibility determinations.
 
 ### Executive-function load
 

@@ -1,0 +1,170 @@
+{
+  "reportId": "ap-biology-foundation-qa",
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-20T00:00:00.000Z",
+  "packId": "ap-biology-foundation-pilot",
+  "version": "0.1.0-internal-preview",
+  "status": "pass",
+  "automatedAssessment": "pass",
+  "structuralFindings": [],
+  "editorialAdvisories": [
+    {
+      "check": "independent-human-review",
+      "asset": "pack",
+      "recordId": "",
+      "message": "Before release, obtain AP Biology subject-expert, lab-boundary, rights, accessibility, production, field-testing, psychometric, and current-CED review.",
+      "requiresHumanJudgment": true
+    }
+  ],
+  "signals": [
+    {
+      "id": "asset-identity",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Pack/library identity, version, internal-preview state, and cross-links are consistent."
+    },
+    {
+      "id": "blueprint-and-unit-coverage",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "The eight current AP Biology units, public weight ranges, four big ideas, and six science practices are declared."
+    },
+    {
+      "id": "one-best-answer",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Every pilot item and chapter check has four distinct choices and one valid key."
+    },
+    {
+      "id": "substantive-feedback",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Every item has an overall rationale and option-specific feedback of meaningful length."
+    },
+    {
+      "id": "learning-alignment",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Every item resolves to an internal objective, topic, chapter, lesson route, and science-practice metadata."
+    },
+    {
+      "id": "library-inventory",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Native chapters, sections, checks, cards, memory aids, and rich prototypes match their declared counts."
+    },
+    {
+      "id": "library-content-structure",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "The native library has navigable, text-first chapter structures and structured lesson blocks."
+    },
+    {
+      "id": "source-and-provenance",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Public blueprint/factual references and independent-original provenance declarations are complete."
+    },
+    {
+      "id": "rights-boundary",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Restricted content, copied-question, and release flags remain closed pending independent review."
+    },
+    {
+      "id": "accessibility-boundary",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Text, linear-reading-order, hands-free, and independent accessibility gates are declared."
+    },
+    {
+      "id": "expert-review-boundary",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "AP Biology subject-expert review remains pending and release-blocking."
+    },
+    {
+      "id": "psychometric-boundary",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "The pilot remains uncalibrated, unreleased, non-predictive, and non-official."
+    },
+    {
+      "id": "prompt-originality",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "No exact or conservative high-similarity duplicate prompt pair exists in the pilot."
+    },
+    {
+      "id": "deployment-parity",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Source and deployment mirrors are byte-identical after the manifest build."
+    }
+  ],
+  "metrics": {
+    "itemCount": 50,
+    "unitCount": 8,
+    "unitCounts": {
+      "chemistry-of-life": 6,
+      "cells": 6,
+      "cellular-energetics": 6,
+      "cell-communication-and-cell-cycle": 6,
+      "heredity": 6,
+      "gene-expression-and-regulation": 7,
+      "natural-selection": 7,
+      "ecology": 6
+    },
+    "practiceCounts": {
+      "SP1": 7,
+      "SP3": 9,
+      "SP2": 12,
+      "SP5": 8,
+      "SP4": 5,
+      "SP6": 9
+    },
+    "answerCounts": {
+      "A": 13,
+      "B": 13,
+      "C": 12,
+      "D": 12
+    },
+    "chapterCount": 8,
+    "sectionCount": 8,
+    "knowledgeCheckCount": 8,
+    "flashcardCount": 8,
+    "memoryAidCount": 8,
+    "richLessonPrototypeCount": 2,
+    "nearDuplicatePairCount": 0
+  },
+  "inputs": {
+    "packSha256": "05d8bcdec6a0b1d99af9c5f717f85940412159eab43ff2a16bcc16ad7a4f893d",
+    "learningLibrarySha256": "ec1af4b158f2d8722fe6b95ff06cd6643924d90674547a0a8aa29e24eaf79bf2",
+    "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
+    "officialCourseUrl": "https://apstudents.collegeboard.org/courses/ap-biology",
+    "factualCrossCheckUrl": "https://openstax.org/details/books/biology-2e"
+  },
+  "deploymentParity": [
+    {
+      "asset": "pack",
+      "status": "pass",
+      "blocking": false,
+      "sourceSha256": "05d8bcdec6a0b1d99af9c5f717f85940412159eab43ff2a16bcc16ad7a4f893d",
+      "deploySha256": "05d8bcdec6a0b1d99af9c5f717f85940412159eab43ff2a16bcc16ad7a4f893d"
+    },
+    {
+      "asset": "learning-library",
+      "status": "pass",
+      "blocking": false,
+      "sourceSha256": "ec1af4b158f2d8722fe6b95ff06cd6643924d90674547a0a8aa29e24eaf79bf2",
+      "deploySha256": "ec1af4b158f2d8722fe6b95ff06cd6643924d90674547a0a8aa29e24eaf79bf2"
+    }
+  ],
+  "releaseBlockers": [
+    "Independent AP Biology subject-expert review",
+    "Independent accessibility and production validation",
+    "Rights review and current-CED/policy reverification",
+    "Field testing and psychometric calibration",
+    "Laboratory boundary review; this pilot is not laboratory competency or safety training"
+  ]
+}

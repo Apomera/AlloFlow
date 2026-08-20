@@ -7618,6 +7618,58 @@ ${pageCss}
   const hasConceptSort = (history || []).some((h) => h && h.type === "concept-sort");
   const hasAssessmentContent = (history || []).some((h) => h && (h.type === "quiz" || h.type === "assessment" || h.type === "stem-assessment"));
   const showDisplayModes = hasGlossary || hasTimeline || hasBrainstorm || hasConceptSort;
+  const textAccessExportReview = React.useMemo(() => {
+    const source = Array.isArray(history) ? history : [];
+    const toggleForType = {
+      analysis: "includeAnalysis",
+      simplified: "includeSimplified",
+      glossary: "includeGlossary",
+      quiz: "includeQuiz",
+      outline: "includeOutline",
+      faq: "includeFaq",
+      "sentence-frames": "includeSentenceFrames",
+      image: "includeImage",
+      math: "includeMath",
+      dbq: "includeDbq",
+      "lesson-plan": "includeLessonPlan",
+      "udl-advice": "includeUdlAdvice",
+      brainstorm: "includeBrainstorm"
+    };
+    const selected = source.filter((item) => {
+      if (!item) return false;
+      const key = toggleForType[item.type];
+      return !key || exportConfig[key] !== false;
+    });
+    const profileFor = (item) => {
+      const config = item && item.config && typeof item.config === "object" ? item.config : {};
+      const raw = item && (item.instructionalText || config.instructionalText || item.textProfile || config.textProfile) || {};
+      const role = ["primary", "supplemental", "unspecified"].includes(raw.role) ? raw.role : "unspecified";
+      const form = ["original", "same-text-supported", "adapted"].includes(raw.form) ? raw.form : item && item.type === "simplified" ? "adapted" : "original";
+      const auth = raw.replacementAuthorization && typeof raw.replacementAuthorization === "object" ? raw.replacementAuthorization : {};
+      return { role, form, authorized: auth.authorized === true && auth.source === "educator" };
+    };
+    const validPrimary = selected.filter((item) => {
+      const profile = profileFor(item);
+      return profile.role === "primary" && (profile.form !== "adapted" || profile.authorized);
+    });
+    const supplemental = selected.filter((item) => profileFor(item).role === "supplemental");
+    const unspecifiedAdapted = selected.filter((item) => {
+      const profile = profileFor(item);
+      return profile.role === "unspecified" && profile.form === "adapted";
+    });
+    const unauthorizedPrimaryAdaptations = selected.filter((item) => {
+      const profile = profileFor(item);
+      return profile.role === "primary" && profile.form === "adapted" && !profile.authorized;
+    });
+    return {
+      primaryCount: validPrimary.length,
+      supplementalCount: supplemental.length,
+      unspecifiedAdaptedCount: unspecifiedAdapted.length,
+      unauthorizedPrimaryAdaptationCount: unauthorizedPrimaryAdaptations.length,
+      supplementalWithoutPrimary: supplemental.length > 0 && validPrimary.length === 0,
+      unspecifiedAdaptedWithoutPrimary: unspecifiedAdapted.length > 0 && validPrimary.length === 0
+    };
+  }, [history, exportConfig]);
   if (!showExportPreview) return null;
   return /* @__PURE__ */ React.createElement(
     "div",
@@ -7809,7 +7861,7 @@ ${pageCss}
         onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, readerWebFonts: e.target.checked })),
         "aria-describedby": "doc-builder-readerfonts-help"
       }
-), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Let readers pick additional web fonts"), /* @__PURE__ */ React.createElement("span", { id: "doc-builder-readerfonts-help", className: "block text-slate-600" }, "Adds accessibility, multilingual, sans-serif, serif and monospace web fonts to the menu inside the exported page. They are downloaded when the page opens, so leave this off for offline use or if your district blocks outside requests. The nine built-in fonts always work offline."))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 shrink-0" }, "Size:"), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Let readers pick additional web fonts"), /* @__PURE__ */ React.createElement("span", { id: "doc-builder-readerfonts-help", className: "block text-slate-600" }, "Adds accessibility, multilingual, sans-serif, serif and monospace web fonts to the menu inside the exported page. They are downloaded when the page opens, so leave this off for offline use or if your district blocks outside requests. The nine built-in fonts always work offline."))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 shrink-0" }, "Size:"), /* @__PURE__ */ React.createElement(
       "input",
       {
         type: "range",
@@ -8036,7 +8088,7 @@ ${pageCss}
       const teacherOnlyDefault = /* @__PURE__ */ new Set(["includeAnalysis", "includeUdlAdvice", "includeBrainstorm"]);
       const available = [
         ["includeAnalysis", "\u{1F4CA} Source Analysis", "analysis"],
-        ["includeSimplified", "\u{1F4D6} Leveled Text", "simplified"],
+        ["includeSimplified", "\u{1F4D6} Adapted Text", "simplified"],
         ["includeGlossary", "\u{1F4DA} Glossary", "glossary"],
         ["includeQuiz", "\u2753 Quiz", "quiz"],
         ["includeOutline", "\u{1F5C2}\uFE0F Graphic Organizer", "outline"],
@@ -8056,7 +8108,7 @@ ${pageCss}
         const showCloze = key === "includeSimplified" && exportPreviewMode === "worksheet" && exportConfig.includeSimplified && history.some((h) => h && h.type === "glossary");
         return /* @__PURE__ */ React.createElement(React.Fragment, { key }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5", title: tooltip }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: exportConfig[key], onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, [key]: e.target.checked })), className: "rounded" }), /* @__PURE__ */ React.createElement("span", null, label, isTeacherOnly && /* @__PURE__ */ React.createElement("span", { className: "ml-1 text-[11px] text-indigo-700 font-bold" }, "(also in student copy)"))), showCloze && /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5 ml-5", title: "Blanks out the glossary words in the passage and adds a word bank. The answer key rides with the teacher copy." }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: !!exportConfig.clozeWorksheet, onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, clozeWorksheet: e.target.checked })), className: "rounded mt-0.5" }), /* @__PURE__ */ React.createElement("span", null, "\u270F\uFE0F Fill in the blanks", /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-slate-600 leading-tight" }, "Blanks the glossary words and adds a word bank."))));
       });
-    })())), (() => {
+    })())), (textAccessExportReview.supplementalWithoutPrimary || textAccessExportReview.unspecifiedAdaptedWithoutPrimary || textAccessExportReview.unauthorizedPrimaryAdaptationCount > 0) && /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-amber-300 bg-amber-50 p-2", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-bold text-amber-950" }, "Text-access review before sharing"), textAccessExportReview.supplementalWithoutPrimary && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[11px] leading-snug text-amber-900" }, "The current student selection includes ", textAccessExportReview.supplementalCount, " supplemental text", textAccessExportReview.supplementalCount === 1 ? "" : "s", " but no designated primary text. Confirm that students will receive the intended primary separately, or include it in this export."), textAccessExportReview.unspecifiedAdaptedWithoutPrimary && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[11px] leading-snug text-amber-900" }, "The current student selection includes ", textAccessExportReview.unspecifiedAdaptedCount, " adapted text", textAccessExportReview.unspecifiedAdaptedCount === 1 ? "" : "s", " whose instructional role is not set, and no designated primary text. Confirm the intended relationship before distribution."), textAccessExportReview.unauthorizedPrimaryAdaptationCount > 0 && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[11px] leading-snug text-amber-900" }, "An adapted text is marked primary without an explicit educator replacement decision. Keep it supplemental or update the designation before distribution."), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[10px] text-amber-800" }, "This notice is advisory and does not make an IEP or legal-compliance determination.")), (() => {
       const skipped = getSkippedResources();
       if (skipped.length === 0) return null;
       const skippedTypes = new Set((Array.isArray(history) ? history : []).filter((item) => item && (item.type === "adventure" || item.type === "persona")).map((item) => item.type));

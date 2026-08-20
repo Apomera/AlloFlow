@@ -38,4 +38,12 @@ describe('AlloBot reduced-motion accessibility', () => {
     expect(moduleSource).toContain('motion-reduce:transition-none');
     expect(publicModule).toBe(moduleSource);
   });
+
+  it('keeps completion feedback visible without requiring motion', () => {
+    expect(source).toContain("className={motionDisabled ? 'allobot-generation-complete-static' : 'animate-allobot-generation-complete'}");
+    expect(source).toContain('.allobot-generation-complete-static { opacity: 1 !important; }');
+    expect(source).toContain('.allobot-generation-complete-static .animate-allobot-generation-completion-check');
+    expect(source).toContain("if (prev === 'thinking' && effectiveMood !== 'thinking' && !isSleeping");
+    expect(moduleSource).toContain('allobot-generation-complete-static');
+  });
 });

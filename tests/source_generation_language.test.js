@@ -16,7 +16,8 @@ describe('source generation language ownership', () => {
   });
 
   it('publishes the UI language to the content-engine state bag', () => {
-    expect(appSource).toMatch(/__contentEngineState\s*=\s*\{[\s\S]*?generatedContent, currentUiLanguage,/);
+    expect(appSource).toMatch(/contentEngineStateRef\.current\s*=\s*\{[\s\S]*?generatedContent, currentUiLanguage,/);
+    expect(appSource).toContain('window.__contentEngineState = contentEngineStateRef.current;');
   });
 
   it('gives the Word Sounds disclosures their localized panel name', () => {

@@ -240,6 +240,42 @@ const InteractiveBlueprintCard = React.memo(({
   // deploy gates do not catch).
   const [openDescIds, setOpenDescIds] = useState([]);
   const getReadableToolLabel = id => String(id || '').split('-').map(part => part ? part.charAt(0).toUpperCase() + part.slice(1) : '').join(' ');
+  const getPlanInstructionalText = (type, existing) => {
+    const hasExisting = existing && typeof existing === 'object';
+    if (!hasExisting && type !== 'simplified' && type !== 'analysis') return null;
+    const defaults = type === 'simplified' ? {
+      role: 'supplemental',
+      form: 'adapted'
+    } : type === 'analysis' ? {
+      role: 'primary',
+      form: 'original'
+    } : {};
+    const candidate = {
+      schemaVersion: 1,
+      role: defaults.role || 'unspecified',
+      form: defaults.form || 'original',
+      sourceArtifactId: null,
+      primaryArtifactId: null,
+      designationSource: 'workflow-default',
+      replacementAuthorization: {
+        authorized: false,
+        source: 'none'
+      },
+      complexity: {
+        requestedGrade: config?.instructionalContext?.instructionalGrade || config?.globalSettings?.gradeLevel || '',
+        calibrationTarget: '',
+        measuredGrade: null,
+        method: '',
+        status: 'unavailable',
+        contentFingerprint: '',
+        measuredAt: '',
+        language: config?.globalSettings?.language || config?.globalSettings?.leveledTextLanguage || 'English'
+      },
+      ...(hasExisting ? existing : {})
+    };
+    const contextModule = window.AlloModules?.InstructionalContext;
+    return contextModule && typeof contextModule.normalizeInstructionalText === 'function' ? contextModule.normalizeInstructionalText(candidate) : candidate;
+  };
   const getPlanItems = cfg => {
     if (!cfg) return [];
     const rawPlan = Array.isArray(cfg.resourcePlan) && cfg.resourcePlan.length > 0 ? cfg.resourcePlan : Array.isArray(cfg.recommendedResources) ? cfg.recommendedResources : [];
@@ -250,7 +286,8 @@ const InteractiveBlueprintCard = React.memo(({
       return {
         id: typeof item === 'object' && item.uiId || `step-${idx}-${type}`,
         type,
-        directive
+        directive,
+        instructionalText: getPlanInstructionalText(type, typeof item === 'object' && item ? item.instructionalText : null)
       };
     }).filter(Boolean);
   };
@@ -264,7 +301,8 @@ const InteractiveBlueprintCard = React.memo(({
     const resourcePlan = newItems.map(i => ({
       tool: i.type,
       directive: i.directive || "",
-      uiId: i.id
+      uiId: i.id,
+      instructionalText: getPlanInstructionalText(i.type, i.instructionalText)
     }));
     const toolDirectives = resourcePlan.reduce((acc, curr) => {
       if (!acc[curr.tool]) acc[curr.tool] = curr.directive || "";
@@ -309,6 +347,9 @@ const InteractiveBlueprintCard = React.memo(({
   const handleTypeChange = (index, newType) => {
     const newItems = [...items];
     newItems[index].type = newType;
+    // A resource-type change is a new instructional designation. Do not carry
+    // an adapted-text role onto a quiz (or vice versa).
+    newItems[index].instructionalText = getPlanInstructionalText(newType, null);
     syncChanges(newItems);
   };
   const handleDirectiveChange = (index, newText) => {
@@ -324,7 +365,8 @@ const InteractiveBlueprintCard = React.memo(({
     const newItem = {
       id: `new-${Date.now()}`,
       type: 'simplified',
-      directive: 'New step...'
+      directive: 'New step...',
+      instructionalText: getPlanInstructionalText('simplified', null)
     };
     syncChanges([...items, newItem]);
   };

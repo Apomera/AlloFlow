@@ -80,7 +80,7 @@ async function main() {
     try {
         context = await configureContext(browser, { viewport: { width: 1440, height: 1000 } });
 
-        for (const file of ['index.html', 'tools.html', 'feedback.html', 'manuals.html']) {
+        for (const file of ['index.html', 'about.html', 'tools.html', 'feedback.html', 'manuals.html']) {
             const page = await context.newPage();
             const runtimeErrors = [];
             page.on('pageerror', (error) => runtimeErrors.push(error.message));
@@ -92,6 +92,7 @@ async function main() {
             assert(await page.locator('[data-site-nav="primary"] a').count() === 7, `${file} primary navigation is not compact`);
             const axeIncludes = {
                 'index.html': [['.navbar'], ['#homeEntryPaths'], ['.home-tool-finder-section'], ['#homeRemediation'], ['.community-feedback-band'], ['.footer']],
+                'about.html': [['body']],
                 'tools.html': [['.navbar'], ['main#main-content'], ['.footer']],
                 'feedback.html': [['body']]
             };

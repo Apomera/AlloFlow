@@ -17,35 +17,35 @@ describe('AP Psychology internal learning library', () => {
     expect(library.visibility).toBe('internal');
     expect(library.chapters).toHaveLength(5);
     expect(total(library.chapters, 'sections')).toBe(15);
-    expect(total(library.chapters, 'knowledgeChecks')).toBe(10);
-    expect(library.flashcards).toHaveLength(15);
-    expect(library.memoryAids).toHaveLength(10);
+    expect(total(library.chapters, 'knowledgeChecks')).toBe(25);
+    expect(library.flashcards).toHaveLength(30);
+    expect(library.memoryAids).toHaveLength(15);
     expect(library.constructedResponseWorkshops).toHaveLength(2);
     expect(library.summary).toMatchObject({
       chapters: 5,
       sections: 15,
       diagrams: 5,
       diagramPlacements: 5,
-      knowledgeChecks: 10,
-      flashcards: 15,
-      memoryAids: 10,
+      knowledgeChecks: 25,
+      flashcards: 30,
+      memoryAids: 15,
       constructedResponseWorkshops: 2,
       releaseEligibleRecords: 0,
     });
   });
 
-  it('provides three sections and two structurally valid checks per unit chapter', () => {
+  it('provides three sections and five structurally valid checks per unit chapter', () => {
     const chapterIds = library.chapters.map((chapter) => chapter.id);
     const sectionIds = library.chapters.flatMap((chapter) => chapter.sections.map((section) => section.id));
     const checks = library.chapters.flatMap((chapter) => chapter.knowledgeChecks);
 
     expect(new Set(chapterIds).size).toBe(5);
     expect(new Set(sectionIds).size).toBe(15);
-    expect(new Set(checks.map((check) => check.id)).size).toBe(10);
+    expect(new Set(checks.map((check) => check.id)).size).toBe(25);
 
     for (const chapter of library.chapters) {
       expect(chapter.sections).toHaveLength(3);
-      expect(chapter.knowledgeChecks).toHaveLength(2);
+      expect(chapter.knowledgeChecks).toHaveLength(5);
       expect(chapter.expertReviewStatus).toBe('pending');
       expect(chapter.accessibilityReviewStatus).toBe('pending-independent-review');
       expect(chapter.releaseEligible).toBe(false);
@@ -59,6 +59,35 @@ describe('AP Psychology internal learning library', () => {
         expect(check.references.length).toBeGreaterThan(0);
       }
     }
+  });
+
+  it('provides expanded textbook lessons and linked retrieval routes', () => {
+    expect(library.version).toBe('0.5.0-internal-preview');
+    expect(library.blueprint).toMatchObject({
+      textbookEnhancementVersion: 'ap-psychology-textbook-v1',
+    });
+    expect(library.contentMigration).toMatchObject({
+      contentVersion: 'ap-psychology-textbook-v1',
+      sections: 15,
+      completeSections: 15,
+      status: 'complete',
+    });
+
+    const sections = library.chapters.flatMap((chapter) => chapter.sections);
+    expect(sections).toHaveLength(15);
+    expect(sections.every((section) => section.contentComplete === true)).toBe(true);
+    expect(sections.every((section) => section.contentEnhancementVersion === 'ap-psychology-textbook-v1')).toBe(true);
+    expect(sections.every((section) => section.content.trim().split(/\s+/).length >= 250)).toBe(true);
+    expect(sections.every((section) => section.contentBlocks.length >= 5)).toBe(true);
+    expect(sections.every((section) => section.examples.length >= 2 && section.nonExamples.length >= 2)).toBe(true);
+    expect(sections.every((section) => section.commonMisconceptions.length >= 1)).toBe(true);
+    expect(sections.every((section) => section.workedDataExample.rows.length >= 2)).toBe(true);
+    expect(sections.every((section) => section.retrievalPrompts.length >= 3)).toBe(true);
+    expect(library.chapters.every((chapter) => chapter.chapterTakeaways.length >= 3)).toBe(true);
+    expect(sections.filter((section) => section.contentBlocks.some((block) => block.type === 'table'))).toHaveLength(15);
+    expect(library.chapters.flatMap((chapter) => chapter.knowledgeChecks).filter((check) => check.sectionId)).toHaveLength(15);
+    expect(library.flashcards.filter((card) => card.sectionId)).toHaveLength(15);
+    expect(library.memoryAids.filter((aid) => aid.id.startsWith('ap-psych-memory-route-'))).toHaveLength(5);
   });
 
   it('provides one optional, original, text-equivalent diagram placement per unit', () => {

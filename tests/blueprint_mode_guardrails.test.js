@@ -94,7 +94,10 @@ describe('blueprint mode guardrails', () => {
   it.each(hostBlueprintFiles)('%s builds Generate Unit lessons with canonical resourcePlan', (file) => {
     const src = read(file);
 
-    expect(src).toContain("const resourcePlan = types.map(tp => ({ tool: tp, directive: _lessonFocus }));");
+    expect(src).toContain('const resourcePlan = types.map(tp => ({');
+    expect(src).toContain('tool: tp,');
+    expect(src).toContain('directive: _lessonFocus,');
+    expect(src).toContain('instructionalText: _ic && typeof _ic.normalizeInstructionalText');
     expect(src).toContain('recommendedResources: resourcePlan.map(r => r.tool)');
     expect(src).toContain('toolDirectives: resourcePlan.reduce');
     expect(src).not.toContain('const blueprint = { recommendedResources: types, toolDirectives');

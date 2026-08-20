@@ -18,6 +18,12 @@ const getFullPackKnownTypes = () => {
     return new Set(catalog.length ? catalog : Array.from(FULL_PACK_FALLBACK_TYPES));
   } catch (_) { return new Set(Array.from(FULL_PACK_FALLBACK_TYPES)); }
 };
+// The review editor intentionally exposes only generator-backed resource
+// types. Return a fresh array so a select component cannot mutate the shared
+// ordering, and keep workflow actions such as package delivery out of the
+// resource list even if a future catalog happens to include them.
+const getFullPackEditableResourceTypes = () => Array.from(FULL_PACK_FALLBACK_TYPES)
+  .filter(type => !['full-pack', 'package-deliver', 'source-input', 'directions', '_final'].includes(type));
 const isUsableGeneratedResource = (item, expectedType) => {
   if (!item || typeof item !== 'object') return false;
   if (expectedType && item.type && item.type !== expectedType) return false;
@@ -47,6 +53,59 @@ const _fullPackFingerprint = (value) => {
     hash = Math.imul(hash, 16777619);
   }
   return 'fp-' + (hash >>> 0).toString(36) + '-' + text.length;
+};
+const _cloneFullPackValue = (value) => {
+  try { return JSON.parse(JSON.stringify(value)); } catch (_) { return value; }
+};
+const _getInstructionalContextModule = () => {
+  try {
+    return typeof window !== 'undefined' && window.AlloModules
+      ? window.AlloModules.InstructionalContext
+      : null;
+  } catch (_) { return null; }
+};
+const _normalizeFullPackInstructionalContext = (raw, options = {}) => {
+  const source = raw && typeof raw === 'object' ? raw : {};
+  const module = _getInstructionalContextModule();
+  if (module && typeof module.normalizeInstructionalContext === 'function') {
+    return module.normalizeInstructionalContext(source, {
+      instructionalGrade: options.gradeLevel || '',
+      standardsContext: options.standardsContext || null,
+    });
+  }
+  const standardsContext = _cloneFullPackValue(source.standardsContext || options.standardsContext || null);
+  return {
+    schemaVersion: 1,
+    instructionalGrade: String(source.instructionalGrade || options.gradeLevel || ''),
+    primaryTextPolicy: source.primaryTextPolicy === 'educator-directed' ? 'educator-directed' : 'preserve-primary',
+    standardsContext,
+    standardsFingerprint: String(source.standardsFingerprint || _fullPackFingerprint(JSON.stringify(standardsContext || null))),
+  };
+};
+const _fullPackInstructionalText = (type, raw, options = {}) => {
+  const isAdapted = type === 'simplified';
+  const isPrimaryAnalysis = type === 'analysis';
+  const defaults = {
+    schemaVersion: 1,
+    role: isAdapted ? 'supplemental' : (isPrimaryAnalysis ? 'primary' : 'unspecified'),
+    form: isAdapted ? 'adapted' : 'original',
+    sourceArtifactId: options.primaryArtifactId || null,
+    primaryArtifactId: options.primaryArtifactId || null,
+    designationSource: 'workflow-default',
+    replacementAuthorization: { authorized: false, source: 'none' },
+    complexity: {
+      requestedGrade: options.gradeLevel || '', calibrationTarget: '', measuredGrade: null,
+      method: '', status: 'unavailable', contentFingerprint: '', measuredAt: '',
+      language: options.language || 'English',
+    },
+  };
+  const candidate = Object.assign({}, defaults, raw && typeof raw === 'object' ? raw : {});
+  candidate.complexity = Object.assign({}, defaults.complexity,
+    raw && raw.complexity && typeof raw.complexity === 'object' ? raw.complexity : {});
+  const module = _getInstructionalContextModule();
+  return module && typeof module.normalizeInstructionalText === 'function'
+    ? module.normalizeInstructionalText(candidate)
+    : candidate;
 };
 const _fullPackRosterSignature = (roster) => JSON.stringify(Object.entries(roster && roster.groups || {})
   .sort(([a], [b]) => String(a).localeCompare(String(b)))
@@ -172,7 +231,7 @@ const _estimateFullPackCapacity = (aiCalls, imageCalls, profile = {}) => {
 };
 
 const handleGenerateMath = async (inputOverride = null, switchView = true, modeOverride = null, deps) => {
-  const { mathInput, history, inputText, useMathSourceContext, studentInterests, gradeLevel, mathMode, mathSubject, mathQuantity, autoAttachManipulatives, leveledTextLanguage, translationMode, resolveTranslationPolicy, currentUiLanguage, isMathGraphEnabled, autoSnapshotManipulatives, setIsProcessing, setGenerationStep, setError, setGeneratedContent, setActiveView, setShowMathAnswers, setHistory, setToolSnapshots, addToast, t, callGemini, cleanJson, safeJsonParse, warnLog, verifyMathProblems, flyToElement } = deps;
+  const { mathInput, history, inputText, useMathSourceContext, studentInterests, gradeLevel, mathMode, mathSubject, mathQuantity, autoAttachManipulatives, leveledTextLanguage, translationMode, resolveTranslationPolicy, currentUiLanguage, isMathGraphEnabled, autoSnapshotManipulatives, setIsProcessing, setGenerationStep, setGenerationStage, setError, setGeneratedContent, setActiveView, setShowMathAnswers, setHistory, setToolSnapshots, addToast, t, callGemini, cleanJson, safeJsonParse, warnLog, verifyMathProblems, flyToElement } = deps;
   // Resolved once from the host-threaded policy. Falls back to the historical
   // rule (gloss into English when the content is not English) if an older host
   // has not threaded the resolver yet, so a stale CDN never silently changes
@@ -204,6 +263,7 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
           return;
       }
       setIsProcessing(true);
+      if (typeof setGenerationStage === 'function') setGenerationStage('analyze');
       setGenerationStep(t('status.solving'));
       setError(null);
       if (switchView) {
@@ -464,7 +524,7 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
 };
 
 const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
-  const { isProcessing, fullPackTargetGroup, rosterKey, gradeLevel, leveledTextLanguage, translationMode, resolveTranslationPolicy, currentUiLanguage, studentInterests, dokLevel, differentiationRange, differentiationTypes, differentiationCustomGrades, generationSignal, leveledTextCustomInstructions, selectedLanguages, targetStandards, useEmojis, textFormat, history, inputText, sourceTopic, standardsInput, standardsContext, resourceCount, isAutoConfigEnabled, quizCustomInstructions, adventureCustomInstructions, frameCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, timelineTopic, lessonCustomAdditions, conceptInput, glossaryCustomInstructions, personaCustomInstructions, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, setIsProcessing, setGenerationStep, setFullPackTargetGroup, setGradeLevel, setLeveledTextLanguage, setStudentInterests, setDokLevel, setLeveledTextCustomInstructions, setSelectedLanguages, setTargetStandards, setUseEmojis, setTextFormat, setPersistedLessonDNA, setFullPackRun, setError, addToast, t, warnLog, handleApplyRosterGroup, handleGenerate, autoConfigureSettings, applyDetailedAutoConfig, getGroupDifferentiationContext, getAssetManifest, getDifferentiationGrades, aiProviderProfile } = deps;
+  const { isProcessing, fullPackTargetGroup, rosterKey, gradeLevel, leveledTextLanguage, translationMode, resolveTranslationPolicy, currentUiLanguage, studentInterests, dokLevel, differentiationRange, differentiationTypes, differentiationCustomGrades, generationSignal, leveledTextCustomInstructions, selectedLanguages, targetStandards, useEmojis, textFormat, history, inputText, sourceTopic, standardsInput, standardsContext, instructionalContext, resourceCount, isAutoConfigEnabled, quizCustomInstructions, adventureCustomInstructions, frameCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, timelineTopic, lessonCustomAdditions, conceptInput, glossaryCustomInstructions, personaCustomInstructions, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, setIsProcessing, setGenerationStep, setGenerationStage, setFullPackTargetGroup, setGradeLevel, setLeveledTextLanguage, setStudentInterests, setDokLevel, setLeveledTextCustomInstructions, setSelectedLanguages, setTargetStandards, setUseEmojis, setTextFormat, setPersistedLessonDNA, setFullPackRun, setError, addToast, t, warnLog, handleApplyRosterGroup, handleGenerate, autoConfigureSettings, applyDetailedAutoConfig, getGroupDifferentiationContext, getAssetManifest, getDifferentiationGrades, aiProviderProfile } = deps;
   // Resolved once from the host-threaded policy. Falls back to the historical
   // rule (gloss into English when the content is not English) if an older host
   // has not threaded the resolver yet, so a stale CDN never silently changes
@@ -523,9 +583,29 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
     const _approvedRun = _fullPackRequest.__fullPackApprovedRun || null;
     const _groupRetryRun = _fullPackRequest.__fullPackGroupRetryRun || null;
     const _preflightOnly = _fullPackRequest.__fullPackPreflightOnly === true;
+    if (typeof setGenerationStage === 'function') setGenerationStage(_preflightOnly ? 'analyze' : 'build');
     const _recordTopLevelMetrics = _ownsFullPackAbort && !_preflightOnly;
     if (_recordTopLevelMetrics) _recordFullPackMetric('run-start');
     const _planSourceRun = _approvedRun || _retryRun;
+    const _standardsContextModule = typeof window !== 'undefined' && window.AlloModules
+        ? window.AlloModules.StandardsContext
+        : null;
+    const _ambientStandardsContext = standardsContext && Array.isArray(standardsContext.standards)
+        ? standardsContext
+        : (_standardsContextModule && typeof _standardsContextModule.resolve === 'function'
+            ? _standardsContextModule.resolve(standardsInput || targetStandards)
+            : null);
+    const _plannedStandardsContext = _planSourceRun && _planSourceRun.planPayload
+        && (_planSourceRun.planPayload.standardsContext
+            || (_planSourceRun.planPayload.instructionalContext && _planSourceRun.planPayload.instructionalContext.standardsContext));
+    const _runStandardsContext = _plannedStandardsContext || _ambientStandardsContext || null;
+    const _plannedInstructionalContext = _planSourceRun
+        && ((_planSourceRun.planPayload && _planSourceRun.planPayload.instructionalContext)
+            || (_planSourceRun.settingsSnapshot && _planSourceRun.settingsSnapshot.instructionalContext));
+    const _activeInstructionalContext = _normalizeFullPackInstructionalContext(
+        _plannedInstructionalContext || _fullPackRequest.instructionalContext || instructionalContext,
+        { gradeLevel, standardsContext: _runStandardsContext }
+    );
     const _fullPackRunAbortCtl = _ownsFullPackAbort && typeof AbortController !== 'undefined' ? new AbortController() : null;
     const _fullPackSignal = generationSignal || (_fullPackRunAbortCtl && _fullPackRunAbortCtl.signal) || null;
     if (_fullPackRunAbortCtl) _fullPackAbortCtl = _fullPackRunAbortCtl;
@@ -543,6 +623,8 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
         differentiationCustomGrades: Array.isArray(differentiationCustomGrades) ? differentiationCustomGrades.slice() : differentiationCustomGrades,
         resourceCount,
         isAutoConfigEnabled,
+        standardsContext: _cloneFullPackValue(_runStandardsContext),
+        instructionalContext: _cloneFullPackValue(_activeInstructionalContext),
         fullPackTargetGroup,
         rosterSignature: _fullPackRosterSignature(rosterKey),
     });
@@ -583,6 +665,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
             for (let gi = 0; gi < groupEntries.length && !(_fullPackSignal && _fullPackSignal.aborted); gi++) {
                 const [gid, group] = groupEntries[gi];
                 const profile = (group && group.profile) || {};
+                if (typeof setGenerationStage === 'function') setGenerationStage(_preflightOnly ? 'analyze' : 'build');
                 setGenerationStep(`${_preflightOnly ? 'Planning' : 'Generating'} full pack for ${group.name} (${gi+1}/${groupEntries.length})...`);
                 handleApplyRosterGroup(gid);
                 await new Promise(r => setTimeout(r, 150));
@@ -599,6 +682,21 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                         })
                     }));
                 };
+                const groupStandardsContext = Array.isArray(profile.targetStandards)
+                    && profile.targetStandards.length
+                    && _standardsContextModule
+                    && typeof _standardsContextModule.resolve === 'function'
+                    ? _standardsContextModule.resolve(profile.targetStandards)
+                    : _runStandardsContext;
+                const groupInstructionalContext = _normalizeFullPackInstructionalContext(
+                    Object.assign({}, _activeInstructionalContext, {
+                        instructionalGrade: profile.gradeLevel || gradeLevel,
+                        standardsContext: groupStandardsContext,
+                        standardsFingerprint: groupStandardsContext === _runStandardsContext
+                            ? _activeInstructionalContext.standardsFingerprint : '',
+                    }),
+                    { gradeLevel: profile.gradeLevel || gradeLevel, standardsContext: groupStandardsContext }
+                );
                 const groupDeps = Object.assign({}, deps, {
                     isProcessing: false,
                     setIsProcessing: () => {},
@@ -612,6 +710,8 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                     leveledTextCustomInstructions: profile.leveledTextCustomInstructions || leveledTextCustomInstructions,
                     selectedLanguages: Array.isArray(profile.selectedLanguages) ? profile.selectedLanguages : selectedLanguages,
                     targetStandards: Array.isArray(profile.targetStandards) ? profile.targetStandards : targetStandards,
+                    standardsContext: groupStandardsContext,
+                    instructionalContext: groupInstructionalContext,
                     useEmojis: profile.useEmojis === undefined ? useEmojis : profile.useEmojis,
                     textFormat: profile.textFormat || textFormat,
                     generationSignal: _fullPackSignal,
@@ -693,22 +793,26 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
         if (_ownsFullPackAbort) _fullPackRunInFlight = false;
         return false;
     }
+    if (_planSourceRun && _planSourceRun.preflight && _planSourceRun.preflight.standardsFingerprint
+        && _planSourceRun.preflight.standardsFingerprint !== _activeInstructionalContext.standardsFingerprint) {
+        const changedStandardsError = new Error('The standards context changed since this Full Pack plan was created. Create a new plan before generating or retrying.');
+        recordFullPackFailure({ type: 'preflight', index: 0, reason: changedStandardsError.message, error: changedStandardsError, sourceTextChars: batchSourceText.length });
+        updateFullPackRun(prev => Object.assign({}, prev, { status: 'failed', reason: changedStandardsError.message, finishedAt: new Date().toISOString(), elapsedMs: Math.max(0, Date.now() - _fullPackStartedAt) }));
+        addToast(changedStandardsError.message, 'warning');
+        if (_recordTopLevelMetrics) _recordFullPackMetric('run-finish', { status: 'failed' });
+        if (_fullPackAbortCtl === _fullPackRunAbortCtl) _fullPackAbortCtl = null;
+        if (_ownsFullPackAbort) _fullPackRunInFlight = false;
+        return false;
+    }
     setIsProcessing(true);
+    if (typeof setGenerationStage === 'function') setGenerationStage(_preflightOnly ? 'analyze' : 'build');
     setGenerationStep(_preflightOnly ? 'Planning Full Pack resources…' : t('fullpack.status_init'));
     addToast(_preflightOnly ? 'Building a Full Pack plan for review…' : t('fullpack.status_start'), "info");
     try {
-        const standardsContextModule = typeof window !== 'undefined' && window.AlloModules
-            ? window.AlloModules.StandardsContext
-            : null;
-        const resolvedStandardsContext = standardsContext && Array.isArray(standardsContext.standards)
-            ? standardsContext
-            : (standardsContextModule && typeof standardsContextModule.resolve === 'function'
-                ? standardsContextModule.resolve(standardsInput || targetStandards)
-                : null);
-        const activeStandardsContext = resolvedStandardsContext
-            && Array.isArray(resolvedStandardsContext.standards)
-            && resolvedStandardsContext.standards.length
-            ? resolvedStandardsContext
+        const activeStandardsContext = _runStandardsContext
+            && Array.isArray(_runStandardsContext.standards)
+            && _runStandardsContext.standards.length
+            ? _runStandardsContext
             : null;
         const lessonDNA = {
             grade: gradeLevel,
@@ -727,7 +831,6 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
             : {};
         let resourcesToGen = [
             { type: 'glossary', directive: '' },
-            { type: 'simplified', directive: '' },
             { type: 'image', directive: '' },
             { type: 'outline', directive: '' },
             { type: 'sentence-frames', directive: '' },
@@ -740,6 +843,13 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
             { type: 'lesson-plan', directive: '' },
             { type: 'adventure', directive: '' }
         ];
+        // Preserve-primary is the safe Full Pack default: add same-text
+        // supports, but do not silently create an adapted companion. Teachers
+        // can opt in by choosing educator-directed policy, and the legacy
+        // internal type remains `simplified` for renderer compatibility.
+        if (_activeInstructionalContext.primaryTextPolicy === 'educator-directed') {
+            resourcesToGen.splice(1, 0, { type: 'simplified', directive: '' });
+        }
         if (!_retryRun && !_approvedRun && (resourceCount === 'Auto' || resourceCount === 'All')) {
              const hasAnalysis = history.some(h => h.type === 'analysis');
              if (!hasAnalysis) {
@@ -749,11 +859,21 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
         const existingTypes = history.map(h => h.type);
         if (_approvedRun) {
             resourcesToGen = ((_approvedRun.preflight && _approvedRun.preflight.selected) || [])
-                .map((item, index) => ({ type: item.type, directive: item.directive || '', uiId: item.uiId || (item.type + '-' + index) }));
+                .map((item, index) => ({
+                    type: item.type,
+                    directive: item.directive || '',
+                    uiId: item.uiId || (item.type + '-' + index),
+                    instructionalText: item.instructionalText || null,
+                }));
         } else if (_retryRun) {
             resourcesToGen = Object.values(_retryRun.resources || {})
                 .filter(item => item && ['failed', 'interrupted', 'stopped'].includes(item.status))
-                .map(item => ({ type: item.type, directive: item.directive || '', uiId: item.key || (item.type + '-' + item.index) }));
+                .map(item => ({
+                    type: item.type,
+                    directive: item.directive || '',
+                    uiId: item.key || (item.type + '-' + item.index),
+                    instructionalText: item.instructionalText || null,
+                }));
         } else if (isAutoConfigEnabled) {
             setGenerationStep(t('process.auto_config'));
             const customInputToUse = (chatContextOverride && typeof chatContextOverride === 'string') ? chatContextOverride : leveledTextCustomInstructions;
@@ -800,7 +920,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                 }));
             }
             if (resourceCount === 'Auto' || resourceCount === 'All') {
-                const essentials = ['analysis', 'simplified', 'lesson-plan'];
+                const essentials = ['analysis', 'lesson-plan'];
                 essentials.forEach(item => {
                     const inBatch = resourcesToGen.some(r => r.type === item);
                     const inHistory = existingTypes.includes(item);
@@ -816,6 +936,16 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                 resourcesToGen.push(...planItems);
             }
         }
+        const _policySkippedResources = [];
+        if (!_approvedRun && !_retryRun && _activeInstructionalContext.primaryTextPolicy === 'preserve-primary') {
+            const adaptedRows = resourcesToGen.filter(item => item && item.type === 'simplified');
+            resourcesToGen = resourcesToGen.filter(item => !item || item.type !== 'simplified');
+            adaptedRows.forEach(item => _policySkippedResources.push({
+                type: 'simplified',
+                uiId: item.uiId || null,
+                reason: 'Adapted Text is optional under the preserve-primary policy.'
+            }));
+        }
         const fullPackFailures = [];
         const planFailures = [];
         const knownTypes = getFullPackKnownTypes();
@@ -830,11 +960,20 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                 planFailures.push({ type, index: planIndex, reason: 'Unsupported Full Pack resource type: ' + type, sourceTextChars: batchSourceText.length });
                 return;
             }
-            normalizedResources.push(Object.assign({}, item, { type }));
+            const primaryArtifact = latestAnalysis && latestAnalysis.id ? latestAnalysis.id : null;
+            normalizedResources.push(Object.assign({}, item, {
+                type,
+                instructionalText: _fullPackInstructionalText(type, item.instructionalText, {
+                    gradeLevel: _activeInstructionalContext.instructionalGrade || gradeLevel,
+                    language: leveledTextLanguage,
+                    primaryArtifactId: primaryArtifact,
+                })
+            }));
         });
         planFailures.forEach(failure => { fullPackFailures.push(failure); recordFullPackFailure(failure); });
         const runnableResources = normalizedResources.filter(item => !(item.type === 'timeline' && batchConfig.hasTimeline === false));
         const _skippedResources = planFailures.map(f => ({ type: f.type, index: f.index, reason: f.reason }))
+            .concat(_policySkippedResources)
             .concat(normalizedResources.filter(item => item.type === 'timeline' && batchConfig.hasTimeline === false)
                 .map(item => ({ type: item.type, reason: 'Skipped by auto-configuration.' })));
         const _diffLevels = typeof getDifferentiationGrades === 'function'
@@ -853,16 +992,25 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
             sourceTextChars: batchSourceText.length,
             sourceFingerprint: _sourceFingerprint,
             retryOf: _retryRun && _retryRun.runId || null,
-            selected: runnableResources.map((item, index) => ({ type: item.type, index, uiId: item.uiId || (item.type + '-' + index), directive: item.directive || '' })),
+            selected: runnableResources.map((item, index) => ({
+                type: item.type,
+                index,
+                uiId: item.uiId || (item.type + '-' + index),
+                directive: item.directive || '',
+                instructionalText: _cloneFullPackValue(item.instructionalText),
+            })),
             skipped: _skippedResources,
             differentiation: { range: differentiationRange || 'None', types: Array.from(_diffTypeSet), levelCount: Math.max(1, _diffLevels.length) },
             estimatedResourceGenerations: _estimatedResourceGenerations,
             planSchemaVersion: FULL_PACK_PLAN_SCHEMA_VERSION,
             capabilityFingerprint: FULL_PACK_CAPABILITY_FINGERPRINT,
+            standardsFingerprint: _activeInstructionalContext.standardsFingerprint,
             capacity: _capacity,
         };
         const _planPayload = {
             batchConfig: _compactFullPackBatchConfig(batchConfig),
+            standardsContext: _cloneFullPackValue(activeStandardsContext),
+            instructionalContext: _cloneFullPackValue(_activeInstructionalContext),
             lessonDNA: Object.assign({}, lessonDNA, {
                 concepts: Array.isArray(lessonDNA.concepts) ? lessonDNA.concepts.slice() : [],
                 keyTerms: Array.isArray(lessonDNA.keyTerms) ? lessonDNA.keyTerms.slice() : [],
@@ -879,6 +1027,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                 readyAt: new Date().toISOString(),
                 elapsedMs: Math.max(0, Date.now() - _fullPackStartedAt),
             }));
+            if (typeof setGenerationStage === 'function') setGenerationStage('finalize');
             setGenerationStep('Full Pack plan ready for review.');
             addToast('Full Pack plan ready. Review the resources and settings before generating.', 'info');
             return true;
@@ -887,9 +1036,10 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
         addToast(t('process.gen_batch', { count: runnableResources.length }), "info");
         for (let i = 0; i < runnableResources.length && !(_fullPackSignal && _fullPackSignal.aborted); i++) {
             const { type, directive } = runnableResources[i];
+            const plannedInstructionalText = runnableResources[i].instructionalText;
             const resourceKey = String(runnableResources[i].uiId || (type + '-' + i));
             const _resourceStartedAt = Date.now();
-            updateFullPackRun(prev => Object.assign({}, prev, { resources: Object.assign({}, prev.resources, { [resourceKey]: { key: resourceKey, type, index: i, directive: directive || '', status: 'running', attempts: 1, startedAt: new Date(_resourceStartedAt).toISOString(), elapsedMs: 0 } }) }));
+            updateFullPackRun(prev => Object.assign({}, prev, { resources: Object.assign({}, prev.resources, { [resourceKey]: { key: resourceKey, type, index: i, directive: directive || '', instructionalText: _cloneFullPackValue(plannedInstructionalText), status: 'running', attempts: 1, startedAt: new Date(_resourceStartedAt).toISOString(), elapsedMs: 0 } }) }));
             let userOverride = "";
             switch(type) {
                 case 'simplified': userOverride = leveledTextCustomInstructions; break;
@@ -920,6 +1070,8 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                 lessonDNA: lessonDNA,
                 customInstructions: combinedInstructions,
                 standardsContext: activeStandardsContext,
+                instructionalContext: _activeInstructionalContext,
+                instructionalText: plannedInstructionalText,
                 historyOverride: currentSessionHistory,
                 // Full Pack is unattended: do not turn a rejected, throttled,
                 // or malformed resource into a false success/no-op.
@@ -956,6 +1108,8 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                 dokLevel: effectiveDokLevel,
                 selectedLanguages,
                 targetStandards,
+                standardsContext: activeStandardsContext,
+                instructionalContext: _activeInstructionalContext,
                 useEmojis,
                 textFormat,
                 differentiationRange,
@@ -967,6 +1121,9 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
             try {
                 resultItem = await handleGenerate(type, generationLanguageOverride, !isLast, batchSourceText, stepConfig, false, generationDepsOverride);
                 if (!isUsableGeneratedResource(resultItem, type)) throw new Error('handleGenerate returned an unusable ' + type + ' resource');
+                if (!resultItem.instructionalText && plannedInstructionalText) {
+                    resultItem = Object.assign({}, resultItem, { instructionalText: _cloneFullPackValue(plannedInstructionalText) });
+                }
             } catch (error) {
                 let finalError = error;
                 resultItem = null;
@@ -980,6 +1137,9 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                         await _waitForFullPackDelay(failurePolicy.delayMs, _fullPackSignal);
                         resultItem = await handleGenerate(type, generationLanguageOverride, !isLast, batchSourceText, stepConfig, false, generationDepsOverride);
                         if (!isUsableGeneratedResource(resultItem, type)) throw new Error('handleGenerate retry returned an unusable ' + type + ' resource');
+                        if (!resultItem.instructionalText && plannedInstructionalText) {
+                            resultItem = Object.assign({}, resultItem, { instructionalText: _cloneFullPackValue(plannedInstructionalText) });
+                        }
                         _recordFullPackMetric('retry-recovered', { type });
                     } catch (retryError) {
                         finalError = retryError;
@@ -1080,14 +1240,70 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
 };
 
 const handleComplexityAdjustment = async (deps) => {
-  const { complexityLevel, generatedContent, gradeLevel, leveledTextLanguage, translationMode, resolveTranslationPolicy, currentUiLanguage, saveOriginalOnAdjust, generatedTerms, setIsProcessing, setGeneratedContent, setHistory, setError, setComplexityLevel, setWordSoundsCustomTerms, setWsPreloadedWords, callGemini, cleanJson, addToast, t, warnLog, extractSourceTextForProcessing, generateBilingualText, getDefaultTitle } = deps;
+  const { complexityLevel, generatedContent, gradeLevel, leveledTextLanguage, translationMode, resolveTranslationPolicy, currentUiLanguage, standardsContext, standardsInput, targetStandards, saveOriginalOnAdjust, generatedTerms, setIsProcessing, setGeneratedContent, setHistory, setError, setComplexityLevel, setWordSoundsCustomTerms, setWsPreloadedWords, callGemini, cleanJson, addToast, t, warnLog, extractSourceTextForProcessing, generateBilingualText, getDefaultTitle, calculateReadability } = deps;
+  const contextModule = typeof window !== 'undefined' && window.AlloModules
+    ? window.AlloModules.InstructionalContext
+    : null;
+  const artifactContext = contextModule && typeof contextModule.resolveArtifactContext === 'function'
+    ? contextModule.resolveArtifactContext(generatedContent, {
+        grade: gradeLevel,
+        language: leveledTextLanguage,
+        standardsContext: standardsContext || null,
+        standards: standardsInput || targetStandards || null
+      })
+    : {
+        grade: generatedContent?.instructionalText?.complexity?.requestedGrade
+          || generatedContent?.targetGradeLevel
+          || generatedContent?.config?.grade
+          || gradeLevel,
+        language: generatedContent?.instructionalText?.complexity?.language
+          || generatedContent?.config?.language
+          || leveledTextLanguage
+          || 'English',
+        standards: generatedContent?.config?.standardsContext
+          || generatedContent?.config?.standards
+          || standardsContext
+          || standardsInput
+          || targetStandards
+          || null,
+        instructionalText: generatedContent?.instructionalText || null
+      };
+  const effectiveGrade = artifactContext.grade || gradeLevel;
+  const effectiveLanguage = artifactContext.language || leveledTextLanguage || 'English';
+  const standardsValue = artifactContext.standards;
+  const standardsForPrompt = (() => {
+    if (!standardsValue) return '';
+    if (typeof standardsValue === 'string') return standardsValue.trim();
+    if (typeof standardsValue.promptText === 'string' && standardsValue.promptText.trim()) return standardsValue.promptText.trim();
+    const entries = Array.isArray(standardsValue.standards) ? standardsValue.standards : (Array.isArray(standardsValue) ? standardsValue : []);
+    return entries.map(entry => typeof entry === 'string'
+      ? entry
+      : [entry?.code || entry?.id, entry?.text || entry?.label].filter(Boolean).join(': ')
+    ).filter(Boolean).join('; ');
+  })().slice(0, 2400);
+  const standardsDirective = standardsForPrompt
+    ? `Standards context to preserve: ${standardsForPrompt}\nDo not lower or replace the concepts, disciplinary content, or cognitive demand required by these standards.`
+    : '';
+  const assessmentStandardsDirective = standardsForPrompt
+    ? `Standards context to retain: ${standardsForPrompt}\nKeep assessing the same standard-aligned content. This educator-requested difficulty adjustment may change item DOK, but it must not silently switch the skill or content being assessed.`
+    : '';
   // Resolved once from the host-threaded policy. Falls back to the historical
   // rule (gloss into English when the content is not English) if an older host
   // has not threaded the resolver yet, so a stale CDN never silently changes
   // what teachers get.
-  const _xlate = (typeof resolveTranslationPolicy === 'function')
-    ? resolveTranslationPolicy(translationMode, leveledTextLanguage, currentUiLanguage)
-    : { enabled: !!leveledTextLanguage && leveledTextLanguage !== 'English' && leveledTextLanguage !== 'All Selected Languages', target: 'English', mode: 'auto' };
+  const resolvedTranslationPolicy = (typeof resolveTranslationPolicy === 'function')
+    ? resolveTranslationPolicy(translationMode, effectiveLanguage, currentUiLanguage)
+    : { enabled: !!effectiveLanguage && effectiveLanguage !== 'English' && effectiveLanguage !== 'All Selected Languages', target: 'English', mode: 'auto' };
+  const artifactIsBilingual = generatedContent?.type === 'simplified'
+    && typeof generatedContent?.data === 'string'
+    && /---\s*ENGLISH TRANSLATION\s*---/i.test(generatedContent.data);
+  // A rewrite of an already bilingual artifact must remain bilingual even if
+  // the teacher has since changed the ambient translation toggle. The content
+  // itself is the durable language snapshot for legacy artifacts that predate
+  // an explicit translation-policy field.
+  const _xlate = artifactIsBilingual
+    ? { ...resolvedTranslationPolicy, enabled: true, target: 'English', mode: 'artifact-preserve' }
+    : resolvedTranslationPolicy;
   try { if (window._DEBUG_GEN_HELPERS) console.log("[GenerationHelpers] handleComplexityAdjustment fired"); } catch(_) {}
     const supportedTypes = ['simplified', 'quiz', 'sentence-frames', 'glossary'];
     if (complexityLevel === 5 || !generatedContent || !supportedTypes.includes(generatedContent.type)) return;
@@ -1161,11 +1377,12 @@ const handleComplexityAdjustment = async (deps) => {
                 Rewrite the following educational text.
                 Goal: Make the text ${direction} relative to its current version.
                 Intensity of Change: ${intensity} out of 5 (1=Slight adjustment, 5=Major revision).
-                Target Audience: ${gradeLevel} students.
+                Target Audience: ${effectiveGrade} students.
+                ${standardsDirective}
                 Instructions:
                 - Keep the same topic and core information.
                 - ${isSimpler ? "Shorten sentences, reduce vocabulary difficulty, focus on clarity." : "Increase sentence variety, use more precise academic vocabulary, add nuance."}
-                - Write the rewritten text in ${leveledTextLanguage}.
+                - Write the rewritten text in ${effectiveLanguage}.
                 - Preserve every inline citation exactly, including its superscript number, URL, occurrence count, and order.
                 - Do not produce a Sources, References, Bibliography, or Works Cited section; AlloFlow appends the preserved reference trailer after validation.
                 Current Text:
@@ -1181,7 +1398,8 @@ const handleComplexityAdjustment = async (deps) => {
                 Rewrite the definitions in the following glossary to adjust their complexity.
                 Goal: Make definitions ${direction}.
                 Intensity: ${intensity} out of 5.
-                Target Audience: ${gradeLevel} students.
+                Target Audience: ${effectiveGrade} students.
+                ${standardsDirective}
                 Current Glossary: ${currentData}
                 Instructions:
                 - Keep the exact same terms.
@@ -1199,7 +1417,8 @@ const handleComplexityAdjustment = async (deps) => {
                 Rewrite the following quiz questions to adjust their difficulty level.
                 Goal: Make questions ${direction}.
                 Intensity: ${intensity} out of 5.
-                Target Audience: ${gradeLevel} students.
+                Target Audience: ${effectiveGrade} students.
+                ${assessmentStandardsDirective}
                 Current Questions: ${currentQuestions}
                 Instructions:
                 - ${isSimpler ? "Simplify vocabulary, focus on direct recall (DOK 1), ensure distractors are clearly incorrect/distinct." : "Increase vocabulary rigor, focus on inference/analysis (DOK 2-3), make distractors more plausible to test deep understanding."}
@@ -1217,17 +1436,18 @@ const handleComplexityAdjustment = async (deps) => {
                 Modify the following writing scaffolds.
                 Goal: Provide ${direction}.
                 Intensity: ${intensity} out of 5.
-                Target Audience: ${gradeLevel} students.
+                Target Audience: ${effectiveGrade} students.
+                ${standardsDirective}
                 Current Scaffolds: ${currentData}
                 Instructions:
                 - ${isSimpler ? "Provide longer sentence starters, include specific prompts/clues within the blanks, guide the student's thought process rigidly." : "Shorten starters to just the first word or phrase, remove internal clues, allow for more independent critical thinking."}
                 - Maintain the existing format (List or Paragraph Frame).
-                ${leveledTextLanguage !== 'English' ? `Ensure translations match the new structure.` : ''}
+                ${effectiveLanguage !== 'English' ? `Ensure translations match the new structure.` : ''}
                 Return ONLY JSON matching the input structure exactly.
             `;
         }
         let result = (!jsonMode && generatedContent.type === 'simplified')
-            ? await generateBilingualText(prompt, leveledTextLanguage, callGemini)
+            ? await generateBilingualText(prompt, effectiveLanguage, callGemini, _xlate)
             : await callGemini(prompt, jsonMode);
         if (generatedContent.type === 'simplified' && simplifiedCitationContext) {
             const candidateParts = splitReferenceTrailer(result);
@@ -1242,7 +1462,7 @@ const handleComplexityAdjustment = async (deps) => {
                 : candidateTarget;
             let conservation = validateCitationsInOrder(originalForValidation, candidateForValidation);
             const shouldValidateGeneratedEnglish = !simplifiedCitationContext.wasBilingual
-                && (candidateExtraction.isBilingual || String(leveledTextLanguage || '').trim().toLowerCase() !== 'english');
+                && (candidateExtraction.isBilingual || String(effectiveLanguage || '').trim().toLowerCase() !== 'english');
             if (shouldValidateGeneratedEnglish) {
                 const englishConservation = validateCitationsInOrder(
                     candidateTarget,
@@ -1320,24 +1540,104 @@ const handleComplexityAdjustment = async (deps) => {
                 }
             } : {})
         };
+        const refreshSimplifiedComplexity = (item) => {
+            if (!item) return item;
+            if (item.type !== 'simplified' || typeof item.data !== 'string') {
+                const invalidatedItem = { ...item };
+                if (invalidatedItem.levelCheck) delete invalidatedItem.levelCheck;
+                if (invalidatedItem.alignmentCheck) delete invalidatedItem.alignmentCheck;
+                return invalidatedItem;
+            }
+            const exactContent = item.data;
+            const bodyParts = splitReferenceTrailer(exactContent);
+            const extracted = extractSourceTextForProcessing(bodyParts.body, false);
+            const bilingual = !!extracted?.isBilingual
+                || /---\s*ENGLISH TRANSLATION\s*---/i.test(bodyParts.body)
+                || /---\s*TRANSLATION\s*---/i.test(bodyParts.body);
+            const englishLanguage = contextModule && typeof contextModule.isEnglishLanguage === 'function'
+                ? contextModule.isEnglishLanguage(effectiveLanguage)
+                : /^(?:english|en)$/i.test(String(effectiveLanguage || '').trim());
+            const canMeasure = !bilingual && englishLanguage && typeof calculateReadability === 'function';
+            let measuredStats = null;
+            if (canMeasure) {
+                try { measuredStats = calculateReadability(extracted?.text || bodyParts.body); } catch (_) { measuredStats = null; }
+            }
+            const baseInstructionalText = contextModule && typeof contextModule.getInstructionalText === 'function'
+                ? contextModule.getInstructionalText(item, {
+                    complexity: { requestedGrade: effectiveGrade, language: effectiveLanguage }
+                })
+                : (item.instructionalText || artifactContext.instructionalText || {
+                    role: 'unspecified',
+                    form: 'adapted',
+                    designationSource: 'legacy-inferred',
+                    complexity: { requestedGrade: effectiveGrade, language: effectiveLanguage }
+                });
+            const fallbackFingerprint = (value) => {
+                const input = String(value == null ? '' : value).replace(/\r\n?/g, '\n');
+                let hash = 2166136261;
+                for (let index = 0; index < input.length; index++) {
+                    hash ^= input.charCodeAt(index);
+                    hash = Math.imul(hash, 16777619);
+                }
+                return `txt-${(hash >>> 0).toString(16).padStart(8, '0')}-${input.length}`;
+            };
+            const fingerprint = contextModule && typeof contextModule.fingerprintText === 'function'
+                ? contextModule.fingerprintText(exactContent)
+                : fallbackFingerprint(exactContent);
+            let instructionalText;
+            if (measuredStats && contextModule && typeof contextModule.withComplexityEvidence === 'function') {
+                instructionalText = contextModule.withComplexityEvidence(baseInstructionalText, {
+                    requestedGrade: effectiveGrade,
+                    measuredGrade: Number(measuredStats.score),
+                    method: 'flesch-kincaid-en',
+                    language: effectiveLanguage
+                }, exactContent);
+            } else if (contextModule && typeof contextModule.invalidateComplexityEvidence === 'function') {
+                instructionalText = contextModule.invalidateComplexityEvidence(
+                    baseInstructionalText,
+                    exactContent,
+                    canMeasure ? 'unavailable' : 'not-applicable'
+                );
+            } else {
+                instructionalText = {
+                    ...baseInstructionalText,
+                    complexity: {
+                        ...(baseInstructionalText?.complexity || {}),
+                        requestedGrade: effectiveGrade,
+                        measuredGrade: measuredStats ? Number(measuredStats.score) : null,
+                        method: measuredStats ? 'flesch-kincaid-en' : '',
+                        status: measuredStats ? 'measured' : (canMeasure ? 'unavailable' : 'not-applicable'),
+                        contentFingerprint: fingerprint,
+                        measuredAt: measuredStats ? new Date().toISOString() : '',
+                        language: effectiveLanguage
+                    }
+                };
+            }
+            const freshItem = {
+                ...item,
+                instructionalText,
+                targetGradeLevel: effectiveGrade,
+                ...(measuredStats ? { localStats: measuredStats } : {})
+            };
+            if (!measuredStats && freshItem.localStats) delete freshItem.localStats;
+            if (freshItem.levelCheck) delete freshItem.levelCheck;
+            if (freshItem.alignmentCheck) delete freshItem.alignmentCheck;
+            return freshItem;
+        };
         if (saveOriginalOnAdjust) {
-            const newItem = {
+            const newItem = refreshSimplifiedComplexity({
                 ...generatedContent,
                 id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
                 data: updatedData,
                 title: `${generatedContent.title || getDefaultTitle(generatedContent.type)} (${changeLabel})`,
                 timestamp: new Date(),
                 config: adjustedConfig
-            };
-            if (newItem.levelCheck) delete newItem.levelCheck;
-            if (newItem.alignmentCheck) delete newItem.alignmentCheck;
+            });
             setGeneratedContent(newItem); setWordSoundsCustomTerms(generatedTerms); setWsPreloadedWords(generatedTerms);
             setHistory(prev => [...prev, newItem]);
             addToast(t('toasts.saved_new_version', { label: changeLabel }), "success");
         } else {
-            const updatedContent = { ...generatedContent, data: updatedData, config: adjustedConfig };
-            if (updatedContent.levelCheck) delete updatedContent.levelCheck;
-            if (updatedContent.alignmentCheck) delete updatedContent.alignmentCheck;
+            const updatedContent = refreshSimplifiedComplexity({ ...generatedContent, data: updatedData, config: adjustedConfig });
             setGeneratedContent(updatedContent);
             setHistory(prev => prev.map(item => item.id === generatedContent.id ? updatedContent : item));
             addToast(t('toasts.adjusted_version', { label: changeLabel }), "success");
@@ -1359,6 +1659,315 @@ const handleComplexityAdjustment = async (deps) => {
 
 const handlePlanFullPack = async (deps) => handleGenerateFullPack({ __fullPackPreflightOnly: true }, deps);
 
+// Pure ready-plan edits used by the Full Pack review UI. The approved path
+// executes preflight.selected, so these edits are authoritative rather than
+// cosmetic. Every operation returns the original object for invalid/no-op
+// requests and never mutates the reviewed run or its nested plan records.
+const _fullPackPlanItemKey = (item, index) => String(
+  item && (item.uiId || (String(item.type || 'resource') + '-' + index)) || ''
+);
+const _fullPackPlanDirective = (value) => String(value == null ? '' : value).slice(0, 4000);
+
+const _fullPackPlanContextOptions = (record) => {
+  const payloadContext = record && record.planPayload && record.planPayload.instructionalContext;
+  const snapshot = record && record.settingsSnapshot || {};
+  const context = payloadContext || snapshot.instructionalContext || {};
+  return {
+    gradeLevel: context.instructionalGrade || snapshot.gradeLevel || '',
+    language: snapshot.leveledTextLanguage || 'English',
+  };
+};
+
+const _nextFullPackPlanUiId = (selected, type, requestedUiId = '') => {
+  const used = new Set((Array.isArray(selected) ? selected : [])
+    .map((item, index) => _fullPackPlanItemKey(item, index)).filter(Boolean));
+  const requested = String(requestedUiId || '').trim();
+  if (requested && !used.has(requested)) return requested;
+  const base = String(type || 'resource').replace(/[^a-z0-9-]/gi, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') || 'resource';
+  let suffix = 0;
+  while (used.has(base + '-' + suffix)) suffix += 1;
+  return base + '-' + suffix;
+};
+
+const _safeFullPackPlanInstructionalText = (type, raw, options = {}, resetForType = false, educatorAdaptation = false) => {
+  const normalized = _fullPackInstructionalText(type, resetForType ? null : _cloneFullPackValue(raw), options);
+  const isAdapted = type === 'simplified' || (normalized && normalized.form === 'adapted');
+  if (isAdapted) {
+    return Object.assign({}, normalized, {
+      role: 'supplemental',
+      form: 'adapted',
+      designationSource: educatorAdaptation ? 'educator' : (normalized.designationSource || 'workflow-default'),
+      replacementAuthorization: { authorized: false, source: 'none' },
+    });
+  }
+  if (resetForType) {
+    return Object.assign({}, normalized, {
+      role: type === 'analysis' ? 'primary' : 'unspecified',
+      form: 'original',
+      designationSource: 'workflow-default',
+      replacementAuthorization: { authorized: false, source: 'none' },
+    });
+  }
+  return normalized;
+};
+
+const _normalizeFullPackPlanRows = (record, rows) => {
+  const sourceRows = Array.isArray(rows) ? rows : [];
+  const used = new Set();
+  const contextOptions = _fullPackPlanContextOptions(record);
+  return sourceRows.map((raw, index) => {
+    const row = raw && typeof raw === 'object' ? raw : {};
+    const type = String(row.type || '').trim();
+    let uiId = String(row.uiId || '').trim();
+    if (!uiId || used.has(uiId)) {
+      uiId = _nextFullPackPlanUiId(
+        Array.from(used).map(id => ({ uiId: id })),
+        type,
+        ''
+      );
+    }
+    used.add(uiId);
+    const normalizedRow = Object.assign({}, row, {
+      type,
+      uiId,
+      index,
+    });
+    if (Object.prototype.hasOwnProperty.call(row, 'directive')) normalizedRow.directive = _fullPackPlanDirective(row.directive);
+    // Legacy ready plans may not yet carry instructionalText on ordinary
+    // resources. Preserve that compact shape, while always stamping adapted
+    // rows because their supplemental/non-replacement status is an invariant.
+    if (type === 'simplified' || row.instructionalText) {
+      normalizedRow.instructionalText = _safeFullPackPlanInstructionalText(type, row.instructionalText, contextOptions);
+    }
+    return normalizedRow;
+  });
+};
+
+const _recalculateFullPackPlan = (record, rows, skipped = null) => {
+  const selected = _normalizeFullPackPlanRows(record, rows);
+  const preflight = record.preflight || {};
+  const diff = preflight.differentiation || {};
+  const diffTypes = new Set(Array.isArray(diff.types) ? diff.types : []);
+  const levelCount = Math.max(1, Number(diff.levelCount) || 1);
+  const aiCalls = selected.reduce((sum, item) => sum + (diffTypes.has(item.type) ? levelCount : 1), 0);
+  const imageCalls = selected.reduce((sum, item) =>
+    sum + (item.type === 'image' ? (diffTypes.has(item.type) ? levelCount : 1) : 0), 0);
+  const priorCapacity = preflight.capacity || {};
+  const capacity = _estimateFullPackCapacity(aiCalls, imageCalls, {
+    backend: priorCapacity.provider,
+    model: priorCapacity.model,
+    imageProvider: priorCapacity.imageProvider,
+    imageModel: priorCapacity.imageModel,
+    isLocal: priorCapacity.isLocal,
+  });
+  return Object.assign({}, record, {
+    preflight: Object.assign({}, preflight, {
+      selected,
+      skipped: skipped === null ? (Array.isArray(preflight.skipped) ? preflight.skipped.slice() : []) : skipped,
+      estimatedResourceGenerations: aiCalls,
+      capacity,
+    }),
+  });
+};
+
+const _setFullPackRecordPrimaryTextPolicy = (record, policy) => {
+  const normalizedPolicy = policy === 'educator-directed' ? 'educator-directed' : 'preserve-primary';
+  const payload = record.planPayload && typeof record.planPayload === 'object' ? record.planPayload : {};
+  const snapshot = record.settingsSnapshot && typeof record.settingsSnapshot === 'object' ? record.settingsSnapshot : {};
+  const existingContext = payload.instructionalContext || snapshot.instructionalContext || {};
+  const instructionalContext = Object.assign({}, existingContext, {
+    schemaVersion: Number(existingContext.schemaVersion) || 1,
+    primaryTextPolicy: normalizedPolicy,
+  });
+  return Object.assign({}, record, {
+    planPayload: Object.assign({}, payload, { instructionalContext: _cloneFullPackValue(instructionalContext) }),
+    settingsSnapshot: Object.assign({}, snapshot, { instructionalContext: _cloneFullPackValue(instructionalContext) }),
+    preflight: Object.assign({}, record.preflight || {}, { primaryTextPolicy: normalizedPolicy }),
+  });
+};
+
+const _getFullPackReadyPlanTarget = (priorRun, groupId, editRecord) => {
+  const run = priorRun && typeof priorRun === 'object' ? priorRun : null;
+  if (!run || run.status !== 'ready' || typeof editRecord !== 'function') return run;
+  const hasGroupId = groupId !== null && groupId !== undefined && String(groupId) !== '';
+  if (hasGroupId) {
+    const gid = String(groupId);
+    const group = run.groups && run.groups[gid];
+    if (!group || group.status !== 'ready' || !group.preflight || !Array.isArray(group.preflight.selected)) return run;
+    const updatedGroup = editRecord(group);
+    if (!updatedGroup || updatedGroup === group) return run;
+    return Object.assign({}, run, { groups: Object.assign({}, run.groups, { [gid]: updatedGroup }) });
+  }
+  if (!run.preflight || !Array.isArray(run.preflight.selected)) return run;
+  return editRecord(run) || run;
+};
+
+const _syncFullPackPolicyToRows = (record, preferredPolicy = null) => {
+  const rows = record.preflight && Array.isArray(record.preflight.selected) ? record.preflight.selected : [];
+  const hasAdapted = rows.some(item => item && item.type === 'simplified');
+  const policy = preferredPolicy || (hasAdapted ? 'educator-directed' : 'preserve-primary');
+  return _setFullPackRecordPrimaryTextPolicy(record, policy);
+};
+
+const addFullPackPlanResource = (priorRun, resource, groupId = null) => {
+  const source = resource && typeof resource === 'object' ? resource : { type: resource };
+  const type = String(source.type || source.tool || '').trim();
+  if (!getFullPackEditableResourceTypes().includes(type)) return priorRun && typeof priorRun === 'object' ? priorRun : null;
+  return _getFullPackReadyPlanTarget(priorRun, groupId, record => {
+    const rows = record.preflight.selected;
+    const uiId = _nextFullPackPlanUiId(rows, type, source.uiId);
+    const contextOptions = _fullPackPlanContextOptions(record);
+    const added = Object.assign({}, source, {
+      type,
+      uiId,
+      directive: _fullPackPlanDirective(source.directive),
+      instructionalText: _safeFullPackPlanInstructionalText(
+        type,
+        source.instructionalText,
+        contextOptions,
+        !source.instructionalText,
+        type === 'simplified'
+      ),
+    });
+    let updated = _recalculateFullPackPlan(record, rows.concat(added));
+    updated = _syncFullPackPolicyToRows(updated, type === 'simplified' ? 'educator-directed' : null);
+    return updated;
+  });
+};
+
+const removeFullPackPlanResource = (priorRun, resourceKey, groupId = null) => {
+  const key = String(resourceKey || '');
+  if (!key) return priorRun && typeof priorRun === 'object' ? priorRun : null;
+  return _getFullPackReadyPlanTarget(priorRun, groupId, record => {
+    const rows = record.preflight.selected;
+    if (rows.length <= 1) return record;
+    const removedIndex = rows.findIndex((item, index) => _fullPackPlanItemKey(item, index) === key);
+    if (removedIndex < 0) return record;
+    const removed = rows[removedIndex];
+    const selected = rows.filter((_, index) => index !== removedIndex);
+    if (selected.length === 0) return record;
+    const skipped = (Array.isArray(record.preflight.skipped) ? record.preflight.skipped : []).concat({
+      type: removed && removed.type || 'review',
+      uiId: key,
+      reason: 'Removed by educator during Full Pack review.',
+    });
+    return _syncFullPackPolicyToRows(_recalculateFullPackPlan(record, selected, skipped));
+  });
+};
+
+const changeFullPackPlanResourceType = (priorRun, resourceKey, nextType, groupId = null) => {
+  const key = String(resourceKey || '');
+  const type = String(nextType || '').trim();
+  if (!key || !getFullPackEditableResourceTypes().includes(type)) return priorRun && typeof priorRun === 'object' ? priorRun : null;
+  return _getFullPackReadyPlanTarget(priorRun, groupId, record => {
+    const rows = record.preflight.selected;
+    const rowIndex = rows.findIndex((item, index) => _fullPackPlanItemKey(item, index) === key);
+    if (rowIndex < 0) return record;
+    const current = rows[rowIndex] || {};
+    if (current.type === type) {
+      const safeRows = _normalizeFullPackPlanRows(record, rows);
+      const same = JSON.stringify(safeRows) === JSON.stringify(rows);
+      return same ? record : _syncFullPackPolicyToRows(_recalculateFullPackPlan(record, safeRows));
+    }
+    const contextOptions = _fullPackPlanContextOptions(record);
+    const changed = Object.assign({}, current, {
+      type,
+      // uiId deliberately remains stable when the resource type changes.
+      uiId: key,
+      instructionalText: _safeFullPackPlanInstructionalText(type, null, contextOptions, true, type === 'simplified'),
+    });
+    const selected = rows.map((item, index) => index === rowIndex ? changed : item);
+    let updated = _recalculateFullPackPlan(record, selected);
+    updated = _syncFullPackPolicyToRows(updated, type === 'simplified' ? 'educator-directed' : null);
+    return updated;
+  });
+};
+
+const editFullPackPlanResourceDirective = (priorRun, resourceKey, directive, groupId = null) => {
+  const key = String(resourceKey || '');
+  const nextDirective = _fullPackPlanDirective(directive);
+  if (!key) return priorRun && typeof priorRun === 'object' ? priorRun : null;
+  return _getFullPackReadyPlanTarget(priorRun, groupId, record => {
+    const rows = record.preflight.selected;
+    const rowIndex = rows.findIndex((item, index) => _fullPackPlanItemKey(item, index) === key);
+    if (rowIndex < 0) return record;
+    const current = rows[rowIndex] || {};
+    const safeText = _safeFullPackPlanInstructionalText(current.type, current.instructionalText, _fullPackPlanContextOptions(record));
+    const textChanged = JSON.stringify(safeText) !== JSON.stringify(current.instructionalText || null);
+    if (String(current.directive || '') === nextDirective && !textChanged) return record;
+    const selected = rows.map((item, index) => index === rowIndex
+      ? Object.assign({}, current, { directive: nextDirective, instructionalText: safeText })
+      : item);
+    return _syncFullPackPolicyToRows(_recalculateFullPackPlan(record, selected));
+  });
+};
+
+const moveFullPackPlanResource = (priorRun, resourceKey, toIndex, groupId = null) => {
+  const key = String(resourceKey || '');
+  if (!key) return priorRun && typeof priorRun === 'object' ? priorRun : null;
+  return _getFullPackReadyPlanTarget(priorRun, groupId, record => {
+    const rows = record.preflight.selected;
+    const fromIndex = rows.findIndex((item, index) => _fullPackPlanItemKey(item, index) === key);
+    if (fromIndex < 0) return record;
+    const requested = toIndex === 'up' ? fromIndex - 1 : (toIndex === 'down' ? fromIndex + 1 : Number(toIndex));
+    if (!Number.isFinite(requested)) return record;
+    const targetIndex = Math.max(0, Math.min(rows.length - 1, Math.trunc(requested)));
+    if (targetIndex === fromIndex) return record;
+    const selected = rows.slice();
+    const [moved] = selected.splice(fromIndex, 1);
+    selected.splice(targetIndex, 0, moved);
+    return _syncFullPackPolicyToRows(_recalculateFullPackPlan(record, selected));
+  });
+};
+
+const setFullPackPlanPrimaryTextPolicy = (priorRun, policy, groupId = null) => {
+  if (!['preserve-primary', 'educator-directed'].includes(policy)) return priorRun && typeof priorRun === 'object' ? priorRun : null;
+  return _getFullPackReadyPlanTarget(priorRun, groupId, record => {
+    const rows = record.preflight.selected;
+    if (policy === 'preserve-primary') {
+      const nonAdapted = rows.filter(item => item && item.type !== 'simplified');
+      // Never let a policy switch erase the entire reviewed plan.
+      if (nonAdapted.length === 0) return record;
+      const removed = rows.filter(item => item && item.type === 'simplified');
+      const priorPolicy = record.planPayload && record.planPayload.instructionalContext
+        && record.planPayload.instructionalContext.primaryTextPolicy;
+      if (removed.length === 0 && priorPolicy === 'preserve-primary') return record;
+      const skipped = (Array.isArray(record.preflight.skipped) ? record.preflight.skipped : []).concat(
+        removed.map((item, index) => ({
+          type: 'simplified',
+          uiId: _fullPackPlanItemKey(item, index),
+          reason: 'Supplemental adapted text removed when the educator selected preserve-primary policy.',
+        }))
+      );
+      return _setFullPackRecordPrimaryTextPolicy(_recalculateFullPackPlan(record, nonAdapted, skipped), policy);
+    }
+    let selected = rows.slice();
+    if (!selected.some(item => item && item.type === 'simplified')) {
+      const type = 'simplified';
+      selected.push({
+        type,
+        uiId: _nextFullPackPlanUiId(selected, type),
+        directive: '',
+        instructionalText: _safeFullPackPlanInstructionalText(
+          type, null, _fullPackPlanContextOptions(record), true, true
+        ),
+      });
+    }
+    const normalized = _recalculateFullPackPlan(record, selected);
+    const existingPolicy = record.planPayload && record.planPayload.instructionalContext
+      && record.planPayload.instructionalContext.primaryTextPolicy;
+    if (existingPolicy === policy && selected.length === rows.length
+        && JSON.stringify(normalized.preflight.selected) === JSON.stringify(rows)) return record;
+    return _setFullPackRecordPrimaryTextPolicy(normalized, policy);
+  });
+};
+
+const handleRemoveFullPackPlanResource = (priorRun, resourceKey, deps, groupId = null) => {
+  const updated = removeFullPackPlanResource(priorRun, resourceKey, groupId);
+  if (updated !== priorRun && deps && typeof deps.setFullPackRun === 'function') deps.setFullPackRun(updated);
+  return updated;
+};
+
 const handleApproveFullPack = async (priorRun, deps) => {
   const run = priorRun && typeof priorRun === 'object' ? priorRun : null;
   if (!run || run.status !== 'ready') {
@@ -1368,6 +1977,10 @@ const handleApproveFullPack = async (priorRun, deps) => {
   const planSummaries = run.targetMode === 'all-groups'
     ? Object.values(run.groups || {}).map(group => group && group.preflight).filter(Boolean)
     : [run.preflight].filter(Boolean);
+  if (planSummaries.length === 0 || planSummaries.some(plan => !Array.isArray(plan.selected) || plan.selected.length === 0)) {
+    try { if (deps && typeof deps.addToast === 'function') deps.addToast('Keep at least one resource in each Full Pack plan before generating.', 'warning'); } catch (_) {}
+    return false;
+  }
   const incompatiblePlan = planSummaries.some(plan => plan.planSchemaVersion !== FULL_PACK_PLAN_SCHEMA_VERSION || plan.capabilityFingerprint !== FULL_PACK_CAPABILITY_FINGERPRINT);
   if (incompatiblePlan) {
     try { if (deps && typeof deps.addToast === 'function') deps.addToast('This Full Pack plan was created by an older generator. Refresh the plan before generating.', 'warning'); } catch (_) {}
@@ -1412,6 +2025,14 @@ window.AlloModules.GenerationHelpers = {
   handleGenerateMath,
   handleGenerateFullPack,
   handlePlanFullPack,
+  getFullPackEditableResourceTypes,
+  addFullPackPlanResource,
+  removeFullPackPlanResource,
+  changeFullPackPlanResourceType,
+  editFullPackPlanResourceDirective,
+  moveFullPackPlanResource,
+  setFullPackPlanPrimaryTextPolicy,
+  handleRemoveFullPackPlanResource,
   handleApproveFullPack,
   handleRetryFailedFullPack,
   handleStopFullPack,

@@ -447,7 +447,7 @@ function _alloNormalizeStoredVerification(stored, derived) {
 var ALLO_INTERACTIVE_OBJECT_PROFILE_VERSION = '2026.07.03';
 var ALLO_INTERACTIVE_OBJECT_PROFILES = {
   analysis: { label: 'Source Analysis', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'static-report', notes: 'Exports as a readable analysis report.' },
-  simplified: { label: 'Leveled Text', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'readable-passage', notes: 'Exports as semantic reading content with optional read-aloud processing.' },
+  simplified: { label: 'Adapted Text', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'readable-passage', notes: 'Exports as semantic reading content with optional read-aloud processing. Instructional role metadata distinguishes a supplemental companion from an educator-designated primary.' },
   glossary: { label: 'Glossary', status: 'ready', html: 'interactive', canExportHtml: true, canExportIms: true, interactiveHtml: true, tracking: 'local-only', fallback: 'table', notes: 'Flash-card/self-test modes run in the downloaded HTML; LMS scoring is not reported.' },
   outline: { label: 'Graphic Organizer', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'responsive-diagram', notes: 'Exports as a responsive organizer with text fallback styling.' },
   image: { label: 'Visual Support', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'image-with-alt', notes: 'Exports the generated image and its accessible description when available.' },
@@ -501,6 +501,45 @@ function _alloInteractiveObjectProfileFor(typeOrItem) {
     notes: base.notes || ''
   };
 }
+function _alloInstructionalTextForManifest(item) {
+  var artifact = item && typeof item === 'object' ? item : {};
+  var config = artifact.config && typeof artifact.config === 'object' ? artifact.config : {};
+  var raw = artifact.instructionalText || config.instructionalText || artifact.textProfile || config.textProfile || {};
+  var inferredForm = artifact.type === 'simplified' ? 'adapted' : 'original';
+  var normalized = raw;
+  try {
+    var api = window.AlloModules && window.AlloModules.InstructionalContext;
+    if (raw && api && typeof api.normalizeInstructionalText === 'function') normalized = api.normalizeInstructionalText(raw, { defaultForm: inferredForm });
+  } catch (e) { normalized = raw; }
+  normalized = normalized && typeof normalized === 'object' ? normalized : {};
+  var role = ['primary', 'supplemental', 'unspecified'].indexOf(normalized.role) >= 0 ? normalized.role : 'unspecified';
+  var form = ['original', 'same-text-supported', 'adapted'].indexOf(normalized.form) >= 0 ? normalized.form : inferredForm;
+  var auth = normalized.replacementAuthorization && typeof normalized.replacementAuthorization === 'object'
+    ? normalized.replacementAuthorization : {};
+  var educatorAuthorized = auth.authorized === true && auth.source === 'educator';
+  var complexity = normalized.complexity && typeof normalized.complexity === 'object' ? normalized.complexity : {};
+  return {
+    schemaVersion: 1,
+    role: role,
+    form: form,
+    sourceArtifactId: normalized.sourceArtifactId == null ? null : String(normalized.sourceArtifactId),
+    primaryArtifactId: normalized.primaryArtifactId == null ? null : String(normalized.primaryArtifactId),
+    designationSource: ['educator', 'workflow-default', 'legacy-inferred'].indexOf(normalized.designationSource) >= 0
+      ? normalized.designationSource : 'legacy-inferred',
+    replacementAuthorization: { authorized: educatorAuthorized, source: educatorAuthorized ? 'educator' : 'none' },
+    complexity: {
+      requestedGrade: complexity.requestedGrade || artifact.targetGradeLevel || config.grade || '',
+      measuredGrade: complexity.measuredGrade != null
+        ? complexity.measuredGrade
+        : (artifact.localStats && artifact.localStats.gradeLevel != null ? artifact.localStats.gradeLevel : null),
+      method: complexity.method || (artifact.localStats ? 'flesch-kincaid' : ''),
+      status: complexity.status || '',
+      contentFingerprint: complexity.contentFingerprint || '',
+      measuredAt: complexity.measuredAt || null,
+      language: complexity.language || config.language || '',
+    }
+  };
+}
 function _alloInteractiveObjectManifestItem(item, extra) {
   var profile = _alloInteractiveObjectProfileFor(item);
   return Object.assign({
@@ -516,7 +555,8 @@ function _alloInteractiveObjectManifestItem(item, extra) {
     qti: profile.qti,
     tracking: profile.tracking,
     fallback: profile.fallback,
-    notes: profile.notes
+    notes: profile.notes,
+    instructionalText: _alloInstructionalTextForManifest(item)
   }, extra || {});
 }
 function _alloInteractiveObjectProfileSummary(items) {
@@ -36857,7 +36897,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       const align = isRtl ? 'right' : 'left';
       // ── Visual enhancement: resource type icon + accent color ──
       const typeVisuals = {
-        'simplified': { icon: '📖', color: '#2563eb', bg: '#eff6ff', label: 'Leveled Text' },
+        'simplified': { icon: '📖', color: '#2563eb', bg: '#eff6ff', label: 'Adapted Text' },
         'analysis': { icon: '📊', color: '#7c3aed', bg: '#f5f3ff', label: 'Source Analysis' },
         'glossary': { icon: '📚', color: '#059669', bg: '#ecfdf5', label: 'Glossary' },
         'quiz': { icon: '❓', color: '#dc2626', bg: '#fef2f2', label: 'Quiz' },
@@ -39615,7 +39655,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       // markers + decorative terminators. Mirrors the visibility logic in
       // generateResourceHTML so we only TOC items that will actually render.
       const _typeVisualsTOC = {
-        'simplified': { icon: '📖', color: '#2563eb', bg: '#eff6ff', label: 'Leveled Text' },
+        'simplified': { icon: '📖', color: '#2563eb', bg: '#eff6ff', label: 'Adapted Text' },
         'analysis': { icon: '📊', color: '#7c3aed', bg: '#f5f3ff', label: 'Source Analysis' },
         'glossary': { icon: '📚', color: '#059669', bg: '#ecfdf5', label: 'Glossary' },
         'quiz': { icon: '❓', color: '#dc2626', bg: '#fef2f2', label: 'Quiz' },
@@ -40034,11 +40074,58 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         if (entry.item === item) return true;
         return !!(entry.item.id && item.id && String(entry.item.id) === String(item.id));
       });
+      const _textAccessResources = historyItems.map((item) => ({
+        id: item && item.id ? String(item.id) : '',
+        type: item && item.type ? String(item.type) : '',
+        renderedInStudentHtml: _hasRenderedEntry(_studentEntries, item),
+        renderedInTeacherHtml: _hasRenderedEntry(_teacherEntries, item),
+        instructionalText: _alloInstructionalTextForManifest(item),
+      }));
+      const _studentPrimaryTextIds = _textAccessResources.filter((entry) => {
+        const profile = entry.instructionalText;
+        return entry.renderedInStudentHtml && profile.role === 'primary'
+          && (profile.form !== 'adapted' || profile.replacementAuthorization.authorized === true);
+      }).map((entry) => entry.id).filter(Boolean);
+      const _studentSupplementalTextIds = _textAccessResources.filter((entry) => {
+        const profile = entry.instructionalText;
+        return entry.renderedInStudentHtml && profile.role === 'supplemental';
+      }).map((entry) => entry.id).filter(Boolean);
+      const _studentUnspecifiedAdaptedTextIds = _textAccessResources.filter((entry) => {
+        const profile = entry.instructionalText;
+        return entry.renderedInStudentHtml && profile.role === 'unspecified' && profile.form === 'adapted';
+      }).map((entry) => entry.id).filter(Boolean);
+      const _studentUnauthorizedPrimaryAdaptedTextIds = _textAccessResources.filter((entry) => {
+        const profile = entry.instructionalText;
+        return entry.renderedInStudentHtml && profile.role === 'primary' && profile.form === 'adapted'
+          && profile.replacementAuthorization.authorized !== true;
+      }).map((entry) => entry.id).filter(Boolean);
+      const _adaptedWithoutPrimary = (_studentSupplementalTextIds.length > 0 || _studentUnspecifiedAdaptedTextIds.length > 0)
+        && _studentPrimaryTextIds.length === 0;
+      const _textAccessWarningCodes = [];
+      if (_studentSupplementalTextIds.length > 0 && _studentPrimaryTextIds.length === 0) _textAccessWarningCodes.push('supplemental-text-without-primary');
+      if (_studentUnspecifiedAdaptedTextIds.length > 0 && _studentPrimaryTextIds.length === 0) _textAccessWarningCodes.push('adapted-text-role-unspecified');
+      if (_studentUnauthorizedPrimaryAdaptedTextIds.length > 0) _textAccessWarningCodes.push('adapted-primary-not-educator-authorized');
+      const _textAccessManifest = {
+        schemaVersion: 1,
+        primaryTextIds: _studentPrimaryTextIds,
+        supplementalTextIds: _studentSupplementalTextIds,
+        unspecifiedAdaptedTextIds: _studentUnspecifiedAdaptedTextIds,
+        unauthorizedPrimaryAdaptedTextIds: _studentUnauthorizedPrimaryAdaptedTextIds,
+        supplementalWithoutPrimary: _studentSupplementalTextIds.length > 0 && _studentPrimaryTextIds.length === 0,
+        adaptedWithoutPrimary: _adaptedWithoutPrimary,
+        warningCodes: _textAccessWarningCodes,
+        resources: _textAccessResources,
+        notes: 'Legacy artifacts remain role=unspecified. Replacement authorization is recorded only when its source is educator.',
+      };
+      const _teacherTextAccessNotice = _textAccessManifest.warningCodes.length > 0
+        ? `<div role="note" style="margin:12px 0 20px;padding:12px 14px;background:#fffbeb;border:1px solid #f59e0b;border-radius:10px;color:#78350f;"><strong>Text-access review:</strong> This student export includes adapted text whose primary-text relationship or educator replacement authorization needs review. Confirm that students will also receive the intended primary text, or explicitly revise the artifact designation before distribution.</div>`
+        : '';
       const _objectProfileManifest = {
         kind: 'alloflow.interactive-object-profile',
         profileVersion: ALLO_INTERACTIVE_OBJECT_PROFILE_VERSION,
         generatedAt: new Date().toISOString(),
         topic: lessonTopic,
+        textAccess: _textAccessManifest,
         summary: _alloInteractiveObjectProfileSummary(historyItems),
         resources: historyItems.map((item) => _alloInteractiveObjectManifestItem(item, {
           renderedInStudentHtml: _hasRenderedEntry(_studentEntries, item),
@@ -43152,6 +43239,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         <div class="teacher-view">
             <h1>${t('export.teacher_key_title')}</h1>
             <p><em>${teacherIntro}</em></p>
+            ${_teacherTextAccessNotice}
             ${teacherTOC}
             ${teacherContent || `<p>${noTeacherMsg}</p>`}
         </div>` : ''}

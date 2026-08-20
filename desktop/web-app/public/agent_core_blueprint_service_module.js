@@ -53,6 +53,26 @@
       return C.validateBlueprint(blueprint, { knownTools: knownTools });
     }
 
+    function applyDraftInstructionalTextDefaults(blueprint) {
+      if (!blueprint || !Array.isArray(blueprint.plan) || typeof C.normalizeInstructionalText !== 'function') return blueprint;
+      blueprint.plan = blueprint.plan.map(function (row) {
+        if (!row || (row.tool !== 'simplified' && row.tool !== 'analysis')) return row;
+        var defaults = row.tool === 'simplified'
+          ? { role: 'supplemental', form: 'adapted' }
+          : { role: 'primary', form: 'original' };
+        var current = row.instructionalText || {};
+        var educatorDesignated = current.designationSource === 'educator';
+        return Object.assign({}, row, {
+          instructionalText: C.normalizeInstructionalText(Object.assign({}, defaults, current, educatorDesignated ? {} : {
+            role: defaults.role,
+            form: defaults.form,
+            designationSource: 'workflow-default'
+          }), row.tool)
+        });
+      });
+      return blueprint;
+    }
+
     /**
      * Create a Blueprint draft. request:
      *   { sourceText, gradeLevel, standards, language, guidance, history,
@@ -69,12 +89,14 @@
         language: req.language || '',
         standards: req.standards || '',
         standardsContext: req.standardsContext || null,
+        instructionalContext: req.instructionalContext || null,
         interests: req.interests || '',
+        sourcePolicy: req.sourcePolicy,
         provenance: req.provenance
       };
       if (typeof d.autoConfigure === 'function') {
         return Promise.resolve(d.autoConfigure(req)).then(function (legacyConfig) {
-          var bp = C.fromLegacyConfig(legacyConfig, ctx);
+          var bp = applyDraftInstructionalTextDefaults(C.fromLegacyConfig(legacyConfig, ctx));
           var report = validate(bp);
           if (!report.ok) {
             var e = new Error('Generated Blueprint failed contract validation');
@@ -89,7 +111,7 @@
         ? req.globalSettings : {};
       var globalSettings = Object.assign({}, requestedGlobalSettings);
       if (ctx.gradeLevel) globalSettings.gradeLevel = ctx.gradeLevel;
-      var bp = C.fromLegacyConfig({ resourcePlan: plan, lessonDNA: req.lessonDNA || {}, globalSettings: globalSettings }, ctx);
+      var bp = applyDraftInstructionalTextDefaults(C.fromLegacyConfig({ resourcePlan: plan, lessonDNA: req.lessonDNA || {}, globalSettings: globalSettings }, ctx));
       var report = validate(bp);
       if (!report.ok) {
         return Promise.reject(Object.assign(new Error('Draft failed contract validation'), { report: report }));
@@ -114,14 +136,48 @@
       }
       if (Array.isArray(ch.addTools)) {
         ch.addTools.forEach(function (tool) {
-          if (!plan.some(function (r) { return r.tool === tool; })) plan.push({ tool: tool, directive: '' });
+          if (!plan.some(function (r) { return r.tool === tool; })) {
+            var row = { tool: tool, directive: '' };
+            if (typeof C.normalizeInstructionalText === 'function' && (tool === 'simplified' || tool === 'analysis')) {
+              row.instructionalText = C.normalizeInstructionalText({
+                role: tool === 'simplified' ? 'supplemental' : 'primary',
+                form: tool === 'simplified' ? 'adapted' : 'original',
+                designationSource: 'workflow-default'
+              }, tool);
+            }
+            plan.push(row);
+          }
         });
       }
       if (ch.setDirectives && typeof ch.setDirectives === 'object') {
         plan = plan.map(function (r) {
           return Object.prototype.hasOwnProperty.call(ch.setDirectives, r.tool)
-            ? { tool: r.tool, directive: String(ch.setDirectives[r.tool] || '') }
+            ? Object.assign({}, r, { directive: String(ch.setDirectives[r.tool] || '') })
             : r;
+        });
+      }
+      var standardsTextChanged = typeof ch.standards === 'string' && ch.standards !== b.standards;
+      var nextStandardsContext = ch.standardsContext !== undefined ? ch.standardsContext : b.standardsContext;
+      if (standardsTextChanged && ch.standardsContext === undefined) {
+        nextStandardsContext = {
+          version: 'standards-context/v1',
+          inputText: ch.standards,
+          promptText: ch.standards,
+          provider: 'user-input',
+          resolutionStatus: 'unresolved',
+          standards: []
+        };
+      }
+      var nextInstructionalContext = ch.instructionalContext !== undefined
+        ? ch.instructionalContext
+        : b.instructionalContext;
+      // A standards edit invalidates the old fingerprint even when the caller
+      // does not explicitly rebuild instructionalContext. The contract will
+      // normalize and fingerprint this new reviewed snapshot.
+      if ((ch.standardsContext !== undefined || standardsTextChanged) && ch.instructionalContext === undefined) {
+        nextInstructionalContext = Object.assign({}, b.instructionalContext || {}, {
+          standardsContext: nextStandardsContext,
+          standardsFingerprint: ''
         });
       }
       var next = {
@@ -129,7 +185,8 @@
         blueprintId: b.blueprintId,
         audience: ch.audience ? Object.assign({}, b.audience, ch.audience) : b.audience,
         standards: typeof ch.standards === 'string' ? ch.standards : b.standards,
-        standardsContext: ch.standardsContext !== undefined ? ch.standardsContext : b.standardsContext,
+        standardsContext: nextStandardsContext,
+        instructionalContext: nextInstructionalContext,
         sourcePolicy: b.sourcePolicy,
         lessonDNA: ch.lessonDNA ? Object.assign({}, b.lessonDNA, ch.lessonDNA) : b.lessonDNA,
         globalSettings: ch.globalSettings ? Object.assign({}, b.globalSettings, ch.globalSettings) : b.globalSettings,
@@ -155,6 +212,7 @@
       if (!report.ok) return Promise.reject(Object.assign(new Error('Invalid Blueprint'), { report: report }));
       var b = report.value;
       return Promise.resolve(d.modifyBlueprint(C.toLegacyConfig(b), String(instruction || ''))).then(function (legacyConfig) {
+        var rawPlan = legacyConfig && Array.isArray(legacyConfig.resourcePlan) ? legacyConfig.resourcePlan : [];
         var next = C.fromLegacyConfig(legacyConfig, {
           blueprintId: b.blueprintId,
           gradeLevel: b.audience.gradeLevel,
@@ -162,13 +220,60 @@
           interests: b.audience.interests,
           standards: b.standards,
           standardsContext: b.standardsContext,
+          instructionalContext: b.instructionalContext,
+          sourcePolicy: b.sourcePolicy,
           provenance: b.provenance
+        });
+        // AI revision output is not an educator-authorization surface. Keep
+        // existing row metadata when the model omits it, and never let model
+        // output mint an educator designation or replacement permission.
+        var priorById = {};
+        var priorByTool = {};
+        b.plan.forEach(function (row) {
+          if (row.uiId) priorById[row.uiId] = row;
+          priorByTool[row.tool] = priorByTool[row.tool] || [];
+          priorByTool[row.tool].push(row);
+        });
+        var rawById = {};
+        var rawByTool = {};
+        rawPlan.forEach(function (row) {
+          if (!row || typeof row !== 'object') return;
+          var rawTool = row.tool || row.type || row.id;
+          if (row.uiId) rawById[row.uiId] = row;
+          rawByTool[rawTool] = rawByTool[rawTool] || [];
+          rawByTool[rawTool].push(row);
+        });
+        next.plan = next.plan.map(function (row, index) {
+          var prior = priorById[row.uiId]
+            || (priorByTool[row.tool] && priorByTool[row.tool].length === 1 ? priorByTool[row.tool][0] : null)
+            || (b.plan[index] && b.plan[index].tool === row.tool ? b.plan[index] : null);
+          var rawRow = rawById[row.uiId]
+            || (rawByTool[row.tool] && rawByTool[row.tool].length === 1 ? rawByTool[row.tool][0] : null)
+            || (rawPlan[index] && typeof rawPlan[index] === 'object' ? rawPlan[index] : null);
+          var rawText = rawRow && rawRow.instructionalText;
+          var priorText = prior && prior.instructionalText;
+          var priorEducator = priorText && priorText.designationSource === 'educator';
+          var modelClaimsEducator = rawText && (rawText.designationSource === 'educator'
+            || (rawText.replacementAuthorization && rawText.replacementAuthorization.authorized === true));
+          var safeText = row.instructionalText;
+          if (priorEducator || (!rawText && priorText)) safeText = priorText;
+          else if (modelClaimsEducator && typeof C.normalizeInstructionalText === 'function') {
+            safeText = C.normalizeInstructionalText({
+              role: row.tool === 'simplified' ? 'supplemental' : (row.tool === 'analysis' ? 'primary' : 'unspecified'),
+              form: row.tool === 'simplified' ? 'adapted' : 'original',
+              designationSource: 'workflow-default',
+              replacementAuthorization: { authorized: false, source: 'none' },
+              complexity: safeText && safeText.complexity
+            }, row.tool);
+          }
+          return Object.assign({}, row, { instructionalText: safeText });
         });
         // The legacy shape cannot represent every Blueprint field. Preserve
         // contract context that the AI revision never received rather than
         // silently resetting it during the round-trip.
         next.audience = Object.assign({}, b.audience, next.audience);
         next.sourcePolicy = b.sourcePolicy;
+        next.instructionalContext = b.instructionalContext;
         next.warnings = b.warnings;
         var out = validate(next);
         if (!out.ok) {
@@ -213,6 +318,7 @@
           index: i,
           tool: r.tool,
           directive: r.directive,
+          instructionalText: r.instructionalText,
           commandId: commandId,
           contract: contract,
           status: (manifest && caps.missing.indexOf(cap(r.tool)) !== -1) ? 'blocked-missing-capability' : 'ready'
@@ -224,6 +330,8 @@
         errors: [],
         steps: steps,
         requiredCapabilities: report.value.requiredCapabilities,
+        standardsContext: report.value.standardsContext,
+        instructionalContext: report.value.instructionalContext,
         missingCapabilities: manifest ? caps.missing : [],
         approvalRequired: true
       };

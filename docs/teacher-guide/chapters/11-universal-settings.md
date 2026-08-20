@@ -1,6 +1,6 @@
 # Universal Settings: set it once, not per tool
 
-Universal Settings is one card that holds the choices every generator inherits. Set the grade level once and the glossary, the quiz, and the adapted text all target that grade. Set it per tool instead and the parts of one lesson pack quietly disagree with each other.
+Universal Settings is one card that holds the choices most generators inherit. Set the instructional audience once and the glossary, quiz, lesson plan, and adapted text use the same context. The Source Generator keeps its own primary-source grade control, so the app can distinguish the standard's instructional grade from an access text's language-complexity target.
 
 Open it before you generate anything. That single habit prevents most of the "why does this pack feel mismatched" problems teachers report.
 
@@ -49,17 +49,27 @@ Use **Image style** in Universal Settings to keep one lesson visually coherent. 
 
 Choose an override for an instructional reason—for example, a simple line-drawing style for a worksheet that must photocopy clearly—not merely because the same selector is visible. Return the resource to **Use Universal style** when the exception is no longer needed. A change affects new or regenerated images; it does not restyle images that already exist.
 
-## Choose a grade level honestly
+## Separate the requested grade from internal calibration
 
-The grade level is a target, not a guarantee. Generated text often lands above the grade you asked for, and asking for more research or more detail tends to push it higher still.
+The grade you select is the educator-facing target. It is not silently relabeled as a lower instructional grade. For source writing, AlloFlow may use a lower internal prompt target to compensate for a model's tendency to overshoot. The resource still records the grade you requested, the internal calibration target, and—when an English readability check is appropriate—the measured result as separate facts.
+
+That distinction matters:
+
+- **Instructional grade** identifies the standards and intellectual target.
+- **Requested text complexity** identifies the intended language load for this resource.
+- **Internal calibration** is a generation technique, not a recommendation about what students should read.
+- **Measured complexity** is evidence about the resulting text, not proof that it is instructionally appropriate.
+
+Flesch–Kincaid is an English screening measure based mainly on word and sentence patterns. It cannot judge knowledge demands, text structure, content accuracy, cultural context, or the reader and task. AlloFlow therefore does not show an English grade-level verdict for non-English or bilingual text.
 
 Do this before you share:
 
 - Read a paragraph aloud and listen for sentences a student would lose track of.
 - Look for words you would have to stop and define.
 - Compare the result against something you know sits at the right grade.
+- Use the recorded level check as one signal, then review content, structure, and the actual task.
 
-If it reads high, ask for a lower grade than you want and check again. Set the grade for the students who need the most access, then offer the original source to students who are ready for it. Lowering the reading load is not the same as lowering the learning goal. See [Prepare a lesson](02-prepare-a-lesson.md) for how to protect the intellectual target while changing the reading level.
+If an adapted version is used as a companion, leave its role as **Supplemental access version** and keep the linked primary text available as required by the lesson, standard, and local policy. Designating an adapted version as a primary replacement requires an explicit educator choice; AlloFlow does not infer an IEP, modification, or authorization. Lowering language load is not the same as lowering the learning goal. See [Prepare a lesson](02-prepare-a-lesson.md) for how to protect the intellectual target while changing text complexity.
 
 ## Set the language and decide about translations
 
@@ -96,7 +106,7 @@ Turn emoji on when the visual cue helps and you have previewed the result. Turn 
 
 Before you generate the first resource for a lesson:
 
-- Set the grade level for the students who need the most access.
+- Set the instructional grade to match the standards and learning target; use an adapted companion when a different language-complexity target is appropriate.
 - Set the output language your class will read.
 - Check the Translations line and confirm it says what you expect.
 - Add a standard only if you will actually use the alignment.

@@ -154,6 +154,56 @@ test('actual Full Pack sidebar restores, adapts capacity, collapses rows, and ex
   expect(JSON.parse(report)).toMatchObject({ reportVersion: 2, status: 'ready' });
 });
 
+test.describe('local unreleased Full Pack editor', () => {
+  test.skip(!process.env.PW_BASE_URL, 'Set PW_BASE_URL to a local build that contains the unreleased Full Pack editor.');
+
+  test('actual Full Pack review lets the educator edit and persist the exact ready plan', async ({ page }) => {
+  const envelope: any = readyEnvelope();
+  envelope.run.targetMode = 'current-settings';
+  envelope.run.groups = {};
+  envelope.run.resources = {};
+  envelope.run.settingsSnapshot.instructionalContext = {
+    schemaVersion: 1,
+    instructionalGrade: '5th Grade',
+    primaryTextPolicy: 'preserve-primary',
+    standardsFingerprint: 'reviewed-standard',
+  };
+  envelope.run.planPayload.instructionalContext = envelope.run.settingsSnapshot.instructionalContext;
+  await seedEnvelope(page, envelope);
+  await bootAlloFlow(page, 'full');
+
+  const panel = page.getByTestId('full-pack-review-panel');
+  await expect(panel).toBeVisible({ timeout: 120000 });
+  await expect(panel.getByTestId('full-pack-text-access-summary')).toContainText('primary/source text remains available');
+
+  const policy = panel.getByTestId('full-pack-primary-policy');
+  await policy.focus();
+  await expect(policy).toBeFocused();
+  await policy.selectOption('educator-directed');
+  await expect(panel.getByTestId('full-pack-resource-type')).toHaveCount(3);
+  await expect(panel.getByTestId('full-pack-text-access-summary')).toContainText('1 supplemental Adapted Text companion');
+
+  const quizDirective = panel.locator('[data-testid="full-pack-resource-directive"][data-resource-key="SENTINEL_UI_ID_QUIZ"]');
+  await quizDirective.fill('Use evidence from two different paragraphs.');
+  await panel.locator('[data-testid="full-pack-move-down"][data-resource-key="SENTINEL_UI_ID_QUIZ"]').click();
+
+  await panel.getByTestId('full-pack-add-resource-select').selectOption('glossary');
+  await panel.getByTestId('full-pack-add-resource').click();
+  await expect(panel.getByTestId('full-pack-resource-type')).toHaveCount(4);
+  await panel.getByTestId('full-pack-resource-type').last().selectOption('outline');
+
+  await expect.poll(async () => page.evaluate(key => {
+    const value = JSON.parse(localStorage.getItem(key) || 'null');
+    return value?.run?.preflight?.selected?.map((row: any) => ({ type: row.type, directive: row.directive })) || [];
+  }, STORE_KEY)).toEqual([
+    { type: 'image', directive: 'SENTINEL_DIRECTIVE_IMAGE' },
+    { type: 'quiz', directive: 'Use evidence from two different paragraphs.' },
+    { type: 'simplified', directive: '' },
+    { type: 'outline', directive: '' },
+  ]);
+  });
+});
+
 test('actual Full Pack sidebar survives quota fallback and exposes the warning', async ({ page }) => {
   await seedEnvelope(page, readyEnvelope(), true);
   await bootAlloFlow(page, 'full');

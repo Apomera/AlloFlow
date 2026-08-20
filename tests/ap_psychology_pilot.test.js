@@ -82,6 +82,37 @@ describe('AP Psychology independent pilot', () => {
     }
   });
 
+  it('keeps generated research and data stems coherent after the final question', () => {
+    const generated = pack.items.filter((item) => Number(String(item.id).split('-').pop()) > 8);
+    expect(generated).toHaveLength(460);
+    expect(generated.every((item) => item.prompt.trim().endsWith('?'))).toBe(true);
+    expect(generated.every((item) => !/The topic comparison also distinguishes|The protocol distinguishes|The study notes/i.test(item.prompt))).toBe(true);
+    expect(generated.every((item) => item.choiceRationales.every((feedback) => !/does not match the relevant evidence, variable, or method described in the scenario/i.test(feedback)))).toBe(true);
+  });
+
+  it('maps every item to an actionable internal learning target and library route', () => {
+    const catalog = pack.blueprint.learningObjectiveCatalog;
+    const objectiveById = new Map(catalog.map((objective) => [objective.id, objective]));
+    const cognitiveProcesses = { P1: 'apply', P2: 'analyze', P3: 'interpret' };
+    expect(pack.blueprint.learningObjectiveCatalogVersion).toBe('internal-remediation-v1');
+    expect(catalog).toHaveLength(35);
+    expect(new Set(catalog.map((objective) => objective.topicId)).size).toBe(35);
+
+    for (const item of pack.items) {
+      const objective = objectiveById.get(item.learningObjectiveId);
+      expect(objective).toBeTruthy();
+      expect(item.chapterIds).toEqual([objective.chapterId]);
+      expect(item.learningSectionId).toBe(objective.sectionId);
+      expect(item.learningSectionLabel).toBe(objective.sectionLabel);
+      expect(item.learningObjectiveLabel).toBe(objective.label);
+      expect(item.skillIds).toEqual([item.practiceId]);
+      expect(item.cognitiveProcess).toBe(cognitiveProcesses[item.practiceId]);
+      expect(objective.topicId).toBe(item.topicIds[0]);
+      expect(objective.domainId).toBe(item.domainId);
+      expect(objective.practiceIds).toContain(item.practiceId);
+    }
+  });
+
   it('declares independent provenance without treating declarations as completed expert review', () => {
     expect(pack.released).toBe(false);
     expect(pack.calibrated).toBe(false);

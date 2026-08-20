@@ -47,6 +47,116 @@
   }
   function nowIso() { return new Date().toISOString(); }
 
+  function resolveInstructionalModule() {
+    var mod = typeof window !== 'undefined' && window.AlloModules
+      ? window.AlloModules.InstructionalContext
+      : null;
+    if (!mod && typeof module !== 'undefined' && typeof require === 'function') {
+      try { mod = require('./instructional_context_module.js'); } catch (_) {}
+    }
+    return mod;
+  }
+
+  function resolveStandardsModule() {
+    var mod = typeof window !== 'undefined' && window.AlloModules
+      ? window.AlloModules.StandardsContext
+      : null;
+    if (!mod && typeof module !== 'undefined' && typeof require === 'function') {
+      try { mod = require('./standards_context_module.js'); } catch (_) {}
+    }
+    return mod;
+  }
+
+  function buildStandardsDirective(request) {
+    var context = request && request.standardsContext;
+    var mod = resolveStandardsModule();
+    if (mod && typeof mod.buildResourceDirective === 'function') {
+      var sharedDirective = mod.buildResourceDirective(context || (request && request.standards), {
+        resourceType: 'resource-pack',
+        textRole: 'primary'
+      });
+      if (text(sharedDirective)) return sharedDirective;
+    }
+    var promptText = text(context && (context.promptText || context.inputText), text(request && request.standards));
+    var constraints = isObject(context && context.instructionalConstraints)
+      ? context.instructionalConstraints : {};
+    var expectation = text(constraints.textAccessExpectation);
+    var lines = [];
+    if (promptText) {
+      lines.push('STANDARDS FIDELITY: Use this reviewed standards snapshot as the instructional target: ' + promptText + '.');
+      lines.push('Preserve required content, cognitive verbs, evidence, and product expectations; language supports must not reduce cognitive demand.');
+    }
+    if (expectation === 'preserve-primary') {
+      lines.push('TEXT ACCESS: Preserve the primary grade-level text. Any adapted text must remain a supplemental companion and must not replace primary-text access.');
+    } else if (expectation === 'supplemental-adaptation-permitted') {
+      lines.push('TEXT ACCESS: Adapted text may be offered only as a clearly labeled supplemental companion to the primary text.');
+    } else if (expectation === 'educator-directed') {
+      lines.push('TEXT ACCESS: Follow the educator-recorded text-access decision; do not infer an accommodation or replacement authorization.');
+    }
+    return lines.join('\n');
+  }
+
+  function fallbackInstructionalText(raw, type, request) {
+    var source = isObject(raw) ? raw : {};
+    var authorization = isObject(source.replacementAuthorization) ? source.replacementAuthorization : {};
+    var rawComplexity = isObject(source.complexity) ? source.complexity : {};
+    var rawMeasured = rawComplexity.measuredGrade;
+    var measured = rawMeasured === null || rawMeasured === undefined || rawMeasured === '' ? NaN : Number(rawMeasured);
+    var isAdapted = type === 'simplified';
+    var role = ['primary', 'supplemental', 'unspecified'].indexOf(source.role) !== -1
+      ? source.role : (isAdapted ? 'supplemental' : 'unspecified');
+    var form = ['original', 'same-text-supported', 'adapted'].indexOf(source.form) !== -1
+      ? source.form : (isAdapted ? 'adapted' : 'original');
+    var authorized = authorization.authorized === true && authorization.source === 'educator';
+    return {
+      schemaVersion: 1,
+      role: role,
+      form: form,
+      sourceArtifactId: text(source.sourceArtifactId) || null,
+      primaryArtifactId: text(source.primaryArtifactId) || null,
+      designationSource: ['educator', 'workflow-default', 'legacy-inferred'].indexOf(source.designationSource) !== -1
+        ? source.designationSource : 'workflow-default',
+      replacementAuthorization: { authorized: authorized, source: authorized ? 'educator' : 'none' },
+      complexity: {
+        requestedGrade: text(rawComplexity.requestedGrade, text(request && request.gradeLevel)),
+        calibrationTarget: text(rawComplexity.calibrationTarget),
+        measuredGrade: Number.isFinite(measured) ? measured : null,
+        method: text(rawComplexity.method), status: text(rawComplexity.status, Number.isFinite(measured) ? 'unreviewed' : 'unavailable'),
+        contentFingerprint: text(rawComplexity.contentFingerprint), measuredAt: text(rawComplexity.measuredAt),
+        language: text(rawComplexity.language, text(request && request.language, 'English'))
+      }
+    };
+  }
+
+  function normalizeInstructionalText(raw, type, request) {
+    var mod = resolveInstructionalModule();
+    if (mod && typeof mod.normalizeInstructionalText === 'function') {
+      var defaults = fallbackInstructionalText(raw, type, request);
+      var candidate = Object.assign({}, defaults, isObject(raw) ? raw : {});
+      candidate.complexity = Object.assign({}, defaults.complexity, isObject(raw) && isObject(raw.complexity) ? raw.complexity : {});
+      return mod.normalizeInstructionalText(candidate);
+    }
+    return fallbackInstructionalText(raw, type, request);
+  }
+
+  function normalizeInstructionalContext(raw, request) {
+    var source = isObject(raw) ? raw : {};
+    var mod = resolveInstructionalModule();
+    if (mod && typeof mod.normalizeInstructionalContext === 'function') {
+      return mod.normalizeInstructionalContext(source, {
+        instructionalGrade: text(request && request.gradeLevel),
+        standardsContext: request && request.standardsContext
+      });
+    }
+    return {
+      schemaVersion: 1,
+      instructionalGrade: text(source.instructionalGrade, text(request && request.gradeLevel)),
+      primaryTextPolicy: source.primaryTextPolicy === 'educator-directed' ? 'educator-directed' : 'preserve-primary',
+      standardsContext: clone(source.standardsContext || (request && request.standardsContext) || null),
+      standardsFingerprint: text(source.standardsFingerprint)
+    };
+  }
+
   function scanUnsafe(value, path, errors, depth) {
     if (!value || typeof value !== 'object') return;
     if (depth > 8) {
@@ -83,6 +193,7 @@
     var allowed = {
       requestId: 1, title: 1, sourceTopic: 1, sourceText: 1, gradeLevel: 1,
       language: 1, standards: 1, learningGoal: 1, resourcePlan: 1,
+      standardsContext: 1, instructionalContext: 1,
       privacy: 1, providerPolicy: 1, author: 1
     };
     Object.keys(request).forEach(function (key) {
@@ -106,7 +217,9 @@
         if (!TYPE_SET[type]) errors.push(error('unsupported-resource-type', path + '.type', 'Unsupported resource type: ' + type + '.'));
         if (isObject(entry)) {
           Object.keys(entry).forEach(function (key) {
-            if (key !== 'type' && key !== 'directive') errors.push(error('unsupported-field', path + '.' + key, 'Only type and directive are allowed.'));
+            if (key !== 'type' && key !== 'directive' && key !== 'uiId' && key !== 'instructionalText') {
+              errors.push(error('unsupported-field', path + '.' + key, 'Only type, directive, uiId, and instructionalText are allowed.'));
+            }
           });
           if (entry.directive !== undefined && (typeof entry.directive !== 'string' || entry.directive.length > MAX_DIRECTIVE_CHARS)) {
             errors.push(error('invalid-directive', path + '.directive', 'directive must be at most ' + MAX_DIRECTIVE_CHARS + ' characters.'));
@@ -141,8 +254,18 @@
       sourceTopic: text(request.sourceTopic), sourceText: String(request.sourceText || '').trim(),
       gradeLevel: text(request.gradeLevel, 'middle school'), language: text(request.language, 'en').toLowerCase(),
       standards: text(request.standards), learningGoal: text(request.learningGoal),
+      standardsContext: clone(request.standardsContext || null),
+      instructionalContext: normalizeInstructionalContext(request.instructionalContext, request),
       author: text(request.author, 'AlloFlow Agent Draft'),
-      resourcePlan: request.resourcePlan.map(function (entry) { return typeof entry === 'string' ? { type: entry, directive: '' } : { type: entry.type, directive: text(entry.directive) }; }),
+      resourcePlan: request.resourcePlan.map(function (entry, index) {
+        var row = typeof entry === 'string' ? { type: entry, directive: '' } : entry;
+        return {
+          type: row.type,
+          directive: text(row.directive),
+          uiId: text(row.uiId, row.type + '-' + index),
+          instructionalText: normalizeInstructionalText(row.instructionalText, row.type, request)
+        };
+      }),
       privacy: clone(request.privacy), providerPolicy: clone(request.providerPolicy)
     };
   }
@@ -156,8 +279,10 @@
       'Return ONLY valid JSON with this exact top-level shape: {"history":[{"id":"...","type":"...","title":"...","meta":"...","data":...}]}',
       'Do not return markdown fences, commentary, prompts, chain-of-thought, secrets, student names, disability labels, accommodations, or personal records.',
       'Preserve the learning goal and essential meaning. Treat the source as ground truth; do not invent unsupported facts.',
+      'Treat the source as the primary text. Resources whose internal type is "simplified" are supplemental adapted companions unless their instructionalText explicitly records an educator-authorized replacement. Never infer an IEP, accommodation, or replacement authorization.',
+      buildStandardsDirective(request),
       'All resource ids must be unique. Use the requested type shapes: directions.data is markdown or {body,objectives}; simplified.data is markdown; glossary.data is an array of {term,def,tier}; outline.data is {main,branches:[{title,items}]}; quiz.data is {questions,reflections}; sentence-frames.data is {mode:"list",items:[{text}],rubric}; faq.data is an array of {question,answer}; concept-sort.data is {categories,items}; timeline.data is {progressionLabel,items:[{date,event}]}; math.data is {problems:[{question,answer,steps:[{explanation}]}]}; note-taking.data is {templateType:"cornell-notes",cues,notes}; anchor-chart.data is {title,sections:[{label,bullets}]}',
-      'Metadata: topic=' + request.sourceTopic + '; title=' + request.title + '; grade=' + request.gradeLevel + '; language=' + request.language + '; standards=' + (request.standards || 'not supplied') + '; goal=' + request.learningGoal + '.',
+      'Metadata: topic=' + request.sourceTopic + '; title=' + request.title + '; grade=' + request.gradeLevel + '; language=' + request.language + '; standards=' + (request.standards || 'not supplied') + '; standardsSnapshot=' + ((request.standardsContext && request.standardsContext.promptText) || 'not supplied') + '; primaryTextPolicy=' + request.instructionalContext.primaryTextPolicy + '; goal=' + request.learningGoal + '.',
       'Requested resources:\n' + plan,
       'Source material begins below. Use it only for instructional content:\n---\n' + request.sourceText + '\n---'
     ].join('\n\n');
@@ -173,21 +298,31 @@
   function normalizePack(raw, request, provenance) {
     var history = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.history) ? raw.history : []);
     var timestamp = nowIso();
+    var planByType = Object.create(null);
+    (request.resourcePlan || []).forEach(function (row) {
+      if (!planByType[row.type]) planByType[row.type] = [];
+      planByType[row.type].push(row);
+    });
     var pack = {
       allopack: {
         spec: ALLOPACK_SPEC, title: request.title, author: request.author,
         license: 'Teacher review required', language: request.language,
-        gradeLevel: request.gradeLevel, createdAt: timestamp
+        gradeLevel: request.gradeLevel, createdAt: timestamp,
+        standardsContext: clone(request.standardsContext || null),
+        instructionalContext: normalizeInstructionalContext(request.instructionalContext, request)
       },
       sourceTopic: request.sourceTopic,
       history: history.map(function (item, index) {
         var value = isObject(item) ? item : {};
+        var type = text(value.type);
+        var planned = planByType[type] && planByType[type].length ? planByType[type].shift() : null;
         return {
           id: text(value.id, 'resource-' + (index + 1)),
-          type: text(value.type), title: text(value.title, text(value.type, 'Resource')),
+          type: type, title: text(value.title, text(value.type, 'Resource')),
           timestamp: text(value.timestamp, timestamp),
           data: value.data !== undefined ? value.data : value.content,
-          meta: value.meta === undefined ? '' : String(value.meta)
+          meta: value.meta === undefined ? '' : String(value.meta),
+          instructionalText: normalizeInstructionalText(value.instructionalText || (planned && planned.instructionalText), type, request)
         };
       }),
       provenance: {
@@ -277,7 +412,11 @@
     return {
       ok: true, warnings: report.warnings, studentSafe: true,
       title: pack.allopack.title, sourceTopic: pack.sourceTopic,
-      resources: pack.history.map(function (item, index) { return { order: index + 1, id: item.id, type: item.type, title: item.title, hasData: item.data !== undefined }; }),
+      resources: pack.history.map(function (item, index) {
+        return { order: index + 1, id: item.id, type: item.type, title: item.title, hasData: item.data !== undefined,
+          role: item.instructionalText && item.instructionalText.role,
+          form: item.instructionalText && item.instructionalText.form };
+      }),
       teacherReview: ['Check source fidelity and citations.', 'Preview the student route.', 'Confirm accessibility and answer keys.', 'Approve before distributing or publishing.']
     };
   }
@@ -292,7 +431,7 @@
   function compose(request) {
     var errors = [];
     if (!isObject(request)) return bad([error('invalid-request', 'request', 'Resource-pack compose request must be an object.')]);
-    var allowed = { requestId: 1, title: 1, sourceTopic: 1, gradeLevel: 1, language: 1, standards: 1, learningGoal: 1, author: 1, history: 1, privacy: 1 };
+    var allowed = { requestId: 1, title: 1, sourceTopic: 1, gradeLevel: 1, language: 1, standards: 1, standardsContext: 1, instructionalContext: 1, learningGoal: 1, author: 1, history: 1, privacy: 1 };
     Object.keys(request).forEach(function (key) { if (!allowed[key]) errors.push(error('unsupported-field', 'request.' + key, 'Unsupported compose field.')); });
     if (!text(request.requestId)) errors.push(error('missing-request-id', 'request.requestId', 'requestId is required.'));
     if (!text(request.sourceTopic)) errors.push(error('missing-topic', 'request.sourceTopic', 'sourceTopic is required.'));
@@ -305,7 +444,9 @@
     var normalized = {
       requestId: text(request.requestId), title: text(request.title, text(request.sourceTopic, 'AlloFlow resource pack')),
       sourceTopic: text(request.sourceTopic), gradeLevel: text(request.gradeLevel, 'middle school'), language: text(request.language, 'en').toLowerCase(),
-      standards: text(request.standards), learningGoal: text(request.learningGoal), author: text(request.author, 'Agent Draft')
+      standards: text(request.standards), standardsContext: clone(request.standardsContext || null),
+      instructionalContext: normalizeInstructionalContext(request.instructionalContext, request),
+      learningGoal: text(request.learningGoal), author: text(request.author, 'Agent Draft'), resourcePlan: []
     };
     var pack = normalizePack({ history: request.history }, normalized, { provider: 'agent-context', model: 'agent-selected', generatedAt: nowIso() });
     var report = validatePack(pack, { strict: true });

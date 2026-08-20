@@ -1114,7 +1114,7 @@ const alloBotGenerationFamily = (generationType, activeView) => {
   const view = String(activeView || "").trim().toLowerCase();
   return ALLOBOT_GENERATION_FAMILY_BY_TYPE[explicit] || ALLOBOT_GENERATION_FAMILY_BY_TYPE[view] || "generic";
 };
-const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, onHide, isListening, isIdleDisabled = false, disableAnimations = false, stemLabTool = null, showStemLab = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voiceVolume = 1, onGenerateAudio, theme = "light", colorOverlay = "none", onSpeechEnd, onSpeechStart, activeView, generationType = null, generationProgress = null, generationError = null, isFlying = false, isSystemAudioActive = false, history = [], isParentMode = false, isStudentMode = false, isEducatorMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic, canPlayIntro = true, aimAt = null, idleSleepMs = 18e4 }, ref) => {
+const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, onHide, isListening, isIdleDisabled = false, disableAnimations = false, stemLabTool = null, showStemLab = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voiceVolume = 1, onGenerateAudio, theme = "light", colorOverlay = "none", onSpeechEnd, onSpeechStart, activeView, generationType = null, generationProgress = null, generationError = null, generationStep = "", generationStage: generationStageSignal = null, generationBatchType = null, isFlying = false, isSystemAudioActive = false, history = [], isParentMode = false, isStudentMode = false, isEducatorMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic, canPlayIntro = true, aimAt = null, idleSleepMs = 18e4 }, ref) => {
   const motionDisabled = useAlloMotionDisabled(disableAnimations);
   const coarsePointer = useAlloCoarsePointer();
   const satelliteBase = coarsePointer ? "inline-flex min-h-9 min-w-9 items-center justify-center rounded-full shadow-md z-50 border-2 duration-200 focus:outline-none" : "inline-flex min-h-8 min-w-8 items-center justify-center rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 focus:opacity-100 focus:outline-none";
@@ -1126,23 +1126,6 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
   };
   const stopTouch = (e) => e.stopPropagation();
   const satelliteIconSize = coarsePointer ? 16 : 12;
-  useEffect(() => {
-    try {
-      var _bot = containerRef.current;
-      var _svg = _bot && _bot.querySelector("svg");
-      if (!_svg || typeof _svg.pauseAnimations !== "function") return;
-      try {
-        if (motionDisabled) {
-          _svg.pauseAnimations();
-          _svg.setCurrentTime(0);
-        } else {
-          _svg.unpauseAnimations();
-        }
-      } catch (e) {
-      }
-    } catch (e) {
-    }
-  }, [motionDisabled]);
   const { t } = useContext(LanguageContext);
   const [position, setPosition] = useState(() => {
     try {
@@ -1168,6 +1151,51 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
   const [eyePosition, setEyePosition] = useState({ x: 0, y: 0 });
   const [visorPosition, setVisorPosition] = useState({ x: 0, y: 0 });
   const containerRef = useRef(null);
+  const [isDocumentHidden, setIsDocumentHidden] = useState(() => {
+    try {
+      return typeof document !== "undefined" && document.visibilityState === "hidden";
+    } catch (e) {
+      return false;
+    }
+  });
+  const [isGenerationOffscreen, setIsGenerationOffscreen] = useState(false);
+  const generationMotionPaused = isDocumentHidden || isGenerationOffscreen;
+  useEffect(() => {
+    try {
+      var _bot = containerRef.current;
+      var _svg = _bot && _bot.querySelector("svg");
+      if (!_svg || typeof _svg.pauseAnimations !== "function") return;
+      try {
+        if (motionDisabled) {
+          _svg.pauseAnimations();
+          _svg.setCurrentTime(0);
+        } else if (generationMotionPaused) {
+          _svg.pauseAnimations();
+        } else {
+          _svg.unpauseAnimations();
+        }
+      } catch (e) {
+      }
+    } catch (e) {
+    }
+  }, [motionDisabled, generationMotionPaused]);
+  useEffect(() => {
+    if (typeof document === "undefined") return void 0;
+    const handleVisibilityChange = () => setIsDocumentHidden(document.visibilityState === "hidden");
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    handleVisibilityChange();
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, []);
+  useEffect(() => {
+    const element = containerRef.current;
+    if (!element || typeof IntersectionObserver === "undefined") return void 0;
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries && entries[0];
+      setIsGenerationOffscreen(!entry || !entry.isIntersecting || entry.intersectionRatio < 0.05);
+    }, { threshold: [0, 0.05] });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
   const flashPivotRef = useRef(null);
   const [aimAngle, setAimAngle] = useState(45);
   const _aimX = aimAt ? aimAt.x : null;
@@ -1253,7 +1281,12 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
   const generationProgressFraction = Number.isFinite(generationProgressCurrent) && Number.isFinite(generationProgressTotal) && generationProgressTotal > 0 ? Math.min(1, Math.max(0, generationProgressCurrent / generationProgressTotal)) : null;
   const generationProgressRingClass = generationProgressFraction === null ? "animate-allobot-generation-progress" : "allobot-generation-progress";
   const generationOutcome = generationError ? /(?:cancel|abort)/i.test(String(generationError?.message || generationError)) ? "cancelled" : "error" : "success";
+  const isFullPackGeneration = String(generationBatchType || "").trim().toLowerCase() === "full-pack";
   const generationHistorySignature = Array.isArray(history) ? history.slice(-32).map((item) => `${item?.id || ""}:${item?.type || ""}:${item?.data == null ? "empty" : "ready"}`).join("|") : "";
+  const generationStepText = String(generationStep || "").trim().toLowerCase();
+  const normalizedGenerationStageSignal = ["analyze", "build", "finalize"].includes(String(generationStageSignal || "").trim().toLowerCase()) ? String(generationStageSignal).trim().toLowerCase() : null;
+  const generationStageFromStep = /finaliz|validat|finish|complete|ready|saving|publish|assembling|formatting/.test(generationStepText) ? "finalize" : /generat|draft|adapt|translat|construct|design|brainstorm|create|build|render|compose|refin|write|visual/.test(generationStepText) ? "build" : /analy|search|extract|inspect|plan|review|audit|verif|identif|categor|prepar|synthes|structure|solv/.test(generationStepText) ? "analyze" : null;
+  const generationStage = normalizedGenerationStageSignal || generationStageFromStep;
   const [generationPhase, setGenerationPhase] = useState(0);
   useEffect(() => {
     if (effectiveMood !== "thinking" || motionDisabled) {
@@ -1265,7 +1298,8 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
     }, 3200);
     return () => clearInterval(phaseTimer);
   }, [effectiveMood, motionDisabled]);
-  const generationProgressDasharray = generationProgressFraction === null ? ["18 82", "26 74", "12 88"][generationPhase] : "100 0";
+  const generationAnimationPhase = generationStage === "analyze" ? 0 : generationStage === "build" ? 1 : generationStage === "finalize" ? 2 : generationPhase;
+  const generationProgressDasharray = generationProgressFraction === null ? ["18 82", "26 74", "12 88"][generationAnimationPhase] : "100 0";
   const [viseme, setViseme] = useState("neutral");
   const [blinkScale, setBlinkScale] = useState(1);
   const [accPop, setAccPop] = useState(false);
@@ -1274,6 +1308,9 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
   const lastGenerationFamilyRef = useRef("generic");
   const generationHistoryBaselineRef = useRef("");
   const generationSessionActiveRef = useRef(false);
+  const generationMilestoneActiveRef = useRef(false);
+  const generationMilestoneSignatureRef = useRef("");
+  const generationMilestoneTimerRef = useRef(null);
   const [displayedAccessory, setDisplayedAccessory] = useState(null);
   const [accExiting, setAccExiting] = useState(false);
   const prevMoodRef = useRef("idle");
@@ -1508,6 +1545,45 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
     generationSessionActiveRef.current = false;
   }, [effectiveMood, generationHistorySignature]);
   useEffect(() => {
+    if (effectiveMood !== "thinking") {
+      generationMilestoneActiveRef.current = false;
+      generationMilestoneSignatureRef.current = "";
+      if (generationMilestoneTimerRef.current) {
+        clearTimeout(generationMilestoneTimerRef.current);
+        generationMilestoneTimerRef.current = null;
+      }
+      return;
+    }
+    if (!isFullPackGeneration) {
+      generationMilestoneActiveRef.current = false;
+      generationMilestoneSignatureRef.current = generationHistorySignature;
+      if (generationMilestoneTimerRef.current) {
+        clearTimeout(generationMilestoneTimerRef.current);
+        generationMilestoneTimerRef.current = null;
+      }
+      return;
+    }
+    if (!generationMilestoneActiveRef.current) {
+      generationMilestoneActiveRef.current = true;
+      generationMilestoneSignatureRef.current = generationHistorySignature;
+      return;
+    }
+    if (generationMilestoneSignatureRef.current === generationHistorySignature) return;
+    generationMilestoneSignatureRef.current = generationHistorySignature;
+    const latestResource = Array.isArray(history) ? history[history.length - 1] : null;
+    if (!latestResource || !latestResource.id || latestResource.data == null) return;
+    setCompletedGenerationFamily(alloBotGenerationFamily(latestResource.type, activeView));
+    setCompletedGenerationOutcome("success");
+    setAccPop(true);
+    if (generationMilestoneTimerRef.current) clearTimeout(generationMilestoneTimerRef.current);
+    generationMilestoneTimerRef.current = setTimeout(() => {
+      setAccPop(false);
+      setCompletedGenerationFamily(null);
+      setCompletedGenerationOutcome(null);
+      generationMilestoneTimerRef.current = null;
+    }, 650);
+  }, [effectiveMood, isFullPackGeneration, generationHistorySignature, history, activeView]);
+  useEffect(() => {
     if (effectiveMood !== "thinking") return;
     lastGenerationFamilyRef.current = alloBotGenerationFamily(generationType, activeView);
     setAccPop(false);
@@ -1518,7 +1594,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
     const prev = prevMoodRef.current;
     prevMoodRef.current = effectiveMood;
     const hasVisibleResource = generationHistoryBaselineRef.current !== generationHistorySignature;
-    if (prev === "thinking" && effectiveMood !== "thinking" && !isSleeping && !motionDisabled && (generationOutcome !== "success" || hasVisibleResource)) {
+    if (prev === "thinking" && effectiveMood !== "thinking" && !isSleeping && (generationOutcome !== "success" || hasVisibleResource)) {
       setCompletedGenerationFamily(lastGenerationFamilyRef.current || "generic");
       setCompletedGenerationOutcome(generationOutcome);
       setAccPop(true);
@@ -1529,7 +1605,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       }, 650);
       return () => clearTimeout(t2);
     }
-  }, [effectiveMood, isSleeping, motionDisabled, generationHistorySignature, generationOutcome]);
+  }, [effectiveMood, isSleeping, generationHistorySignature, generationOutcome]);
   useEffect(() => {
     if (!isTalking || motionDisabled) {
       setViseme("neutral");
@@ -3000,6 +3076,9 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
 [data-allo-generation-phase="2"] .animate-hologram-3d { animation-duration: 6.5s; }
 [data-allo-generation-phase="1"] .animate-allobot-generation-scan { animation-duration: 1.9s; }
 [data-allo-generation-phase="2"] .animate-allobot-generation-spark { animation-duration: 1.8s; }
+[data-allo-generation-stage="analyze"] .animate-allobot-generation-scan { animation-duration: 1.25s; }
+[data-allo-generation-stage="build"] .animate-allobot-generation-card, [data-allo-generation-stage="build"] .animate-allobot-generation-spark { animation-duration: 1.15s; }
+[data-allo-generation-stage="finalize"] .animate-allobot-generation-line, [data-allo-generation-stage="finalize"] .animate-allobot-generation-check { animation-duration: 1.1s; }
 @keyframes allobotGenerationCard { 0%, 100% { transform: translateY(2px); opacity: 0.45; } 50% { transform: translateY(-2px); opacity: 1; } }
 .animate-allobot-generation-card { transform-box: fill-box; transform-origin: center; animation: allobotGenerationCard 1.8s ease-in-out infinite; }
 @keyframes allobotGenerationResolve { 0%, 100% { transform: scaleX(0.65); opacity: 0.3; } 50% { transform: scaleX(1); opacity: 1; } }
@@ -3020,6 +3099,9 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
 .animate-allobot-generation-complete { transform-box: fill-box; transform-origin: center; animation: allobotGenerationComplete 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) 1 both; }
 @keyframes allobotGenerationCompletionCheck { 0% { stroke-dashoffset: 24; opacity: 0; } 35% { opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 1; } }
 .animate-allobot-generation-completion-check { animation: allobotGenerationCompletionCheck 0.45s ease-out 0.08s 1 both; }
+.allobot-generation-complete-static { opacity: 1 !important; }
+.allobot-generation-complete-static .animate-allobot-generation-completion-check { stroke-dashoffset: 0 !important; opacity: 1 !important; }
+.allobot-generation-paused, .allobot-generation-paused * { animation-play-state: paused !important; }
 /* Exit transition: the outgoing accessory fades up briefly before the new enters. */
 @keyframes allobotExit { to { opacity: 0; transform: translateY(-3px); } }
 .allobot-exiting > * { animation: allobotExit 0.2s ease-in forwards; }
@@ -3241,7 +3323,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
             fill: "#000",
             className: isSleeping || motionDisabled ? "opacity-20" : "animate-shadow-pulse"
           }
-        ), /* @__PURE__ */ React.createElement("rect", { x: "25", y: "42", width: "50", height: "8", rx: "2", fill: colors.jetpackStroke }), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "46", r: "6", fill: "#06B6D4", stroke: colors.jetpackStroke, strokeWidth: "2" }), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "46", r: "3", fill: "#67E8F9", className: "animate-pulse motion-reduce:animate-none" }), /* @__PURE__ */ React.createElement("path", { d: "M10 36 A10 6 0 0 1 30 36 V 68 L 27 76 H 13 L 10 68 Z", fill: colors.jetpackFill, stroke: colors.jetpackStroke, strokeWidth: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M10 46 H30 M10 60 H30", stroke: colors.jetpackStroke, strokeWidth: "1", fill: "none", opacity: "0.6" }), /* @__PURE__ */ React.createElement("path", { d: "M70 36 A10 6 0 0 1 90 36 V 68 L 87 76 H 73 L 70 68 Z", fill: colors.jetpackFill, stroke: colors.jetpackStroke, strokeWidth: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M70 46 H90 M70 60 H90", stroke: colors.jetpackStroke, strokeWidth: "1", fill: "none", opacity: "0.6" }), isFlightActive && /* @__PURE__ */ React.createElement("g", { className: "animate-jetpack-flame" }, /* @__PURE__ */ React.createElement("path", { d: "M14 78 Q20 100 26 78 Z", fill: "#F59E0B" }), /* @__PURE__ */ React.createElement("path", { d: "M17 78 Q20 90 23 78 Z", fill: "#FEF3C7" }), /* @__PURE__ */ React.createElement("path", { d: "M74 78 Q80 100 86 78 Z", fill: "#F59E0B" }), /* @__PURE__ */ React.createElement("path", { d: "M77 78 Q80 90 83 78 Z", fill: "#FEF3C7" })), isFlightActive && /* @__PURE__ */ React.createElement("g", { transform: "translate(-10, 0)", className: "animate-fade-in", style: { opacity: 0.6 } }, /* @__PURE__ */ React.createElement("rect", { x: "-20", y: "20", width: "30", height: "2", rx: "1", fill: "white", className: "animate-wind-streak", style: { animationDuration: "0.4s", animationDelay: "0s" } }), /* @__PURE__ */ React.createElement("rect", { x: "-10", y: "50", width: "40", height: "1", rx: "0.5", fill: "white", className: "animate-wind-streak", style: { animationDuration: "0.6s", animationDelay: "0.2s" } }), /* @__PURE__ */ React.createElement("rect", { x: "-15", y: "80", width: "25", height: "2", rx: "1", fill: "white", className: "animate-wind-streak", style: { animationDuration: "0.5s", animationDelay: "0.1s" } })), effectiveMood === "thinking" && !isSleeping && !motionDisabled && /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-generation-enter" }, /* @__PURE__ */ React.createElement("g", { "data-allo-generation-family": alloBotGenerationFamily(generationType, activeView), "data-allo-generation-phase": generationPhase, className: "animate-pulse motion-reduce:animate-none", style: { animationDuration: "2s" } }, /* @__PURE__ */ React.createElement(
+        ), /* @__PURE__ */ React.createElement("rect", { x: "25", y: "42", width: "50", height: "8", rx: "2", fill: colors.jetpackStroke }), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "46", r: "6", fill: "#06B6D4", stroke: colors.jetpackStroke, strokeWidth: "2" }), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "46", r: "3", fill: "#67E8F9", className: "animate-pulse motion-reduce:animate-none" }), /* @__PURE__ */ React.createElement("path", { d: "M10 36 A10 6 0 0 1 30 36 V 68 L 27 76 H 13 L 10 68 Z", fill: colors.jetpackFill, stroke: colors.jetpackStroke, strokeWidth: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M10 46 H30 M10 60 H30", stroke: colors.jetpackStroke, strokeWidth: "1", fill: "none", opacity: "0.6" }), /* @__PURE__ */ React.createElement("path", { d: "M70 36 A10 6 0 0 1 90 36 V 68 L 87 76 H 73 L 70 68 Z", fill: colors.jetpackFill, stroke: colors.jetpackStroke, strokeWidth: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M70 46 H90 M70 60 H90", stroke: colors.jetpackStroke, strokeWidth: "1", fill: "none", opacity: "0.6" }), isFlightActive && /* @__PURE__ */ React.createElement("g", { className: "animate-jetpack-flame" }, /* @__PURE__ */ React.createElement("path", { d: "M14 78 Q20 100 26 78 Z", fill: "#F59E0B" }), /* @__PURE__ */ React.createElement("path", { d: "M17 78 Q20 90 23 78 Z", fill: "#FEF3C7" }), /* @__PURE__ */ React.createElement("path", { d: "M74 78 Q80 100 86 78 Z", fill: "#F59E0B" }), /* @__PURE__ */ React.createElement("path", { d: "M77 78 Q80 90 83 78 Z", fill: "#FEF3C7" })), isFlightActive && /* @__PURE__ */ React.createElement("g", { transform: "translate(-10, 0)", className: "animate-fade-in", style: { opacity: 0.6 } }, /* @__PURE__ */ React.createElement("rect", { x: "-20", y: "20", width: "30", height: "2", rx: "1", fill: "white", className: "animate-wind-streak", style: { animationDuration: "0.4s", animationDelay: "0s" } }), /* @__PURE__ */ React.createElement("rect", { x: "-10", y: "50", width: "40", height: "1", rx: "0.5", fill: "white", className: "animate-wind-streak", style: { animationDuration: "0.6s", animationDelay: "0.2s" } }), /* @__PURE__ */ React.createElement("rect", { x: "-15", y: "80", width: "25", height: "2", rx: "1", fill: "white", className: "animate-wind-streak", style: { animationDuration: "0.5s", animationDelay: "0.1s" } })), effectiveMood === "thinking" && !isSleeping && !motionDisabled && /* @__PURE__ */ React.createElement("g", { className: `animate-allobot-generation-enter${generationMotionPaused ? " allobot-generation-paused" : ""}` }, /* @__PURE__ */ React.createElement("g", { "data-allo-generation-family": alloBotGenerationFamily(generationType, activeView), "data-allo-generation-stage": generationStage || "working", "data-allo-generation-phase": generationAnimationPhase, className: "animate-pulse motion-reduce:animate-none", style: { animationDuration: "2s" } }, /* @__PURE__ */ React.createElement(
           "circle",
           {
             cx: "50",
@@ -3275,7 +3357,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
             dur: motionDisabled ? "indefinite" : "3s",
             repeatCount: "indefinite"
           }
-        ), /* @__PURE__ */ React.createElement("g", { className: "animate-hologram-3d" }, renderHologramContent())))), accPop && completedGenerationFamily && !isSleeping && !motionDisabled && /* @__PURE__ */ React.createElement("g", { transform: "translate(50, -25)", "data-allo-generation-complete": completedGenerationFamily, "data-allo-generation-outcome": completedGenerationOutcome, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-generation-complete" }, renderGenerationCompletion(completedGenerationFamily, completedGenerationOutcome))), isSleeping && /* @__PURE__ */ React.createElement("g", { className: "animate-zzz", style: { transformOrigin: "top right" } }, /* @__PURE__ */ React.createElement("text", { x: "65", y: "10", fontSize: "14", fill: "#93C5FD", fontWeight: "bold", style: { opacity: 0.8 } }, "z"), /* @__PURE__ */ React.createElement("text", { x: "75", y: "-5", fontSize: "18", fill: "#60A5FA", fontWeight: "bold", style: STYLE_ANIMATION_DELAY_HALF }, "Z")), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "50", r: "45", fill: colors.glow, fillOpacity: "0.2", className: isSleeping || motionDisabled ? "" : "animate-pulse motion-reduce:animate-none" }), /* @__PURE__ */ React.createElement(
+        ), /* @__PURE__ */ React.createElement("g", { className: "animate-hologram-3d" }, renderHologramContent())))), accPop && completedGenerationFamily && !isSleeping && /* @__PURE__ */ React.createElement("g", { transform: "translate(50, -25)", "data-allo-generation-complete": completedGenerationFamily, "data-allo-generation-outcome": completedGenerationOutcome, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("g", { className: motionDisabled ? "allobot-generation-complete-static" : "animate-allobot-generation-complete" }, renderGenerationCompletion(completedGenerationFamily, completedGenerationOutcome))), isSleeping && /* @__PURE__ */ React.createElement("g", { className: "animate-zzz", style: { transformOrigin: "top right" } }, /* @__PURE__ */ React.createElement("text", { x: "65", y: "10", fontSize: "14", fill: "#93C5FD", fontWeight: "bold", style: { opacity: 0.8 } }, "z"), /* @__PURE__ */ React.createElement("text", { x: "75", y: "-5", fontSize: "18", fill: "#60A5FA", fontWeight: "bold", style: STYLE_ANIMATION_DELAY_HALF }, "Z")), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "50", r: "45", fill: colors.glow, fillOpacity: "0.2", className: isSleeping || motionDisabled ? "" : "animate-pulse motion-reduce:animate-none" }), /* @__PURE__ */ React.createElement(
           "g",
           {
             className: isSleeping || motionDisabled ? "" : isMoving ? "transition-transform motion-reduce:transition-none duration-100 ease-out" : wobbleState.active ? "animate-antenna-spring" : "animate-antenna-sway",

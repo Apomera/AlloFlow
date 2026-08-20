@@ -92,6 +92,8 @@ describe('AP Psychology deterministic QA report', () => {
     expect(report.metrics.blueprint.itemCount).toBe(500);
     expect(report.metrics.blueprint.bankCount).toBe(25);
     expect(report.metrics.blueprint.bankSize).toBe(20);
+    expect(report.metrics.blueprint.learningObjectiveCatalogVersion).toBe('internal-remediation-v1');
+    expect(report.metrics.blueprint.learningObjectiveCount).toBe(35);
     expect(Object.entries(report.metrics.blueprint.minimumTopicCoverage).every(
       ([topicId, minimum]) => report.metrics.blueprint.topicItemCounts[topicId] >= minimum,
     )).toBe(true);
@@ -135,13 +137,30 @@ describe('AP Psychology deterministic QA report', () => {
       expertGateItems: 500,
       psychometricBoundaryItems: 500,
       severeKeyedLengthCueItems: 0,
+      generatedPromptQuestionEndingItems: 460,
+      generatedPromptFlowIssueItems: 0,
+      generatedItemsWithGenericChoiceFeedback: 0,
+      learningAlignmentItems: 500,
     });
+    expect(report.metrics.itemQuality.learningAlignmentByUnit).toEqual({
+      'biological-bases-of-behavior': 100,
+      cognition: 100,
+      'development-and-learning': 100,
+      'social-psychology-and-personality': 100,
+      'mental-and-physical-health': 100,
+    });
+    expect(Object.keys(report.metrics.itemQuality.learningAlignmentByTopic)).toHaveLength(35);
     expect(report.metrics.itemQuality.keyedToDistractorMeanRatio).toBeGreaterThanOrEqual(0.8);
     expect(report.metrics.itemQuality.keyedToDistractorMeanRatio).toBeLessThanOrEqual(1.25);
     expect(report.metrics.promptOriginality.exactDuplicateGroups).toEqual([]);
     expect(report.metrics.promptOriginality.nearDuplicatePairs).toEqual([]);
     expect(report.items).toHaveLength(500);
     expect(report.items.every((item) => item.automatedStatus === 'pass')).toBe(true);
+    expect(report.metrics.itemQuality.promptFlowMetrics).toHaveLength(460);
+    expect(report.metrics.itemQuality.promptFlowMetrics.every((metric) => (
+      metric.endsWithQuestion && metric.questionMarkCount === 1 && !metric.trailingTextAfterQuestion
+    ))).toBe(true);
+    expect(report.metrics.itemQuality.genericChoiceFeedbackIds).toEqual([]);
     const categoricalAdvisoryIds = new Set(
       report.editorialReviewQueue.advisories
         .filter((entry) => entry.check === 'categorical-cue-review')
@@ -180,10 +199,10 @@ describe('AP Psychology deterministic QA report', () => {
       sections: 15,
       diagrams: 5,
       diagramPlacements: 5,
-      knowledgeChecks: 10,
+      knowledgeChecks: 25,
       skills: 4,
-      flashcards: 15,
-      memoryAids: 10,
+      flashcards: 30,
+      memoryAids: 15,
       constructedResponseWorkshops: 2,
     });
     expect(report.metrics.learningLibrary).toMatchObject({
@@ -211,6 +230,13 @@ describe('AP Psychology deterministic QA report', () => {
         officialWorkshops: 0,
         releaseEligibleWorkshops: 0,
       },
+      learningObjectiveCatalogVersion: 'internal-remediation-v1',
+      learningObjectiveCount: 35,
+      contentEnhancementVersion: 'ap-psychology-textbook-v1',
+      contentCompleteSections: 15,
+      structuredContentSections: 15,
+      workedDataExamples: 15,
+      sectionRetrievalChecks: 15,
     });
     expect(report.editorialReviewQueue.advisories.every((entry) => entry.requiresHumanJudgment)).toBe(true);
     expect(

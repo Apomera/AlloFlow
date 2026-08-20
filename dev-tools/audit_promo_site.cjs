@@ -7,7 +7,7 @@ const vm = require('vm');
 const { JSDOM } = require('jsdom');
 
 const root = path.resolve(__dirname, '..');
-const sharedPages = ['index.html', 'features.html', 'for-districts.html', 'library.html', 'students.html', 'calculator.html', 'accessibility_demo.html'];
+const sharedPages = ['index.html', 'about.html', 'features.html', 'for-districts.html', 'library.html', 'students.html', 'calculator.html', 'accessibility_demo.html'];
 const pages = sharedPages.concat(['launch.html', 'changelog.html']);
 const errors = [];
 const warnings = [];
@@ -201,4 +201,3 @@ errors.forEach(function (message) { console.error('ERROR ' + message); });
 console.log('');
 console.log('Promotion-site audit: ' + pages.length + ' pages, ' + warnings.length + ' warning(s), ' + errors.length + ' error(s).');
 if (errors.length) process.exit(1);
-

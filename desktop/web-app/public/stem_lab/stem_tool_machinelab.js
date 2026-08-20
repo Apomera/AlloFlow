@@ -4108,10 +4108,17 @@ window.StemLab = window.StemLab || {
         var pitch = finite(d[k.x]) ? d[k.x] : home.rotX;
         var zoom = pos(d[k.z]) ? d[k.z] : home.zoom;
         function set(ny, nx, nz) {
+          // Keep the local camera cursor in step with the patch. A row of
+          // arrow/zoom clicks can arrive before React renders the next state;
+          // using only the values captured above would make every click jump
+          // from the original view instead of continuing the exploration.
+          yaw = ((ny % 360) + 360) % 360;
+          pitch = Math.max(-70, Math.min(78, nx));
+          zoom = Math.max(0.5, Math.min(2.6, nz));
           var patch = {};
-          patch[k.y] = ((ny % 360) + 360) % 360;
-          patch[k.x] = Math.max(-70, Math.min(78, nx));   // never fully under or over
-          patch[k.z] = Math.max(0.5, Math.min(2.6, nz));
+          patch[k.y] = yaw;
+          patch[k.x] = pitch;   // never fully under or over
+          patch[k.z] = zoom;
           updMulti(patch);
         }
         return {
@@ -4523,6 +4530,112 @@ window.StemLab = window.StemLab || {
         ], 'parts');
       }
 
+      // A compact key sits beside the live scene so the vocabulary in the
+      // ledger has a visible home in the machine. It is deliberately a key,
+      // not another panel: the scene remains the dominant object.
+      function anatomyKey(cam) {
+        var torsion = machineId === 'ballista' || machineId === 'onager';
+        var items = torsion ? [
+          { label: __alloT('stem.machinelab.anatomy_spring', 'spring bundle'), color: T.effort, view: [-12, 14, 1.35] },
+          { label: __alloT('stem.machinelab.anatomy_pivot', 'pivot'), color: T.frame, view: [22, 18, 1.5] },
+          { label: __alloT('stem.machinelab.anatomy_arm', 'throwing arm'), color: T.beam, view: [42, 24, 1.25] },
+          { label: __alloT('stem.machinelab.anatomy_stone', 'stone'), color: T.load, view: [62, 14, 1.45] }
+        ] : [
+          { label: __alloT('stem.machinelab.anatomy_weight', 'counterweight'), color: T.load, view: [-18, 14, 1.35] },
+          { label: __alloT('stem.machinelab.anatomy_pivot', 'pivot'), color: T.frame, view: [22, 18, 1.5] },
+          { label: __alloT('stem.machinelab.anatomy_beam', 'throwing beam'), color: T.beam, view: [42, 24, 1.25] },
+          { label: __alloT('stem.machinelab.anatomy_stone', 'stone'), color: T.effort, view: [62, 14, 1.45] }
+        ];
+        return h('div', {
+          key: 'anatomy', role: 'group',
+          'aria-label': __alloT('stem.machinelab.anatomy_aria', '3D machine key'),
+          style: {
+            display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap',
+            marginTop: 6, padding: '2px 2px 0', color: T.dim
+          }
+        }, [
+          h('span', {
+            key: 'title',
+            style: { fontSize: 10, fontWeight: 800, letterSpacing: 0.8, textTransform: 'uppercase', color: T.accent }
+          }, __alloT('stem.machinelab.anatomy_title', 'Read the machine')),
+          items.map(function (item) {
+            return h('button', {
+              key: item.label, type: 'button',
+              onClick: function () {
+                if (cam && item.view) cam.setView(item.view[0], item.view[1], item.view[2]);
+              },
+              onFocus: function (ev) {
+                if (ev && ev.currentTarget) ev.currentTarget.style.outline = '2px solid ' + T.accent;
+              },
+              onBlur: function (ev) {
+                if (ev && ev.currentTarget) ev.currentTarget.style.outline = '1px solid transparent';
+              },
+              title: __alloT('stem.machinelab.anatomy_focus_title', 'Focus this part in the 3D scene'),
+              'aria-label': __alloT('stem.machinelab.anatomy_focus', 'Focus the ') + item.label +
+                __alloT('stem.machinelab.anatomy_focus_3d', ' in the 3D scene'),
+              style: {
+                display: 'inline-flex', alignItems: 'center', gap: 4,
+                minHeight: 24, padding: '2px 5px', border: '1px solid ' + T.border,
+                borderRadius: 6, background: T.bg, outline: '1px solid transparent',
+                outlineOffset: 1, fontSize: 11, fontWeight: 650, color: T.text, cursor: 'pointer'
+              }
+            }, [
+              h('span', {
+                key: 'dot', 'aria-hidden': 'true',
+                style: { width: 8, height: 8, borderRadius: '50%', background: item.color, flex: '0 0 auto' }
+              }),
+              item.label
+            ]);
+          }),
+          h('span', {
+            key: 'hint', style: { fontSize: 11, color: T.dim, fontStyle: 'italic' }
+          }, __alloT('stem.machinelab.anatomy_hint', 'Click a part or drag to inspect the structure.'))
+        ]);
+      }
+
+      function buildShotStatus() {
+        if (!d.lastShot) return null;
+        var shot = d.lastShot;
+        var current = !d.lastShotSig || d.lastShotSig === rangeConfigSig();
+        var rangeText = pos(shot.range) ? fmt(shot.range, 1) + ' m' : '-';
+        var speedText = pos(shot.muzzleV) ? fmt(shot.muzzleV, 1) + ' m/s' : '-';
+        var impactText = pos(shot.impactKE) ? fmt(shot.impactKE, 0) + ' J at impact' : '';
+        return h('div', {
+          key: 'shotstatus', role: 'status',
+          style: {
+            display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap',
+            marginTop: 8, padding: '7px 9px', borderRadius: 8,
+            background: T.bg, border: '1px solid ' + T.border
+          }
+        }, [
+          h('span', {
+            key: 'label',
+            style: { fontSize: 10, fontWeight: 800, letterSpacing: 0.8, textTransform: 'uppercase', color: current ? T.accent : T.warn }
+          }, current
+            ? __alloT('stem.machinelab.last_test', 'Last test')
+            : __alloT('stem.machinelab.last_test_stale', 'Last test - settings changed')),
+          h('strong', {
+            key: 'range', style: { fontSize: 14, color: T.text, fontVariantNumeric: 'tabular-nums' }
+          }, rangeText),
+          h('span', {
+            key: 'detail', style: { fontSize: 11, color: T.muted }
+          }, speedText + (impactText ? ' - ' + impactText : '')),
+          !current ? h('span', {
+            key: 'stale', style: { fontSize: 11, color: T.warn }
+          }, __alloT('stem.machinelab.last_test_stale_hint', 'Fire again to test the new settings.')) : null,
+          h('button', {
+            key: 'range', type: 'button',
+            onClick: function () { upd('view', 'range'); },
+            'aria-label': __alloT('stem.machinelab.last_test_open', 'Open the full flight in the Test Range'),
+            style: {
+              marginLeft: 'auto', padding: '4px 8px', borderRadius: 7, cursor: 'pointer',
+              border: '1px solid ' + T.border, background: T.card, color: T.text,
+              fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap'
+            }
+          }, __alloT('stem.machinelab.last_test_open_short', 'See full flight'))
+        ]);
+      }
+
       function renderBuild() {
         var WINCH_CONTROLS = [
           { key: 'winchHandleR', label: __alloT('stem.machinelab.winch_handle', 'Crank handle radius'), min: 0.1, max: 0.9, step: 0.05, unit: 'm' },
@@ -4583,7 +4696,7 @@ window.StemLab = window.StemLab || {
           machinePicker(),
           h('div', {
           key: 'grid',
-          style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 12 }
+          style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 12 }
         }, [
           h('div', { key: 'l' }, [
             card([
@@ -4613,7 +4726,8 @@ window.StemLab = window.StemLab || {
                   cursor: 'grab', userSelect: 'none'
                 }
               }, null),
-              camControls(mCam, machineLabel(machineId), 'machine')
+              camControls(mCam, machineLabel(machineId), 'machine'),
+              anatomyKey(mCam)
               ]),
               // The machine's swing was animated but unreachable: the only Fire
               // control lived in the Test Range, which has no 3D view, so a
@@ -4645,6 +4759,7 @@ window.StemLab = window.StemLab || {
                 preview ? h('span', { key: 'n', style: { fontSize: 12, color: T.dim } },
                   __alloT('stem.machinelab.test_fire_note', 'Watch the arm. Range and full numbers are in the Test Range.')) : null
               ]),
+              buildShotStatus(),
               glStatus !== 'ready' ? h('p', {
                 key: 'st', style: { margin: '8px 0 0', fontSize: 12, color: T.dim }
               }, glStatus === 'failed'
@@ -4797,7 +4912,7 @@ window.StemLab = window.StemLab || {
         }
         return h('div', {
           key: 'rangeview',
-          style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 12 }
+          style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 12 }
         }, [
           h('div', {
             key: 'world', ref: rangeFsRef,
@@ -5318,7 +5433,7 @@ window.StemLab = window.StemLab || {
           ], 'shopfallback', { borderStyle: 'dashed' }) : null,
           h('div', {
             key: 'main',
-            style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 12 }
+            style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 12 }
           }, [
             h('div', { key: 'left' }, [
               card([
@@ -5660,7 +5775,7 @@ window.StemLab = window.StemLab || {
 
           h('div', {
             key: 'grid',
-            style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 12 }
+            style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 12 }
           }, [
             h('div', { key: 'l' }, [
               oddStoneNote('siegeodd'),
@@ -6631,6 +6746,63 @@ window.StemLab = window.StemLab || {
           ];
         }
 
+        // The manual should be a launchpad, not a dead end. Each topic points
+        // back to the smallest 3D experiment that makes its idea tangible.
+        var manualRoute = {
+          energy: {
+            view: 'range', icon: '\uD83C\uDFAF',
+            title: __alloT('stem.machinelab.manual_route_energy_title', 'Watch the energy move'),
+            copy: __alloT('stem.machinelab.manual_route_energy_copy', 'Make a prediction, fire the stone, and follow the joules from the crank to the flight.'),
+            action: __alloT('stem.machinelab.manual_route_energy_action', 'Open the 3D Test Range')
+          },
+          machines: {
+            view: 'machines', icon: '\u2699\uFE0F',
+            title: __alloT('stem.machinelab.manual_route_machines_title', 'Try one simple machine'),
+            copy: __alloT('stem.machinelab.manual_route_machines_copy', 'Tune a bench, watch force and distance trade places, then prove your prediction.'),
+            action: __alloT('stem.machinelab.manual_route_machines_action', 'Visit the Machine Shop')
+          },
+          history: {
+            view: 'siege', icon: '\uD83C\uDFF0',
+            title: __alloT('stem.machinelab.manual_route_history_title', 'Put the model against a wall'),
+            copy: __alloT('stem.machinelab.manual_route_history_copy', 'Aim at a target and see what a reconstruction can show—and what history still has to tell us.'),
+            action: __alloT('stem.machinelab.manual_route_history_action', 'Open the 3D Target Wall')
+          },
+          model: {
+            view: 'range', icon: '\uD83E\uDDEA',
+            title: __alloT('stem.machinelab.manual_route_model_title', 'Stress-test the model'),
+            copy: __alloT('stem.machinelab.manual_route_model_copy', 'Change drag, gravity, angle, or wind and watch which conclusions survive.'),
+            action: __alloT('stem.machinelab.manual_route_model_action', 'Experiment in the Test Range')
+          },
+          record: {
+            view: 'compare', icon: '\uD83D\uDCCA',
+            title: __alloT('stem.machinelab.manual_route_record_title', 'Turn notes into a claim'),
+            copy: __alloT('stem.machinelab.manual_route_record_copy', 'Compare the three machines side by side and record what the ledger makes you think.'),
+            action: __alloT('stem.machinelab.manual_route_record_action', 'Open Compare')
+          }
+        }[topic] || null;
+        var routeCard = manualRoute ? card([
+          h('div', {
+            key: 'row',
+            style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }
+          }, [
+            h('div', { key: 'copy', style: { minWidth: 220, flex: '1 1 260px' } }, [
+              h('div', { key: 'ey', style: { fontSize: 10, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: T.accent, marginBottom: 3 } },
+                __alloT('stem.machinelab.manual_route_eyebrow', 'Step back into the world')),
+              h('h4', { key: 'title', style: { margin: 0, fontSize: 14, color: T.text } }, manualRoute.icon + ' ' + manualRoute.title),
+              h('p', { key: 'p', style: { margin: '4px 0 0', fontSize: 12, lineHeight: 1.5, color: T.muted } }, manualRoute.copy)
+            ]),
+            h('button', {
+              key: 'go', type: 'button', onClick: function () { upd('view', manualRoute.view); },
+              'aria-label': manualRoute.action,
+              style: {
+                padding: '7px 12px', borderRadius: 8, cursor: 'pointer',
+                border: '1px solid ' + T.accent, background: T.accent,
+                color: T.accentInk, fontSize: 12, fontWeight: 800
+              }
+            }, manualRoute.action + ' \u2192')
+          ])
+        ], 'manualroute') : null;
+
         return h('div', { key: 'learnview' }, [
           h('div', {
             key: 'topics', role: 'tablist',
@@ -6649,6 +6821,7 @@ window.StemLab = window.StemLab || {
               }
             }, tp.icon + ' ' + tp.label);
           })),
+          routeCard,
           card([
             h('div', {
               key: 'rd',

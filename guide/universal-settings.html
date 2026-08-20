@@ -84,7 +84,7 @@
             <li><a href="#what-the-card-controls">What the card controls</a></li>
             <li><a href="#the-rule-that-surprises-teachers">The rule that surprises teachers</a></li>
             <li><a href="#set-image-style-once-unless-a-resource-needs-an-exception">Set image style once unless a resource needs an exception</a></li>
-            <li><a href="#choose-a-grade-level-honestly">Choose a grade level honestly</a></li>
+            <li><a href="#separate-the-requested-grade-from-internal-calibration">Separate the requested grade from internal calibration</a></li>
             <li><a href="#set-the-language-and-decide-about-translations">Set the language and decide about translations</a></li>
             <li><a href="#watch-emoji-around-word-activities">Watch emoji around word activities</a></li>
             <li><a href="#a-two-minute-preflight">A two-minute preflight</a></li>
@@ -133,7 +133,7 @@
             </div>
           </noscript>
       </section>
-<p>Universal Settings is one card that holds the choices every generator inherits. Set the grade level once and the glossary, the quiz, and the adapted text all target that grade. Set it per tool instead and the parts of one lesson pack quietly disagree with each other.</p>
+<p>Universal Settings is one card that holds the choices most generators inherit. Set the instructional audience once and the glossary, quiz, lesson plan, and adapted text use the same context. The Source Generator keeps its own primary-source grade control, so the app can distinguish the standard's instructional grade from an access text's language-complexity target.</p>
 <p>Open it before you generate anything. That single habit prevents most of the &quot;why does this pack feel mismatched&quot; problems teachers report.</p>
 <p>If you have not made a resource yet, start with <a href="start-here.html">Start here</a>. To see how these settings fit a full planning routine, see <a href="prepare-a-lesson.html">Prepare a lesson</a>.</p>
 <h2 id="what-the-card-controls">What the card controls</h2>
@@ -208,15 +208,24 @@
 <h2 id="set-image-style-once-unless-a-resource-needs-an-exception">Set image style once unless a resource needs an exception</h2>
 <p>Use <strong>Image style</strong> in Universal Settings to keep one lesson visually coherent. Visuals, Glossary, and Word Sounds begin on <strong>Use Universal style</strong>; their own preset and custom-style controls appear only after you choose <strong>Override for this resource</strong>. Timeline and Concept Sort use the Universal style directly. Adventure keeps story-specific presets, with <strong>Use Universal style</strong> available when continuity matters more than a separate story look.</p>
 <p>Choose an override for an instructional reason—for example, a simple line-drawing style for a worksheet that must photocopy clearly—not merely because the same selector is visible. Return the resource to <strong>Use Universal style</strong> when the exception is no longer needed. A change affects new or regenerated images; it does not restyle images that already exist.</p>
-<h2 id="choose-a-grade-level-honestly">Choose a grade level honestly</h2>
-<p>The grade level is a target, not a guarantee. Generated text often lands above the grade you asked for, and asking for more research or more detail tends to push it higher still.</p>
+<h2 id="separate-the-requested-grade-from-internal-calibration">Separate the requested grade from internal calibration</h2>
+<p>The grade you select is the educator-facing target. It is not silently relabeled as a lower instructional grade. For source writing, AlloFlow may use a lower internal prompt target to compensate for a model's tendency to overshoot. The resource still records the grade you requested, the internal calibration target, and—when an English readability check is appropriate—the measured result as separate facts.</p>
+<p>That distinction matters:</p>
+<ul>
+<li><strong>Instructional grade</strong> identifies the standards and intellectual target.</li>
+<li><strong>Requested text complexity</strong> identifies the intended language load for this resource.</li>
+<li><strong>Internal calibration</strong> is a generation technique, not a recommendation about what students should read.</li>
+<li><strong>Measured complexity</strong> is evidence about the resulting text, not proof that it is instructionally appropriate.</li>
+</ul>
+<p>Flesch–Kincaid is an English screening measure based mainly on word and sentence patterns. It cannot judge knowledge demands, text structure, content accuracy, cultural context, or the reader and task. AlloFlow therefore does not show an English grade-level verdict for non-English or bilingual text.</p>
 <p>Do this before you share:</p>
 <ul>
 <li>Read a paragraph aloud and listen for sentences a student would lose track of.</li>
 <li>Look for words you would have to stop and define.</li>
 <li>Compare the result against something you know sits at the right grade.</li>
+<li>Use the recorded level check as one signal, then review content, structure, and the actual task.</li>
 </ul>
-<p>If it reads high, ask for a lower grade than you want and check again. Set the grade for the students who need the most access, then offer the original source to students who are ready for it. Lowering the reading load is not the same as lowering the learning goal. See <a href="prepare-a-lesson.html">Prepare a lesson</a> for how to protect the intellectual target while changing the reading level.</p>
+<p>If an adapted version is used as a companion, leave its role as <strong>Supplemental access version</strong> and keep the linked primary text available as required by the lesson, standard, and local policy. Designating an adapted version as a primary replacement requires an explicit educator choice; AlloFlow does not infer an IEP, modification, or authorization. Lowering language load is not the same as lowering the learning goal. See <a href="prepare-a-lesson.html">Prepare a lesson</a> for how to protect the intellectual target while changing text complexity.</p>
 <h2 id="set-the-language-and-decide-about-translations">Set the language and decide about translations</h2>
 <p>Two separate controls do two different jobs.</p>
 <p><strong>Output language</strong> is the language the resource is written in. If your class works in Spanish, set it to Spanish and the content comes back in Spanish.</p>
@@ -244,7 +253,7 @@
 <h2 id="a-two-minute-preflight">A two-minute preflight</h2>
 <p>Before you generate the first resource for a lesson:</p>
 <ul>
-<li>Set the grade level for the students who need the most access.</li>
+<li>Set the instructional grade to match the standards and learning target; use an adapted companion when a different language-complexity target is appropriate.</li>
 <li>Set the output language your class will read.</li>
 <li>Check the Translations line and confirm it says what you expect.</li>
 <li>Add a standard only if you will actually use the alignment.</li>
