@@ -6306,6 +6306,7 @@ var createDocPipeline = function(deps) {
       innerFetchTimeoutMs: 120000,
       traceMax: _THROTTLE_TRACE_MAX,
       callLedgerMax: 2000,
+      hostTransportProfile: _hostTransportProfile(),
     };
     return {
       schemaVersion: 1,
@@ -6350,6 +6351,36 @@ var createDocPipeline = function(deps) {
     } catch (_) {
       return false;
     }
+  };
+  // ── Host transport profile (2026-08-19) ─────────────────────────────────────────────────
+  // A HOST embedding this pipeline (e.g. the MCP agent-bridge driver, where the "model" is a
+  // conversational client answering over tool calls) may publish
+  // window.__alloHostTransportProfile BEFORE pipeline creation to declare its transport's
+  // latency character. Deliberately narrow: it can widen per-call deadlines (clamped 30s–900s)
+  // and exempt the run from quota pacing and calm probes — it can NOT change passes, chunking,
+  // scoring, or any honesty surface. Rationale: deadlines tuned for a wedged HTTP socket
+  // misread a slow-but-healthy conversational transport as failure — a 30-minute agent-bridge
+  // run spent ~9 minutes waiting out 180s deadlines on calls that were about to succeed, and
+  // each discarded re-ask destroyed client work already in flight (perf report 2026-08-19).
+  var _hostTransportProfile = function () {
+    try {
+      var w = typeof window !== 'undefined' ? window : null;
+      var p = w && w.__alloHostTransportProfile;
+      if (!p || typeof p !== 'object') return null;
+      var clampMs = function (v) {
+        var n = Number(v);
+        return Number.isFinite(n) && n > 0 ? Math.max(30000, Math.min(900000, Math.round(n))) : null;
+      };
+      return {
+        kind: String(p.kind || 'host'),
+        textInitialMs: clampMs(p.textInitialMs),
+        textRetryMs: clampMs(p.textRetryMs),
+        visionInitialMs: clampMs(p.visionInitialMs),
+        visionRetryMs: clampMs(p.visionRetryMs),
+        pacingExempt: p.pacingExempt === true,
+        probeExempt: p.probeExempt === true,
+      };
+    } catch (_) { return null; }
   };
   var _localTextProfile = function () {
     try {
@@ -7090,6 +7121,18 @@ var createDocPipeline = function(deps) {
   // call repeatedly (e.g. once on page-count, again when OCR confirms scanned). (2026-06-24, maintainer ask.)
   var _applyGeminiPacing = function (heavy, opts) {
     opts = opts || {};
+    // A host transport with no provider quota (agent bridge: the client's own model answers,
+    // nothing goes to Gemini) has nothing for pacing to protect — heavy-doc pacing only
+    // added queue waits (77.5s observed for one auditor slot) in front of a transport whose
+    // cost is per-answer, not per-burst.
+    var _htpPacing = _hostTransportProfile();
+    if (_htpPacing && _htpPacing.pacingExempt) {
+      _geminiEffectiveMax = _GEMINI_MAX_CONCURRENT;
+      _geminiStaggerMs = 0;
+      if (heavy) warnLog('[GeminiGate] Pacing skipped: host transport profile (' + _htpPacing.kind + ') declares no provider quota to protect.');
+      try { _geminiPump(); } catch (_) {}
+      return;
+    }
     if (heavy) {
       var _max = (typeof opts.maxConcurrent === 'number') ? opts.maxConcurrent : 2; // 3 → 2: gentle, not fully serial
       _geminiEffectiveMax = Math.max(1, Math.min(_GEMINI_MAX_CONCURRENT, _max));
@@ -7365,10 +7408,12 @@ var createDocPipeline = function(deps) {
       // A Canvas text probe cannot validate a Vision/PDF route, and its 30s timeout is harmful
       // to a healthy slow local model. Resume one real request at cap 1 for those routes.
       var _probeRouteMismatch = !!(_geminiLastFailureProfile && _geminiLastFailureProfile.kind === 'vision');
-      if (o.probe === false || typeof _rawCallGemini !== 'function' || _usesLocalTextBackend() || _probeRouteMismatch) {
+      var _htpProbe = _hostTransportProfile();
+      var _hostProbeExempt = !!(_htpProbe && _htpProbe.probeExempt);
+      if (o.probe === false || typeof _rawCallGemini !== 'function' || _usesLocalTextBackend() || _hostProbeExempt || _probeRouteMismatch) {
         var _cNP = {
           calm: true, waitedMs: _now() - t0, unprobed: true,
-          reason: _usesLocalTextBackend() ? 'local-backend' : (_probeRouteMismatch ? 'vision-route' : 'probe-disabled'),
+          reason: _usesLocalTextBackend() ? 'local-backend' : (_hostProbeExempt ? 'host-transport' : (_probeRouteMismatch ? 'vision-route' : 'probe-disabled')),
         };
         warnLog('[GeminiGate] wait-not-stop: cooldown elapsed; resuming one real request cautiously because a text probe would not represent this route.');
         return _cNP;
@@ -7925,7 +7970,8 @@ var createDocPipeline = function(deps) {
         }
       },
     });
-    return _geminiCall(function() { return _rawCallGemini.apply(null, _rawCallArgs); }, _localTextCall ? 420000 : 180000, _localTextCall ? 300000 : 180000, 'callGemini', function(start) {
+    var _htpText = _hostTransportProfile();
+    return _geminiCall(function() { return _rawCallGemini.apply(null, _rawCallArgs); }, _localTextCall ? 420000 : ((_htpText && _htpText.textInitialMs) || 180000), _localTextCall ? 300000 : ((_htpText && _htpText.textRetryMs) || 180000), 'callGemini', function(start) {
       _pipeLog('API-start', 'callGemini #' + callNum + ' transport start' + (start.attempt ? ' (retry ' + start.attempt + ')' : '') + ' after ' + start.queuedMs + 'ms queued', null, _callOwner);
     }, _requestProfile, _callOwner, _explicitSignal).then(function(result) {
       var dur = Math.round(performance.now() - t0);
@@ -8098,7 +8144,8 @@ var createDocPipeline = function(deps) {
     var _visionOptionsWithTelemetry = (args[3] && typeof args[3] === 'object') ? Object.assign({}, args[3]) : {};
     _visionOptionsWithTelemetry.diagnosticTelemetry = _visionTelemetry;
     args[3] = _visionOptionsWithTelemetry;
-    return _geminiCall(function() { return _rawCallGeminiVision.apply(null, args); }, 120000, 120000, 'callGeminiVision', function(start) {
+    var _htpVision = _hostTransportProfile();
+    return _geminiCall(function() { return _rawCallGeminiVision.apply(null, args); }, (_htpVision && _htpVision.visionInitialMs) || 120000, (_htpVision && _htpVision.visionRetryMs) || 120000, 'callGeminiVision', function(start) {
       _pipeLog('Vision-start', 'callGeminiVision #' + callNum + ' transport start' + (start.attempt ? ' (retry ' + start.attempt + ')' : '') + ' after ' + start.queuedMs + 'ms queued', null, _callOwner);
     }, _requestProfile, _callOwner, _capturedVisionSignal).then(function(result) {
       var dur = Math.round(performance.now() - t0);

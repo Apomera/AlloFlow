@@ -46,7 +46,7 @@ const MCPB_CLI_VERSION = '2.1.2';
 
 // zip_writer.cjs is required by the driver at load time — omitting it makes the packaged server
 // fail to start, not merely lose a feature.
-const SERVER_FILES = ['alloflow-remediation-mcp-stdio.cjs', 'remediation_headless_driver.cjs', 'zip_writer.cjs', 'README_REMEDIATION.md'];
+const SERVER_FILES = ['alloflow-remediation-mcp-stdio.cjs', 'remediation_headless_driver.cjs', 'zip_writer.cjs', 'connector_version.cjs', 'README_REMEDIATION.md'];
 // The driver resolves this beside itself and verifies every byte against vendor/manifest.json.
 // Omitting it produces a bundle that starts but fails as soon as a browser-backed tool runs.
 const SERVER_DIRS = ['vendor'];
@@ -131,13 +131,17 @@ function buildManifest() {
     { name: 'remediation_job_cancel', description: 'Cancel a queued job or kill the running one.' },
     { name: 'remediation_job_diagnostics', description: 'Numbers-only run diagnostics: per-call ledger, throttle events, constants. Never document content.' },
     { name: 'audit_html', description: 'Two-engine accessibility audit (AI rubric + axe-core) of a local HTML file. Never fetches URLs.' },
+    { name: 'pdf_remediate_agent_start', description: "Full remediation with the MCP client's own model as the engine — no Gemini key, no Gemini egress; prompts surface to the client conversation." },
+    { name: 'remediation_agent_requests', description: 'Fetch the agent-bridge run state and pending model requests (long-poll; vision requests include page images).' },
+    { name: 'remediation_agent_respond', description: 'Answer one pending agent-bridge model request with the reply text.' },
+    { name: 'remediation_agent_cancel', description: 'Cancel the agent-bridge run; written outputs stay.' },
   ];
   return {
     $schema: 'https://raw.githubusercontent.com/modelcontextprotocol/mcpb/main/schemas/mcpb-manifest-v0.4.schema.json',
     manifest_version: '0.4',
     name: 'alloflow-remediation',
     display_name: 'AlloFlow PDF Remediation',
-    version: '0.3.5',
+    version: require('./connector_version.cjs'),
     description: 'Remediate PDFs (and DOCX/PPTX) for accessibility with AlloFlow\'s honesty-gated pipeline: audit, accessible-HTML rebuild, AI fix passes, tagged-PDF export, and independent PDF/UA-1 validation.',
     long_description: 'Runs the real AlloFlow remediation pipeline headlessly on your machine. Requires Node.js 18+ and a one-time Chromium download. AI-dependent tools require a Google Gemini API key and send the selected document to Gemini under your key; deterministic tools remain available without a key. A bundled remediation skill teaches supporting clients the safe sequence, privacy tiers, and honesty-reporting rules. Long runs use durable local job records and progress polling. See PRIVACY.md before processing student records. Results preserve AlloFlow\'s honesty surfaces: distribution verdict, sourced scores, fidelity notes, and a tagged PDF that only claims PDF/UA when it earned it.',
     author: { name: 'Aaron Pomeranz', url: 'https://github.com/Apomera' },
@@ -215,7 +219,7 @@ function main() {
   if (!LEAN) {
     log('installing playwright into the bundle (use --lean to skip; ~50MB)…');
     fs.writeFileSync(path.join(STAGING, 'package.json'), JSON.stringify({
-      name: 'alloflow-remediation-mcpb', private: true, version: '0.3.5',
+      name: 'alloflow-remediation-mcpb', private: true, version: require('./connector_version.cjs'),
       dependencies: { playwright: '1.60.0' },
     }, null, 2), 'utf8');
     execSync('npm install --omit=dev --no-audit --no-fund', { cwd: STAGING, stdio: ['ignore', 'inherit', 'inherit'] });
