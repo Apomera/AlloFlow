@@ -15,6 +15,8 @@ var EE_MAX_SUMMARY_CHARS = 240;
 var EE_MAX_DEPTH = 18;
 var EE_MIN_COHORT = 10;
 var EE_MAX_AUDIT = 5000;
+var EE_ROLLOVER_REVIEW_SECONDS = 600;
+var EE_ADMIN_REVIEW_SECONDS = 600;
 var EE_PROP_PREFIX = 'EE_';
 var EE_SHEETS = {
   Config: ['Key', 'Value'],
@@ -368,8 +370,9 @@ function sendPortalNotification(request) {
  * strengths-first Google Doc: created in a repository subfolder, shared
  * VIEW-ONLY to the educator's active district member account (single-file ACL —
  * the central folder stays unshared), recorded on the educator record and in
- * the audit log. Drive sharing here sends no email; the existing content-free
- * portal notification remains the only email pathway.
+ * the audit log. The confirmation screen treats Drive access and the separate
+ * content-free portal notice as two distinct actions and makes no promise
+ * about Google-controlled Drive activity surfaces.
  */
 var EE_DOC_DOMAINS = [
   { id: 'd1', code: '1', label: 'Planning and Preparation', plain: 'how the lesson and its goals were designed' },
@@ -432,6 +435,149 @@ function releasedEvaluationsFolder_() {
   return folder;
 }
 
+function releasedDocId_(releasedDoc) {
+  if (!isPlainObject_(releasedDoc)) return '';
+  var explicit = safeId_(releasedDoc.id || '', false);
+  if (explicit) return explicit;
+  var match = safeString_(releasedDoc.url, 400, '').match(/^https:\/\/docs\.google\.com\/document\/d\/([A-Za-z0-9_-]{1,200})/);
+  return match ? match[1] : '';
+}
+
+function releaseReviewCacheKey_(token) { return 'EE_RELEASE_REVIEW_' + safeId_(token, true); }
+
+function reviewPortalReleasedEvaluationShare(request) {
+  var actor = currentActor_();
+  if (actor.role !== 'admin' && actor.role !== 'evaluator') throw eeError_('denied', 'Only an assigned evaluator or administrator can review released-summary access.');
+  request = requireObject_(request || {}, 'request');
+  var teacherId = safeId_(request.teacherId, true);
+  requireTeacherAccess_(actor, teacherId);
+  var recipient = teacherMemberEmail_(teacherId);
+  var allowedDomain = normalizeDomain_(PropertiesService.getScriptProperties().getProperty('EE_ALLOWED_DOMAIN'));
+  if (!allowedDomain || emailDomain_(recipient) !== allowedDomain) throw eeError_('denied', 'The educator account is outside the district domain.');
+  var state = readWorkspaceState_();
+  releaseRecoveryRequiredForState_(state);
+  var teacher = findById_(state.workspace.teachers || [], teacherId);
+  if (!teacher) throw eeError_('not_found', 'Educator record not found.');
+  if (!teacher.finalizedAt) throw eeError_('invalid_transition', 'The educator cycle must be finalized before the evaluation can be shared.');
+  var existingId = releasedDocId_(teacher.releasedDoc);
+  var existingAccessible = false;
+  if (existingId) {
+    try { var existingFile = DriveApp.getFileById(existingId); existingAccessible = typeof existingFile.isTrashed !== 'function' || !existingFile.isTrashed(); } catch (existingErr) {}
+  }
+  var releaseAction = teacher.releasedDoc ? (existingId && existingAccessible ? 'verify_existing' : 'replace_unavailable') : 'create';
+  var token = newId_('release-review');
+  var expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+  CacheService.getScriptCache().put(releaseReviewCacheKey_(token), JSON.stringify({
+    actorEmail: actor.email,
+    teacherId: teacherId,
+    recipient: recipient,
+    revision: state.revision,
+    finalizedAt: teacher.finalizedAt,
+    existingId: existingId,
+    action: releaseAction,
+  }), 600);
+  return {
+    ok: true,
+    review: {
+      token: token,
+      expiresAt: expiresAt,
+      teacherId: teacherId,
+      educatorName: safeString_(teacher.name, 160, '') || safeString_(teacher.code, 40, 'Educator'),
+      recipient: recipient,
+      finalizedAt: teacher.finalizedAt,
+      action: releaseAction,
+      currentDocumentUrl: teacher.releasedDoc ? safeString_(teacher.releasedDoc.url, 400, '') : '',
+      currentSharedAt: teacher.releasedDoc ? optionalTimestamp_(teacher.releasedDoc.at) : '',
+      actorWillReceiveAccess: actor.email !== recipient,
+      separatePortalNoticeSent: false,
+    },
+  };
+}
+
+function requireReleaseReview_(request, actor, teacher, recipient, revision) {
+  var token = safeId_(request.reviewToken || '', false);
+  if (!token) throw eeError_('review_required', 'Review the recipient and disclosure before changing Drive access.');
+  var cache = CacheService.getScriptCache();
+  var key = releaseReviewCacheKey_(token);
+  var raw = cache.get(key);
+  if (!raw) throw eeError_('review_required', 'The release review expired or was already used. Review the recipient and disclosure again.');
+  var review;
+  try { review = JSON.parse(raw); } catch (parseErr) { review = null; }
+  if (!review || review.actorEmail !== actor.email || review.teacherId !== teacher.id || review.recipient !== recipient || Number(review.revision) !== Number(revision) || review.finalizedAt !== teacher.finalizedAt || review.existingId !== releasedDocId_(teacher.releasedDoc)) {
+    cache.remove(key);
+    throw eeError_('review_stale', 'The evaluation or release record changed after review. Reload and review the disclosure again.');
+  }
+  cache.remove(key);
+  return review;
+}
+
+function driveUserEmail_(user) {
+  try { return normalizeEmail_(user && typeof user.getEmail === 'function' ? user.getEmail() : user); } catch (err) { return ''; }
+}
+
+function fileHasAccess_(file, email) {
+  email = normalizeEmail_(email);
+  var owner = '';
+  try { owner = normalizeEmail_(Session.getEffectiveUser().getEmail()); } catch (ownerErr) {}
+  if (email && email === owner) return true;
+  var viewers = typeof file.getViewers === 'function' ? file.getViewers() : [];
+  var editors = typeof file.getEditors === 'function' ? file.getEditors() : [];
+  var users = viewers.concat(editors);
+  for (var i = 0; i < users.length; i++) if (driveUserEmail_(users[i]) === email) return true;
+  return false;
+}
+
+function grantReleasedDocAccess_(file, emails) {
+  var granted = [];
+  for (var i = 0; i < emails.length; i++) {
+    var email = normalizeEmail_(emails[i]);
+    if (!email || granted.indexOf(email) !== -1) continue;
+    if (!fileHasAccess_(file, email)) file.addViewer(email);
+    if (!fileHasAccess_(file, email)) throw eeError_('share_verification_failed', 'Google Drive did not confirm view-only access for an authorized recipient.');
+    granted.push(email);
+  }
+  return granted;
+}
+
+function supersededReleasedDocs_(releasedDoc) {
+  if (!isPlainObject_(releasedDoc)) return [];
+  var history = Array.isArray(releasedDoc.history) ? releasedDoc.history.slice(-24) : [];
+  var id = releasedDocId_(releasedDoc);
+  if (id || releasedDoc.url) history.push({ id: id, url: safeString_(releasedDoc.url, 400, ''), at: optionalTimestamp_(releasedDoc.at), by: safeString_(releasedDoc.by, 160, ''), openedAt: optionalTimestamp_(releasedDoc.openedAt), status: 'superseded_unavailable', supersededAt: nowIso_() });
+  return history.slice(-25);
+}
+
+function recordReleaseRecovery_(payload) {
+  PropertiesService.getScriptProperties().setProperty('EE_RELEASE_RECOVERY_REQUIRED', JSON.stringify(payload || { at: nowIso_() }));
+}
+
+function clearReleaseRecovery_() { PropertiesService.getScriptProperties().deleteProperty('EE_RELEASE_RECOVERY_REQUIRED'); }
+
+function releaseRecoveryRequiredForState_(state) {
+  var props = PropertiesService.getScriptProperties();
+  var raw = props.getProperty('EE_RELEASE_RECOVERY_REQUIRED');
+  if (!raw) return false;
+  var item;
+  try { item = JSON.parse(raw); } catch (parseErr) { return true; }
+  if (item && item.stage === 'workspace_commit' && state && state.workspace) {
+    var teacher = findById_(state.workspace.teachers || [], safeId_(item.teacherId || '', false));
+    if (teacher && releasedDocId_(teacher.releasedDoc) === safeId_(item.documentId || '', false)) {
+      props.deleteProperty('EE_RELEASE_RECOVERY_REQUIRED');
+      return false;
+    }
+  }
+  return true;
+}
+
+function quarantineUncommittedRelease_(file, emails) {
+  var clean = true;
+  for (var i = 0; i < emails.length; i++) {
+    try { file.removeViewer(emails[i]); } catch (removeErr) { clean = false; }
+  }
+  try { file.setTrashed(true); } catch (trashErr) { clean = false; }
+  return clean;
+}
+
 function sharePortalReleasedEvaluation(request) {
   var actor = currentActor_();
   if (actor.role !== 'admin' && actor.role !== 'evaluator') throw eeError_('denied', 'Only an assigned evaluator or administrator can share a released evaluation.');
@@ -449,15 +595,93 @@ function sharePortalReleasedEvaluation(request) {
     var teacher = findById_(workspace.teachers || [], teacherId);
     if (!teacher) throw eeError_('not_found', 'Educator record not found.');
     if (!teacher.finalizedAt) throw eeError_('invalid_transition', 'The educator cycle must be finalized before the evaluation can be shared.');
-    var built = buildReleasedEvaluationDoc_(workspace, teacher, actor);
-    var file = DriveApp.getFileById(built.id);
-    file.moveTo(releasedEvaluationsFolder_());
-    file.setShareableByEditors(false);
-    file.addViewer(recipient); // DriveApp sharing sends no email; notifications stay content-free
-    teacher.releasedDoc = { url: built.url, at: nowIso_(), by: actor.email };
-    writeWorkspaceState_(workspace, state.revision + 1, actor.email);
-    appendAuditRow_({ teacherId: teacherId, event: 'RELEASED_DOC_SHARED', summary: 'Released evaluation document shared view-only with the educator', entityType: 'evaluation', entityId: teacherId, version: 1 }, actor);
-    return { ok: true, url: built.url, sharedWith: recipient };
+    var releaseReview = requireReleaseReview_(request, actor, teacher, recipient, state.revision);
+    var existingId = releasedDocId_(teacher.releasedDoc);
+    var file = null;
+    var built = null;
+    var created = false;
+    var commitStarted = false;
+    var accessEmails = [recipient];
+    var effectiveOwner = '';
+    try { effectiveOwner = normalizeEmail_(Session.getEffectiveUser().getEmail()); } catch (ownerErr) {}
+    if (actor.email !== effectiveOwner && actor.email !== recipient) accessEmails.push(actor.email);
+    if (existingId) {
+      try { file = DriveApp.getFileById(existingId); if (typeof file.isTrashed === 'function' && file.isTrashed()) file = null; } catch (missingErr) { file = null; }
+    }
+    if ((releaseReview.action === 'verify_existing') !== !!file) throw eeError_('review_stale', 'The current Drive document changed after review. Review the disclosure again before changing access.');
+    try {
+      if (!file) {
+        built = buildReleasedEvaluationDoc_(workspace, teacher, actor);
+        file = DriveApp.getFileById(built.id);
+        created = true;
+        file.moveTo(releasedEvaluationsFolder_());
+        setPrivate_(file);
+      } else {
+        built = { id: existingId, url: teacher.releasedDoc.url };
+        file.setShareableByEditors(false);
+      }
+      grantReleasedDocAccess_(file, accessEmails);
+      var releasedAt = created ? nowIso_() : (teacher.releasedDoc.at || nowIso_());
+      var mutation = {
+        teacherId: teacherId,
+        event: created ? 'RELEASED_DOC_SHARED' : 'RELEASED_DOC_ACCESS_VERIFIED',
+        summary: created ? 'Released evaluation document shared view-only with the educator' : 'Released evaluation document access verified without creating a duplicate',
+        entityType: 'released_summary',
+        entityId: built.id,
+        version: 1,
+      };
+      teacher.releasedDoc = {
+        id: built.id,
+        url: built.url,
+        at: releasedAt,
+        by: created ? actor.email : (teacher.releasedDoc.by || actor.email),
+        sharedWith: recipient,
+        openedAt: created ? '' : optionalTimestamp_(teacher.releasedDoc.openedAt),
+        accessReviewedAt: nowIso_(),
+        history: created && teacher.releasedDoc ? supersededReleasedDocs_(teacher.releasedDoc) : (teacher.releasedDoc && teacher.releasedDoc.history ? teacher.releasedDoc.history : []),
+      };
+      var auditEntry = appendWorkspaceAudit_(workspace, mutation, actor);
+      commitStarted = true;
+      var commit = writeWorkspaceState_(workspace, state.revision + 1, actor.email);
+      var recoveryPending = !!commit.pending;
+      if (recoveryPending) {
+        try {
+          var confirmed = readWorkspaceState_();
+          var confirmedTeacher = findById_(confirmed.workspace.teachers || [], teacherId);
+          recoveryPending = !confirmedTeacher || releasedDocId_(confirmedTeacher.releasedDoc) !== built.id;
+        } catch (confirmErr) { recoveryPending = true; }
+      }
+      var auditPending = false;
+      if (!recoveryPending) {
+        try { appendCanonicalAuditRow_(auditEntry); }
+        catch (auditErr) { PropertiesService.getScriptProperties().setProperty('EE_SECONDARY_RECONCILE_REQUIRED', '1'); auditPending = true; }
+        clearReleaseRecovery_();
+      } else {
+        recordReleaseRecovery_({ at: nowIso_(), teacherId: teacherId, documentId: built.id, stage: 'workspace_commit', actorEmail: actor.email });
+      }
+      return {
+        ok: true,
+        status: recoveryPending ? 'recovery_pending' : 'released',
+        doc: { id: built.id, url: built.url, sharedAt: releasedAt },
+        url: built.url,
+        sharedWith: recipient,
+        access: { educator: 'viewer', actor: actor.email === effectiveOwner ? 'owner' : 'viewer' },
+        created: created,
+        idempotent: !created,
+        recoveryPending: recoveryPending,
+        auditPending: auditPending,
+        separatePortalNoticeSent: false,
+      };
+    } catch (releaseErr) {
+      if (created && file && !commitStarted) {
+        var quarantined = quarantineUncommittedRelease_(file, accessEmails);
+        if (!quarantined) {
+          recordReleaseRecovery_({ at: nowIso_(), teacherId: teacherId, documentId: built && built.id, stage: 'compensation', actorEmail: actor.email });
+          throw eeError_('release_recovery_required', 'The release did not complete and automatic Drive cleanup could not be confirmed. An administrator must run Setup health and inspect the recovery item before trying again.');
+        }
+      }
+      throw releaseErr;
+    }
   } finally { lock.releaseLock(); }
 }
 
@@ -632,7 +856,14 @@ function getPortalSetupHealth() {
   var props = PropertiesService.getScriptProperties();
   var members = memberObjects_();
   var assignments = assignmentObjects_();
-  var state = readWorkspaceState_();
+  var releaseRecoveryRequired = !!props.getProperty('EE_RELEASE_RECOVERY_REQUIRED');
+  var rolloverRecoveryRequired = !!props.getProperty('EE_ROLLOVER_RECOVERY_REQUIRED');
+  var state;
+  try { state = readWorkspaceState_(); releaseRecoveryRequired = releaseRecoveryRequiredForState_(state); }
+  catch (workspaceErr) {
+    if (!releaseRecoveryRequired && !rolloverRecoveryRequired) throw workspaceErr;
+    state = { workspace: { teachers: [] }, revision: -1, metadataExists: false };
+  }
   var teachers = (state.workspace.teachers || []).filter(function (t) { return t.active !== false; });
   var counts = { admin: 0, evaluator: 0, teacher: 0, inactive: 0 };
   members.forEach(function (m) { if (!m.active) counts.inactive++; else if (counts[m.role] !== undefined) counts[m.role]++; });
@@ -647,6 +878,11 @@ function getPortalSetupHealth() {
   });
   var folderOk = false;
   try { DriveApp.getFolderById(props.getProperty('EE_FOLDER_ID')); folderOk = true; } catch (folderErr) {}
+  var effectiveOwner = '';
+  try { effectiveOwner = normalizeEmail_(Session.getEffectiveUser().getEmail()); } catch (ownerErr) {}
+  var bootstrapAdmin = normalizeEmail_(props.getProperty('EE_BOOTSTRAP_ADMIN'));
+  var lastRollover = null;
+  try { lastRollover = JSON.parse(props.getProperty('EE_LAST_ROLLOVER') || 'null'); } catch (lastRolloverErr) {}
   // Recomputed on demand, and defensively: a chain problem must not take the
   // rest of the health report down with it.
   var audit;
@@ -669,8 +905,554 @@ function getPortalSetupHealth() {
       auditChainRows: audit.rows || 0,
       auditChainBreakReason: audit.ok ? '' : String(audit.reason || 'unknown'),
       auditChainBrokenAtRow: audit.ok ? 0 : (audit.brokenAtRow || 0),
+      releasedSummaryRecoveryRequired: releaseRecoveryRequired,
+      annualRolloverRecoveryRequired: rolloverRecoveryRequired,
+      deploymentOwnerMatchesBootstrapAdmin: !!effectiveOwner && !!bootstrapAdmin && effectiveOwner === bootstrapAdmin,
+      lastAnnualRolloverAt: lastRollover && optionalTimestamp_(lastRollover.at) || '',
+      lastAnnualRolloverFromYear: lastRollover ? safeString_(lastRollover.fromYear, 20, '') : '',
+      lastAnnualRolloverToYear: lastRollover ? safeString_(lastRollover.toYear, 20, '') : '',
     },
   };
+}
+
+/* ---------------- district administrator operations ---------------- */
+
+function adminReviewCacheKey_(token) { return 'EE_ADMIN_REVIEW_' + safeId_(token, true); }
+function directoryFingerprint_() { return hashText_(JSON.stringify({ members: memberObjects_(), assignments: assignmentObjects_() })); }
+function assertUniqueTeacherMember_(candidate, members) {
+  if (!candidate.active || candidate.role !== 'teacher') return;
+  for (var i = 0; i < members.length; i++) {
+    var member = members[i];
+    if (member.active && member.role === 'teacher' && member.teacherId === candidate.teacherId && member.email !== candidate.email) {
+      throw eeError_('bad_member', 'That educator record is already linked to another active managed account. Deactivate the old account first.');
+    }
+  }
+}
+
+function portalAdminDirectory_() {
+  var state = readWorkspaceState_();
+  return {
+    revision: state.revision,
+    academicYear: safeString_(state.workspace.config && state.workspace.config.academicYear, 20, ''),
+    educators: (state.workspace.teachers || []).map(function (teacher) {
+      return { id: teacher.id, code: teacher.code, name: teacher.name, building: teacher.building, assignment: teacher.assignment, active: teacher.active !== false, dueDate: teacher.dueDate || '', finalized: !!teacher.finalizedAt };
+    }),
+    members: memberObjects_(),
+    assignments: assignmentObjects_(),
+  };
+}
+
+function getPortalAdminOperations() {
+  requireAdmin_();
+  return { ok: true, directory: portalAdminDirectory_() };
+}
+
+function reviewPortalDirectoryChange(request) {
+  var actor = requireAdmin_();
+  request = requireObject_(request || {}, 'request');
+  var kind = oneOf_(request.kind, ['member', 'assignment'], 'directory change kind');
+  var domain = PropertiesService.getScriptProperties().getProperty('EE_ALLOWED_DOMAIN');
+  var candidate = kind === 'member' ? normalizeMember_(request.candidate, domain) : normalizeAssignment_(request.candidate, domain);
+  var directory = portalAdminDirectory_();
+  var current = null;
+  if (kind === 'member') {
+    for (var i = 0; i < directory.members.length; i++) if (directory.members[i].email === candidate.email) current = directory.members[i];
+    if (candidate.role === 'teacher' && !findById_(directory.educators, candidate.teacherId)) throw eeError_('bad_member', 'Teacher membership must reference an existing educator record.');
+    assertUniqueTeacherMember_(candidate, directory.members);
+  } else {
+    for (var j = 0; j < directory.assignments.length; j++) if (directory.assignments[j].teacherId === candidate.teacherId && directory.assignments[j].evaluatorEmail === candidate.evaluatorEmail) current = directory.assignments[j];
+    if (!findById_(directory.educators, candidate.teacherId)) throw eeError_('bad_assignment', 'Assignment must reference an existing educator record.');
+    var evaluatorFound = directory.members.some(function (member) { return member.active && member.email === candidate.evaluatorEmail && (member.role === 'evaluator' || member.role === 'admin'); });
+    if (!evaluatorFound) throw eeError_('bad_assignment', 'Assignment must reference an active evaluator or administrator member.');
+  }
+  var token = newId_('admin-review');
+  CacheService.getScriptCache().put(adminReviewCacheKey_(token), JSON.stringify({ actorEmail: actor.email, operation: 'directory', kind: kind, candidate: candidate, fingerprint: directoryFingerprint_() }), EE_ADMIN_REVIEW_SECONDS);
+  var impacts = kind === 'member' ? {
+    removesPortalAccess: !!current && current.active && !candidate.active,
+    changesRole: !!current && current.role !== candidate.role,
+    activeEvaluatorAssignments: directory.assignments.filter(function (assignment) { return assignment.active && assignment.evaluatorEmail === candidate.email; }).length,
+  } : {
+    educatorName: (findById_(directory.educators, candidate.teacherId) || {}).name || candidate.teacherId,
+    removesEvaluatorAccess: !!current && current.active && !candidate.active,
+  };
+  return { ok: true, review: { token: token, expiresAt: new Date(Date.now() + EE_ADMIN_REVIEW_SECONDS * 1000).toISOString(), kind: kind, action: current ? 'update' : 'create', current: current, candidate: candidate, impacts: impacts } };
+}
+
+function performPortalDirectoryChange(request) {
+  var actor = requireAdmin_();
+  request = requireObject_(request || {}, 'request');
+  if (request.acknowledgeImpact !== true) throw eeError_('acknowledgment_required', 'Confirm the membership or assignment impact before applying it.');
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) throw eeError_('busy', 'Repository is busy.');
+  try {
+    var token = safeId_(request.reviewToken || '', false);
+    if (!token) throw eeError_('review_required', 'Review the directory change before applying it.');
+    var cache = CacheService.getScriptCache(), key = adminReviewCacheKey_(token), raw = cache.get(key), review;
+    try { review = raw ? JSON.parse(raw) : null; } catch (parseErr) { review = null; }
+    if (!review || review.actorEmail !== actor.email || review.operation !== 'directory') throw eeError_('review_required', 'The directory review expired or was already used. Review the change again.');
+    if (review.fingerprint !== directoryFingerprint_()) { cache.remove(key); throw eeError_('review_stale', 'Membership or assignments changed after review. Reload and review again.'); }
+    cache.remove(key);
+    var workspace = readWorkspaceState_().workspace;
+    if (review.kind === 'member') {
+      var member = normalizeMember_(review.candidate, PropertiesService.getScriptProperties().getProperty('EE_ALLOWED_DOMAIN'));
+      if (member.role === 'teacher' && !findById_(workspace.teachers || [], member.teacherId)) throw eeError_('bad_member', 'Teacher membership must reference an existing educator record.');
+      assertUniqueTeacherMember_(member, memberObjects_());
+      assertAdminInvariantAfterMember_(member);
+      upsertMemberRow_(repositorySpreadsheet_(), member);
+      appendAuditRow_({ teacherId: member.teacherId, event: 'MEMBER_UPDATED', summary: member.active ? 'Repository membership created or updated' : 'Repository membership deactivated', entityType: 'member', entityId: hashText_(member.email).slice(0, 20), version: 1 }, actor);
+    } else {
+      var assignment = normalizeAssignment_(review.candidate, PropertiesService.getScriptProperties().getProperty('EE_ALLOWED_DOMAIN'));
+      if (!findById_(workspace.teachers || [], assignment.teacherId)) throw eeError_('bad_assignment', 'Assignment must reference an existing educator record.');
+      var members = memberObjects_(), evaluatorFound = false;
+      for (var i = 0; i < members.length; i++) if (members[i].active && members[i].email === assignment.evaluatorEmail && (members[i].role === 'evaluator' || members[i].role === 'admin')) evaluatorFound = true;
+      if (!evaluatorFound) throw eeError_('bad_assignment', 'Assignment must reference an active evaluator or administrator member.');
+      upsertAssignmentRow_(repositorySpreadsheet_(), assignment);
+      appendAuditRow_({ teacherId: assignment.teacherId, event: 'ASSIGNMENT_UPDATED', summary: assignment.active ? 'Evaluator assignment created or activated' : 'Evaluator assignment deactivated', entityType: 'assignment', entityId: assignment.teacherId, version: 1 }, actor);
+    }
+    return { ok: true, status: 'completed', directory: portalAdminDirectory_() };
+  } finally { lock.releaseLock(); }
+}
+
+function scheduleTargets_(workspace, request) {
+  var date = optionalDate_(request.dueDate);
+  if (!date) throw eeError_('bad_request', 'A cycle due date is required.');
+  var applyTo = oneOf_(request.applyTo || 'missing', ['missing', 'all_open'], 'schedule scope');
+  var building = safeString_(request.building, 160, '');
+  var targets = (workspace.teachers || []).filter(function (teacher) {
+    return teacher.active !== false && !teacher.finalizedAt && (!building || teacher.building === building) && (applyTo === 'all_open' || !teacher.dueDate);
+  });
+  return { dueDate: date, applyTo: applyTo, building: building, targets: targets };
+}
+
+function reviewPortalCycleSchedule(request) {
+  var actor = requireAdmin_();
+  request = requireObject_(request || {}, 'request');
+  var state = readWorkspaceState_(), plan = scheduleTargets_(state.workspace, request);
+  var token = newId_('admin-review');
+  var targetIds = plan.targets.map(function (teacher) { return teacher.id; });
+  CacheService.getScriptCache().put(adminReviewCacheKey_(token), JSON.stringify({ actorEmail: actor.email, operation: 'schedule', revision: state.revision, dueDate: plan.dueDate, applyTo: plan.applyTo, building: plan.building, targetHash: hashText_(JSON.stringify(targetIds)) }), EE_ADMIN_REVIEW_SECONDS);
+  return { ok: true, review: { token: token, expiresAt: new Date(Date.now() + EE_ADMIN_REVIEW_SECONDS * 1000).toISOString(), dueDate: plan.dueDate, applyTo: plan.applyTo, building: plan.building, affectedEducators: targetIds.length, skippedFinalized: (state.workspace.teachers || []).filter(function (teacher) { return teacher.active !== false && !!teacher.finalizedAt && (!plan.building || teacher.building === plan.building); }).length, sample: plan.targets.slice(0, 8).map(function (teacher) { return { id: teacher.id, code: teacher.code, name: teacher.name, previousDueDate: teacher.dueDate || '' }; }) } };
+}
+
+function performPortalCycleSchedule(request) {
+  var actor = requireAdmin_();
+  request = requireObject_(request || {}, 'request');
+  if (request.acknowledgeImpact !== true) throw eeError_('acknowledgment_required', 'Confirm the cycle schedule impact before applying it.');
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) throw eeError_('busy', 'Repository is busy.');
+  try {
+    var token = safeId_(request.reviewToken || '', false), cache = CacheService.getScriptCache(), key = adminReviewCacheKey_(token), raw = token ? cache.get(key) : '', review;
+    try { review = raw ? JSON.parse(raw) : null; } catch (parseErr) { review = null; }
+    if (!review || review.actorEmail !== actor.email || review.operation !== 'schedule') throw eeError_('review_required', 'The schedule review expired or was already used. Review it again.');
+    var state = readWorkspaceState_();
+    if (Number(review.revision) !== Number(state.revision)) { cache.remove(key); throw eeError_('review_stale', 'The workspace changed after review. Reload and review the schedule again.'); }
+    var plan = scheduleTargets_(state.workspace, review);
+    var ids = plan.targets.map(function (teacher) { return teacher.id; });
+    if (hashText_(JSON.stringify(ids)) !== review.targetHash) { cache.remove(key); throw eeError_('review_stale', 'The eligible educator set changed after review. Review the schedule again.'); }
+    cache.remove(key);
+    for (var i = 0; i < plan.targets.length; i++) plan.targets[i].dueDate = plan.dueDate;
+    var auditEntry = appendWorkspaceAudit_(state.workspace, { event: 'CYCLE_SCHEDULE_UPDATED', summary: 'Administrator applied a reviewed cycle due-date schedule to ' + ids.length + ' educator records', entityType: 'cycle_schedule', entityId: 'schedule-' + plan.dueDate, version: 1 }, actor);
+    var commit = writeWorkspaceState_(state.workspace, state.revision + 1, actor.email), pending = !!commit.pending;
+    if (!pending) { try { appendCanonicalAuditRow_(auditEntry); } catch (auditErr) { PropertiesService.getScriptProperties().setProperty('EE_SECONDARY_RECONCILE_REQUIRED', '1'); } }
+    return { ok: true, status: pending ? 'recovery_pending' : 'completed', recoveryPending: pending, dueDate: plan.dueDate, affectedEducators: ids.length, revision: state.revision + 1 };
+  } finally { lock.releaseLock(); }
+}
+
+function authorizedExportsFolder_() {
+  var props = PropertiesService.getScriptProperties(), id = props.getProperty('EE_AUTHORIZED_EXPORTS_FOLDER_ID');
+  if (id) { try { return DriveApp.getFolderById(id); } catch (existingErr) {} }
+  var folder = DriveApp.getFolderById(props.getProperty('EE_FOLDER_ID')).createFolder('Authorized exports');
+  setPrivate_(folder); props.setProperty('EE_AUTHORIZED_EXPORTS_FOLDER_ID', folder.getId()); return folder;
+}
+
+function csvCell_(value) { var text = String(value == null ? '' : value); return '"' + text.replace(/"/g, '""') + '"'; }
+function statusExportCsv_(workspace) {
+  var rows = [['Staff code','Educator','Building','Assignment','Active','Cycle status','Due date','Finalized at']];
+  (workspace.teachers || []).forEach(function (teacher) { rows.push([teacher.code,teacher.name,teacher.building,teacher.assignment,teacher.active !== false ? 'yes' : 'no',teacher.cycleStatus,teacher.dueDate || '',teacher.finalizedAt || '']); });
+  return '\uFEFF' + rows.map(function (row) { return row.map(csvCell_).join(','); }).join('\r\n');
+}
+
+function educatorRecordExport_(workspace, teacherId) {
+  var teacher = findById_(workspace.teachers || [], teacherId);
+  if (!teacher) throw eeError_('not_found', 'Educator record not found.');
+  return { teacher: teacher, walkthroughs: filterByTeacher_(workspace.walkthroughs || [], (function(){var x={};x[teacherId]=true;return x;})(), false), observations: filterByTeacher_(workspace.observations || [], (function(){var x={};x[teacherId]=true;return x;})(), false), spms: filterByTeacher_(workspace.spms || [], (function(){var x={};x[teacherId]=true;return x;})(), false), comments: filterByTeacher_(workspace.comments || [], (function(){var x={};x[teacherId]=true;return x;})(), false), audit: filterByTeacher_(workspace.audit || [], (function(){var x={};x[teacherId]=true;return x;})(), false), cycleSnapshots: filterByTeacher_(workspace.cycleSnapshots || [], (function(){var x={};x[teacherId]=true;return x;})(), false) };
+}
+
+function reviewPortalDistrictExport(request) {
+  var actor = requireAdmin_(); request = requireObject_(request || {}, 'request');
+  var scope = oneOf_(request.scope, ['status_csv','educator_record','repository_backup'], 'export scope');
+  var purpose = safeString_(request.purpose, 240, '', true), teacherId = scope === 'educator_record' ? safeId_(request.teacherId, true) : '';
+  var state = readWorkspaceState_(); if (teacherId && !findById_(state.workspace.teachers || [], teacherId)) throw eeError_('not_found', 'Educator record not found.');
+  var token = newId_('admin-review');
+  CacheService.getScriptCache().put(adminReviewCacheKey_(token), JSON.stringify({ actorEmail: actor.email, operation: 'export', revision: state.revision, scope: scope, purpose: purpose, teacherId: teacherId }), EE_ADMIN_REVIEW_SECONDS);
+  return { ok: true, review: { token: token, expiresAt: new Date(Date.now() + EE_ADMIN_REVIEW_SECONDS * 1000).toISOString(), scope: scope, purpose: purpose, teacherId: teacherId, educatorName: teacherId ? findById_(state.workspace.teachers || [], teacherId).name : '', recordCounts: annualRolloverCounts_(state.workspace).records, activeEducators: (state.workspace.teachers || []).filter(function (teacher) { return teacher.active !== false; }).length, destination: 'Private Authorized exports folder in the deployment owner\'s Drive' } };
+}
+
+function performPortalDistrictExport(request) {
+  var actor = requireAdmin_(); request = requireObject_(request || {}, 'request');
+  if (request.acknowledgePolicy !== true) throw eeError_('acknowledgment_required', 'Confirm district export policy, purpose, destination, retention, and legal-hold handling.');
+  var lock = LockService.getScriptLock(); if (!lock.tryLock(30000)) throw eeError_('busy', 'Repository is busy.');
+  try {
+    var token = safeId_(request.reviewToken || '', false), cache = CacheService.getScriptCache(), key = adminReviewCacheKey_(token), raw = token ? cache.get(key) : '', review;
+    try { review = raw ? JSON.parse(raw) : null; } catch (parseErr) { review = null; }
+    if (!review || review.actorEmail !== actor.email || review.operation !== 'export') throw eeError_('review_required', 'The export review expired or was already used. Review it again.');
+    var state = readWorkspaceState_();
+    if (Number(review.revision) !== Number(state.revision)) { cache.remove(key); throw eeError_('review_stale', 'The workspace changed after review. Reload and review the export again.'); }
+    cache.remove(key);
+    var content, extension, mime;
+    if (review.scope === 'status_csv') { content = statusExportCsv_(state.workspace); extension = '.csv'; mime = 'text/csv'; }
+    else {
+      var payload = review.scope === 'educator_record' ? educatorRecordExport_(state.workspace, review.teacherId) : state.workspace;
+      var envelope = { kind: 'alloflow-educator-evaluation-authorized-export', version: 1, scope: review.scope, purpose: review.purpose, exportedAt: nowIso_(), exportedBy: actor.email, sourceRevision: state.revision, payloadHash: hashText_(JSON.stringify(payload)), payload: payload };
+      content = JSON.stringify(envelope); extension = '.json'; mime = MimeType.PLAIN_TEXT;
+    }
+    var file = authorizedExportsFolder_().createFile('educator-evaluation-' + review.scope.replace(/_/g,'-') + '-' + nowIso_().slice(0,10) + '-' + newId_('export').slice(-8) + extension, content, mime);
+    setPrivate_(file);
+    var reread = file.getBlob().getDataAsString('UTF-8'); if (hashText_(reread) !== hashText_(content)) throw eeError_('export_verification_failed', 'The private export could not be verified.');
+    appendAuditRow_({ teacherId: review.teacherId, event: 'DISTRICT_EXPORT_CREATED', summary: 'Reviewed private district export created; purpose recorded in export metadata', entityType: 'district_export', entityId: file.getId(), version: 1 }, actor);
+    return { ok: true, status: 'completed', export: { id: file.getId(), url: annualArchiveUrl_(file), scope: review.scope, createdAt: nowIso_(), private: true, sha256: hashText_(content) } };
+  } finally { lock.releaseLock(); }
+}
+
+function verifiedAnnualArchive_(file) {
+  var raw = file.getBlob().getDataAsString('UTF-8'), envelope;
+  try { envelope = JSON.parse(raw); } catch (parseErr) { envelope = null; }
+  var verified = !!envelope && envelope.kind === 'alloflow-educator-evaluation-annual-archive' && envelope.workspaceHash === hashText_(JSON.stringify(envelope.workspace));
+  return { verified: verified, envelope: verified ? envelope : null, sha256: hashText_(raw) };
+}
+
+function annualArchiveFileById_(archiveId) {
+  archiveId = safeId_(archiveId, true);
+  var folderId = PropertiesService.getScriptProperties().getProperty('EE_ANNUAL_ARCHIVES_FOLDER_ID');
+  if (!folderId) throw eeError_('not_found', 'The selected annual archive is unavailable.');
+  var files = DriveApp.getFolderById(folderId).getFiles();
+  while (files.hasNext()) {
+    var file = files.next();
+    if (file.getId() === archiveId) return file;
+  }
+  throw eeError_('not_found', 'The selected file is not in this repository\'s Annual archives folder.');
+}
+
+function getPortalAnnualArchives() {
+  requireAdmin_(); var props = PropertiesService.getScriptProperties(), id = props.getProperty('EE_ANNUAL_ARCHIVES_FOLDER_ID'); if (!id) return { ok: true, archives: [] };
+  var folder; try { folder = DriveApp.getFolderById(id); } catch (folderErr) { throw eeError_('not_found', 'The Annual archives folder is unavailable.'); }
+  var files = folder.getFiles(), archives = [], limit = 100;
+  while (files.hasNext() && archives.length < limit) {
+    var file = files.next(), check = verifiedAnnualArchive_(file), envelope = check.envelope;
+    archives.push({ id: file.getId(), name: typeof file.getName === 'function' ? file.getName() : 'Annual archive', url: annualArchiveUrl_(file), verified: check.verified, sha256: check.sha256, fromAcademicYear: envelope ? envelope.fromAcademicYear : '', plannedNextAcademicYear: envelope ? envelope.plannedNextAcademicYear : '', sourceRevision: envelope ? envelope.sourceRevision : null, archivedAt: envelope ? envelope.archivedAt : '', counts: envelope ? envelope.counts : null });
+  }
+  archives.sort(function (a,b) { return String(b.archivedAt).localeCompare(String(a.archivedAt)); });
+  return { ok: true, archives: archives };
+}
+
+function restoreRehearsalsFolder_() {
+  var props = PropertiesService.getScriptProperties(), id = props.getProperty('EE_RESTORE_REHEARSALS_FOLDER_ID'); if (id) { try { return DriveApp.getFolderById(id); } catch (existingErr) {} }
+  var folder = DriveApp.getFolderById(props.getProperty('EE_FOLDER_ID')).createFolder('Restore rehearsals'); setPrivate_(folder); props.setProperty('EE_RESTORE_REHEARSALS_FOLDER_ID', folder.getId()); return folder;
+}
+
+function reviewPortalArchiveRestoreRehearsal(request) {
+  var actor = requireAdmin_(); request = requireObject_(request || {}, 'request'); var archiveId = safeId_(request.archiveId, true), file = annualArchiveFileById_(archiveId), check = verifiedAnnualArchive_(file);
+  if (!check.verified) throw eeError_('archive_verification_failed', 'The selected archive failed verification and cannot be rehearsed.');
+  var state = readWorkspaceState_(), archivedCounts = annualRolloverCounts_(check.envelope.workspace), currentCounts = annualRolloverCounts_(state.workspace), token = newId_('admin-review');
+  CacheService.getScriptCache().put(adminReviewCacheKey_(token), JSON.stringify({ actorEmail: actor.email, operation: 'restore_rehearsal', revision: state.revision, archiveId: archiveId, archiveHash: check.sha256 }), EE_ADMIN_REVIEW_SECONDS);
+  return { ok: true, review: { token: token, expiresAt: new Date(Date.now() + EE_ADMIN_REVIEW_SECONDS * 1000).toISOString(), archiveId: archiveId, fromAcademicYear: check.envelope.fromAcademicYear, archivedRevision: check.envelope.sourceRevision, activeAcademicYear: state.workspace.config.academicYear, activeRevision: state.revision, archivedCounts: archivedCounts, currentCounts: currentCounts, liveWorkspaceWillChange: false } };
+}
+
+function performPortalArchiveRestoreRehearsal(request) {
+  var actor = requireAdmin_(); request = requireObject_(request || {}, 'request'); if (request.acknowledgeNoLiveRestore !== true) throw eeError_('acknowledgment_required', 'Confirm this creates a private restore candidate and does not overwrite the live workspace.');
+  var lock = LockService.getScriptLock(); if (!lock.tryLock(30000)) throw eeError_('busy', 'Repository is busy.');
+  try {
+    var token = safeId_(request.reviewToken || '', false), cache = CacheService.getScriptCache(), key = adminReviewCacheKey_(token), raw = token ? cache.get(key) : '', review;
+    try { review = raw ? JSON.parse(raw) : null; } catch (parseErr) { review = null; }
+    if (!review || review.actorEmail !== actor.email || review.operation !== 'restore_rehearsal') throw eeError_('review_required', 'The restore rehearsal review expired or was already used. Review it again.');
+    var state = readWorkspaceState_(); if (Number(review.revision) !== Number(state.revision)) { cache.remove(key); throw eeError_('review_stale', 'The live workspace changed after review. Reload and review the rehearsal again.'); }
+    var archiveFile = annualArchiveFileById_(review.archiveId), check = verifiedAnnualArchive_(archiveFile); if (!check.verified || check.sha256 !== review.archiveHash) { cache.remove(key); throw eeError_('review_stale', 'The archive changed after review or failed verification.'); }
+    cache.remove(key);
+    var candidate = { kind: 'alloflow-educator-evaluation-restore-rehearsal', version: 1, createdAt: nowIso_(), createdBy: actor.email, sourceArchiveId: review.archiveId, sourceArchiveHash: review.archiveHash, liveRevisionAtReview: state.revision, liveWorkspaceChanged: false, candidateWorkspace: check.envelope.workspace };
+    var content = JSON.stringify(candidate), file = restoreRehearsalsFolder_().createFile('restore-rehearsal-' + check.envelope.fromAcademicYear + '-' + nowIso_().slice(0,10) + '.json', content, MimeType.PLAIN_TEXT); setPrivate_(file);
+    if (hashText_(file.getBlob().getDataAsString('UTF-8')) !== hashText_(content)) throw eeError_('archive_verification_failed', 'The restore rehearsal candidate could not be verified.');
+    appendAuditRow_({ teacherId: '', event: 'RESTORE_REHEARSAL_CREATED', summary: 'Verified private restore rehearsal created without changing the live workspace', entityType: 'restore_rehearsal', entityId: file.getId(), version: 1 }, actor);
+    return { ok: true, status: 'completed', liveWorkspaceChanged: false, candidate: { id: file.getId(), url: annualArchiveUrl_(file), sha256: hashText_(content) } };
+  } finally { lock.releaseLock(); }
+}
+
+/* ---------------- annual rollover and continuity ---------------- */
+
+function annualRolloverReviewCacheKey_(token) { return 'EE_ROLLOVER_REVIEW_' + safeId_(token, true); }
+
+function normalizeAcademicYear_(value) {
+  var text = safeString_(value, 20, '').replace(/[\u2013\u2014]/g, '-');
+  var match = text.match(/^(\d{4})-(\d{2})$/);
+  if (!match || Number(match[2]) !== (Number(match[1]) + 1) % 100) throw eeError_('bad_request', 'Academic year must use YYYY-YY and name consecutive years, for example 2027-28.');
+  return match[1] + '-' + match[2];
+}
+
+function annualRolloverCounts_(workspace) {
+  var active = (workspace.teachers || []).filter(function (teacher) { return teacher.active !== false; });
+  var recordTeacherIds = {};
+  ['walkthroughs', 'observations', 'spms'].forEach(function (key) {
+    (workspace[key] || []).forEach(function (record) { recordTeacherIds[record.teacherId] = true; });
+  });
+  var finalized = 0, open = 0;
+  active.forEach(function (teacher) {
+    if (teacher.finalizedAt) finalized++;
+    else if (teacher.cycleStatus !== 'not_started' || teacher.lastActivityAt || recordTeacherIds[teacher.id]) open++;
+  });
+  var records = {
+    walkthroughs: (workspace.walkthroughs || []).length,
+    observations: (workspace.observations || []).length,
+    spms: (workspace.spms || []).length,
+    comments: (workspace.comments || []).length,
+  };
+  records.total = records.walkthroughs + records.observations + records.spms + records.comments;
+  return {
+    activeEducators: active.length,
+    inactiveEducators: (workspace.teachers || []).length - active.length,
+    finalizedCycles: finalized,
+    openCycles: open,
+    notStartedCycles: Math.max(0, active.length - finalized - open),
+    releasedDocuments: (workspace.teachers || []).filter(function (teacher) { return !!teacher.releasedDoc; }).length,
+    retainedCycleSnapshots: (workspace.cycleSnapshots || []).length,
+    records: records,
+  };
+}
+
+function annualArchivesFolder_() {
+  var props = PropertiesService.getScriptProperties();
+  var existingId = props.getProperty('EE_ANNUAL_ARCHIVES_FOLDER_ID');
+  if (existingId) {
+    try { return DriveApp.getFolderById(existingId); } catch (existingErr) {}
+  }
+  var parent = DriveApp.getFolderById(props.getProperty('EE_FOLDER_ID'));
+  var folder = parent.createFolder('Annual archives');
+  setPrivate_(folder);
+  props.setProperty('EE_ANNUAL_ARCHIVES_FOLDER_ID', folder.getId());
+  return folder;
+}
+
+function annualArchiveUrl_(file) {
+  if (file && typeof file.getUrl === 'function') return safeString_(file.getUrl(), 1000, '');
+  return 'https://drive.google.com/file/d/' + file.getId() + '/view';
+}
+
+function buildAnnualArchive_(state, actor, fromYear, toYear, counts) {
+  var workspaceJson = JSON.stringify(state.workspace);
+  var envelope = {
+    kind: 'alloflow-educator-evaluation-annual-archive',
+    version: 1,
+    archivedAt: nowIso_(),
+    fromAcademicYear: fromYear,
+    plannedNextAcademicYear: toYear,
+    sourceRevision: state.revision,
+    archivedBy: actor.email,
+    counts: counts,
+    workspaceHash: hashText_(workspaceJson),
+    workspace: state.workspace,
+  };
+  var content = JSON.stringify(envelope);
+  var name = 'educator-evaluation-' + fromYear + '-archive-' + envelope.archivedAt.slice(0, 10) + '.json';
+  var file = annualArchivesFolder_().createFile(name, content, MimeType.PLAIN_TEXT);
+  setPrivate_(file);
+  var stored = file.getBlob().getDataAsString('UTF-8');
+  var verified;
+  try { verified = JSON.parse(stored); } catch (parseErr) { verified = null; }
+  if (!verified || verified.kind !== envelope.kind || verified.sourceRevision !== state.revision || verified.workspaceHash !== hashText_(JSON.stringify(verified.workspace)) || hashText_(stored) !== hashText_(content)) {
+    throw eeError_('archive_verification_failed', 'The private annual archive could not be verified. The active year was not changed.');
+  }
+  return { id: file.getId(), url: annualArchiveUrl_(file), name: name, hash: hashText_(content), archivedAt: envelope.archivedAt };
+}
+
+function resetTeacherForAnnualRollover_(teacher) {
+  return sanitizeTeacher_({
+    id: teacher.id,
+    code: teacher.code,
+    name: teacher.name,
+    building: teacher.building,
+    assignment: teacher.assignment,
+    employeeType: teacher.employeeType,
+    buildingData: teacher.buildingData,
+    teacherSpecificData: teacher.teacherSpecificData,
+    active: teacher.active,
+    evaluator: teacher.evaluator,
+    dueDate: '',
+    cycleStatus: 'not_started',
+    frameworkVersion: teacher.frameworkVersion,
+    ratings: { domains: { d1: null, d2: null, d3: null, d4: null }, building: null, teacher: null, lea: null },
+    weightSnapshot: null,
+    finalScore: null,
+    releasedDoc: null,
+    educatorStatement: null,
+  });
+}
+
+function workspaceForAnnualRollover_(workspace, toYear) {
+  var next = clone_(workspace);
+  next.config.academicYear = toYear;
+  next.config.sampleMode = false;
+  next.teachers = (workspace.teachers || []).map(resetTeacherForAnnualRollover_);
+  next.walkthroughs = [];
+  next.observations = [];
+  next.spms = [];
+  next.comments = [];
+  next.cycleSnapshots = clone_(workspace.cycleSnapshots || []);
+  next.audit = clone_(workspace.audit || []);
+  return sanitizeStoredWorkspace_(next);
+}
+
+function reviewPortalAnnualRollover(request) {
+  var actor = requireAdmin_();
+  request = requireObject_(request || {}, 'request');
+  var props = PropertiesService.getScriptProperties();
+  if (props.getProperty('EE_ROLLOVER_RECOVERY_REQUIRED')) throw eeError_('rollover_recovery_required', 'A prior annual rollover needs an administrator recovery recheck before another review.');
+  var toYear = normalizeAcademicYear_(request.nextAcademicYear);
+  var state = readWorkspaceState_();
+  var fromYear = safeString_(state.workspace.config && state.workspace.config.academicYear, 20, '').replace(/[\u2013\u2014]/g, '-');
+  if (fromYear === toYear) throw eeError_('bad_request', 'The next academic year must differ from the active year.');
+  var fromMatch = fromYear.match(/^(\d{4})-(\d{2})$/);
+  var toMatch = toYear.match(/^(\d{4})-(\d{2})$/);
+  if (fromMatch && toMatch && Number(toMatch[1]) !== Number(fromMatch[1]) + 1) throw eeError_('bad_request', 'Annual rollover must advance exactly one academic year.');
+  var counts = annualRolloverCounts_(state.workspace);
+  var token = newId_('rollover-review');
+  CacheService.getScriptCache().put(annualRolloverReviewCacheKey_(token), JSON.stringify({
+    actorEmail: actor.email,
+    revision: state.revision,
+    fromYear: fromYear,
+    toYear: toYear,
+    countsHash: hashText_(JSON.stringify(counts)),
+  }), EE_ROLLOVER_REVIEW_SECONDS);
+  return {
+    ok: true,
+    review: {
+      token: token,
+      expiresAt: new Date(Date.now() + EE_ROLLOVER_REVIEW_SECONDS * 1000).toISOString(),
+      currentAcademicYear: fromYear,
+      nextAcademicYear: toYear,
+      counts: counts,
+      archiveCreatedBeforeReset: true,
+      rosterRetained: true,
+      cycleSnapshotsRetained: true,
+      releasedDocumentsDeleted: false,
+    },
+  };
+}
+
+function requireAnnualRolloverReview_(request, actor, state) {
+  var token = safeId_(request.reviewToken || '', false);
+  if (!token) throw eeError_('review_required', 'Review the annual rollover impact before confirming it.');
+  var cache = CacheService.getScriptCache();
+  var key = annualRolloverReviewCacheKey_(token);
+  var raw = cache.get(key);
+  if (!raw) throw eeError_('review_required', 'The annual rollover review expired or was already used. Review it again.');
+  var review;
+  try { review = JSON.parse(raw); } catch (parseErr) { review = null; }
+  var currentYear = safeString_(state.workspace.config && state.workspace.config.academicYear, 20, '').replace(/[\u2013\u2014]/g, '-');
+  var counts = annualRolloverCounts_(state.workspace);
+  if (!review || review.actorEmail !== actor.email || Number(review.revision) !== Number(state.revision) || review.fromYear !== currentYear || review.countsHash !== hashText_(JSON.stringify(counts))) {
+    cache.remove(key);
+    throw eeError_('review_stale', 'The active workspace changed after review. Reload and review the annual rollover again.');
+  }
+  cache.remove(key);
+  review.counts = counts;
+  return review;
+}
+
+function recordAnnualRolloverRecovery_(payload) {
+  PropertiesService.getScriptProperties().setProperty('EE_ROLLOVER_RECOVERY_REQUIRED', JSON.stringify(payload));
+}
+
+function annualRolloverCommitted_(state, recovery) {
+  if (!state || !recovery || state.workspace.config.academicYear !== recovery.toYear) return false;
+  return (state.workspace.audit || []).some(function (entry) { return entry.event === 'ANNUAL_ROLLOVER' && entry.entityId === recovery.archiveId; });
+}
+
+function performPortalAnnualRollover(request) {
+  var actor = requireAdmin_();
+  request = requireObject_(request || {}, 'request');
+  var props = PropertiesService.getScriptProperties();
+  if (props.getProperty('EE_ROLLOVER_RECOVERY_REQUIRED')) throw eeError_('rollover_recovery_required', 'A prior annual rollover needs an administrator recovery recheck before another attempt.');
+  if (request.acknowledgeArchive !== true) throw eeError_('acknowledgment_required', 'Confirm district archive, retention, legal-hold, and ownership responsibility.');
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) throw eeError_('busy', 'Repository is busy.');
+  var archive = null;
+  var recovery = null;
+  try {
+    var state = readWorkspaceState_();
+    var review = requireAnnualRolloverReview_(request, actor, state);
+    if (review.counts.openCycles > 0 && request.acknowledgeOpenCycles !== true) throw eeError_('acknowledgment_required', 'Confirm that open cycles will be archived and will not carry into the new active year.');
+    archive = buildAnnualArchive_(state, actor, review.fromYear, review.toYear, review.counts);
+    recovery = {
+      at: nowIso_(),
+      stage: 'archive_verified',
+      archiveId: archive.id,
+      archiveUrl: archive.url,
+      fromYear: review.fromYear,
+      toYear: review.toYear,
+      sourceRevision: state.revision,
+      actorEmail: actor.email,
+    };
+    recordAnnualRolloverRecovery_(recovery);
+    var nextWorkspace = workspaceForAnnualRollover_(state.workspace, review.toYear);
+    var auditEntry = appendWorkspaceAudit_(nextWorkspace, {
+      event: 'ANNUAL_ROLLOVER',
+      summary: 'Verified private annual archive created; active evaluation cycles reset for ' + review.toYear,
+      entityType: 'annual_archive',
+      entityId: archive.id,
+      version: 1,
+    }, actor);
+    recovery.stage = 'workspace_commit';
+    recordAnnualRolloverRecovery_(recovery);
+    var commit = writeWorkspaceState_(nextWorkspace, state.revision + 1, actor.email);
+    var recoveryPending = !!commit.pending;
+    if (recoveryPending) {
+      try { recoveryPending = !annualRolloverCommitted_(readWorkspaceState_(), recovery); }
+      catch (confirmErr) { recoveryPending = true; }
+    }
+    if (recoveryPending) {
+      return { ok: true, status: 'recovery_pending', recoveryPending: true, archive: archive, fromAcademicYear: review.fromYear, toAcademicYear: review.toYear, counts: review.counts };
+    }
+    var auditPending = false;
+    try { appendCanonicalAuditRow_(auditEntry); }
+    catch (auditErr) { props.setProperty('EE_SECONDARY_RECONCILE_REQUIRED', '1'); auditPending = true; }
+    try { setConfigValue_('academicYear', review.toYear); }
+    catch (configErr) { props.setProperty('EE_SECONDARY_RECONCILE_REQUIRED', '1'); }
+    props.setProperty('EE_LAST_ROLLOVER', JSON.stringify({ archiveId: archive.id, archiveUrl: archive.url, fromYear: review.fromYear, toYear: review.toYear, at: archive.archivedAt, actorEmail: actor.email, revision: state.revision + 1 }));
+    props.deleteProperty('EE_ROLLOVER_RECOVERY_REQUIRED');
+    return { ok: true, status: 'completed', recoveryPending: false, auditPending: auditPending, archive: archive, fromAcademicYear: review.fromYear, toAcademicYear: review.toYear, counts: review.counts };
+  } catch (err) {
+    if (archive && recovery) {
+      recovery.stage = recovery.stage || 'archive_verified';
+      recovery.errorCode = String(err && err.code || 'server_error');
+      recordAnnualRolloverRecovery_(recovery);
+      throw eeError_('rollover_recovery_required', 'A verified private archive exists, but rollover completion was not confirmed. Do not retry; run the recovery recheck.');
+    }
+    throw err;
+  } finally { lock.releaseLock(); }
+}
+
+function reconcilePortalAnnualRollover() {
+  requireAdmin_();
+  var props = PropertiesService.getScriptProperties();
+  var raw = props.getProperty('EE_ROLLOVER_RECOVERY_REQUIRED');
+  if (!raw) return { ok: true, status: 'none', recoveryPending: false };
+  var recovery;
+  try { recovery = JSON.parse(raw); } catch (parseErr) { throw eeError_('manual_recovery_required', 'Rollover recovery metadata is invalid. District IT must inspect the repository before any retry.'); }
+  var archiveFile;
+  try { archiveFile = DriveApp.getFileById(safeId_(recovery.archiveId, true)); } catch (archiveErr) { throw eeError_('manual_recovery_required', 'The recorded annual archive cannot be opened. District IT must inspect the repository before any retry.'); }
+  var archiveRaw = archiveFile.getBlob().getDataAsString('UTF-8');
+  var envelope;
+  try { envelope = JSON.parse(archiveRaw); } catch (archiveParseErr) { envelope = null; }
+  if (!envelope || envelope.kind !== 'alloflow-educator-evaluation-annual-archive' || envelope.workspaceHash !== hashText_(JSON.stringify(envelope.workspace)) || Number(envelope.sourceRevision) !== Number(recovery.sourceRevision)) throw eeError_('manual_recovery_required', 'The recorded annual archive failed verification. District IT must inspect the repository before any retry.');
+  var state = readWorkspaceState_();
+  if (annualRolloverCommitted_(state, recovery)) {
+    props.setProperty('EE_LAST_ROLLOVER', JSON.stringify({ archiveId: recovery.archiveId, archiveUrl: recovery.archiveUrl, fromYear: recovery.fromYear, toYear: recovery.toYear, at: recovery.at, actorEmail: recovery.actorEmail, revision: state.revision }));
+    props.deleteProperty('EE_ROLLOVER_RECOVERY_REQUIRED');
+    return { ok: true, status: 'completed', recoveryPending: false, archive: { id: recovery.archiveId, url: recovery.archiveUrl }, activeAcademicYear: state.workspace.config.academicYear };
+  }
+  if (Number(state.revision) === Number(recovery.sourceRevision) && safeString_(state.workspace.config.academicYear, 20, '').replace(/[\u2013\u2014]/g, '-') === recovery.fromYear) {
+    props.deleteProperty('EE_ROLLOVER_RECOVERY_REQUIRED');
+    return { ok: true, status: 'archive_only', recoveryPending: false, archive: { id: recovery.archiveId, url: recovery.archiveUrl }, activeAcademicYear: state.workspace.config.academicYear };
+  }
+  throw eeError_('manual_recovery_required', 'The workspace is neither the reviewed old year nor the confirmed new year. District IT must inspect both the active workspace and archive before any retry.');
 }
 
 function getPortalCohortStats(request) {
@@ -1418,7 +2200,8 @@ function sanitizeTeacher_(v) { v=requireObject_(v,'teacher'); var ratings=requir
 // survive sanitizeStoredWorkspace_ (which rebuilds every teacher through
 // sanitizeTeacher_ at commit time) or the pointer written by
 // sharePortalReleasedEvaluation evaporates before it ever reaches disk.
-function sanitizeReleasedDoc_(v){ if(!isPlainObject_(v))return null; var url=safeString_(v.url,400,''); if(url.indexOf('https://docs.google.com/')!==0)return null; return { url:url, at:optionalTimestamp_(v.at), by:safeString_(v.by,160,''), openedAt:optionalTimestamp_(v.openedAt) }; }
+function sanitizeReleasedDocHistory_(items){if(!Array.isArray(items))return[];var out=[];for(var i=Math.max(0,items.length-25);i<items.length;i++){var v=items[i];if(!isPlainObject_(v))continue;var url=safeString_(v.url,400,''),id=safeId_(v.id||'',false);if(!id&&url.indexOf('https://docs.google.com/')!==0)continue;out.push({id:id,url:url,at:optionalTimestamp_(v.at),by:safeString_(v.by,160,''),openedAt:optionalTimestamp_(v.openedAt),status:v.status==='superseded_unavailable'?'superseded_unavailable':'superseded',supersededAt:optionalTimestamp_(v.supersededAt)});}return out;}
+function sanitizeReleasedDoc_(v){ if(!isPlainObject_(v))return null; var url=safeString_(v.url,400,''); if(url.indexOf('https://docs.google.com/')!==0)return null; return { id:safeId_(v.id||'',false), url:url, at:optionalTimestamp_(v.at), by:safeString_(v.by,160,''), sharedWith:normalizeEmail_(v.sharedWith), openedAt:optionalTimestamp_(v.openedAt), accessReviewedAt:optionalTimestamp_(v.accessReviewedAt), history:sanitizeReleasedDocHistory_(v.history) }; }
 // educatorStatement: the educator's own words for the record. Owned by the
 // teacher (merge adopts it only from teacher saves, only pre-finalization).
 function sanitizeEducatorStatement_(v){ if(!isPlainObject_(v))return null; var text=safeString_(v.text,20000,''); if(!text)return null; return { text:text, updatedAt:optionalTimestamp_(v.updatedAt) }; }
@@ -1450,6 +2233,7 @@ function removeNonOwnerAccess_(item,users,ownerEmail,method){for(var i=0;i<(user
 function appendRow_(name,row){var sheet=repositorySpreadsheet_().getSheetByName(name);if(!sheet)throw eeError_('corrupt','Required repository table is missing.');safeSheetAppendRow_(sheet,row);}
 function putConfigRows_(ss,values){var sheet=ss.getSheetByName('Config');var keys=Object.keys(values);sheet.clearContents();safeSheetSetValues_(sheet.getRange(1,1,1,2),[EE_SHEETS.Config]);for(var i=0;i<keys.length;i++)safeSheetAppendRow_(sheet,[keys[i],String(values[keys[i]]||'')]);}
 function configMap_(){var sheet=repositorySpreadsheet_().getSheetByName('Config');var rows=dataRows_(sheet,2);var out={};for(var i=0;i<rows.length;i++)out[String(rows[i][0])]=String(rows[i][1]||'');return out;}
+function setConfigValue_(key,value){var sheet=repositorySpreadsheet_().getSheetByName('Config');var rows=dataRows_(sheet,2);for(var i=0;i<rows.length;i++){if(String(rows[i][0])===String(key)){safeSheetSetValues_(sheet.getRange(i+2,1,1,2),[[String(key),String(value||'')]]);return;}}safeSheetAppendRow_(sheet,[String(key),String(value||'')]);}
 function memberObjects_(){var rows=dataRows_(repositorySpreadsheet_().getSheetByName('Members'),5),out=[];for(var i=0;i<rows.length;i++){if(!rows[i][0])continue;out.push({email:normalizeEmail_(rows[i][0]),displayName:safeString_(rows[i][1],160,normalizeEmail_(rows[i][0])),role:String(rows[i][2]),teacherId:safeId_(rows[i][3]||'',false),active:parseBool_(rows[i][4])});}return out;}
 function assignmentObjects_(){var rows=dataRows_(repositorySpreadsheet_().getSheetByName('Assignments'),3),out=[];for(var i=0;i<rows.length;i++){if(!rows[i][0])continue;out.push({teacherId:safeId_(rows[i][0],true),evaluatorEmail:normalizeEmail_(rows[i][1]),active:parseBool_(rows[i][2])});}return out;}
 function sheetLogicalCell_(value){if(typeof value!=='string')return value;return /^'(?:[\t\r]|[ \t\r\n]*[=+\-@])/.test(value)?value.slice(1):value;}
@@ -1462,7 +2246,7 @@ function normalizeSetupMembers_(members,domain){if(members===undefined||members=
 function normalizeSetupAssignments_(assignments,domain){if(assignments===undefined||assignments===null)return[];if(!Array.isArray(assignments)||assignments.length>5000)throw eeError_('bad_config','Invalid setup assignments list.');var out=[];for(var i=0;i<assignments.length;i++)out.push(normalizeAssignment_(assignments[i],domain));return out;}
 function validateDeclaredSetupReferences_(teachers,members,assignments,bootstrapAdmin){var ids={};for(var i=0;i<teachers.length;i++)ids[teachers[i].id]=true;var evaluatorEmails={};evaluatorEmails[bootstrapAdmin]=true;for(var j=0;j<members.length;j++){if(members[j].role==='teacher'&&!ids[members[j].teacherId])throw eeError_('bad_config','Teacher member references an undeclared educator ID.');if(members[j].role==='evaluator'||members[j].role==='admin')evaluatorEmails[members[j].email]=true;}for(var k=0;k<assignments.length;k++){if(!ids[assignments[k].teacherId])throw eeError_('bad_config','Assignment references an undeclared educator ID.');if(!evaluatorEmails[assignments[k].evaluatorEmail])throw eeError_('bad_config','Assignment evaluator must be an evaluator/admin member.');}}
 function validateRepositoryReferences_(workspace){var ids={};for(var i=0;i<(workspace.teachers||[]).length;i++)ids[workspace.teachers[i].id]=true;var members=memberObjects_(),evaluators={},activeAdmins=0;for(var j=0;j<members.length;j++){if(members[j].active&&members[j].role==='teacher'&&!ids[members[j].teacherId])throw eeError_('bad_config','Active teacher membership references a missing educator record.');if(members[j].active&&(members[j].role==='evaluator'||members[j].role==='admin'))evaluators[members[j].email]=true;if(members[j].active&&members[j].role==='admin')activeAdmins++;}if(activeAdmins<1)throw eeError_('bad_config','Repository requires an active administrator.');var assignments=assignmentObjects_();for(var k=0;k<assignments.length;k++){if(assignments[k].active&&!ids[assignments[k].teacherId])throw eeError_('bad_config','Active assignment references a missing educator record.');if(assignments[k].active&&!evaluators[assignments[k].evaluatorEmail])throw eeError_('bad_config','Active assignment references a missing evaluator member.');}}
-function normalizeMember_(m,domain){m=requireObject_(m,'member');var email=normalizeEmail_(m.email);if(!email||emailDomain_(email)!==domain)throw eeError_('bad_member','Member must use the allowed district domain.');var role=oneOf_(m.role,['admin','evaluator','teacher'],'role');var teacherId=safeId_(m.teacherId||'',false);if(role==='teacher'&&!teacherId)throw eeError_('bad_member','Teacher membership requires teacherId.');return{email:email,displayName:safeString_(m.displayName,160,email),role:role,teacherId:teacherId,active:m.active!==false};}
+function normalizeMember_(m,domain){m=requireObject_(m,'member');var email=normalizeEmail_(m.email);if(!email||emailDomain_(email)!==domain)throw eeError_('bad_member','Member must use the allowed district domain.');var role=oneOf_(m.role,['admin','evaluator','teacher'],'role');var teacherId=role==='teacher'?safeId_(m.teacherId||'',false):'';if(role==='teacher'&&!teacherId)throw eeError_('bad_member','Teacher membership requires teacherId.');return{email:email,displayName:safeString_(m.displayName,160,email),role:role,teacherId:teacherId,active:m.active!==false};}
 function assertAdminInvariantAfterMember_(candidate){var members=memberObjects_(),activeAdmins=0;for(var i=0;i<members.length;i++){var member=members[i].email===candidate.email?candidate:members[i];if(member.active&&member.role==='admin')activeAdmins++;}var found=false;for(var j=0;j<members.length;j++)if(members[j].email===candidate.email)found=true;if(!found&&candidate.active&&candidate.role==='admin')activeAdmins++;var bootstrap=normalizeEmail_(PropertiesService.getScriptProperties().getProperty('EE_BOOTSTRAP_ADMIN'));if(candidate.email===bootstrap&&(!candidate.active||candidate.role!=='admin'))throw eeError_('bad_member','The bootstrap administrator cannot be deactivated or demoted.');if(activeAdmins<1)throw eeError_('bad_member','At least one active administrator is required.');}
 function normalizeAssignment_(a,domain){a=requireObject_(a,'assignment');var email=normalizeEmail_(a.evaluatorEmail);if(!email||emailDomain_(email)!==domain)throw eeError_('bad_assignment','Evaluator must use the allowed district domain.');return{teacherId:safeId_(a.teacherId,true),evaluatorEmail:email,active:a.active!==false};}
 

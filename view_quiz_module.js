@@ -7029,6 +7029,7 @@ function QuizView(props) {
   var endCollaborativeEscapeRoom = props.endCollaborativeEscapeRoom;
   var resetEscapeRoom = props.resetEscapeRoom;
   var launchCollaborativeEscapeRoom = props.launchCollaborativeEscapeRoom;
+  var launchConceptQuest = props.launchConceptQuest;
   var openEscapeRoomSettings = props.openEscapeRoomSettings;
   var generateEscapeRoom = props.generateEscapeRoom;
   var handlePuzzleSolved = props.handlePuzzleSolved;
@@ -8487,7 +8488,16 @@ function QuizView(props) {
     size: 14
   }) : /*#__PURE__*/React.createElement(DoorOpen, {
     size: 14
-  }), escapeRoomState.isActive ? t('common.close') : isTeacherMode && activeSessionCode ? t('escape_room.launch_live_btn') : t('escape_room.title')), isTeacherMode && !isIndependentMode && /*#__PURE__*/React.createElement("button", {
+  }), escapeRoomState.isActive ? t('common.close') : isTeacherMode && activeSessionCode ? t('escape_room.launch_live_btn') : t('escape_room.title')), isTeacherMode && activeSessionCode && !escapeRoomState.isActive && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: launchConceptQuest,
+    disabled: isPresentationMode || isReviewGame,
+    className: "flex items-center gap-2 rounded-full border border-indigo-300 bg-gradient-to-r from-indigo-700 to-purple-700 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:from-indigo-600 hover:to-purple-600 disabled:opacity-50",
+    title: "Launch an eight-room cooperative concept dungeon with teacher co-GM controls",
+    "aria-label": "Launch Concept Quest"
+  }, /*#__PURE__*/React.createElement(Gamepad2, {
+    size: 14
+  }), " Concept Quest"), isTeacherMode && !isIndependentMode && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handleExportQTI,
     className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-teal-600 border border-teal-200 hover:bg-teal-50 transition-all motion-reduce:transition-none shadow-sm",
@@ -8517,9 +8527,12 @@ function QuizView(props) {
     fallbackMessage: "Escape room controls encountered an error. Refreshing..."
   }, /*#__PURE__*/React.createElement(EscapeRoomTeacherControls, {
     sessionData: sessionData,
+    generatedContent: generatedContent,
     activeSessionCode: activeSessionCode,
     appId: appId,
-    t: t
+    t: t,
+    addToast: addToast,
+    callGemini: props.callGemini
   })), isTeacherMode && activeSessionCode && sessionData?.quizState?.isActive ? /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-4"
   }, /*#__PURE__*/React.createElement(LiveResultsDashboard, {
@@ -8549,7 +8562,8 @@ function QuizView(props) {
     onSetGroupProfile: handleSetGroupProfile,
     onDeleteGroup: handleDeleteGroup,
     onUpdateQuestionRoutingRules: handleUpdateQuestionRoutingRules,
-    history: props.history
+    history: props.history,
+    callGemini: props.callGemini
   })), /*#__PURE__*/React.createElement("div", {
     className: "flex justify-end px-4"
   }, /*#__PURE__*/React.createElement("button", {

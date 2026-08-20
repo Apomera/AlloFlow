@@ -234,7 +234,7 @@ describe('Adventure Mode runtime regressions', () => {
       imageCache: ['must-not-return'], sceneImage: 'must-not-return',
       _adventureConfig: {
         difficulty: 'Hard', inputMode: 'debate', languageMode: 'Spanish',
-        chanceMode: true, freeResponse: true, consistentCharacters: true,
+        chanceMode: true, freeResponse: true, typingPace: true, sceneReadingPractice: true, consistentCharacters: true,
         storyMode: true, socialStoryMode: true, socialStoryFocus: 'Taking turns',
         artStyle: 'storybook', customArtStyle: 'paper collage', lowQualityVisuals: true,
         enableFactionResources: true, factionResourceMode: 'detailed',
@@ -243,7 +243,8 @@ describe('Adventure Mode runtime regressions', () => {
     let restoredState;
     const setters = Object.fromEntries([
       'setAdventureDifficulty', 'setAdventureInputMode', 'setAdventureLanguageMode',
-      'setAdventureChanceMode', 'setAdventureFreeResponseEnabled', 'setAdventureConsistentCharacters',
+      'setAdventureChanceMode', 'setAdventureFreeResponseEnabled', 'setAdventureTypingPaceEnabled',
+      'setAdventureFluencyEnabled', 'setAdventureConsistentCharacters',
       'setIsAdventureStoryMode', 'setIsSocialStoryMode', 'setSocialStoryFocus',
       'setAdventureArtStyle', 'setAdventureCustomArtStyle', 'setUseLowQualityVisuals',
       'setEnableFactionResources', 'setFactionResourceMode',
@@ -263,6 +264,8 @@ describe('Adventure Mode runtime regressions', () => {
     expect(setters.setAdventureInputMode).toHaveBeenCalledWith('debate');
     expect(setters.setAdventureLanguageMode).toHaveBeenCalledWith('Spanish');
     expect(setters.setAdventureFreeResponseEnabled).toHaveBeenCalledWith(true);
+    expect(setters.setAdventureTypingPaceEnabled).toHaveBeenCalledWith(true);
+    expect(setters.setAdventureFluencyEnabled).toHaveBeenCalledWith(true);
     expect(setters.setIsSocialStoryMode).toHaveBeenCalledWith(true);
     expect(setters.setAdventureCustomArtStyle).toHaveBeenCalledWith('paper collage');
     expect(setters.setFactionResourceMode).toHaveBeenCalledWith('detailed');
@@ -289,7 +292,7 @@ describe('Adventure Mode runtime regressions', () => {
         adventurePermissions: { allowModeSwitch: true, lockAllSettings: false },
         defaultAdventureConfig: {
           difficulty: 'Story', mode: 'debate', language: 'French', instructions: 'Use evidence.',
-          chanceMode: true, freeResponse: true, consistentCharacters: true,
+          chanceMode: true, freeResponse: true, typingPace: true, sceneReadingPractice: true, consistentCharacters: true,
           storyMode: true, socialStoryMode: true, socialStoryFocus: 'Perspective taking',
           artStyle: 'custom', customArtStyle: 'cut paper', lowQualityVisuals: true,
           enableFactionResources: true, factionResourceMode: 'simple',
@@ -306,6 +309,7 @@ describe('Adventure Mode runtime regressions', () => {
     const setters = Object.fromEntries([
       'setAdventureDifficulty', 'setAdventureInputMode', 'setAdventureLanguageMode',
       'setAdventureCustomInstructions', 'setAdventureChanceMode', 'setAdventureFreeResponseEnabled',
+      'setAdventureTypingPaceEnabled', 'setAdventureFluencyEnabled',
       'setAdventureConsistentCharacters', 'setIsAdventureStoryMode', 'setIsSocialStoryMode',
       'setSocialStoryFocus', 'setAdventureArtStyle', 'setAdventureCustomArtStyle',
       'setUseLowQualityVisuals', 'setEnableFactionResources', 'setFactionResourceMode',
@@ -328,6 +332,8 @@ describe('Adventure Mode runtime regressions', () => {
 
     expect(setters.setAdventureInputMode).toHaveBeenCalledWith('debate');
     expect(setters.setAdventureCustomInstructions).toHaveBeenCalledWith('Use evidence.');
+    expect(setters.setAdventureTypingPaceEnabled).toHaveBeenCalledWith(true);
+    expect(setters.setAdventureFluencyEnabled).toHaveBeenCalledWith(true);
     expect(setters.setSocialStoryFocus).toHaveBeenCalledWith('Perspective taking');
     expect(setters.setAdventureArtStyle).toHaveBeenCalledWith('custom');
     expect(restoredState.currentScene.text).toBe('Project scene');

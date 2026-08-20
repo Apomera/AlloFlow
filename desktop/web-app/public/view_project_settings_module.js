@@ -363,7 +363,7 @@ function ProjectSettingsView(props) {
     className: "mt-1 text-base font-black text-slate-900"
   }, "Principal Evaluation"), /*#__PURE__*/React.createElement("p", {
     className: "mt-1 max-w-2xl text-sm leading-relaxed text-slate-600"
-  }, isEvaluationPortalConnected ? 'Opens the Google-authenticated district portal for walkthroughs, formal observations, SPM and SLO workflow, feedback, and trends. Sign-in and server-side assignments decide what each person sees.' : 'Opens your private on-device workspace with walkthroughs, observations, SPM/SLO workflow, and trends. Nothing is uploaded. It is per-device (anyone using this device can open it) and is not the official personnel record; connect your district portal for shared, authenticated records.')), /*#__PURE__*/React.createElement("button", {
+  }, isEvaluationPortalConnected ? 'Opens the Google-authenticated district portal for walkthroughs, formal observations, SPM and SLO workflow, feedback, and trends. Sign-in and server-side assignments decide what each person sees.' : 'Opens the evaluator setup center for three paths: private on-device work, a principal-managed Drive share helper, or the district portal. The private path is per-device (anyone using this device can open it) and is not the official personnel record; connect your district portal for shared, authenticated records. Nothing is uploaded until you deliberately use a district-approved sharing path.')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: onOpenPrincipalEvaluation,
     className: `shrink-0 rounded-xl px-4 py-2.5 text-sm font-black shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${isEvaluationPortalConnected ? 'bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500' : 'border border-amber-500 bg-white text-amber-800 hover:bg-amber-50 focus:ring-amber-500'}`
@@ -376,7 +376,9 @@ function ProjectSettingsView(props) {
     className: "text-indigo-700 underline hover:text-indigo-900"
   }, "Read the user manual"), /*#__PURE__*/React.createElement("span", {
     className: "ml-1 font-normal text-slate-600"
-  }, "covers both versions, the evaluation cycle, privacy, and district setup.")), typeof onSaveEvaluationPortalUrl === 'function' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("form", {
+  }, "covers the private, principal-managed Drive, and district portal paths, plus the evaluation cycle and privacy.")), !isEvaluationPortalConnected && /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs leading-relaxed text-blue-900"
+  }, /*#__PURE__*/React.createElement("strong", null, "Need the middle path?"), " Open Educator Evaluation, choose ", /*#__PURE__*/React.createElement("strong", null, "Setup"), ", then select ", /*#__PURE__*/React.createElement("strong", null, "Principal-managed Drive"), ". A resumable seven-step checklist provides script.new, three source-copy buttons, private-deployment warnings, a helper-link field, and the deployment check."), typeof onSaveEvaluationPortalUrl === 'function' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("form", {
     className: "mt-4 border-t border-indigo-100 pt-4",
     onSubmit: function (event) {
       event.preventDefault();

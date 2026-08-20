@@ -136,7 +136,7 @@ describe('session-wide Q&A background host lifecycle', () => {
     click(findButton('Broadcast to'));
     expect(liveHost.activePoll).toBeTruthy();
     const activePollId = liveHost.activePoll.id;
-    expect(findButton('Close poll')).toBeTruthy();
+    expect(findButton('End poll')).toBeTruthy();
 
     await renderHost({ ...props, isOpen: false });
     expect(transport.unsubscribe).not.toHaveBeenCalled();
@@ -144,7 +144,9 @@ describe('session-wide Q&A background host lifecycle', () => {
     expect(liveHost.activePoll).toBeNull();
 
     await renderHost(props);
-    expect(findButton('Close poll')).toBeUndefined();
+    expect(findButton('End poll')).toBeUndefined();
+    expect(findButton('Compose a poll')).toBeTruthy();
+    click(findButton('Compose a poll'));
     expect(findButton('Broadcast to')).toBeTruthy();
   });
 

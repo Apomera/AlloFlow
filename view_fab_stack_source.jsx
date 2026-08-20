@@ -248,7 +248,7 @@ function FabStack(props) {
               {activeView === 'simplified' && generatedContent && (
                 <section className="alloflow-student-tools-section px-4 py-3" aria-labelledby="alloflow-student-tools-read-heading">
                   <div className="mb-2 flex items-center justify-between gap-3">
-                    <h3 id="alloflow-student-tools-read-heading" className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-500">Read</h3>
+                    <h3 id="alloflow-student-tools-read-heading" className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-500">{t('student_tools.read') || 'Read'}</h3>
                     <span className="text-[10px] font-semibold text-slate-400">{t('simplified.mode_label')}</span>
                   </div>
                   <div className="alloflow-student-tools-grid">
@@ -294,7 +294,7 @@ function FabStack(props) {
               )}
 
               <section className="alloflow-student-tools-section px-4 py-3" aria-labelledby="alloflow-student-tools-focus-heading">
-                <h3 id="alloflow-student-tools-focus-heading" className="mb-2 text-[11px] font-black uppercase tracking-[0.16em] text-slate-500">Focus</h3>
+                <h3 id="alloflow-student-tools-focus-heading" className="mb-2 text-[11px] font-black uppercase tracking-[0.16em] text-slate-500">{t('student_tools.focus') || 'Focus'}</h3>
                 <div className="alloflow-student-tools-grid">
                   <button
                     data-student-tool="true"
@@ -365,7 +365,7 @@ function FabStack(props) {
 
               {showInputAndPractice && (
                 <section className="alloflow-student-tools-section px-4 py-3" aria-labelledby="alloflow-student-tools-input-heading">
-                  <h3 id="alloflow-student-tools-input-heading" className="mb-2 text-[11px] font-black uppercase tracking-[0.16em] text-slate-500">Input &amp; practice</h3>
+                  <h3 id="alloflow-student-tools-input-heading" className="mb-2 text-[11px] font-black uppercase tracking-[0.16em] text-slate-500">{t('student_tools.input_practice') || 'Input & practice'}</h3>
                   <div className="alloflow-student-tools-grid">
                     {!isTeacherMode && !studentAiFeaturesHidden && studentProjectSettings.allowSocraticTutor && (
                       <button

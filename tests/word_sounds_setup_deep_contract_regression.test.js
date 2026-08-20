@@ -173,6 +173,8 @@ describe('Word Sounds review and preview integration', () => {
     expect((previewSource.match(/resourceId: generatedContent\?\.id \|\| null/g) || [])).toHaveLength(2);
     expect(previewSource).toContain('Teacher: Review Words &amp; Audio');
     expect(previewSource).toContain('Student: Start Practice');
+    expect(previewSource).toContain('var isTeacherMode = props.isTeacherMode !== false;');
+    expect(previewSource).toContain('{isTeacherMode && (');
   });
 
   it('keeps the review surface modal, named, keyboard-contained, and responsive', () => {

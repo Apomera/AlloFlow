@@ -1,0 +1,301 @@
+'use strict';
+
+const reviewedAt = '2026-08-20';
+const reviewWave = 'eppp-native-quality-wave-29';
+const baselineMetrics = Object.freeze({
+  distractor: { totalItems: 1500, warningOnly: true, forbiddenAggregateChoices: 0, uniqueKeyStemLexicalLeakageCandidates: 51, asymmetricExtremeDistractorCandidates: 91, advancedDirectRecallCandidates: 4, semanticConceptDuplicatePairs: 65, semanticConceptDuplicateClusters: 40, editorialAnchorsWithActiveWarnings: 1, editorialAnchorsWithNoCurrentWarning: 9, priorityDocketItems: 20 },
+  feedback: { totalItems: 1500, totalIncorrectOptions: 4500, itemsWithWarnings: 570, incorrectOptionsWithWarnings: 1602, insufficientDetailOptions: 627, genericTemplateOptions: 915, choiceRestatementOptions: 355, fullKeyEchoOptions: 169, priorityDocketItems: 100 },
+});
+
+const revisions = [
+  {
+    id: 'eppp-v3-biological-022', expectedAnswerIndex: 1, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: "Wernicke's area is located in which brain region?",
+    prompt: 'A person speaks fluently but produces semantically inappropriate sentences and has difficulty understanding spoken questions after a focal cortical injury. Which location best accounts for this pattern?',
+    choices: ['Right inferior parietal cortex supporting visuospatial attention', 'Left posterior superior temporal cortex supporting language comprehension', 'Right occipital cortex supporting primary visual analysis', 'Left primary motor cortex supporting voluntary speech articulation'],
+    rationale: 'The posterior superior temporal language network in the dominant hemisphere contributes to comprehension and meaningful language processing. Injury there can produce fluent but poorly comprehended speech, whereas motor-articulation and visual regions explain different deficits.',
+    feedback: {
+      0: 'Right parietal regions can contribute to spatial attention and aspects of attention, but they do not best explain fluent speech with impaired comprehension and semantic content.',
+      2: 'Occipital cortex processes visual input. A visual deficit would not account for a selective change in spoken language comprehension and meaningful verbal output.',
+      3: 'Motor speech regions can impair articulation or fluency, yet the patient’s speech is fluent. The prominent comprehension and semantic problem points to a language-understanding network.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'biological-localize-comprehension-language-network-from-fluent-aphasia', distractorDesign: ['parietal-attention-confusion', 'visual-cortex-confusion', 'motor-articulation-confusion'],
+  },
+  {
+    id: 'eppp-b019-biological-1', expectedAnswerIndex: 0, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Landmark evidence for neurogenesis in the adult human brain identified newly generated neurons in the:',
+    prompt: 'A study of adult human brain tissue reports a small population of newly generated neurons in a region involved in forming episodic memories. Which structure is the best match?',
+    choices: ['Dentate gyrus within the hippocampal formation', 'Primary visual cortex around the calcarine sulcus', 'Cerebellar Purkinje-cell layer', 'Ventral horn among spinal lower motor neurons'],
+    rationale: 'The landmark human evidence concerned the dentate gyrus of the hippocampal formation, a region involved in memory-related processing. The finding is regional and method-sensitive; it does not imply uniform neuron production throughout the adult brain.',
+    feedback: {
+      1: 'Primary visual cortex is specialized for early visual processing. It is not the memory-related hippocampal subregion identified in the cited adult-neurogenesis finding.',
+      2: 'The cerebellar cortex supports coordination and learning of movement. Its mature Purkinje-cell layer is not the region implicated in the landmark human finding.',
+      3: 'The spinal ventral horn contains motor neurons that control skeletal muscle. It does not match the medial-temporal memory region described in the vignette.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'biological-identify-memory-related-region-in-adult-neurogenesis-evidence', distractorDesign: ['visual-cortex-mismatch', 'cerebellar-mismatch', 'spinal-motor-mismatch'],
+  },
+  {
+    id: 'eppp-b008-biological-1', expectedAnswerIndex: 0, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'For most people, which function is more strongly lateralized to the left cerebral hemisphere?',
+    prompt: 'After an injury to the dominant hemisphere, a bilingual adult has marked difficulty producing and understanding words, while recognizing familiar faces remains relatively strong. Which function is most likely showing the affected lateralization?',
+    choices: ['Core language processing', 'Recognition of faces in natural scenes', 'Interpretation of emotional prosody', 'Spatial attention distributed across visual fields'],
+    rationale: 'Language functions are more strongly left-lateralized for most people, although individual and bilingual patterns vary and both hemispheres contribute. Face recognition, prosody, and broad spatial attention rely more heavily on right-hemisphere or distributed networks.',
+    feedback: {
+      1: 'Face recognition is commonly associated with right-hemisphere and bilateral ventral visual networks. Preserved face recognition alongside language impairment fits that contrast.',
+      2: 'Emotional prosody often draws more strongly on right-hemisphere networks, while language content is more left-lateralized. The observed deficit concerns words rather than affective tone.',
+      3: 'Spatial attention depends on distributed systems, with important right-hemisphere contributions. It does not best explain the selective disruption of word production and comprehension.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'biological-infer-left-language-lateralization-from-neurological-pattern', distractorDesign: ['face-network-confusion', 'prosody-lateralization-confusion', 'spatial-attention-confusion'],
+  },
+  {
+    id: 'eppp-b006-cognitive-2', expectedAnswerIndex: 3, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'A lesson splits one diagram across several distant panels, forcing learners to search back and forth for matching labels. The avoidable mental effort produced by this layout is best described as:',
+    prompt: 'Learners must repeatedly scan between a diagram and a distant legend while studying a new procedure. Which instructional burden should the designer reduce first?',
+    choices: ['Retrieval-induced forgetting caused by recalling the legend too often', 'State-dependent learning caused by studying the material in a classroom', 'Intrinsic cognitive load created by the inherent complexity of the procedure', 'Extraneous cognitive load created by avoidable presentation and search demands'],
+    rationale: 'Extraneous load comes from how information is presented rather than from the material’s inherent complexity. Integrating labels with the diagram can reduce unnecessary search and preserve working-memory capacity for understanding the procedure.',
+    feedback: {
+      0: 'Retrieval can strengthen memory and does not describe the avoidable split-attention burden created by the layout. The problem concerns instructional presentation rather than forgetting.',
+      1: 'State-dependent learning concerns similarity between learning and later retrieval conditions. Studying in a classroom does not explain the extra mental search imposed by separated labels.',
+      2: 'Intrinsic load reflects the elements and relationships that the procedure itself requires learners to coordinate. The distant legend adds a design burden beyond that inherent complexity.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'cognitive-affective-reduce-extraneous-load-in-split-attention-design', distractorDesign: ['retrieval-forgetting-confusion', 'state-dependence-confusion', 'intrinsic-versus-extraneous-confusion'],
+  },
+  {
+    id: 'eppp-v3-cognitive-affective-017', expectedAnswerIndex: 1, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: 'According to the Yerkes-Dodson law, performance on complex tasks is optimal at:',
+    prompt: 'A student’s moderate alertness helps with a difficult reasoning exam, but intense worry later disrupts working memory and accuracy. Which prediction best fits the arousal-performance relationship?',
+    choices: ['Complex-task performance should improve steadily as alertness continues to rise', 'Complex-task performance tends to peak at lower-to-moderate arousal before excessive activation impairs it', 'Complex-task performance should peak at minimal arousal across differing task demands', 'Arousal has no systematic relation to performance once a person has learned the material'],
+    rationale: 'The Yerkes-Dodson framework predicts an inverted-U relation, with complex tasks generally benefiting from lower-to-moderate arousal and suffering when activation becomes excessive. Task difficulty and individual context qualify the simple curve.',
+    feedback: {
+      0: 'Rising activation can support initial engagement, but the relationship is not steadily positive for demanding tasks. Excessive worry can consume attention and working-memory resources.',
+      2: 'Very low activation may reduce alertness and effort. The model predicts a task-dependent optimum rather than a universal peak at minimal arousal.',
+      3: 'Learning history can alter performance, but arousal still affects attention, working memory, and response efficiency. The vignette directly illustrates this interaction.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'cognitive-affective-apply-yerkes-dodson-to-complex-task-anxiety', distractorDesign: ['linear-arousal-claim', 'minimal-arousal-claim', 'arousal-irrelevance-claim'],
+  },
+  {
+    id: 'eppp-v3-cognitive-affective-026', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: "In Gardner's theory of multiple intelligences, which type involves sensitivity to the feelings and moods of others?",
+    prompt: 'A counselor quickly notices subtle shifts in a client’s mood, understands differing perspectives, and adjusts communication to build collaboration. Which proposed intelligence most closely describes this strength?',
+    choices: ['Existential intelligence concerned with questions of meaning and mortality', 'Intrapersonal intelligence concerned with recognizing one’s own internal states', 'Interpersonal intelligence concerned with reading other people', 'Linguistic intelligence concerned with producing and interpreting verbal language'],
+    rationale: 'Interpersonal intelligence, in Gardner’s framework, concerns sensitivity to other people’s feelings, motives, perspectives, and social signals. It differs from intrapersonal awareness of one’s own internal experience.',
+    feedback: {
+      0: 'Existential intelligence addresses broad questions about meaning, existence, and ultimate concerns. It does not specifically describe reading and responding to another person’s mood.',
+      1: 'Intrapersonal intelligence concerns insight into one’s own feelings, motives, and patterns. The vignette emphasizes accurate understanding of clients and other people.',
+      3: 'Linguistic intelligence concerns verbal comprehension and expression. Skilled language can help counseling, but recognizing others’ perspectives is the defining feature here.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'cognitive-affective-distinguish-interpersonal-from-intrapersonal-intelligence', distractorDesign: ['existential-domain-confusion', 'intrapersonal-domain-confusion', 'linguistic-domain-confusion'],
+  },
+  {
+    id: 'eppp-v3-social-cultural-006', expectedAnswerIndex: 0, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: 'According to realistic group conflict theory, prejudice increases when:',
+    prompt: 'Two departments that previously cooperated begin competing for a scarce grant, and each group blames the other for reduced opportunities. Which process best accounts for the rise in hostility?',
+    choices: ['Perceived competition over limited resources', 'Value differences that occur in the absence of conflicting outcomes', 'Cultural diversity considered apart from intergroup conditions', 'Reduced contact when groups have no opportunity to interact'],
+    rationale: 'Realistic group conflict theory links intergroup hostility to perceived competition over scarce resources, status, or opportunities. Cooperation toward superordinate goals can reduce hostility by making outcomes interdependent rather than mutually exclusive.',
+    feedback: {
+      1: 'Value differences can shape interpretation, but the theory emphasizes competition over desired outcomes. The vignette makes resource conflict the salient change.',
+      2: 'Cultural diversity alone does not establish competition or hostility. Intergroup conditions, perceived interests, and the structure of outcomes matter for the theory’s prediction.',
+      3: 'Limited contact can affect knowledge and stereotypes, but the departments’ hostility emerged after a resource contest. Competition provides the more direct explanation.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'social-cultural-apply-realistic-group-conflict-to-resource-competition', distractorDesign: ['value-difference-confusion', 'diversity-essentialism', 'contact-explanation-substitution'],
+  },
+  {
+    id: 'eppp-b001-social-2', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'A community organization first asks a resident to sign a brief petition and later asks the resident to volunteer several hours. Which compliance technique is being used?',
+    prompt: 'A resident agrees to display a campaign card, and a week later the organization asks the same resident to staff a weekend event. Which sequence best illustrates the influence pattern?',
+    choices: ['Door-in-the-face, because the later request is more demanding than the first', 'Low-ball, because the organization changes the cost after obtaining agreement', 'A sequential-request method, because a modest initial request precedes a more demanding related request', 'Social loafing, because responsibility is distributed across campaign volunteers'],
+    rationale: 'The foot-in-the-door technique uses an initial manageable request to increase the likelihood of agreement with a later, larger related request. The first commitment can shape self-perception and establish consistency pressure.',
+    feedback: {
+      0: 'Door-in-the-face begins with a large request that is refused or negotiated down before a smaller request. Here, the sequence moves from a small commitment to a larger one.',
+      1: 'Low-balling involves securing agreement and then revealing or changing important costs. The defining feature here is the escalating size of related requests.',
+      3: 'Social loafing concerns reduced effort when responsibility is shared in a group. It does not describe compliance gained through sequential requests.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'social-cultural-identify-foot-in-the-door-sequence', distractorDesign: ['door-in-the-face-sequence', 'low-ball-cost-change', 'social-loafing-confusion'],
+  },
+  {
+    id: 'eppp-b005-social-1', expectedAnswerIndex: 0, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'System-justification theory was introduced partly to explain why people may defend existing social arrangements even when those arrangements disadvantage their own group. This is described as:',
+    prompt: 'Members of a disadvantaged group describe the current hierarchy as fair and resist reforms that would improve their group’s access, citing the legitimacy of established institutions. Which motive is most relevant?',
+    choices: ['System-justifying motivation that legitimizes existing arrangements', 'Simple exposure learning produced by repeated contact with the hierarchy', 'Informational conformity caused by uncertainty about an unfamiliar task', 'Reciprocal altruism based on a history of equal exchanges'],
+    rationale: 'System justification refers to motives and beliefs that defend the legitimacy of existing social arrangements, sometimes even when those arrangements disadvantage the person’s own group. It is distinct from personal and group-serving motives.',
+    feedback: {
+      1: 'Repeated exposure can increase familiarity, but it does not specifically explain defending an unequal institutional arrangement as legitimate. The ideological defense is the central clue.',
+      2: 'Informational conformity occurs when people use others’ judgments under uncertainty. The vignette concerns legitimizing a social system, not solving an ambiguous task.',
+      3: 'Reciprocal altruism concerns exchanges that benefit partners over time. It does not account for endorsing a hierarchy that distributes benefits unequally.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'social-cultural-recognize-system-justification-in-group-disadvantage', distractorDesign: ['exposure-learning-confusion', 'informational-conformity-confusion', 'reciprocity-confusion'],
+  },
+  {
+    id: 'eppp-b023-lifespan-1', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'A child who understands conservation and can mentally reverse transformations but reasons best about tangible situations is showing Piagetian:',
+    prompt: 'A school-age child understands that rearranging equal clay does not change its amount and can reverse a classification step, but struggles with abstract propositions. Which cognitive period is most consistent?',
+    choices: ['Sensorimotor intelligence organized around direct action and object permanence', 'Preoperational thought marked by symbolic play and difficulty with conservation', 'Concrete-stage reasoning using logic for tangible situations', 'Formal operational thought using systematic hypothetical-deductive reasoning'],
+    rationale: 'Concrete operational thought supports conservation, reversibility, classification, and seriation when reasoning is anchored to tangible or directly represented situations. Formal operations extend these logical processes to abstract and hypothetical problems.',
+    feedback: {
+      0: 'Sensorimotor intelligence describes action-based problem solving before stable symbolic reasoning develops. The child’s conservation and reversibility indicate a later period.',
+      1: 'Preoperational children use symbols but typically struggle with conservation and reversible operations. The described competencies mark progress beyond that period.',
+      3: 'Formal operations support abstract and hypothetical-deductive reasoning. The child’s difficulty with propositions and strength with tangible materials fit concrete operations instead.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'lifespan-classify-concrete-operational-reasoning-pattern', distractorDesign: ['sensorimotor-timing-confusion', 'preoperational-limitation-confusion', 'formal-abstraction-confusion'],
+  },
+  {
+    id: 'eppp-v3-lifespan-008', expectedAnswerIndex: 1, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: "Kohlberg's conventional level of moral reasoning is characterized by:",
+    prompt: 'An adolescent explains that a rule should be followed because coordinating shared expectations helps a community function. Which level of Kohlberg’s model best fits?',
+    choices: ['Preconventional reasoning centered on punishment and personal exchange', 'Conventional reasoning centered on approval and maintaining established rules', 'Postconventional reasoning centered on self-chosen universal principles', 'Premoral behavior that has not yet incorporated social expectations'],
+    rationale: 'Conventional reasoning evaluates conduct through interpersonal approval and maintaining the social system, corresponding to Kohlberg’s stages 3 and 4. Postconventional reasoning appeals more explicitly to principles that can challenge existing rules.',
+    feedback: {
+      0: 'Preconventional reasoning focuses on punishment, reward, or instrumental exchange. The adolescent justifies the rule by its role in maintaining a wider social system.',
+      2: 'Postconventional reasoning involves self-chosen principles and critical evaluation of laws. The explanation emphasizes preserving established social expectations rather than judging them by independent principles.',
+      3: 'Premoral descriptions apply before social rules meaningfully organize conduct. The adolescent is explicitly reasoning about shared expectations and community order.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'lifespan-classify-conventional-moral-reasoning-from-rule-justification', distractorDesign: ['preconventional-level-confusion', 'postconventional-level-confusion', 'premoral-level-confusion'],
+  },
+  {
+    id: 'eppp-v3-lifespan-009', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: "Harlow's monkey experiments demonstrated:",
+    prompt: 'Infant rhesus monkeys spend more time clinging to a soft surrogate than to a wire surrogate that provides milk, and they seek the soft surrogate when frightened. Which conclusion is best supported?',
+    choices: ['Food access by itself determines the formation of a stable attachment', 'Typical biological mothers are required for infants to develop social bonds', 'Contact comfort contributes substantially to attachment beyond feeding access', 'Early attachment cannot form when an infant receives artificial care'],
+    rationale: 'Harlow’s findings showed that infant monkeys preferred a soft source of contact and used it for security even when feeding came from another surrogate. The work challenged a purely drive-reduction account of attachment.',
+    feedback: {
+      0: 'The feeding surrogate supplied nutrition, yet the infants preferred the soft contact source for comfort. Feeding therefore cannot by itself explain the attachment behavior observed.',
+      1: 'The experiment used surrogate figures and still observed attachment-like preferences. It does not support a requirement that a biological mother be present for social bonding.',
+      3: 'Artificial surrogates did not prevent attachment-related behavior in the study. The pattern instead demonstrates the contribution of tactile comfort and security.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'lifespan-infer-contact-comfort-contribution-from-surrogate-study', distractorDesign: ['feeding-drive-account', 'biological-mother-requirement', 'artificial-care-preclusion'],
+  },
+  {
+    id: 'eppp-v3-assessment-010', expectedAnswerIndex: 3, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Construct validity is best established through:',
+    prompt: 'A new measure of trauma-related avoidance correlates with established avoidance scales, shows a weaker relation with unrelated physical-symptom measures, and follows the predicted factor pattern. What validity argument is being assembled?',
+    choices: ['Test-retest reliability showing score stability across administrations', 'Expert review showing that item content appears relevant to the domain', 'Correlation with a single criterion measure showing practical prediction', 'A convergent and discriminant construct interpretation supported by the converging findings'],
+    rationale: 'Construct validity is supported when scores relate to measures of the same construct as predicted, relate less to distinct constructs, and fit the proposed measurement structure. No single coefficient establishes construct validity by itself.',
+    feedback: {
+      0: 'Test-retest reliability addresses consistency over time rather than whether scores represent the intended construct. Stable scores can still measure the wrong attribute.',
+      1: 'Content review can support content-related evidence, but apparent relevance does not test relations with similar and different constructs or the predicted factor structure.',
+      2: 'A criterion correlation can support a specific use interpretation, but a single criterion does not establish the broader convergent, discriminant, and structural evidence described.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'assessment-integrate-convergent-discriminant-evidence-for-construct-validity', distractorDesign: ['reliability-evidence-confusion', 'content-evidence-confusion', 'criterion-evidence-overreach'],
+  },
+  {
+    id: 'eppp-b011-assessment-2', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'The WISC–V is normed for assessment of children in which approximate age range?',
+    prompt: 'A psychologist is considering a Wechsler cognitive measure for a 10-year-old child and wants an instrument whose normative sample spans childhood through mid-adolescence. Which measure and age range fit?',
+    choices: ['An infant-preschool measure normed from birth through age 5', 'An adult measure normed from approximately age 18 through older adulthood', 'The WISC–V, normed from approximately ages 6 years through 16 years 11 months', 'A secondary-school measure intended for students in grades 9 through 12'],
+    rationale: 'The WISC–V is designed for children aged approximately 6:0 through 16:11. Age fit is necessary but not sufficient; referral question, language, culture, validity evidence, and examinee characteristics also guide selection.',
+    feedback: {
+      0: 'An infant-preschool measure would not provide the WISC–V’s school-age normative coverage. The child’s age falls within the WISC–V range instead.',
+      1: 'An adult cognitive measure is normed for a substantially older population. It would not be the age-appropriate Wechsler choice for this child.',
+      3: 'A grade-band measure aimed at secondary students does not match the WISC–V’s broad school-age norming interval or the child’s developmental stage.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'assessment-select-wisc-v-by-age-and-referral-fit', distractorDesign: ['preschool-measure-mismatch', 'adult-measure-mismatch', 'secondary-measure-mismatch'],
+  },
+  {
+    id: 'eppp-b013-assessment-2', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'A respondent consistently chooses answers intended to appear unusually virtuous rather than answering candidly. This is:',
+    prompt: 'On a personality inventory, a respondent endorses an implausibly flawless pattern and later acknowledges choosing answers that would make a favorable impression. Which response-style concern is most relevant?',
+    choices: ['Restriction of range caused by a homogeneous sample of respondents', 'Differential item functioning caused by group differences in item meaning', 'Socially desirable responding that may distort interpretation of the profile', 'Predictive validity showing that scores forecast an external criterion'],
+    rationale: 'Socially desirable responding occurs when answers are shaped toward favorable self-presentation rather than candid reporting. It can distort profile interpretation and should be considered alongside context, collateral information, and other response-style indicators.',
+    feedback: {
+      0: 'Restriction of range concerns limited variability in observed scores or a sample. It does not describe a respondent selecting answers to appear unusually virtuous.',
+      1: 'Differential item functioning concerns how an item performs across groups after relevant trait level is considered. The vignette instead describes an individual response motive.',
+      3: 'Predictive validity concerns relations between scores and an external criterion. It does not identify a tendency to present oneself in an unrealistically favorable way.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'assessment-recognize-socially-desirable-response-style', distractorDesign: ['range-restriction-confusion', 'item-functioning-confusion', 'predictive-validity-confusion'],
+  },
+  {
+    id: 'eppp-v3-intervention-013', expectedAnswerIndex: 2, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: 'In motivational interviewing, OARS refers to:',
+    prompt: 'A therapist invites the client’s perspective, highlights a strength, reflects the client’s ambivalence, and links the discussion before asking what step feels feasible. Which set of motivational-interviewing skills is represented?',
+    choices: ['Advice, confrontation, interpretation, and exposure planning', 'Observation, assessment, response prevention, and scaling', 'Open questions, affirmations, reflections, and summaries', 'Outcome monitoring, advocacy, referral, and stabilization'],
+    rationale: 'OARS names four core motivational-interviewing skills: open questions, affirmations, reflective listening, and summaries. They support a collaborative spirit that evokes the client’s own reasons and confidence for change.',
+    feedback: {
+      0: 'Confrontation and unsolicited advice can conflict with motivational interviewing’s collaborative, autonomy-supportive stance. The vignette emphasizes eliciting and reflecting the client’s perspective.',
+      1: 'Assessment and response prevention are useful concepts in other interventions, but they do not name the conversational sequence described in the vignette.',
+      3: 'Monitoring, advocacy, referral, and stabilization may be clinical tasks, yet they are not the four communication skills represented by the therapist’s responses.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'intervention-identify-motivational-interviewing-oars-skills', distractorDesign: ['confrontational-advice-set', 'behavioral-assessment-set', 'case-management-set'],
+  },
+  {
+    id: 'eppp-v3-intervention-046', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: "Which therapeutic approach is driven by the premise that irrational beliefs and absolute 'musts' or 'shoulds' are the primary cause of emotional distress?",
+    prompt: 'A client says, “I must perform perfectly or I am worthless.” The therapist challenges the absolutist demand and examines its emotional consequence. Which approach most directly fits?',
+    choices: ['Gestalt therapy emphasizing present-moment awareness and unfinished business', 'Client-centered therapy emphasizing empathic understanding and acceptance', 'Rational emotive behavior therapy focused on belief evaluation', 'Dialectical behavior therapy emphasizing validation and skills for emotion regulation'],
+    rationale: 'Rational emotive behavior therapy links distress to rigid, absolutist demands and uses active disputation to develop more flexible beliefs. The therapist challenges the evaluative rule rather than merely exploring experience or teaching regulation skills.',
+    feedback: {
+      0: 'Gestalt therapy may explore present experience and unfinished business, but disputing a rigid belief is the defining intervention in this vignette.',
+      1: 'Client-centered therapy emphasizes empathic understanding, acceptance, and genuineness rather than actively disputing the client’s irrational demand.',
+      3: 'Dialectical behavior therapy combines validation with skills training and behavioral change. Its focus differs from the direct rational disputation described here.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'intervention-recognize-rebt-belief-disputation', distractorDesign: ['gestalt-process-confusion', 'client-centered-process-confusion', 'dbt-skills-confusion'],
+  },
+  {
+    id: 'eppp-v3-intervention-025', expectedAnswerIndex: 3, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Mentalization-based therapy (MBT) was developed primarily for:',
+    prompt: 'A treatment emphasizes helping a client with unstable relationships pause and consider how the client’s own and other people’s mental states may shape rapidly changing interpretations. Which established approach most closely matches?',
+    choices: ['Attention-deficit/hyperactivity disorder treatment focused on executive skills', 'Autism intervention focused on social-communication learning', 'Schizophrenia treatment focused on psychosis relapse prevention', 'Mentalization-based therapy developed for borderline personality pathology'],
+    rationale: 'Mentalization-based therapy was developed chiefly for borderline personality pathology and targets the capacity to understand one’s own and others’ thoughts, feelings, intentions, and perspectives during emotionally charged interactions.',
+    feedback: {
+      0: 'Executive-skills treatment for attention-deficit/hyperactivity disorder addresses planning, inhibition, and organization. It does not define the relational mental-state focus described.',
+      1: 'Autism interventions may address social communication and perspective taking, but the established target population and formulation for MBT are different.',
+      2: 'Psychosis relapse prevention can include mental-state work, yet MBT’s primary development and evidence base concern borderline personality pathology and unstable relational interpretations.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'intervention-identify-mbt-target-and-mentalizing-mechanism', distractorDesign: ['adhd-executive-skills-mismatch', 'autism-social-communication-mismatch', 'psychosis-relapse-mismatch'],
+  },
+  {
+    id: 'eppp-b006-research-1', expectedAnswerIndex: 0, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Investigators use records from ten years ago to identify exposed and unexposed groups, then determine outcomes that occurred between then and now. This is best classified as a:',
+    prompt: 'Archived records identify who received a workplace exposure ten years earlier and allow comparison of their subsequent health outcomes. Which design best describes the study?',
+    choices: ['Retrospective cohort study built from historical exposure and later-recorded outcomes', 'Prospective cohort study beginning exposure measurement before outcomes occur', 'Cross-sectional survey measuring exposure and outcome at a single time point', 'Randomized controlled trial assigning participants to exposure conditions'],
+    rationale: 'A retrospective cohort study constructs groups from historical exposure information and examines outcomes that have already occurred by the time of the investigation. Researchers do not assign exposure, distinguishing it from a randomized trial.',
+    feedback: {
+      1: 'A prospective cohort begins with current exposure assessment and follows participants toward future outcomes. Here, both exposure and subsequent outcomes are available in historical records.',
+      2: 'A cross-sectional design measures exposure and outcome around one period rather than reconstructing a temporal sequence from archived records.',
+      3: 'Randomized trials assign the exposure or intervention and use controlled allocation. The investigators here observe naturally occurring historical exposure groups.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'research-classify-retrospective-cohort-from-archived-temporal-records', distractorDesign: ['prospective-retrospective-confusion', 'cross-sectional-timing-confusion', 'randomization-confusion'],
+  },
+  {
+    id: 'eppp-b007-research-2', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'A participant infers that a study expects cooperation and changes behavior to appear more cooperative. This is an example of:',
+    prompt: 'During a laboratory task, participants infer that the investigators favor cooperation and adjust their responses to look helpful rather than responding naturally. Which validity threat is illustrated?',
+    choices: ['Attrition bias caused by participants leaving a study at different rates', 'Statistical regression caused by extreme scores moving toward the average', 'A demand-characteristic effect caused by cues about the expected response', 'Differential item functioning caused by different item meaning across groups'],
+    rationale: 'Demand characteristics are cues that let participants infer a study’s purpose or expected behavior and then alter their responses. This reactivity can threaten the internal validity of the observed effect.',
+    feedback: {
+      0: 'Attrition bias arises when dropout differs systematically across conditions or participant types. No participant loss is described in the vignette.',
+      1: 'Regression toward the mean is a statistical tendency following selection on extreme values. It does not involve participants changing behavior to satisfy perceived expectations.',
+      3: 'Differential item functioning concerns item performance across groups at comparable trait levels. The problem here is participant reactivity to study cues.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'research-recognize-demand-characteristics-as-participant-reactivity', distractorDesign: ['attrition-confusion', 'regression-confusion', 'item-functioning-confusion'],
+  },
+  {
+    id: 'eppp-v3-research-025', expectedAnswerIndex: 0, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'When a researcher measures aggression by counting the number of times a child hits a doll, this is an example of:',
+    prompt: 'A researcher represents aggression in a laboratory study by counting how many times a child strikes a standardized object during a ten-minute observation. What measurement label applies?',
+    choices: ['An observable procedure specifying how the construct will be recorded', 'A theoretical construct explaining the latent meaning of aggression', 'A mediating variable linking an intervention to a later outcome', 'A self-report measure requiring the child to describe personal behavior'],
+    rationale: 'An operational definition specifies the observable procedures used to measure or manipulate an abstract construct. Counting recorded strikes during a defined observation period makes the aggression measure explicit and replicable.',
+    feedback: {
+      1: 'A theoretical construct is the abstract concept that a study seeks to explain. The count of observed strikes is the procedure used to represent that concept.',
+      2: 'A mediating variable explains a pathway between a predictor and outcome. The vignette describes how one variable is measured, not a causal pathway.',
+      3: 'Self-report requires the participant to provide a description or rating. Here, the researcher directly observes and records behavior during a defined interval.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'research-distinguish-operational-definition-from-construct-and-mediator', distractorDesign: ['construct-versus-measure-confusion', 'mediation-confusion', 'self-report-confusion'],
+  },
+  {
+    id: 'eppp-v3-professional-039', expectedAnswerIndex: 2, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: 'The Belmont Report established three core ethical principles governing research with human subjects:',
+    prompt: 'An institutional review discussion asks investigators to protect participant autonomy, minimize foreseeable harm while seeking benefit, and distribute research burdens fairly. Which framework names these three principles?',
+    choices: ['Scientific honesty, methodological integrity, and public transparency', 'Confidentiality, social justice, and procedural fairness', 'Respect for persons, beneficence, and justice', 'Individual autonomy, absolute veracity, and professional fidelity'],
+    rationale: 'The Belmont Report identifies respect for persons, beneficence, and justice as core principles for research with human participants. They guide consent and autonomy, risk-benefit assessment, and fair distribution of burdens and benefits.',
+    feedback: {
+      0: 'Scientific integrity and transparency are important research values, but they are not the three Belmont principles named in the framework.',
+      1: 'Confidentiality and fairness relate to research ethics, yet this list does not state the Belmont triad or its risk-benefit principle of beneficence.',
+      3: 'Autonomy is related to respect for persons, but the proposed list replaces the broader Belmont principles of beneficence and justice with nonstandard terms.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'professional-identify-belmont-principles-from-review-scenario', distractorDesign: ['research-integrity-list', 'partial-ethics-list', 'nonstandard-principle-list'],
+  },
+  {
+    id: 'eppp-v3-professional-032', expectedAnswerIndex: 3, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Social media ethics for psychologists include:',
+    prompt: 'A psychologist is creating a professional social-media policy for current clients and asks what practice best handles privacy and dual-relationship concerns. Which policy is most appropriate?',
+    choices: ['Accept connection requests from current clients to make the therapeutic relationship more accessible', 'Discuss identifiable client progress in private professional groups to obtain informal feedback', 'Search clients’ public profiles routinely to anticipate treatment concerns', 'Set clear boundaries, address digital practices in informed consent, and protect client information online'],
+    rationale: 'Ethical digital practice requires attention to boundaries, dual relationships, privacy, informed consent, and the limits of online information. Policies should explain relevant practices and avoid disclosing or seeking client information inappropriately.',
+    feedback: {
+      0: 'Accepting client connection requests can create a dual relationship and expose private information across contexts. Accessibility does not remove the boundary concern.',
+      1: 'A professional group can still expose identifiable information and bypass appropriate consultation safeguards. Client details require privacy protection and a legitimate clinical rationale.',
+      2: 'Routine searches can intrude on privacy and alter the therapeutic relationship. Public availability does not automatically make information clinically appropriate to collect.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'professional-apply-boundaries-and-privacy-to-social-media-practice', distractorDesign: ['online-dual-relationship', 'informal-identifiable-disclosure', 'routine-client-search'],
+  },
+  {
+    id: 'eppp-v3-professional-035', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Psychologists who conduct research must:',
+    prompt: 'Before enrolling volunteers in a study involving a mild deception procedure, the investigator secures required review and plans an explanation after the session. Which ethical practice is represented?',
+    choices: ['Skip review because the procedure presents little physical risk', 'Tell volunteers the study purpose after data collection and omit consent beforehand', 'Secure informed consent before enrollment and debrief afterward when appropriate', 'Reject any form of deception even when review and participant protections permit it'],
+    rationale: 'Research generally requires informed consent before participation, appropriate review, and debriefing when deception or incomplete disclosure was used. Deception is constrained by risk, necessity, consent limits, review, and participant welfare.',
+    feedback: {
+      0: 'Risk level does not by itself eliminate review or consent requirements. Appropriate oversight determines whether the study can proceed and under what protections.',
+      1: 'Post-study explanation does not replace consent before participation. Participants need information sufficient for an ethically valid decision within the approved design.',
+      3: 'Deception is restricted and requires safeguards, but ethical standards do not treat every use as categorically impermissible. Necessity, risk, review, and debriefing matter.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'professional-evaluate-consent-review-and-debriefing-in-research', distractorDesign: ['low-risk-review-exemption', 'delayed-consent-error', 'absolute-anti-deception-claim'],
+  },
+];
+
+module.exports = { baselineMetrics, reviewedAt, reviewWave, revisions };

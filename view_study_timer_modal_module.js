@@ -73,7 +73,8 @@ function StudyTimerModal(props) {
     };
   }, [handleSetShowStudyTimerModalToFalse]);
   const completionPercent = studyDuration > 0 ? Math.max(0, Math.min(100, Math.round((studyDuration - studyTimeLeft) / studyDuration * 100))) : 0;
-  const timerStatus = studyDuration > 0 && studyTimeLeft === 0 ? `${t("timer.title")}: complete` : `${t("timer.title")}: ${isStudyTimerRunning ? "running" : studyDuration > 0 ? "paused" : "ready"}`;
+  const timerStatus = `${t("timer.title")}: ${formatTime(studyTimeLeft)}`;
+  const completionLabel = `${completionPercent}% \xB7 ${t("common.progress")}`;
   return /* @__PURE__ */ React.createElement(
     "div",
     {
@@ -164,13 +165,13 @@ function StudyTimerModal(props) {
         },
         t("timer.set_btn") || "Set"
       )),
-      /* @__PURE__ */ React.createElement("div", { className: "text-center mb-6 relative" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl font-black text-slate-700 font-mono tracking-wider", role: "timer", "aria-live": "off", "aria-label": `${t("timer.title")}: ${formatTime(studyTimeLeft)} remaining` }, formatTime(studyTimeLeft)), studyDuration > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-3 mx-auto max-w-[200px]" }, /* @__PURE__ */ React.createElement("div", { className: "h-2 bg-slate-200 rounded-full overflow-hidden", role: "progressbar", "aria-label": t("common.progress"), "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": completionPercent, "aria-valuetext": `${completionPercent}% complete` }, /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("div", { className: "text-center mb-6 relative" }, /* @__PURE__ */ React.createElement("div", { className: "text-5xl font-black text-slate-700 font-mono tracking-wider", role: "timer", "aria-live": "off", "aria-label": timerStatus }, formatTime(studyTimeLeft)), studyDuration > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-3 mx-auto max-w-[200px]" }, /* @__PURE__ */ React.createElement("div", { className: "h-2 bg-slate-200 rounded-full overflow-hidden", role: "progressbar", "aria-label": t("common.progress"), "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": completionPercent, "aria-valuetext": completionLabel }, /* @__PURE__ */ React.createElement(
         "div",
         {
           className: "h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-1000 ease-linear motion-reduce:transition-none",
           style: { width: `${completionPercent}%` }
         }
-      )), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-1 font-medium" }, completionPercent, "% complete"))),
+      )), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 mt-1 font-medium" }, completionLabel))),
       /* @__PURE__ */ React.createElement("div", { className: "flex gap-3" }, /* @__PURE__ */ React.createElement(
         "button",
         {

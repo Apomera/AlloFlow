@@ -67,7 +67,7 @@ describe('Code.gs protocol (real source, mocked Google services)', () => {
     it('runs the full live-session lifecycle with separated teacher and participant capabilities', () => {
         const { call } = makeGsSandbox();
         const K = 'k_secret_k_secret_20';
-        expect(call({ a: 'hello' }).v).toBe(13);
+        expect(call({ a: 'hello' }).v).toBe(16);
         const claim = call({ a: 'claim' });
         expect(claim.ok).toBe(true);
         expect(claim.admin.length).toBeGreaterThanOrEqual(32);
@@ -686,7 +686,7 @@ describe('ANTI wiring pins', () => {
     });
 
     it('live-session transport chooser, hosted-QR button, and hand-raise are wired', () => {
-        expect(anti).toMatch(/Start live session/);
+        expect(anti).toMatch(/Teach live/);
         expect(anti).toMatch(/Standard live session/);
         expect(anti).toMatch(/Class Mailbox QR session/);
         expect(anti).toMatch(/Connect & self-test/);
@@ -845,14 +845,15 @@ describe('ANTI wiring pins', () => {
 });
 
 describe('teacher-only resource gating', () => {
-    it("keeps 'analysis' (Analyze Source Material) out of every student lane", () => {
-        // Teacher planning info (reading-level scan, accuracy discrepancies)
-        // must not reach students: TEACHER_ONLY_TYPES gates packs/QR/mailbox,
-        // and the student history filter hides it in live sessions (where the
-        // Firebase path syncs all types).
+    it("allows 'analysis' (Analyze Source Material) in student lanes", () => {
+        // Analyze Source Material is a normal shareable resource. Teachers can
+        // present it through Firebase, Mailbox, QR/pack, and student history.
+        // Other private planning artifacts remain type-gated.
         const teacherOnlyBlock = anti.slice(anti.indexOf('const TEACHER_ONLY_TYPES'), anti.indexOf('];', anti.indexOf('const TEACHER_ONLY_TYPES')));
-        expect(teacherOnlyBlock).toContain("'analysis'");
-        expect(anti).toContain("!['udl-advice', 'brainstorm', 'alignment-report', 'analysis'].includes(item.type)");
+        expect(teacherOnlyBlock).not.toContain("'analysis'");
+        expect(teacherOnlyBlock).toContain("'lesson-plan'");
+        expect(anti).toContain("!['udl-advice', 'brainstorm', 'alignment-report'].includes(item.type)");
+        expect(anti).not.toContain("!['udl-advice', 'brainstorm', 'alignment-report', 'analysis'].includes(item.type)");
     });
 });
 
@@ -889,7 +890,13 @@ describe('student-pack serialization (full-fidelity)', () => {
 
         const packed = helper({
             id: 'ws-1', type: 'word-sounds', title: 'Word Sounds (3 words)',
-            data: [{ word: 'cat' }, { word: 'dog' }, { word: 'sun' }],
+            data: [{
+                word: 'cat',
+                _ttsAssets: {
+                    cat: { mime: 'audio/mpeg', base64: 'QUJDRA==' },
+                    unsafe: { mime: 'text/html', base64: 'PHNjcmlwdD4=' },
+                },
+            }, { word: 'dog' }, { word: 'sun' }],
             lessonPlanSequence: ['counting', 'blending'],
             lessonPlanConfig: { focus: 'short vowels' },
             configSummary: 'Planned practice',
@@ -907,6 +914,12 @@ describe('student-pack serialization (full-fidelity)', () => {
         expect(packed.probeActivity).toBe('blending');
         expect(packed.gameData).toEqual({ board: [1, 2, 3] });
         expect(packed.data).toHaveLength(3);
+        // Teacher-prepared Word Sounds speech survives the chunked pack even
+        // though the generic session sanitizer strips nested base64 fields.
+        expect(packed.data[0]._ttsAssets).toEqual({
+            cat: { mime: 'audio/mpeg', base64: 'QUJDRA==' },
+        });
+        expect(packed.data[0]._ttsAssets).not.toHaveProperty('unsafe');
         // A child's recorded voice never travels in a pack:
         expect(packed).not.toHaveProperty('karaokeStudentAudio');
         // Binary/audio payloads are nulled exactly like the Firebase path:

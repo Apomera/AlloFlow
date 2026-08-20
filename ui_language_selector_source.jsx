@@ -196,7 +196,7 @@ const FALLBACK_LANGUAGE_OPTIONS = [
                   ></div>
               </div>
               <div className="flex justify-start items-center gap-1 text-[11px] text-indigo-600 font-bold uppercase tracking-wider animate-pulse motion-reduce:animate-none">
-                  <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> Generating...
+                  <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> {t('language_selector.status_generating')}
               </div>
           </div>
       );

@@ -2903,7 +2903,7 @@ function LiveLessonRunPanel(props) {
             {selectedAudience && selectedAudience.kind !== 'class'
               ? (t('live_lesson.targeting_hint') || 'Specific sends reuse the existing priority: individual overrides group, and group overrides class.')
               : teacherPaced
-                ? (t('live_lesson.teacher_paced_hint') || 'Teacher-paced: presenting follows this step on student screens.')
+                ? (t('live_lesson.teacher_paced_hint') || 'Teacher-led: presenting follows this step on student screens.')
                 : (t('live_lesson.student_paced_hint') || 'Student-paced: opening changes your view while students keep navigation control.')}
           </p>
             </>

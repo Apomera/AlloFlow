@@ -10,7 +10,7 @@
  * 4. Writes allobot_module.js
  */
 
-const { execSync } = require('child_process');
+const { transformSync } = require('esbuild');
 const fs = require('fs');
 const path = require('path');
 
@@ -18,7 +18,6 @@ const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'allobot_source.jsx');
 const OUTPUT = path.join(ROOT, 'allobot_module.js');
 const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'allobot_module.js');
-const TMP = path.join(ROOT, '_tmp_allobot_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) {
     console.error('❌ Source not found:', SOURCE);
@@ -43,31 +42,31 @@ ${source}
 window.__alloBotExports = { SpeechBubble, AlloBot };
 `;
 
-fs.writeFileSync(TMP, entry, 'utf-8');
+// Compile from the in-memory JSX entry so the build does not depend on esbuild resolving a OneDrive path.
 
 // Compile JSX → vanilla JS
 console.log('🔨 Compiling allobot_source.jsx with esbuild...');
+let compiled;
 try {
-    execSync(`npx esbuild "${TMP}" --bundle=false --format=esm --jsx=transform --jsx-factory=React.createElement --jsx-fragment=React.Fragment --outfile="${TMP}.compiled.js" --target=es2020`, {
-        cwd: ROOT,
-        stdio: 'inherit'
+    compiled = transformSync(entry, {
+        loader: 'jsx',
+        format: 'esm',
+        jsxFactory: 'React.createElement',
+        jsxFragment: 'React.Fragment',
+        target: 'es2020',
+        sourcefile: path.basename(SOURCE)
     });
 } catch (e) {
     console.error('❌ esbuild compilation failed');
-    fs.unlinkSync(TMP);
     process.exit(1);
 }
 
-const compiled = fs.readFileSync(TMP + '.compiled.js', 'utf-8')
+const compiledSource = compiled.code
     // Remove the entry wrapper comments and export line
     .replace(/\/\/ ── Entry wrapper.*\n/g, '')
     .replace(/\/\*.*global.*\*\/\n/g, '')
     .replace(/window\.__alloBotExports\s*=\s*\{[^}]+\};?\s*/, '')
     .trim();
-
-// Clean up temp files
-fs.unlinkSync(TMP);
-fs.unlinkSync(TMP + '.compiled.js');
 
 // Build final module with IIFE wrapper
 const outputCode = `/**
@@ -141,7 +140,7 @@ const outputCode = `/**
   // COMPILED COMPONENTS
   // ═══════════════════════════════════════════════════════════════
 
-${compiled}
+${compiledSource}
 
   // ═══════════════════════════════════════════════════════════════
   // REGISTRATION

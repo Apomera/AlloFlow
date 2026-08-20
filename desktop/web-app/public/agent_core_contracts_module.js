@@ -498,6 +498,10 @@
 
   var COMMAND_WORKFLOW_AUDIENCES = ['teacher', 'student', 'independent', 'parent'];
   var COMMAND_WORKFLOW_FAILURE_POLICIES = ['pause', 'stop'];
+  // A reviewed CommandWorkflow is the durable long-horizon plan primitive.
+  // Twenty-four steps is large enough for a full lesson-production arc while
+  // remaining bounded for review, persistence, dry-run, stop, and resume.
+  var COMMAND_WORKFLOW_MAX_STEPS = 24;
   var COMMAND_WORKFLOW_KNOWN_FIELDS = ['schemaVersion', 'workflowId', 'kind', 'audience', 'steps', 'warnings', 'review', 'provenance'];
   var COMMAND_WORKFLOW_STEP_FIELDS = ['stepId', 'commandId', 'params', 'why', 'onFailure'];
   var COMMAND_ID_RE = /^[a-z0-9_:-]{1,80}$/;
@@ -545,11 +549,11 @@
     var rawSteps = input.steps;
     if (!Array.isArray(rawSteps)) errors.push(err('bad-workflow-steps', 'steps', 'steps must be a non-empty array.'));
     else if (!rawSteps.length) errors.push(err('empty-workflow', 'steps', 'A command workflow needs at least one step.'));
-    else if (rawSteps.length > 8) errors.push(err('too-many-workflow-steps', 'steps', 'A command workflow may contain at most 8 steps.'));
+    else if (rawSteps.length > COMMAND_WORKFLOW_MAX_STEPS) errors.push(err('too-many-workflow-steps', 'steps', 'A command workflow may contain at most ' + COMMAND_WORKFLOW_MAX_STEPS + ' steps.'));
 
     var seenStepIds = {};
     var steps = [];
-    (Array.isArray(rawSteps) ? rawSteps.slice(0, 8) : []).forEach(function (raw, index) {
+    (Array.isArray(rawSteps) ? rawSteps.slice(0, COMMAND_WORKFLOW_MAX_STEPS) : []).forEach(function (raw, index) {
       var path = 'steps[' + index + ']';
       if (!isPlainObject(raw)) { errors.push(err('bad-workflow-step', path, 'Each workflow step must be an object.')); return; }
       var stepId = typeof raw.stepId === 'string' ? raw.stepId.trim() : '';
@@ -752,6 +756,7 @@
     JOB_STATUSES: JOB_STATUSES,
     COMMAND_WORKFLOW_AUDIENCES: COMMAND_WORKFLOW_AUDIENCES,
     COMMAND_WORKFLOW_FAILURE_POLICIES: COMMAND_WORKFLOW_FAILURE_POLICIES,
+    COMMAND_WORKFLOW_MAX_STEPS: COMMAND_WORKFLOW_MAX_STEPS,
     getToolClassification: getToolClassification,
     getMcpAnnotations: getMcpAnnotations,
     validateToolTable: validateToolTable,

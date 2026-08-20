@@ -592,6 +592,7 @@ function siteHeader(offline) {
     '        <span>AlloFlow Teacher Guide</span>',
     '      </a>',
     '      <nav class="utility-nav" aria-label="Guide utilities">',
+    '        <a href="../manuals.html">All manuals and guides</a>',
     '        <a href="../launch.html">Open AlloFlow</a>',
     offline ? '' : '        <a href="tool-reference.html">Guide tool reference</a>',
     '        <a href="../tools.html">Find a tool</a>',

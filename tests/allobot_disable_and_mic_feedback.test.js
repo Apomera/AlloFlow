@@ -38,13 +38,14 @@ describe('A3 — hiding AlloBot must not silence the rest of the app', () => {
   it('claims ownership only while its own browser utterance is in flight', () => {
     expect(botSource).toContain('alloBotClaimBrowserSpeech();\n                      window.speechSynthesis.speak(utter);');
     expect(botSource).toContain('utter.onend = () => { alloBotReleaseBrowserSpeech(); resetState(); };');
-    expect(botSource).toContain('utter.onerror = () => { alloBotReleaseBrowserSpeech(); resetState(); };');
+    expect(botSource).toContain('utter.onerror = () => {');
+    expect(botSource).toContain('alloBotReleaseBrowserSpeech();\n                      reportPlaybackFailure');
   });
 
   it('routes every silence path through the scoped helper', () => {
     for (const marker of [
       'if (speechTimeoutRef.current) { clearTimeout(speechTimeoutRef.current); speechTimeoutRef.current = null; }\n      cancelAlloBotBrowserSpeech();', // silenceSpeech
-      'if (speechTimeoutRef.current) clearTimeout(speechTimeoutRef.current);\n      cancelAlloBotBrowserSpeech();\n  }, []);',                        // unmount cleanup
+      'if (speechTimeoutRef.current) clearTimeout(speechTimeoutRef.current);\n      cancelAlloBotBrowserSpeech();\n      if (wasPlaying && onSpeechEnd) onSpeechEnd();', // unmount cleanup
       'cancelAlloBotBrowserSpeech();\n          setIsTalking(false);',                                                                               // mute toggle
     ]) {
       expect(botSource).toContain(marker);

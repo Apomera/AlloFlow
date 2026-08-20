@@ -24,6 +24,8 @@ function makeAppsScriptHarness() {
   let clock = FIXED_NOW;
   let nextId = 1;
   let lockAvailable = true;
+  let failAddViewer = false;
+  let failTrash = false;
   const properties = new Map();
   const spreadsheets = new Map();
   const driveFiles = new Map();
@@ -89,18 +91,24 @@ function makeAppsScriptHarness() {
     insertSheet(name) { const sheet = new MockSheet(name); this.sheets.push(sheet); return sheet; }
   }
   class MockFile {
-    constructor(id, name, content = '') { this.id = id; this.name = name; this.content = String(content); this.sharingAccess = 'PRIVATE'; this.viewers = []; this.parentFolderId = null; }
+    constructor(id, name, content = '') { this.id = id; this.name = name; this.content = String(content); this.sharingAccess = 'PRIVATE'; this.viewers = []; this.parentFolderId = null; this.createdAt = clock; }
     getId() { return this.id; }
+    getName() { return this.name; }
+    getUrl() { return `https://drive.google.com/file/d/${this.id}/view`; }
+    getDateCreated() { return new FixedDate(this.createdAt); }
+    getSize() { return Buffer.byteLength(this.content, 'utf8'); }
     getBlob() { return { getDataAsString: () => this.content }; }
     setContent(content) { this.content = String(content); return this; }
     setSharing(access, permission) { if (access === 'PRIVATE' && permission === 'NONE') throw new Error('Invalid PRIVATE+NONE'); this.sharingAccess = access; return this; }
     getSharingAccess() { return this.sharingAccess; }
     setShareableByEditors() { return this; }
     getEditors() { return []; }
-    getViewers() { return []; }
-    addViewer(email) { this.viewers.push(String(email)); return this; }
-    removeViewer() { return this; }
+    getViewers() { return this.viewers.map(email => ({ getEmail: () => email })); }
+    addViewer(email) { if (failAddViewer) throw new Error('Injected Drive viewer failure'); this.viewers.push(String(email)); return this; }
+    removeViewer(user) { const email = typeof user === 'string' ? user : (user && user.getEmail ? user.getEmail() : ''); this.viewers = this.viewers.filter(item => item !== String(email)); return this; }
     moveTo(folder) { this.parentFolderId = folder && folder.getId ? folder.getId() : null; return this; }
+    setTrashed(value) { if (failTrash) throw new Error('Injected Drive trash failure'); this.trashed = !!value; return this; }
+    isTrashed() { return !!this.trashed; }
   }
   class MockFolder {
     constructor(id, name) { this.id = id; this.name = name; this.sharingAccess = 'PRIVATE'; }
@@ -112,6 +120,7 @@ function makeAppsScriptHarness() {
     getViewers() { return []; }
     createFile(name, content) {
       const file = new MockFile(allocateId('file'), name, content);
+      file.parentFolderId = this.id;
       driveFiles.set(file.id, file);
       return file;
     }
@@ -119,6 +128,11 @@ function makeAppsScriptHarness() {
       const folder = new MockFolder(allocateId('folder'), name);
       driveFolders.set(folder.id, folder);
       return folder;
+    }
+    getFiles() {
+      const items = [...driveFiles.values()].filter(file => file.parentFolderId === this.id && !file.trashed);
+      let index = 0;
+      return { hasNext: () => index < items.length, next: () => items[index++] };
     }
   }
   const scriptProperties = {
@@ -235,6 +249,8 @@ function makeAppsScriptHarness() {
     setEffectiveEmail: email => { effectiveEmail = email; },
     setClock: iso => { clock = iso; },
     setLockAvailable: value => { lockAvailable = value; },
+    setFailAddViewer: value => { failAddViewer = !!value; },
+    setFailTrash: value => { failTrash = !!value; },
   };
 }
 

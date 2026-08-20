@@ -28,7 +28,24 @@ function text(filePath) {
 }
 
 function documentFor(filePath) {
-  return new DOMParser().parseFromString(text(filePath), 'text/html');
+  let source = text(filePath);
+  // offline.html embeds every screenshot as a base64 data URL. jsdom expands
+  // those payloads while parsing even though these tests inspect only markup,
+  // alt text, and link/heading structure. Remove image bytes in the test copy
+  // so guide growth does not require multi-gigabyte workers; the generated
+  // file and its digest are still verified separately, unchanged.
+  if (filePath.endsWith('offline.html')) {
+    source = source.replace(/(\bsrc=["']data:[^,"']+,)[^"']+/gi, '$1AA');
+  }
+  return new DOMParser().parseFromString(source, 'text/html');
+}
+
+function cachedDocumentReader() {
+  const documents = new Map();
+  return function cachedDocumentFor(filePath) {
+    if (!documents.has(filePath)) documents.set(filePath, documentFor(filePath));
+    return documents.get(filePath);
+  };
 }
 
 function expectSequentialHeadings(document) {
@@ -250,15 +267,16 @@ describe('teacher guide HTML accessibility', () => {
   );
 
   it('resolves every generated chapter and in-page link', { timeout: 480000 }, () => {
+    const cachedDocumentFor = cachedDocumentReader();
     for (const filePath of [resolve(outputRoot, 'index.html'), ...chapterPages]) {
-      const document = documentFor(filePath);
+      const document = cachedDocumentFor(filePath);
       for (const link of document.querySelectorAll('a[href]')) {
         const href = link.getAttribute('href');
         if (!href || /^(?:https?:|mailto:|\/)/i.test(href)) continue;
         const [relativePath, fragment] = href.split('#', 2);
         const targetPath = relativePath ? resolve(outputRoot, relativePath) : filePath;
         if (!targetPath.endsWith('.html')) continue;
-        const targetDocument = documentFor(targetPath);
+        const targetDocument = cachedDocumentFor(targetPath);
         if (fragment) expect(targetDocument.getElementById(decodeURIComponent(fragment)), href).not.toBeNull();
       }
     }
@@ -267,6 +285,7 @@ describe('teacher guide HTML accessibility', () => {
 
 describe('teacher guide search and offline contracts', () => {
   it('indexes each chapter by section and points to real headings', { timeout: 240000 }, () => {
+    const cachedDocumentFor = cachedDocumentReader();
     const records = JSON.parse(text(resolve(outputRoot, 'search-index.json')));
     expect(records.length).toBeGreaterThan(manifest.chapters.length);
     expect(new Set(records.map((record) => record.id)).size).toBe(records.length);
@@ -282,7 +301,7 @@ describe('teacher guide search and offline contracts', () => {
       expect(record.title.trim()).not.toBe('');
       expect(record.url).toMatch(/^[a-z0-9-]+\.html#[a-z0-9-]+$/);
       const [fileName, fragment] = record.url.split('#');
-      expect(documentFor(resolve(outputRoot, fileName)).getElementById(fragment), record.url).not.toBeNull();
+      expect(cachedDocumentFor(resolve(outputRoot, fileName)).getElementById(fragment), record.url).not.toBeNull();
     }
   });
 

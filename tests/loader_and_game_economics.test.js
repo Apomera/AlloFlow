@@ -109,7 +109,7 @@ describe('mailbox live-session parity', () => {
         expect(anti).toMatch(/Late-joiner welcome/);
         // Mode semantics match Firestore: teacher-paced gates auto-follow.
         expect(anti).toMatch(/mbLive && mbMode === 'sync'/);
-        expect(anti).toMatch(/Teacher-paced: class follows what you open/);
+        expect(anti).toMatch(/Teacher-led: students follow your screen/);
     });
 
     it('interruption resilience: teacher resume, RTC retry-forever, cursor self-heal, clean student pack', () => {

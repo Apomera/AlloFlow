@@ -255,7 +255,7 @@ function FabStack(props) {
         },
         /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\xD7")
       )),
-      /* @__PURE__ */ React.createElement("div", { className: "alloflow-student-tools-body custom-scrollbar" }, activeView === "simplified" && generatedContent && /* @__PURE__ */ React.createElement("section", { className: "alloflow-student-tools-section px-4 py-3", "aria-labelledby": "alloflow-student-tools-read-heading" }, /* @__PURE__ */ React.createElement("div", { className: "mb-2 flex items-center justify-between gap-3" }, /* @__PURE__ */ React.createElement("h3", { id: "alloflow-student-tools-read-heading", className: "text-[11px] font-black uppercase tracking-[0.16em] text-slate-500" }, "Read"), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-semibold text-slate-400" }, t("simplified.mode_label"))), /* @__PURE__ */ React.createElement("div", { className: "alloflow-student-tools-grid" }, /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("div", { className: "alloflow-student-tools-body custom-scrollbar" }, activeView === "simplified" && generatedContent && /* @__PURE__ */ React.createElement("section", { className: "alloflow-student-tools-section px-4 py-3", "aria-labelledby": "alloflow-student-tools-read-heading" }, /* @__PURE__ */ React.createElement("div", { className: "mb-2 flex items-center justify-between gap-3" }, /* @__PURE__ */ React.createElement("h3", { id: "alloflow-student-tools-read-heading", className: "text-[11px] font-black uppercase tracking-[0.16em] text-slate-500" }, t("student_tools.read") || "Read"), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-semibold text-slate-400" }, t("simplified.mode_label"))), /* @__PURE__ */ React.createElement("div", { className: "alloflow-student-tools-grid" }, /* @__PURE__ */ React.createElement(
         "button",
         {
           "data-student-tool": "true",
@@ -312,7 +312,7 @@ function FabStack(props) {
         },
         /* @__PURE__ */ React.createElement("span", { className: "alloflow-student-tool-icon", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 18 })),
         /* @__PURE__ */ React.createElement("span", { className: "min-w-0 text-xs font-bold leading-tight" }, t("simplified.explain_mode"))
-      ))), /* @__PURE__ */ React.createElement("section", { className: "alloflow-student-tools-section px-4 py-3", "aria-labelledby": "alloflow-student-tools-focus-heading" }, /* @__PURE__ */ React.createElement("h3", { id: "alloflow-student-tools-focus-heading", className: "mb-2 text-[11px] font-black uppercase tracking-[0.16em] text-slate-500" }, "Focus"), /* @__PURE__ */ React.createElement("div", { className: "alloflow-student-tools-grid" }, /* @__PURE__ */ React.createElement(
+      ))), /* @__PURE__ */ React.createElement("section", { className: "alloflow-student-tools-section px-4 py-3", "aria-labelledby": "alloflow-student-tools-focus-heading" }, /* @__PURE__ */ React.createElement("h3", { id: "alloflow-student-tools-focus-heading", className: "mb-2 text-[11px] font-black uppercase tracking-[0.16em] text-slate-500" }, t("student_tools.focus") || "Focus"), /* @__PURE__ */ React.createElement("div", { className: "alloflow-student-tools-grid" }, /* @__PURE__ */ React.createElement(
         "button",
         {
           "data-student-tool": "true",
@@ -379,7 +379,7 @@ function FabStack(props) {
         },
         /* @__PURE__ */ React.createElement("span", { className: "alloflow-student-tool-icon", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(AlignJustify, { size: 18 })),
         /* @__PURE__ */ React.createElement("span", { className: "min-w-0 text-xs font-bold leading-tight" }, t("a11y.toggle_line_focus"))
-      ))), showInputAndPractice && /* @__PURE__ */ React.createElement("section", { className: "alloflow-student-tools-section px-4 py-3", "aria-labelledby": "alloflow-student-tools-input-heading" }, /* @__PURE__ */ React.createElement("h3", { id: "alloflow-student-tools-input-heading", className: "mb-2 text-[11px] font-black uppercase tracking-[0.16em] text-slate-500" }, "Input & practice"), /* @__PURE__ */ React.createElement("div", { className: "alloflow-student-tools-grid" }, !isTeacherMode && !studentAiFeaturesHidden && studentProjectSettings.allowSocraticTutor && /* @__PURE__ */ React.createElement(
+      ))), showInputAndPractice && /* @__PURE__ */ React.createElement("section", { className: "alloflow-student-tools-section px-4 py-3", "aria-labelledby": "alloflow-student-tools-input-heading" }, /* @__PURE__ */ React.createElement("h3", { id: "alloflow-student-tools-input-heading", className: "mb-2 text-[11px] font-black uppercase tracking-[0.16em] text-slate-500" }, t("student_tools.input_practice") || "Input & practice"), /* @__PURE__ */ React.createElement("div", { className: "alloflow-student-tools-grid" }, !isTeacherMode && !studentAiFeaturesHidden && studentProjectSettings.allowSocraticTutor && /* @__PURE__ */ React.createElement(
         "button",
         {
           "data-student-tool": "true",

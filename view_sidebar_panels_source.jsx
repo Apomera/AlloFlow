@@ -1172,7 +1172,7 @@ function UniversalSettingsPanel(props) {
                                 maxLength={120}
                                 className={SIDEBAR_PANEL_UI.control}
                             />
-                            <p className={SIDEBAR_PANEL_UI.help}>{t('universal.image_style_hint') || 'Used for Visuals, Glossary, Timeline and Concept Sort images unless a tool sets its own style.'}</p>
+                            <p className={SIDEBAR_PANEL_UI.help}>{t('universal.image_style_hint') || 'Lesson-wide default for new Visuals, Glossary, Timeline, Concept Sort, and Word Sounds images. Adventure can also choose this style.'}</p>
                         </div>
                     </div>
                 </div>
@@ -1198,7 +1198,7 @@ function AdventurePanel(props) {
     setAdventureInputMode, setAdventureLanguageMode, setAdventureState, setEnableFactionResources,
     setIsAdventureCloudEnabled, setIsAdventureStoryMode, setIsSocialStoryMode, setSocialStoryFocus,
     setStudentProjectSettings, setUseLowQualityVisuals, socialStoryFocus, studentProjectSettings,
-    t, useLowQualityVisuals
+    t, universalImageStyle, useLowQualityVisuals
   } = props;
   if (!expandedTools || !expandedTools.includes('adventure')) return null;
   const adventurePermissions = studentProjectSettings.adventurePermissions || {};
@@ -1536,6 +1536,7 @@ function AdventurePanel(props) {
                                             🎨 {t('adventure.art_style_label') || 'Art Style'}
                                         </label>
                                         <select id="advArtStyle" value={adventureArtStyle} onChange={(e) => setAdventureArtStyle(e.target.value)} disabled={lockAllAdventureSettings || (!isTeacherMode && adventurePermissions.allowVisualsToggle === false)} className="flex-1 text-xs px-2 py-1 border border-indigo-600 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400 cursor-pointer">
+                                            <option value="universal">Use Universal style</option>
                                             <option value="auto">🎨 {t('adventure.art_auto') || 'Auto (default)'}</option>
                                             <option value="storybook">📚 {t('adventure.art_storybook') || 'Storybook'}</option>
                                             <option value="pixel">🎮 {t('adventure.art_pixel') || 'Pixel Art'}</option>
@@ -1545,6 +1546,13 @@ function AdventurePanel(props) {
                                             <option value="custom">✏️ {t('adventure.art_custom') || 'Custom...'}</option>
                                         </select>
                                     </div>
+                                    {adventureArtStyle === 'universal' && (
+                                        <p className="rounded border border-indigo-200 bg-indigo-50 px-2 py-1.5 text-[11px] text-indigo-800">
+                                            {universalImageStyle && universalImageStyle.trim()
+                                                ? `Using Universal style: ${universalImageStyle.trim()}`
+                                                : 'No Universal style is set; Adventure will use its automatic style.'}
+                                        </p>
+                                    )}
                                     {adventureArtStyle === 'custom' && (
                                         <input type="text" aria-label={t('adventure.custom_art_style_placeholder') || 'Custom art style'} value={adventureCustomArtStyle} onChange={(e) => setAdventureCustomArtStyle(e.target.value)} placeholder={t('adventure.custom_art_style_placeholder') || 'Describe your art style...'} disabled={lockAllAdventureSettings || (!isTeacherMode && adventurePermissions.allowVisualsToggle === false)} className="w-full text-xs px-3 py-1.5 border border-indigo-600 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400"/>
                                     )}
@@ -3446,9 +3454,10 @@ function ImagePanel(props) {
     hasSourceOrAnalysis, isProcessing, noText, setCreativeMode,
     setFillInTheBlank, setNoText, setUseLowQualityVisuals, setVisualCustomInstructions,
     setVisualCustomStyle, setVisualLayoutMode, setVisualStyle, t, useLowQualityVisuals,
-    visualCustomInstructions, visualCustomStyle, visualLayoutMode, visualStyle
+    universalImageStyle, visualCustomInstructions, visualCustomStyle, visualLayoutMode, visualStyle
   } = props;
   if (!expandedTools || !expandedTools.includes('image')) return null;
+  const visualStyleMode = !visualStyle || visualStyle === 'Default' ? 'inherit' : 'override';
   return (
                 <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
                     <div className={SIDEBAR_PANEL_UI.settingsSurface} data-help-key="tour-visual-settings">
@@ -3477,14 +3486,32 @@ function ImagePanel(props) {
                             </label>
                         </div>
                         <div>
-                        <label className={SIDEBAR_PANEL_UI.label}>{t('visuals.art_style')}</label>
+                        <label className={SIDEBAR_PANEL_UI.label}>Image style</label>
+                        <select
+                            aria-label="Image style source"
+                            value={visualStyleMode}
+                            onChange={(e) => setVisualStyle(e.target.value === 'inherit' ? 'Default' : 'Isometric Diagram')}
+                            className={`${SIDEBAR_PANEL_UI.control} text-xs focus-visible:border-cyan-500 focus-visible:ring-cyan-500/20`}
+                        >
+                            <option value="inherit">Use Universal style</option>
+                            <option value="override">Override for this resource</option>
+                        </select>
+                        {visualStyleMode === 'inherit' && (
+                            <p className={SIDEBAR_PANEL_UI.help}>
+                                {universalImageStyle && universalImageStyle.trim()
+                                    ? `Using Universal style: ${universalImageStyle.trim()}`
+                                    : 'No Universal style is set; the app default will be used.'}
+                            </p>
+                        )}
+                        {visualStyleMode === 'override' && (
+                        <>
+                        <label className={`${SIDEBAR_PANEL_UI.label} mt-2`}>{t('visuals.art_style')}</label>
                         <select aria-label={t('common.selection')}
                             data-help-key="visuals_art_style"
                             value={visualStyle}
                             onChange={(e) => setVisualStyle(e.target.value)}
                             className={`${SIDEBAR_PANEL_UI.control} text-xs focus-visible:border-cyan-500 focus-visible:ring-cyan-500/20`}
                         >
-                            <option value="Default">{t('visuals.styles.default')}</option>
                             <option value="Isometric Diagram">{t('visuals.styles.isometric')}</option>
                             <option value="Pixel Art">{t('visuals.styles.pixel')}</option>
                             <option value="Watercolor">{t('visuals.styles.watercolor')}</option>
@@ -3505,6 +3532,9 @@ function ImagePanel(props) {
                                 className={`${SIDEBAR_PANEL_UI.control} mt-2 text-xs focus-visible:border-cyan-500 focus-visible:ring-cyan-500/20`}
                             />
                         )}
+                        </>
+                        )}
+                        <p className={SIDEBAR_PANEL_UI.help}>Style changes apply to new or regenerated images.</p>
                         </div>
                         <div>
                         <label className="block text-xs font-medium text-slate-700 mb-1">🎬 Layout Mode</label>
@@ -3881,8 +3911,11 @@ function LessonPlanPanel(props) {
   const aiTextAvailable = useAiTextAvailable(); // keyless-shell gating (X6)
   const {
     activeView, expandedTools, handleGenerateLessonPlan, hasSourceOrAnalysis,
-    isProcessing, lessonCustomAdditions, setLessonCustomAdditions, t
+    isParentMode, isProcessing, lessonCustomAdditions, setLessonCustomAdditions, t
   } = props;
+  const lessonPlanActionLabel = isParentMode
+    ? (t('parent_mode.guide_action') || t('lesson_plan.generate'))
+    : t('lesson_plan.generate');
   if (!expandedTools || !expandedTools.includes('lesson-plan')) return null;
   return (
                  <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
@@ -3895,13 +3928,13 @@ function LessonPlanPanel(props) {
                     </div>
                     {!aiTextAvailable && <AiSetupNotice t={t} />}
                     <button type="button"
-                        aria-label={t('common.generate_lesson_plan')}
+                        aria-label={isParentMode ? lessonPlanActionLabel : t('common.generate_lesson_plan')}
                         onClick={handleGenerateLessonPlan}
                         disabled={!hasSourceOrAnalysis || isProcessing || !aiTextAvailable} aria-busy={isProcessing}
                         className={SIDEBAR_PANEL_UI.primaryAction}
                     >
                         <span className="text-sm text-slate-600 group-hover:text-cyan-700 transition-colors motion-reduce:transition-none flex items-center gap-2">
-                            {isProcessing && activeView === 'lesson-plan' ? t('lesson_plan.drafting') : t('lesson_plan.generate')}
+                            {isProcessing && activeView === 'lesson-plan' ? t('lesson_plan.drafting') : lessonPlanActionLabel}
                             {isProcessing && activeView === 'lesson-plan' ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/> : <Sparkles size={14} className="text-yellow-600"/>}
                         </span>
                         <ArrowRight size={16} className="text-slate-600 group-hover:text-cyan-600" />

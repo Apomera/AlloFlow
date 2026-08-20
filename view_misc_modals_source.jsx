@@ -1561,23 +1561,23 @@ function AIBackendModalBody(props) {
     writeAIBackendConfig(updated);
     const urlEl = document.getElementById('ai-backend-url');
     if (urlEl) urlEl.value = updated.baseUrl || '';
-    populateModelSelect(document.getElementById('ai-backend-model-default'), 'Auto (server default)', [], '');
-    populateModelSelect(document.getElementById('ai-backend-model-fallback'), 'Same as default', [], '');
+    populateModelSelect(document.getElementById('ai-backend-model-default'), t('ai_backend.auto_server_default') || 'Auto (server default)', [], '');
+    populateModelSelect(document.getElementById('ai-backend-model-fallback'), t('ai_backend.same_as_default') || 'Same as default', [], '');
     if (showStatus) {
       const status = document.getElementById('ai-backend-status');
-      if (status) { status.textContent = 'Preset applied. Test connection to discover models, then reload to apply.'; status.className = 'text-xs font-bold mt-2 text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-100'; }
+      if (status) { status.textContent = t('ai_backend.preset_applied') || 'Preset applied. Test connection to discover models, then reload to apply.'; status.className = 'text-xs font-bold mt-2 text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-100'; }
     }
     setTimeout(refreshEngineStrip, 0);
   };
   const GUIDED_BACKEND_LABELS = {
-    gemini: 'Google Gemini', 'alloflow-local': 'the built-in private AI',
-    lmstudio: 'LM Studio', ollama: 'Ollama', localai: 'LocalAI', custom: 'your custom endpoint'
+    gemini: 'Google Gemini', 'alloflow-local': t('ai_backend.guided_backend_private_label') || 'the built-in private AI',
+    lmstudio: 'LM Studio', ollama: 'Ollama', localai: 'LocalAI', custom: t('ai_backend.guided_backend_custom_label') || 'your custom endpoint'
   };
   const GUIDED_CONNECT_APPS = [
-    { id: 'lmstudio', title: 'LM Studio', body: 'Desktop app with a friendly model browser.', keyProps: { 'data-help-key': 'ai_backend_guided_connect_lmstudio' }, link: 'https://lmstudio.ai', steps: ['Install LM Studio from lmstudio.ai (free).', 'Use its search to download a model — "Qwen 2.5 7B Instruct" is a good start.', 'Open the Developer / Local Server tab and press Start.', 'Press Test Connection below.'] },
-    { id: 'ollama', title: 'Ollama', body: 'Lightweight command-line runner.', keyProps: { 'data-help-key': 'ai_backend_guided_connect_ollama' }, link: 'https://ollama.com', steps: ['Install Ollama from ollama.com (free).', 'In a terminal, run: ollama run llama3.2', 'Leave it running.', 'Press Test Connection below.'] },
-    { id: 'localai', title: 'LocalAI', body: 'Self-hosted server (advanced).', keyProps: { 'data-help-key': 'ai_backend_guided_connect_localai' }, link: 'https://localai.io', steps: ['Follow the LocalAI install guide at localai.io.', 'Start the server with at least one text model.', 'Press Test Connection below.'] },
-    { id: 'custom', title: 'Custom endpoint', body: 'Any OpenAI-compatible server.', keyProps: { 'data-help-key': 'ai_backend_guided_connect_custom' }, link: '', steps: ['Enter your server address below.', 'Add an API key only if your server requires one.', 'Press Test Connection below.'] },
+    { id: 'lmstudio', title: 'LM Studio', body: t('ai_backend.guided_connect_lmstudio_body') || 'Desktop app with a friendly model browser.', keyProps: { 'data-help-key': 'ai_backend_guided_connect_lmstudio' }, link: 'https://lmstudio.ai', steps: [t('ai_backend.guided_connect_lmstudio_step1') || 'Install LM Studio from lmstudio.ai (free).', t('ai_backend.guided_connect_lmstudio_step2') || 'Use its search to download a model — "Qwen 2.5 7B Instruct" is a good start.', t('ai_backend.guided_connect_lmstudio_step3') || 'Open the Developer / Local Server tab and press Start.', t('ai_backend.guided_connect_lmstudio_step4') || 'Press Test Connection below.'] },
+    { id: 'ollama', title: 'Ollama', body: t('ai_backend.guided_connect_ollama_body') || 'Lightweight command-line runner.', keyProps: { 'data-help-key': 'ai_backend_guided_connect_ollama' }, link: 'https://ollama.com', steps: [t('ai_backend.guided_connect_ollama_step1') || 'Install Ollama from ollama.com (free).', t('ai_backend.guided_connect_ollama_step2') || 'In a terminal, run: ollama run llama3.2', t('ai_backend.guided_connect_ollama_step3') || 'Leave it running.', t('ai_backend.guided_connect_ollama_step4') || 'Press Test Connection below.'] },
+    { id: 'localai', title: 'LocalAI', body: t('ai_backend.guided_connect_localai_body') || 'Self-hosted server (advanced).', keyProps: { 'data-help-key': 'ai_backend_guided_connect_localai' }, link: 'https://localai.io', steps: [t('ai_backend.guided_connect_localai_step1') || 'Follow the LocalAI install guide at localai.io.', t('ai_backend.guided_connect_localai_step2') || 'Start the server with at least one text model.', t('ai_backend.guided_connect_localai_step3') || 'Press Test Connection below.'] },
+    { id: 'custom', title: t('ai_backend.guided_connect_custom_title') || 'Custom endpoint', body: t('ai_backend.guided_connect_custom_body') || 'Any OpenAI-compatible server.', keyProps: { 'data-help-key': 'ai_backend_guided_connect_custom' }, link: '', steps: [t('ai_backend.guided_connect_custom_step1') || 'Enter your server address below.', t('ai_backend.guided_connect_custom_step2') || 'Add an API key only if your server requires one.', t('ai_backend.guided_connect_custom_step3') || 'Press Test Connection below.'] },
   ];
   // Canonical fields, rendered by exactly one layout at a time (guided step or
   // Advanced) — same ids, same help keys, same config writes, so external
@@ -1850,15 +1850,15 @@ function AIBackendModalBody(props) {
             <button onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10" aria-label={t('common.close') || "Close"}><X size={20}/></button>
             <div className="flex items-center gap-2 mb-6 text-violet-900">
                 <div className="bg-violet-100 p-2 rounded-full"><Unplug size={20} className="text-violet-600"/></div>
-                <h3 id="ai-backend-title" className="font-black text-lg">{isStudentAiSetup ? 'Connect Personal AI' : (t('ai_backend.title') || 'AI Backend Settings')}</h3>
+                <h3 id="ai-backend-title" className="font-black text-lg">{isStudentAiSetup ? (t('ai_backend.personal_title') || 'Connect Personal AI') : (t('ai_backend.title') || 'AI Backend Settings')}</h3>
             </div>
             <div className="space-y-4">
                 {/* ─── Section 1: Provider & Connection ─── */}
                 {isStudentAiSetup && (
                   <div className='rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-950'>
-                    <p className='font-black'>Personal AI for this session</p>
-                    <p className='mt-1'>Use only your own provider account. Your credential is stored only in this browser tab and transmitted only to the provider you choose; it is never placed in the QR, Class Mailbox, or student submission.</p>
-                    <p className='mt-1'>Your prompts and activity content are sent directly to the provider you choose and may create charges. Follow your school or district rules, do not include private student information, and use a restricted, low-budget key. Avoid shared devices.</p>
+                    <p className='font-black'>{t('ai_backend.personal_session_title') || 'Personal AI for this session'}</p>
+                    <p className='mt-1'>{t('ai_backend.personal_storage_notice') || 'Use only your own provider account. Your credential is stored only in this browser tab and transmitted only to the provider you choose; it is never placed in the QR, Class Mailbox, or student submission.'}</p>
+                    <p className='mt-1'>{t('ai_backend.personal_privacy_notice') || 'Your prompts and activity content are sent directly to the provider you choose and may create charges. Follow your school or district rules, do not include private student information, and use a restricted, low-budget key. Avoid shared devices.'}</p>
                   </div>
                 )}
                 {/* ─── Guided setup (default) — three cards, then only the fields
@@ -2204,8 +2204,8 @@ function AIBackendModalBody(props) {
                         <strong className="text-slate-600">Active:</strong>{' '}
                         {(() => { try { const c = readAIBackendConfig(); return c.backend ? (c.backend.charAt(0).toUpperCase() + c.backend.slice(1)) + (c.baseUrl ? ' → ' + c.baseUrl : '') : 'Gemini (default)'; } catch { return 'Gemini (default)'; } })()}
                     </p>
-                    {!isStudentAiSetup && <p className="text-[11px] text-slate-600 font-medium mt-1">⚡ Reload page after changing backend to apply.</p>}
-                    {isStudentAiSetup && <p className="text-[11px] text-slate-600 font-medium mt-1">Verified connections enable text AI only for this browser tab. Media generation stays off unless separately verified.</p>}
+                    {!isStudentAiSetup && <p className="text-[11px] text-slate-600 font-medium mt-1">⚡ {t('ai_backend.reload_after_change') || 'Reload page after changing backend to apply.'}</p>}
+                    {isStudentAiSetup && <p className="text-[11px] text-slate-600 font-medium mt-1">{t('ai_backend.student_verified_note') || 'Verified connections enable text AI only for this browser tab. Media generation stays off unless separately verified.'}</p>}
                 </div>
                 </>)}
 

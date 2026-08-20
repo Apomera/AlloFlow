@@ -4,14 +4,23 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Educator Growth &amp; Evaluation: User Manual | AlloFlow</title>
-<meta name="description" content="How to use AlloFlow's Educator Growth &amp; Evaluation tool: the private on-device workspace, the district-hosted portal, the ten-step observation cycle, framework profiles, what the released summary says, the educator view, backups, accessibility, and troubleshooting.">
-<link rel="canonical" href="https://alloflow-cdn.pages.dev/educator-evaluation-manual">
+<meta name="description" content="How to use AlloFlow's Educator Growth &amp; Evaluation tool: private on-device work, the principal-managed Drive helper, the district portal, simulated data, the evaluation cycle, privacy, and records handoff.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://apomera.github.io/AlloFlow/educator-evaluation-manual.html">
 <meta property="og:type" content="article">
+<meta property="og:site_name" content="AlloFlow">
 <meta property="og:title" content="Educator Growth &amp; Evaluation: User Manual">
-<meta property="og:description" content="How to run an evaluation cycle in AlloFlow: the private on-device workspace, the district-hosted portal, what the released summary says, and what the tool deliberately does not do.">
-<meta property="og:url" content="https://alloflow-cdn.pages.dev/educator-evaluation-manual">
-<meta property="og:image" content="https://alloflow-cdn.pages.dev/educator-evaluation-manual-assets/02-overview.jpg">
+<meta property="og:description" content="How to run an evaluation cycle in AlloFlow across the private, principal-managed Drive, and district portal paths.">
+<meta property="og:url" content="https://apomera.github.io/AlloFlow/educator-evaluation-manual.html">
+<meta property="og:image" content="https://apomera.github.io/AlloFlow/educator-evaluation-manual-assets/02-overview.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:alt" content="Overview of the AlloFlow Educator Growth and Evaluation workspace.">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:url" content="https://apomera.github.io/AlloFlow/educator-evaluation-manual.html">
+<meta name="twitter:title" content="Educator Growth &amp; Evaluation: User Manual">
+<meta name="twitter:description" content="How to run an evaluation cycle across AlloFlow's private, principal-managed, and district-hosted record paths.">
+<meta name="twitter:image" content="https://apomera.github.io/AlloFlow/educator-evaluation-manual-assets/02-overview.jpg">
+<meta name="twitter:image:alt" content="Overview of the AlloFlow Educator Growth and Evaluation workspace.">
 <style>
 :root{
   /* Text-size multiplier for the Reading tools bar. Every prose font-size below
@@ -48,17 +57,23 @@ strong{font-weight:700;color:var(--ink);}
 a{color:var(--accent);}
 a:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:3px;}
 code{background:var(--code-bg);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.88em;}
+pre{overflow:auto;background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:12px;font-size:calc(12.5px * var(--fs));line-height:1.5;}
+pre code{border:0;padding:0;background:transparent;}
 table{border-collapse:collapse;width:100%;margin:0;font-size:calc(14.5px * var(--fs));background:var(--panel);}
 th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top;}
 th{background:var(--th);font-weight:700;color:var(--ink);}
 caption{text-align:left;padding:0 0 8px;font-weight:700;color:var(--ink);}
 .tablewrap{overflow-x:auto;margin:0 0 18px;}
+.tablewrap:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:6px;}
 blockquote{margin:18px 0;padding:12px 16px;background:var(--warn-bg);border:1px solid var(--warn-bd);border-left:4px solid #f59e0b;border-radius:10px;}
 blockquote p{margin:0;color:var(--warn-ink);font-size:calc(14.5px * var(--fs));}
 .good{margin:18px 0;padding:12px 16px;background:var(--ok-bg);border:1px solid var(--ok-bd);border-left:4px solid #22c55e;border-radius:10px;color:var(--ok-ink);font-size:calc(14.5px * var(--fs));}
 .suite{margin:0 0 18px;font-size:calc(14px * var(--fs));color:var(--soft);}
+.manual-home{margin:0 0 18px;font-weight:800;}
 .start{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:6px 18px 14px;margin:0 0 22px;box-shadow:var(--shadow);}
 .start p{margin:10px 0 0;font-size:calc(14.5px * var(--fs));}
+.start .start-heading{font-size:calc(17px * var(--fs));margin:10px 0 4px;padding:0;border:0;}
+.start .start-heading::before{display:none;}
 figure{margin:22px 0 26px;}
 figure img{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);background:var(--panel);}
 figcaption{margin-top:8px;font-size:calc(13.5px * var(--fs));color:var(--soft);}
@@ -97,8 +112,8 @@ nav.toc a:hover{border-bottom-color:var(--accent);}
    as 17 buttons competing with the headings. The accessible name lives in
    aria-label, so dropping the visible word costs nothing to a screen reader.
    Deliberately not hidden-until-hover, which would be mouse-only. */
-.listen{margin-left:9px;vertical-align:middle;display:inline-flex;align-items:center;
-  justify-content:center;width:22px;height:22px;padding:0;flex:none;
+.listen{margin:2px 0 8px;display:inline-flex;align-items:center;
+  justify-content:center;min-width:28px;min-height:28px;padding:2px;flex:none;
   font:400 11px/1 ui-sans-serif,system-ui,sans-serif;letter-spacing:normal;
   color:var(--soft);background:var(--panel);border:1px solid var(--line);
   border-radius:50%;cursor:pointer;transition:background .15s,border-color .15s;}
@@ -164,36 +179,41 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
     --accent-soft:#fff;--accent-bd:#999;--warn-bg:#fff;--warn-bd:#999;--warn-ink:#000;
     --ok-bg:#fff;--ok-bd:#999;--ok-ink:#000;--shadow:none;}
   body{background:#fff;color:#000;}
-  nav.toc{display:none;}
+  nav.toc{box-shadow:none;break-after:page;page-break-after:always;}
   .listen{display:none;}
   .rtools,#rtools-ruler{display:none !important;}
   h2{padding-left:0;}
   h2::before{display:none;}
   .reading{background:none;box-shadow:none;}
   .wrap{max-width:none;padding:0;}
-  figure,table,blockquote,.good,.doc{break-inside:avoid;page-break-inside:avoid;}
+  table,blockquote,.good,.doc{break-inside:avoid;page-break-inside:avoid;}
+  figure{break-inside:auto;page-break-inside:auto;}
+  figure img{max-height:8.6in;width:auto;max-width:100%;margin:0 auto;object-fit:contain;}
+  figure.phone-shot img{max-height:7.8in;}
   h2{break-after:avoid;page-break-after:avoid;}
   a{color:#000;text-decoration:underline;}
+  a[href^="http"]::after{content:" (" attr(href) ")";font-size:.8em;overflow-wrap:anywhere;}
 }
 </style>
 </head>
 <body>
 <main class="wrap">
-<div class="banner">🌱 <strong>Growth first.</strong> This tool makes educator evaluation transparent, strengths-forward, and clear. It works two ways: a <strong>private on-device workspace</strong> anyone can open instantly, and a <strong>district-hosted portal</strong> for shared, authenticated records. This manual covers both.</div>
+<p class="manual-home"><a href="https://apomera.github.io/AlloFlow/manuals.html">← All manuals and guides</a></p>
+<div class="banner">🌱 <strong>Growth first.</strong> This tool makes educator evaluation transparent, strengths-forward, and clear. It supports three record paths: a <strong>private on-device workspace</strong>, a <strong>principal-managed Drive share helper</strong>, and a <strong>district-hosted portal</strong>. This manual covers all three.</div>
 <article>
 <h1>Educator Growth &amp; Evaluation: User Manual</h1>
-<p class="suite">Part of the Leadership Hub. For how this tool sits beside the rest of the suite, see <a href="guide/for-school-leaders.html">For school leaders</a> in the AlloFlow teacher guide. That chapter is the suite overview; this is the operating manual for one tool.</p>
+<p class="suite">Part of the Leadership Hub. For how this tool sits beside the rest of the suite, see <a href="https://alloflow-cdn.pages.dev/guide/for-school-leaders.html">For school leaders</a> in the AlloFlow teacher guide. That chapter is the suite overview; this is the operating manual for one tool.</p>
 
 <p class="docmeta">
-<span>17 sections</span><span class="dot" aria-hidden="true"></span>
-<span>about 25 minutes end to end</span><span class="dot" aria-hidden="true"></span>
-<span>updated August 2026</span><span class="dot" aria-hidden="true"></span>
+<span>21 sections</span><span class="dot" aria-hidden="true"></span>
+<span>about 30 minutes end to end</span><span class="dot" aria-hidden="true"></span>
+<span>reviewed August 20, 2026</span><span class="dot" aria-hidden="true"></span>
 <span>prints to about 20 pages</span>
 </p>
 
 <div class="start">
-<h3>Where to start</h3>
-<p><strong>Evaluators and principals:</strong> read sections 1 through 7. That is everything you need to run a cycle.</p>
+<h2 class="start-heading">Where to start</h2>
+<p><strong>Evaluators and principals:</strong> read sections 1 through 7 and section 12 to run and protect a cycle; add section 19 if you will use the principal-managed Drive helper.</p>
 <p><strong>Educators being evaluated:</strong> section 8 is written for you, and section 10 shows the summary you will receive.</p>
 <p><strong>District IT and administrators:</strong> section 9 is the deployment, and sections 11 and 12 cover privacy, data location, and backups.</p>
 </div>
@@ -201,7 +221,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <nav class="toc" aria-label="Contents">
 <strong>Contents</strong>
 <ol>
-<li><a href="#versions">Choosing your version</a></li>
+<li><a href="#versions">Choosing your record path</a></li>
 <li><a href="#quickstart">Quick start</a></li>
 <li><a href="#tour">A tour of the workspace</a></li>
 <li><a href="#walkthroughs">Walkthroughs: evidence and interpretation</a></li>
@@ -225,35 +245,60 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 </ol>
 </nav>
 
-<h2 id="versions">1. Choosing Your Version</h2>
-<p>Both versions run the same evaluation workspace. The difference is where records live and who can see them.</p>
+<h2 id="versions">1. Choosing Your Record Path</h2>
+<p>The workspace offers three deliberately different paths. The difference is where records live, who can see them, and who is responsible for setup.</p>
 <div class="tablewrap">
 <table>
-<caption>On-device workspace compared with the district portal</caption>
-<tr><th scope="col"></th><th scope="col">On-device workspace</th><th scope="col">District portal</th></tr>
-<tr><th scope="row">Who it is for</th><td>A single evaluator organizing their own walkthroughs, observations, and trends. Good for getting started today.</td><td>A district that wants shared two-way records, where teachers see and acknowledge their own records under their district sign-in.</td></tr>
-<tr><th scope="row">Setup needed</th><td>None. Open it and go.</td><td>A one-time Apps Script deployment by a district administrator, with IT permission.</td></tr>
-<tr><th scope="row">Where data lives</th><td>Only on your device. Nothing is uploaded.</td><td>In the district's own Google Workspace: a private Drive folder owned by the district deployment account.</td></tr>
-<tr><th scope="row">Teacher access</th><td>None. Role switching previews the teacher view on your device; it is not a sign-in.</td><td>Real. Each teacher signs in with their district account and sees only their own published records.</td></tr>
-<tr><th scope="row">Drive sharing</th><td>Not available. Export a growth snapshot file instead.</td><td>Released summaries are created as Google Docs and shared to the teacher's Drive, with an opened receipt.</td></tr>
-<tr><th scope="row">Official record</th><td>No. It is a working notebook, not the personnel record.</td><td>Closer, but the district's authorized personnel system remains the official record unless the district decides otherwise.</td></tr>
+<caption>Private, principal-managed, and district-hosted paths</caption>
+<tr><th scope="col"></th><th scope="col">Private on-device</th><th scope="col">Principal Drive helper</th><th scope="col">District portal</th></tr>
+<tr><th scope="row">Who it is for</th><td>One evaluator drafting, simulating, and exporting on one device.</td><td>One principal who needs a small Drive handoff without a district-wide repository.</td><td>A district that wants authenticated, shared, two-way records.</td></tr>
+<tr><th scope="row">Setup needed</th><td>None.</td><td>The principal copies three files into their own private Apps Script project, with district approval.</td><td>A district administrator deploys and configures the repository, membership, and assignments.</td></tr>
+<tr><th scope="row">Where working data lives</th><td>In this browser profile on this device. A deliberate export creates a separate file wherever you save or send it.</td><td>Exported HTML packets in the principal's district Drive, plus the principal's local source workspace until it is handed off.</td><td>The district deployment account's repository and released-summary folders inside its Google Workspace tenant.</td></tr>
+<tr><th scope="row">Educator access</th><td>No authentication; role switching is only a preview.</td><td>A reviewed viewer/commenter permission to one exported packet; it may expire or be revoked.</td><td>Each educator signs in and sees only their assigned record.</td></tr>
+<tr><th scope="row">Controls</th><td>Visible save state, staged import review, automatic pre-import backup, manual exports, and read-only educator preview.</td><td>Validated one-educator packet, verified-account domain boundary, immutable final review, live permission re-read, optional expiration, and proof-based revoke.</td><td>Managed identity, roles, assignments, mutation validation, server audit, two-party workflow, reviewed administrator changes, private audited exports, and archive rehearsal.</td></tr>
+<tr><th scope="row">Official record</th><td>No.</td><td>No; the Drive folder needs a deliberate records handoff.</td><td>The district still decides which authorized personnel system is official.</td></tr>
 </table>
 </div>
-<div class="good"><strong>A good path:</strong> start in the on-device workspace to learn the tool and sharpen your walkthrough practice. When your district is ready for shared records, connect the portal. Your habits transfer directly, because the screens are the same.</div>
+<div class="good"><strong>A good path:</strong> learn with fictional data first. Use the principal helper only when a district-approved one-recipient Drive handoff is sufficient; use the portal when identity, assignments, shared live records, and district audit are required.</div>
 
 <h2 id="quickstart">2. Quick Start</h2>
 <p>Three ways in, all the same tool. Inside AlloFlow, open <strong>Educator Tools &rarr; Leadership Hub &rarr; Educator Evaluation</strong> &mdash; that is the route the Leadership Hub documents and the one to teach colleagues. It is also still reachable from AlloFlow's Project Settings with <strong>Open Educator Evaluation</strong>. Or go straight to <a href="https://alloflow-cdn.pages.dev/educator-evaluation">alloflow-cdn.pages.dev/educator-evaluation</a> in any modern browser, which is the link to bookmark or hand to a colleague. Once the tool is open, <strong>Manual</strong> in its header returns you to this page from any tab.</p>
 <figure>
-<img src="educator-evaluation-manual-assets/01-first-launch.jpg" width="1770" height="1200" loading="lazy" alt="First-time setup dialog titled Choose how to start Educator Evaluation, offering two cards: Start with a blank workspace, which preloads nothing, and Explore simulated data, which opens a fictional roster. A note headed Where this lives explains the workspace is stored in your signed-in profile on this device, never uploaded, protected by your device sign-in rather than by encryption AlloFlow adds, and that educators cannot see anything until the district connects the portal.">
-<figcaption>First launch asks how you want to begin. Both choices stay entirely on your device.</figcaption>
+<img src="educator-evaluation-manual-assets/01-first-launch.jpg" width="1280" height="720" loading="lazy" alt="First-time setup dialog for Educator Evaluation. The current dialog offers a guided fictional tour, private local work, and a record-path planning route.">
+<figcaption>First launch asks what you want to do. The fictional option starts a resumable in-app tour; the setup option opens the neutral three-path chooser.</figcaption>
 </figure>
 <ol>
-<li><strong>Choose a starting point.</strong> <em>Explore simulated data</em> opens a fictional roster with example statuses, ratings, and workflow history, which is the fastest way to see how the cycle works. <em>Start with a blank workspace</em> preloads nothing.</li>
+<li><strong>Choose a starting point.</strong> <em>Start a guided sample tour</em> opens a fictional roster and walks through Overview, Staff, Walkthroughs, Formal, Audit, and Setup; <em>Start real work locally</em> preloads nothing and shares nothing; <em>Choose a record path</em> opens the neutral three-path setup center. Only the path you select expands.</li>
 <li><strong>Set up the workspace.</strong> On the <strong>Setup</strong> tab, enter your organization, building, academic year, and evaluator name, then choose your <strong>evaluation framework</strong> (section 6).</li>
-<li><strong>Add educators.</strong> On the <strong>Staff</strong> tab, add the educators you evaluate along with their assignment type, which drives the correct scoring composition.</li>
+<li><strong>Add educators.</strong> On <strong>Staff</strong>, choose <strong>+ Add educator</strong>, enter a name and unique staff code, then save. The form is a draft: Cancel creates no record or audit event.</li>
 <li><strong>Start observing.</strong> Log walkthroughs as you do them, and assign formal observations when the cycle calls for them. Trends build themselves.</li>
 </ol>
-<p>Everything saves automatically on your device as you work. There is no account and no server in this version. Before you rely on it for a full year of records, read section 12 on backups.</p>
+<p>In the private path, edits are saved to this browser profile after a short delay. Watch the persistent <strong>Saving</strong>, <strong>Saved on this device</strong>, or <strong>Changes are not saved</strong> status. A blocked, full, or unavailable browser store is reported instead of being treated as success; download an emergency backup before closing. Exports, Drive sharing, the district portal, and optional AI reflection are deliberate transmissions described in section 11.</p>
+<h3>Changing the fictional scenario</h3>
+<p>In a simulated workspace, open <strong>Setup &rarr; Simulation Studio</strong>. It is intentionally absent from real workspaces. The language interpreter is a local rules parser, not an AI service: no request or record leaves the browser.</p>
+<figure>
+<img src="educator-evaluation-manual-assets/12-simulation-studio.jpg" width="1280" height="720" loading="lazy" alt="Simulation Studio on the Setup tab showing three scenario presets, a large natural-language scenario field with an Interpret request locally button, and the first manual parameter controls for fictional educators and buildings.">
+<figcaption>Simulation Studio supports preset scenarios, locally interpreted natural language, manual parameters, or a combination of all three.</figcaption>
+</figure>
+<div class="tablewrap">
+<table>
+<caption>Adjustable simulation parameters</caption>
+<tr><th scope="col">Parameter</th><th scope="col">Allowed value</th><th scope="col">What happens at the boundary</th></tr>
+<tr><th scope="row">Fictional educators</th><td>1 to 60</td><td>Values outside the range are normalized and shown before preview.</td></tr>
+<tr><th scope="row">Buildings</th><td>1 to 8</td><td>The selected number is distributed across fictional profiles.</td></tr>
+<tr><th scope="row">Finalized cycles</th><td>0 to educator count</td><td>Cannot exceed the roster.</td></tr>
+<tr><th scope="row">Overdue cycles</th><td>0 to remaining non-finalized educators</td><td>Finalized and overdue counts cannot overlap.</td></tr>
+<tr><th scope="row">Published walkthroughs per educator</th><td>0 to 8</td><td>The preview reports the resulting total.</td></tr>
+<tr><th scope="row">Framework</th><td>Pennsylvania Act 13, Maine PEPG, or Portland PEPG</td><td>Use the profile menu for exact selection; recognized framework language can also set it.</td></tr>
+<tr><th scope="row">Intentionally thin evidence</th><td>None or Domain 1 to 4</td><td>Creates a safe fictional evidence-gap exercise.</td></tr>
+</table>
+</div>
+<ol>
+<li><strong>Natural language only:</strong> type a concrete request such as <em>18 educators, 3 buildings, 4 overdue, 2 finalized, 2 walkthroughs per educator, Portland framework, thin evidence in Domain 3</em>, then choose <strong>Interpret request locally</strong>. The result names recognized settings, corrections, and clauses it ignored. Reword only the ignored part; do not assume it was applied.</li>
+<li><strong>Manual only:</strong> start with <em>Small-school tour</em>, <em>Busy midyear</em>, or <em>Evidence-gap review</em>, then edit the number fields and menus. A normalization warning shows every requested-to-applied correction.</li>
+<li><strong>Combined:</strong> interpret a sentence first, then fine-tune any field manually. Manual values visible at preview time are authoritative.</li>
+</ol>
+<p>Choose <strong>Preview changes</strong> and inspect the educator, building, finalized, overdue, and walkthrough totals. Nothing changes yet. <strong>Apply this simulated scenario</strong> replaces only the fictional workspace. <strong>Undo last simulation</strong> remains available while the Simulation Studio is mounted; export a sample JSON if you need a durable comparison across reloads.</p>
 
 <h2 id="tour">3. A Tour of the Workspace</h2>
 <p>Evaluators see eight tabs. The <strong>Overview</strong> is the daily home base: what is coming due, how far the roster has progressed, and how the selected educator's final evaluation is composed.</p>
@@ -320,7 +365,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <h2 id="frameworks">6. Framework Profiles</h2>
 <p>Choose the profile on the Setup tab. Every record permanently remembers which framework and weights it was scored under, so changing profiles mid-year never rewrites old scores.</p>
 <figure>
-<img src="educator-evaluation-manual-assets/06-setup.jpg" width="1770" height="1200" loading="lazy" alt="Setup tab headed Setup, sources, and sharing, with a link to this user manual. The Workspace setup card holds organization, building, academic year, evaluator name and initials, and an Evaluation framework dropdown set to Pennsylvania Act 13 with Danielson 2021, above a note that full performance-level rubric text is not bundled. An Official references card lists four links including the Pennsylvania Department of Education and the Danielson Group, above an amber note explaining that this workspace uses assignment-aware 70/10/10/10 rather than the older 50 percent observation model.">
+<img src="educator-evaluation-manual-assets/06-setup.jpg" width="1280" height="720" loading="lazy" alt="Setup tab showing the Workspace setup card with organization, building, academic year, evaluator name and initials, and an Evaluation framework dropdown set to Pennsylvania Act 13 with Danielson 2021. Beside it, the Official references card lists four links including the Pennsylvania Department of Education and the Danielson Group, above an amber note explaining that this workspace uses assignment-aware 70/10/10/10 rather than the older 50 percent observation model.">
 <figcaption>Workspace setup and the framework picker, with the official references for whichever profile is active.</figcaption>
 </figure>
 <h3>Pennsylvania Act 13 (Danielson 2021)</h3>
@@ -396,32 +441,118 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <blockquote><p><strong>Get IT permission first.</strong> The portal must live in a district-owned Google account, never a personal one, and district IT and leadership should approve it like any system that touches personnel records, including LEA authorization, a privacy and security review, and approval of any rating forms.</p></blockquote>
 <p>The portal is a separate deployment from the AlloFlow Class Mailbox. The mailbox is deliberately open to anyone with the link, because homework is low-stakes. The evaluation portal is the opposite: district-domain accounts only, and it fails closed without one.</p>
 <ol>
-<li>A district administrator copies <code>apps_script/educator_evaluation/</code> (Code.gs, Portal.html, appsscript.json) into a district-owned Apps Script project.</li>
-<li>They run the one-time <code>setupEvaluationRepository</code> with the district domain, bootstrap admin, educators, members, and evaluator assignments. The package README shows the exact call.</li>
-<li>They deploy as a Web app with <strong>Execute as: Me</strong> and <strong>Who has access: users in your domain</strong>, then verify with <code>verifyDeploymentIdentity()</code>.</li>
-<li>Each user pastes the deployment's <code>/macros/s/&hellip;/exec</code> link into AlloFlow's Project Settings, or bookmarks it directly. Opening it signs them in with their district Google account. The server, not the link, decides their role and which records they see.</li>
+<li><strong>Create a district-owned standalone Apps Script project.</strong> Add all four required files: <a href="https://alloflow-cdn.pages.dev/apps_script/educator_evaluation/Code.gs"><code>Code.gs</code></a>, <a href="https://alloflow-cdn.pages.dev/apps_script/educator_evaluation/Index.html"><code>Index.html</code></a>, <a href="https://alloflow-cdn.pages.dev/apps_script/educator_evaluation/Portal.html"><code>Portal.html</code></a>, and <a href="https://alloflow-cdn.pages.dev/apps_script/educator_evaluation/appsscript.json"><code>appsscript.json</code></a>. In Project Settings, first enable display of the manifest.</li>
+<li><strong>Review scopes and ownership with district IT.</strong> The project uses the deployment owner's Drive for the private repository. Record who assumes ownership if that account changes.</li>
+<li><strong>Add a temporary no-argument setup wrapper.</strong> Apps Script's Run button cannot supply the object argument directly. Paste the template below at the end of <code>Code.gs</code>, replace every example value, run <code>runDistrictSetupOnce</code> as the same account named by <code>bootstrapAdmin</code>, save the returned repository IDs, then delete the wrapper and save again.</li>
+<li><strong>Deploy a Web app.</strong> Choose <strong>Execute as: Me</strong> and <strong>Who has access: users in your domain</strong>; never choose Anyone. Copy the resulting <code>/macros/s/&hellip;/exec</code> URL.</li>
+<li><strong>Verify before real records.</strong> Run <code>verifyDeploymentIdentity()</code>, then test the URL as an administrator, an assigned evaluator, an assigned educator, an unlisted same-domain account, and a personal Gmail account. The last two must receive Access unavailable; each permitted account must see only its authorized scope.</li>
+<li><strong>Register the reviewed URL.</strong> Re-run the setup wrapper with the exact <code>webAppUrl</code> included, remove the wrapper again, and give staff only that reviewed <code>/exec</code> link. Google sign-in and server assignments, not possession of the link, decide access.</li>
 </ol>
+<pre aria-label="District portal one-time setup wrapper"><code>function runDistrictSetupOnce() {
+  return setupEvaluationRepository({
+    allowedDomain: 'example.k12.pa.us',
+    bootstrapAdmin: 'principal@example.k12.pa.us',
+    adminDisplayName: 'Principal',
+    organization: 'Example School District',
+    building: 'Example School',
+    academicYear: '2026-27',
+    webAppUrl: '', // add the reviewed /exec URL on the second run
+    teachers: [{
+      id: 'teacher-001', code: 'T-001', name: 'Educator Name',
+      building: 'Example School', assignment: 'Grade 6',
+      employeeType: 'professional', buildingData: true,
+      teacherSpecificData: true, evaluator: 'Evaluator'
+    }],
+    members: [
+      { email: 'principal@example.k12.pa.us', displayName: 'Principal', role: 'admin', active: true },
+      { email: 'evaluator@example.k12.pa.us', displayName: 'Evaluator', role: 'evaluator', active: true },
+      { email: 'teacher@example.k12.pa.us', displayName: 'Educator', role: 'teacher', teacherId: 'teacher-001', active: true }
+    ],
+    assignments: [
+      { teacherId: 'teacher-001', evaluatorEmail: 'evaluator@example.k12.pa.us', active: true }
+    ]
+  });
+}</code></pre>
+<p><strong>Current operational boundary:</strong> treat this package as a district-reviewed pilot until the district has documented and tested backup/restore, the archive-first annual rollover below, retention and legal-hold handling, authorized deletion, deployment-owner transfer, and official-record handoff. The portal makes rollover safer; it does not make those lifecycle responsibilities disappear.</p>
 <figure>
-<img src="educator-evaluation-manual-assets/11-portal-evaluator.jpg" width="1770" height="1200" loading="lazy" alt="The district portal in an evaluator's browser. A green banner reads District Google account with the signed-in address, Evaluator access, and Saved to district repository, beside buttons for Refresh, Email educator a portal notice, and Share released summary to educator's Drive. The eight evaluator tabs and the overview cards look the same as the on-device workspace, and there is no role switch.">
+<img src="educator-evaluation-manual-assets/11-portal-evaluator.jpg" width="1770" height="1200" loading="lazy" alt="The district portal in an evaluator's browser. A green banner identifies the signed-in district account and evaluator access beside controls for refreshing, sending a content-free portal notice, and reviewing released-summary access. The server, rather than a role switch, decides which records are visible.">
 <figcaption>The connected portal. The signed-in identity replaces the role switch, because the server decides what each person can see.</figcaption>
 </figure>
-<p>After connecting, the <strong>Setup health</strong> panel confirms the deployment is configured correctly, checking the domain lock, repository files, and assignments before anyone relies on it. It also re-hashes the audit log and reports whether any entry has been edited, deleted, or reordered since it was written, so an administrator can confirm the record is intact without opening the script editor.</p>
+<p>After connecting, the <strong>Setup health</strong> panel confirms the deployment is configured correctly, checking the domain lock, repository files, assignments, unresolved release/rollover recovery, and whether the effective deployment owner still matches the bootstrap administrator before anyone relies on it. It also re-hashes the audit log and reports whether any entry has been edited, deleted, or reordered since it was written, so an administrator can confirm the record is intact without opening the script editor. An owner mismatch is a warning, not an ownership-transfer tool: district IT must transfer and test Apps Script and Drive custody through approved Google Workspace procedures.</p>
+
+<h3 id="district-operations">Routine district administration without the script editor</h3>
+<p>An authorized administrator now has a <strong>District operations center</strong> inside <strong>Setup</strong>. It is for recurring work after the one-time repository deployment. Each sensitive operation follows the same pattern: enter the request, review a server-produced summary that changes nothing, check the explicit acknowledgment, then confirm. Reviews are tied to the signed-in administrator and current repository state, expire after ten minutes, and cannot be reused.</p>
+<h4>Accounts and evaluator assignments</h4>
+<ol>
+<li>Create the educator profile in <strong>Staff</strong> first. The profile ID is an opaque application ID, not an email or employee number.</li>
+<li>Open <strong>Setup &rarr; District operations center &rarr; Accounts and evaluator assignments</strong>. Wait for the current managed member table to load.</li>
+<li>For an educator account, enter the managed-domain email, display name, choose <strong>Educator</strong>, and link the correct educator record. For an evaluator or administrator, choose that role; no educator link is used.</li>
+<li>Select <strong>Review member change</strong>. Compare the normalized managed email, role, record link, and active status. Check the legitimate-educational-interest acknowledgment, then choose <strong>Confirm directory change</strong>.</li>
+<li>To authorize an evaluator, choose the educator and an active evaluator/administrator member, set the assignment active or inactive, then use <strong>Review assignment change</strong> and the same confirmation step.</li>
+</ol>
+<p>The portal blocks an educator account that points to a missing educator, an assignment to a missing or inactive evaluator, removal of the bootstrap administrator, or a change that would leave no active administrator. If any other member or assignment changes during review, reload and review again.</p>
+<h4>Annual cycle due-date schedule</h4>
+<ol>
+<li>Open <strong>Annual cycle due-date schedule</strong>, choose the date, and optionally enter an exact building name.</li>
+<li>Choose <strong>Open cycles without a due date</strong> for the safest fill-in operation, or <strong>All open cycles</strong> only when replacing current dates is intended. Inactive and finalized cycles are never changed.</li>
+<li>Select <strong>Review schedule impact</strong>. Read the affected count, finalized count skipped, and sample names. A zero-result review cannot be confirmed.</li>
+<li>Confirm the scope and apply. Then choose <strong>Reload scheduled records</strong> and spot-check the Staff list.</li>
+</ol>
+<h4>Audited private exports and official-record handoff</h4>
+<blockquote><p><strong>Private export is not official-record filing.</strong> The portal creates the requested file privately in the deployment owner's <strong>Authorized exports</strong> folder. It does not email, share, move, or declare that file to be the official personnel record.</p></blockquote>
+<ol>
+<li>Choose <strong>Roster and cycle status CSV</strong>, <strong>One educator's complete portal record</strong>, or <strong>Complete repository workspace backup</strong>.</li>
+<li>Write a specific authorized purpose, such as the approved annual HR handoff under a named district procedure. Avoid generic text such as “backup.”</li>
+<li>Select <strong>Review private export</strong>. Verify the scope, named educator when applicable, current counts, purpose, and private destination.</li>
+<li>Confirm district authorization, destination, retention, legal hold, and handoff. Select <strong>Create verified private export</strong>. The server re-reads and hashes the stored bytes before returning a Drive link and writes the event to the canonical audit.</li>
+<li>Open the Drive link, preserve the displayed SHA-256 under district procedure, complete the approved handoff, and document custody. Delete or retain the private working export only according to district policy.</li>
+</ol>
+<h4>Archive inventory and non-destructive restore rehearsal</h4>
+<ol>
+<li>Select <strong>Load and verify annual archives</strong>. The portal lists only files in this repository's private <strong>Annual archives</strong> folder and recalculates each embedded workspace hash.</li>
+<li>For a verified archive, choose <strong>Review rehearsal</strong>. Compare archived year/revision and record counts with the active year/revision.</li>
+<li>Acknowledge that the action creates a separate candidate and does not perform a live restore. Choose <strong>Create private restore candidate</strong>.</li>
+<li>Open the candidate in the private <strong>Restore rehearsals</strong> folder and have district IT test its contents through the approved recovery procedure. The live workspace remains unchanged; the portal intentionally offers no one-click production restore.</li>
+</ol>
+<div class="good"><strong>Recommended operating rhythm:</strong> run Setup health before a scheduled bulk change, keep the review card with the district change ticket, spot-check after reload, verify the audit event, and rehearse at least one annual archive in a non-production process before the next rollover.</div>
+
+<h3 id="annual-rollover">Annual rollover: archive first, then start the new year</h3>
+<blockquote><p><strong>Administrator-only and high impact.</strong> Complete this in a test repository first. The workflow creates and verifies a private archive before changing the active workspace, but it does not select your retention period, execute a legal hold, transfer ownership, or file the record in your official HR/records system.</p></blockquote>
+<ol>
+<li><strong>Finish district preflight.</strong> In the portal, open <strong>Setup</strong>, run <strong>Setup health</strong>, and resolve any repository, workspace-integrity, audit-chain, owner-continuity, released-summary recovery, or rollover-recovery warning. Confirm that district backup/restore, retention, legal hold, official-record handoff, and owner succession are documented and tested.</li>
+<li><strong>Open Annual rollover &amp; continuity.</strong> Enter the immediately following academic year in <code>YYYY-YY</code> form. For example, an active <code>2026-27</code> workspace can advance only to <code>2027-28</code>. Choose <strong>Review annual rollover</strong>. Review changes nothing.</li>
+<li><strong>Read the live impact review.</strong> It lists active educators, finalized cycles, open cycles, current walkthroughs, formal observations, SPMs, comments, prior cycle snapshots, and released-document references. The review expires after ten minutes and becomes stale after any intervening workspace save.</li>
+<li><strong>Make an explicit custody decision.</strong> Check the district-custody acknowledgment only after verifying backup/restore, retention, legal hold, official-record handoff, and deployment-owner responsibility. If open cycles exist, separately acknowledge that they will be preserved in the archive but will not carry into the new active year.</li>
+<li><strong>Create the archive and start the year.</strong> Choose <strong>Create archive &amp; start …</strong>. The server creates a private JSON file in the repository's <strong>Annual archives</strong> folder, re-reads it, checks the embedded workspace hash and exact stored bytes, and only then writes the clean active year.</li>
+<li><strong>Verify the result.</strong> Open the returned <strong>verified private archive</strong> link, record its Drive location and archive ID under district procedure, confirm the file is private, then choose <strong>Reload active year</strong>. Run Setup health again.</li>
+</ol>
+<h4>What is retained and what is reset</h4>
+<div class="tablewrap"><table>
+<caption>Annual rollover treatment</caption>
+<tr><th scope="col">Retained in the new active workspace</th><th scope="col">Reset for the new active year</th><th scope="col">Preserved outside the active year</th></tr>
+<tr><td>Educator roster and profile identifiers, active/inactive status, member accounts, evaluator assignments, framework configuration, immutable prior <code>cycleSnapshots</code>, and audit history.</td><td>Due dates, cycle status, activity/finalization/lock timestamps, current ratings, weights and final score, educator statement, released-document pointer, walkthroughs, formal observations, SPMs, and comments.</td><td>The complete pre-rollover workspace in the verified private JSON archive. Existing released Google Docs remain where they are and are never deleted or unshared by rollover.</td></tr>
+</table></div>
+<p>Resetting the active <em>pointer</em> to a released summary does not delete that Drive document. The old pointer, permissions, and document context remain in the archive, and the file remains subject to district retention and legal-hold rules. The archive is intentionally private to the deployment owner; districts that require independent custody must copy or export it through an approved, auditable handoff.</p>
+<h4>If rollover is interrupted</h4>
+<p>If the archive is verified but the active commit cannot be confirmed, the portal reports <strong>Annual rollover recovery required</strong> and blocks another review. Do not keep clicking rollover. Choose <strong>Recheck interrupted rollover</strong>. The server reopens and verifies the recorded archive, then clears the block only if it can prove one of two states: the new-year commit is present, or the exact old revision and old academic year are unchanged. In the second case the verified archive is kept and a fresh review can be started. If the workspace is in any mixed state, the block remains and district IT must compare the active <code>workspace.json</code>, its metadata row, pending journal, and the exact annual archive before proceeding. Never delete a released document or archive merely to clear a warning.</p>
 
 <h2 id="sharing">10. The Released Summary: How It Arrives and What It Says</h2>
-<p>In the district portal, when an evaluator releases a finalized evaluation:</p>
+<p>In the district portal, releasing a finalized evaluation is a <strong>review, then confirm</strong> workflow. Opening the review changes nothing:</p>
 <ol>
-<li>The summary is generated as a <strong>Google Doc</strong> in a private "Released evaluations" folder owned by the district deployment account.</li>
-<li>The teacher's district account is added as a <strong>viewer</strong> of that one document, so it appears in their Drive under "Shared with me."</li>
-<li>Email notifications are <strong>content-free</strong>, saying only that there is portal activity. No ratings or details travel by email.</li>
-<li>When the teacher opens their summary, an <strong>opened receipt</strong> is recorded, so both parties can see the evaluation was actually received.</li>
+<li>Select the finalized educator and choose <strong>Review &amp; share released summary</strong>. The server resolves the active educator member account; the browser does not supply or edit the recipient.</li>
+<li>Read the disclosure card. It names the educator, exact managed Drive account, finalization time, intended access, notification boundary, and whether the action will create, verify, or replace a document. The review token expires after ten minutes and becomes invalid if the record changes.</li>
+<li>Check the confirmation only after verifying the account, then choose <strong>Confirm and grant access</strong>. The summary is generated as a Google Doc in the private <strong>Released evaluations</strong> folder and that single file is shared view-only with the educator. The initiating evaluator is also given access when they are not the deployment owner, so <strong>Open current summary</strong> behaves as labeled.</li>
+<li>Choosing <strong>Review released-summary access</strong> later verifies or restores access to the <em>same immutable document</em>; it does not quietly create duplicates. A replacement is offered only when the recorded file is unavailable, and the old pointer is retained as superseded history.</li>
+<li>This Drive action does not send the separate content-free portal email. Use <strong>Email educator a portal notice</strong> deliberately if one is needed. Google can still surface Drive access in its own activity or notification interfaces, so the tool does not promise that Drive itself is silent.</li>
+<li>When the educator follows the portal summary link, a <strong>link-opened receipt</strong> is attempted. It records that the link was clicked, <strong>not that the document was read, understood, or actually received</strong>. If that write fails, the summary still opens and the portal now displays the receipt error instead of suppressing it.</li>
 </ol>
-<p>Sharing is a deliberate evaluator action at release time, never a silent background job. In the on-device workspace, use <strong>Export growth snapshot</strong> instead: it produces a formative, ratings-free file you can hand to an educator directly.</p>
+<p>Sharing is a deliberate evaluator action, never a silent background job. If Drive access succeeds but the repository commit cannot yet be confirmed, the portal says <strong>Release recovery required</strong>, disables another attempt, and tells an administrator to run Setup health. A failure before commit attempts to remove newly granted viewers and move the uncommitted file to trash; an unconfirmed cleanup also appears in Setup health. Do not retry until the recovery item has been inspected. District IT should still test recipient access, tenant-specific Drive activity, recovery, retention, and legal-hold procedures before production use. In the on-device workspace, use <strong>Export growth snapshot</strong> instead: it produces a formative, ratings-free file you can hand to an educator directly.</p>
 <h3>What the document actually says</h3>
 <p>Below is a real summary produced by the tool, abridged, using fictional names. Notice the order: the educator's own words come first, strengths come before growth areas, and the arithmetic is explained rather than asserted.</p>
 <section class="doc" aria-label="Example of a released evaluation summary">
 <p class="doc-title">Educator Effectiveness Summary — 2026-27</p>
 <p class="meta">Prepared for Teacher One on 2026-08-13 by Principal Rivera.</p>
-<p>This document is a plain-language summary of your finalized evaluation. It is shared view-only with you and your evaluation team — no one else. The district portal remains the official record and holds every observation, note, timestamp, and revision behind this summary; nothing here is hidden from you there.</p>
+<p>This document is a plain-language summary of your finalized evaluation. It is shared view-only with you. Your district decides which authorized personnel system is the official record; the portal holds the observations, timestamps, and revisions used to assemble this copy.</p>
 <h4>In your own words</h4>
 <p>This year I rebuilt my small-group reading block so every student conferences with me at least twice a month. Attendance in my first period was uneven through the winter, and I want that context on the record alongside my ratings.</p>
 <p class="meta">Written by you in the portal (2026-08-13); no one edited it.</p>
@@ -456,36 +587,49 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <p class="doc-note"><small>The wording adapts to your framework profile: a Maine or Portland workspace names that plan's rating levels instead of the statewide Pennsylvania bands.</small></p>
 
 <h2 id="privacy">11. Privacy, Records, and Boundaries</h2>
+<p>“Local” describes the normal working store, not every action a user can take. Use this data-flow table when reviewing the tool with privacy, labor, records, and IT staff.</p>
+<div class="tablewrap">
+<table>
+<caption>Where information goes and what triggers it</caption>
+<tr><th scope="col">Action</th><th scope="col">Destination</th><th scope="col">Information involved</th><th scope="col">Trigger and choice</th></tr>
+<tr><th scope="row">Private work and delayed save</th><td>This browser profile on this device</td><td>The complete local workspace</td><td>Automatic after an edit; visible save status reports success or failure.</td></tr>
+<tr><th scope="row">Workspace, report, packet, or recovery export</th><td>The download location and any system through which you later store or send the file</td><td>The export's stated scope; workspace JSON is the broadest</td><td>User selects a Download/Export action. Review and store it only in an authorized location.</td></tr>
+<tr><th scope="row">Principal Drive helper</th><td>The verified principal's district Drive and one reviewed recipient's Drive access</td><td>One validated educator packet</td><td>Principal completes a disclosure review, then explicitly confirms. Google Drive is asked to notify the recipient.</td></tr>
+<tr><th scope="row">District portal</th><td>The district deployment owner's Google Workspace repository; released copies may be shared to an educator's Drive; annual archives remain private in the repository owner's Drive until an approved district handoff</td><td>Authorized workspace records, released summaries, and a complete pre-rollover workspace inside each verified annual archive</td><td>Managed sign-in plus server role/assignment checks; sharing and administrator-confirmed annual rollover are separate actions.</td></tr>
+<tr><th scope="row">AI reflection</th><td>The AI provider configured in AlloFlow</td><td>The selected educator's evidence notes and ratings; the name field is omitted</td><td>Off by default. An evaluator enables it under Setup → Advanced workspace options and requests a second read.</td></tr>
+<tr><th scope="row">QR code</th><td>No record destination; it encodes only a workspace or portal URL</td><td>A link, never the current workspace records</td><td>Visible only for the private path or a connected portal.</td></tr>
+</table>
+</div>
 <ul>
-<li><strong>On-device workspace:</strong> nothing is uploaded, ever. Records live in your signed-in browser profile on this device, so anyone who can unlock that profile can open them. Use a device you control.</li>
-<li><strong>AlloFlow adds no encryption of its own.</strong> On-device records are protected by your device sign-in and whatever the device provides, which on a managed district laptop usually means the user profile is encrypted at rest. That is a question for IT, not an assumption to make.</li>
-<li><strong>Retention applies here too.</strong> Evaluation records are subject to your district's retention and discoverability rules wherever they live, including on your own laptop.</li>
-<li><strong>District portal:</strong> all data stays inside the district's own Google Workspace. The server code makes <strong>no external network calls</strong>, so nothing leaves the district tenant, which is what lets it operate under the district's existing Google Workspace for Education agreement.</li>
-<li><strong>Repository files are private by verified default.</strong> The deployment checks that its Drive folder and files are private and refuses to proceed if that cannot be confirmed.</li>
-<li><strong>Evaluations are personnel records.</strong> Treat them with the confidentiality your state law and collective bargaining agreement require. FERPA governs student records and enters here only if observation evidence names identifiable students, so keep evidence focused on educator practice.</li>
-<li><strong>Role switching is a preview, not authentication.</strong> Only the portal, with district sign-in, gives educators real authenticated access.</li>
-<li><strong>The official record:</strong> unless your district decides otherwise, official summative ratings and anything requiring two-party records belong in the district's authorized personnel system.</li>
-<li><strong>No AI scoring.</strong> Ratings are entered by people. The tool organizes evidence; it does not judge it.</li>
+<li><strong>Names-limited is not anonymous.</strong> Omitting the educator's name does not de-identify narrative evidence, comments, class details, dates, or contextual statements. Review free text before every export or share.</li>
+<li><strong>AlloFlow adds no encryption of its own.</strong> Local records inherit protection from the device account and browser profile. Confirm device encryption and management with IT.</li>
+<li><strong>Retention and discoverability apply everywhere.</strong> Local browser records, downloads, Drive packets, portal repositories, and AI-provider processing must all fit district policy and any collective bargaining agreement.</li>
+<li><strong>Evaluations are personnel records.</strong> FERPA applies when evidence includes identifiable student education information; keep evidence focused on educator practice and remove unnecessary student identifiers.</li>
+<li><strong>Role switching and Educator preview are not authentication.</strong> The local educator preview is read-only and helps an evaluator inspect visibility. Only a managed portal sign-in or a deliberately shared packet grants another person access.</li>
+<li><strong>The district decides the official record.</strong> The tool and helper do not make that decision.</li>
+<li><strong>No AI scoring.</strong> Ratings are entered by people. Optional AI reflection comments on documentation only and must remain advisory.</li>
 </ul>
 
 <h2 id="backup">12. Backing Up and Moving Devices</h2>
-<p>The on-device workspace lives in your browser's storage. That is what keeps it private, and it is also its main risk: <strong>clearing your browser data will erase it</strong>, and it does not follow you to another computer. The Reports &amp; audit tab is where you protect against that.</p>
+<p>The on-device workspace lives in your browser's storage. That is what keeps normal editing local, and it is also its main risk: <strong>clearing browser data can erase it</strong>, and it does not follow you to another computer. A persistent header status distinguishes Saving, Saved on this device, and Changes are not saved.</p>
 <figure>
 <img src="educator-evaluation-manual-assets/09-reports-audit.jpg" width="1770" height="1200" loading="lazy" alt="Reports and audit tab headed Audit, reports, and handoff. The left column shows an audit timeline listing dated events including assigned, prework submitted, observed, evidence published, reflection submitted, and signed, each naming the actor and role. The right column holds an Export and transfer card with buttons for Export workspace JSON, Export status CSV, Workflow summary HTML, and Growth snapshot, an Import another device export section, and a warning that the district-authorized system remains the official summative rating record.">
 <figcaption>The audit timeline records who did what and when. The export card beside it is your backup and transfer route.</figcaption>
 </figure>
 <ul>
 <li><strong>Export workspace JSON</strong> is your backup. Take one at the end of any working session you would not want to redo, and keep it in district-authorized storage.</li>
-<li><strong>Import another device export</strong> moves a workspace to a new computer. Import <em>replaces</em> the current workspace after validation, so export first if the destination has anything you want to keep.</li>
+<li><strong>Import workspace or educator response</strong> stages a review instead of applying on file selection. A workspace review shows organization, year, educator and record counts, and export time. Replacement automatically downloads a pre-import checkpoint; <strong>Undo import</strong> remains until the next edit. Device-specific helper URLs and verification are removed.</li>
+<li><strong>A response import</strong> lists the source packet, educator, response fields, stale records, and ignored fields before you apply it. The tool assigns receipt timestamps itself; timestamps edited into the file are not trusted.</li>
 <li><strong>Export status CSV</strong> and <strong>Workflow summary HTML</strong> are for reporting and handoff rather than backup.</li>
 <li><strong>Growth snapshot</strong> is the formative, ratings-free file you can share with an educator directly.</li>
 </ul>
 <blockquote><p>Exports can contain confidential personnel information. Store and transmit them only through district-authorized systems, never personal email or cloud storage.</p></blockquote>
-<p>In the district portal this concern disappears: records live server-side in the district's Drive, and the portal keeps its own tamper-evident audit log. Each audit row is hashed together with the hash of the row before it, so an administrator can run <code>verifyAuditChain()</code> at any time and find out whether any row has been edited, deleted, or reordered since it was written.</p>
+<p><strong>If storage is corrupt:</strong> the app quarantines the raw value rather than silently replacing it with sample data. Download the damaged raw workspace for recovery, retry storage, or use the explicit two-confirmation fresh-start action. If storage is unavailable, continue only as a temporary session and export before closing. If a save fails, use <strong>Retry save</strong> and <strong>Download emergency backup</strong>.</p>
+<p>The district portal changes the backup owner; it does not remove the concern. Its annual rollover creates and verifies a private point-in-time archive before resetting active cycles, but that archive still lives under the deployment owner's Drive custody. District IT must define and test independent repository backup/restore, archive handoff, retention, legal hold, authorized deletion, annual rollover acceptance, and deployment-owner transfer. Its hash chain can detect many edits to retained rows, but without an independent external anchor it should be described as tamper evidence, not proof that no tail or whole-log deletion occurred.</p>
 
 <h2 id="phone">13. Using It on a Phone</h2>
 <p>Walkthroughs happen while you are standing in a doorway, so the workspace reflows to a single column on a phone. The tab strip scrolls sideways, cards stack, and buttons keep a large touch target.</p>
-<figure>
+<figure class="phone-shot">
 <img src="educator-evaluation-manual-assets/10-phone.jpg" width="804" height="1600" loading="lazy" alt="The workspace at phone width showing the Walkthroughs tab in a single column: a horizontally scrolling tab strip, a large Start walkthrough button, and stacked visit records badged Private draft and Published, each showing the educator, date, duration, and note.">
 <figcaption>The Walkthroughs tab on a phone. Everything stacks into one column and nothing scrolls sideways except the tab strip.</figcaption>
 </figure>
@@ -496,12 +640,12 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 </ul>
 
 <h2 id="accessibility">14. Accessibility</h2>
-<p>The workspace is built to the same standard as the rest of AlloFlow and is checked automatically on every change.</p>
+<p>The workspace includes keyboard, screen-reader, contrast, responsive, and touch-target contracts. Automated checks are one layer of review, not a guarantee that every screen or assistive-technology combination has zero barriers.</p>
 <ul>
 <li><strong>Keyboard throughout.</strong> Tabs, forms, dialogs, and record controls are reachable and operable by keyboard. The first-launch dialog holds focus until you choose, so keyboard and screen-reader users cannot land behind it.</li>
 <li><strong>Screen-reader structure.</strong> The tab strip and panels use a proper tab and tabpanel relationship, so each panel announces the tab it belongs to.</li>
-<li><strong>Touch targets</strong> are sized for a phone in a hallway between visits: primary buttons, inputs, and the role switch are at least 44 pixels tall, and no control falls below the 24 pixel minimum that WCAG sets. Both floors are checked automatically at desktop and phone widths.</li>
-<li><strong>Automated checks.</strong> Every screen in both roles is scanned against WCAG 2.1 AA rules as part of the test suite, and the tool ships with zero violations. This manual is scanned the same way.</li>
+<li><strong>Touch targets</strong> are designed for a phone in a hallway between visits. Key buttons and inputs target 44 pixels; source and browser tests check the 24 CSS-pixel WCAG 2.2 Target Size (Minimum) floor where applicable.</li>
+<li><strong>Automated checks.</strong> Static, component, keyboard-target, and selected real-browser tests cover high-risk screens. They do not replace screen-reader testing, zoom/reflow review, or district acceptance testing with the actual devices staff use.</li>
 <li><strong>Dark and light.</strong> Both this manual and the workspace follow your system's colour scheme.</li>
 </ul>
 <h3>Language</h3>
@@ -509,7 +653,7 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <p>Automated checks catch a great deal but not everything. If you hit something that does not work with your assistive technology, that is a bug worth reporting, not a limit you should work around.</p>
 
 <h2 id="qr">15. Sharing the Tool by QR</h2>
-<p>The Setup tab includes a <strong>Share by QR</strong> card with a scannable code and a copy-link button.</p>
+<p>The Setup tab shows <strong>Share by QR</strong> only after you choose the private on-device path or connect a district portal. The principal-helper path uses its saved private <code>/exec</code> launcher instead. The QR card keeps a selectable URL visible if QR drawing or clipboard access fails.</p>
 <figure>
 <img src="educator-evaluation-manual-assets/07-share-qr.jpg" width="1770" height="1200" loading="lazy" alt="Share by QR card on the Setup tab, showing a QR code beside the address https://alloflow-cdn.pages.dev/educator-evaluation and a Copy link button, with the caption that anyone can scan this to open their own private on-device workspace and that your data is not shared by the code.">
 <figcaption>The Share by QR card in the on-device workspace, pointing to the published page rather than to anything on your machine.</figcaption>
@@ -522,28 +666,18 @@ html:root[data-allo-theme="easyread"]{--bg:#faf8ef;--panel:#fffefa;--ink:#18202f
 <h2 id="packet">16. Sending an Evaluation to an Educator by Email</h2>
 <p>The QR card above shares the <em>tool</em>. This section is about sharing <em>one educator's evaluation</em> with
 that educator, and getting their written response back, without any district server.</p>
-<p>On <strong>Reports &amp; audit</strong>, with an educator selected, choose <strong>Educator packet (send to
-educator)</strong>. You get a single HTML file containing only that educator's records: their own walkthroughs,
-observations and student-measure records, and nothing that reveals which other educators exist. A checkbox lets you
-send codes instead of names.</p>
-<p>Email that file to the educator as an attachment. They can simply open it and read their evaluation in a browser,
-with nothing installed and no account. If they want to respond, the same file contains a form: a statement in their
-own words, a reflection on each observation, and a box confirming they have read it. Clicking the button downloads a
-small response file, which they email back to you.</p>
-<p>Import that response with the same <strong>Import</strong> control you use for a workspace file. It merges into the
-educator's record and the timeline notes where it came from.</p>
+<p>On <strong>Reports &amp; audit</strong>, select one educator and choose <strong>Educator packet (send to educator)</strong>. The packet boundary is state-based: it includes published walkthroughs, released formal evidence and ratings, eligible SPM records, permitted shared comments, and the educator's own submitted words. Evaluator drafts, unpublished evidence, unsigned ratings, internal receipts, audit rows, and every other educator are excluded.</p>
+<p>Preview the downloaded HTML before sending it. <strong>Limit profile names to codes</strong> changes known profile labels, but it does not rewrite narrative evidence or comments; free text may still identify educators, students, colleagues, or classes.</p>
+<p>Email the HTML only through a district-approved channel. The educator can open it in a browser and read the released evaluation with no account. Its response form provides their statement, eligible reflections, and a separate acknowledgment for each eligible walkthrough or formal record. Acknowledgment means “received/read,” not agreement or a contractual signature. The form downloads a small JSON response that they return to the evaluator.</p>
+<p>Use <strong>Import workspace or educator response</strong>, then choose the response JSON. File selection does not apply anything. Review the source packet id, educator, statement/reflection/acknowledgment counts, stale records, and ignored fields, then choose <strong>Apply this reviewed response</strong>.</p>
 <p><strong>What a returned file can and cannot change.</strong> Only the educator's own words are accepted: their
-statement, their reflections, and their read-receipt. Ratings, evidence and evaluator comments are ignored even if the
-file has been edited by hand, and the import tells you how many fields it dropped. If you changed a record after
-issuing the packet, the import says so rather than quietly overwriting what the educator replied to.</p>
-<p><strong>The receipt is not a signature.</strong> Ticking the box records that the educator read the evaluation. It
-is not the signature your district's evaluation form asks for, and it does not replace the conference where you and
-the educator both sign.</p>
+statement, eligible reflections, record-specific acknowledgment intent, and permitted response comments. Ratings, evidence, evaluator notes, workflow state, and supplied timestamps are ignored even if the file was edited by hand. The app stamps the receipt time and reports every stale or dropped field. If a source record changed after packet issue, that response is identified rather than quietly overwriting current work.</p>
+<p><strong>The receipt is not a signature.</strong> Each checkbox records acknowledgment intent for that specific record. It does not replace the conference or signature process required by district policy.</p>
 
 <h2 id="rubric">17. Using Your District's Own Rubric</h2>
 <p>The tool ships with three scoring profiles (Pennsylvania Act 13, Portland ME PEPG, and Maine PEPG). If your
 district uses a different instrument altogether, you can supply it.</p>
-<p>On the <strong>About</strong> tab, under <strong>Rubric</strong>, <strong>Download current rubric</strong> gives you
+<p>As an evaluator, open <strong>Setup &rarr; Advanced workspace options &rarr; Custom rubric</strong>. <strong>Download current rubric</strong> gives you
 the active one as a JSON file to use as a starting point. Edit the domains, their components, weights, colours and
 rating-band labels, then use <strong>Load a custom rubric</strong>. <strong>Restore the built-in rubric</strong> puts
 it back.</p>
@@ -564,9 +698,9 @@ questioned for thin evidence, and unrated domains are left alone. The point is n
 rests on little documented evidence is the one most likely to be overturned, so it is worth seeing before the record
 is finalised rather than afterwards.</p>
 <p><strong>The optional AI second read.</strong> Off by default. A district that permits it can enable
-<strong>AI reflection</strong> on the About tab. An evaluator can then ask a model whether the evidence
+<strong>AI reflection</strong> under <strong>Setup &rarr; Advanced workspace options</strong>. An evaluator can then ask a model whether the evidence
 <em>they wrote</em> supports the ratings <em>they assigned</em>, and what other readings that same evidence allows,
-including ones favourable to the educator.</p>
+including ones favourable to the educator. The educator's About tab is read-only and does not expose these evaluator controls.</p>
 <p>Three boundaries apply and they are deliberate. The model is asked about the documentation, never about the
 educator, and is explicitly instructed not to assign, suggest or imply a rating. Its answer is advisory: it is shown
 to the evaluator and is never written into the record, so nothing a model produces becomes part of a personnel file.
@@ -575,28 +709,34 @@ is opt-in, per workspace, and why the educator's name is not included in what is
 does not permit AI in evaluation, leave it off and everything else works unchanged.</p>
 
 <h2 id="share-helper">19. Sharing Through Your Own Drive (Optional)</h2>
-<p>Section 16 sends the packet as an email attachment, which needs nothing from anyone. This section
-is the optional upgrade: the same packet delivered through <em>your</em> Google Drive, so the share
-can be withdrawn on a date and every evaluation you send lands in one organised place.</p>
-<p>It needs a small Apps Script that <strong>you</strong> deploy in your own district account. It is
-not the district portal: it has no roster, no roles, and no repository, and only you can open it.
-The setup steps are in <code>apps_script/educator_evaluation_share/README.md</code>.</p>
-<p>Once deployed, you paste an exported packet into it along with the educator's email. It files the
-packet under <em>AlloFlow Evaluations / academic year / educator</em>, shares it with that educator
-as a commenter, and can end that access on a date you choose. A listing view shows everything filed
-for the year, so at the end of a cycle you move or copy one folder to wherever your district keeps
-evaluation records.</p>
-<p><strong>What it gives you that email cannot.</strong> An emailed attachment cannot be recalled.
-A Drive share can be withdrawn, and can expire on its own.</p>
-<p><strong>What to check before relying on expiry.</strong> Google only expires viewer and commenter
-access, only on some Workspace editions, and only within about a year. The helper has a check button
-that tells you whether expiry is available to your account before you depend on it, and after each
-share it says plainly whether the expiry was applied or whether the file is shared with no timer
-running.</p>
-<p><strong>What it does not do.</strong> It sends no email of its own, it cannot tell one person from
-another beyond you, and the folder lives in your account, so treat it as a working store and hand it
-over at the end of a cycle. Whether you may deploy Apps Script at all, and whether personnel records
-may be shared this way, are district policy questions rather than technical ones.</p>
+<p>This is the middle path: a validated one-educator packet is filed in one principal's district Drive and shared through one reviewed Drive permission. It has no roster, assignment model, shared live editing, or district-wide repository. Obtain approval for Apps Script, personnel records in Drive, retention, and account handoff first.</p>
+<figure>
+<img src="educator-evaluation-manual-assets/13-principal-helper.jpg" width="1280" height="720" loading="lazy" alt="Principal-managed Drive share helper setup card showing zero of seven stages complete, the next-step prompt, the personnel-record boundary warning, approval and project checkboxes, and the Copy Code.gs source control.">
+<figcaption>The principal-helper checklist is resumable. Source stages complete only after the expected file is fetched and copied successfully.</figcaption>
+</figure>
+<h3>The same seven setup stages shown in the app</h3>
+<p>Open <strong>Setup</strong>, choose <strong>Principal-managed Drive</strong>, and follow the resumable checklist. A copy control marks a source stage only after it fetches the expected file signature and the clipboard succeeds.</p>
+<ol>
+<li><strong>Confirm approval and account.</strong> Verify the intended district-managed Google account and district authorization.</li>
+<li><strong>Create the private project.</strong> Open <a href="https://script.new/">script.new</a>, verify the account again, and name the project <code>AlloFlow evaluation share helper</code>.</li>
+<li><strong>Replace Code.gs.</strong> Use <strong>Copy Code.gs</strong> or open <a href="https://alloflow-cdn.pages.dev/apps_script/educator_evaluation_share/Code.gs">the published source</a>; select all starter code, paste, and save.</li>
+<li><strong>Add the Index page.</strong> Choose <strong>+ → HTML</strong>, name it exactly <code>Index</code>, then use <strong>Copy Index.html</strong> or <a href="https://alloflow-cdn.pages.dev/apps_script/educator_evaluation_share/Index.html">open its source</a>.</li>
+<li><strong>Enable Drive API v3.</strong> In Project Settings, show <code>appsscript.json</code>, then use its copy control or <a href="https://alloflow-cdn.pages.dev/apps_script/educator_evaluation_share/appsscript.json">open the manifest source</a>.</li>
+<li><strong>Deploy privately and save the link.</strong> Choose <strong>Deploy → New deployment → Web app</strong>, set <strong>Execute as: Me</strong> and <strong>Who has access: Only myself</strong>, review the account and scopes, then paste the URL ending in <code>/exec</code> into Setup. Preview <code>/dev</code> links are rejected.</li>
+<li><strong>Run the deployment check.</strong> Open that exact saved URL and select <strong>Run deployment check</strong>. It must show helper version 3, the expected managed email/domain, and Drive API v3. Changing the URL or copying updated source clears the recorded confirmation.</li>
+</ol>
+<h3>Share and revoke one packet</h3>
+<ol>
+<li>In Evaluation <strong>Reports &amp; audit</strong>, export and locally preview one <strong>Educator packet (.html)</strong>.</li>
+<li>Open the private helper and run its deployment check before selecting a personnel file.</li>
+<li>Choose the HTML packet. The helper rejects arbitrary HTML and response packets, requires exactly one educator, and auto-fills educator/year metadata. A names-limited packet can still contain identifying free text.</li>
+<li>Enter and retype the educator's exact district email. The domain is locked to the verified account. Leave <strong>Viewer</strong> selected unless district procedure specifically needs Drive comments; those comments do not import into Evaluation. Choose an optional end date only after confirming tenant support.</li>
+<li>Confirm policy and choose <strong>Review; do not share yet</strong>. Inspect packet id and issue time, educator, folder, exact recipient, role, access end, and notification. Editing any field invalidates this snapshot.</li>
+<li>Choose <strong>Confirm and share this packet</strong>. A success message means Drive was re-read and the exact recipient, role, and expiration were proved. Google Drive is asked to email the recipient. Tell the educator to <strong>download the shared .html file and open it in a browser</strong>; Drive preview shows markup.</li>
+<li>Use <strong>Filed packets and live access status</strong> to re-read current permissions. Choose <strong>Revoke this live access</strong> for an active row. Success appears only after Drive proves every matching permission is absent. If an error names a recovery file, open that exact Drive link immediately and remove access manually.</li>
+</ol>
+<p><strong>Updates:</strong> replace all three source files, save, then choose <strong>Deploy → Manage deployments → Edit → New version</strong>. Reopen the same <code>/exec</code> link and run the check again. Editing source without creating a new version does not update the deployed helper.</p>
+<blockquote><p><strong>Custody boundary.</strong> The <em>AlloFlow Evaluations</em> folder is a principal-owned working store, not automatic records management. Move or copy the year folder into the district's authorized system at the required handoff point, document that handoff, and transfer project/folder ownership before the principal account changes.</p></blockquote>
 
 <h2 id="glossary">20. Glossary</h2>
 <dl>
@@ -615,10 +755,35 @@ may be shared this way, are district policy questions rather than technical ones
 
 <h2 id="troubleshooting">21. Troubleshooting</h2>
 <ul>
+<li><strong>“Changes are not saved” or a save-failed banner:</strong> stop editing, choose <strong>Retry save</strong>, then <strong>Download emergency backup</strong>. Check browser storage/privacy settings and available space. Do not close until you have an authorized recovery copy.</li>
+<li><strong>A damaged local workspace was detected:</strong> download the raw damaged value first. Retry storage or ask IT/data support to inspect that copy. Use the two-confirmation fresh-start action only after preserving it.</li>
+<li><strong>An import did not apply when you chose a file:</strong> this is intentional. Read the staged organization/year/counts or response-field review, then explicitly confirm. A workspace replacement downloads a checkpoint first.</li>
+<li><strong>A response shows stale or ignored fields:</strong> compare the packet issue/source time with the current record. Stale responses are identified; evaluator-controlled fields and file-supplied timestamps are dropped. Do not edit the response JSON to force a workflow transition.</li>
+<li><strong>You need to undo an import:</strong> use <strong>Undo import</strong> before making another edit. The prior workspace is intentionally discarded from undo history after the next mutation; the automatic checkpoint remains as a downloaded file.</li>
+<li><strong>Simulation Studio ignored part of a sentence:</strong> only the clauses listed as recognized were applied. Reword the ignored clause or set that parameter manually. Inspect normalization corrections and Preview before Apply.</li>
+<li><strong>A simulated value changed by itself:</strong> the preview enforces 1 to 60 educators, 1 to 8 buildings, 0 to 8 walkthroughs per educator, finalized no greater than staff, and overdue no greater than non-finalized staff. The correction list shows requested and applied values.</li>
+<li><strong>A custom rubric is rejected:</strong> return to <strong>Setup → Advanced workspace options</strong>, validate required unique domain ids/labels and weights, and test it in a fictional workspace before using it for a real cycle.</li>
+<li><strong>AI reflection is unavailable or fails:</strong> the evaluation record is unchanged. Confirm that the feature is enabled, an approved provider is configured, and district policy permits transmission. Never paste personnel data into an unapproved provider as a workaround.</li>
+<li><strong>A principal-helper source will not copy:</strong> use the visible <strong>view source</strong> link. “Unexpected source received” means the fetched file lacked its expected signature; do not paste it. Clipboard denial means select/copy from the source page manually.</li>
+<li><strong>The helper URL is rejected:</strong> save the deployed Apps Script URL ending in <code>/exec</code>. A <code>/dev</code> preview, editor URL, or shortened link is not accepted.</li>
+<li><strong>The helper remains locked:</strong> its check requires both a visible managed deployer email and Advanced Drive API v3. Reopen Apps Script under the intended district account, confirm the manifest/service, create a new deployment version, and run the check again.</li>
+<li><strong>The helper rejects the HTML file:</strong> export a fresh <strong>Educator packet (.html)</strong>. Arbitrary HTML, response packets, damaged metadata, year/name mismatches, and multi-educator data are blocked.</li>
+<li><strong>The helper says review is no longer current:</strong> any edit cancels the disclosure snapshot. Re-read every field and select <strong>Review; do not share yet</strong> again.</li>
+<li><strong>A recipient/domain or expiration is refused:</strong> never bypass the verified domain. Confirm the address. Viewer/commenter expiration depends on the Workspace edition and must generally be within one year; use no expiration plus documented revoke when policy permits.</li>
+<li><strong>Drive shows raw HTML:</strong> this is Drive preview behavior. The educator must download the `.html` file and open it locally in a browser.</li>
+<li><strong>Revoke cannot be proved:</strong> open the exact packet link in Drive, remove every matching educator permission manually, then run <strong>Filed packets and live access status</strong> again. Escalate to the principal/helper owner; do not ask the educator to send personnel content for diagnosis.</li>
 <li><strong>"This page must be opened from the district Apps Script web-app URL":</strong> the portal bundle was opened outside its deployment. Use the <code>/exec</code> link from your district administrator.</li>
 <li><strong>"The secure workspace could not be opened":</strong> this is the portal refusing to show anything, which is the design rather than a fault. The line underneath names the reason: an account that is not a member, a repository that was never set up, or the page opened outside its Apps Script address. Access is granted by the district, so the fix is with the administrator who deployed the portal, not on the page.</li>
-<li><strong>The portal looks out of date:</strong> the administrator should re-paste the current <code>Code.gs</code> and <code>Portal.html</code> and create a new deployment version. Apps Script serves the old version until a new one is deployed.</li>
-<li><strong>Setup health shows a warning:</strong> follow its specific message. It checks the domain lock, repository files, and assignments in order.</li>
+<li><strong>The portal looks out of date:</strong> the administrator should review and re-paste all four current package files: <code>Code.gs</code>, <code>Index.html</code>, <code>Portal.html</code>, and <code>appsscript.json</code>. Then create a new deployment version. Apps Script serves the old version until that version is deployed.</li>
+<li><strong>Setup health shows a warning:</strong> follow its specific message. It checks the domain lock, repository files, workspace metadata, owner continuity, release/rollover recovery, membership, assignments, and audit-chain integrity. Do not treat a green row as a substitute for district acceptance testing.</li>
+<li><strong>An operations-center review expired or became stale:</strong> do not retry the old confirmation. Reload the current directory or active workspace, recreate the request, and review the new server-produced impact. Reviews expire after ten minutes, become invalid after relevant repository changes, and are single-use.</li>
+<li><strong>A member or assignment is refused:</strong> confirm the address uses the configured managed domain, the educator profile already exists, and the chosen evaluator is an active evaluator or administrator member. The bootstrap administrator cannot be deactivated or demoted, and the last active administrator cannot be removed.</li>
+<li><strong>A schedule review finds zero educators:</strong> check the exact building spelling, whether <strong>missing dates</strong> was selected, and whether the relevant cycles are inactive or finalized. Finalized cycles are intentionally never changed by a bulk schedule.</li>
+<li><strong>An export was created but nobody can open it:</strong> this is the safe default. The file remains private to the deployment owner in <strong>Authorized exports</strong>. District personnel must use the approved records-handoff process; do not make the whole repository folder public.</li>
+<li><strong>An archive is marked Failed or a restore rehearsal is refused:</strong> stop. Do not edit the archive or attempt a live overwrite. Confirm that the selected file is in this repository's <strong>Annual archives</strong> folder, compare it with the recorded rollover audit, and escalate to district IT under the backup/recovery procedure.</li>
+<li><strong>Deployment owner continuity needs attention:</strong> stop before annual rollover or account retirement. The portal detected that the effective deployment owner no longer matches the bootstrap administrator. It intentionally returns no other account identity. District IT should verify the Apps Script deployment, private repository folder, spreadsheet/file ownership, recovery accounts, and the approved successor; the portal cannot transfer ownership itself.</li>
+<li><strong>Release recovery required:</strong> do not click release again. An administrator should run Setup health, inspect the exact file in the private <strong>Released evaluations</strong> folder, confirm the educator's live Drive permission and the portal pointer, and follow district retention/legal-hold procedure. If automatic cleanup failed, remove access and trash only the uncommitted file after positively matching it to the recovery event.</li>
+<li><strong>Annual rollover recovery required:</strong> do not start another rollover. In Setup, choose <strong>Recheck interrupted rollover</strong>. A result of <strong>completed</strong> means the server proved the reviewed new-year commit; reload and run Setup health. A result of <strong>archive only</strong> means it proved the old revision/year was unchanged; keep the archive and begin a fresh review only after checking it. A manual-recovery message means the state is ambiguous or the recorded archive failed verification; district IT must inspect the exact files and pending journal. Never delete archives or released documents to silence the warning.</li>
 <li><strong>A finalized record needs a correction:</strong> finalized records are immutable by design. Add an appended comment, record a new entry, or have the educator attach a statement.</li>
 <li><strong>Scores differ between old and new records:</strong> that is the framework snapshot working as intended (section 7). Each record keeps the framework and weights it was scored under.</li>
 <li><strong>Peer context is missing on the Trends tab:</strong> fewer than ten eligible peers contributed, so the comparison is suppressed to protect identities.</li>
@@ -655,8 +820,8 @@ may be shared this way, are district policy questions rather than technical ones
   function blocksFor(h2) {
     var out = [], n = h2.nextElementSibling;
     while (n && n.tagName !== 'H2') {
-      if (/^(P|LI|DT|DD|H3|H4|TD|TH|BLOCKQUOTE|FIGCAPTION)$/.test(n.tagName)) out.push(n);
-      else out.push.apply(out, n.querySelectorAll('p, li, dt, dd, h3, h4'));
+      if (/^(P|LI|DT|DD|H3|H4|CAPTION|TD|TH|BLOCKQUOTE|FIGCAPTION)$/.test(n.tagName)) out.push(n);
+      else out.push.apply(out, n.querySelectorAll('p, li, dt, dd, h3, h4, caption, th, td, figcaption'));
       n = n.nextElementSibling;
     }
     return out.filter(function (el) { return (el.textContent || '').trim().length > 1; });
@@ -668,8 +833,8 @@ may be shared this way, are district policy questions rather than technical ones
     current.blocks.forEach(function (b) { b.classList.remove('reading'); });
     current.btn.textContent = '🔊';
     current.btn.setAttribute('aria-pressed', 'false');
-    current.btn.setAttribute('aria-label', 'Read this section aloud');
-    current.btn.title = 'Read this section aloud';
+    current.btn.setAttribute('aria-label', 'Read section aloud: ' + current.sectionLabel);
+    current.btn.title = 'Read section aloud: ' + current.sectionLabel;
     current = null;
   }
 
@@ -688,28 +853,29 @@ may be shared this way, are district policy questions rather than technical ones
     try { synth.speak(u); } catch (e) { stop(); }
   }
 
-  Array.prototype.forEach.call(document.querySelectorAll('article h2'), function (h2) {
+  Array.prototype.forEach.call(document.querySelectorAll('article > h2[id]'), function (h2) {
     var blocks = blocksFor(h2);
     if (!blocks.length) return;
+    var sectionLabel = (h2.textContent || '').trim();
     var btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'listen';
     btn.textContent = '🔊';
-    btn.title = 'Read this section aloud';
+    btn.title = 'Read section aloud: ' + sectionLabel;
     btn.setAttribute('aria-pressed', 'false');
-    btn.setAttribute('aria-label', 'Read this section aloud');
+    btn.setAttribute('aria-label', 'Read section aloud: ' + sectionLabel);
     btn.addEventListener('click', function () {
       var wasThis = current && current.btn === btn;
       stop();
       if (wasThis) return;            // second click on the same button = stop
-      current = { btn: btn, blocks: blocks, idx: 0 };
+      current = { btn: btn, blocks: blocks, idx: 0, sectionLabel: sectionLabel };
       btn.textContent = '⏹';
       btn.setAttribute('aria-pressed', 'true');
       btn.title = 'Stop reading';
-      btn.setAttribute('aria-label', 'Stop reading this section');
+      btn.setAttribute('aria-label', 'Stop reading section: ' + sectionLabel);
       speakFrom(current);
     });
-    h2.appendChild(btn);
+    h2.insertAdjacentElement('afterend', btn);
   });
 
   window.addEventListener('beforeunload', function () { try { synth.cancel(); } catch (e) {} });
@@ -775,7 +941,7 @@ may be shared this way, are district policy questions rather than technical ones
     range('rt-line', 'Line', '1.2', '2.4', '0.1'),
     range('rt-letter', 'Letter', '0', '0.14', '0.01'),
     select('rt-theme', 'Theme', THEMES),
-    el('button', { type: 'button', id: 'rt-ruler', 'aria-pressed': 'false', text: 'Reading ruler' }),
+    el('button', { type: 'button', id: 'rt-ruler', 'aria-pressed': 'false', 'aria-keyshortcuts': 'ArrowUp ArrowDown', text: 'Reading ruler' }),
     el('button', { type: 'button', id: 'rt-reset', text: 'Reset' })
   ]);
   var toggle = el('button', {
@@ -786,6 +952,12 @@ may be shared this way, are district policy questions rather than technical ones
     [el('div', { class: 'rtools-in' }, [toggle, panel])]);
   d.body.insertBefore(bar, d.body.firstChild);
   d.body.appendChild(el('div', { id: 'rtools-ruler', 'aria-hidden': 'true' }));
+  Array.prototype.forEach.call(d.querySelectorAll('.tablewrap'), function (wrap, index) {
+    var caption = wrap.querySelector('caption');
+    wrap.tabIndex = 0;
+    wrap.setAttribute('role', 'region');
+    wrap.setAttribute('aria-label', (caption && caption.textContent ? caption.textContent.trim() : 'Scrollable table ' + (index + 1)) + '. Scroll horizontally if needed.');
+  });
 
   function apply() {
     var b = d.body;
@@ -813,7 +985,7 @@ may be shared this way, are district policy questions rather than technical ones
   on('rt-line', 'input', function (e) { prefs.line = parseFloat(e.target.value); save(); apply(); });
   on('rt-letter', 'input', function (e) { prefs.letter = parseFloat(e.target.value); save(); apply(); });
   on('rt-theme', 'change', function (e) { prefs.theme = e.target.value; save(); apply(); });
-  on('rt-ruler', 'click', function () { prefs.ruler = !prefs.ruler; save(); apply(); });
+  on('rt-ruler', 'click', function () { prefs.ruler = !prefs.ruler; save(); apply(); if (prefs.ruler) moveRuler(rulerTop); });
   on('rt-reset', 'click', function () { prefs = {}; save(); apply(); });
   on('rt-toggle', 'click', function () {
     var open = panel.hasAttribute('hidden');
@@ -822,10 +994,30 @@ may be shared this way, are district policy questions rather than technical ones
   });
 
   var ruler = $('rtools-ruler');
+  var rulerTop = Math.max(0, Math.round(window.innerHeight / 2));
+  function moveRuler(top) {
+    if (!ruler) return;
+    rulerTop = Math.max(0, Math.min(window.innerHeight - ruler.offsetHeight, top));
+    ruler.style.top = rulerTop + 'px';
+  }
   d.addEventListener('mousemove', function (e) {
     if (ruler && root.getAttribute('data-allo-ruler') === '1') {
-      ruler.style.top = (e.clientY - ruler.offsetHeight / 2) + 'px';
+      moveRuler(e.clientY - ruler.offsetHeight / 2);
     }
+  });
+  d.addEventListener('focusin', function (e) {
+    if (!ruler || root.getAttribute('data-allo-ruler') !== '1' || !e.target.getBoundingClientRect) return;
+    var rect = e.target.getBoundingClientRect();
+    moveRuler(rect.top + rect.height / 2 - ruler.offsetHeight / 2);
+  });
+  on('rt-ruler', 'keydown', function (e) {
+    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+    e.preventDefault();
+    if (!prefs.ruler) { prefs.ruler = true; save(); apply(); }
+    moveRuler(rulerTop + (e.key === 'ArrowDown' ? 20 : -20));
+  });
+  window.addEventListener('beforeprint', function () {
+    Array.prototype.forEach.call(d.images, function (img) { img.loading = 'eager'; });
   });
   apply();
 }());

@@ -126,18 +126,24 @@ const STALE_FIXTURE = { density: 2717, sig: 'moved-since', results: BEST_RESULTS
 const SHOTS = [
   ['01-machines-lever', S({ view: 'machines', bench: 'lever' }), {}, 400],
   ['02-machines-pulley', S({ view: 'machines', bench: 'pulley' }), {}, 400],
+  ['02b-machines-wheel-axle', S({ view: 'machines', bench: 'windlass' }), {}, 400],
   ['03-machines-screw', S({ view: 'machines', bench: 'screw' }), {}, 400],
+  ['03b-machines-wedge', S({ view: 'machines', bench: 'wedge' }), {}, 400],
   ['04-machines-k2', S({ view: 'machines', bench: 'ramp' }), { band: 'k2' }, 400],
   ['05-build-trebuchet', S({ view: 'build', machine: 'trebuchet' }), {}, 2600],
+  // The build bay has its own world-space status stack; keep a moving shot so
+  // the release feedback remains visible in visual QA, not just in the UI.
+  ['05b-build-trebuchet-running', S({ view: 'build', machine: 'trebuchet', animating: true, shotId: 1 }), {}, 450],
   ['06-build-ballista', S({ view: 'build', machine: 'ballista' }), {}, 2600],
   ['07-build-onager', S({ view: 'build', machine: 'onager' }), {}, 2600],
   // A 1 kg stone 0.8 m across is 4 kg per cubic metre, lighter than balsa. The
   // warning has its own colours in all three palettes, so it needs its own shot.
   ['07b-build-odd-stone', S({ view: 'build', projMass: 1, projDiameter: 0.8 }), {}, 2600],
-  ['08-range-fresh', S({ view: 'range' }), {}, 500],
+  ['08-range-fresh', S({ view: 'range' }), {}, 1400],
   // The warning is placed above the fire card, where a student reads before
   // predicting rather than after being scored.
-  ['08b-range-odd-stone', S({ view: 'range', projMass: 1, projDiameter: 0.8 }), {}, 500],
+  ['08b-range-odd-stone', S({ view: 'range', projMass: 1, projDiameter: 0.8 }), {}, 1400],
+  ['08c-range-running', S({ view: 'range', animating: true, shotId: 1 }), {}, 700],
   ['09-siege-fresh', S({ view: 'siege', wallPreset: 'curtain' }), {}, 2600],
   ['10-siege-gatehouse', S({ view: 'siege', wallPreset: 'gatehouse' }), {}, 2600],
   ['11-siege-motte', S({ view: 'siege', wallPreset: 'motte' }), {}, 2600],
@@ -215,6 +221,89 @@ const SHOTS = [
     manifest.push(label);
     console.log('shot', label);
   }
+
+  // The simple-machine workshop is a simulation now, not only a model viewer.
+  // Capture the lever halfway through its learner-triggered cycle so a static
+  // pose, a disconnected Run button or a parked render loop is visible in QA.
+  await pg.evaluate(([st, o]) => window.__mount(st, o), [
+    S({ view: 'machines', bench: 'lever' }),
+    { dark: DARK || CONTRAST, contrast: CONTRAST, band: BAND }
+  ]);
+  await pg.waitForTimeout(700);
+  const ranDemo = await pg.evaluate(() => {
+    const btn = Array.prototype.slice.call(document.querySelectorAll('button'))
+      .filter((b) => (b.textContent || '').indexOf('Run demonstration') !== -1)[0];
+    if (!btn) return false;
+    btn.click();
+    return true;
+  });
+  if (!ranDemo) { console.error('FAIL: no simple-machine demonstration button'); await b.close(); process.exit(2); }
+  // Capture early enough that a full-page screenshot cannot race the 2.3 s
+  // demo timeout on slower software-rendered CI machines.
+  await pg.waitForTimeout(450);
+  const demoLabel = '01b-machines-lever-running';
+  await pg.screenshot({
+    path: path.join(OUT, demoLabel + (CONTRAST ? '-contrast' : (DARK ? '-dark' : '')) + '.png'),
+    fullPage: true
+  });
+  manifest.push(demoLabel);
+  console.log('shot', demoLabel);
+
+  // Camera affordances are part of the simulation, not decorative chrome.
+  // Capture both a semantic preset and a real pointer orbit so either route
+  // failing is visible without relying on source-level event assertions.
+  const clickedClose = await pg.evaluate(() => {
+    const btn = Array.prototype.slice.call(document.querySelectorAll('button'))
+      .filter((b) => (b.textContent || '').trim() === 'Close')[0];
+    if (!btn) return false;
+    btn.click(); return true;
+  });
+  if (!clickedClose) { console.error('FAIL: no close camera preset'); await b.close(); process.exit(2); }
+  await pg.waitForTimeout(500);
+  const closeLabel = '01c-machines-lever-close';
+  await pg.screenshot({
+    path: path.join(OUT, closeLabel + (CONTRAST ? '-contrast' : (DARK ? '-dark' : '')) + '.png'),
+    fullPage: true
+  });
+  manifest.push(closeLabel);
+  console.log('shot', closeLabel);
+
+  const orbitBay = pg.locator('[data-ml-orbitable="true"]');
+  const orbitBox = await orbitBay.boundingBox();
+  if (!orbitBox) { console.error('FAIL: orbitable workshop not visible'); await b.close(); process.exit(2); }
+  await pg.mouse.move(orbitBox.x + orbitBox.width * 0.55, orbitBox.y + orbitBox.height * 0.55);
+  await pg.mouse.down();
+  await pg.mouse.move(orbitBox.x + orbitBox.width * 0.68, orbitBox.y + orbitBox.height * 0.48, { steps: 8 });
+  await pg.mouse.up();
+  await pg.waitForTimeout(500);
+  const dragLabel = '01d-machines-lever-dragged';
+  await pg.screenshot({
+    path: path.join(OUT, dragLabel + (CONTRAST ? '-contrast' : (DARK ? '-dark' : '')) + '.png'),
+    fullPage: true
+  });
+  manifest.push(dragLabel);
+  console.log('shot', dragLabel);
+
+  await pg.evaluate(([st, o]) => window.__mount(st, o), [
+    S({ view: 'machines', bench: 'wedge' }),
+    { dark: DARK || CONTRAST, contrast: CONTRAST, band: BAND }
+  ]);
+  await pg.waitForTimeout(600);
+  const ranWedge = await pg.evaluate(() => {
+    const btn = Array.prototype.slice.call(document.querySelectorAll('button'))
+      .filter((b) => (b.textContent || '').indexOf('Run demonstration') !== -1)[0];
+    if (!btn) return false;
+    btn.click(); return true;
+  });
+  if (!ranWedge) { console.error('FAIL: wedge demonstration button missing'); await b.close(); process.exit(2); }
+  await pg.waitForTimeout(450);
+  const wedgeRunLabel = '03c-machines-wedge-running';
+  await pg.screenshot({
+    path: path.join(OUT, wedgeRunLabel + (CONTRAST ? '-contrast' : (DARK ? '-dark' : '')) + '.png'),
+    fullPage: true
+  });
+  manifest.push(wedgeRunLabel);
+  console.log('shot', wedgeRunLabel);
 
   // ── Full screen ──
   // The interaction harness already proves the drawing buffer follows the box.

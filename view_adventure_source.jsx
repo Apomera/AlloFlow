@@ -27,6 +27,312 @@ function useAdventureDialogFocus(isOpen, dialogRef, onClose) {
   }, [isOpen, dialogRef]);
 }
 
+// Adventure free response is composition, not a transcription drill. Reuse the
+// Typing Lab's five-characters-per-word convention, but keep the result local to
+// the current turn and descriptive only. Pasted/dictated responses retain a word
+// count while the comparative WPM value is intentionally suppressed.
+function useAdventureTypingPace(enabled, text, dictationActive) {
+  var startedAtRef = React.useRef(null);
+  var pausedAtRef = React.useRef(null);
+  var pausedMsRef = React.useRef(0);
+  var assistedRef = React.useRef(null);
+  var _tickState = React.useState(0);
+  var tick = _tickState[0];
+  var setTick = _tickState[1];
+
+  var reset = React.useCallback(function () {
+    startedAtRef.current = null;
+    pausedAtRef.current = null;
+    pausedMsRef.current = 0;
+    assistedRef.current = null;
+    setTick(function (value) { return value + 1; });
+  }, []);
+  var pause = React.useCallback(function () {
+    if (startedAtRef.current && !pausedAtRef.current) pausedAtRef.current = Date.now();
+  }, []);
+  var resume = React.useCallback(function () {
+    if (!startedAtRef.current || !pausedAtRef.current) return;
+    pausedMsRef.current += Date.now() - pausedAtRef.current;
+    pausedAtRef.current = null;
+  }, []);
+  var markAssisted = React.useCallback(function (kind) {
+    assistedRef.current = kind || 'assisted';
+    setTick(function (value) { return value + 1; });
+  }, []);
+  var noteChange = React.useCallback(function (nextText, nativeEvent) {
+    if (!enabled) return;
+    var value = String(nextText || '');
+    if (!value) { reset(); return; }
+    if (!startedAtRef.current) startedAtRef.current = Date.now();
+    var inputType = String(nativeEvent && nativeEvent.inputType || '');
+    if (dictationActive || inputType === 'insertFromDictation' || inputType === 'insertFromSpeech') {
+      assistedRef.current = 'dictation';
+    } else if (inputType === 'insertFromPaste' || inputType === 'insertFromDrop' || inputType === 'insertFromYank') {
+      assistedRef.current = 'paste';
+    }
+    setTick(function (value2) { return value2 + 1; });
+  }, [dictationActive, enabled, reset]);
+
+  React.useEffect(function () {
+    if (!enabled || !text) return undefined;
+    var timer = setInterval(function () { setTick(function (value) { return value + 1; }); }, 1000);
+    return function () { clearInterval(timer); };
+  }, [enabled, text]);
+  React.useEffect(function () {
+    if (!enabled || !text) reset();
+  }, [enabled, text, reset]);
+  React.useEffect(function () {
+    if (!enabled) return undefined;
+    var onVisibility = function () { if (document.hidden) pause(); else resume(); };
+    document.addEventListener('visibilitychange', onVisibility);
+    return function () { document.removeEventListener('visibilitychange', onVisibility); };
+  }, [enabled, pause, resume]);
+
+  var now = Date.now();
+  var activeMs = startedAtRef.current
+    ? Math.max(0, now - startedAtRef.current - pausedMsRef.current - (pausedAtRef.current ? now - pausedAtRef.current : 0))
+    : 0;
+  var charCount = Array.from(String(text || '')).length;
+  var wordCount = String(text || '').trim() ? String(text).trim().split(/\s+/).length : 0;
+  var wpm = activeMs > 0 && charCount > 0 ? Math.round((charCount / 5) / (activeMs / 60000)) : 0;
+  void tick;
+  return {
+    activeMs: activeMs,
+    assisted: assistedRef.current,
+    markAssisted: markAssisted,
+    noteChange: noteChange,
+    pause: pause,
+    resume: resume,
+    wordCount: wordCount,
+    wpm: wpm
+  };
+}
+
+function AdventureFluencyPractice(props) {
+  var open = props.open;
+  var t = props.t;
+  var sceneText = String(props.sceneText || '').trim();
+  var dialogRef = React.useRef(null);
+  var recorderRef = React.useRef(null);
+  var streamRef = React.useRef(null);
+  var chunksRef = React.useRef([]);
+  var passageRef = React.useRef(null);
+  var _statusState = React.useState('idle');
+  var status = _statusState[0];
+  var setStatus = _statusState[1];
+  var _resultState = React.useState(null);
+  var result = _resultState[0];
+  var setResult = _resultState[1];
+  var _errorState = React.useState('');
+  var error = _errorState[0];
+  var setError = _errorState[1];
+  var _cloudState = React.useState(false);
+  var allowCloud = _cloudState[0];
+  var setAllowCloud = _cloudState[1];
+  var _savedState = React.useState(false);
+  var saved = _savedState[0];
+  var setSaved = _savedState[1];
+
+  var stopTracks = React.useCallback(function () {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(function (track) { try { track.stop(); } catch (_) {} });
+      streamRef.current = null;
+    }
+  }, []);
+  var closePractice = React.useCallback(function () {
+    if (status === 'processing') return;
+    if (recorderRef.current && recorderRef.current.state !== 'inactive') {
+      try { recorderRef.current.stop(); } catch (_) {}
+    }
+    recorderRef.current = null;
+    stopTracks();
+    setStatus('idle');
+    setResult(null);
+    setError('');
+    setSaved(false);
+    props.onClose();
+  }, [props.onClose, status, stopTracks]);
+  useAdventureDialogFocus(open, dialogRef, closePractice);
+  React.useEffect(function () { return stopTracks; }, [stopTracks]);
+  React.useEffect(function () {
+    if (!open) return;
+    setStatus('idle');
+    setResult(null);
+    setError('');
+    setSaved(false);
+    setAllowCloud(false);
+  }, [open, props.sceneId]);
+
+  var blobToBase64 = function (blob) {
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onloadend = function () { resolve(String(reader.result || '').split(',')[1] || ''); };
+      reader.onerror = function () { reject(reader.error || new Error('Could not read the recording.')); };
+      reader.readAsDataURL(blob);
+    });
+  };
+  var startRecording = async function () {
+    setError('');
+    setResult(null);
+    setSaved(false);
+    if (!sceneText) { setError(t('adventure.fluency_no_scene') || 'There is no scene passage to read yet.'); return; }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === 'undefined') {
+      setError(t('adventure.fluency_microphone_unavailable') || 'Microphone recording is not available in this browser.');
+      return;
+    }
+    try {
+      if (typeof props.stopPlayback === 'function') props.stopPlayback();
+      var stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      var mimeCandidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus'];
+      var mimeType = mimeCandidates.find(function (candidate) { return !MediaRecorder.isTypeSupported || MediaRecorder.isTypeSupported(candidate); }) || '';
+      var recorder = mimeType ? new MediaRecorder(stream, { mimeType: mimeType }) : new MediaRecorder(stream);
+      chunksRef.current = [];
+      recorder.ondataavailable = function (event) { if (event.data && event.data.size > 0) chunksRef.current.push(event.data); };
+      recorderRef.current = recorder;
+      passageRef.current = {
+        text: sceneText,
+        sceneId: props.sceneId,
+        turnCount: props.turnCount,
+        language: props.language,
+        startedAt: Date.now()
+      };
+      recorder.start();
+      setStatus('recording');
+    } catch (recordingError) {
+      stopTracks();
+      setError(t('errors.microphone_access_denied') || 'Microphone access was denied or unavailable.');
+      setStatus('idle');
+    }
+  };
+  var stopAndAnalyze = async function () {
+    var recorder = recorderRef.current;
+    if (!recorder || recorder.state === 'inactive') return;
+    setStatus('processing');
+    setError('');
+    try {
+      var blob = await new Promise(function (resolve, reject) {
+        recorder.onstop = function () {
+          var type = recorder.mimeType || 'audio/webm';
+          resolve(new Blob(chunksRef.current, { type: type }));
+        };
+        recorder.onerror = function (event) { reject(event.error || new Error('Recording failed.')); };
+        recorder.stop();
+      });
+      stopTracks();
+      recorderRef.current = null;
+      var captured = passageRef.current;
+      var durationSeconds = Math.max(1, (Date.now() - captured.startedAt) / 1000);
+      var audioBase64 = await blobToBase64(blob);
+      var fluency = window.AlloModules && window.AlloModules.Fluency;
+      if (!fluency) throw new Error(t('adventure.fluency_engine_unavailable') || 'Reading analysis is still loading. Please try again.');
+      var analysis = null;
+      if (typeof fluency.analyzeFluencyLocal === 'function') {
+        analysis = await fluency.analyzeFluencyLocal(audioBase64, blob.type || 'audio/webm', captured.text, {});
+      }
+      if (!analysis && allowCloud && typeof fluency.analyzeFluencyWithGemini === 'function') {
+        analysis = await fluency.analyzeFluencyWithGemini(audioBase64, blob.type || 'audio/webm', captured.text);
+      }
+      if (!analysis || !Array.isArray(analysis.wordData)) {
+        throw new Error(allowCloud
+          ? (t('adventure.fluency_analysis_failed') || 'The reading could not be analyzed. Your recording was not saved.')
+          : (t('adventure.fluency_local_unavailable') || 'On-device analysis is unavailable. Enable cloud analysis to use Google Gemini, or try again on a School Box device.'));
+      }
+      var passageMetadata = typeof fluency.createFluencyPassageMetadata === 'function'
+        ? fluency.createFluencyPassageMetadata(captured.text, {
+            passageId: 'adventure-' + String(captured.sceneId || captured.turnCount || Date.now()),
+            title: 'Adventure scene ' + String(captured.turnCount || ''),
+            grade: props.gradeLevel,
+            language: captured.language,
+            calibrated: false
+          })
+        : { passageId: 'adventure-' + String(captured.sceneId || captured.turnCount || Date.now()), calibrated: false };
+      var totalWords = passageMetadata.wordCount || captured.text.split(/\s+/).filter(Boolean).length;
+      var metrics = fluency.calculateLocalFluencyMetrics(analysis.wordData, durationSeconds, totalWords, analysis.insertions || []);
+      var recordId = 'adventure-fluency-' + Date.now().toString(36);
+      setResult({
+        recordId: recordId,
+        timestamp: new Date().toISOString(),
+        sourceKind: 'adventure-scene',
+        sourceText: captured.text,
+        sceneId: captured.sceneId,
+        turnCount: captured.turnCount,
+        audioBase64: audioBase64,
+        mimeType: blob.type || 'audio/webm',
+        durationSeconds: durationSeconds,
+        passageMetadata: passageMetadata,
+        wordData: analysis.wordData,
+        insertions: analysis.insertions || [],
+        feedback: analysis.feedback || '',
+        confidence: analysis.confidence || null,
+        prosody: analysis.prosody || null,
+        method: analysis.method || 'cloud-ai',
+        accuracy: metrics.accuracy,
+        wcpm: metrics.wcpm,
+        correctWords: metrics.correctWords,
+        metrics: Object.assign({}, metrics, { durationSeconds: durationSeconds, totalWords: totalWords })
+      });
+      setStatus('complete');
+    } catch (analysisError) {
+      stopTracks();
+      recorderRef.current = null;
+      setError(analysisError && analysisError.message ? analysisError.message : (t('adventure.fluency_analysis_failed') || 'The reading could not be analyzed.'));
+      setStatus('idle');
+    }
+  };
+  var saveResult = async function () {
+    if (!result || typeof props.onSave !== 'function' || saved) return;
+    try {
+      await props.onSave(result);
+      setSaved(true);
+    } catch (saveError) {
+      setError(saveError && saveError.message ? saveError.message : (t('adventure.fluency_save_failed') || 'The reading result could not be saved.'));
+    }
+  };
+  if (!open) return null;
+  return (
+    <div role="presentation" className="fixed inset-0 z-[260] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-3" onMouseDown={(event) => { if (event.target === event.currentTarget && status !== 'recording' && status !== 'processing') closePractice(); }}>
+      <div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="adventure-fluency-title" aria-describedby="adventure-fluency-description" className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border-2 border-rose-200 bg-white p-5 shadow-2xl focus:outline-none">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 id="adventure-fluency-title" className="text-xl font-black text-slate-900 flex items-center gap-2"><Mic size={20} aria-hidden="true"/> {t('adventure.fluency_title') || 'Practice reading this scene'}</h2>
+            <p id="adventure-fluency-description" className="mt-1 text-sm text-slate-600">{t('adventure.fluency_description') || 'Read the AI narrator\u2019s passage aloud. Results are descriptive practice only, not a benchmark score.'}</p>
+          </div>
+          <button type="button" onClick={closePractice} disabled={status === 'processing'} className="min-w-11 min-h-11 rounded-full p-2 text-slate-700 hover:bg-slate-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600" aria-label={t('common.close')}><X size={20} aria-hidden="true"/></button>
+        </div>
+        <div className="mt-4 max-h-56 overflow-y-auto rounded-xl border border-slate-300 bg-slate-50 p-4 text-sm font-medium leading-relaxed text-slate-800">{sceneText}</div>
+        <label className="mt-4 flex min-h-11 items-start gap-3 rounded-xl border border-sky-200 bg-sky-50 p-3 text-sm text-slate-700">
+          <input type="checkbox" checked={allowCloud} disabled={status === 'recording' || status === 'processing'} onChange={(event) => setAllowCloud(event.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 rounded text-sky-700 focus-visible:ring-2 focus-visible:ring-sky-700"/>
+          <span><strong className="block text-slate-900">{t('adventure.fluency_cloud_label') || 'Allow cloud analysis if on-device analysis is unavailable'}</strong>{t('adventure.fluency_cloud_desc') || 'When enabled, this recording may be sent to Google Gemini for word-by-word analysis. The recording is not saved unless you choose Save below.'}</span>
+        </label>
+        {error && <div role="alert" className="mt-4 rounded-xl border border-red-300 bg-red-50 p-3 text-sm font-bold text-red-800">{error}</div>}
+        {status === 'complete' && result && (
+          <div className="mt-4 rounded-xl border border-indigo-200 bg-indigo-50 p-4">
+            <div className="grid grid-cols-2 gap-3 text-center">
+              <div className="rounded-xl bg-white p-3 shadow-sm"><div className="text-3xl font-black text-indigo-700">{result.wcpm}</div><div className="text-[11px] font-bold uppercase tracking-wide text-slate-600">{t('fluency.wcpm_label') || 'Words correct per minute'}</div></div>
+              <div className="rounded-xl bg-white p-3 shadow-sm"><div className="text-3xl font-black text-emerald-700">{result.accuracy}%</div><div className="text-[11px] font-bold uppercase tracking-wide text-slate-600">{t('fluency.accuracy_score') || 'Accuracy'}</div></div>
+            </div>
+            <p className="mt-3 text-xs font-bold text-indigo-950">{t('adventure.fluency_descriptive_note') || 'Adventure passages are AI-generated and uncalibrated. Use this result for practice and reflection only.'}</p>
+            {result.feedback && <p className="mt-2 text-sm text-slate-700">{result.feedback}</p>}
+          </div>
+        )}
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+          {status === 'recording' ? (
+            <button type="button" onClick={stopAndAnalyze} className="min-h-11 rounded-xl bg-red-700 px-5 py-3 font-black text-white hover:bg-red-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2"><span aria-hidden="true">\u25A0</span> {t('fluency.stop_recording') || 'Stop and analyze'}</button>
+          ) : status === 'processing' ? (
+            <div role="status" aria-live="polite" className="min-h-11 rounded-xl bg-indigo-100 px-5 py-3 font-black text-indigo-800"><RefreshCw size={16} className="mr-2 inline animate-spin motion-reduce:animate-none" aria-hidden="true"/> {t('fluency.processing') || 'Analyzing reading...'}</div>
+          ) : (
+            <button type="button" onClick={startRecording} className="min-h-11 rounded-xl bg-rose-700 px-5 py-3 font-black text-white hover:bg-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-700 focus-visible:ring-offset-2"><Mic size={16} className="mr-2 inline" aria-hidden="true"/> {status === 'complete' ? (t('adventure.fluency_try_again') || 'Try again') : (t('fluency.start_recording') || 'Start recording')}</button>
+          )}
+          {status === 'complete' && result && (
+            <button type="button" onClick={saveResult} disabled={saved} className="min-h-11 rounded-xl border-2 border-indigo-600 bg-white px-5 py-3 font-black text-indigo-700 hover:bg-indigo-50 disabled:cursor-default disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2">{saved ? (t('adventure.fluency_saved') || 'Saved to reading history') : (t('adventure.fluency_save') || 'Save to reading history')}</button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function AdventureView(props) {
   // State (object-bundle)
   var adventureState = props.adventureState;
@@ -39,11 +345,14 @@ function AdventureView(props) {
   var isProcessing = props.isProcessing;
   var adventureImageSize = props.adventureImageSize;
   var adventureAutoRead = props.adventureAutoRead;
+  var adventureTypingPaceEnabled = props.adventureTypingPaceEnabled;
+  var adventureFluencyEnabled = props.adventureFluencyEnabled;
   var isDictationMode = props.isDictationMode;
   var adventureTextInput = props.adventureTextInput;
   var adventureInputMode = props.adventureInputMode;
   var adventureArtStyle = props.adventureArtStyle;
   var adventureCustomArtStyle = props.adventureCustomArtStyle;
+  var universalImageStyle = props.universalImageStyle;
   var useLowQualityVisuals = props.useLowQualityVisuals;
   var enableFactionResources = props.enableFactionResources;
   var isZenMode = props.isZenMode;
@@ -98,6 +407,8 @@ function AdventureView(props) {
   var setShowStorybookExportModal = props.setShowStorybookExportModal;
   var setAdventureImageSize = props.setAdventureImageSize;
   var setAdventureAutoRead = props.setAdventureAutoRead;
+  var setAdventureTypingPaceEnabled = props.setAdventureTypingPaceEnabled;
+  var setAdventureFluencyEnabled = props.setAdventureFluencyEnabled;
   // Handlers (lifted in this session's prep + existing)
   var handleToggleAdventureImmersive = props.handleToggleAdventureImmersive;
   var handleExitAdventureImmersive = props.handleExitAdventureImmersive;
@@ -139,11 +450,13 @@ function AdventureView(props) {
   var formatInteractiveText = props.formatInteractiveText;
   var splitTextToSentences = props.splitTextToSentences;
   var stopPlayback = props.stopPlayback;
+  var saveAdventureFluencyResult = props.saveAdventureFluencyResult;
   var executeStartAdventure = props.executeStartAdventure;
   var adventureEffects = props.adventureEffects;
   // Components
   var ErrorBoundary = props.ErrorBoundary;
   var AdventureAmbience = props.AdventureAmbience;
+  var AdventureAudioControls = props.AdventureAudioControls || (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.AdventureAudioControls);
   var AdventureShop = props.AdventureShop;
   var AnimatedNumber = props.AnimatedNumber;
   var ClimaxProgressBar = props.ClimaxProgressBar;
@@ -153,10 +466,29 @@ function AdventureView(props) {
   var inventoryDialogRef = React.useRef(null);
   useAdventureDialogFocus(showLedger, ledgerDialogRef, handleSetShowLedgerToFalse);
   useAdventureDialogFocus(!!selectedInventoryItem, inventoryDialogRef, handleSetSelectedInventoryItemToNull);
+  var _fluencyOpenState = React.useState(false);
+  var adventureFluencyOpen = _fluencyOpenState[0];
+  var setAdventureFluencyOpen = _fluencyOpenState[1];
+  var typingPace = useAdventureTypingPace(adventureTypingPaceEnabled && adventureFreeResponseEnabled, adventureTextInput, isDictationMode);
+  var handleAdventureTextChange = function (event) {
+    typingPace.noteChange(event.target.value, event.nativeEvent);
+    setAdventureTextInput(event.target.value);
+  };
+  var renderTypingPace = function (isDark) {
+    if (!adventureTypingPaceEnabled || !adventureFreeResponseEnabled || !adventureTextInput) return null;
+    var text = typingPace.assisted
+      ? typingPace.wordCount + ' ' + (typingPace.wordCount === 1 ? 'word' : 'words') + ' \u00B7 ' + (t('adventure.typing_pace_assisted') || 'assisted input')
+      : typingPace.wpm + ' ' + (t('adventure.typing_pace_wpm') || 'WPM') + ' \u00B7 ' + typingPace.wordCount + ' ' + (typingPace.wordCount === 1 ? 'word' : 'words');
+    return <div role="status" aria-live="off" className={(isDark ? 'border-white/20 bg-black/40 text-white/80' : 'border-indigo-200 bg-indigo-50 text-indigo-900') + ' w-fit rounded-full border px-2.5 py-1 text-[11px] font-bold tabular-nums'}>{text}</div>;
+  };
   var xpMax = Math.max(1, Number(adventureState.xpToNextLevel) || 1);
   var xpValue = Math.max(0, Math.min(xpMax, Number(adventureState.xp) || 0));
   var xpProgressPercent = Math.max(0, Math.min(100, (xpValue / xpMax) * 100));
   var energyValue = Math.max(0, Math.min(100, Number(adventureState.energy) || 0));
+  var adventureThemeAnchor = (Array.isArray(adventureState.history) ? adventureState.history : []).find(function (entry) { return entry && entry.type === 'scene' && entry.text; });
+  var adventureThemeSeed = activeSessionCode
+    ? 'session:' + String(activeSessionCode)
+    : 'solo:' + String((adventureThemeAnchor && adventureThemeAnchor.text) || (adventureState.currentScene && adventureState.currentScene.text) || adventureInputMode || 'adventure');
   var debateMomentumValue = Math.max(0, Math.min(100, Number(adventureState.debateMomentum) || 0));
   var democracyActive = !!(sessionData && sessionData.democracy && sessionData.democracy.isActive);
   var democracyVotes = democracyActive && sessionData.democracy.votes && typeof sessionData.democracy.votes === 'object'
@@ -293,6 +625,7 @@ function AdventureView(props) {
                       <AdventureAmbience
                           sceneText={adventureState.currentScene?.text}
                           soundParams={adventureState.currentScene?.soundParams}
+                          themeSeed={adventureThemeSeed}
                           active={!adventureState.isGameOver && soundEnabled && activeView === 'adventure'}
                           volume={0.2}
                       />
@@ -485,6 +818,7 @@ function AdventureView(props) {
                             <p className="text-xs text-indigo-200 mt-1">{t('adventure.explore_hint')}</p>
                         </div>
                         <div className="flex items-center gap-3 relative z-10 overflow-x-auto min-w-0 shrink-0" role="group" aria-label={t('adventure.title')}>
+                            {AdventureAudioControls && <AdventureAudioControls soundEnabled={soundEnabled} t={t} />}
                             {isTeacherMode && adventureState.currentScene && !adventureState.isGameOver && (
                                 <button type="button"
                                     data-help-key="adventure_edit_options" onClick={handleStartOptionEdit}
@@ -546,6 +880,19 @@ function AdventureView(props) {
                                 {adventureAutoRead ? <Volume2 size={14} className="fill-current animate-pulse motion-reduce:animate-none" aria-hidden="true"/> : <VolumeX size={14} aria-hidden="true"/>}
                                 <span className="hidden sm:inline">{t('adventure.auto_read_status_label')}: {adventureAutoRead ? t('common.on') : t('common.off')}</span>
                             </button>
+                            {adventureFluencyEnabled && adventureState.currentScene && (
+                                <button type="button"
+                                    aria-label={t('adventure.fluency_title') || 'Practice reading this scene'}
+                                    aria-haspopup="dialog"
+                                    data-help-key="adventure_scene_reading_practice"
+                                    onClick={() => { stopPlayback(); setAdventureFluencyOpen(true); }}
+                                    className="min-w-11 min-h-11 flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-all border shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900 bg-rose-800 text-rose-100 border-rose-500 hover:bg-rose-700"
+                                    title={t('adventure.fluency_title') || 'Practice reading this scene'}
+                                >
+                                    <Mic size={14} aria-hidden="true"/>
+                                    <span className="hidden sm:inline">{t('adventure.fluency_button_short') || 'Reading practice'}</span>
+                                </button>
+                            )}
                             {!isZenMode && (
                             <button type="button"
                                 aria-label={t('adventure.maximize_tooltip')}
@@ -699,6 +1046,32 @@ function AdventureView(props) {
                                                                     <span className="block text-[11px] text-slate-700">{t('adventure.free_response_desc')}</span>
                                                                 </div>
                                                             </label>
+                                                            <label className={`min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:ring-2 focus-within:ring-cyan-700 focus-within:ring-offset-2 ${adventureTypingPaceEnabled ? 'bg-cyan-50 border-cyan-300' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!adventureFreeResponseEnabled || (!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings)) ? 'opacity-50' : ''}`}>
+                                                                <input
+                                                                    type="checkbox"
+                                                                    data-help-key="adventure_setup_chk_typing_pace" checked={adventureTypingPaceEnabled}
+                                                                    onChange={(e) => setAdventureTypingPaceEnabled(e.target.checked)}
+                                                                    disabled={!adventureFreeResponseEnabled || (!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings)}
+                                                                    className="w-5 h-5 shrink-0 text-cyan-700 rounded focus-visible:ring-2 focus-visible:ring-cyan-700 focus-visible:ring-offset-2 cursor-pointer disabled:cursor-not-allowed"
+                                                                />
+                                                                <div>
+                                                                    <span className="block text-xs font-bold text-slate-700">{t('adventure.typing_pace_label') || 'Typing pace'}</span>
+                                                                    <span className="block text-[11px] text-slate-700">{t('adventure.typing_pace_desc') || 'Show descriptive WPM and word count for each free response. Never affects points or grades.'}</span>
+                                                                </div>
+                                                            </label>
+                                                            <label className={`min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:ring-2 focus-within:ring-rose-700 focus-within:ring-offset-2 ${adventureFluencyEnabled ? 'bg-rose-50 border-rose-300' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50' : ''}`}>
+                                                                <input
+                                                                    type="checkbox"
+                                                                    data-help-key="adventure_setup_chk_reading_practice" checked={adventureFluencyEnabled}
+                                                                    onChange={(e) => setAdventureFluencyEnabled(e.target.checked)}
+                                                                    disabled={!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings}
+                                                                    className="w-5 h-5 shrink-0 text-rose-700 rounded focus-visible:ring-2 focus-visible:ring-rose-700 focus-visible:ring-offset-2 cursor-pointer disabled:cursor-not-allowed"
+                                                                />
+                                                                <div>
+                                                                    <span className="block text-xs font-bold text-slate-700">{t('adventure.fluency_support_label') || 'Scene reading practice'}</span>
+                                                                    <span className="block text-[11px] text-slate-700">{t('adventure.fluency_support_desc') || 'Add an optional microphone button for practicing the AI narrator\u2019s current passage.'}</span>
+                                                                </div>
+                                                            </label>
                                                             <label className={`min-h-11 flex items-center gap-3 p-2 rounded-lg border transition-all cursor-pointer focus-within:ring-2 focus-within:ring-indigo-700 focus-within:ring-offset-2 ${adventureChanceMode ? 'bg-indigo-50 border-indigo-200' : 'border-transparent hover:bg-slate-50 hover:border-slate-100'} ${(!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings) ? 'opacity-50 pointer-events-none' : ''}`}>
                                                                 <input
                                                                     type="checkbox"
@@ -742,6 +1115,7 @@ function AdventureView(props) {
                                                                 <div className="flex-1">
                                                                     <span className="block text-xs font-bold text-slate-700">🎨 {t('adventure.art_style_label') || 'Art Style'}</span>
                                                                     <select aria-label={t('adventure.art_style_label') || 'Art style'} value={adventureArtStyle} onChange={(e) => setAdventureArtStyle(e.target.value)} disabled={!isTeacherMode && (studentProjectSettings.adventurePermissions?.allowVisualsToggle === false || studentProjectSettings.adventurePermissions?.lockAllSettings)} className="mt-1 min-h-11 w-full text-xs px-2 py-2 border border-indigo-600 rounded-lg bg-white focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 focus:outline-none cursor-pointer">
+                                                                        <option value="universal">Use Universal style</option>
                                                                         <option value="auto">🎨 {t('adventure.art_auto') || 'Auto (default)'}</option>
                                                                         <option value="storybook">📚 {t('adventure.art_storybook') || 'Storybook'}</option>
                                                                         <option value="pixel">🎮 {t('adventure.art_pixel') || 'Pixel Art'}</option>
@@ -750,6 +1124,13 @@ function AdventureView(props) {
                                                                         <option value="crayon">🖍️ {t('adventure.art_crayon') || 'Hand-drawn'}</option>
                                                                         <option value="custom">✏️ {t('adventure.art_custom') || 'Custom...'}</option>
                                                                     </select>
+                                                                    {adventureArtStyle === 'universal' && (
+                                                                        <p className="mt-1 text-[11px] text-indigo-800">
+                                                                            {universalImageStyle && universalImageStyle.trim()
+                                                                                ? `Using Universal style: ${universalImageStyle.trim()}`
+                                                                                : 'No Universal style is set; Adventure will use its automatic style.'}
+                                                                        </p>
+                                                                    )}
                                                                     {adventureArtStyle === 'custom' && (
                                                                         <input type="text" aria-label={t('adventure.custom_art_style_placeholder') || 'Custom art style'} value={adventureCustomArtStyle} onChange={(e) => setAdventureCustomArtStyle(e.target.value)} placeholder={t('adventure.custom_art_style_placeholder') || 'Describe your art style...'} disabled={!isTeacherMode && (studentProjectSettings.adventurePermissions?.allowVisualsToggle === false || studentProjectSettings.adventurePermissions?.lockAllSettings)} className="mt-1 min-h-11 w-full text-xs px-2 py-2 border border-indigo-600 rounded-lg bg-white focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 focus:outline-none"/>
                                                                     )}
@@ -1121,6 +1502,18 @@ function AdventureView(props) {
                                             >
                                                 {adventureAutoRead ? <Volume2 size={16} className="fill-current" aria-hidden="true" /> : <VolumeX size={16} aria-hidden="true" />}
                                             </button>
+                                            {adventureFluencyEnabled && adventureState.currentScene && (
+                                                <button type="button"
+                                                    aria-label={t('adventure.fluency_title') || 'Practice reading this scene'}
+                                                    aria-haspopup="dialog"
+                                                    data-help-key="adventure_immersive_reading_practice"
+                                                    onClick={() => { stopPlayback(); setAdventureFluencyOpen(true); }}
+                                                    className="min-w-11 min-h-11 bg-rose-800/90 backdrop-blur-md text-white border border-rose-400 p-2 rounded-full hover:bg-rose-700 transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                                                    title={t('adventure.fluency_title') || 'Practice reading this scene'}
+                                                >
+                                                    <Mic size={16} aria-hidden="true" />
+                                                </button>
+                                            )}
                                             <button type="button"
                                                 aria-label={immersiveHideUI ? t('adventure.show_ui') : t('adventure.hide_ui')}
                                                 aria-pressed={immersiveHideUI}
@@ -1290,7 +1683,10 @@ function AdventureView(props) {
                                                                         <textarea
                                                                             aria-label={t('adventure.aria_free_response') || 'Type your adventure action'}
                                                                             data-help-key="adventure_input_field" value={adventureTextInput}
-                                                                            onChange={(e) => setAdventureTextInput(e.target.value)}
+                                                                            onChange={handleAdventureTextChange}
+                                                                            onFocus={typingPace.resume}
+                                                                            onBlur={typingPace.pause}
+                                                                            onPaste={() => typingPace.markAssisted('paste')}
                                                                             onKeyDown={(e) => {
                                                                                 if (e.key === 'Enter' && !e.shiftKey && adventureTextInput.trim() && !adventureState.isLoading) {
                                                                                     e.preventDefault();
@@ -1301,6 +1697,7 @@ function AdventureView(props) {
                                                                             className="w-full bg-black/50 text-white border border-white/30 rounded-xl p-3 focus:border-white focus:ring-2 focus:ring-white/20 outline-none resize-none h-24 text-sm font-medium placeholder:text-white/50 backdrop-blur-sm"
                                                                             autoFocus
                                                                         />
+                                                                        {renderTypingPace(true)}
                                                                         <button
                                                                             type="button" data-help-key="adventure_input_send" onClick={() => handleAdventureTextSubmit()}
                                                                             disabled={!adventureTextInput.trim() || adventureState.isLoading}
@@ -1614,20 +2011,26 @@ function AdventureView(props) {
                                             >
                                                 {isDictationMode ? <Mic size={20} aria-hidden="true" /> : <MicOff size={20} aria-hidden="true" />}
                                             </button>
-                                            <textarea
-                                                ref={adventureInputRef}
-                                                data-help-key="adventure_input_field" value={adventureTextInput}
-                                                onChange={(e) => setAdventureTextInput(e.target.value)}
-                                                placeholder={adventureInputMode === 'debate' ? t('adventure.placeholder_debate') : t('adventure.placeholder_action')}
-                                                aria-label={adventureInputMode === 'debate' ? t('adventure.aria_debate') : t('adventure.aria_action')}
-                                                className="flex-grow p-3 text-sm border border-purple-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 outline-none resize-none h-20 bg-purple-50 text-purple-900 placeholder:text-purple-300 transition-shadow duration-300"
-                                                onKeyDown={(e) => {
-                                                    if (e.key === 'Enter' && !e.shiftKey && adventureTextInput.trim() && !adventureState.isLoading) {
-                                                        e.preventDefault();
-                                                        handleAdventureTextSubmit();
-                                                    }
-                                                }}
-                                            />
+                                            <div className="flex min-w-0 flex-grow flex-col gap-1.5">
+                                                <textarea
+                                                    ref={adventureInputRef}
+                                                    data-help-key="adventure_input_field" value={adventureTextInput}
+                                                    onChange={handleAdventureTextChange}
+                                                    onFocus={typingPace.resume}
+                                                    onBlur={typingPace.pause}
+                                                    onPaste={() => typingPace.markAssisted('paste')}
+                                                    placeholder={adventureInputMode === 'debate' ? t('adventure.placeholder_debate') : t('adventure.placeholder_action')}
+                                                    aria-label={adventureInputMode === 'debate' ? t('adventure.aria_debate') : t('adventure.aria_action')}
+                                                    className="w-full p-3 text-sm border border-purple-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 outline-none resize-none h-20 bg-purple-50 text-purple-900 placeholder:text-purple-300 transition-shadow duration-300"
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter' && !e.shiftKey && adventureTextInput.trim() && !adventureState.isLoading) {
+                                                            e.preventDefault();
+                                                            handleAdventureTextSubmit();
+                                                        }
+                                                    }}
+                                                />
+                                                {renderTypingPace(false)}
+                                            </div>
                                             <button
                                                 type="button" data-help-key="adventure_input_send" onClick={() => handleAdventureTextSubmit()}
                                                 disabled={!adventureTextInput.trim() || adventureState.isLoading}
@@ -1668,6 +2071,18 @@ function AdventureView(props) {
                         </div>
                         )}
                     </div>
+                    <AdventureFluencyPractice
+                        open={adventureFluencyOpen}
+                        onClose={() => setAdventureFluencyOpen(false)}
+                        onSave={saveAdventureFluencyResult}
+                        t={t}
+                        sceneText={adventureState.currentScene?.text || ''}
+                        sceneId={adventureState.currentScene?.id || adventureState.turnCount}
+                        turnCount={adventureState.turnCount}
+                        language={adventureLanguageMode}
+                        gradeLevel={props.gradeLevel}
+                        stopPlayback={stopPlayback}
+                    />
                     {selectedInventoryItem && (
                         <div role="presentation" className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-2 sm:p-4 animate-in fade-in duration-200 motion-reduce:animate-none" onClick={handleSetSelectedInventoryItemToNull}>
                             <div ref={inventoryDialogRef} tabIndex={-1} className="bg-white rounded-2xl shadow-2xl p-4 sm:p-6 max-w-sm w-full max-h-[calc(100vh-1rem)] overflow-y-auto relative border-4 border-indigo-200 transition-all animate-in zoom-in-95 motion-reduce:animate-none" role="dialog" aria-modal="true" aria-labelledby="adventure-inventory-item-title" aria-describedby="adventure-inventory-item-description" onClick={e => e.stopPropagation()}>

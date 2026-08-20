@@ -230,12 +230,17 @@ describe('CommandWorkflow contract', () => {
     ]));
   });
 
-  it('caps workflows at eight steps and drops unknown additive fields with warnings', () => {
-    const steps = Array.from({ length: 9 }, (_, index) => ({ stepId: 's-' + index, commandId: 'open_learning_hub', params: {} }));
-    const r = C.validateCommandWorkflow({ schemaVersion: '1.0', workflowId: 'cw-9', kind: 'command-workflow', audience: 'teacher', steps, extra: true }, { knownCommandIds: ['open_learning_hub'] });
-    expect(r.ok).toBe(false);
-    expect(r.errors.some((error) => error.code === 'too-many-workflow-steps')).toBe(true);
-    expect(r.warnings.some((warning) => warning.path === 'extra')).toBe(true);
+  it('supports the 24-step long horizon and rejects anything beyond it', () => {
+    const steps = Array.from({ length: 24 }, (_, index) => ({ stepId: 's-' + index, commandId: 'open_learning_hub', params: {} }));
+    const accepted = C.validateCommandWorkflow({ schemaVersion: '1.0', workflowId: 'cw-24', kind: 'command-workflow', audience: 'teacher', steps }, { knownCommandIds: ['open_learning_hub'] });
+    expect(C.COMMAND_WORKFLOW_MAX_STEPS).toBe(24);
+    expect(accepted.ok).toBe(true);
+    expect(accepted.value.steps).toHaveLength(24);
+
+    const rejected = C.validateCommandWorkflow({ schemaVersion: '1.0', workflowId: 'cw-25', kind: 'command-workflow', audience: 'teacher', steps: steps.concat({ stepId: 's-24', commandId: 'open_learning_hub', params: {} }), extra: true }, { knownCommandIds: ['open_learning_hub'] });
+    expect(rejected.ok).toBe(false);
+    expect(rejected.errors.some((error) => error.code === 'too-many-workflow-steps')).toBe(true);
+    expect(rejected.warnings.some((warning) => warning.path === 'extra')).toBe(true);
   });
 });
 

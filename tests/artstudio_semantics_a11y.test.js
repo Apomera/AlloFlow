@@ -101,6 +101,51 @@ describe('Art Studio graphic and form semantics', () => {
     expect(animatedHtml).toContain('id="artstudio-stereo-animation-ai-prompt"');
   });
 
+  it('exposes the watercolor canvas, controls, and keyboard instructions', () => {
+    loadTool('stem_lab/stem_tool_artstudio.js', 'artStudio');
+    const html = renderTool('artStudio', {
+      artStudio: {
+        tab: 'watercolor',
+      },
+    });
+
+    expect(html).toContain('id="watercolorCanvas"');
+    expect(html).toContain('aria-label="Watercolor painting canvas. Focus and use Arrow keys');
+    expect(html).toContain('id="artstudio-watercolor-keyboard-help"');
+    expect(html).toContain('aria-describedby="artstudio-watercolor-keyboard-help artstudio-watercolor-status"');
+    expect(html).toContain('Control+Z Control+Y Meta+Z Meta+Y');
+    expect(html).toContain('Enter Space P Control+Z');
+    expect(html).toContain('id="artstudio-watercolor-status" role="status" aria-live="polite" aria-atomic="true"');
+    expect(html).toContain('id="artstudio-watercolor-undo"');
+    expect(html).toContain('id="artstudio-watercolor-redo"');
+    expect(html).toContain('id="artstudio-watercolor-pause"');
+    expect(html).toContain('aria-pressed="false"');
+    expect(html).toContain('Pause drying');
+    expect(html).toContain('Resume drying');
+    expect(html).toContain('Undo');
+    expect(html).toContain('Redo');
+    expect(html).toContain('aria-label="Pigment color"');
+    expect(html).toContain('Granulation');
+    expect(html).toContain('Bleed');
+    expect(html).toContain('Absorption');
+    expect(html).toContain('Hot press');
+    expect(html).toContain('Rough');
+    expect(html).toContain('Clear water');
+    expect(html).toContain('Lift');
+    expect(html).toContain('Splatter');
+    expect(html).toContain('Salt texture');
+    expect(html).toContain('Masking fluid');
+    expect(html).toContain('Peel mask');
+    expect(html).toContain('Drying rate');
+    expect(html).toContain('Tilt strength');
+    expect(html).toContain('id="artstudio-watercolor-remove-mask"');
+    expect(html).toContain('Remove all mask');
+    expect(html).toContain('Down');
+    expect(html).toContain('Still');
+    expect(html).toContain('Reload brush');
+    expect(html).toContain('Export PNG');
+  });
+
   it('suppresses the AI pulse when reduced motion is requested', () => {
     Object.defineProperty(window, 'matchMedia', {
       configurable: true,

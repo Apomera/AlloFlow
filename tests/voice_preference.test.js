@@ -16,9 +16,9 @@ describe('saved narration voice survives a refresh', () => {
       const app = read(f);
       const canvas = app.slice(app.indexOf('if (_isCanvasEnv) {'), app.indexOf("return 'Kore'; // Gemini TTS default"));
       // Shape test, not catalog test: the engine is local and needs no backend.
-      expect(canvas, f).toContain('if (/^(af_|am_)/.test(saved)) return saved;');
+      expect(canvas, f).toContain('if (/^(af_|am_|bf_|bm_)/.test(saved)) return saved;');
       // And it must be checked BEFORE the catalog lookups that were the bug.
-      expect(canvas.indexOf('/^(af_|am_)/')).toBeLessThan(canvas.indexOf('KOKORO_VOICES.some'));
+      expect(canvas.indexOf('/^(af_|am_|bf_|bm_)/')).toBeLessThan(canvas.indexOf('KOKORO_VOICES.some'));
     }
   });
 
@@ -45,8 +45,36 @@ describe('saved narration voice survives a refresh', () => {
     for (const f of COPIES) {
       const app = read(f);
       expect(app, f).toContain('_mc.hasKokoro()');
-      expect(app, f).toMatch(/_kokoroCached && progress && typeof progress\.stage === 'string' && \/download\/i\.test\(progress\.stage\)/);
-      expect(app, f).toContain('Preparing the saved voice model');
+      // Hydrating a cached model is intentionally silent. The progress
+      // takeover is reserved for a genuine model download.
+      expect(app, f).toContain('if (_kokoroCached) return;');
+      expect(app, f).not.toMatch(/_kokoroCached && progress && typeof progress\.stage === 'string' && \/download\/i\.test\(progress\.stage\)/);
+    }
+  });
+});
+
+describe('voice output diagnostics', () => {
+  it('offers a Test voice control wired to real playback-start signals', () => {
+    const header = read('view_header_source.jsx');
+    expect(header).toContain('Test voice');
+    expect(header).toContain('window.__alloTestVoice');
+    for (const f of COPIES) {
+      const app = read(f);
+      expect(app, f).toContain('window.__alloTestVoice = handleTestVoice;');
+      expect(app, f).toContain('audio.onplaying = () =>');
+      expect(app, f).toContain('utterance.onstart = () =>');
+      expect(app, f).toContain('Voice volume is set to zero');
+      expect(app, f).toContain('Voice test blocked by global mute');
+    }
+  });
+
+  it('persists bot voice and effects independently', () => {
+    for (const f of COPIES) {
+      const app = read(f);
+      expect(app, f).toContain("safeGetItem('alloflow-effects-enabled') !== 'false'");
+      expect(app, f).toContain("safeGetItem('alloflow-bot-voice-enabled') !== 'false'");
+      expect(app, f).toContain('setBotVoiceEnabled(prev =>');
+      expect(app, f).toContain('soundEnabled={botVoiceEnabled}');
     }
   });
 });

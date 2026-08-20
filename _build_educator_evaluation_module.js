@@ -3,6 +3,7 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'educator_evaluation_source.jsx');
@@ -10,7 +11,32 @@ const OUTPUT = path.join(ROOT, 'educator_evaluation_module.js');
 const DEPLOY_OUT = path.join(ROOT, 'desktop', 'web-app', 'public', 'educator_evaluation_module.js');
 const STANDALONE_SOURCE = path.join(ROOT, 'educator-evaluation.html');
 const STANDALONE_OUT = path.join(ROOT, 'desktop', 'web-app', 'public', 'educator-evaluation.html');
+const MANUAL_SOURCE = path.join(ROOT, 'educator-evaluation-manual.html');
+const MANUAL_OUT = path.join(ROOT, 'desktop', 'web-app', 'public', 'educator-evaluation-manual.html');
+const MANUAL_ASSETS_SOURCE = path.join(ROOT, 'educator-evaluation-manual-assets');
+const MANUAL_ASSETS_OUT = path.join(ROOT, 'desktop', 'web-app', 'public', 'educator-evaluation-manual-assets');
+const SHARE_HELPER_SOURCE = path.join(ROOT, 'apps_script', 'educator_evaluation_share');
+const SHARE_HELPER_OUT = path.join(ROOT, 'desktop', 'web-app', 'public', 'apps_script', 'educator_evaluation_share');
 const TMP = path.join(ROOT, '_tmp_educator_evaluation_entry.jsx');
+
+// OneDrive occasionally refuses a truncate/write handle on an existing generated file while it
+// is indexing, even though a replace-copy succeeds. Stage outside the sync root, then copy the
+// completed artifact into place so a failed build never leaves a half-written module.
+function writeGenerated(target, data) {
+  const staged = path.join(os.tmpdir(), 'alloflow-' + path.basename(target) + '-' + process.pid + '-' + Date.now());
+  fs.writeFileSync(staged, data);
+  try {
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    try {
+      fs.renameSync(staged, target);
+      return;
+    } catch (renameError) {
+      fs.copyFileSync(staged, target);
+    }
+  } finally {
+    try { fs.unlinkSync(staged); } catch (_) {}
+  }
+}
 
 if (!fs.existsSync(SOURCE)) {
   console.error('Source not found:', SOURCE);
@@ -72,16 +98,20 @@ ${compiled}
       AE_MAX_CYCLE_SNAPSHOTS: AE_MAX_CYCLE_SNAPSHOTS,
       aeTeacherTrendPoints: aeTeacherTrendPoints,
       aeDistinctTeacherMedian: aeDistinctTeacherMedian,
-      aeCohortMetric: aeCohortMetric
+      aeCohortMetric: aeCohortMetric,
+      aeSimulationDefaults: aeSimulationDefaults,
+      aeParseSimulationRequest: aeParseSimulationRequest,
+      aeNormalizeSimulationParams: aeNormalizeSimulationParams,
+      aeBuildSimulatedWorkspace: aeBuildSimulatedWorkspace,
+      aeSimulationSummary: aeSimulationSummary
     }
   };
   console.log('[CDN] EducatorEvaluation loaded');
 })();
 `;
 
-fs.writeFileSync(OUTPUT, outputCode, 'utf8');
-fs.mkdirSync(path.dirname(DEPLOY_OUT), { recursive: true });
-fs.writeFileSync(DEPLOY_OUT, outputCode, 'utf8');
+writeGenerated(OUTPUT, outputCode);
+writeGenerated(DEPLOY_OUT, outputCode);
 
 // The standalone shell bundles its own production React runtime so the page
 // can be hosted or opened locally without relying on a third-party CDN.
@@ -95,9 +125,10 @@ const reactDomImport = path.join(ROOT, 'desktop', 'web-app', 'node_modules', 're
 // module-scoped `qrcode`, so attach it to window for the panel's feature check.
 const qrSource = fs.readFileSync(path.join(ROOT, 'qrcode.js'), 'utf8');
 fs.writeFileSync(STANDALONE_ENTRY, `import React from ${JSON.stringify(reactImport)};\nimport { createRoot } from ${JSON.stringify(reactDomImport)};\n${qrSource}\nif (typeof window !== 'undefined') window.qrcode = window.qrcode || qrcode;\n${source}\ncreateRoot(document.getElementById('educator-evaluation-root')).render(React.createElement(EducatorEvaluationPanel, { standalone: true }));\n`, 'utf8');
+const stagedStandalone = path.join(os.tmpdir(), 'alloflow-educator-evaluation-standalone-' + process.pid + '.js');
 require('esbuild').buildSync({
   entryPoints: [STANDALONE_ENTRY],
-  outfile: STANDALONE_BUNDLE,
+  outfile: stagedStandalone,
   bundle: true,
   format: 'iife',
   platform: 'browser',
@@ -106,7 +137,24 @@ require('esbuild').buildSync({
   legalComments: 'eof',
   define: { 'process.env.NODE_ENV': '"production"' },
 });
-fs.copyFileSync(STANDALONE_BUNDLE, STANDALONE_BUNDLE_OUT);
+writeGenerated(STANDALONE_BUNDLE, fs.readFileSync(stagedStandalone));
+writeGenerated(STANDALONE_BUNDLE_OUT, fs.readFileSync(stagedStandalone));
+try { fs.unlinkSync(stagedStandalone); } catch (_) {}
 fs.unlinkSync(STANDALONE_ENTRY);
-if (fs.existsSync(STANDALONE_SOURCE)) fs.copyFileSync(STANDALONE_SOURCE, STANDALONE_OUT);
+if (fs.existsSync(STANDALONE_SOURCE)) writeGenerated(STANDALONE_OUT, fs.readFileSync(STANDALONE_SOURCE));
+if (fs.existsSync(MANUAL_SOURCE)) writeGenerated(MANUAL_OUT, fs.readFileSync(MANUAL_SOURCE));
+if (fs.existsSync(MANUAL_ASSETS_SOURCE)) {
+  fs.mkdirSync(MANUAL_ASSETS_OUT, { recursive: true });
+  fs.readdirSync(MANUAL_ASSETS_SOURCE, { withFileTypes: true }).forEach((entry) => {
+    if (!entry.isFile()) return;
+    writeGenerated(path.join(MANUAL_ASSETS_OUT, entry.name), fs.readFileSync(path.join(MANUAL_ASSETS_SOURCE, entry.name)));
+  });
+}
+if (fs.existsSync(SHARE_HELPER_SOURCE)) {
+  fs.mkdirSync(SHARE_HELPER_OUT, { recursive: true });
+  ['Code.gs', 'Index.html', 'appsscript.json', 'README.md'].forEach((name) => {
+    const from = path.join(SHARE_HELPER_SOURCE, name);
+    if (fs.existsSync(from)) writeGenerated(path.join(SHARE_HELPER_OUT, name), fs.readFileSync(from));
+  });
+}
 console.log(`Built ${OUTPUT} (${outputCode.split('\n').length} lines) and standalone bundle`);

@@ -3888,7 +3888,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   // step is excluded because it is still running in AlloFlow's background;
   // ordinary failures/stops keep the first unfinished step for a safe retry.
   function vsDemoContinuationPlan(steps, response) {
-    var list = (Array.isArray(steps) ? steps : []).slice(0, 8);
+    var list = (Array.isArray(steps) ? steps : []).slice(0, 16);
     var r = response || {};
     var rawCompleted = Number(r.completed);
     var completed = isFinite(rawCompleted) ? Math.floor(rawCompleted) : 0;
@@ -11993,7 +11993,7 @@ function buildContactSheet(t, count, shouldCancel) {
     if (!report || typeof report !== 'object') return null;
     var allowed = { running: 1, completed: 1, failed: 1, stopped: 1, timed_out: 1, interrupted: 1 };
     var stepAllowed = { pending: 1, running: 1, completed: 1, failed: 1, stopped: 1, timed_out: 1 };
-    var steps = Array.isArray(report.steps) ? report.steps.slice(0, 8).map(function (step, i) {
+    var steps = Array.isArray(report.steps) ? report.steps.slice(0, 16).map(function (step, i) {
       step = step || {};
       return {
         index: Math.max(0, Math.round(Number(step.index != null ? step.index : i) || 0)),
@@ -12014,13 +12014,13 @@ function buildContactSheet(t, count, shouldCancel) {
     var status = allowed[report.status] ? report.status : 'interrupted';
     return {
       version: 1, status: status, startedAt: Number(report.startedAt) || null, endedAt: Number(report.endedAt) || null,
-      total: Math.max(0, Math.min(8, Math.round(Number(report.total) || steps.length))), completed: Math.max(0, Math.round(Number(report.completed) || 0)),
+      total: Math.max(0, Math.min(16, Math.round(Number(report.total) || steps.length))), completed: Math.max(0, Math.round(Number(report.completed) || 0)),
       timedOut: !!report.timedOut, recovered: !!report.recovered, error: String(report.error || '').slice(0, 240), reason: String(report.reason || '').slice(0, 240),
-      steps: steps, events: events, remainingSteps: Array.isArray(report.remainingSteps) ? report.remainingSteps.slice(0, 8).map(function (step) { return typeof cleanDemoDraftStep === 'function' ? cleanDemoDraftStep(step) : step; }) : []
+      steps: steps, events: events, remainingSteps: Array.isArray(report.remainingSteps) ? report.remainingSteps.slice(0, 16).map(function (step) { return typeof cleanDemoDraftStep === 'function' ? cleanDemoDraftStep(step) : step; }) : []
     };
   }
   function beginDemoRunReport(steps) {
-    var list = (Array.isArray(steps) ? steps : []).slice(0, 8);
+    var list = (Array.isArray(steps) ? steps : []).slice(0, 16);
     demoState.runReport = cleanDemoRunReport({
       status: 'running', startedAt: Date.now(), total: list.length, completed: 0,
       steps: list.map(function (step, i) { return { index: i, commandId: step.commandId, label: step.label, script: step.script, status: 'pending' }; }), events: []
@@ -12197,7 +12197,7 @@ function buildContactSheet(t, count, shouldCancel) {
   }
   function cleanDemoTemplate(value) {
     var t = value && typeof value === 'object' ? value : {};
-    var steps = (Array.isArray(t.steps) ? t.steps : []).slice(0, 8).map(cleanDemoDraftStep).filter(function (step) { return step.commandId; });
+    var steps = (Array.isArray(t.steps) ? t.steps : []).slice(0, 16).map(cleanDemoDraftStep).filter(function (step) { return step.commandId; });
     if (!steps.length) return null;
     return {
       id: String(t.id || ('tpl_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6))).replace(/[^a-z0-9_-]/gi, '').slice(0, 60),
@@ -12577,7 +12577,7 @@ function buildContactSheet(t, count, shouldCancel) {
         goal: String($('demoGoal').value || '').trim().slice(0, 300),
         audioMode: String($('demoAudioMode').value || 'auto-Kore').slice(0, 40),
         polish: currentDemoPolish(),
-        steps: demoState.steps.slice(0, 8).map(cleanDemoDraftStep).filter(function (step) { return step.commandId; })
+        steps: demoState.steps.slice(0, 16).map(cleanDemoDraftStep).filter(function (step) { return step.commandId; })
       };
       if (!payload.steps.length) return false;
       sessionStorage.setItem(DEMO_DRAFT_KEY, JSON.stringify(payload));
@@ -12636,7 +12636,7 @@ function buildContactSheet(t, count, shouldCancel) {
         total: Math.max(0, Math.round(Number(demoState.continuation.total) || 0)),
         seriesId: String(demoState.continuation.seriesId || '').replace(/[^a-z0-9_-]/gi, '').slice(0, 80) || null,
         part: Math.max(2, Math.round(Number(demoState.continuation.part) || 2)),
-        steps: demoState.continuation.steps.slice(0, 8).map(cleanDemoDraftStep).filter(function (step) { return step.commandId; })
+        steps: demoState.continuation.steps.slice(0, 16).map(cleanDemoDraftStep).filter(function (step) { return step.commandId; })
       };
       if (!payload.steps.length) return false;
       sessionStorage.setItem(DEMO_CONTINUATION_KEY, JSON.stringify(payload));
@@ -12679,7 +12679,7 @@ function buildContactSheet(t, count, shouldCancel) {
     try { data = JSON.parse(sessionStorage.getItem(DEMO_CONTINUATION_KEY) || 'null'); } catch (_) {}
     if (!data || data.version !== 1 || !Array.isArray(data.steps)) return false;
     if (!isFinite(Number(data.savedAt)) || Date.now() - Number(data.savedAt) > DEMO_CONTINUATION_MAX_AGE) { clearDemoContinuation(); return false; }
-    var steps = data.steps.slice(0, 8).map(cleanDemoDraftStep).filter(function (step) { return step.commandId; });
+    var steps = data.steps.slice(0, 16).map(cleanDemoDraftStep).filter(function (step) { return step.commandId; });
     if (!steps.length) { clearDemoContinuation(); return false; }
     demoState.continuation = {
       steps: steps,
@@ -12698,7 +12698,7 @@ function buildContactSheet(t, count, shouldCancel) {
     try { data = JSON.parse(sessionStorage.getItem(DEMO_DRAFT_KEY) || 'null'); } catch (_) {}
     if (!data || data.version !== 1 || !Array.isArray(data.steps)) return false;
     if (!isFinite(Number(data.savedAt)) || Date.now() - Number(data.savedAt) > DEMO_DRAFT_MAX_AGE) { clearDemoDraft(false); return false; }
-    var steps = data.steps.slice(0, 8).map(cleanDemoDraftStep).filter(function (step) { return step.commandId; });
+    var steps = data.steps.slice(0, 16).map(cleanDemoDraftStep).filter(function (step) { return step.commandId; });
     if (!steps.length) { clearDemoDraft(false); return false; }
     demoState.restoringDraft = true;
     $('demoGoal').value = String(data.goal || '').slice(0, 300);
@@ -12910,7 +12910,7 @@ function buildContactSheet(t, count, shouldCancel) {
   $('demoQualityRerunBtn').addEventListener('click', function () { var take = currentTake(); if (renderDemoQuality(take) && take) saveDraft(take); });  function demoReportRemainingSteps(report) {
     report = cleanDemoRunReport(report);
     if (!report) return [];
-    var pending = Array.isArray(report.remainingSteps) ? report.remainingSteps.slice(0, 8) : [];
+    var pending = Array.isArray(report.remainingSteps) ? report.remainingSteps.slice(0, 16) : [];
     if (!pending.length) pending = (report.steps || []).filter(function (step) { return step.status !== 'completed'; }).map(function (step) { return { commandId: step.commandId, label: step.label, script: step.script }; });
     return pending.map(cleanDemoDraftStep).filter(function (step) { return step && step.commandId; });
   }
@@ -13986,7 +13986,7 @@ function buildContactSheet(t, count, shouldCancel) {
     if (!goal && demoState.officialId) goal = 'Complete the official ' + demoState.officialId + ' tutorial from start to finish.';
     if (!goal || !steps || !steps.length) return;
     var events = (demoState.events || []).slice();
-    var stepSummaries = steps.slice(0, 8).map(function (s, i) {
+    var stepSummaries = steps.slice(0, 16).map(function (s, i) {
       var last = null;
       events.forEach(function (e) { if (e.index === i) last = e; });
       return {
@@ -15990,7 +15990,7 @@ function buildContactSheet(t, count, shouldCancel) {
     var events = d && Array.isArray(d.events) ? d.events : [];
     return {
       active: !!(d && d.active),
-      steps: steps.slice(0, 8).map(function (step) { return typeof cleanDemoDraftStep === 'function' ? cleanDemoDraftStep(step) : { commandId: String(step.commandId || ''), label: String(step.label || ''), script: String(step.script || '') }; }),
+      steps: steps.slice(0, 16).map(function (step) { return typeof cleanDemoDraftStep === 'function' ? cleanDemoDraftStep(step) : { commandId: String(step.commandId || ''), label: String(step.label || ''), script: String(step.script || '') }; }),
       events: events.slice(-96).map(function (event) { return { t: Math.max(0, Number(event.t) || 0), index: Math.max(0, Math.round(Number(event.index) || 0)), phase: String(event.phase || ''), label: String(event.label || '').slice(0, 120), narration: String(event.narration || '').slice(0, 220), script: String(event.script || '').slice(0, 400) }; }),
       report: typeof cleanDemoRunReport === 'function' ? cleanDemoRunReport(d && d.runReport) : null,
       seriesId: d ? String(d.activeSeriesId || '').replace(/[^a-z0-9_-]/gi, '').slice(0, 80) || null : null,

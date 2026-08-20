@@ -100,12 +100,18 @@ console.log('[CDN] ModuleScopeExtrasModule loaded — 4 lang utils + ErrorBounda
 })();
 `;
 
-fs.writeFileSync(OUTPUT, outputCode, 'utf-8');
+const atomicWrite = (file, contents) => {
+    const temporary = `${file}.build-${process.pid}.tmp`;
+    fs.writeFileSync(temporary, contents, 'utf-8');
+    fs.renameSync(temporary, file);
+};
+
+atomicWrite(OUTPUT, outputCode);
 try {
     if (!fs.existsSync(path.dirname(DEPLOY_OUT))) {
         fs.mkdirSync(path.dirname(DEPLOY_OUT), { recursive: true });
     }
-    fs.writeFileSync(DEPLOY_OUT, outputCode, 'utf-8');
+    atomicWrite(DEPLOY_OUT, outputCode);
 } catch (e) {
     console.warn('[ModuleScopeExtras] Could not sync to desktop/web-app/public/:', e.message);
 }

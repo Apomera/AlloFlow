@@ -11,7 +11,7 @@ const require2 = createRequire(import.meta.url);
 const MODULES_DIR = resolve(process.cwd(), 'desktop/web-app/node_modules');
 const React = require2(resolve(MODULES_DIR, 'react'));
 const ReactDOMClient = require2(resolve(MODULES_DIR, 'react-dom/client'));
-const { act } = require2(resolve(MODULES_DIR, 'react-dom/test-utils'));
+const { act, Simulate } = require2(resolve(MODULES_DIR, 'react-dom/test-utils'));
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -59,7 +59,7 @@ function mountPanel(props = {}) {
   });
   mounted.push({ root, container });
   if (startMode && !renderProps.repository) {
-    clickButton(container, startMode === 'blank' ? 'Start with a blank workspace' : 'Explore simulated data');
+    clickButton(container, startMode === 'blank' ? 'Start real work locally' : 'Start a guided sample tour');
   }
   return container;
 }
@@ -100,15 +100,24 @@ function clickButton(container, label) {
   return button;
 }
 
+function enterInput(input, value) {
+  const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+  act(() => {
+    setter.call(input, value);
+    input.dispatchEvent(new window.Event('input', { bubbles: true }));
+  });
+}
+
 describe('EducatorEvaluationPanel', () => {
   it('offers a first-run choice and loads simulated data when selected', () => {
     const container = mountPanel({ startMode: null });
 
     expect(container.querySelector('.ae-onboarding-overlay')).toBeTruthy();
     expect(container.textContent).toContain('Choose how to start Educator Evaluation');
-    expect(container.textContent).toContain('Start with a blank workspace');
-    expect(container.textContent).toContain('Explore simulated data');
-    clickButton(container, 'Explore simulated data');
+    expect(container.textContent).toContain('Start real work locally');
+    expect(container.textContent).toContain('Start a guided sample tour');
+    expect(container.textContent).toContain('Choose a record path');
+    clickButton(container, 'Start a guided sample tour');
 
     expect(container.querySelector('[role="dialog"]')).toBeTruthy();
     expect(container.textContent).toContain('Educator Growth & Evaluation');
@@ -124,15 +133,17 @@ describe('EducatorEvaluationPanel', () => {
     expect(container.textContent).toContain('Overdue');
     expect(container.textContent).toContain('70%');
     expect(container.textContent).toContain('Observation & Practice');
+    expect(container.textContent).toContain('Guided sample · 1 of 6');
+    expect(container.textContent).toContain('1 of 6');
 
     const stored = JSON.parse(localStorage.getItem('allo_educator_evaluation_workspace_v1'));
     expect(stored.config.sampleMode).toBe(true);
     expect(stored.teachers).toHaveLength(8);
-  });
+  }, 15000);
 
   it('can start with a blank on-device workspace instead of simulated records', () => {
     const container = mountPanel({ startMode: null });
-    clickButton(container, 'Start with a blank workspace');
+    clickButton(container, 'Start real work locally');
 
     expect(container.textContent).toContain('Private on-device workspace');
     expect(container.textContent).not.toContain('Teacher 01');
@@ -141,6 +152,24 @@ describe('EducatorEvaluationPanel', () => {
     expect(localStorage.getItem('allo_educator_evaluation_onboarding_v1')).toBe('blank');
     expect(stored.config.sampleMode).toBe(false);
     expect(stored.teachers).toHaveLength(0);
+  });
+
+  it('keeps the add-educator form as a draft until Save and lets Cancel leave no record', () => {
+    const container = mountPanel({ startMode: 'blank' });
+    click(container.querySelector('#ae-tab-staff'));
+    clickButton(container, '+ Add educator');
+
+    const addCard = container.querySelector('[aria-labelledby="ae-add-educator-title"]');
+    const fields = addCard.querySelectorAll('input');
+    enterInput(fields[0], 'Draft Educator');
+    enterInput(fields[1], 'DRAFT-01');
+    clickButton(container, 'Cancel');
+
+    expect(container.querySelector('[aria-labelledby="ae-add-educator-title"]')).toBeNull();
+    expect(container.textContent).not.toContain('Draft Educator');
+    const stored = JSON.parse(localStorage.getItem('allo_educator_evaluation_workspace_v1'));
+    expect(stored.teachers).toHaveLength(0);
+    expect(stored.audit).toHaveLength(0);
   });
 
   it('clicks through every evaluator tab without losing the tab-panel contract', () => {
@@ -167,9 +196,10 @@ describe('EducatorEvaluationPanel', () => {
 
   it('scopes teacher view to one educator and removes organization-wide controls', () => {
     const container = mountPanel();
-    clickButton(container, 'Teacher');
+    clickButton(container, 'Educator preview');
 
-    expect(container.querySelector('.ae-role button[aria-pressed="true"]').textContent).toBe('Teacher');
+    expect(container.querySelector('.ae-role button[aria-pressed="true"]').textContent).toBe('Educator preview');
+    expect(container.textContent).toContain('Read-only educator preview');
     expect(Array.from(container.querySelectorAll('[role="tab"]')).map((tab) => tab.textContent)).toEqual([
       'My evaluation', 'My trends', 'My evidence', 'Formal observation', 'SPM / SLO', 'Timeline', 'About',
     ]);
@@ -209,6 +239,22 @@ describe('EducatorEvaluationPanel', () => {
     expect(container.querySelector('#ae-panel').textContent).toContain('About this workspace');
     expect(container.querySelector('#ae-panel').textContent).not.toContain('Setup, sources, and sharing');
     expect(container.querySelector('#ae-panel fieldset').disabled).toBe(true);
+  });
+
+  it('makes educator-owned controls visibly read-only in a local educator preview', () => {
+    const container = mountPanel();
+    click(container.querySelector('#ae-tab-staff'));
+    clickButton(container, 'Teacher 03');
+    clickButton(container, 'Educator preview');
+
+    const statementSection = Array.from(container.querySelectorAll('section'))
+      .find((section) => section.textContent.includes('Your statement for the record'));
+    const statement = statementSection.querySelector('textarea');
+    const save = Array.from(statementSection.querySelectorAll('button'))
+      .find((button) => button.textContent.includes('Save statement'));
+    expect(statement.readOnly).toBe(true);
+    expect(save.disabled).toBe(true);
+    expect(statementSection.textContent).toContain('Preview only. The educator can write this statement');
   });
 
   it('routes close-button, backdrop, and Escape requests through onClose', () => {
@@ -268,7 +314,7 @@ describe('EducatorEvaluationPanel', () => {
     expect(container.textContent).toContain('This display label does not grant or revoke access.');
 
     click(container.querySelector('#ae-tab-audit'));
-    expect(container.textContent).toContain('District export policy not configured.');
+    expect(container.textContent).toContain('Direct downloads, imports, and reset stay disabled in the portal.');
     expect(container.textContent).not.toContain('Export status CSV');
     expect(container.textContent).not.toContain('Workflow summary HTML');
 
@@ -338,7 +384,7 @@ describe('EducatorEvaluationPanel', () => {
     expect(container.textContent).not.toContain('Choose JSON export');
     expect(container.textContent).not.toContain('Replace sample with blank workspace');
     expect(container.textContent).not.toContain('Download my summary HTML');
-    expect(container.textContent).toContain('District export policy not configured.');
+    expect(container.textContent).toContain('Direct downloads, imports, and reset stay disabled in the portal.');
   });
 
   it('ignores a cross-teacher deep link and keeps the authenticated teacher in an allowed view', async () => {
@@ -403,6 +449,61 @@ describe('EducatorEvaluationPanel', () => {
     expect(repository.bootstrap).toHaveBeenCalledTimes(2);
   });
 
+  it('reviews the authoritative recipient before granting released-summary access', async () => {
+    const sample = sampleWorkspaceFixture();
+    sample.teachers[0].finalizedAt = '2026-08-12T12:00:00.000Z';
+    sample.teachers[0].cycleStatus = 'finalized';
+    const reviewReleasedEvaluation = vi.fn().mockResolvedValue({
+      ok: true,
+      review: {
+        token: 'release-review-123',
+        educatorName: sample.teachers[0].name,
+        recipient: 'teacher.one@district.example',
+        finalizedAt: sample.teachers[0].finalizedAt,
+        action: 'create',
+        actorWillReceiveAccess: true,
+      },
+    });
+    const shareReleasedEvaluation = vi.fn().mockResolvedValue({
+      ok: true,
+      created: true,
+      idempotent: false,
+      recoveryPending: false,
+      doc: { id: 'doc-1', url: 'https://docs.google.com/document/d/doc-1', sharedAt: '2026-08-13T12:00:00.000Z' },
+    });
+    const repository = {
+      bootstrap: vi.fn().mockResolvedValue({
+        ok: true,
+        workspace: sample,
+        revision: 22,
+        currentUser: { email: 'principal@district.example', role: 'evaluator' },
+        deployment: { kind: 'apps-script' },
+      }),
+      saveWorkspace: vi.fn(),
+      reviewReleasedEvaluation,
+      shareReleasedEvaluation,
+    };
+    const container = mountPanel({ repository });
+    await flushRemote();
+
+    clickButton(container, 'Review & share released summary');
+    await flushRemote();
+    expect(reviewReleasedEvaluation).toHaveBeenCalledWith({ teacherId: sample.teachers[0].id });
+    expect(shareReleasedEvaluation).not.toHaveBeenCalled();
+    const dialog = container.querySelector('[aria-labelledby="ae-release-title"]');
+    expect(dialog).toBeTruthy();
+    expect(dialog.textContent).toContain('teacher.one@district.example');
+    expect(dialog.textContent).toContain('Nothing has been shared');
+    expect(dialog.querySelector('.ae-release-actions .ae-btn-primary').disabled).toBe(true);
+
+    const confirmation = dialog.querySelector('input[type="checkbox"]');
+    act(() => { Simulate.change(confirmation, { target: { checked: true } }); });
+    expect(dialog.querySelector('.ae-release-actions .ae-btn-primary').disabled).toBe(false);
+    clickButton(container, 'Confirm and grant access');
+    await flushRemote();
+    expect(shareReleasedEvaluation).toHaveBeenCalledWith({ teacherId: sample.teachers[0].id, reviewToken: 'release-review-123' });
+  });
+
   it('warns before closing only while a remote save remains unconfirmed', async () => {
     const sample = sampleWorkspaceFixture();
     const repository = {
@@ -424,9 +525,14 @@ describe('EducatorEvaluationPanel', () => {
 
     click(container.querySelector('#ae-tab-staff'));
     clickButton(container, '+ Add educator');
-    expect(container.querySelector('#ae-panel').getAttribute('aria-busy')).toBe('true');
+    const addCard = container.querySelector('[aria-labelledby="ae-add-educator-title"]');
+    const fields = addCard.querySelectorAll('input');
+    enterInput(fields[0], 'New Educator');
+    enterInput(fields[1], 'T-NEW');
+    clickButton(container, 'Save educator');
     await flushRemote();
     expect(repository.saveWorkspace).toHaveBeenCalledTimes(1);
+    expect(container.querySelector('#ae-panel').getAttribute('aria-busy')).toBe('true');
     const savingEvent = new window.Event('beforeunload', { cancelable: true });
     window.dispatchEvent(savingEvent);
     expect(savingEvent.defaultPrevented).toBe(true);

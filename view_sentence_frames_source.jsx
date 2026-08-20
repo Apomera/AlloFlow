@@ -42,7 +42,7 @@ function SentenceFramesView(props) {
   return (
                   <div className="space-y-6">
                       <div className="bg-rose-50 p-4 rounded-lg border border-rose-100 mb-6 flex justify-between items-center gap-4" data-help-key="scaffolds_goal_panel">
-                        <p className="text-sm text-rose-800 flex-grow"><strong>UDL Goal:</strong> Providing options for Action & Expression. Scaffolding writing helps students organize their thoughts.</p>
+                        <p className="text-sm text-rose-800 flex-grow"><strong>{t('about.action_title')}</strong> {t('about.action_desc')}</p>
                         <div className="flex items-center gap-3">
                             {studentWorkStatus !== 'idle' && (
                                 <div className={`flex items-center gap-1.5 text-xs font-bold transition-all duration-500 ${studentWorkStatus === 'saving' ? 'text-rose-400' : 'text-green-600'}`}>
@@ -66,7 +66,7 @@ function SentenceFramesView(props) {
                                     title={t('scaffolds.clear_all')}
                                     aria-label={t('scaffolds.clear_all')}
                                 >
-                                    <RefreshCw size={12} /> Reset
+                                    <RefreshCw size={12} /> {t('common.reset')}
                                 </button>
                                 <button
                                     onClick={launchGradingSession}
@@ -267,7 +267,7 @@ function SentenceFramesView(props) {
                         {isTeacherMode && generatedContent?.data.rubric && (
                             <div className="mt-6 bg-indigo-50 border border-indigo-100 rounded-xl p-4 shadow-sm">
                                 <h4 className="font-bold text-indigo-900 mb-3 flex items-center gap-2">
-                                    <CheckCircle2 size={18} className="text-indigo-600"/> AI Auto-Grader
+                                    <CheckCircle2 size={18} className="text-indigo-600"/> {t('scaffolds.auto_grader')}
                                 </h4>
                                 {!gradingResult ? (
                                     <div className="space-y-3">

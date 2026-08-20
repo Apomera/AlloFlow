@@ -4611,6 +4611,35 @@
       addToast('📽️ ' + TT('studio.deck_built', 'Deck drafted: a title slide plus one slide per resource. Reorder, edit, then export to PowerPoint.') + (built.skipped ? ' (' + built.skipped + ' ' + TT('studio.deck_skipped', 'resources beyond the page limit were left out') + ')' : ''), 'success');
       stAnnounce(TT('studio.a11y_deck_built', 'Deck drafted from resources') + ': ' + built.used);
     };
+    var insertArtworkFromArtStudio = function (artwork) {
+      var source = artwork && stSafeDataImage(artwork.src, ST_MAX_IMAGE_SRC_LENGTH);
+      if (!source) {
+        addToast(TT('studio.artstudio_image_failed', 'That Art Studio image could not be added.'), 'error');
+        return;
+      }
+      var now = Date.now();
+      var title = stCleanText(artwork.title || 'Art Studio artwork', 120) || 'Art Studio artwork';
+      var created = stCreateDoc('letter-portrait', title, now);
+      stAppend(created, { type: 'doc.template', template: 'artstudio-artwork' }, 'import', now);
+      var frame = { x: 72, y: 120, w: Math.min(672, created.canvas.w - 144), h: Math.min(672, created.canvas.h - 240) };
+      var image = stMakeImage(source, stCleanText(artwork.altText || '', 300), frame, 'stem-artstudio');
+      image.provenance = {
+        origin: 'stem-artstudio',
+        sourceTool: stCleanText(artwork.sourceTool || 'artStudio', 60),
+        sourceTab: stCleanText(artwork.sourceTab || '', 60),
+        createdAt: Number(artwork.createdAt) || now,
+      };
+      var applied = stAppend(created, { type: 'object.add', object: image }, 'import', now);
+      _docRef.current = created;
+      setPageIndex(0);
+      setView('edit');
+      clearSelection();
+      var insertedId = applied && applied.object && applied.object.id;
+      if (insertedId) selectOnly(insertedId);
+      bump();
+      addToast(TT('studio.artstudio_image_added', 'Art Studio artwork added. Review its alt text before exporting.'), 'success');
+      stAnnounce(TT('studio.artstudio_image_added_a11y', 'Art Studio artwork added to Page Designer'));
+    };
     // Host routing ("Open in Page Designer" next to the main app's slide
     // export): the prop arrives once; the ref guard makes it one-shot so
     // closing the deck and picking a template does not rebuild it.
@@ -4620,8 +4649,14 @@
       if (props.initialAction === 'deck-from-resources') {
         initialActionRef.current = true;
         buildDeckFromResources();
+      } else if (props.initialAction === 'insert-artstudio-artwork' && props.initialArtwork) {
+        initialActionRef.current = true;
+        insertArtworkFromArtStudio(props.initialArtwork);
+      } else if (props.initialAction === 'import-lesson-deck' && props.initialFile) {
+        initialActionRef.current = true;
+        onImportPptxFile({ target: { files: [props.initialFile], value: '' } });
       }
-    }, [props.initialAction]);
+    }, [props.initialAction, props.initialFile, props.initialArtwork]);
 
     // ── object insertion ──
     var selectFromOp = function (op) { if (op && op.object && op.object.id) selectOnly(op.object.id); return op; };
@@ -5580,7 +5615,7 @@
       if (!f) return;
       var Zip = typeof window !== 'undefined' ? window.JSZip : null;
       if (!Zip) { addToast(TT('studio.pptx_import_nolib', 'The import library is still loading — try again in a moment, or open Page Designer from the main app.'), 'error'); return; }
-      addToast(TT('studio.pptx_importing', '📽️ Importing the PowerPoint…'), 'info');
+      addToast(TT('studio.pptx_importing', '📽️ Importing the lesson deck…'), 'info');
       stImportPptxFile(f, Zip, Date.now()).then(function (res) {
         if (!res || res.error) { addToast(TT('studio.pptx_import_failed', 'Could not import: ') + ((res && res.error) || 'unknown error'), 'error'); return; }
         _docRef.current = res.doc;
@@ -5590,7 +5625,8 @@
         var skippedTotal = Object.keys(s.skipped).reduce(function (n, k) { return n + s.skipped[k]; }, 0);
         var parts = [s.slides + ' ' + TT('studio.pptx_slides', 'slides'), s.texts + ' ' + TT('studio.pptx_texts', 'text blocks'), s.images + ' ' + TT('studio.pptx_images', 'images')];
         if (skippedTotal) parts.push(skippedTotal + ' ' + TT('studio.pptx_skipped', 'not importable') + ' (' + Object.keys(s.skipped).map(function (k) { return k + ' ×' + s.skipped[k]; }).join(', ') + ')');
-        addToast('📽️ ' + TT('studio.pptx_imported', 'Deck imported: ') + parts.join(' · '), skippedTotal ? 'info' : 'success');
+        addToast('📽️ ' + TT('studio.pptx_imported', 'Lesson deck imported: ') + parts.join(' · '), skippedTotal ? 'info' : 'success');
+        addToast(TT('studio.pptx_activity_hint', 'Interactive features from Curipod, Nearpod, Pear Deck, or other presentation tools do not travel inside PowerPoint files. Recreate them as AlloFlow activities and launch them from the Live Dashboard.'), 'info');
         if (s.altMissing) addToast('♿ ' + s.altMissing + ' ' + TT('studio.pptx_import_alt', 'imported image(s) arrived without alt text — export stays blocked until each gets a description or a decorative mark.'), 'info');
         stAnnounce(TT('studio.a11y_pptx_imported', 'PowerPoint imported') + ': ' + s.slides + ' ' + TT('studio.pptx_slides', 'slides'));
       }).catch(function (err) { addToast(TT('studio.pptx_import_failed', 'Could not import: ') + ((err && err.message) || 'unknown'), 'error'); });
@@ -5682,7 +5718,7 @@
             h('strong', { style: { fontSize: '15px' } }, TT('studio.title', 'AlloStudio')),
             h('span', { style: { fontSize: '11px', color: C.soft } }, TT('studio.tagline', 'Flyers, worksheets & posters — accessible by construction')),
             h('button', { style: Object.assign({}, S.hBtn, { marginLeft: 'auto' }), onClick: function () { if (loadRef.current) loadRef.current.click(); } }, '📂 ' + TT('studio.open_file', 'Open .allostudio.json')),
-            h('button', { style: S.hBtn, onClick: function () { if (pptxRef.current) pptxRef.current.click(); }, title: TT('studio.pptx_import_hint', 'Bring an existing deck in: text, pictures, and alt text import; tables, charts, and SmartArt are reported, not silently dropped.') }, '📽️ ' + TT('studio.import_pptx', 'Import PowerPoint (.pptx)')),
+            h('button', { style: S.hBtn, onClick: function () { if (pptxRef.current) pptxRef.current.click(); }, title: TT('studio.pptx_import_hint', 'Bring in a PowerPoint or exported lesson deck. Supported text, pictures, alt text, and layout import; proprietary activities, tables, charts, and SmartArt are reported or left for review.') }, '📽️ ' + TT('studio.import_pptx', 'Import lesson deck (.pptx)')),
             h('button', { style: S.hBtn, 'aria-label': TT('studio.close', 'Close AlloStudio'), onClick: props.onClose }, '✕')),
           (function () {
             var saved = stReadAutosave();

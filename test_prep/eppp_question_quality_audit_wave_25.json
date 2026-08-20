@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-native-quality-wave-25",
+  "reviewedAt": "2026-08-20",
+  "scope": "Eight source-reviewed EPPP items, one per domain, rewritten to remove answer-style cues and redundant option feedback while preserving every keyed position.",
+  "summary": {
+    "totalItems": 1500,
+    "rewrittenItems": 8,
+    "domainsCovered": 8,
+    "keyPositionsPreserved": 8,
+    "optionSpecificExplanations": 32,
+    "selectedDistractorWarningsAfter": 0,
+    "selectedFeedbackWarningsAfter": 0,
+    "distractorWarningsBefore": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 56,
+      "asymmetricExtremeDistractorCandidates": 116,
+      "advancedDirectRecallCandidates": 4,
+      "semanticConceptDuplicatePairs": 71,
+      "semanticConceptDuplicateClusters": 42,
+      "editorialAnchorsWithActiveWarnings": 2,
+      "editorialAnchorsWithNoCurrentWarning": 8,
+      "priorityDocketItems": 20
+    },
+    "distractorWarningsAfter": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 56,
+      "asymmetricExtremeDistractorCandidates": 110,
+      "advancedDirectRecallCandidates": 4,
+      "semanticConceptDuplicatePairs": 71,
+      "semanticConceptDuplicateClusters": 42,
+      "editorialAnchorsWithActiveWarnings": 2,
+      "editorialAnchorsWithNoCurrentWarning": 8,
+      "priorityDocketItems": 20
+    },
+    "feedbackWarningsBefore": {
+      "totalItems": 1500,
+      "totalIncorrectOptions": 4500,
+      "itemsWithWarnings": 614,
+      "incorrectOptionsWithWarnings": 1734,
+      "insufficientDetailOptions": 642,
+      "genericTemplateOptions": 1031,
+      "choiceRestatementOptions": 420,
+      "fullKeyEchoOptions": 260,
+      "currentWaveIncorrectOptions": 24,
+      "currentWaveOptionsWithWarnings": 0,
+      "previousWaveIncorrectOptions": 24,
+      "previousWaveOptionsWithWarnings": 0,
+      "latestWaveIncorrectOptions": 48,
+      "latestWaveOptionsWithWarnings": 0,
+      "activeWaveIncorrectOptions": 48,
+      "activeWaveOptionsWithWarnings": 0,
+      "wave09IncorrectOptions": 48,
+      "wave09OptionsWithWarnings": 0,
+      "wave10IncorrectOptions": 48,
+      "wave10OptionsWithWarnings": 0,
+      "wave11IncorrectOptions": 48,
+      "wave11OptionsWithWarnings": 0,
+      "priorityDocketItems": 100
+    },
+    "feedbackWarningsAfter": {
+      "totalItems": 1500,
+      "totalIncorrectOptions": 4500,
+      "itemsWithWarnings": 605,
+      "incorrectOptionsWithWarnings": 1707,
+      "insufficientDetailOptions": 636,
+      "genericTemplateOptions": 1010,
+      "choiceRestatementOptions": 415,
+      "fullKeyEchoOptions": 251,
+      "priorityDocketItems": 100
+    },
+    "status": "pass"
+  },
+  "items": [
+    {
+      "id": "eppp-b021-assessment-4",
+      "domainId": "assessment",
+      "answerIndex": 3,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "assessment-identify-projective-method-from-response-demands"
+    },
+    {
+      "id": "eppp-b023-biological-1",
+      "domainId": "biological",
+      "answerIndex": 0,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "biological-interpret-heterogeneous-fasd-presentations"
+    },
+    {
+      "id": "eppp-b020-cognitive-1",
+      "domainId": "cognitive-affective",
+      "answerIndex": 0,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "cognitive-affective-apply-selective-attention-to-salient-unattended-input"
+    },
+    {
+      "id": "eppp-b019-intervention-3",
+      "domainId": "intervention",
+      "answerIndex": 3,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "intervention-map-modeling-procedure-to-bandura-processes"
+    },
+    {
+      "id": "eppp-b017-lifespan-2",
+      "domainId": "lifespan",
+      "answerIndex": 1,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "lifespan-apply-evolutionary-function-of-attachment-behavior"
+    },
+    {
+      "id": "eppp-b022-professional-3",
+      "domainId": "professional",
+      "answerIndex": 3,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "professional-respond-lawfully-to-overbroad-court-order"
+    },
+    {
+      "id": "eppp-b013-research-1",
+      "domainId": "research",
+      "answerIndex": 0,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "research-interpret-direction-strength-and-causal-limits-of-correlation"
+    },
+    {
+      "id": "eppp-v3-social-cultural-004",
+      "domainId": "social-cultural",
+      "answerIndex": 2,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "social-cultural-apply-realistic-conflict-and-superordinate-goals"
+    }
+  ],
+  "limitations": [
+    "Editorial and source review is not psychometric calibration or independent licensed-psychologist validation."
+  ]
+}

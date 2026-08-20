@@ -602,7 +602,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                     <Sparkles className="text-yellow-500 fill-current" size={20} /> {t('wizard.title')}
                   </h2>
                   <p id="quickstart-step-status" role="status" aria-live="polite" aria-atomic="true" className="text-xs font-bold text-slate-600 mt-1">{wt('wizard.step_status', 'Step')} {step} {wt('wizard.step_of', 'of')} 4</p>
-                  <div className="flex gap-1 mt-2" role="progressbar" aria-label={wt('wizard.progress', 'Quick Start progress')} aria-valuemin={1} aria-valuemax={4} aria-valuenow={step} aria-valuetext={`Step ${step} of 4`}>
+                  <div className="flex gap-1 mt-2" role="progressbar" aria-label={wt('wizard.progress', 'Quick Start progress')} aria-valuemin={1} aria-valuemax={4} aria-valuenow={step} aria-valuetext={(wt('wizard.progress_value', 'Step {current} of {total}')).replace('{current}', String(step)).replace('{total}', '4')}>
                       {[1, 2, 3, 4].map(s => (
                           <div key={s} aria-hidden="true" className={`h-1.5 w-5 rounded-full transition-colors motion-reduce:transition-none ${step >= s ? 'bg-indigo-600' : 'bg-slate-200'}`}></div>
                       ))}
@@ -627,7 +627,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                 <div>
                   <p className="font-bold text-sm text-indigo-800">{wizardStepHelp[step].title}</p>
                   <p className="text-xs text-indigo-700 mt-1 leading-relaxed">{wizardStepHelp[step].text}</p>
-                  <p className="text-xs text-indigo-500 mt-2 italic">💡 Click any element below for a detailed explanation</p>
+                  <p className="text-xs text-indigo-500 mt-2 italic">💡 {wt('wizard.help_click_element', 'Click any element below for a detailed explanation')}</p>
                 </div>
                 <button type="button" aria-label={t('common.close')} onClick={() => setIsHelpMode(false)} className="text-indigo-400 hover:text-indigo-600 shrink-0 min-w-6 min-h-6 inline-flex items-center justify-center"><X size={14}/></button>
               </div>

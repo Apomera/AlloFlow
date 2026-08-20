@@ -50,7 +50,60 @@ function setInputValue(input, value) {
   });
 }
 
+function setSelectValue(select, value) {
+  const setter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
+  act(() => {
+    setter.call(select, value);
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+}
+
 describe('Live Polling host dialog accessibility', () => {
+  it('provides keyboard-friendly section jumping and collapsible teacher work areas', async () => {
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = ReactDOMClient.createRoot(host);
+
+    await act(async () => {
+      root.render(React.createElement(LivePolling.HostPanel, {
+        sessionCode: 'NAV1',
+        isOpen: true,
+        onClose: () => {},
+        roster: { u1: { name: 'Ari', resourceId: 'r1', resourceAt: 100 } },
+        resources: [{ id: 'r1', title: 'Evidence Sort' }],
+        sessionGroups: {},
+      }));
+      await Promise.resolve();
+    });
+
+    const dialog = host.querySelector('[role="dialog"]');
+    const jump = dialog.querySelector('select[aria-label="Jump to live session section"]');
+    const studentSection = dialog.querySelector('[data-live-workspace-section="students"]');
+    const createSection = dialog.querySelector('[data-live-workspace-section="create"]');
+    const studentToggle = dialog.querySelector('button[aria-controls="live-student-activity-details"]');
+    const composerToggle = dialog.querySelector('button[aria-controls="live-poll-composer-details"]');
+
+    expect(jump).not.toBeNull();
+    expect(Array.from(jump.options).map((option) => option.textContent)).toContain('Students and progress');
+    expect(studentSection.getAttribute('tabindex')).toBe('-1');
+    expect(studentToggle.getAttribute('aria-expanded')).toBe('true');
+    expect(composerToggle.getAttribute('aria-expanded')).toBe('true');
+
+    click(studentToggle);
+    expect(studentToggle.getAttribute('aria-expanded')).toBe('false');
+    expect(dialog.querySelector('#live-student-activity-details').hidden).toBe(true);
+
+    click(composerToggle);
+    expect(composerToggle.getAttribute('aria-expanded')).toBe('false');
+    expect(dialog.querySelector('#live-poll-composer-details')).toBeNull();
+
+    setSelectValue(jump, 'create');
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 5)); });
+    expect(composerToggle.getAttribute('aria-expanded')).toBe('true');
+    expect(dialog.querySelector('#live-poll-composer-details')).not.toBeNull();
+    expect(document.activeElement).toBe(createSection);
+  });
+
   it('contains focus, replaces window.confirm with a nested safe-default alert, and restores focus', async () => {
     const confirmSpy = vi.spyOn(window, 'confirm');
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -98,7 +151,7 @@ describe('Live Polling host dialog accessibility', () => {
 
     outside.focus();
     act(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true })));
-    expect(document.activeElement).toBe(close);
+    expect(document.activeElement).toBe(dialog.querySelector('select[aria-label="Jump to live session section"]'));
 
     const routing = Array.from(dialog.querySelectorAll('button')).find((button) => button.textContent.includes('Routing rules'));
     click(routing);

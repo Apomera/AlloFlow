@@ -36,7 +36,7 @@ describe('framework registry (client)', () => {
 
   it('Maine practice composite is an equal average, and the UI says so', () => {
     expect(src).toMatch(/domainWeighted: false/);
-    expect(src).toMatch(/four rubric domains average equally here/);
+    expect(src).toMatch(/four rubric domains average equally in this generic planning profile/);
   });
 
   it('the render pass refreshes the active framework from workspace config', () => {

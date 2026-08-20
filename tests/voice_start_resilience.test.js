@@ -8,6 +8,7 @@
 // never reached, and the mic never opened. start() had ALREADY returned true,
 // so the UI showed voice as ON while nothing was listening.
 import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { loadAlloModule } from './setup.js';
 
 let AC;
@@ -92,5 +93,43 @@ describe('a hanging on-device probe cannot leave the mic closed', () => {
       expect(fake.instances.length, 'no duplicate recognizer').toBe(afterTimeout);
       loop.stop();
     } finally { fake.restore(); }
+  });
+});
+
+describe('desktop Whisper continuous-turn parity', () => {
+  it.each(['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt', 'desktop/web-app/src/App.jsx'])('%s finalizes speech on a natural pause', (file) => {
+    const source = readFileSync(file, 'utf8');
+    const shimStart = source.indexOf('class AlloLocalSpeechRecognition');
+    const shimEnd = source.indexOf('window.__loadPiperTTS', shimStart);
+    const shim = source.slice(shimStart, shimEnd);
+    expect(shimStart).toBeGreaterThan(-1);
+    expect(shim).toContain('_startTurnDetection()');
+    expect(shim).toContain('now - this._lastVoiceAt >= 750');
+    expect(shim).toContain('this.onspeechstart');
+    expect(shim).toContain('this.onspeechend');
+    expect(shim).toContain('if (naturalPause || turnLimit)');
+    expect(shim).not.toContain('confidence: 0.9');
+  });
+});
+
+describe('AlloBot output state matches audible playback', () => {
+  it('waits for actual generated or browser playback before notifying the host', () => {
+    const source = readFileSync('allobot_source.jsx', 'utf8');
+    const speak = source.slice(source.indexOf('const speak = useCallback'), source.indexOf('const handleTypingState'));
+    expect(speak).toContain('audio.onplaying = () =>');
+    expect(speak).toContain('utter.onstart = () =>');
+    expect(speak).toContain('if (onSpeechStart) onSpeechStart();');
+    expect(speak.indexOf('if (onSpeechStart) onSpeechStart();')).toBeGreaterThan(speak.indexOf('const markSpeechStarted'));
+    expect(speak).toContain('if (speechStarted && onSpeechEnd) onSpeechEnd();');
+  });
+
+  it('recovers from zero volume and accepted playback that never starts', () => {
+    const source = readFileSync('allobot_source.jsx', 'utf8');
+    const speak = source.slice(source.indexOf('const speak = useCallback'), source.indexOf('const handleTypingState'));
+    expect(speak).toContain('configuredVolume <= 0');
+    expect(speak).toContain('voice volume is set to zero');
+    expect(speak).toContain("AlloBot's device voice did not start");
+    expect(speak).toContain("Generated AlloBot audio accepted play() but never started");
+    expect(speak).toContain('cancelAlloBotBrowserSpeech();');
   });
 });

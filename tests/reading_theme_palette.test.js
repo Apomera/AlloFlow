@@ -13,6 +13,8 @@ import path from 'node:path';
 
 const repo = path.resolve(import.meta.dirname, '..');
 const ANTI = fs.readFileSync(path.join(repo, 'AlloFlowANTI.txt'), 'utf8');
+const APP_STYLES = fs.readFileSync(path.join(repo, 'app_styles_source.jsx'), 'utf8');
+const HEADER = fs.readFileSync(path.join(repo, 'view_header_source.jsx'), 'utf8');
 
 const hex = (h) => { const s = h.replace('#', ''); return [0, 2, 4].map((i) => parseInt(s.slice(i, i + 2), 16)); };
 const lin = (c) => { const x = c / 255; return x <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); };
@@ -34,19 +36,44 @@ function parseThemes() {
   const out = {};
   const re = /\[data-reading-theme="([a-zA-Z]+)"\] \{ --allo-rt-fg: (#[0-9a-f]{6}); --allo-rt-bg: (#[0-9a-f]{6}); --allo-rt-hl: (#[0-9a-f]{6}); --allo-rt-ok: (#[0-9a-f]{6}); --allo-rt-err: (#[0-9a-f]{6}); --allo-rt-link: (#[0-9a-f]{6});/g;
   let m;
-  while ((m = re.exec(ANTI))) {
+  while ((m = re.exec(APP_STYLES))) {
     out[m[1]] = { fg: m[2], bg: m[3], hl: m[4], ok: m[5], err: m[6], link: m[7] };
   }
   return out;
 }
 
+function parseFullThemeTokens() {
+  const out = {};
+  const blockRe = /\[data-reading-theme="([a-zA-Z]+)"\] \{([^}]*)\}/g;
+  let block;
+  while ((block = blockRe.exec(APP_STYLES))) {
+    if (!block[2].includes('--allo-rt-fg')) continue;
+    const tokens = {};
+    for (const token of block[2].matchAll(/--allo-rt-([a-z-]+): (#[0-9a-f]{6})/g)) tokens[token[1]] = token[2];
+    out[block[1]] = tokens;
+  }
+  return out;
+}
+
+function parseHeaderSwatches() {
+  const out = {};
+  const re = /\{ id: '([^']+)',[^\r\n]*?bg: '(#[0-9a-f]{6})', fg: '(#[0-9a-f]{6})', border: '(#[0-9a-f]{6})', focus: '(#[0-9a-f]{6})'/g;
+  let match;
+  while ((match = re.exec(HEADER))) {
+    out[match[1]] = { bg: match[2], fg: match[3], border: match[4], focus: match[5] };
+  }
+  return out;
+}
+
 const ALL = parseThemes();
+const FULL = parseFullThemeTokens();
 // dark / highContrast carry the same accent tokens but are excluded from the
 // perceptual-spacing and lightness checks — they are deliberately far from the
 // light set, and comparing them would make those assertions meaningless.
 const DARKISH = ['dark', 'highContrast'];
 const THEMES = Object.fromEntries(Object.entries(ALL).filter(([n]) => !DARKISH.includes(n)));
 const NAMES = Object.keys(THEMES);
+const SWATCHES = parseHeaderSwatches();
 
 describe('reading theme palette', () => {
   it('defines every theme with a full accent set', () => {
@@ -57,6 +84,45 @@ describe('reading theme palette', () => {
   it('body text reaches AAA on every theme', () => {
     for (const [name, t] of Object.entries(THEMES)) {
       expect(ratio(t.bg, t.fg), `${name} body text`).toBeGreaterThanOrEqual(7);
+    }
+  });
+
+  it('keeps text and controls legible on every rebuilt reading surface', () => {
+    for (const [name, t] of Object.entries(FULL)) {
+      for (const surface of ['surface', 'surface-raised', 'surface-muted', 'control']) {
+        expect(ratio(t[surface], t.fg), `${name} text on ${surface}`).toBeGreaterThanOrEqual(7);
+      }
+      for (const surface of ['bg', 'surface', 'surface-raised', 'surface-muted', 'control']) {
+        expect(ratio(t[surface], t.muted), `${name} muted text on ${surface}`).toBeGreaterThanOrEqual(4.5);
+      }
+      for (const surface of ['bg', 'surface', 'surface-muted', 'control']) {
+        expect(ratio(t[surface], t.border), `${name} boundary on ${surface}`).toBeGreaterThanOrEqual(3);
+      }
+      expect(ratio(t.bg, t.focus), `${name} focus on canvas`).toBeGreaterThanOrEqual(3);
+      expect(ratio(t.control, t.focus), `${name} focus on control`).toBeGreaterThanOrEqual(3);
+      for (const accent of ['ok', 'err', 'link']) {
+        expect(ratio(t.surface, t[accent]), `${name} ${accent} on nested surface`).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  });
+
+  it('keeps picker swatches truthful, legible, and synchronized with the reading canvases', () => {
+    expect(Object.keys(SWATCHES).sort()).toEqual([
+      'blue', 'dark', 'default', 'dim', 'dyslexia', 'green', 'highContrast', 'rose', 'sepia', 'warm',
+    ]);
+
+    for (const [name, swatch] of Object.entries(SWATCHES)) {
+      expect(ratio(swatch.bg, swatch.fg), `${name} swatch label`).toBeGreaterThanOrEqual(7);
+      expect(ratio(swatch.bg, swatch.border), `${name} swatch boundary`).toBeGreaterThanOrEqual(3);
+      expect(ratio(swatch.bg, swatch.focus), `${name} swatch focus`).toBeGreaterThanOrEqual(3);
+      if (name !== 'default') {
+        expect(swatch, `${name} swatch tokens`).toEqual({
+          bg: FULL[name].bg,
+          fg: FULL[name].fg,
+          border: FULL[name].border,
+          focus: FULL[name].focus,
+        });
+      }
     }
   });
 
@@ -108,12 +174,12 @@ describe('reading theme palette', () => {
     // GlossaryTermSpan takes an isDarkBg prop that NO simplified-view call site
     // passes, so it always rendered indigo-600 (#4f46e5): 2.71:1 on dark,
     // 3.34:1 on high contrast, 2.98:1 on dim. The themes now restyle it.
-    expect(ANTI).toMatch(/\.allo-glossary-term \{ color: var\(--allo-rt-link\)/);
+    expect(APP_STYLES).toMatch(/\.allo-glossary-term \{ color: var\(--allo-rt-link\)/);
 
     // dark + highContrast must carry the tokens that rule depends on, or it
     // resolves to nothing and silently falls back to the unreadable default.
     for (const name of ['dark', 'highContrast']) {
-      const m = ANTI.match(new RegExp(`\\[data-reading-theme="${name}"\\] \\{ --allo-rt-fg: (#[0-9a-f]{6}); --allo-rt-bg: (#[0-9a-f]{6});[^}]*--allo-rt-link: (#[0-9a-f]{6});`));
+      const m = APP_STYLES.match(new RegExp(`\\[data-reading-theme="${name}"\\] \\{ --allo-rt-fg: (#[0-9a-f]{6}); --allo-rt-bg: (#[0-9a-f]{6});[^}]*--allo-rt-link: (#[0-9a-f]{6});`));
       expect(m, `${name} accent tokens`).toBeTruthy();
       const [, fg, bg, link] = m;
       expect(ratio(bg, link), `${name} glossary term`).toBeGreaterThanOrEqual(4.5);
@@ -124,8 +190,45 @@ describe('reading theme palette', () => {
   it('drives accents from variables rather than per-theme hardcoding', () => {
     // The point of the refactor: adding a theme should not mean editing a
     // nine-way conditional in four places.
-    expect(ANTI).toContain('--allo-rt-hl');
-    expect(ANTI).toMatch(/background-color: var\(--allo-rt-hl\)/);
-    expect(ANTI).toMatch(/color: var\(--allo-rt-link\)/);
+    expect(APP_STYLES).toContain('--allo-rt-hl');
+    expect(APP_STYLES).toMatch(/background-color: var\(--allo-rt-hl\)/);
+    expect(APP_STYLES).toMatch(/color: var\(--allo-rt-link\)/);
+  });
+
+  it('gives explicit reading themes final precedence inside dark and contrast shells', () => {
+    const bridgeStart = APP_STYLES.indexOf('App-theme / reading-theme compatibility bridge');
+    expect(bridgeStart).toBeGreaterThan(APP_STYLES.indexOf('.theme-contrast [class*="bg-"]'));
+
+    const bridge = APP_STYLES.slice(bridgeStart);
+    expect(bridge).toContain(':is(.theme-dark, .theme-contrast) .allo-docsuite [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"])');
+    expect(bridge).toMatch(/:where\(\*\) \{\s*color: inherit !important;/);
+    expect(bridge).toMatch(/:where\(button, \[role="button"\]\) \{[\s\S]*?background-color: var\(--allo-rt-control\) !important;/);
+    // Generated docsuite field selectors include three :not([type]) clauses;
+    // :is() deliberately retains the field selector specificity needed to beat
+    // those earlier rules, while :where() would zero it and lose by one point.
+    expect(bridge).toContain(':is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, select, option)');
+    expect(bridge).toContain('outline: 3px solid var(--allo-rt-focus) !important;');
+    expect(bridge).toContain('.theme-contrast .allo-docsuite [data-reading-theme]:not([data-reading-theme=""]):not([data-reading-theme="default"])');
+    expect(bridge).not.toMatch(/\[data-reading-theme="default"\]\s*\{/);
+  });
+
+  it('normalizes reading-theme controls and protects picker previews from app-theme overrides', () => {
+    const layerStart = APP_STYLES.indexOf('Reading-color interaction layer');
+    const bridgeStart = APP_STYLES.indexOf('App-theme / reading-theme compatibility bridge');
+    const layer = APP_STYLES.slice(layerStart, bridgeStart);
+
+    expect(layer).toMatch(/:where\(button, \[role="button"\]\) \{[\s\S]*?background-color: var\(--allo-rt-control\) !important;/);
+    expect(layer).not.toMatch(/:where\(button:not\(\[class\*="bg-"\]\)/);
+
+    expect(HEADER).toContain('allo-reading-theme-swatch');
+    for (const token of ['bg', 'fg', 'border', 'focus']) {
+      expect(HEADER).toContain(`--allo-reading-swatch-${token}`);
+      expect(APP_STYLES).toContain(`--allo-reading-swatch-${token}`);
+    }
+
+    expect(APP_STYLES).toMatch(/button\.allo-reading-theme-swatch \{/);
+    expect(APP_STYLES).toMatch(/button\.allo-reading-theme-swatch\[aria-checked="true"\]/);
+    expect(APP_STYLES).toMatch(/\.theme-contrast button\.allo-reading-theme-swatch:focus-visible/);
+    expect(APP_STYLES).toMatch(/@media \(forced-colors: active\)[\s\S]*?button\.allo-reading-theme-swatch[\s\S]*?CanvasText/);
   });
 });

@@ -458,6 +458,103 @@ describe('mailbox session bridge (real ANTI block against real Code.gs)', () => 
             await expect(api.updateDoc(ref, { mode: 'async' })).rejects.toMatchObject({ code: 'allo/mailbox-denied' });
         } finally { api.teardown(); }
     });
+
+    it('routes live Escape Room team lives through the mailbox without a first-miss game over', async () => {
+        const { api, sb } = makeBridge();
+        const guest = sb.joinParticipant();
+        sb.teacherCall({ a: 'dset', c: sb.code, p: 's', d: {
+            mode: 'sync',
+            roster: { [guest.uid]: { name: 'Brave Fox' } },
+            isActive: true,
+            escapeRoomState: {
+                isActive: true,
+                teams: { [guest.uid]: 'Red' },
+                teamProgress: {
+                    Red: {
+                        solvedPuzzles: [],
+                        isEscaped: false,
+                        lives: 3,
+                        maxLives: 3,
+                        wrongAttempts: 0,
+                        streak: 0,
+                        isGameOver: false,
+                        hintsRemaining: 3,
+                        revealedHints: {},
+                    },
+                },
+            },
+        } });
+        api.install({ url: 'https://mb/exec', code: sb.code, participant: guest.pt, isTeacher: false, uid: guest.uid });
+        try {
+            const ref = api.doc(...sessionArgs(sb.code));
+            await api.updateDoc(ref, {
+                'escapeRoomState.teamProgress.Red.lives': 2,
+                'escapeRoomState.teamProgress.Red.maxLives': 3,
+                'escapeRoomState.teamProgress.Red.streak': 0,
+                'escapeRoomState.teamProgress.Red.wrongAttempts': 1,
+                'escapeRoomState.teamProgress.Red.isGameOver': false,
+            });
+
+            const stored = sb.teacherCall({ a: 'dget', c: sb.code, ps: [{ p: 's' }] }).docs[0].d;
+            expect(stored.escapeRoomState.teamProgress.Red).toMatchObject({
+                lives: 2,
+                maxLives: 3,
+                wrongAttempts: 1,
+                streak: 0,
+                isGameOver: false,
+            });
+            expect(stored.escapeRoomState.isGameOver).toBeUndefined();
+
+            await expect(api.updateDoc(ref, {
+                'escapeRoomState.lives': 0,
+                'escapeRoomState.isGameOver': true,
+            })).rejects.toMatchObject({ code: 'allo/mailbox-denied' });
+        } finally { api.teardown(); }
+    });
+
+    it('routes Concept Quest votes and turn actions through the same mailbox team-progress surface', async () => {
+        const { api, sb } = makeBridge();
+        const guest = sb.joinParticipant();
+        sb.teacherCall({ a: 'dset', c: sb.code, p: 's', d: {
+            mode: 'sync', roster: { [guest.uid]: { name: 'Brave Fox' } }, isActive: true,
+            escapeRoomState: {
+                mode: 'concept-quest', isActive: true, teams: {},
+                teamProgress: { All: { questVotes: {}, questActions: {}, questRoles: {} } },
+                conceptQuest: { currentRoomId: 'room-1', phase: 'explore', turn: 1 },
+            },
+        } });
+        api.install({ url: 'https://mb/exec', code: sb.code, participant: guest.pt, isTeacher: false, uid: guest.uid });
+        try {
+            const ref = api.doc(...sessionArgs(sb.code));
+            await api.updateDoc(ref, {
+                [`escapeRoomState.teams.${guest.uid}`]: 'All',
+                [`escapeRoomState.teamProgress.All.questVotes.${guest.uid}`]: 'room-2',
+                [`escapeRoomState.teamProgress.All.questRoles.${guest.uid}`]: 'connector',
+            });
+            await api.updateDoc(ref, {
+                [`escapeRoomState.teamProgress.All.questActions.${guest.uid}`]: { abilityId: 'connect', answerIndex: 1, submittedAt: 12345, supportId: 'guard', supportTargetUid: 'classmate-1' },
+            });
+            const stored = sb.teacherCall({ a: 'dget', c: sb.code, ps: [{ p: 's' }] }).docs[0].d;
+            expect(stored.escapeRoomState.teams[guest.uid]).toBe('All');
+            expect(stored.escapeRoomState.teamProgress.All.questVotes[guest.uid]).toBe('room-2');
+            expect(stored.escapeRoomState.teamProgress.All.questRoles[guest.uid]).toBe('connector');
+            expect(stored.escapeRoomState.teamProgress.All.questActions[guest.uid]).toMatchObject({ abilityId: 'connect', answerIndex: 1, supportId: 'guard', supportTargetUid: 'classmate-1' });
+            expect(stored.escapeRoomState.conceptQuest).toMatchObject({ currentRoomId: 'room-1', phase: 'explore', turn: 1 });
+            await expect(api.updateDoc(ref, {
+                'escapeRoomState.teamProgress.All.questVotes.someone-else': 'room-3',
+            })).rejects.toMatchObject({ code: 'allo/mailbox-denied' });
+            await expect(api.updateDoc(ref, {
+                [`escapeRoomState.teamProgress.All.questRoles.${guest.uid}`]: 'boss',
+            })).rejects.toMatchObject({ code: 'allo/mailbox-denied' });
+            await expect(api.updateDoc(ref, {
+                [`escapeRoomState.teamProgress.All.questActions.${guest.uid}`]: { abilityId: 'connect', answerIndex: 99, submittedAt: 12345 },
+            })).rejects.toMatchObject({ code: 'allo/mailbox-denied' });
+            await expect(api.updateDoc(ref, {
+                [`escapeRoomState.teamProgress.All.questActions.${guest.uid}`]: { abilityId: 'connect', answerIndex: 1, submittedAt: 12345, supportId: 'guard', supportTargetUid: guest.uid },
+            })).rejects.toMatchObject({ code: 'allo/mailbox-denied' });
+        } finally { api.teardown(); }
+    });
+
     it('doc watchers receive remote changes via the pump', async () => {
         const { api, sb } = makeBridge();
         sb.teacherCall({ a: 'dset', c: sb.code, k: sb.secret, p: 's', d: { mode: 'sync', roster: {} } });

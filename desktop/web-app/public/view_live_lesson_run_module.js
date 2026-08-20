@@ -2203,7 +2203,7 @@ function LiveLessonRunPanel(props) {
         },
         delivery.total > 0 ? `${delivery.viewing} ${t("common.of") || "of"} ${delivery.total} ${t("live_lesson.viewing_step") || "last reported on this step"}` : t("live_lesson.no_connected_audience") || "No connected students in this audience yet."
       )
-    ), /* @__PURE__ */ React.createElement("p", { style: { margin: "0.45rem 0 0", color: "#475569", fontSize: "0.62rem", lineHeight: 1.35 } }, selectedAudience && selectedAudience.kind !== "class" ? t("live_lesson.targeting_hint") || "Specific sends reuse the existing priority: individual overrides group, and group overrides class." : teacherPaced ? t("live_lesson.teacher_paced_hint") || "Teacher-paced: presenting follows this step on student screens." : t("live_lesson.student_paced_hint") || "Student-paced: opening changes your view while students keep navigation control."))))
+    ), /* @__PURE__ */ React.createElement("p", { style: { margin: "0.45rem 0 0", color: "#475569", fontSize: "0.62rem", lineHeight: 1.35 } }, selectedAudience && selectedAudience.kind !== "class" ? t("live_lesson.targeting_hint") || "Specific sends reuse the existing priority: individual overrides group, and group overrides class." : teacherPaced ? t("live_lesson.teacher_paced_hint") || "Teacher-led: presenting follows this step on student screens." : t("live_lesson.student_paced_hint") || "Student-paced: opening changes your view while students keep navigation control."))))
   );
 }
 

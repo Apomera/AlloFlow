@@ -19,7 +19,7 @@ beforeAll(() => {
   ST = global.window.AlloModules.SessionTransport;
 });
 
-const TEACHER_ONLY = ['lesson-plan', 'analysis', 'udl-advice', 'persona-session'];
+const TEACHER_ONLY = ['lesson-plan', 'udl-advice', 'persona-session'];
 
 const liveFollowStart = anti.indexOf('const _alloFollowResourceLive = (item, options = {}) => {');
 const liveFollowEnd = anti.indexOf('const handleRestoreView', liveFollowStart);
@@ -54,7 +54,7 @@ describe('studentSafeResources (the one candidate rule)', () => {
   it('keeps id-bearing student types, drops teacher-only and malformed items', () => {
     const history = [
       { id: 'a', type: 'simplified' },
-      { id: 'b', type: 'analysis' },        // teacher-only
+      { id: 'b', type: 'analysis' },        // shareable when the teacher presents it
       { id: 'c', type: 'lesson-plan' },     // teacher-only
       { type: 'quiz' },                     // no id
       { id: 'd' },                          // no type
@@ -62,7 +62,7 @@ describe('studentSafeResources (the one candidate rule)', () => {
       { id: 'e', type: 'word-sounds' },
     ];
     const safe = ST.studentSafeResources(history, TEACHER_ONLY);
-    expect(safe.map((item) => item.id)).toEqual(['a', 'e']);
+    expect(safe.map((item) => item.id)).toEqual(['a', 'b', 'e']);
   });
 
   it('tolerates non-array input', () => {
@@ -94,12 +94,15 @@ describe('firebase adapter', () => {
       { id: 'b', type: 'analysis' },
     ];
     const result = await transport.publishResources(history);
-    expect(ops.uploadAssets).toHaveBeenCalledWith([{ id: 'a', type: 'simplified' }]);
+    expect(ops.uploadAssets).toHaveBeenCalledWith([
+      { id: 'a', type: 'simplified' },
+      { id: 'b', type: 'analysis' },
+    ]);
     expect(ops.write).toHaveBeenCalledTimes(1);
     const payload = ops.write.mock.calls[0][0];
-    expect(payload.resources).toHaveLength(1);
+    expect(payload.resources).toHaveLength(2);
     expect(payload.aiPolicy).toEqual({ studentAi: 'off' });
-    expect(result).toMatchObject({ kind: 'firebase', candidates: 1, kept: 1, dropped: 0, publishedIds: ['a'] });
+    expect(result).toMatchObject({ kind: 'firebase', candidates: 2, kept: 2, dropped: 0, publishedIds: ['a', 'b'] });
     expect(ops.onTrimmed).not.toHaveBeenCalled();
   });
 
@@ -165,8 +168,11 @@ describe('mailbox adapter (stage-1 shell)', () => {
       { id: 'a', type: 'simplified' },
       { id: 'b', type: 'analysis' },
     ]);
-    expect(runPackCycle).toHaveBeenCalledWith([{ id: 'a', type: 'simplified' }]);
-    expect(result).toMatchObject({ kind: 'mailbox', candidates: 1, pushed: 1 });
+    expect(runPackCycle).toHaveBeenCalledWith([
+      { id: 'a', type: 'simplified' },
+      { id: 'b', type: 'analysis' },
+    ]);
+    expect(result).toMatchObject({ kind: 'mailbox', candidates: 2, pushed: 2 });
   });
 
   it('declares policy as join-URL capability, not a doc write', async () => {
@@ -268,8 +274,8 @@ describe('mailbox pack cycle (stage 2 — the algorithm, module-owned)', () => {
       { id: 'a', type: 'simplified' },
       { id: 'b', type: 'analysis' },
     ]);
-    expect(ops.pushItem).toHaveBeenCalledTimes(1);
-    expect(result).toMatchObject({ kind: 'mailbox', candidates: 1, pushed: 1 });
+    expect(ops.pushItem).toHaveBeenCalledTimes(2);
+    expect(result).toMatchObject({ kind: 'mailbox', candidates: 2, pushed: 2 });
   });
 });
 

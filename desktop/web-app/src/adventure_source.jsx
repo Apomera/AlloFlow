@@ -149,7 +149,7 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
 });
 
 // ═══ playAdventureEventSound (lines 9264-9336) ═══
-const playAdventureEventSound = (type) => {
+const playAdventureEventSoundLegacy = (type) => {
   const ctx = getGlobalAudioContext();
   if (!ctx) return;
   if (ctx.state === 'suspended') ctx.resume();
@@ -224,7 +224,7 @@ const playAdventureEventSound = (type) => {
 };
 
 // ═══ playGenerativeSoundscape (lines 9337-9498) ═══
-const playGenerativeSoundscape = (ctx, dest, params) => {
+const playGenerativeSoundscapeLegacy = (ctx, dest, params) => {
     const safeParams = params || {};
     const atmosphere = safeParams.atmosphere || 'Calm';
     const element = safeParams.element || 'Wind';
@@ -388,6 +388,896 @@ const playGenerativeSoundscape = (ctx, dest, params) => {
 };
 
 // ═══ ClimaxProgressBar (lines 9499-9563) ═══
+// Shared Adventure mixer. All audio is synthesized locally; no third-party
+// samples are bundled. A future verified CC0 layer can feed these same buses.
+let adventureAudioEngineSingleton = null;
+const ADVENTURE_AUDIO_PREFS_KEY = 'alloflow-adventure-audio-v1';
+const ADVENTURE_AUDIO_PREFS_DEFAULTS = Object.freeze({ ambience: 1, effects: 1, gentle: false });
+let adventureAudioPreferencesCache = null;
+
+const clampAdventureAudio = (value, min = 0, max = 1) => Math.max(min, Math.min(max, Number(value) || 0));
+
+const normalizeAdventureAudioPreferences = (value) => {
+    const safe = value && typeof value === 'object' ? value : {};
+    return {
+        ambience: clampAdventureAudio(safe.ambience == null ? ADVENTURE_AUDIO_PREFS_DEFAULTS.ambience : safe.ambience),
+        effects: clampAdventureAudio(safe.effects == null ? ADVENTURE_AUDIO_PREFS_DEFAULTS.effects : safe.effects),
+        gentle: safe.gentle === true
+    };
+};
+
+const getAdventureAudioPreferences = () => {
+    if (adventureAudioPreferencesCache) return { ...adventureAudioPreferencesCache };
+    let stored = null;
+    try {
+        if (typeof window !== 'undefined' && window.localStorage) stored = JSON.parse(window.localStorage.getItem(ADVENTURE_AUDIO_PREFS_KEY) || 'null');
+    } catch (_) {}
+    adventureAudioPreferencesCache = normalizeAdventureAudioPreferences(stored);
+    return { ...adventureAudioPreferencesCache };
+};
+
+const setAdventureAudioPreferences = (patch) => {
+    adventureAudioPreferencesCache = normalizeAdventureAudioPreferences({ ...getAdventureAudioPreferences(), ...(patch || {}) });
+    try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+            window.localStorage.setItem(ADVENTURE_AUDIO_PREFS_KEY, JSON.stringify(adventureAudioPreferencesCache));
+            window.dispatchEvent(new CustomEvent('alloflow-adventure-audio-preferences', { detail: { ...adventureAudioPreferencesCache } }));
+        }
+    } catch (_) {}
+    return { ...adventureAudioPreferencesCache };
+};
+
+const normalizeAdventureSoundParams = (params, sceneText = '') => {
+    const safe = params && typeof params === 'object' ? params : {};
+    const atmosphere = String(safe.atmosphere || safe.mood || 'Calm').toLowerCase();
+    const rawElement = String(safe.element || safe.environment || 'Wind').toLowerCase();
+    let element = rawElement;
+    if (/rain|storm|drizzle/.test(rawElement)) element = 'rain';
+    else if (/ocean|sea|coast|wave/.test(rawElement)) element = 'ocean';
+    else if (/cave|cavern|underground/.test(rawElement)) element = 'cave';
+    else if (/city|urban|street/.test(rawElement)) element = 'city';
+    else if (/space|cosmic|star/.test(rawElement)) element = 'space';
+    else if (/laboratory|lab|science/.test(rawElement)) element = 'laboratory';
+    else if (/crowd|market|festival/.test(rawElement)) element = 'crowd';
+    else if (/forest|jungle|nature|wild/.test(rawElement)) element = 'nature';
+    else if (/machine|factory|engine|mechan/.test(rawElement)) element = 'machinery';
+    else if (/water|river|stream|lake/.test(rawElement)) element = 'water';
+    else if (/fire|flame|lava/.test(rawElement)) element = 'fire';
+    else if (/silent|none|quiet/.test(rawElement)) element = 'silence';
+    else element = 'wind';
+    const rawSpace = String(safe.space || safe.acousticSpace || safe.room || '').toLowerCase();
+    let acousticSpace = rawSpace;
+    if (/cave|cavern|underground|echo/.test(rawSpace) || element === 'cave') acousticSpace = 'cave';
+    else if (/void|vacuum|cosmic|outer/.test(rawSpace) || element === 'space') acousticSpace = 'void';
+    else if (/open|outdoor|outside|sky|wide/.test(rawSpace) || ['wind', 'water', 'rain', 'ocean', 'fire', 'nature'].includes(element)) acousticSpace = 'open';
+    else acousticSpace = 'room';
+    const motion = String(safe.motion || safe.pacing || '').toLowerCase();
+    const text = String(sceneText || '').toLowerCase();
+    let inferred = ({ calm: 0.28, joyful: 0.48, ethereal: 0.42, dark: 0.58, tense: 0.76 }[atmosphere] || 0.4);
+    if (/chase|race|escape|battle|attack|danger|urgent|collapse|storm/.test(text)) inferred += 0.16;
+    if (/rest|quiet|peace|safe|gentle|calm|still/.test(text)) inferred -= 0.12;
+    if (/chase|urgent|rapid/.test(motion)) inferred += 0.12;
+    if (/still|rest|quiet/.test(motion)) inferred -= 0.1;
+    const supplied = Number(safe.intensity);
+    const intensity = clampAdventureAudio(Number.isFinite(supplied) ? supplied : inferred, 0.12, 1);
+    return {
+        atmosphere,
+        element,
+        acousticSpace,
+        intensity,
+        motion: motion || (intensity > 0.72 ? 'urgent' : intensity < 0.3 ? 'still' : 'steady')
+    };
+};
+
+const createAdventureAudioRng = (seed) => {
+    let state = 2166136261;
+    const text = String(seed || 'adventure');
+    for (let i = 0; i < text.length; i++) {
+        state ^= text.charCodeAt(i);
+        state = Math.imul(state, 16777619);
+    }
+    return () => {
+        state += 0x6D2B79F5;
+        let value = state;
+        value = Math.imul(value ^ (value >>> 15), value | 1);
+        value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+        return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+    };
+};
+
+// AudioBuffers are safe to share between BufferSource and Convolver nodes when
+// treated as immutable. Keep small per-context LRU pools so procedural details
+// do not allocate a new buffer for every raindrop, crackle, or scene crossfade.
+const adventureAudioBufferCaches = new WeakMap();
+
+const getAdventureCachedBuffer = (ctx, kind, key, create, maxEntries) => {
+    let contextCaches = adventureAudioBufferCaches.get(ctx);
+    if (!contextCaches) {
+        contextCaches = { noise: new Map(), reverb: new Map() };
+        adventureAudioBufferCaches.set(ctx, contextCaches);
+    }
+    const cache = contextCaches[kind];
+    if (cache.has(key)) {
+        const cached = cache.get(key);
+        cache.delete(key);
+        cache.set(key, cached);
+        return cached;
+    }
+    const value = create();
+    cache.set(key, value);
+    while (cache.size > maxEntries) cache.delete(cache.keys().next().value);
+    return value;
+};
+
+const createAdventureNoiseBuffer = (ctx, seconds = 0.5, variation = 0) => {
+    const sampleRate = Math.max(8000, Math.round(Number(ctx?.sampleRate) || 44100));
+    const bucketSeconds = Math.ceil(Math.max(0.05, Math.min(4, Number(seconds) || 0.5)) * 20) / 20;
+    const safeVariation = Math.abs(Math.floor(Number(variation) || 0)) % 4;
+    const cacheKey = [sampleRate, bucketSeconds.toFixed(2), safeVariation].join(':');
+    return getAdventureCachedBuffer(ctx, 'noise', cacheKey, () => {
+        const buffer = ctx.createBuffer(1, Math.max(1, Math.floor(sampleRate * bucketSeconds)), sampleRate);
+        const data = buffer.getChannelData(0);
+        const noiseRng = createAdventureAudioRng('noise|' + cacheKey);
+        let brown = 0;
+        for (let i = 0; i < data.length; i++) {
+            brown = (brown + 0.02 * (noiseRng() * 2 - 1)) / 1.02;
+            data[i] = clampAdventureAudio(brown * 3.5, -1, 1);
+        }
+        return buffer;
+    }, 32);
+};
+
+const createAdventureReverb = (ctx, seconds = 1.05, decay = 2.4) => {
+    if (!ctx || typeof ctx.createConvolver !== 'function') return null;
+    try {
+        const sampleRate = Math.max(8000, Math.round(Number(ctx.sampleRate) || 44100));
+        const bucketSeconds = Math.ceil(Math.max(0.2, Math.min(4, Number(seconds) || 1.05)) * 20) / 20;
+        const bucketDecay = Math.round(Math.max(0.5, Math.min(6, Number(decay) || 2.4)) * 10) / 10;
+        const cacheKey = [sampleRate, bucketSeconds.toFixed(2), bucketDecay.toFixed(1)].join(':');
+        const impulse = getAdventureCachedBuffer(ctx, 'reverb', cacheKey, () => {
+            const length = Math.max(1, Math.floor(sampleRate * bucketSeconds));
+            const buffer = ctx.createBuffer(2, length, sampleRate);
+            const impulseRng = createAdventureAudioRng('reverb|' + cacheKey);
+            for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
+                const data = buffer.getChannelData(channel);
+                for (let i = 0; i < length; i++) {
+                    const envelope = Math.pow(1 - (i / length), bucketDecay);
+                    data[i] = (impulseRng() * 2 - 1) * envelope;
+                }
+            }
+            return buffer;
+        }, 12);
+        const convolver = ctx.createConvolver();
+        convolver.buffer = impulse;
+        return convolver;
+    } catch (_) { return null; }
+};
+
+const createAdventureVoiceBudget = (options = {}) => {
+    const activeTokens = new Map();
+    const reserves = { detail: 8, event: 5, critical: 0, ...(options.reserves || {}) };
+    let nextId = 0;
+    const getMaxVoices = () => Math.max(1, Math.floor(Number(typeof options.maxVoices === 'function' ? options.maxVoices() : options.maxVoices) || 24));
+    const normalizePriority = priority => ['detail', 'event', 'critical'].includes(priority) ? priority : 'detail';
+    const claim = (priority = 'detail') => {
+        const safePriority = normalizePriority(priority);
+        const capacity = Math.max(1, getMaxVoices() - Math.max(0, Number(reserves[safePriority]) || 0));
+        if (activeTokens.size >= capacity) return null;
+        const token = { id: ++nextId, priority: safePriority, released: false };
+        activeTokens.set(token.id, token);
+        return token;
+    };
+    const release = token => {
+        if (!token || token.released || !activeTokens.has(token.id)) return;
+        token.released = true;
+        activeTokens.delete(token.id);
+    };
+    const snapshot = () => {
+        const byPriority = { detail: 0, event: 0, critical: 0 };
+        activeTokens.forEach(token => { byPriority[token.priority] += 1; });
+        return { active: activeTokens.size, max: getMaxVoices(), byPriority };
+    };
+    return { claim, release, snapshot };
+};
+
+const ADVENTURE_THEME_CONTOURS = Object.freeze([
+    [0, 2, 1, 3],
+    [0, 1, 4, 2],
+    [2, 0, 3, 1],
+    [0, 3, 2, 4],
+    [1, 3, 0, 2]
+]);
+
+const createAdventureThemeProfile = seed => {
+    const themeRng = createAdventureAudioRng('theme|' + String(seed || 'adventure'));
+    const identity = Math.floor(themeRng() * 0xFFFFFFFF).toString(36);
+    const contour = ADVENTURE_THEME_CONTOURS[Math.floor(themeRng() * ADVENTURE_THEME_CONTOURS.length)].slice();
+    const register = themeRng() > 0.82 ? 0.5 : 1;
+    const lifts = contour.map((degree, index) => {
+        const nextDegree = contour[(index + 1) % contour.length];
+        return Math.max(0.88, Math.min(1.22, 1 + (nextDegree - degree) * 0.055));
+    });
+    return { key: identity + ':' + contour.join(''), contour, lifts, register };
+};
+
+const createAdventureThemeState = () => {
+    let activeKey = '';
+    let cursor = 0;
+    const next = (themeKey, length) => {
+        const safeLength = Math.max(1, Math.floor(Number(length) || 1));
+        if (themeKey !== activeKey) {
+            activeKey = themeKey;
+            cursor = 0;
+        }
+        const index = cursor % safeLength;
+        cursor += 1;
+        return index;
+    };
+    return { next, snapshot: () => ({ key: activeKey, cursor }) };
+};
+
+const createAdventureMixFocus = () => {
+    const activeTokens = new Map();
+    let nextId = 0;
+    const add = (priority, gentle = false) => {
+        if (priority !== 'event' && priority !== 'critical') return null;
+        const level = priority === 'critical'
+            ? (gentle ? 0.6 : 0.45)
+            : (gentle ? 0.8 : 0.7);
+        const token = { id: ++nextId, level, released: false };
+        activeTokens.set(token.id, token);
+        return token;
+    };
+    const release = token => {
+        if (!token || token.released || !activeTokens.has(token.id)) return;
+        token.released = true;
+        activeTokens.delete(token.id);
+    };
+    const multiplier = () => {
+        let level = 1;
+        activeTokens.forEach(token => { level = Math.min(level, token.level); });
+        return level;
+    };
+    return { add, release, multiplier, snapshot: () => ({ active: activeTokens.size, multiplier: multiplier() }) };
+};
+
+const isAdventureAudioDocumentHidden = () => {
+    try { return typeof document !== 'undefined' && document.visibilityState === 'hidden'; } catch (_) { return false; }
+};
+
+const stopAdventureAudioNodes = (nodes) => {
+    (nodes || []).forEach(node => {
+        try { if (node && typeof node.stop === 'function') node.stop(); } catch (_) {}
+        try { if (node && typeof node.disconnect === 'function') node.disconnect(); } catch (_) {}
+    });
+};
+
+const playGenerativeSoundscape = (ctx, dest, params, options = {}) => {
+    const profile = normalizeAdventureSoundParams(params, options.sceneText);
+    const gentle = options.gentle === true;
+    const intensity = gentle ? Math.min(profile.intensity, 0.5) : profile.intensity;
+    const rng = createAdventureAudioRng([options.sceneText || '', profile.atmosphere, profile.element, profile.acousticSpace].join('|'));
+    const themeProfile = options.themeProfile || createAdventureThemeProfile(options.themeSeed || options.sceneText || 'adventure');
+    const themeState = options.themeState || createAdventureThemeState();
+    const rawMotionFactor = ({ still: 0.45, steady: 0.72, travel: 1, chase: 1.22, urgent: 1.42 })[profile.motion] || 0.82;
+    const motionFactor = gentle ? Math.min(rawMotionFactor, 1) : rawMotionFactor;
+    const cadence = milliseconds => Math.max(260, Math.round(milliseconds / motionFactor));
+    const maxTransientCount = gentle ? 4 : 10;
+    const transientBudget = options.voiceBudget || createAdventureVoiceBudget({
+        maxVoices: maxTransientCount,
+        reserves: { detail: 0, event: 0, critical: 0 }
+    });
+    const claimTransient = () => transientBudget.claim('detail');
+    const releaseTransient = token => transientBudget.release(token);
+    const legacyElement = ({ rain: 'water', ocean: 'water', city: 'machinery', laboratory: 'machinery', cave: 'wind', crowd: 'nature', space: 'silence' })[profile.element] || profile.element;
+    const spaceColoration = ({ open: { cutoff: 5200, q: 0.35 }, room: { cutoff: 3600, q: 0.55 }, cave: { cutoff: 1800, q: 0.8 }, void: { cutoff: 2600, q: 0.4 } })[profile.acousticSpace] || { cutoff: 3600, q: 0.55 };
+    const textureDest = ctx.createGain();
+    const spaceFilter = ctx.createBiquadFilter();
+    const spaceLfo = ctx.createOscillator();
+    const spaceDepth = ctx.createGain();
+    const ambienceSwell = ctx.createOscillator();
+    const ambienceSwellDepth = ctx.createGain();
+    textureDest.gain.value = 0.92;
+    spaceFilter.type = 'lowpass';
+    spaceFilter.frequency.value = spaceColoration.cutoff;
+    spaceFilter.Q.value = spaceColoration.q;
+    spaceLfo.type = 'sine';
+    spaceLfo.frequency.value = 0.035 + motionFactor * 0.018;
+    spaceDepth.gain.value = spaceColoration.cutoff * (gentle ? 0.045 : 0.09);
+    textureDest.connect(spaceFilter);
+    spaceFilter.connect(dest);
+    spaceLfo.connect(spaceDepth);
+    spaceDepth.connect(spaceFilter.frequency);
+    spaceLfo.start();
+    ambienceSwell.type = 'sine';
+    const swellRate = ({ open: 0.024, room: 0.018, cave: 0.012, void: 0.008 })[profile.acousticSpace] || 0.018;
+    ambienceSwell.frequency.value = swellRate + intensity * 0.006 + Math.min(motionFactor, 1.4) * 0.004;
+    ambienceSwellDepth.gain.value = profile.element === 'silence'
+        ? 0
+        : (gentle ? 0.014 : 0.032) + intensity * (gentle ? 0.012 : 0.028);
+    ambienceSwell.connect(ambienceSwellDepth);
+    ambienceSwellDepth.connect(textureDest.gain);
+    ambienceSwell.start();
+    const nodes = playGenerativeSoundscapeLegacy(ctx, textureDest, {
+        atmosphere: profile.atmosphere,
+        element: legacyElement
+    });
+    const timers = [];
+    nodes.push({ stop: () => timers.forEach(clearInterval), disconnect: () => {} });
+    nodes.push(textureDest, spaceFilter, spaceLfo, spaceDepth, ambienceSwell, ambienceSwellDepth);
+    const reverbSpace = ({ open: { seconds: 0.78, decay: 3.2, wet: 0.022 }, room: { seconds: 1.05, decay: 2.4, wet: 0.045 }, cave: { seconds: 1.65, decay: 1.65, wet: 0.075 }, void: { seconds: 2.35, decay: 1.35, wet: 0.055 } })[profile.acousticSpace] || { seconds: 1.05, decay: 2.4, wet: 0.045 };
+    const detailReverb = createAdventureReverb(ctx, reverbSpace.seconds, reverbSpace.decay);
+    let detailReverbWet = null;
+    if (detailReverb) {
+        detailReverbWet = ctx.createGain();
+        detailReverbWet.gain.value = reverbSpace.wet * (gentle ? 0.68 : 1) + intensity * (gentle ? 0.012 : 0.028);
+        detailReverb.connect(detailReverbWet);
+        detailReverbWet.connect(textureDest);
+        nodes.push(detailReverb, detailReverbWet);
+    }
+
+    // Add a subtle pace layer. It responds to scene intensity without replacing
+    // the established atmosphere/element contract used by saved adventures.
+    if (profile.atmosphere === 'tense' || profile.motion === 'urgent' || profile.motion === 'chase') {
+        const pulse = ctx.createOscillator();
+        const pulseGain = ctx.createGain();
+        const lfo = ctx.createOscillator();
+        const depth = ctx.createGain();
+        pulse.type = 'triangle';
+        pulse.frequency.value = profile.atmosphere === 'dark' ? 41.2 : 55;
+        pulseGain.gain.value = (gentle ? 0.003 : 0.006) + intensity * (gentle ? 0.004 : 0.012);
+        lfo.type = gentle ? 'sine' : 'square';
+        lfo.frequency.value = (1.2 + intensity * (gentle ? 0.7 : 1.5)) * Math.min(motionFactor, 1.35);
+        depth.gain.value = (gentle ? 0.0015 : 0.004) + intensity * (gentle ? 0.003 : 0.009);
+        lfo.connect(depth);
+        depth.connect(pulseGain.gain);
+        pulse.connect(pulseGain);
+        pulseGain.connect(textureDest);
+        pulse.start();
+        lfo.start();
+        nodes.push(pulse, pulseGain, lfo, depth);
+    }
+
+    const playDetail = (from, to, duration, volume) => {
+        if (ctx.state !== 'running' || isAdventureAudioDocumentHidden()) return;
+        const voiceToken = claimTransient();
+        if (!voiceToken) return;
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const panner = typeof ctx.createStereoPanner === 'function' ? ctx.createStereoPanner() : null;
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(from, now);
+        osc.frequency.exponentialRampToValueAtTime(Math.max(30, to), now + duration);
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(volume, now + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+        osc.connect(gain);
+        if (panner) {
+            const startPan = rng() * 1.2 - 0.6;
+            const endPan = clampAdventureAudio(startPan + (rng() * 0.5 - 0.25) * motionFactor, -0.85, 0.85);
+            try {
+                panner.pan.setValueAtTime(startPan, now);
+                panner.pan.linearRampToValueAtTime(endPan, now + duration);
+            } catch (_) { panner.pan.value = startPan; }
+            gain.connect(panner);
+            panner.connect(textureDest);
+            if (detailReverb) panner.connect(detailReverb);
+        } else {
+            gain.connect(textureDest);
+            if (detailReverb) gain.connect(detailReverb);
+        }
+        osc.start(now);
+        osc.stop(now + duration + 0.02);
+        setTimeout(() => {
+            releaseTransient(voiceToken);
+            try { osc.disconnect(); } catch (_) {}
+            try { gain.disconnect(); } catch (_) {}
+            try { panner?.disconnect(); } catch (_) {}
+        }, Math.max(80, duration * 1000 + 100));
+    };
+
+    const playNoiseDetail = (from, to, duration, volume) => {
+        if (ctx.state !== 'running' || isAdventureAudioDocumentHidden()) return;
+        const voiceToken = claimTransient();
+        if (!voiceToken) return;
+        const now = ctx.currentTime;
+        const source = ctx.createBufferSource();
+        const filter = ctx.createBiquadFilter();
+        const gain = ctx.createGain();
+        const panner = typeof ctx.createStereoPanner === 'function' ? ctx.createStereoPanner() : null;
+        source.buffer = createAdventureNoiseBuffer(ctx, duration + 0.05, Math.floor(rng() * 4));
+        filter.type = 'bandpass';
+        filter.Q.value = 0.75 + rng() * 1.4;
+        filter.frequency.setValueAtTime(Math.max(40, from), now);
+        filter.frequency.exponentialRampToValueAtTime(Math.max(40, to), now + duration);
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(volume, now + Math.min(0.018, duration * 0.2));
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+        source.connect(filter);
+        filter.connect(gain);
+        if (panner) {
+            const startPan = rng() * 1.4 - 0.7;
+            const endPan = clampAdventureAudio(startPan + (rng() * 0.6 - 0.3) * motionFactor, -0.9, 0.9);
+            try {
+                panner.pan.setValueAtTime(startPan, now);
+                panner.pan.linearRampToValueAtTime(endPan, now + duration);
+            } catch (_) { panner.pan.value = startPan; }
+            gain.connect(panner);
+            panner.connect(textureDest);
+            if (detailReverb) panner.connect(detailReverb);
+        } else {
+            gain.connect(textureDest);
+            if (detailReverb) gain.connect(detailReverb);
+        }
+        source.start(now);
+        source.stop(now + duration + 0.03);
+        setTimeout(() => {
+            releaseTransient(voiceToken);
+            try { source.disconnect(); } catch (_) {}
+            try { filter.disconnect(); } catch (_) {}
+            try { gain.disconnect(); } catch (_) {}
+            try { panner?.disconnect(); } catch (_) {}
+        }, Math.max(80, duration * 1000 + 100));
+    };
+
+    const motifScales = {
+        calm: [196, 246.94, 293.66, 392, 493.88],
+        joyful: [261.63, 329.63, 392, 523.25, 659.25],
+        ethereal: [220, 277.18, 329.63, 440, 554.37],
+        dark: [110, 130.81, 146.83, 174.61, 207.65],
+        tense: [110, 116.54, 130.81, 155.56, 174.61]
+    };
+    const motifScale = motifScales[profile.atmosphere];
+    if (motifScale && profile.element !== 'silence' && profile.element !== 'machinery' && profile.element !== 'city') {
+        timers.push(setInterval(() => {
+            if (rng() > (gentle ? 0.78 : 0.58)) return;
+            const themeIndex = themeState.next(themeProfile.key, themeProfile.contour.length);
+            const degree = themeProfile.contour[themeIndex] % motifScale.length;
+            const root = motifScale[degree] * themeProfile.register;
+            const lift = themeProfile.lifts[themeIndex];
+            playDetail(root, root * lift, gentle ? 0.34 : 0.46, (gentle ? 0.0025 : 0.004) + intensity * (gentle ? 0.002 : 0.004));
+        }, cadence(gentle ? 5200 : 3600)));
+    }
+
+    if (profile.element === 'water' || profile.element === 'rain' || profile.element === 'ocean') {
+        timers.push(setInterval(() => {
+            const rainLift = profile.element === 'rain' ? 500 : 0;
+            if (rng() > (gentle ? 0.7 : 0.56)) {
+                playDetail(900 + rainLift + rng() * 500, 480 + rng() * 260, 0.18 + rng() * 0.16, (gentle ? 0.004 : 0.009) + intensity * 0.009);
+                if (profile.element === 'rain' && rng() > (gentle ? 0.74 : 0.46)) playNoiseDetail(1600 + rng() * 1100, 520 + rng() * 420, 0.07 + rng() * 0.08, (gentle ? 0.002 : 0.004) + intensity * 0.004);
+            }
+        }, cadence(profile.element === 'rain' ? 520 : profile.element === 'ocean' ? 1150 : 760)));
+    } else if (profile.element === 'nature') {
+        timers.push(setInterval(() => {
+            if (rng() > (gentle ? 0.76 : 0.62)) playDetail(1700 + rng() * 800, 2500 + rng() * 1100, 0.12 + rng() * 0.14, (gentle ? 0.004 : 0.008) + intensity * 0.008);
+        }, cadence(1100)));
+    } else if (profile.element === 'machinery' || profile.element === 'city' || profile.element === 'laboratory') {
+        timers.push(setInterval(() => {
+            if (rng() > (gentle ? 0.65 : 0.4)) {
+                playDetail(180 + rng() * 70, 85 + rng() * 35, 0.06 + rng() * 0.05, (gentle ? 0.004 : 0.01) + intensity * 0.012);
+                if (rng() > (gentle ? 0.82 : 0.58)) playNoiseDetail(420 + rng() * 420, 120 + rng() * 160, 0.045 + rng() * 0.06, (gentle ? 0.0015 : 0.003) + intensity * 0.003);
+            }
+        }, cadence(Math.max(260, 650 - intensity * 340))));
+    } else if (profile.element === 'cave') {
+        timers.push(setInterval(() => {
+            if (rng() > 0.64) playDetail(320 + rng() * 120, 160 + rng() * 60, 0.65 + rng() * 0.45, (gentle ? 0.003 : 0.006) + intensity * 0.004);
+        }, cadence(1800)));
+    } else if (profile.element === 'space') {
+        timers.push(setInterval(() => {
+            if (rng() > 0.7) playDetail(620 + rng() * 180, 930 + rng() * 260, 1.1 + rng() * 0.7, (gentle ? 0.0025 : 0.005) + intensity * 0.003);
+        }, cadence(2400)));
+    } else if (profile.element === 'crowd') {
+        timers.push(setInterval(() => {
+            if (rng() > (gentle ? 0.8 : 0.58)) {
+                playDetail(180 + rng() * 220, 150 + rng() * 180, 0.18 + rng() * 0.22, (gentle ? 0.0025 : 0.006) + intensity * 0.004);
+                if (rng() > (gentle ? 0.84 : 0.62)) playNoiseDetail(260 + rng() * 300, 520 + rng() * 420, 0.12 + rng() * 0.18, (gentle ? 0.0015 : 0.003) + intensity * 0.003);
+            }
+        }, cadence(680)));
+    } else if (profile.element === 'fire') {
+        timers.push(setInterval(() => {
+            if (rng() > (gentle ? 0.82 : 0.56)) {
+                playDetail(1150 + rng() * 900, 260 + rng() * 240, 0.08 + rng() * 0.12, (gentle ? 0.003 : 0.006) + intensity * 0.006);
+                if (rng() > (gentle ? 0.8 : 0.5)) playNoiseDetail(900 + rng() * 1000, 180 + rng() * 220, 0.045 + rng() * 0.07, (gentle ? 0.002 : 0.004) + intensity * 0.004);
+            }
+        }, cadence(420)));
+    } else if (profile.element === 'wind') {
+        timers.push(setInterval(() => {
+            if (rng() > (gentle ? 0.78 : 0.58)) playDetail(430 + rng() * 240, 180 + rng() * 130, 0.45 + rng() * 0.35, (gentle ? 0.0025 : 0.005) + intensity * 0.004);
+        }, cadence(1450)));
+    }
+    return nodes;
+};
+
+const getAdventureAudioEngine = () => {
+    if (adventureAudioEngineSingleton) return adventureAudioEngineSingleton;
+    let ctx = null;
+    let masterGain = null;
+    let ambienceBus = null;
+    let sfxBus = null;
+    let currentAmbience = null;
+    let speechActive = false;
+    let enabled = true;
+    let preferences = getAdventureAudioPreferences();
+    let documentHidden = isAdventureAudioDocumentHidden();
+    const lastEventAt = {};
+    const voiceBudget = createAdventureVoiceBudget({
+        maxVoices: () => preferences.gentle ? 12 : 24,
+        // Background details yield first, ordinary cues keep five voices in
+        // reserve, and critical feedback can use the complete safe ceiling.
+        reserves: { detail: 8, event: 5, critical: 0 }
+    });
+    const themeState = createAdventureThemeState();
+    const mixFocus = createAdventureMixFocus();
+
+    const getSfxBusLevel = () => 0.72 * preferences.effects * (preferences.gentle ? 0.68 : 1) * (speechActive ? 0.42 : 1);
+    const getAmbienceBusLevel = () => (speechActive ? 0.24 : 1) * preferences.ambience * mixFocus.multiplier();
+
+    const rampGain = (node, value, seconds = 0.12) => {
+        if (!node || !ctx) return;
+        const now = ctx.currentTime;
+        const target = Math.max(0.0001, Number(value) || 0.0001);
+        try {
+            node.gain.cancelScheduledValues(now);
+            node.gain.setValueAtTime(Math.max(0.0001, node.gain.value), now);
+            node.gain.exponentialRampToValueAtTime(target, now + Math.max(0.01, seconds));
+        } catch (_) { node.gain.value = value; }
+    };
+
+    const focusEvent = (priority, durationMs = 500) => {
+        const token = mixFocus.add(priority, preferences.gentle);
+        if (!token) return null;
+        if (ambienceBus && ctx) rampGain(ambienceBus, getAmbienceBusLevel(), 0.055);
+        setTimeout(() => {
+            mixFocus.release(token);
+            if (ambienceBus && ctx) rampGain(ambienceBus, getAmbienceBusLevel(), preferences.gentle ? 0.48 : 0.34);
+        }, Math.max(80, Math.min(2000, Number(durationMs) || 500)));
+        return token;
+    };
+
+    const ensureGraph = () => {
+        const nextCtx = getGlobalAudioContext();
+        if (!nextCtx) return null;
+        if (ctx === nextCtx && masterGain) return ctx;
+        ctx = nextCtx;
+        masterGain = ctx.createGain();
+        ambienceBus = ctx.createGain();
+        sfxBus = ctx.createGain();
+        const compressor = ctx.createDynamicsCompressor();
+        masterGain.gain.value = isGlobalMuted() ? 0.0001 : 0.82;
+        ambienceBus.gain.value = getAmbienceBusLevel();
+        sfxBus.gain.value = getSfxBusLevel();
+        compressor.threshold.value = -18;
+        compressor.knee.value = 16;
+        compressor.ratio.value = 5;
+        compressor.attack.value = 0.004;
+        compressor.release.value = 0.22;
+        ambienceBus.connect(masterGain);
+        sfxBus.connect(masterGain);
+        masterGain.connect(compressor);
+        compressor.connect(ctx.destination);
+        return ctx;
+    };
+
+    const resume = () => {
+        const audioCtx = ensureGraph();
+        if (audioCtx && audioCtx.state === 'suspended' && !isGlobalMuted()) {
+            try { audioCtx.resume(); } catch (_) {}
+        }
+        return audioCtx;
+    };
+
+    const stopLayer = (layer, fadeSeconds = 1.2) => {
+        if (!layer || layer.stopping) return;
+        layer.stopping = true;
+        rampGain(layer.gain, 0.0001, fadeSeconds);
+        layer.stopTimer = setTimeout(() => {
+            stopAdventureAudioNodes(layer.nodes);
+            try { layer.gain.disconnect(); } catch (_) {}
+        }, Math.max(60, fadeSeconds * 1000 + 80));
+    };
+
+    const playAmbience = (params, options = {}) => {
+        const audioCtx = resume() || ensureGraph();
+        if (!audioCtx || !ambienceBus) return null;
+        const profile = normalizeAdventureSoundParams(params, options.sceneText);
+        const themeProfile = createAdventureThemeProfile(options.themeSeed || options.sceneText || 'adventure');
+        const signature = [profile.atmosphere, profile.element, profile.acousticSpace, profile.motion, profile.intensity.toFixed(2), themeProfile.key, preferences.gentle ? 'gentle' : 'full'].join(':');
+        const volume = clampAdventureAudio(options.volume == null ? 0.2 : options.volume, 0, 0.5);
+        if (currentAmbience && currentAmbience.signature === signature && !currentAmbience.stopping) {
+            currentAmbience.volume = volume;
+            rampGain(currentAmbience.gain, volume, 0.45);
+            return currentAmbience;
+        }
+        const oldLayer = currentAmbience;
+        const gain = audioCtx.createGain();
+        gain.gain.value = 0.0001;
+        gain.connect(ambienceBus);
+        const layer = {
+            signature,
+            profile,
+            themeProfile,
+            gain,
+            nodes: playGenerativeSoundscape(audioCtx, gain, profile, {
+                sceneText: options.sceneText,
+                gentle: preferences.gentle,
+                themeProfile,
+                themeState,
+                voiceBudget
+            }),
+            volume,
+            stopping: false
+        };
+        currentAmbience = layer;
+        rampGain(gain, volume, oldLayer ? 1.7 : 1.05);
+        if (oldLayer) stopLayer(oldLayer, 1.8);
+        return layer;
+    };
+
+    const stopAmbience = (fadeSeconds = 0.75) => {
+        const oldLayer = currentAmbience;
+        currentAmbience = null;
+        stopLayer(oldLayer, fadeSeconds);
+    };
+
+    const setMuted = (muted) => {
+        if (masterGain && ctx) rampGain(masterGain, muted || documentHidden ? 0.0001 : 0.82, muted ? 0.05 : 0.2);
+        if (!muted && !documentHidden && masterGain) resume();
+    };
+
+    const setSpeechActive = (active) => {
+        speechActive = !!active;
+        if (ambienceBus && ctx) rampGain(ambienceBus, getAmbienceBusLevel(), speechActive ? 0.15 : 0.7);
+        if (sfxBus && ctx) rampGain(sfxBus, getSfxBusLevel(), speechActive ? 0.08 : 0.3);
+    };
+
+    const setDocumentHidden = (hidden) => {
+        documentHidden = !!hidden;
+        if (!masterGain || !ctx) return;
+        rampGain(masterGain, documentHidden || isGlobalMuted() ? 0.0001 : 0.82, documentHidden ? 0.08 : 0.18);
+        if (!documentHidden && !isGlobalMuted()) resume();
+    };
+
+    const applyPreferences = (next, persist = false) => {
+        preferences = persist ? setAdventureAudioPreferences(next) : normalizeAdventureAudioPreferences(next);
+        if (ambienceBus && ctx) rampGain(ambienceBus, getAmbienceBusLevel(), 0.25);
+        if (sfxBus && ctx) rampGain(sfxBus, getSfxBusLevel(), 0.18);
+        return { ...preferences };
+    };
+
+    const canPlayEvent = (type, cooldownMs) => {
+        if (!enabled || documentHidden || isGlobalMuted()) return false;
+        const now = Date.now();
+        if (lastEventAt[type] && now - lastEventAt[type] < cooldownMs) return false;
+        lastEventAt[type] = now;
+        return true;
+    };
+
+    if (typeof window !== 'undefined') {
+        window.addEventListener('alloflow-mute-changed', event => setMuted(!!event?.detail?.muted));
+        window.addEventListener('allo-speech-state', event => setSpeechActive(!!event?.detail?.isPlaying));
+        window.addEventListener('alloflow-adventure-audio-preferences', event => applyPreferences(event?.detail || getAdventureAudioPreferences(), false));
+        document.addEventListener('visibilitychange', () => setDocumentHidden(isAdventureAudioDocumentHidden()));
+    }
+
+    adventureAudioEngineSingleton = {
+        canPlayEvent,
+        claimVoice: priority => voiceBudget.claim(priority),
+        focusEvent,
+        getMixFocusSnapshot: () => mixFocus.snapshot(),
+        getSfxBus: () => sfxBus,
+        getPreferences: () => ({ ...preferences }),
+        getSceneProfile: () => currentAmbience ? { ...currentAmbience.profile } : null,
+        getThemeProfile: () => currentAmbience ? { ...currentAmbience.themeProfile } : null,
+        getVoiceBudgetSnapshot: () => voiceBudget.snapshot(),
+        playAmbience,
+        releaseVoice: token => voiceBudget.release(token),
+        resume,
+        setEnabled: value => { enabled = value !== false; },
+        setPreferences: value => applyPreferences(value, true),
+        stopAmbience
+    };
+    return adventureAudioEngineSingleton;
+};
+
+const ADVENTURE_EVENT_SCALES = {
+    calm: [196, 246.94, 293.66, 392, 493.88],
+    joyful: [261.63, 329.63, 392, 523.25, 659.25],
+    ethereal: [220, 277.18, 329.63, 440, 554.37],
+    dark: [110, 130.81, 146.83, 174.61, 207.65],
+    tense: [110, 116.54, 130.81, 155.56, 174.61]
+};
+
+const ADVENTURE_EVENT_ELEMENT_BANDS = {
+    water: [170, 1100], rain: [500, 2400], ocean: [110, 900], nature: [700, 2600],
+    machinery: [90, 700], city: [120, 900], laboratory: [250, 1400], fire: [260, 1900],
+    wind: [300, 2100], cave: [90, 500], space: [600, 1800], crowd: [180, 1200], silence: [220, 1100]
+};
+
+const getAdventureEventRoot = (profile, variation, mode = 'scene', themeProfile = null) => {
+    const atmosphere = mode === 'failure' ? 'dark' : String(profile?.atmosphere || 'calm').toLowerCase();
+    const scale = ADVENTURE_EVENT_SCALES[atmosphere] || ADVENTURE_EVENT_SCALES.calm;
+    const elementOffset = profile?.element === 'water' || profile?.element === 'ocean' ? 1 : profile?.element === 'machinery' ? 2 : 0;
+    const contour = Array.isArray(themeProfile?.contour) && themeProfile.contour.length ? themeProfile.contour : null;
+    const themeDegree = contour ? contour[variation % contour.length] : variation;
+    return scale[(themeDegree + elementOffset) % scale.length];
+};
+
+const getAdventureEventBand = (profile) => {
+    const element = String(profile?.element || 'silence').toLowerCase();
+    return ADVENTURE_EVENT_ELEMENT_BANDS[element] || ADVENTURE_EVENT_ELEMENT_BANDS.silence;
+};
+
+const playAdventureEventSound = (type) => {
+    const engine = getAdventureAudioEngine();
+    const cooldown = type === 'transition' ? 500 : type === 'decision_select' ? 45 : 100;
+    if (!engine.canPlayEvent(type, cooldown)) return;
+    const ctx = engine.resume();
+    const destination = engine.getSfxBus();
+    if (!ctx || !destination) return;
+    const now = ctx.currentTime;
+    const variation = Math.floor(Math.random() * 3);
+    const sceneProfile = engine.getSceneProfile();
+    const themeProfile = engine.getThemeProfile();
+    const eventRoot = getAdventureEventRoot(sceneProfile, variation, 'scene', themeProfile);
+    const [bandLow, bandHigh] = getAdventureEventBand(sceneProfile);
+    const materialWave = sceneProfile?.element === 'machinery' || sceneProfile?.element === 'city' ? 'triangle' : 'sine';
+    const eventSpace = String(sceneProfile?.acousticSpace || 'room').toLowerCase();
+    const eventSpaceLift = ({ open: 1, room: 0.97, cave: 0.82, void: 1.08 })[eventSpace] || 0.97;
+    const eventPriority = ['critical_success', 'failure', 'damage'].includes(type)
+        ? 'critical'
+        : type === 'decision_select' ? 'detail' : 'event';
+    let playedAnyVoice = false;
+
+    const tone = ({ wave = 'sine', frequency, endFrequency, start = 0, duration = 0.25, volume = 0.05, pan = 0 }) => {
+        const voiceToken = engine.claimVoice(eventPriority);
+        if (!voiceToken) return false;
+        let osc = null;
+        let gain = null;
+        let panner = null;
+        const cleanup = () => {
+            engine.releaseVoice(voiceToken);
+            try { osc?.disconnect(); } catch (_) {}
+            try { gain?.disconnect(); } catch (_) {}
+            try { panner?.disconnect(); } catch (_) {}
+        };
+        try {
+            osc = ctx.createOscillator();
+            gain = ctx.createGain();
+            panner = typeof ctx.createStereoPanner === 'function' ? ctx.createStereoPanner() : null;
+            const at = now + start;
+            osc.type = wave;
+            osc.frequency.setValueAtTime(Math.max(30, frequency), at);
+            if (endFrequency) osc.frequency.exponentialRampToValueAtTime(Math.max(30, endFrequency), at + duration);
+            gain.gain.setValueAtTime(0.0001, at);
+            gain.gain.exponentialRampToValueAtTime(volume, at + Math.min(0.018, duration * 0.2));
+            gain.gain.exponentialRampToValueAtTime(0.0001, at + duration);
+            osc.connect(gain);
+            if (panner) {
+                panner.pan.value = clampAdventureAudio(pan, -1, 1);
+                gain.connect(panner);
+                panner.connect(destination);
+            } else gain.connect(destination);
+            osc.onended = cleanup;
+            osc.start(at);
+            osc.stop(at + duration + 0.025);
+            playedAnyVoice = true;
+            setTimeout(cleanup, Math.max(80, (start + duration) * 1000 + 120));
+            return true;
+        } catch (_) {
+            cleanup();
+            return false;
+        }
+    };
+
+    // Give major cues a quiet harmonic companion shaped by the current
+    // acoustic space. This keeps transitions and rewards connected to the
+    // scene without introducing any sampled material or extra loudness.
+    const playSceneAccent = (ratio, start = 0.08, duration = 0.46, volume = 0.012, pan = 0) => {
+        const frequency = Math.max(60, Math.min(4600, eventRoot * ratio * eventSpaceLift));
+        const endFrequency = eventSpace === 'void' ? frequency * 1.06 : frequency * 1.012;
+        tone({
+            wave: eventSpace === 'cave' ? 'triangle' : 'sine',
+            frequency,
+            endFrequency,
+            start,
+            duration,
+            volume,
+            pan
+        });
+    };
+
+    const noise = ({ duration = 0.2, volume = 0.035, from = 300, to = 1400, pan = 0 }) => {
+        const voiceToken = engine.claimVoice(eventPriority);
+        if (!voiceToken) return false;
+        let source = null;
+        let filter = null;
+        let gain = null;
+        let panner = null;
+        const cleanup = () => {
+            engine.releaseVoice(voiceToken);
+            try { source?.disconnect(); } catch (_) {}
+            try { filter?.disconnect(); } catch (_) {}
+            try { gain?.disconnect(); } catch (_) {}
+            try { panner?.disconnect(); } catch (_) {}
+        };
+        try {
+            source = ctx.createBufferSource();
+            filter = ctx.createBiquadFilter();
+            gain = ctx.createGain();
+            panner = typeof ctx.createStereoPanner === 'function' ? ctx.createStereoPanner() : null;
+            source.buffer = createAdventureNoiseBuffer(ctx, duration + 0.05, variation);
+            filter.type = 'bandpass';
+            filter.Q.value = 0.8;
+            filter.frequency.setValueAtTime(from, now);
+            filter.frequency.exponentialRampToValueAtTime(to, now + duration);
+            gain.gain.setValueAtTime(0.0001, now);
+            gain.gain.exponentialRampToValueAtTime(volume, now + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+            source.connect(filter);
+            filter.connect(gain);
+            if (panner) {
+                panner.pan.value = clampAdventureAudio(pan, -1, 1);
+                gain.connect(panner);
+                panner.connect(destination);
+            } else gain.connect(destination);
+            source.onended = cleanup;
+            source.start(now);
+            source.stop(now + duration + 0.03);
+            playedAnyVoice = true;
+            setTimeout(cleanup, Math.max(80, duration * 1000 + 120));
+            return true;
+        } catch (_) {
+            cleanup();
+            return false;
+        }
+    };
+
+    switch (type) {
+        case 'transition':
+            noise({ duration: 0.48, volume: 0.03, from: bandLow, to: bandHigh, pan: variation === 0 ? -0.25 : 0.25 });
+            tone({ wave: materialWave, frequency: Math.max(55, eventRoot * 0.5), endFrequency: eventRoot, duration: 0.42, volume: 0.02 });
+            playSceneAccent(2, 0.1, 0.54, 0.011, variation === 0 ? 0.22 : -0.22);
+            break;
+        case 'critical_success': {
+            [1, 1.25, 1.5, 2].forEach((ratio, index) => tone({ wave: index === 3 ? 'sine' : materialWave === 'sine' ? 'triangle' : materialWave, frequency: eventRoot * ratio, start: index * 0.095, duration: 0.38 + index * 0.07, volume: index === 3 ? 0.065 : 0.045, pan: (index - 1.5) * 0.18 }));
+            playSceneAccent(2.5, 0.18, 0.62, 0.014, 0.22);
+            break;
+        }
+        case 'success': {
+            const root = eventRoot;
+            tone({ frequency: root, duration: 0.32, volume: 0.046, pan: -0.12 });
+            tone({ wave: 'triangle', frequency: root * (variation === 1 ? 1.5 : 1.25), start: 0.085, duration: 0.4, volume: 0.042, pan: 0.12 });
+            playSceneAccent(2, 0.12, 0.5, 0.012, -0.2);
+            break;
+        }
+        case 'failure': {
+            const root = getAdventureEventRoot(sceneProfile, variation, 'failure', themeProfile);
+            tone({ wave: 'triangle', frequency: root * 1.5, endFrequency: root, duration: 0.45, volume: 0.048 });
+            tone({ frequency: root * 1.1, endFrequency: root * 0.78, start: 0.09, duration: 0.4, volume: 0.03, pan: -0.2 });
+            playSceneAccent(0.5, 0.07, 0.48, 0.008, 0.2);
+            break;
+        }
+        case 'damage':
+            noise({ duration: 0.18, volume: 0.056, from: Math.max(90, bandHigh * 0.75), to: bandLow, pan: variation === 0 ? -0.2 : 0.2 });
+            tone({ wave: 'sawtooth', frequency: Math.max(60, eventRoot * 0.75), endFrequency: Math.max(35, eventRoot * 0.24), duration: 0.24, volume: 0.042 });
+            break;
+        case 'item_get': {
+            const root = Math.max(784, eventRoot * 4);
+            [1, 1.25, 1.5].forEach((ratio, index) => tone({ frequency: root * ratio, start: index * 0.075, duration: 0.2 + index * 0.08, volume: 0.026, pan: (index - 1) * 0.3 }));
+            playSceneAccent(4, 0.12, 0.4, 0.009, 0.18);
+            break;
+        }
+        case 'decision_select':
+            tone({ wave: 'triangle', frequency: eventRoot * 3.1, endFrequency: eventRoot * 3.8, duration: 0.055, volume: 0.023 });
+            break;
+    }
+    if (playedAnyVoice) {
+        const focusDuration = ({ transition: 620, success: 520, critical_success: 950, failure: 680, damage: 430, item_get: 560 })[type] || 0;
+        if (focusDuration) engine.focusEvent(eventPriority, focusDuration);
+    }
+};
+
 const ClimaxProgressBar = React.memo(({ climaxState }) => {
   const { t } = useContext(LanguageContext);
   if (!climaxState || !climaxState.isActive) return null;
@@ -456,122 +1346,183 @@ const ClimaxProgressBar = React.memo(({ climaxState }) => {
   );
 });
 // ═══ AdventureAmbience (lines 9565-9642) ═══
-const AdventureAmbience = React.memo(({ sceneText, soundParams, active, volume = 0.3 }) => {
-    const ctxRef = useRef(null);
-    const masterGainRef = useRef(null);
-    const activeNodesRef = useRef([]);
-    const intervalsRef = useRef([]);
-    const cleanup = () => {
-        const nodesToStop = [...activeNodesRef.current];
-        const intervalsToClear = [...intervalsRef.current];
-        const oldGain = masterGainRef.current;
-        activeNodesRef.current = [];
-        intervalsRef.current = [];
-        masterGainRef.current = null;
-        intervalsToClear.forEach(clearInterval);
-        if (oldGain && ctxRef.current) {
-            try {
-                oldGain.gain.cancelScheduledValues(ctxRef.current.currentTime);
-                oldGain.gain.setValueAtTime(oldGain.gain.value, ctxRef.current.currentTime);
-                oldGain.gain.linearRampToValueAtTime(0, ctxRef.current.currentTime + 1.0);
-            } catch(e) { warnLog('Caught error:', e?.message || e); }
-        }
-        setTimeout(() => {
-            nodesToStop.forEach(node => {
-                try { node.stop(); } catch(e) { warnLog('Caught error:', e?.message || e); }
-                try { node.disconnect(); } catch(e) { warnLog('Caught error:', e?.message || e); }
-            });
-            if (oldGain) {
-                try { oldGain.disconnect(); } catch(e) { warnLog('Caught error:', e?.message || e); }
-            }
-        }, 1100);
-    };
+// ═══ playDiceSound + getD20Rotation (lines 10760-10811) ═══
+const AdventureAmbience = React.memo(({ sceneText, soundParams, themeSeed, active, volume = 0.3 }) => {
+    const engineRef = useRef(null);
+
     useEffect(() => {
+        const engine = engineRef.current || getAdventureAudioEngine();
+        engineRef.current = engine;
         if (!active || !sceneText) {
-            cleanup();
+            engine.setEnabled(false);
+            engine.stopAmbience(0.65);
             return;
         }
-        const ctx = getGlobalAudioContext();
-        if (!ctx) return;
-        ctxRef.current = ctx;
-        if (ctx.state === 'suspended') ctx.resume();
-        cleanup();
-        playAdventureEventSound('transition');
-        const masterGain = ctx.createGain();
-        const now = ctx.currentTime;
-        const fadeInTime = 2;
-        const sustainTime = 6;
-        const fadeOutTime = 4;
-        const totalDuration = fadeInTime + sustainTime + fadeOutTime;
-        masterGain.gain.setValueAtTime(0, now);
-        masterGain.gain.linearRampToValueAtTime(volume, now + fadeInTime);
-        masterGain.gain.setValueAtTime(volume, now + fadeInTime + sustainTime);
-        masterGain.gain.linearRampToValueAtTime(0, now + totalDuration);
-        masterGain.connect(ctx.destination);
-        masterGainRef.current = masterGain;
-        const autoKillTimer = setTimeout(() => {
-            cleanup();
-        }, totalDuration * 1000 + 200);
-        intervalsRef.current.push(autoKillTimer);
-        try {
-            if (soundParams && typeof soundParams === 'object') {
-                 debugLog("DJ Gemini playing:", soundParams);
-                 const nodes = playGenerativeSoundscape(ctx, masterGain, soundParams);
-                 activeNodesRef.current.push(...nodes);
-            }
-        } catch (err) {
-            warnLog("Audio generation failed, attempting fallback.", err);
-            const nodes = playGenerativeSoundscape(ctx, masterGain, { atmosphere: 'Calm', element: 'Wind' });
-            activeNodesRef.current.push(...nodes);
+        engine.setEnabled(true);
+        engine.playAmbience(soundParams, { sceneText, themeSeed, volume });
+    }, [sceneText, soundParams, themeSeed, active, volume]);
+
+    useEffect(() => () => {
+        if (engineRef.current) {
+            engineRef.current.setEnabled(false);
+            engineRef.current.stopAmbience(0.45);
         }
-        return () => cleanup();
-    }, [sceneText, soundParams, active]);
-    useEffect(() => {
-        if (masterGainRef.current && ctxRef.current) {
-             try {
-             } catch(e) { warnLog('Caught error:', e?.message || e); }
-        }
-    }, [volume]);
+    }, []);
+
     return null;
 });
 
-// ═══ playDiceSound + getD20Rotation (lines 10760-10811) ═══
+const AdventureAudioControls = React.memo(({ soundEnabled = true, t = key => key }) => {
+    const [preferences, setPreferences] = useState(() => getAdventureAudioPreferences());
+    const [open, setOpen] = useState(false);
+    const triggerRef = useRef(null);
+    const dialogRef = useRef(null);
+    const update = (patch) => {
+        const next = getAdventureAudioEngine().setPreferences(patch);
+        setPreferences(next);
+    };
+    const translate = (key, fallback) => {
+        try {
+            const value = t(key);
+            return value && value !== key ? value : fallback;
+        } catch (_) { return fallback; }
+    };
+    const closeDialog = () => {
+        setOpen(false);
+        setTimeout(() => { try { triggerRef.current?.focus(); } catch (_) {} }, 0);
+    };
+    useEffect(() => {
+        if (!open) return;
+        const onKeyDown = event => {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                closeDialog();
+            }
+        };
+        window.addEventListener('keydown', onKeyDown);
+        const focusTimer = setTimeout(() => { try { dialogRef.current?.focus(); } catch (_) {} }, 0);
+        return () => {
+            clearTimeout(focusTimer);
+            window.removeEventListener('keydown', onKeyDown);
+        };
+    }, [open]);
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const onPreferences = event => setPreferences(normalizeAdventureAudioPreferences(event?.detail || getAdventureAudioPreferences()));
+        const onStorage = event => {
+            if (event.key !== ADVENTURE_AUDIO_PREFS_KEY) return;
+            let next = null;
+            try { next = JSON.parse(event.newValue || 'null'); } catch (_) {}
+            adventureAudioPreferencesCache = normalizeAdventureAudioPreferences(next);
+            setPreferences(adventureAudioPreferencesCache);
+            getAdventureAudioEngine().setPreferences(adventureAudioPreferencesCache);
+        };
+        window.addEventListener('alloflow-adventure-audio-preferences', onPreferences);
+        window.addEventListener('storage', onStorage);
+        return () => {
+            window.removeEventListener('alloflow-adventure-audio-preferences', onPreferences);
+            window.removeEventListener('storage', onStorage);
+        };
+    }, []);
+    const ambiencePercent = Math.round(preferences.ambience * 100);
+    const effectsPercent = Math.round(preferences.effects * 100);
+    const audioAvailable = soundEnabled && (ambiencePercent > 0 || effectsPercent > 0);
+    const label = translate('adventure.audio_settings', 'Adventure sound settings');
+    return (
+        <>
+            <button
+                ref={triggerRef}
+                type="button"
+                onClick={() => setOpen(true)}
+                className="min-w-11 min-h-11 shrink-0 flex items-center justify-center gap-2 px-3 py-2 rounded-full text-xs font-bold transition-colors border shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-900 bg-indigo-800 text-indigo-200 border-indigo-600 hover:bg-indigo-700 hover:text-white"
+                aria-label={label}
+                aria-haspopup="dialog"
+                aria-expanded={open}
+                title={label}
+            >
+                {audioAvailable ? <Volume2 size={15} aria-hidden="true" /> : <VolumeX size={15} aria-hidden="true" />}
+                <span className="hidden xl:inline">{translate('adventure.audio_short', 'Sound mix')}</span>
+            </button>
+            {open && <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/55 p-4 backdrop-blur-sm" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) closeDialog(); }}>
+            <div ref={dialogRef} tabIndex={-1} className="relative w-full max-w-sm rounded-2xl border-2 border-indigo-300 bg-white p-5 text-slate-800 shadow-2xl focus:outline-none" role="dialog" aria-modal="true" aria-labelledby="adventure-audio-dialog-title">
+                <button type="button" onClick={closeDialog} className="absolute right-2 top-2 flex min-h-11 min-w-11 items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700" aria-label={translate('common.close', 'Close')}><X size={18} aria-hidden="true" /></button>
+                <div className="mb-3 flex items-start justify-between gap-3">
+                    <div>
+                        <div id="adventure-audio-dialog-title" className="pr-10 font-black text-indigo-950">{label}</div>
+                        <div className="text-[11px] leading-snug text-slate-600">{soundEnabled ? translate('adventure.audio_local_note', 'Created on this device with procedural audio.') : translate('adventure.audio_muted_note', 'App sound is currently muted.')}</div>
+                    </div>
+                    <span className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${audioAvailable ? 'bg-emerald-500' : 'bg-slate-400'}`} aria-hidden="true"></span>
+                </div>
+                <label className="mb-3 block text-xs font-bold" htmlFor="adventure-ambience-level">
+                    <span className="mb-1 flex justify-between"><span>{translate('adventure.audio_ambience', 'Ambience')}</span><output>{ambiencePercent}%</output></span>
+                    <input id="adventure-ambience-level" type="range" min="0" max="100" step="10" value={ambiencePercent} onChange={event => update({ ambience: Number(event.target.value) / 100 })} className="min-h-11 w-full accent-indigo-700" />
+                </label>
+                <label className="mb-3 block text-xs font-bold" htmlFor="adventure-effects-level">
+                    <span className="mb-1 flex justify-between"><span>{translate('adventure.audio_effects', 'Effects')}</span><output>{effectsPercent}%</output></span>
+                    <input id="adventure-effects-level" type="range" min="0" max="100" step="10" value={effectsPercent} onChange={event => update({ effects: Number(event.target.value) / 100 })} className="min-h-11 w-full accent-indigo-700" />
+                </label>
+                <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-950">
+                    <input type="checkbox" checked={preferences.gentle} onChange={event => update({ gentle: event.target.checked })} className="h-5 w-5 accent-indigo-700" />
+                    <span><span className="block">{translate('adventure.audio_gentle', 'Gentle sound mode')}</span><span className="block font-normal text-indigo-700">{translate('adventure.audio_gentle_note', 'Softer effects and calmer motion.')}</span></span>
+                </label>
+                <button type="button" onClick={() => update(ADVENTURE_AUDIO_PREFS_DEFAULTS)} className="mt-3 min-h-11 w-full rounded-xl border border-indigo-300 px-3 py-2 text-xs font-bold text-indigo-800 transition-colors hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700">{translate('adventure.audio_reset', 'Reset sound settings')}</button>
+            </div>
+            </div>}
+        </>
+    );
+});
+
 const playDiceSound = () => {
-  const ctx = getGlobalAudioContext();
-  if (!ctx) return;
-  if (ctx.state === 'suspended') {
-      ctx.resume();
-  }
+  const engine = getAdventureAudioEngine();
+  if (!engine.canPlayEvent('dice', 250)) return;
+  const ctx = engine.resume();
+  const destination = engine.getSfxBus();
+  if (!ctx || !destination) return;
   const now = ctx.currentTime;
-  const playClack = (time, velocity) => {
-    const bufferSize = ctx.sampleRate * 0.1;
-    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-      data[i] = Math.random() * 2 - 1;
+  const playClack = (time, velocity, index) => {
+    const voiceToken = engine.claimVoice(index < 2 ? 'event' : 'detail');
+    if (!voiceToken) return false;
+    let noise = null;
+    let filter = null;
+    let gain = null;
+    const cleanup = () => {
+      engine.releaseVoice(voiceToken);
+      try { noise?.disconnect(); } catch (_) {}
+      try { filter?.disconnect(); } catch (_) {}
+      try { gain?.disconnect(); } catch (_) {}
+    };
+    try {
+      noise = ctx.createBufferSource();
+      noise.buffer = createAdventureNoiseBuffer(ctx, 0.1, index);
+      filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.value = 1200 + Math.random() * 1000;
+      filter.Q.value = 1.5;
+      gain = ctx.createGain();
+      gain.gain.setValueAtTime(0, time);
+      gain.gain.linearRampToValueAtTime(velocity, time + 0.001);
+      gain.gain.exponentialRampToValueAtTime(0.01, time + 0.08);
+      noise.connect(filter);
+      filter.connect(gain);
+      gain.connect(destination);
+      noise.onended = cleanup;
+      noise.start(time);
+      noise.stop(time + 0.1);
+      setTimeout(cleanup, Math.max(120, (time - now + 0.1) * 1000 + 120));
+      return true;
+    } catch (_) {
+      cleanup();
+      return false;
     }
-    const noise = ctx.createBufferSource();
-    noise.buffer = buffer;
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'bandpass';
-    filter.frequency.value = 1200 + Math.random() * 1000;
-    filter.Q.value = 1.5;
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0, time);
-    gain.gain.linearRampToValueAtTime(velocity, time + 0.001);
-    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.08);
-    noise.connect(filter);
-    filter.connect(gain);
-    gain.connect(ctx.destination);
-    noise.start(time);
-    noise.stop(time + 0.1);
   };
-  playClack(now, 0.8);
-  playClack(now + 0.06, 0.7);
-  playClack(now + 0.13, 0.6);
-  playClack(now + 0.25 + Math.random() * 0.05, 0.5);
-  playClack(now + 0.45 + Math.random() * 0.1, 0.3);
-  playClack(now + 0.7 + Math.random() * 0.1, 0.15);
+  let playedClack = false;
+  playedClack = playClack(now, 0.8, 0) || playedClack;
+  playedClack = playClack(now + 0.06, 0.7, 1) || playedClack;
+  playedClack = playClack(now + 0.13, 0.6, 2) || playedClack;
+  playedClack = playClack(now + 0.25 + Math.random() * 0.05, 0.5, 3) || playedClack;
+  playedClack = playClack(now + 0.45 + Math.random() * 0.1, 0.3, 4) || playedClack;
+  playedClack = playClack(now + 0.7 + Math.random() * 0.1, 0.15, 5) || playedClack;
+  if (playedClack) engine.focusEvent('event', 850);
 };
 const getD20Rotation = (result, spins = 5) => {
     const index = result - 1;

@@ -3152,7 +3152,7 @@ Return ONLY valid JSON:
                         onClick: () => setTimerActive(!timerActive),
                         className: `px-4 py-2 rounded-lg font-bold text-sm ${timerActive ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-emerald-600'}`
                     }, timerActive ? '⏸ Pause' : '▶ Start Timer'),
-                    h('button', { "aria-label": "Reset",
+                    h('button', { "aria-label": "Reset first-then board",
                         onClick: () => { setTimerSeconds(0); setIntervalReady(false); },
                         className: 'px-4 py-2 bg-slate-100 text-slate-600 rounded-lg font-bold text-sm'
                     }, '↺ Reset')
@@ -4943,12 +4943,40 @@ Recommend reinforcers and return ONLY valid JSON:
         ]);
         const [editing, setEditing] = useState(false);
         const [selected, setSelected] = useState(null);
+        const [selectionAnnouncement, setSelectionAnnouncement] = useState('');
         const [log, setLog] = useState([]);
         const [mode, setMode] = useState('choice'); // 'choice' or 'firstThen'
         const [firstItem, setFirstItem] = useState({ label: (tt('behavior_lens.raw.finish_math_worksheet', 'Finish math worksheet')), emoji: '📝' });
         const [thenItem, setThenItem] = useState({ label: (tt('behavior_lens.raw.free_time_on_ipad', 'Free time on iPad')), emoji: '🎮' });
         const [firstDone, setFirstDone] = useState(false);
         const [aiChoiceLoading, setAiChoiceLoading] = useState(false);
+
+        useEffect(() => {
+            if (typeof document === 'undefined') return undefined;
+            const shellNodes = [
+                document.querySelector('[aria-label="AlloBot assistant"]'),
+                document.querySelector('button[aria-label="View captured errors and report a bug"]')
+            ].filter(Boolean);
+            const previous = shellNodes.map(node => ({
+                node,
+                visibility: node.style.visibility,
+                ariaHidden: node.getAttribute('aria-hidden')
+            }));
+            shellNodes.forEach(node => {
+                node.style.visibility = 'hidden';
+                node.setAttribute('aria-hidden', 'true');
+            });
+            const previousOverflow = document.body && document.body.style.overflow;
+            if (document.body) document.body.style.overflow = 'hidden';
+            return () => {
+                previous.forEach(({ node, visibility, ariaHidden }) => {
+                    node.style.visibility = visibility;
+                    if (ariaHidden === null) node.removeAttribute('aria-hidden');
+                    else node.setAttribute('aria-hidden', ariaHidden);
+                });
+                if (document.body) document.body.style.overflow = previousOverflow;
+            };
+        }, []);
 
         const handleAiSuggestChoices = async () => {
             if (!callGemini) return;
@@ -4994,6 +5022,7 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
 
         const handleSelect = (idx) => {
             setSelected(idx);
+            setSelectionAnnouncement(`Selected ${choices[idx].label}.`);
             setLog(prev => [...prev, { choice: choices[idx].label, time: new Date().toISOString() }]);
             if (addToast) addToast(t('behavior_lens.toast.choice_n') || `Choice: ${choices[idx].label} `, 'success');
             setTimeout(() => setSelected(null), 2000);
@@ -5011,20 +5040,20 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
                         h('div', { key: i, className: 'flex gap-2 items-center' },
                             h('input', { value: c.emoji, onChange: (e) => updateChoice(i, 'emoji', e.target.value), 'aria-label': 'Choice ' + (i + 1) + ' emoji', className: 'w-12 text-center text-xl border rounded-lg', maxLength: 2 }),
                             h('input', { value: c.label, onChange: (e) => updateChoice(i, 'label', e.target.value), 'aria-label': 'Choice ' + (i + 1) + ' label', className: 'flex-1 border rounded-lg px-3 py-2 text-sm' }),
-                            choices.length > 2 && h('button', { "aria-label": "Toggle choices",
+                            choices.length > 2 && h('button', { "aria-label": `Remove choice ${i + 1}: ${c.label}`,
                                 onClick: () => setChoices(prev => prev.filter((_, j) => j !== i)),
-                                className: 'p-1.5 rounded-lg hover:bg-red-100 text-slate-300 hover:text-red-600 transition-colors'
+                                className: 'min-w-11 min-h-11 p-2 rounded-lg hover:bg-red-100 text-slate-500 hover:text-red-600 transition-colors inline-flex items-center justify-center'
                             }, h(X, { size: 14 }))
                         )
                     ),
                     h('div', { className: 'flex gap-2 flex-wrap' },
                         choices.length < 6 && h('button', { "aria-label": "+ Add Choice",
                             onClick: () => setChoices(prev => [...prev, { label: (tt('behavior_lens.raw.new_choice', 'New choice')), emoji: '✨' }]),
-                            className: 'px-3 py-2 bg-emerald-100 text-emerald-300 rounded-lg text-sm font-bold'
+                            className: 'px-3 py-2 bg-emerald-100 text-emerald-800 rounded-lg text-sm font-bold hover:bg-emerald-200 transition-colors'
                         }, '+ Add Choice'),
-                        callGemini && h('button', { onClick: handleAiSuggestChoices,
+                        callGemini && h('button', { "aria-label": "Suggest choices with AI", onClick: handleAiSuggestChoices,
                             disabled: aiChoiceLoading,
-                            className: 'px-3 py-2 bg-purple-100 text-purple-300 rounded-lg text-sm font-bold hover:bg-purple-200 disabled:opacity-40 transition-all'
+                            className: 'px-3 py-2 bg-purple-100 text-purple-800 rounded-lg text-sm font-bold hover:bg-purple-200 disabled:opacity-40 transition-all'
                         }, aiChoiceLoading ? '⏳ Thinking...' : '🧠 AI Suggest')
                     ),
                     // First-Then editor
@@ -5041,7 +5070,7 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
                             )
                         )
                     ),
-                    h('button', { "aria-label": "Toggle editing", onClick: () => setEditing(false), className: 'w-full py-2 bg-indigo-500 text-white rounded-lg font-bold' }, tt('behavior_lens.ui.done', 'Done'))
+                    h('button', { "aria-label": "Done editing choice board", onClick: () => setEditing(false), className: 'w-full py-2 bg-indigo-500 text-white rounded-lg font-bold' }, tt('behavior_lens.ui.done', 'Done'))
                 )
             );
         }
@@ -5049,15 +5078,15 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
         // First-Then mode
         if (mode === 'firstThen') {
             return h('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'First-Then board', className: 'fixed inset-0 z-[300] bg-slate-900 flex flex-col' },
-                h('div', { className: 'flex justify-between items-center p-4 shrink-0' },
+                h('div', { className: 'flex flex-wrap items-center gap-2 p-4 shrink-0' },
                     h('div', { className: 'flex gap-2' },
-                        h('button', { onClick: () => setMode('choice'), className: 'px-3 py-1.5 bg-white/10 text-white rounded-lg text-xs font-bold hover:bg-white/20' }, '🔲 Choices'),
-                        h('button', { onClick: () => setEditing(true), className: 'px-3 py-1.5 bg-white/10 text-white rounded-lg text-xs font-bold hover:bg-white/20' }, '✏️ Edit')
+                        h('button', { "aria-label": 'Show choice board', onClick: () => setMode('choice'), className: 'px-3 py-1.5 bg-white/10 text-white rounded-lg text-xs font-bold hover:bg-white/20' }, '🔲 Choices'),
+                        h('button', { "aria-label": 'Edit choice board', onClick: () => setEditing(true), className: 'px-3 py-1.5 bg-white/10 text-white rounded-lg text-xs font-bold hover:bg-white/20' }, '✏️ Edit')
                     ),
-                    h('span', { className: 'text-white/60 text-xs font-bold' }, tt('behavior_lens.first_then', 'First → Then')),
-                    h('button', { "aria-label": "On Close", onClick: onClose, className: 'px-3 py-1.5 bg-white/10 text-white rounded-lg text-xs font-bold hover:bg-white/20' }, tt('behavior_lens.close', '✕ Close'))
+                    h('span', { className: 'text-white/60 text-xs font-bold text-center flex-[1_1_100%] order-3 sm:order-none sm:flex-1 sm:basis-auto truncate' }, tt('behavior_lens.first_then', 'First → Then')),
+                    h('button', { "aria-label": "Close choice board", onClick: onClose, className: 'order-2 sm:order-none px-3 py-1.5 bg-white/10 text-white rounded-lg text-xs font-bold hover:bg-white/20' }, tt('behavior_lens.close', '✕ Close'))
                 ),
-                h('div', { className: 'flex-1 grid grid-cols-2 gap-6 p-6' },
+                h('div', { className: 'flex-1 grid grid-cols-2 gap-6 p-6 overflow-y-auto sm:overflow-hidden' },
                     // FIRST panel
                     h('button', { "aria-label": "Toggle first done",
                         onClick: () => { setFirstDone(true); if (addToast) addToast(tt('behavior_lens.toast.first_task_complete', 'First task complete! ✅'), 'success'); },
@@ -5096,28 +5125,30 @@ Generate 4 calming/coping choice items. Return ONLY valid JSON:
 
         return h('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Choice board', className: 'fixed inset-0 z-[300] bg-slate-900 flex flex-col' },
             // Toolbar
-            h('div', { className: 'flex justify-between items-center p-4 shrink-0' },
+            h('div', { className: 'flex flex-wrap items-center gap-2 p-4 shrink-0' },
                 h('div', { className: 'flex gap-2' },
-                    h('button', { onClick: () => setMode('firstThen'), className: 'px-3 py-1.5 bg-white/10 text-white rounded-lg text-xs font-bold hover:bg-white/20' }, '➡️ First/Then'),
-                    h('button', { onClick: () => setEditing(true), className: 'px-3 py-1.5 bg-white/10 text-white rounded-lg text-xs font-bold hover:bg-white/20' }, '✏️ Edit')
+                    h('button', { "aria-label": 'Show first-then board', onClick: () => setMode('firstThen'), className: 'px-3 py-1.5 bg-white/10 text-white rounded-lg text-xs font-bold hover:bg-white/20' }, '➡️ First/Then'),
+                    h('button', { "aria-label": 'Edit choice board', onClick: () => setEditing(true), className: 'px-3 py-1.5 bg-white/10 text-white rounded-lg text-xs font-bold hover:bg-white/20' }, '✏️ Edit')
                 ),
-                h('span', { className: 'text-white/60 text-xs font-bold' }, studentName ? `For: ${studentName} ` : 'Choice Board'),
-                h('button', { "aria-label": "On Close", onClick: onClose, className: 'px-3 py-1.5 bg-white/10 text-white rounded-lg text-xs font-bold hover:bg-white/20' }, tt('behavior_lens.close', '✕ Close'))
+                h('span', { className: 'text-white/60 text-xs font-bold text-center flex-[1_1_100%] order-3 sm:order-none sm:flex-1 sm:basis-auto truncate' }, studentName ? `For: ${studentName} ` : 'Choice Board'),
+                h('button', { "aria-label": "Close choice board", onClick: onClose, className: 'order-2 sm:order-none px-3 py-1.5 bg-white/10 text-white rounded-lg text-xs font-bold hover:bg-white/20' }, tt('behavior_lens.close', '✕ Close'))
             ),
             // Choices grid
-            h('div', { className: `flex-1 grid gap-4 p-6 ${choices.length <= 2 ? 'grid-cols-1' : choices.length <= 4 ? 'grid-cols-2' : 'grid-cols-3'} ` },
+            h('div', { className: `flex-1 grid gap-4 p-6 overflow-y-auto ${choices.length <= 2 ? 'grid-cols-1' : choices.length <= 4 ? 'grid-cols-2' : 'grid-cols-3'} ` },
                 choices.map((c, i) =>
-                    h('button', { "aria-label": "Select",
+                    h('button', { "aria-label": `Select ${c.label}`,
+                        'aria-pressed': selected === i,
                         key: i,
                         onClick: () => handleSelect(i),
-                        className: `rounded-3xl bg-gradient-to-br ${gradients[i % gradients.length]} flex flex-col items-center justify-center shadow-2xl transition-all duration-300 ${selected === i ? 'scale-95 ring-4 ring-white/80' : 'hover:scale-[1.02] active:scale-95'} `
+                        className: `rounded-3xl min-h-[10rem] bg-gradient-to-br ${gradients[i % gradients.length]} flex flex-col items-center justify-center shadow-2xl transition-all duration-300 ${selected === i ? 'scale-95 ring-4 ring-white/80' : 'hover:scale-[1.02] active:scale-95'} `
                     },
                         h('span', { className: `${choices.length <= 4 ? 'text-6xl md:text-8xl' : 'text-4xl md:text-6xl'} mb-4 drop-shadow-lg` }, c.emoji),
                         h('span', { className: `${choices.length <= 4 ? 'text-xl md:text-3xl' : 'text-lg md:text-xl'} font-black text-white drop-shadow-md` }, c.label),
                         selected === i && h('div', { className: 'mt-3 text-white/80 text-lg font-bold animate-bounce motion-reduce:animate-none' }, '✓ Selected!')
                     )
                 )
-            )
+            ),
+            h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'sr-only' }, selectionAnnouncement)
         );
     };
 

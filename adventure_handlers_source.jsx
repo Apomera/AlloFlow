@@ -90,7 +90,7 @@ const scheduleAdventureEstablishingShot = ({ prompt, callImagen, setAdventureSta
 };
 
 const executeStartAdventure = async (contextOverride = null, deps) => {
-  const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureArtStyle, adventureCustomArtStyle, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, translationMode, resolveTranslationPolicy, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, callGemini, callGeminiVision, callImagen, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
+  const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureArtStyle, adventureCustomArtStyle, universalImageStyle, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, translationMode, resolveTranslationPolicy, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, callGemini, callGeminiVision, callImagen, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
   try { if (window._DEBUG_ADVENTURE) console.log("[Adventure] executeStartAdventure fired"); } catch(_) {}
     const latestAnalysis = history.slice().reverse().find(h => h && h.type === 'analysis');
     const sourceText = (latestAnalysis && latestAnalysis.data && latestAnalysis.data.originalText)
@@ -238,7 +238,10 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
                 "voices": { "Moderator": "Leda" },
                 "soundParams": {
                     "atmosphere": "One of: Tense, Calm, Ethereal, Dark, Joyful",
-                    "element": "One of: Fire, Water, Wind, Machinery, Nature, Silence"
+                    "element": "One of: Fire, Water, Wind, Machinery, Nature, Rain, Ocean, Cave, City, Space, Laboratory, Crowd, Silence",
+                    "intensity": "Number from 0.0 (very gentle) to 1.0 (urgent)",
+                    "motion": "One of: Still, Steady, Travel, Chase, Urgent",
+                    "space": "One of: Open, Room, Cave, Void"
                 }
             }
           `;
@@ -276,7 +279,10 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
               "voices": { "Advisor/System Voice": "VoiceName" },
               "soundParams": {
                   "atmosphere": "One of: Tense, Calm, Ethereal, Dark, Joyful",
-                  "element": "One of: Fire, Water, Wind, Machinery, Nature, Silence"
+                  "element": "One of: Fire, Water, Wind, Machinery, Nature, Rain, Ocean, Cave, City, Space, Laboratory, Crowd, Silence",
+                  "intensity": "Number from 0.0 (very gentle) to 1.0 (urgent)",
+                  "motion": "One of: Still, Steady, Travel, Chase, Urgent",
+                  "space": "One of: Open, Room, Cave, Void"
               }${adventureConsistentCharacters ? `,
               "characters": [
                 {"name": "Protagonist Name", "role": "Protagonist", "appearance": "Age, hair color, clothing, distinguishing features"},
@@ -330,7 +336,10 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
               "voices": { "Narrator": "Allo" },
               "soundParams": {
                   "atmosphere": "One of: Tense, Calm, Ethereal, Dark, Joyful",
-                  "element": "One of: Fire, Water, Wind, Machinery, Nature, Silence"
+                  "element": "One of: Fire, Water, Wind, Machinery, Nature, Rain, Ocean, Cave, City, Space, Laboratory, Crowd, Silence",
+                  "intensity": "Number from 0.0 (very gentle) to 1.0 (urgent)",
+                  "motion": "One of: Still, Steady, Travel, Chase, Urgent",
+                  "space": "One of: Open, Room, Cave, Void"
               }${adventureConsistentCharacters ? `,
               "characters": [
                 {"name": "Protagonist Name", "role": "Protagonist", "appearance": "Age, hair color, clothing, distinguishing features"},
@@ -490,7 +499,9 @@ Opening scene: ${sceneText.substring(0, 1200)}
       if (adventureConsistentCharacters && sceneCharacters.length > 0) {
           const establishingStyle = adventureArtStyle === 'custom' && adventureCustomArtStyle
               ? `Art style: ${adventureCustomArtStyle}.`
-              : (adventureArtStyle && adventureArtStyle !== 'auto' ? `Art style: ${adventureArtStyle}.` : '');
+              : (adventureArtStyle === 'universal'
+                  ? (String(universalImageStyle || '').trim() ? `Art style: ${String(universalImageStyle).trim()}.` : '')
+                  : (adventureArtStyle && adventureArtStyle !== 'auto' ? `Art style: ${adventureArtStyle}.` : ''));
           const establishingPrompt = `Wide establishing shot introducing this setting: ${String(sceneData.text || '').substring(0, 600)}. Scenic environment only, absolutely no people, no characters, no text. ${establishingStyle}`;
           scheduleAdventureEstablishingShot({
               prompt: establishingPrompt,
@@ -563,7 +574,7 @@ const handleStartAdventure = (deps) => {
 };
 
 const handleResumeAdventure = async (deps) => {
-  const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, translationMode, resolveTranslationPolicy, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, setAdventureDifficulty, setAdventureInputMode, setAdventureLanguageMode, setAdventureChanceMode, setAdventureFreeResponseEnabled, setAdventureConsistentCharacters, setIsAdventureStoryMode, setIsSocialStoryMode, setSocialStoryFocus, setAdventureArtStyle, setAdventureCustomArtStyle, setUseLowQualityVisuals, setEnableFactionResources, setFactionResourceMode, callGemini, callGeminiVision, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, adventureImageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
+  const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, translationMode, resolveTranslationPolicy, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, setAdventureDifficulty, setAdventureInputMode, setAdventureLanguageMode, setAdventureChanceMode, setAdventureFreeResponseEnabled, setAdventureTypingPaceEnabled, setAdventureFluencyEnabled, setAdventureConsistentCharacters, setIsAdventureStoryMode, setIsSocialStoryMode, setSocialStoryFocus, setAdventureArtStyle, setAdventureCustomArtStyle, setUseLowQualityVisuals, setEnableFactionResources, setFactionResourceMode, callGemini, callGeminiVision, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, adventureImageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
   try { if (window._DEBUG_ADVENTURE) console.log("[Adventure] handleResumeAdventure fired"); } catch(_) {}
       setIsResumingAdventure(true);
       try {
@@ -592,6 +603,8 @@ const handleResumeAdventure = async (deps) => {
           if (typeof setAdventureLanguageMode === 'function' && savedConfig.languageMode) setAdventureLanguageMode(savedConfig.languageMode);
           if (typeof setAdventureChanceMode === 'function' && savedConfig.chanceMode !== undefined) setAdventureChanceMode(!!savedConfig.chanceMode);
           if (typeof setAdventureFreeResponseEnabled === 'function' && savedConfig.freeResponse !== undefined) setAdventureFreeResponseEnabled(!!savedConfig.freeResponse);
+          if (typeof setAdventureTypingPaceEnabled === 'function' && savedConfig.typingPace !== undefined) setAdventureTypingPaceEnabled(!!savedConfig.typingPace);
+          if (typeof setAdventureFluencyEnabled === 'function' && savedConfig.sceneReadingPractice !== undefined) setAdventureFluencyEnabled(!!savedConfig.sceneReadingPractice);
           if (typeof setAdventureConsistentCharacters === 'function' && savedConfig.consistentCharacters !== undefined) setAdventureConsistentCharacters(!!savedConfig.consistentCharacters);
           if (typeof setIsAdventureStoryMode === 'function' && savedConfig.storyMode !== undefined) setIsAdventureStoryMode(!!savedConfig.storyMode);
           if (typeof setIsSocialStoryMode === 'function' && savedConfig.socialStoryMode !== undefined) setIsSocialStoryMode(!!savedConfig.socialStoryMode);
@@ -832,7 +845,10 @@ const handleAdventureTextSubmit = async (overrideInput = null, deps) => {
                 "scene": { "text": "Rebuttal...", "options": ${jsonOptionsExample} },
                 "soundParams": {
                     "atmosphere": "One of: Tense, Calm, Ethereal, Dark, Joyful",
-                    "element": "One of: Fire, Water, Wind, Machinery, Nature, Silence"
+                    "element": "One of: Fire, Water, Wind, Machinery, Nature, Rain, Ocean, Cave, City, Space, Laboratory, Crowd, Silence",
+                    "intensity": "Number from 0.0 (very gentle) to 1.0 (urgent)",
+                    "motion": "One of: Still, Steady, Travel, Chase, Urgent",
+                    "space": "One of: Open, Room, Cave, Void"
                 }
             }
           `;
@@ -911,7 +927,10 @@ const handleAdventureTextSubmit = async (overrideInput = null, deps) => {
                     "scene": { "text": "Narrative describing new state of the faction/system...", "options": ${jsonOptionsExample} },
                     "soundParams": {
                         "atmosphere": "One of: Tense, Calm, Ethereal, Dark, Joyful",
-                        "element": "One of: Fire, Water, Wind, Machinery, Nature, Silence"
+                        "element": "One of: Fire, Water, Wind, Machinery, Nature, Rain, Ocean, Cave, City, Space, Laboratory, Crowd, Silence",
+                        "intensity": "Number from 0.0 (very gentle) to 1.0 (urgent)",
+                        "motion": "One of: Still, Steady, Travel, Chase, Urgent",
+                        "space": "One of: Open, Room, Cave, Void"
                     }
                 }
               `;
@@ -967,7 +986,10 @@ Do NOT force all characters into every scene — let the narrative decide natura
                     "scene": { "text": "Outcome...", "options": ${isLastTurn ? "[]" : jsonOptionsExample} },
                     "soundParams": {
                         "atmosphere": "One of: Tense, Calm, Ethereal, Dark, Joyful",
-                        "element": "One of: Fire, Water, Wind, Machinery, Nature, Silence"
+                        "element": "One of: Fire, Water, Wind, Machinery, Nature, Rain, Ocean, Cave, City, Space, Laboratory, Crowd, Silence",
+                        "intensity": "Number from 0.0 (very gentle) to 1.0 (urgent)",
+                        "motion": "One of: Still, Steady, Travel, Chase, Urgent",
+                        "space": "One of: Open, Room, Cave, Void"
                     }${adventureConsistentCharacters && adventureState.characters?.length > 0 ? `,
                     "charactersInScene": ["Protagonist Name", "Other Character Present"]` : ''}
                 }
@@ -1286,7 +1308,10 @@ const handleAdventureChoice = async (choice, deps) => {
           "scene": { "text": "Scene...", "options": ${isLastTurn ? "[]" : jsonOptionsExample} },
           "soundParams": {
               "atmosphere": "One of: Tense, Calm, Ethereal, Dark, Joyful",
-              "element": "One of: Fire, Water, Wind, Machinery, Nature, Silence"
+              "element": "One of: Fire, Water, Wind, Machinery, Nature, Rain, Ocean, Cave, City, Space, Laboratory, Crowd, Silence",
+              "intensity": "Number from 0.0 (very gentle) to 1.0 (urgent)",
+              "motion": "One of: Still, Steady, Travel, Chase, Urgent",
+              "space": "One of: Open, Room, Cave, Void"
           }
         }
       `;

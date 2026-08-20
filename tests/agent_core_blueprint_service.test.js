@@ -44,6 +44,21 @@ const memoryStorage = () => {
 };
 
 describe('CommandWorkflow service', () => {
+  it('preserves a reviewed long-horizon workflow beyond eight steps', () => {
+    const svc = mkCommandService();
+    const steps = Array.from({ length: 12 }, () => ({ commandId: 'open_learning_hub' }));
+    const created = svc.createDraft({ workflowId: 'cw-long-lesson', audience: 'teacher', steps }, {});
+    expect(created.ok).toBe(true);
+    expect(created.value.steps).toHaveLength(12);
+    const approved = svc.approve(created.value, 'teacher-ui', {});
+    const planned = svc.planExecution(approved.value, {});
+    expect(planned.ok).toBe(true);
+    expect(planned.steps).toHaveLength(12);
+    const tooLong = svc.createDraft({ workflowId: 'cw-too-long', audience: 'teacher', steps: Array.from({ length: 25 }, () => ({ commandId: 'open_learning_hub' })) }, {});
+    expect(tooLong.ok).toBe(false);
+    expect(tooLong.errors.some((error) => error.code === 'too-many-workflow-steps')).toBe(true);
+  });
+
   it('creates, dry-runs, approves, and plans a command workflow without executing it', () => {
     const svc = mkCommandService();
     const created = svc.createDraft({ workflowId: 'cw-service', audience: 'teacher', steps: [

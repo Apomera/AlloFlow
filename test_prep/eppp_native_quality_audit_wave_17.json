@@ -19,8 +19,10 @@
     "appliedOrAnalysisItems": 10,
     "keyPositionsPreserved": 10,
     "optionSpecificExplanations": 40,
-    "selectedItemsWithWarningsAfter": 0,
-    "selectedWarningIdsAfter": [],
+    "selectedItemsWithWarningsAfter": 1,
+    "selectedWarningIdsAfter": [
+      "eppp-v2-biological-033"
+    ],
     "warningCountsBefore": {
       "totalItems": 1500,
       "warningOnly": true,
@@ -38,13 +40,13 @@
       "totalItems": 1500,
       "warningOnly": true,
       "forbiddenAggregateChoices": 0,
-      "uniqueKeyStemLexicalLeakageCandidates": 57,
-      "asymmetricExtremeDistractorCandidates": 116,
-      "advancedDirectRecallCandidates": 4,
-      "semanticConceptDuplicatePairs": 84,
-      "semanticConceptDuplicateClusters": 48,
-      "editorialAnchorsWithActiveWarnings": 2,
-      "editorialAnchorsWithNoCurrentWarning": 8,
+      "uniqueKeyStemLexicalLeakageCandidates": 47,
+      "asymmetricExtremeDistractorCandidates": 86,
+      "advancedDirectRecallCandidates": 3,
+      "semanticConceptDuplicatePairs": 51,
+      "semanticConceptDuplicateClusters": 36,
+      "editorialAnchorsWithActiveWarnings": 1,
+      "editorialAnchorsWithNoCurrentWarning": 9,
       "priorityDocketItems": 20
     },
     "warningCountContext": {
@@ -52,7 +54,7 @@
       "after": "Global diagnostics immediately after wave 17 and before the downstream distractor-halving campaign replays.",
       "interpretation": "Use item-level diagnosticsBefore and diagnosticsAfter for wave-specific evidence, and use the final canonical diagnostic artifact for current global totals."
     },
-    "status": "pass"
+    "status": "review-required"
   },
   "items": [
     {
@@ -69,7 +71,9 @@
         "asymmetric-extreme-distractors",
         "semantic-concept-duplicate-candidate"
       ],
-      "diagnosticsAfter": []
+      "diagnosticsAfter": [
+        "semantic-concept-duplicate-candidate"
+      ]
     },
     {
       "id": "eppp-v3-biological-032",

@@ -25,7 +25,9 @@ Open it from the top of the left column. Collapsed, it summarises itself, for ex
 - **Output language and translations**, which decide what language students receive. This is *not* the same as the interface language.
 - **Use emoji for visual support**, on or off.
 - **Differentiation Set**, for example *Target Level Only*, which decides whether you get one version or a range.
-- **Image Style**, a default used by Visuals, Glossary, Timeline and Concept Sort unless a tool overrides it.
+- **Image Style**, the lesson-wide default for new Visuals, Glossary, Timeline, Concept Sort and Word Sounds images. Adventure can choose it too.
+
+Visuals, Glossary and Word Sounds start on **Use Universal style**. Choose **Override for this resource** only when one resource genuinely needs a different look; its preset or custom-style field then appears. Timeline and Concept Sort use the Universal style directly, so there is no duplicate style field to reconcile. Adventure keeps its story-specific presets and adds **Use Universal style** when visual continuity matters. Style changes affect new or regenerated images, not images that already exist.
 
 **The coverage notes are the important detail.** Under many settings sits a small line reading something like *Applies to 12 of 19 resource types*. AlloFlow is telling you exactly how far that setting reaches instead of implying it governs everything. When a setting seems not to have worked, check whether the tool you used is inside its coverage.
 

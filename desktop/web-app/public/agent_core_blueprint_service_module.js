@@ -299,7 +299,10 @@
     function knownIds(ctx) { return commandList(ctx).map(function (command) { return command && command.id; }).filter(Boolean); }
     function commandById(ctx, id) { return commandList(ctx).find(function (command) { return command && command.id === id; }) || { id: id }; }
     function sanitizeSteps(steps, ctx) {
-      return (Array.isArray(steps) ? steps : []).slice(0, 8).map(function (raw, index) {
+      var maxSteps = Math.max(8, Number(C.COMMAND_WORKFLOW_MAX_STEPS) || 24);
+      // Retain one overflow item so the contract can reject an overlong draft
+      // instead of silently dropping work the teacher thought was reviewed.
+      return (Array.isArray(steps) ? steps : []).slice(0, maxSteps + 1).map(function (raw, index) {
         var command = commandById(ctx, raw && raw.commandId);
         var params = raw && raw.params || {};
         if (typeof d.sanitizeCommandParams === 'function') {

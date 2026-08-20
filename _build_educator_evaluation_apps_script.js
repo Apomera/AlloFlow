@@ -167,6 +167,25 @@ function sharePortalReleasedEvaluation(request) {
   });
 }
 
+function reviewPortalReleasedEvaluation(request) {
+  return new Promise((resolve, reject) => {
+    if (!request || typeof request !== 'object' || !request.teacherId) {
+      reject(new Error('An authorized educator record is required.'));
+      return;
+    }
+    let runner;
+    try { runner = requireAppsScriptRunner(); }
+    catch (error) { reject(error); return; }
+    runner
+      .withSuccessHandler((response) => {
+        if (!response || response.ok === false) { reject(portalError(response)); return; }
+        resolve(response);
+      })
+      .withFailureHandler((error) => reject(portalError(error)))
+      .reviewPortalReleasedEvaluationShare(request);
+  });
+}
+
 function recordPortalReleasedSummaryOpened(request) {
   return new Promise((resolve, reject) => {
     if (!request || typeof request !== 'object' || !request.teacherId) {
@@ -201,6 +220,78 @@ function getPortalSetupHealthClient() {
   });
 }
 
+function reviewPortalAnnualRolloverClient(request) {
+  return new Promise((resolve, reject) => {
+    if (!request || typeof request !== 'object' || !request.nextAcademicYear) {
+      reject(new Error('A next academic year is required.'));
+      return;
+    }
+    let runner;
+    try { runner = requireAppsScriptRunner(); }
+    catch (error) { reject(error); return; }
+    runner
+      .withSuccessHandler((response) => {
+        if (!response || response.ok === false) { reject(portalError(response)); return; }
+        resolve(response);
+      })
+      .withFailureHandler((error) => reject(portalError(error)))
+      .reviewPortalAnnualRollover(request);
+  });
+}
+
+function performPortalAnnualRolloverClient(request) {
+  return new Promise((resolve, reject) => {
+    if (!request || typeof request !== 'object' || !request.reviewToken) {
+      reject(new Error('A current annual rollover review is required.'));
+      return;
+    }
+    let runner;
+    try { runner = requireAppsScriptRunner(); }
+    catch (error) { reject(error); return; }
+    runner
+      .withSuccessHandler((response) => {
+        if (!response || response.ok === false) { reject(portalError(response)); return; }
+        resolve(response);
+      })
+      .withFailureHandler((error) => reject(portalError(error)))
+      .performPortalAnnualRollover(request);
+  });
+}
+
+function reconcilePortalAnnualRolloverClient() {
+  return new Promise((resolve, reject) => {
+    let runner;
+    try { runner = requireAppsScriptRunner(); }
+    catch (error) { reject(error); return; }
+    runner
+      .withSuccessHandler((response) => {
+        if (!response || response.ok === false) { reject(portalError(response)); return; }
+        resolve(response);
+      })
+      .withFailureHandler((error) => reject(portalError(error)))
+      .reconcilePortalAnnualRollover();
+  });
+}
+
+function callPortalAdminRpc(method, request) {
+  return new Promise((resolve, reject) => {
+    let runner;
+    try { runner = requireAppsScriptRunner(); }
+    catch (error) { reject(error); return; }
+    const call = runner
+      .withSuccessHandler((response) => {
+        if (!response || response.ok === false) { reject(portalError(response)); return; }
+        resolve(response);
+      })
+      .withFailureHandler((error) => reject(portalError(error)));
+    if (!call || typeof call[method] !== 'function') {
+      reject(new Error('This deployment does not include the requested administrator operation.'));
+      return;
+    }
+    if (request === undefined) call[method](); else call[method](request);
+  });
+}
+
 function readPortalDeepLink(parameters) {
   const params = parameters && typeof parameters === 'object'
     ? { get: (name) => parameters[name] == null ? '' : String(parameters[name]) }
@@ -224,9 +315,23 @@ function mountPortal(initialRoute) {
     bootstrap: getPortalBootstrap,
     saveWorkspace: savePortalWorkspace,
     sendNotification: sendPortalNotification,
+    reviewReleasedEvaluation: reviewPortalReleasedEvaluation,
     shareReleasedEvaluation: sharePortalReleasedEvaluation,
     recordReleasedSummaryOpened: recordPortalReleasedSummaryOpened,
     getSetupHealth: getPortalSetupHealthClient,
+    reviewAnnualRollover: reviewPortalAnnualRolloverClient,
+    performAnnualRollover: performPortalAnnualRolloverClient,
+    reconcileAnnualRollover: reconcilePortalAnnualRolloverClient,
+    getAdminOperations: () => callPortalAdminRpc('getPortalAdminOperations'),
+    reviewDirectoryChange: (request) => callPortalAdminRpc('reviewPortalDirectoryChange', request),
+    performDirectoryChange: (request) => callPortalAdminRpc('performPortalDirectoryChange', request),
+    reviewCycleSchedule: (request) => callPortalAdminRpc('reviewPortalCycleSchedule', request),
+    performCycleSchedule: (request) => callPortalAdminRpc('performPortalCycleSchedule', request),
+    reviewDistrictExport: (request) => callPortalAdminRpc('reviewPortalDistrictExport', request),
+    performDistrictExport: (request) => callPortalAdminRpc('performPortalDistrictExport', request),
+    getAnnualArchives: () => callPortalAdminRpc('getPortalAnnualArchives'),
+    reviewArchiveRestoreRehearsal: (request) => callPortalAdminRpc('reviewPortalArchiveRestoreRehearsal', request),
+    performArchiveRestoreRehearsal: (request) => callPortalAdminRpc('performPortalArchiveRestoreRehearsal', request),
     getInitialRoute: () => initialRoute,
   });
   window.__alloEvaluationRepository = repository;

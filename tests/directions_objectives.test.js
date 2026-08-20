@@ -34,6 +34,33 @@ describe('normalizer: one reader contract for legacy strings AND structured data
     expect(normalize({ body: 'x', objectives: [], softGate: true }).softGate).toBe(true);
     expect(normalize({ body: 'x', objectives: [], softGate: 'yes' }).softGate).toBe(false);
   });
+  it('normalizes an optional activity choice board and drops unsafe/incomplete entries', () => {
+    const board = normalize({
+      body: 'Choose an activity.',
+      choiceBoard: {
+        enabled: true,
+        title: 'Pick your path',
+        prompt: 'Choose one activity.',
+        choices: [
+          { resourceRef: 'r1', label: 'Read', icon: '📖' },
+          { resourceRef: 'r1', label: 'Duplicate' },
+          { resourceRef: 'r2', label: 'Sort', description: 'Build a concept sort.' },
+          { resourceRef: '', label: 'Missing resource' },
+          { resourceRef: 'r3', label: '' }
+        ]
+      }
+    }).choiceBoard;
+    expect(board).toEqual({
+      enabled: true,
+      title: 'Pick your path',
+      prompt: 'Choose one activity.',
+      choices: [
+        { resourceRef: 'r1', label: 'Read', icon: '📖' },
+        { resourceRef: 'r2', label: 'Sort', description: 'Build a concept sort.' }
+      ]
+    });
+    expect(normalize({ body: 'x', choiceBoard: { enabled: true, choices: [{ resourceRef: 'only', label: 'One' }] } }).choiceBoard).toBeUndefined();
+  });
 });
 
 describe('evaluator: XP is a DELTA from the first-view baseline', () => {
@@ -71,14 +98,27 @@ describe('evaluator: game completions count only AFTER the assignment started', 
 });
 
 describe('wiring pins', () => {
-  it('composer builds structured data ONLY when goals exist (plain string otherwise)', () => {
-    expect(anti).toContain("const _dirData = _objectives.length ? { body: md, objectives: _objectives, ...(d.softGate ? { softGate: true } : {}) } : md;");
+  it('composer keeps legacy strings but stores structured data for goals or an activity choice board', () => {
+    expect(anti).toContain("const _normalizedDir = _alloNormalizeDirectionsData({ body: md, objectives: d.objectives, softGate: d.softGate, choiceBoard: d.choiceBoard });");
+    expect(anti).toContain('const _dirData = (_objectives.length || _normalizedDir.choiceBoard)');
+    expect(anti).toContain("...(_normalizedDir.choiceBoard ? { choiceBoard: _normalizedDir.choiceBoard } : {})");
     expect(anti).toContain("data: _dirData,");
   });
   it("the 'directions' view branch exists (the type previously rendered a BLANK content area)", () => {
     expect(anti).toContain("activeView === 'directions' && generatedContent?.type === 'directions'");
     expect(anti).toContain('_alloEvaluateObjectives(_dir.objectives, _alloObjectiveSignals, _dirProg)');
     expect(anti).toContain('parseMarkdownToHTML(_dir.body)');
+    expect(anti).toContain('directions-choice-board-title');
+    expect(anti).toContain("aria-label={'Choose activity: ' + choice.label}");
+    expect(anti).toContain('aria-pressed={_selectedChoiceRef === choice.resourceRef}');
+    expect(anti).toContain('Back to directions');
+  });
+  it('choice-board authoring validates, previews, and supports optional card descriptions', () => {
+    expect(anti).toContain('Select at least two activities before saving the choice board.');
+    expect(anti).toContain('Remove unavailable activities from the choice board before saving.');
+    expect(anti).toContain('Preview student choice board');
+    expect(anti).toContain('Optional card descriptions');
+    expect(anti).toContain('_mbDirectionsChoiceStaleCount');
   });
   it('baseline captures on FIRST view; celebration fires once via the existing bot event', () => {
     expect(anti).toContain('if (prev[dirId] && prev[dirId].startedAt) return prev;');

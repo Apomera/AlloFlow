@@ -48,9 +48,8 @@ function StudyTimerModal(props) {
   const completionPercent = studyDuration > 0
     ? Math.max(0, Math.min(100, Math.round(((studyDuration - studyTimeLeft) / studyDuration) * 100)))
     : 0;
-  const timerStatus = studyDuration > 0 && studyTimeLeft === 0
-    ? `${t('timer.title')}: complete`
-    : `${t('timer.title')}: ${isStudyTimerRunning ? 'running' : studyDuration > 0 ? 'paused' : 'ready'}`;
+  const timerStatus = `${t('timer.title')}: ${formatTime(studyTimeLeft)}`;
+  const completionLabel = `${completionPercent}% · ${t('common.progress')}`;
 
   return (
         <div
@@ -135,19 +134,19 @@ function StudyTimerModal(props) {
                     </button>
                 </div>
                 <div className="text-center mb-6 relative">
-                    <div className="text-5xl font-black text-slate-700 font-mono tracking-wider" role="timer" aria-live="off" aria-label={`${t('timer.title')}: ${formatTime(studyTimeLeft)} remaining`}>
+                    <div className="text-5xl font-black text-slate-700 font-mono tracking-wider" role="timer" aria-live="off" aria-label={timerStatus}>
                         {formatTime(studyTimeLeft)}
                     </div>
                     {studyDuration > 0 && (
                         <div className="mt-3 mx-auto max-w-[200px]">
-                            <div className="h-2 bg-slate-200 rounded-full overflow-hidden" role="progressbar" aria-label={t('common.progress')} aria-valuemin={0} aria-valuemax={100} aria-valuenow={completionPercent} aria-valuetext={`${completionPercent}% complete`}>
+                            <div className="h-2 bg-slate-200 rounded-full overflow-hidden" role="progressbar" aria-label={t('common.progress')} aria-valuemin={0} aria-valuemax={100} aria-valuenow={completionPercent} aria-valuetext={completionLabel}>
                                 <div
                                     className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-1000 ease-linear motion-reduce:transition-none"
                                     style={{ width: `${completionPercent}%` }}
                                 />
                             </div>
                             <div className="text-[11px] text-slate-600 mt-1 font-medium">
-                                {completionPercent}% complete
+                                {completionLabel}
                             </div>
                         </div>
                     )}

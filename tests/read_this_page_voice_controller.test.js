@@ -94,6 +94,14 @@ describe('Read This Page hands-free controller', () => {
     expect(reader).toContain("if (typeof isGlobalMuted === 'function' && isGlobalMuted())");
     expect(reader).toContain('watchdogId = setTimeout(finish, watchdogMs)');
     expect(reader).toContain('if (watchdogId != null) clearTimeout(watchdogId)');
+    expect(reader).toContain('Number(voiceVolume) <= 0');
+    expect(reader).toContain("audio.addEventListener('playing', markStarted)");
+    expect(reader).toContain('playPromise.then(markStarted).catch(finish)');
+    expect(reader).toContain('if (playbackStarted) return;');
+    expect(reader).toContain('utterance.onstart = () =>');
+    expect(reader).toContain('voiceSpeechLease.start()');
+    expect(reader).toContain('startWatchdogId = setTimeout(failBeforeStart, 8000)');
+    expect(reader).toContain("I couldn't start spoken playback.");
   });
 
   it('uses canonical per-item speech locales and tracks media read-all progress', () => {

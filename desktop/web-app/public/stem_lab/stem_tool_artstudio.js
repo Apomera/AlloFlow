@@ -49,6 +49,16 @@ window.StemLab = window.StemLab || {
   function sfxArtClick() { artTone(600, 0.03, "sine", 0.04); }
   function sfxArtSuccess() { artTone(523, 0.08, "sine", 0.07); setTimeout(function() { artTone(659, 0.08, "sine", 0.07); }, 70); setTimeout(function() { artTone(784, 0.1, "sine", 0.08); }, 140); }
 
+  // The live watercolor grid is intentionally kept outside React state. This
+  // small session cache lets wet paint keep diffusing after the canvas is
+  // remounted, while the serializable tool data still stores a flat PNG.
+  var _artStudioWatercolorCache = {
+    state: null,
+    undo: [],
+    redo: [],
+    maxHistory: 8
+  };
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-artstudio')) return;
@@ -69,7 +79,7 @@ window.StemLab = window.StemLab || {
   window.StemLab.registerTool('artStudio', {
     icon: "🎨",
     label: "Art & Design Studio",
-    desc: "Explore the math behind art: color theory, pixel art, symmetry, spirographs, fractals, generative design, and WCAG contrast.",
+    desc: "Explore color theory, watercolor, pixel art, symmetry, spirographs, fractals, generative design, and WCAG contrast.",
     color: 'slate',
     category: 'creative',
     questHooks: [
@@ -113,6 +123,7 @@ window.StemLab = window.StemLab || {
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var canvasNarrate = ctx.canvasNarrate;
       var props = ctx.props;
+      var onUseArtwork = ctx.onUseArtwork;
 
       // ── Tool body (artStudio) ──
       return (function() {
@@ -121,7 +132,53 @@ const d = labToolData.artStudio || {};
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, artStudio: { ...prev.artStudio, [key]: val } }));
 
           const tab = d.tab || 'colorWheel';
-          const ART_STUDIO_TAB_ORDER = ['colorWheel', 'mixer', 'pixel', 'symmetry', 'spirograph', 'generative', 'spinArt', 'stringArt', 'opArt', 'tessellation', 'fractal', 'gradient', 'stereogram', 'sculpt3d', 'contrast', 'harmonyHunt'];
+          const ART_STUDIO_TAB_ORDER = ['colorWheel', 'mixer', 'watercolor', 'pixel', 'symmetry', 'spirograph', 'generative', 'spinArt', 'stringArt', 'opArt', 'tessellation', 'fractal', 'gradient', 'stereogram', 'sculpt3d', 'contrast', 'harmonyHunt'];
+          const ART_STUDIO_TAB_LABELS = {
+            colorWheel: 'Color Wheel', mixer: 'Color Mixer', watercolor: 'Watercolor', pixel: 'Pixel Art',
+            symmetry: 'Symmetry', spirograph: 'Spirograph', generative: 'Generative Art', spinArt: 'Spin Art',
+            stringArt: 'String Art', opArt: 'Op Art', tessellation: 'Tessellation', fractal: 'Fractal',
+            gradient: 'Gradient', stereogram: 'Stereogram', sculpt3d: '3D Sculpture', contrast: 'Contrast', harmonyHunt: 'Harmony'
+          };
+          const captureCurrentArtwork = function () {
+            if (typeof document === 'undefined') return null;
+            var panel = document.getElementById('artstudio-panel-' + tab);
+            if (!panel) return null;
+            var canvases = panel.querySelectorAll('canvas');
+            var canvas = null;
+            for (var ci = 0; ci < canvases.length; ci++) {
+              var candidate = canvases[ci];
+              if (candidate && candidate.getAttribute('aria-hidden') !== 'true' && candidate.width > 0 && candidate.height > 0) {
+                canvas = candidate;
+                break;
+              }
+            }
+            if (!canvas) return null;
+            var src = '';
+            try { src = canvas.toDataURL('image/png'); } catch (_) { return null; }
+            if (!src || src === 'data:,') return null;
+            var label = ART_STUDIO_TAB_LABELS[tab] || 'Art Studio artwork';
+            var altText = canvas.getAttribute('aria-label') || label + ' artwork created in Art Studio.';
+            return {
+              src: src,
+              title: 'Art Studio — ' + label,
+              altText: String(altText).replace(/\s+/g, ' ').trim().slice(0, 300),
+              sourceTool: 'artStudio',
+              sourceTab: tab,
+              createdAt: Date.now()
+            };
+          };
+          const sendArtworkTo = function (destination) {
+            var artwork = captureCurrentArtwork();
+            if (!artwork) {
+              if (typeof addToast === 'function') addToast('Finish or open an artwork canvas on this tab before sending it.', 'info');
+              return;
+            }
+            if (typeof onUseArtwork !== 'function') {
+              if (typeof addToast === 'function') addToast('Artwork handoff is not available in this version of AlloFlow.', 'info');
+              return;
+            }
+            onUseArtwork(artwork, destination);
+          };
           const artStudioTabKeyDown = function (e, index) {
             let nextIndex = -1;
             if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % ART_STUDIO_TAB_ORDER.length;
@@ -139,12 +196,29 @@ const d = labToolData.artStudio || {};
               nextTab.click();
             }
           };
+          const selectArtStudioTab = function (nextTab, label) {
+            if (tab === 'watercolor' && nextTab !== 'watercolor' && typeof document !== 'undefined') {
+              var watercolorCanvas = document.getElementById('watercolorCanvas');
+              if (watercolorCanvas && watercolorCanvas._watercolorEngine && watercolorCanvas._watercolorEngine.captureSnapshot) {
+                var watercolorEngine = watercolorCanvas._watercolorEngine;
+                var flatSnapshot = watercolorEngine.captureSnapshot();
+                if (watercolorEngine.captureState) {
+                  var liveState = watercolorEngine.captureState();
+                  liveState.flatSnapshot = flatSnapshot;
+                  _artStudioWatercolorCache.state = liveState;
+                }
+                upd('watercolorSnapshot', flatSnapshot);
+              }
+            }
+            upd('tab', nextTab);
+            if (typeof canvasNarrate === 'function') canvasNarrate('artStudio', 'tabSwitch', 'Switched to ' + label + ' canvas tool.', { debounce: 500 });
+          };
           const reducedMotion = typeof window !== 'undefined' && typeof window.matchMedia === 'function' &&
             window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
           // Canvas Narration: Art Studio init
           if (typeof canvasNarrate === 'function') canvasNarrate('artStudio', 'init', {
-            first: 'Art Studio loaded. Explore color theory, pixel art, symmetry drawing, spirographs, fractals, and more. Use the tabs to switch between tools.',
+            first: 'Art Studio loaded. Explore color theory, watercolor, pixel art, symmetry drawing, spirographs, fractals, and more. Use the tabs to switch between tools.',
             repeat: 'Art Studio ready.',
             terse: 'Art Studio ready.'
           });
@@ -316,6 +390,853 @@ const d = labToolData.artStudio || {};
 
             drawWheel();
 
+          };
+
+
+
+          // Watercolor Simulation Canvas
+
+          // This is intentionally a small, self-contained fluid/pigment model:
+          // water and pigment live on a 192x192 grid, then get upscaled into
+          // the display canvas. Keeping the hot loop here (rather than in
+          // React state) makes wet-on-wet diffusion inexpensive and keeps
+          // session snapshots from filling up with per-frame pixel data.
+          const watercolorRef = function (canvas) {
+            if (!canvas) return;
+
+            function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
+
+            function parseColor(value) {
+              var hex = String(value || '#2f6fb0').replace('#', '');
+              if (hex.length === 3) hex = hex.split('').map(function (ch) { return ch + ch; }).join('');
+              var num = parseInt(hex, 16);
+              if (!isFinite(num)) num = parseInt('2f6fb0', 16);
+              return {
+                r: ((num >> 16) & 255) / 255,
+                g: ((num >> 8) & 255) / 255,
+                b: (num & 255) / 255
+              };
+            }
+
+            function readParams() {
+              var size = Number(d.watercolorSize);
+              var water = Number(d.watercolorWater);
+              var pigment = Number(d.watercolorPigment);
+              var paper = Number(d.watercolorPaper);
+              var granulation = Number(d.watercolorGranulation);
+              var bleed = Number(d.watercolorBleed);
+              var absorption = Number(d.watercolorAbsorption);
+              var drying = Number(d.watercolorDrying);
+              var flowStrength = Number(d.watercolorFlowStrength);
+              return {
+                color: parseColor(d.watercolorColor || '#2f6fb0'),
+                brush: d.watercolorBrush || 'round',
+                surface: d.watercolorSurface || 'wet',
+                flowDirection: d.watercolorFlowDirection || 'down',
+                size: clamp(isFinite(size) ? size : 28, 8, 80),
+                water: clamp((isFinite(water) ? water : 72) / 100, 0, 1),
+                pigment: clamp((isFinite(pigment) ? pigment : 68) / 100, 0, 1),
+                paper: clamp((isFinite(paper) ? paper : 48) / 100, 0, 1),
+                granulation: clamp((isFinite(granulation) ? granulation : 54) / 100, 0, 1),
+                bleed: clamp((isFinite(bleed) ? bleed : 62) / 100, 0, 1),
+                absorption: clamp((isFinite(absorption) ? absorption : 52) / 100, 0, 1),
+                drying: clamp((isFinite(drying) ? drying : 50) / 100, 0, 1),
+                flowStrength: clamp((isFinite(flowStrength) ? flowStrength : 60) / 100, 0, 1)
+              };
+            }
+
+            var existing = canvas._watercolorEngine;
+            if (existing) {
+              existing.configure(readParams(), d.watercolorSnapshot || '');
+              return;
+            }
+
+            var SIM_W = 192, SIM_H = 192, COUNT = SIM_W * SIM_H;
+            var mainCtx = canvas.getContext('2d');
+            if (!mainCtx) return;
+
+            var simCanvas = document.createElement('canvas');
+            simCanvas.setAttribute('aria-hidden', 'true');
+            simCanvas.width = SIM_W; simCanvas.height = SIM_H;
+            var simCtx = simCanvas.getContext('2d');
+
+            var paperCanvas = document.createElement('canvas');
+            paperCanvas.setAttribute('aria-hidden', 'true');
+            paperCanvas.width = SIM_W; paperCanvas.height = SIM_H;
+            var paperCtx = paperCanvas.getContext('2d');
+            var paperImage = paperCtx.createImageData(SIM_W, SIM_H);
+            var paperNoise = new Float32Array(COUNT);
+            var granulationNoise = new Float32Array(COUNT);
+
+            function seededNoise(seed) {
+              var value = Math.sin(seed * 12.9898 + 78.233) * 43758.5453;
+              return value - Math.floor(value);
+            }
+
+            for (var pi = 0; pi < COUNT; pi++) {
+              var grain = seededNoise(pi + 11.7);
+              paperNoise[pi] = grain;
+              var fiber = seededNoise(pi * 0.37 + 91.4);
+              var cellX = pi % SIM_W;
+              var cellY = Math.floor(pi / SIM_W);
+              var cluster = seededNoise(Math.floor(cellX / 6) * 17.13 + Math.floor(cellY / 6) * 31.71 + 8.4);
+              var microCluster = seededNoise(pi * 0.73 + 17.2);
+              granulationNoise[pi] = clamp(cluster * 0.78 + microCluster * 0.22, 0, 1);
+              var tone = 247 + Math.round((grain - 0.5) * 7 + (fiber - 0.5) * 2);
+              var po = pi * 4;
+              paperImage.data[po] = clamp(tone + 2, 0, 255);
+              paperImage.data[po + 1] = clamp(tone + 1, 0, 255);
+              paperImage.data[po + 2] = clamp(tone, 0, 255);
+              paperImage.data[po + 3] = 255;
+            }
+            paperCtx.putImageData(paperImage, 0, 0);
+
+            var water = new Float32Array(COUNT);
+            var nextWater = new Float32Array(COUNT);
+            var pigmentR = new Float32Array(COUNT);
+            var pigmentG = new Float32Array(COUNT);
+            var pigmentB = new Float32Array(COUNT);
+            var pigmentDensity = new Float32Array(COUNT);
+            // Mobile pigment travels with water; stain pigment has settled into
+            // the paper fibers. Keeping both layers makes glazing and lifting
+            // behave more like transparent watercolor on real paper.
+            var stainR = new Float32Array(COUNT);
+            var stainG = new Float32Array(COUNT);
+            var stainB = new Float32Array(COUNT);
+            var stainDensity = new Float32Array(COUNT);
+            var nextR = new Float32Array(COUNT);
+            var nextG = new Float32Array(COUNT);
+            var nextB = new Float32Array(COUNT);
+            var nextDensity = new Float32Array(COUNT);
+            var bloom = new Float32Array(COUNT);
+            var nextBloom = new Float32Array(COUNT);
+            // Masking fluid is a non-porous resist layer. Pigment and water
+            // cannot enter masked fibers until the artist peels it away.
+            var mask = new Float32Array(COUNT);
+            var pigmentImage = simCtx.createImageData(SIM_W, SIM_H);
+            var params = readParams();
+            var baseImage = null;
+            var loadedSnapshot = '';
+            var ignoredFlatSnapshot = '';
+            var wetCells = 0;
+            var maskedCells = 0;
+            var waterTotal = 0;
+            var running = false;
+            var paused = false;
+            var frameId = 0;
+            var lastTime = 0;
+            var accumulator = 0;
+            var drawing = false;
+            var lastX = null, lastY = null;
+            var lastStrokeTime = 0;
+            var lastPressure = 0.7;
+            var lastTilt = 0;
+            var lastBrushAngle = 0;
+            var keyboardX = SIM_W / 2, keyboardY = SIM_H / 2;
+            var reservoirWater = 1;
+            var reservoirPigment = 1;
+            var strokeSeed = 1;
+            var lastStatusKey = '';
+            var STEP = 1 / 30;
+
+            function updateA11y() {
+              canvas.setAttribute('aria-label', 'Watercolor painting canvas using a ' + params.brush +
+                ' brush on ' + params.surface + ' paper. Brush size ' + Math.round(params.size) +
+                ' pixels, water ' + Math.round(params.water * 100) + ' percent, pigment ' +
+                Math.round(params.pigment * 100) + ' percent, granulation ' +
+                Math.round(params.granulation * 100) + ' percent, bleed ' +
+                Math.round(params.bleed * 100) + ' percent, absorption ' +
+                Math.round(params.absorption * 100) + ' percent, drying rate ' +
+                Math.round(params.drying * 100) + ' percent, flow ' + params.flowDirection + ' at ' +
+                Math.round(params.flowStrength * 100) + ' percent strength. ' +
+                (paused ? 'Drying is paused.' : 'Drying is active.'));
+            }
+
+            function loadSnapshot(url) {
+              url = url || '';
+              if (url === loadedSnapshot) return;
+              loadedSnapshot = url;
+              baseImage = null;
+              if (!url) { render(); return; }
+              var image = new Image();
+              image.onload = function () { baseImage = image; render(); };
+              image.onerror = function () { loadedSnapshot = ''; baseImage = null; render(); };
+              image.src = url;
+            }
+
+            function updateStatus() {
+              if (typeof document === 'undefined') return;
+              var status = document.getElementById('artstudio-watercolor-status');
+              if (!status) return;
+              var averageWater = wetCells > 0 ? waterTotal / wetCells : 0;
+              var stage = 'Dry';
+              if (wetCells > 0 && averageWater > 0.72) stage = 'Very wet';
+              else if (wetCells > 0 && averageWater > 0.24) stage = 'Wet';
+              else if (wetCells > 0) stage = 'Damp';
+              var coverage = wetCells > 0
+                ? Math.max(1, Math.min(100, Math.ceil((wetCells / COUNT * 100) / 5) * 5))
+                : 0;
+              var waterLoad = Math.round(reservoirWater * 10) * 10;
+              var pigmentLoad = Math.round(reservoirPigment * 10) * 10;
+              var maskCoverage = maskedCells > 0
+                ? Math.max(1, Math.min(100, Math.ceil((maskedCells / COUNT * 100) / 5) * 5))
+                : 0;
+              var statusKey = stage + '|' + coverage + '|' + maskCoverage + '|' + waterLoad + '|' + pigmentLoad + '|' + paused;
+              if (statusKey === lastStatusKey) return;
+              lastStatusKey = statusKey;
+              status.textContent = 'Paper: ' + stage + ' | active area ' + coverage + '%. Brush load: ' +
+                waterLoad + '% water | ' + pigmentLoad + '% pigment. Masked area: ' + maskCoverage + '%.' +
+                (paused ? ' Drying paused.' : ' Drying active.');
+            }
+
+            function updateHistoryControls() {
+              if (typeof document === 'undefined') return;
+              var undoButton = document.getElementById('artstudio-watercolor-undo');
+              var redoButton = document.getElementById('artstudio-watercolor-redo');
+              if (undoButton) undoButton.disabled = _artStudioWatercolorCache.undo.length === 0;
+              if (redoButton) redoButton.disabled = _artStudioWatercolorCache.redo.length === 0;
+            }
+
+            function updatePauseControl() {
+              if (typeof document === 'undefined') return;
+              var pauseButton = document.getElementById('artstudio-watercolor-pause');
+              if (!pauseButton) return;
+              pauseButton.setAttribute('aria-pressed', paused ? 'true' : 'false');
+              pauseButton.textContent = paused
+                ? (pauseButton.getAttribute('data-resume-label') || 'Resume drying')
+                : (pauseButton.getAttribute('data-pause-label') || 'Pause drying');
+            }
+
+            function captureState() {
+              return {
+                version: 4,
+                simWidth: SIM_W,
+                simHeight: SIM_H,
+                baseSnapshot: loadedSnapshot,
+                water: water.slice(0),
+                pigmentR: pigmentR.slice(0),
+                pigmentG: pigmentG.slice(0),
+                pigmentB: pigmentB.slice(0),
+                pigmentDensity: pigmentDensity.slice(0),
+                stainR: stainR.slice(0),
+                stainG: stainG.slice(0),
+                stainB: stainB.slice(0),
+                stainDensity: stainDensity.slice(0),
+                bloom: bloom.slice(0),
+                mask: mask.slice(0),
+                reservoirWater: reservoirWater,
+                reservoirPigment: reservoirPigment,
+                paused: paused,
+                strokeSeed: strokeSeed,
+                keyboardX: keyboardX,
+                keyboardY: keyboardY
+              };
+            }
+
+            function restoreState(state) {
+              if (!state || state.simWidth !== SIM_W || state.simHeight !== SIM_H ||
+                  !state.water || state.water.length !== COUNT) return false;
+              if (frameId) cancelAnimationFrame(frameId);
+              running = false;
+              drawing = false;
+              lastX = null; lastY = null;
+              lastStrokeTime = 0;
+              loadSnapshot(state.baseSnapshot || '');
+              water.set(state.water);
+              pigmentR.fill(0); pigmentG.fill(0); pigmentB.fill(0);
+              pigmentDensity.fill(0); stainR.fill(0); stainG.fill(0); stainB.fill(0); stainDensity.fill(0); bloom.fill(0); mask.fill(0);
+              if (state.pigmentR && state.pigmentR.length === COUNT) pigmentR.set(state.pigmentR);
+              if (state.pigmentG && state.pigmentG.length === COUNT) pigmentG.set(state.pigmentG);
+              if (state.pigmentB && state.pigmentB.length === COUNT) pigmentB.set(state.pigmentB);
+              if (state.pigmentDensity && state.pigmentDensity.length === COUNT) pigmentDensity.set(state.pigmentDensity);
+              if (state.stainR && state.stainR.length === COUNT) stainR.set(state.stainR);
+              if (state.stainG && state.stainG.length === COUNT) stainG.set(state.stainG);
+              if (state.stainB && state.stainB.length === COUNT) stainB.set(state.stainB);
+              if (state.stainDensity && state.stainDensity.length === COUNT) stainDensity.set(state.stainDensity);
+              if (state.bloom && state.bloom.length === COUNT) bloom.set(state.bloom);
+              if (state.mask && state.mask.length === COUNT) mask.set(state.mask);
+              if (!state.pigmentDensity || state.pigmentDensity.length !== COUNT || !state.stainDensity || state.stainDensity.length !== COUNT) {
+                for (var legacyIndex = 0; legacyIndex < COUNT; legacyIndex++) {
+                  if (!state.pigmentDensity || state.pigmentDensity.length !== COUNT) pigmentDensity[legacyIndex] = Math.max(pigmentR[legacyIndex], pigmentG[legacyIndex], pigmentB[legacyIndex]);
+                  if (!state.stainDensity || state.stainDensity.length !== COUNT) stainDensity[legacyIndex] = Math.max(stainR[legacyIndex], stainG[legacyIndex], stainB[legacyIndex]);
+                }
+              }
+              nextWater.fill(0); nextR.fill(0); nextG.fill(0); nextB.fill(0); nextDensity.fill(0); nextBloom.fill(0);
+              wetCells = 0;
+              maskedCells = 0;
+              waterTotal = 0;
+              for (var wi = 0; wi < COUNT; wi++) {
+                waterTotal += water[wi];
+                if (water[wi] > 0.004) wetCells++;
+                if (mask[wi] > 0.04) maskedCells++;
+              }
+              reservoirWater = clamp(Number(state.reservoirWater), 0, 1);
+              reservoirPigment = clamp(Number(state.reservoirPigment), 0, 1);
+              if (!isFinite(reservoirWater)) reservoirWater = 1;
+              if (!isFinite(reservoirPigment)) reservoirPigment = 1;
+              paused = !!state.paused;
+              strokeSeed = isFinite(Number(state.strokeSeed)) ? Number(state.strokeSeed) : 1;
+              keyboardX = clamp(isFinite(Number(state.keyboardX)) ? Number(state.keyboardX) : SIM_W / 2, 0, SIM_W - 1);
+              keyboardY = clamp(isFinite(Number(state.keyboardY)) ? Number(state.keyboardY) : SIM_H / 2, 0, SIM_H - 1);
+              lastStatusKey = '';
+              render();
+              updateHistoryControls();
+              updatePauseControl();
+              if (wetCells > 0 && !paused) ensureLoop();
+              return true;
+            }
+
+            function trimHistory(stack) {
+              while (stack.length > _artStudioWatercolorCache.maxHistory) stack.shift();
+            }
+
+            function pushHistory() {
+              _artStudioWatercolorCache.undo.push(captureState());
+              trimHistory(_artStudioWatercolorCache.undo);
+              _artStudioWatercolorCache.redo.length = 0;
+              updateHistoryControls();
+            }
+
+            function undoState() {
+              if (_artStudioWatercolorCache.undo.length === 0) return false;
+              _artStudioWatercolorCache.redo.push(captureState());
+              trimHistory(_artStudioWatercolorCache.redo);
+              var previous = _artStudioWatercolorCache.undo.pop();
+              var restored = restoreState(previous);
+              updateHistoryControls();
+              return restored;
+            }
+
+            function redoState() {
+              if (_artStudioWatercolorCache.redo.length === 0) return false;
+              _artStudioWatercolorCache.undo.push(captureState());
+              trimHistory(_artStudioWatercolorCache.undo);
+              var next = _artStudioWatercolorCache.redo.pop();
+              var restored = restoreState(next);
+              updateHistoryControls();
+              return restored;
+            }
+
+            function render() {
+              var data = pigmentImage.data;
+              for (var i = 0; i < COUNT; i++) {
+                var mobileMass = pigmentDensity[i];
+                var stainMass = stainDensity[i];
+                var r = pigmentR[i] + stainR[i];
+                var g = pigmentG[i] + stainG[i];
+                var b = pigmentB[i] + stainB[i];
+                var mass = mobileMass + stainMass;
+                var maskAmount = mask[i];
+                var offset = i * 4;
+                if (mass < 0.0001) {
+                  if (maskAmount > 0.01) {
+                    var maskGrain = 0.92 + paperNoise[i] * 0.10;
+                    data[offset] = Math.round(196 * maskGrain);
+                    data[offset + 1] = Math.round(218 * maskGrain);
+                    data[offset + 2] = Math.round(220 * maskGrain);
+                    data[offset + 3] = Math.round(clamp(maskAmount * 0.48, 0.04, 0.48) * 255);
+                  } else {
+                    data[offset] = 0; data[offset + 1] = 0; data[offset + 2] = 0; data[offset + 3] = 0;
+                  }
+                  continue;
+                }
+
+                var dryCell = clamp(1 - water[i] * 0.86, 0, 1);
+                var granuleTone = (granulationNoise[i] - 0.5) * params.granulation * dryCell;
+                var transparentLayering = mobileMass * 0.30 + stainMass * 0.43;
+                var density = clamp(transparentLayering * (0.88 + params.pigment * 0.78) *
+                  (0.84 + dryCell * 0.20) * (1 + bloom[i] * 0.42 + Math.max(0, granuleTone) * 0.46), 0, 3.2);
+                var averageR = clamp(r / Math.max(0.0001, mass), 0, 1);
+                var averageG = clamp(g / Math.max(0.0001, mass), 0, 1);
+                var averageB = clamp(b / Math.max(0.0001, mass), 0, 1);
+                // Beer-Lambert-style channel absorption gives overlapping
+                // washes subtractive depth without making light glazes opaque.
+                var opticalR = Math.exp(-density * (0.07 + (1 - averageR) * 0.28));
+                var opticalG = Math.exp(-density * (0.07 + (1 - averageG) * 0.28));
+                var opticalB = Math.exp(-density * (0.07 + (1 - averageB) * 0.28));
+                var grainTone = clamp(0.95 + (paperNoise[i] - 0.5) * 0.13 * params.paper - Math.max(0, granuleTone) * 0.08, 0.82, 1.08);
+                var alpha = clamp(1 - Math.exp(-density * 0.88) + bloom[i] * 0.045, 0.02, 0.95);
+                var renderedR = clamp(averageR * 255 * opticalR * grainTone, 0, 255);
+                var renderedG = clamp(averageG * 255 * opticalG * grainTone, 0, 255);
+                var renderedB = clamp(averageB * 255 * opticalB * grainTone, 0, 255);
+                var maskFilm = maskAmount * 0.58;
+                data[offset] = Math.round(renderedR * (1 - maskFilm) + 196 * maskFilm);
+                data[offset + 1] = Math.round(renderedG * (1 - maskFilm) + 218 * maskFilm);
+                data[offset + 2] = Math.round(renderedB * (1 - maskFilm) + 220 * maskFilm);
+                data[offset + 3] = Math.round(Math.max(alpha, maskAmount * 0.48) * 255);
+              }
+              simCtx.putImageData(pigmentImage, 0, 0);
+              mainCtx.save();
+              mainCtx.clearRect(0, 0, canvas.width, canvas.height);
+              mainCtx.imageSmoothingEnabled = true;
+              if (baseImage) mainCtx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
+              else mainCtx.drawImage(paperCanvas, 0, 0, canvas.width, canvas.height);
+              mainCtx.drawImage(simCanvas, 0, 0, canvas.width, canvas.height);
+              mainCtx.restore();
+              updateStatus();
+            }
+
+            function stepSimulation() {
+              var flow = params.surface === 'wet' ? 0.16 + params.bleed * 0.22 : 0.08 + params.bleed * 0.10;
+              var evaporation = params.surface === 'wet'
+                ? 0.0036 + (1 - params.bleed) * 0.0018
+                : 0.007 + (1 - params.bleed) * 0.0025;
+              evaporation *= 0.45 + params.drying * 1.10;
+              var pigmentFlow = params.surface === 'wet' ? 0.10 + params.bleed * 0.16 : 0.035 + params.bleed * 0.07;
+              var gravityStrength = params.surface === 'wet' ? 0.028 + params.bleed * 0.072 : 0.012 + params.bleed * 0.035;
+              gravityStrength *= 0.10 + params.flowStrength * 1.50;
+              var absorptionStrength = params.surface === 'wet' ? 0.001 + params.absorption * 0.004 : 0.002 + params.absorption * 0.006;
+              var nextWetCells = 0;
+              var nextWaterTotal = 0;
+
+              for (var y = 0; y < SIM_H; y++) {
+                for (var x = 0; x < SIM_W; x++) {
+                  var i = y * SIM_W + x;
+                  var left = x > 0 ? i - 1 : i;
+                  var right = x < SIM_W - 1 ? i + 1 : i;
+                  var up = y > 0 ? i - SIM_W : i;
+                  var down = y < SIM_H - 1 ? i + SIM_W : i;
+                  var barrier = clamp(mask[i], 0, 1);
+                  var access = 1 - barrier;
+                  var w0 = water[i];
+                  var wl = water[left] * (1 - mask[left] * 0.98);
+                  var wr = water[right] * (1 - mask[right] * 0.98);
+                  var wu = water[up] * (1 - mask[up] * 0.98);
+                  var wd = water[down] * (1 - mask[down] * 0.98);
+                  var neighborWater = (wl + wr + wu + wd) * 0.25;
+                  var gradient = clamp(Math.abs(w0 - neighborWater) * 3.2, 0, 1);
+                  var upstream = i;
+                  if (params.flowDirection === 'down') upstream = up;
+                  else if (params.flowDirection === 'up') upstream = down;
+                  else if (params.flowDirection === 'right') upstream = left;
+                  else if (params.flowDirection === 'left') upstream = right;
+                  var gravity = params.flowDirection === 'none' ? 0 : (water[upstream] * (1 - mask[upstream] * 0.98) - w0) * gravityStrength * access;
+                  var paperPull = absorptionStrength * (0.45 + paperNoise[i] * 0.55) * w0 * access;
+                  var nw = clamp(w0 + (neighborWater - w0) * flow * access + gravity -
+                    evaporation * (0.25 + w0) * (0.18 + access * 0.82) - paperPull, 0, 1.5);
+
+                  var totalWater = w0 + wl + wr + wu + wd + 0.0001;
+                  var neighborR = (pigmentR[i] * w0 + pigmentR[left] * wl + pigmentR[right] * wr + pigmentR[up] * wu + pigmentR[down] * wd) / totalWater;
+                  var neighborG = (pigmentG[i] * w0 + pigmentG[left] * wl + pigmentG[right] * wr + pigmentG[up] * wu + pigmentG[down] * wd) / totalWater;
+                  var neighborB = (pigmentB[i] * w0 + pigmentB[left] * wl + pigmentB[right] * wr + pigmentB[up] * wu + pigmentB[down] * wd) / totalWater;
+                  var neighborDensity = (pigmentDensity[i] * w0 + pigmentDensity[left] * wl + pigmentDensity[right] * wr + pigmentDensity[up] * wu + pigmentDensity[down] * wd) / totalWater;
+                  var wetFactor = clamp((w0 + neighborWater) * 0.5, 0, 1);
+                  var settling = params.granulation * (1 - wetFactor) * (0.004 + granulationNoise[i] * 0.018);
+                  var pigmentMix = pigmentFlow * (0.25 + wetFactor * 0.75) * (1 - params.granulation * (1 - wetFactor) * 0.18) * (1 - params.absorption * (1 - wetFactor) * 0.22) * access;
+                  var bloomAmount = gradient * w0 * (0.012 + paperNoise[i] * params.paper * 0.045) * (0.72 + params.bleed * 0.86) * access;
+                  var granuleShift = (granulationNoise[i] - 0.5) * settling;
+                  var fiberFix = clamp(settling + params.absorption * (1 - wetFactor) *
+                    (0.002 + paperNoise[i] * 0.006), 0, 0.065);
+                  var mixedR = clamp(pigmentR[i] + (neighborR - pigmentR[i]) * pigmentMix + pigmentR[i] * (bloomAmount + granuleShift), 0, 2.5);
+                  var mixedG = clamp(pigmentG[i] + (neighborG - pigmentG[i]) * pigmentMix + pigmentG[i] * (bloomAmount + granuleShift), 0, 2.5);
+                  var mixedB = clamp(pigmentB[i] + (neighborB - pigmentB[i]) * pigmentMix + pigmentB[i] * (bloomAmount + granuleShift), 0, 2.5);
+                  var mixedDensity = clamp(pigmentDensity[i] + (neighborDensity - pigmentDensity[i]) * pigmentMix + pigmentDensity[i] * (bloomAmount + granuleShift), 0, 2.5);
+
+                  nextWater[i] = nw;
+                  nextR[i] = mixedR * (1 - fiberFix);
+                  nextG[i] = mixedG * (1 - fiberFix);
+                  nextB[i] = mixedB * (1 - fiberFix);
+                  nextDensity[i] = mixedDensity * (1 - fiberFix);
+                  stainR[i] = clamp(stainR[i] + mixedR * fiberFix, 0, 2.5);
+                  stainG[i] = clamp(stainG[i] + mixedG * fiberFix, 0, 2.5);
+                  stainB[i] = clamp(stainB[i] + mixedB * fiberFix, 0, 2.5);
+                  stainDensity[i] = clamp(stainDensity[i] + mixedDensity * fiberFix, 0, 3.5);
+                  nextBloom[i] = clamp(gradient * 0.74 + bloom[i] * 0.42, 0, 1);
+                  nextWaterTotal += nw;
+                  if (nw > 0.004) nextWetCells++;
+                }
+              }
+
+              var swap;
+              swap = water; water = nextWater; nextWater = swap;
+              swap = pigmentR; pigmentR = nextR; nextR = swap;
+              swap = pigmentG; pigmentG = nextG; nextG = swap;
+              swap = pigmentB; pigmentB = nextB; nextB = swap;
+              swap = pigmentDensity; pigmentDensity = nextDensity; nextDensity = swap;
+              swap = bloom; bloom = nextBloom; nextBloom = swap;
+              wetCells = nextWetCells;
+              waterTotal = nextWaterTotal;
+            }
+
+            function tick(now) {
+              if (!canvas.isConnected) { running = false; return; }
+              if (paused) { running = false; render(); return; }
+              var delta = Math.min(0.12, Math.max(0, (now - lastTime) / 1000));
+              lastTime = now;
+              accumulator += delta;
+              var steps = 0;
+              while (accumulator >= STEP && steps < 4) {
+                stepSimulation();
+                accumulator -= STEP;
+                steps++;
+              }
+              if (steps > 0) render();
+              if (running && (wetCells > 0 || drawing)) frameId = requestAnimationFrame(tick);
+              else { running = false; render(); }
+            }
+
+            function ensureLoop() {
+              if (paused) { render(); return; }
+              if (running || !canvas.isConnected) return;
+              running = true;
+              lastTime = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+              frameId = requestAnimationFrame(tick);
+            }
+
+            function setCellWater(index, value) {
+              var previous = water[index];
+              var next = clamp(value, 0, 1.5);
+              water[index] = next;
+              waterTotal = Math.max(0, waterTotal + next - previous);
+              if (previous <= 0.004 && next > 0.004) wetCells++;
+              else if (previous > 0.004 && next <= 0.004) wetCells = Math.max(0, wetCells - 1);
+            }
+
+            function setCellMask(index, value) {
+              var previous = mask[index];
+              var next = clamp(value, 0, 1);
+              mask[index] = next;
+              if (previous <= 0.04 && next > 0.04) maskedCells++;
+              else if (previous > 0.04 && next <= 0.04) maskedCells = Math.max(0, maskedCells - 1);
+            }
+
+            function addDab(x, y, dynamics) {
+              if (typeof dynamics === 'number') dynamics = { pressure: dynamics };
+              dynamics = dynamics || {};
+              var brushScale = 1, waterScale = 1, pigmentScale = 1, softness = 1;
+              var clearWater = params.brush === 'water';
+              var liftPigment = params.brush === 'lift';
+              var splatter = params.brush === 'splatter';
+              var saltTexture = params.brush === 'salt';
+              var maskingFluid = params.brush === 'mask';
+              var peelMask = params.brush === 'peel';
+              if (params.brush === 'wash') { brushScale = 1.55; waterScale = 1.38; pigmentScale = 0.42; softness = 1.24; }
+              if (params.brush === 'dry') { brushScale = 0.72; waterScale = 0.22; pigmentScale = 1.15; softness = 0.72; }
+              if (clearWater) { brushScale = 1.18; waterScale = 1.62; pigmentScale = 0; softness = 1.32; }
+              if (liftPigment) { brushScale = 0.92; waterScale = 0.78; pigmentScale = 0; softness = 1.05; }
+              if (splatter) { brushScale = 1.75; waterScale = 0.78; pigmentScale = 0.82; softness = 0.68; }
+              if (saltTexture) { brushScale = 1.08; waterScale = 0; pigmentScale = 0; softness = 0.9; }
+              if (maskingFluid) { brushScale = 0.88; waterScale = 0; pigmentScale = 0; softness = 1.12; }
+              if (peelMask) { brushScale = 1.02; waterScale = 0; pigmentScale = 0; softness = 0.94; }
+              if (params.surface === 'wet') waterScale *= 1.18;
+              else { waterScale *= 0.62; pigmentScale *= 1.08; }
+
+              var safePressure = dynamics.pressure > 0 ? clamp(dynamics.pressure, 0.05, 1) : 0.7;
+              var speed = clamp(Number(dynamics.speed) || 0, 0, 1);
+              var tilt = clamp(Number(dynamics.tilt) || 0, 0, 1);
+              var brushAngle = Number(dynamics.angle) || 0;
+              var depositScale = clamp(isFinite(Number(dynamics.depositScale)) ? Number(dynamics.depositScale) : 1, 0.2, 1.4);
+              var speedDeposit = 1 - speed * 0.46;
+              waterScale *= 0.78 + speedDeposit * 0.28;
+              pigmentScale *= 0.72 + speedDeposit * 0.36;
+              var waterLoad = clamp(0.56 + reservoirWater * 0.44, 0.32, 1);
+              var pigmentLoad = clamp(0.48 + reservoirPigment * 0.52, 0.28, 1);
+              var radius = Math.max(1.5, params.size * (SIM_W / Math.max(1, canvas.width)) * brushScale * (0.72 + safePressure * 0.46));
+              var aspect = 1 + tilt * (params.brush === 'wash' ? 1.05 : 0.72);
+              var majorRadius = radius * aspect;
+              var minorRadius = radius / (1 + tilt * 0.18);
+              var extent = Math.max(majorRadius, minorRadius);
+              var angleCos = Math.cos(brushAngle), angleSin = Math.sin(brushAngle);
+              var minX = Math.max(0, Math.floor(x - extent - 1));
+              var maxX = Math.min(SIM_W - 1, Math.ceil(x + extent + 1));
+              var minY = Math.max(0, Math.floor(y - extent - 1));
+              var maxY = Math.min(SIM_H - 1, Math.ceil(y + extent + 1));
+              var color = params.color;
+
+              for (var yy = minY; yy <= maxY; yy++) {
+                for (var xx = minX; xx <= maxX; xx++) {
+                  var dx = xx - x, dy = yy - y;
+                  var rotatedX = dx * angleCos + dy * angleSin;
+                  var rotatedY = -dx * angleSin + dy * angleCos;
+                  var normalizedDistance = Math.sqrt((rotatedX * rotatedX) / (majorRadius * majorRadius) + (rotatedY * rotatedY) / (minorRadius * minorRadius));
+                  if (normalizedDistance > 1) continue;
+                  var falloff = Math.pow(1 - normalizedDistance, softness);
+                  var index = yy * SIM_W + xx;
+                  var dropletNoise = seededNoise(index * 0.91 + strokeSeed * 37.4);
+                  if (splatter && dropletNoise < 0.73) continue;
+                  if (params.brush === 'dry' && seededNoise(index * 0.23 + strokeSeed * 11.8) < 0.10 + speed * 0.18 + params.paper * 0.08) continue;
+                  var texture = 0.78 + paperNoise[index] * (0.24 + params.paper * 0.26);
+                  var deposit = falloff * texture * speedDeposit * depositScale * (splatter ? 0.42 + dropletNoise * 0.88 : 1);
+                  if (maskingFluid) {
+                    var adhesion = clamp(1 - water[index] * 0.72, 0.22, 1);
+                    setCellMask(index, mask[index] + deposit * adhesion * (0.42 + safePressure * 0.46));
+                    continue;
+                  }
+                  if (peelMask) {
+                    setCellMask(index, mask[index] - deposit * (0.62 + safePressure * 0.54));
+                    continue;
+                  }
+                  var resist = 1 - mask[index];
+                  if (resist <= 0.01) continue;
+                  deposit *= resist;
+                  if (saltTexture) {
+                    var saltCenter = clamp(1 - normalizedDistance, 0, 1);
+                    var saltRing = clamp(1 - Math.abs(normalizedDistance - 0.72) * 5.5, 0, 1);
+                    var saltLift = clamp(deposit * (0.10 + params.granulation * 0.24) * saltCenter, 0, 0.58);
+                    pigmentR[index] *= 1 - saltLift;
+                    pigmentG[index] *= 1 - saltLift;
+                    pigmentB[index] *= 1 - saltLift;
+                    pigmentDensity[index] *= 1 - saltLift;
+                    stainR[index] *= 1 - saltLift * 0.08;
+                    stainG[index] *= 1 - saltLift * 0.08;
+                    stainB[index] *= 1 - saltLift * 0.08;
+                    stainDensity[index] *= 1 - saltLift * 0.08;
+                    setCellWater(index, water[index] * (1 - saltLift * 0.22));
+                    bloom[index] = clamp(bloom[index] + saltRing * deposit * 0.34, 0, 1);
+                    continue;
+                  }
+                  var waterAmount = deposit * params.water * waterScale * 0.62 * waterLoad;
+                  var pigmentAmount = deposit * params.pigment * pigmentScale * 0.42 * (0.64 + safePressure * 0.4) * pigmentLoad;
+                  setCellWater(index, water[index] + waterAmount);
+                  if (liftPigment) {
+                    var liftAmount = clamp(deposit * (0.10 + params.water * 0.28) * (0.58 + safePressure * 0.42), 0, 0.72);
+                    pigmentR[index] *= 1 - liftAmount;
+                    pigmentG[index] *= 1 - liftAmount;
+                    pigmentB[index] *= 1 - liftAmount;
+                    pigmentDensity[index] *= 1 - liftAmount;
+                    stainR[index] *= 1 - liftAmount * 0.26;
+                    stainG[index] *= 1 - liftAmount * 0.26;
+                    stainB[index] *= 1 - liftAmount * 0.26;
+                    stainDensity[index] *= 1 - liftAmount * 0.26;
+                    bloom[index] *= 1 - liftAmount * 0.55;
+                  } else {
+                    pigmentR[index] = clamp(pigmentR[index] + color.r * pigmentAmount, 0, 2.5);
+                    pigmentG[index] = clamp(pigmentG[index] + color.g * pigmentAmount, 0, 2.5);
+                    pigmentB[index] = clamp(pigmentB[index] + color.b * pigmentAmount, 0, 2.5);
+                    pigmentDensity[index] = clamp(pigmentDensity[index] + pigmentAmount, 0, 2.5);
+                  }
+                  bloom[index] = clamp(bloom[index] + deposit * (params.paper * 0.08), 0, 1);
+                }
+              }
+              var waterDrain = params.brush === 'wash' ? 0.026 : 0.014;
+              var pigmentDrain = (clearWater || liftPigment || saltTexture || maskingFluid || peelMask) ? 0 : (params.brush === 'dry' ? 0.022 : 0.016);
+              if (!maskingFluid && !peelMask) reservoirWater = clamp(reservoirWater - waterDrain * depositScale * (0.55 + params.water * 0.7), 0.04, 1);
+              reservoirPigment = clamp(reservoirPigment - pigmentDrain * depositScale * (0.55 + params.pigment * 0.7), 0.04, 1);
+              updateStatus();
+            }
+
+            function pointFor(event) {
+              var rect = canvas.getBoundingClientRect();
+              return {
+                x: clamp((event.clientX - rect.left) * (SIM_W / Math.max(1, rect.width)), 0, SIM_W - 1),
+                y: clamp((event.clientY - rect.top) * (SIM_H / Math.max(1, rect.height)), 0, SIM_H - 1)
+              };
+            }
+
+            var engine = {
+              configure: function (nextParams, snapshotUrl) {
+                var previousBrush = params.brush;
+                var previousColor = params.color;
+                params = nextParams || params;
+                var colorChanged = !previousColor || !params.color || params.color.r !== previousColor.r ||
+                  params.color.g !== previousColor.g || params.color.b !== previousColor.b;
+                if (params.brush !== previousBrush || colorChanged) {
+                  reservoirWater = 1;
+                  reservoirPigment = 1;
+                }
+                updateA11y();
+                snapshotUrl = snapshotUrl || '';
+                if (snapshotUrl !== ignoredFlatSnapshot) {
+                  ignoredFlatSnapshot = '';
+                  loadSnapshot(snapshotUrl);
+                }
+                render();
+                setTimeout(function () { updateStatus(); updateHistoryControls(); updatePauseControl(); }, 0);
+              },
+              clear: function () {
+                pushHistory();
+                if (frameId) cancelAnimationFrame(frameId);
+                running = false; wetCells = 0; maskedCells = 0; waterTotal = 0; baseImage = null; loadedSnapshot = ''; ignoredFlatSnapshot = '';
+                reservoirWater = 1; reservoirPigment = 1;
+                strokeSeed = 1;
+                water.fill(0); nextWater.fill(0); pigmentR.fill(0); pigmentG.fill(0); pigmentB.fill(0); pigmentDensity.fill(0);
+                stainR.fill(0); stainG.fill(0); stainB.fill(0); stainDensity.fill(0);
+                nextR.fill(0); nextG.fill(0); nextB.fill(0); nextDensity.fill(0); bloom.fill(0); nextBloom.fill(0); mask.fill(0);
+                lastStatusKey = '';
+                render();
+              },
+              dry: function () {
+                pushHistory();
+                for (var di = 0; di < COUNT; di++) {
+                  stainR[di] = clamp(stainR[di] + pigmentR[di], 0, 2.5);
+                  stainG[di] = clamp(stainG[di] + pigmentG[di], 0, 2.5);
+                  stainB[di] = clamp(stainB[di] + pigmentB[di], 0, 2.5);
+                  stainDensity[di] = clamp(stainDensity[di] + pigmentDensity[di], 0, 3.5);
+                }
+                pigmentR.fill(0); pigmentG.fill(0); pigmentB.fill(0); pigmentDensity.fill(0);
+                nextR.fill(0); nextG.fill(0); nextB.fill(0); nextDensity.fill(0);
+                water.fill(0); nextWater.fill(0); wetCells = 0; waterTotal = 0;
+                lastStatusKey = '';
+                render();
+              },
+              reload: function () {
+                reservoirWater = 1;
+                reservoirPigment = 1;
+                lastStatusKey = '';
+                updateStatus();
+              },
+              removeMask: function () {
+                if (maskedCells === 0) return false;
+                pushHistory();
+                mask.fill(0);
+                maskedCells = 0;
+                lastStatusKey = '';
+                render();
+                return true;
+              },
+              togglePause: function () {
+                paused = !paused;
+                lastStatusKey = '';
+                if (paused) {
+                  if (frameId) cancelAnimationFrame(frameId);
+                  running = false;
+                  render();
+                } else if (wetCells > 0) ensureLoop();
+                updateA11y();
+                updateStatus();
+                updatePauseControl();
+                return paused;
+              },
+              dabAt: function (x, y, pressure) { pushHistory(); strokeSeed += 1; addDab(x, y, { pressure: pressure || 0.7, speed: 0.12, tilt: 0, angle: 0 }); ensureLoop(); },
+              undo: undoState,
+              redo: redoState,
+              captureState: captureState,
+              restoreState: restoreState,
+              captureSnapshot: function () { render(); return canvas.toDataURL('image/png'); }
+            };
+            canvas._watercolorEngine = engine;
+            canvas.style.touchAction = 'none';
+
+            function dynamicsForEvent(event) {
+              var pressure = Number(event.pressure);
+              if (!isFinite(pressure) || pressure <= 0) pressure = event.pointerType === 'pen' ? 0.35 : 0.68;
+              var tiltX = Number(event.tiltX) || 0;
+              var tiltY = Number(event.tiltY) || 0;
+              var tilt = clamp(Math.sqrt(tiltX * tiltX + tiltY * tiltY) / 90, 0, 1);
+              var angle = tilt > 0.02 ? Math.atan2(tiltY, tiltX) : ((Number(event.twist) || 0) * Math.PI / 180);
+              return {
+                pressure: clamp(pressure, 0.05, 1),
+                tilt: tilt,
+                angle: angle,
+                time: Number(event.timeStamp) || Date.now()
+              };
+            }
+
+            function strokeTo(x, y, dynamics) {
+              var radius = Math.max(2, params.size * (SIM_W / Math.max(1, canvas.width)) * 0.35);
+              var targetPressure = dynamics.pressure;
+              var targetTilt = dynamics.tilt;
+              var targetAngle = dynamics.angle;
+              if (lastX === null || lastY === null) {
+                addDab(x, y, { pressure: targetPressure, speed: 0, tilt: targetTilt, angle: targetAngle, depositScale: 1 });
+              }
+              else {
+                var dx = x - lastX, dy = y - lastY;
+                var distance = Math.sqrt(dx * dx + dy * dy);
+                var elapsed = Math.max(4, dynamics.time - lastStrokeTime);
+                var speed = clamp((distance / elapsed) / 0.62, 0, 1);
+                var spacing = Math.max(0.75, radius * (params.brush === 'dry' ? 0.34 : 0.46));
+                var count = Math.max(1, Math.ceil(distance / spacing));
+                var sampleScale = clamp(distance / Math.max(0.001, spacing), 0.22, 1);
+                for (var step = 1; step <= count; step++) {
+                  var amount = step / count;
+                  addDab(lastX + dx * amount, lastY + dy * amount, {
+                    pressure: lastPressure + (targetPressure - lastPressure) * amount,
+                    speed: speed,
+                    tilt: lastTilt + (targetTilt - lastTilt) * amount,
+                    angle: lastBrushAngle + (targetAngle - lastBrushAngle) * amount,
+                    depositScale: sampleScale
+                  });
+                }
+              }
+              lastX = x; lastY = y;
+              lastStrokeTime = dynamics.time;
+              lastPressure = targetPressure;
+              lastTilt = targetTilt;
+              lastBrushAngle = targetAngle;
+              ensureLoop();
+            }
+
+            function paintPointerSamples(event) {
+              var samples = typeof event.getCoalescedEvents === 'function' ? event.getCoalescedEvents() : null;
+              if (!samples || samples.length === 0) samples = [event];
+              for (var sampleIndex = 0; sampleIndex < samples.length; sampleIndex++) {
+                var sample = samples[sampleIndex];
+                var point = pointFor(sample);
+                strokeTo(point.x, point.y, dynamicsForEvent(sample));
+              }
+            }
+
+            canvas.onpointerdown = function (event) {
+              event.preventDefault(); drawing = true; lastX = null; lastY = null;
+              lastStrokeTime = 0; lastPressure = 0.7; lastTilt = 0; lastBrushAngle = 0;
+              pushHistory();
+              strokeSeed += 1;
+              try { canvas.setPointerCapture(event.pointerId); } catch (e) {}
+              paintPointerSamples(event);
+            };
+            canvas.onpointermove = function (event) {
+              if (!drawing) return;
+              event.preventDefault();
+              paintPointerSamples(event);
+            };
+            canvas.onpointerup = canvas.onpointercancel = function () {
+              drawing = false; lastX = null; lastY = null; lastStrokeTime = 0;
+            };
+            canvas.onkeydown = function (event) {
+              var historyKey = String(event.key || '').toLowerCase();
+              if (!event.ctrlKey && !event.metaKey && !event.altKey && historyKey === 'p') {
+                event.preventDefault();
+                var nowPaused = engine.togglePause();
+                if (typeof announceToSR === 'function') announceToSR(nowPaused ? 'Watercolor drying paused.' : 'Watercolor drying resumed.');
+                return;
+              }
+              if ((event.ctrlKey || event.metaKey) && historyKey === 'z') {
+                event.preventDefault();
+                var didHistoryChange = event.shiftKey ? engine.redo() : engine.undo();
+                if (typeof announceToSR === 'function') announceToSR(didHistoryChange ? (event.shiftKey ? 'Watercolor redone.' : 'Watercolor undone.') : (event.shiftKey ? 'Nothing to redo.' : 'Nothing to undo.'));
+                return;
+              }
+              if ((event.ctrlKey || event.metaKey) && historyKey === 'y') {
+                event.preventDefault();
+                var didRedo = engine.redo();
+                if (typeof announceToSR === 'function') announceToSR(didRedo ? 'Watercolor redone.' : 'Nothing to redo.');
+                return;
+              }
+              var move = Math.max(2, params.size * (SIM_W / Math.max(1, canvas.width)) * 0.55);
+              var moved = false;
+              if (event.key === 'ArrowLeft') { keyboardX = clamp(keyboardX - move, 0, SIM_W - 1); moved = true; }
+              else if (event.key === 'ArrowRight') { keyboardX = clamp(keyboardX + move, 0, SIM_W - 1); moved = true; }
+              else if (event.key === 'ArrowUp') { keyboardY = clamp(keyboardY - move, 0, SIM_H - 1); moved = true; }
+              else if (event.key === 'ArrowDown') { keyboardY = clamp(keyboardY + move, 0, SIM_H - 1); moved = true; }
+              else if (event.key === 'Home') { keyboardX = 0; keyboardY = 0; moved = true; }
+              else if (event.key === 'End') { keyboardX = SIM_W - 1; keyboardY = SIM_H - 1; moved = true; }
+              if (moved) {
+                event.preventDefault();
+                if (typeof announceToSR === 'function') announceToSR('Watercolor cursor at column ' + Math.round(keyboardX + 1) + ', row ' + Math.round(keyboardY + 1) + '.');
+                return;
+              }
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                engine.dabAt(keyboardX, keyboardY, 0.7);
+                if (typeof announceToSR === 'function') announceToSR('Watercolor dab placed at column ' + Math.round(keyboardX + 1) + ', row ' + Math.round(keyboardY + 1) + '.');
+              }
+            };
+
+            var incomingSnapshot = d.watercolorSnapshot || '';
+            var cachedState = _artStudioWatercolorCache.state;
+            if (cachedState && cachedState.flatSnapshot === incomingSnapshot) {
+              ignoredFlatSnapshot = incomingSnapshot;
+              params = readParams();
+              updateA11y();
+              restoreState(cachedState);
+              setTimeout(function () { updateStatus(); updateHistoryControls(); updatePauseControl(); }, 0);
+            } else {
+              _artStudioWatercolorCache.state = null;
+              _artStudioWatercolorCache.undo.length = 0;
+              _artStudioWatercolorCache.redo.length = 0;
+              engine.configure(readParams(), incomingSnapshot);
+            }
           };
 
 
@@ -1548,18 +2469,25 @@ const d = labToolData.artStudio || {};
 
               React.createElement("button", { onClick: function () { setStemLabTool('archStudio'); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border border-amber-600 hover:from-amber-200 hover:to-orange-200 transition-all shadow-sm", title: __alloT('stem.artstudio.launch_3d_architecture_studio', "Launch 3D Architecture Studio") }, __alloT('stem.artstudio.3d_builder', "\uD83C\uDFD7\uFE0F 3D Builder \u2192")),
 
-              React.createElement("button", { onClick: function () { upd('showTour', !d.showTour); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.showTour ? "bg-pink-600 text-white" : "transition-colors bg-pink-50 text-pink-700 border border-pink-700 hover:bg-pink-100") + " transition-all shadow-sm", "aria-label": __alloT('stem.artstudio.toggle_studio_tour', "Toggle studio tour") }, d.showTour ? "\u2716 Close Tour" : "\uD83C\uDFA8 Tour")
+              React.createElement("button", { onClick: function () { upd('showTour', !d.showTour); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.showTour ? "bg-pink-600 text-white" : "transition-colors bg-pink-50 text-pink-700 border border-pink-700 hover:bg-pink-100") + " transition-all shadow-sm", "aria-label": __alloT('stem.artstudio.toggle_studio_tour', "Toggle studio tour") }, d.showTour ? "\u2716 Close Tour" : "\uD83C\uDFA8 Tour"),
+
+              typeof onUseArtwork === 'function' && React.createElement("div", { className: "flex items-center gap-1.5 ml-auto", role: "group", "aria-label": "Use this artwork" },
+                React.createElement("span", { className: "text-[10px] font-bold text-slate-500 hidden sm:inline" }, "Use artwork:"),
+                React.createElement("button", { type: "button", onClick: function () { sendArtworkTo('page-designer'); }, className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-indigo-50 text-indigo-800 border border-indigo-300 hover:bg-indigo-100 transition-colors", title: "Insert this static image into Page Designer" }, "↗ Page Designer"),
+                React.createElement("button", { type: "button", onClick: function () { sendArtworkTo('visual-support'); }, className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-violet-50 text-violet-800 border border-violet-300 hover:bg-violet-100 transition-colors", title: "Save this static image as a Visual Support" }, "＋ Visual Support")
+              )
 
             ),
 
             /* ── Art Studio Tour/Welcome Panel ── */
             d.showTour && React.createElement("div", { className: "mb-4 bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 rounded-xl border-2 border-pink-200 p-4 animate-in fade-in duration-200" },
               React.createElement("h4", { className: "text-sm font-black text-pink-800 mb-3 flex items-center gap-2" }, __alloT('stem.artstudio.welcome_to_the_art_design_studio', "\uD83C\uDFA8 Welcome to the Art & Design Studio!")),
-              React.createElement("p", { className: "text-xs text-slate-600 mb-3 leading-relaxed" }, __alloT('stem.artstudio.explore_15_interactive_tools_that_teac', "Explore 15 interactive tools that teach color theory, mathematical art, generative design, and visual accessibility. Each tab is a different creative canvas. Here\u2019s what you can create:")),
+              React.createElement("p", { className: "text-xs text-slate-600 mb-3 leading-relaxed" }, __alloT('stem.artstudio.explore_15_interactive_tools_that_teac', "Explore 16 interactive tools that teach color theory, mathematical art, generative design, and visual accessibility. Each tab is a different creative canvas. Here\u2019s what you can create:")),
               React.createElement("div", { className: "grid grid-cols-3 sm:grid-cols-5 gap-2 mb-3" },
                 [
                   { icon: '\uD83C\uDFA8', name: __alloT('stem.artstudio.color_wheel', 'Color Wheel'), desc: __alloT('stem.artstudio.explore_hsl_color_space_interactively', 'Explore HSL color space interactively') },
                   { icon: '\uD83E\uDDEA', name: __alloT('stem.artstudio.color_mixer', 'Color Mixer'), desc: __alloT('stem.artstudio.mix_paints_with_subtractive_color_theo', 'Mix paints with subtractive color theory') },
+                  { icon: '\uD83C\uDFA8', name: __alloT('stem.artstudio.watercolor', 'Watercolor'), desc: __alloT('stem.artstudio.simulate_watercolor_diffusion_and_paper', 'Simulate pigment, water, and paper texture') },
                   { icon: '\uD83D\uDDBC', name: __alloT('stem.artstudio.pixel_art', 'Pixel Art'), desc: __alloT('stem.artstudio.create_pixel_art_on_a_grid_canvas', 'Create pixel art on a grid canvas') },
                   { icon: '\u2728', name: __alloT('stem.artstudio.symmetry', 'Symmetry'), desc: __alloT('stem.artstudio.draw_with_rotational_reflective_symmet', 'Draw with rotational & reflective symmetry') },
                   { icon: '\uD83C\uDF00', name: __alloT('stem.artstudio.spirograph', 'Spirograph'), desc: __alloT('stem.artstudio.mathematical_spiral_patterns_hypotroch', 'Mathematical spiral patterns (hypotrochoids)') },
@@ -1593,9 +2521,9 @@ const d = labToolData.artStudio || {};
 
             React.createElement("div", { className: "flex gap-1 mb-4 bg-slate-50 p-1 rounded-xl border border-slate-400", role: 'tablist', 'aria-label': __alloT('stem.artstudio.art_studio_sections', 'Art Studio sections') },
 
-              [{ id: 'colorWheel', icon: '\uD83C\uDFA8', label: __alloT('stem.artstudio.color_wheel_2', 'Color Wheel') }, { id: 'mixer', icon: '\uD83E\uDDEA', label: __alloT('stem.artstudio.color_mixer_2', 'Color Mixer') }, { id: 'pixel', icon: '\uD83D\uDDBC', label: __alloT('stem.artstudio.pixel_art_2', 'Pixel Art') }, { id: 'symmetry', icon: '\u2728', label: __alloT('stem.artstudio.symmetry_2', 'Symmetry') }, { id: 'spirograph', icon: '\uD83C\uDF00', label: __alloT('stem.artstudio.spirograph_2', 'Spirograph') }, { id: 'generative', icon: '\uD83C\uDF86', label: __alloT('stem.artstudio.generative_2', 'Generative') }, { id: 'spinArt', icon: '\uD83C\uDF00', label: __alloT('stem.artstudio.spin_art_2', 'Spin Art') }, { id: 'stringArt', icon: '\uD83D\uDD78', label: __alloT('stem.artstudio.string_art_2', 'String Art') }, { id: 'opArt', icon: '\uD83D\uDC41', label: __alloT('stem.artstudio.op_art_2', 'Op Art') }, { id: 'tessellation', icon: '\uD83D\uDD37', label: __alloT('stem.artstudio.tessellation_2', 'Tessellation') }, { id: 'fractal', icon: '\uD83D\uDD2E', label: __alloT('stem.artstudio.fractals_2', 'Fractals') }, { id: 'gradient', icon: '\uD83C\uDF08', label: __alloT('stem.artstudio.gradient_2', 'Gradient') }, { id: 'stereogram', icon: '\uD83D\uDC53', label: __alloT('stem.artstudio.stereogram_2', 'Stereogram') }, { id: 'sculpt3d', icon: '\uD83D\uDDFF', label: __alloT('stem.artstudio.sculpt_3d', 'Sculpt 3D') }, { id: 'contrast', icon: '\u267F', label: __alloT('stem.artstudio.contrast_2', 'Contrast') }, { id: 'harmonyHunt', icon: '\uD83C\uDFB6', label: __alloT('stem.artstudio.harmony', 'Harmony') }].map(function (tb, tabIndex) {
+              [{ id: 'colorWheel', icon: '\uD83C\uDFA8', label: __alloT('stem.artstudio.color_wheel_2', 'Color Wheel') }, { id: 'mixer', icon: '\uD83E\uDDEA', label: __alloT('stem.artstudio.color_mixer_2', 'Color Mixer') }, { id: 'watercolor', icon: '\uD83C\uDFA8', label: __alloT('stem.artstudio.watercolor_2', 'Watercolor') }, { id: 'pixel', icon: '\uD83D\uDDBC', label: __alloT('stem.artstudio.pixel_art_2', 'Pixel Art') }, { id: 'symmetry', icon: '\u2728', label: __alloT('stem.artstudio.symmetry_2', 'Symmetry') }, { id: 'spirograph', icon: '\uD83C\uDF00', label: __alloT('stem.artstudio.spirograph_2', 'Spirograph') }, { id: 'generative', icon: '\uD83C\uDF86', label: __alloT('stem.artstudio.generative_2', 'Generative') }, { id: 'spinArt', icon: '\uD83C\uDF00', label: __alloT('stem.artstudio.spin_art_2', 'Spin Art') }, { id: 'stringArt', icon: '\uD83D\uDD78', label: __alloT('stem.artstudio.string_art_2', 'String Art') }, { id: 'opArt', icon: '\uD83D\uDC41', label: __alloT('stem.artstudio.op_art_2', 'Op Art') }, { id: 'tessellation', icon: '\uD83D\uDD37', label: __alloT('stem.artstudio.tessellation_2', 'Tessellation') }, { id: 'fractal', icon: '\uD83D\uDD2E', label: __alloT('stem.artstudio.fractals_2', 'Fractals') }, { id: 'gradient', icon: '\uD83C\uDF08', label: __alloT('stem.artstudio.gradient_2', 'Gradient') }, { id: 'stereogram', icon: '\uD83D\uDC53', label: __alloT('stem.artstudio.stereogram_2', 'Stereogram') }, { id: 'sculpt3d', icon: '\uD83D\uDDFF', label: __alloT('stem.artstudio.sculpt_3d', 'Sculpt 3D') }, { id: 'contrast', icon: '\u267F', label: __alloT('stem.artstudio.contrast_2', 'Contrast') }, { id: 'harmonyHunt', icon: '\uD83C\uDFB6', label: __alloT('stem.artstudio.harmony', 'Harmony') }].map(function (tb, tabIndex) {
 
-                return React.createElement("button", { "aria-label": 'Switch to ' + tb.label + ' tab', key: tb.id, id: 'artstudio-tab-' + tb.id, 'aria-controls': 'artstudio-panel-' + tb.id, onClick: function () { upd('tab', tb.id); if (typeof canvasNarrate === 'function') canvasNarrate('artStudio', 'tabSwitch', 'Switched to ' + tb.label + ' canvas tool.', { debounce: 500 }); }, role: 'tab', 'aria-selected': tab === tb.id, tabIndex: tab === tb.id ? 0 : -1, onKeyDown: function (e) { artStudioTabKeyDown(e, tabIndex); }, className: "flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all " + (tab === tb.id ? 'bg-white shadow-md text-pink-700' : 'text-slate-600 hover:text-slate-700 hover:bg-white/50') }, tb.icon + ' ' + tb.label);
+                return React.createElement("button", { "aria-label": 'Switch to ' + tb.label + ' tab', key: tb.id, id: 'artstudio-tab-' + tb.id, 'aria-controls': 'artstudio-panel-' + tb.id, onClick: function () { selectArtStudioTab(tb.id, tb.label); }, role: 'tab', 'aria-selected': tab === tb.id, tabIndex: tab === tb.id ? 0 : -1, onKeyDown: function (e) { artStudioTabKeyDown(e, tabIndex); }, className: "flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all " + (tab === tb.id ? 'bg-white shadow-md text-pink-700' : 'text-slate-600 hover:text-slate-700 hover:bg-white/50') }, tb.icon + ' ' + tb.label);
 
               })
 
@@ -1606,6 +2534,7 @@ const d = labToolData.artStudio || {};
               var TAB_META = {
                 colorWheel:   { accent: '#db2777', soft: 'rgba(219,39,119,0.10)', icon: '\uD83C\uDFA8', title: __alloT('stem.artstudio.color_wheel_hsl_hsv_complementary_pair', 'Color Wheel \u2014 HSL/HSV + complementary pairs'),           hint: __alloT('stem.artstudio.hue_0_360_around_the_wheel_saturation_', 'Hue (0-360 around the wheel), saturation (purity), lightness (brightness). Complementary across, analogous adjacent, triadic 120\u00b0 apart. Newton put the spectrum on a wheel in 1666.') },
                 mixer:        { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83E\uDDEA', title: __alloT('stem.artstudio.color_mixer_subtractive_vs_additive', 'Color Mixer \u2014 subtractive vs additive'),                  hint: __alloT('stem.artstudio.paint_and_print_subtractive_cmy_mixes_', 'Paint and print = subtractive (CMY mixes to dark); light and screens = additive (RGB mixes to white). Same world, completely different math \u2014 a printer thinks in K plates, a TV thinks in Hz.') },
+                watercolor:   { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)', icon: '\uD83C\uDFA8', title: __alloT('stem.artstudio.watercolor_simulation', 'Watercolor \u2014 pigment, water, and paper'),                 hint: __alloT('stem.artstudio.watercolor_simulation_hint', 'Water carries pigment across paper; as the brush unloads and water evaporates, clustered pigment creates granulation and darker drying edges. Try a wash, then a dry brush.') },
                 pixel:        { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDDBC',  title: __alloT('stem.artstudio.pixel_art_bitmap_craft_at_8_8_to_32_32', 'Pixel Art \u2014 bitmap craft at 8\u00d78 to 32\u00d732'),          hint: __alloT('stem.artstudio.each_pixel_is_a_deliberate_decision_ne', 'Each pixel is a deliberate decision. NES sprites famously fit a hero into 16\u00d716 with a 4-color palette. Bresenham\u2019s line algorithm draws diagonals without floats.') },
                 symmetry:     { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\u2728',         title: __alloT('stem.artstudio.symmetry_reflection_rotation_glide', 'Symmetry \u2014 reflection, rotation, glide'),                hint: __alloT('stem.artstudio.bilateral_mirror_rotational_n_fold_poi', 'Bilateral (mirror), rotational (n-fold), point. The 17 wallpaper groups classify every possible repeating 2D pattern \u2014 Escher\u2019s entire body of work.') },
                 spirograph:   { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83C\uDF00', title: __alloT('stem.artstudio.spirograph_hypotrochoid_roulettes', 'Spirograph \u2014 hypotrochoid roulettes'),                  hint: __alloT('stem.artstudio.a_small_circle_rolls_inside_a_big_one_', 'A small circle rolls inside a big one, pen offset from center. Ratio of radii determines petal count; offset sets thickness. Toy patented 1965, math from 1700s.') },
@@ -1754,6 +2683,76 @@ const d = labToolData.artStudio || {};
 
                 )
 
+              )
+
+            ),
+
+            tab === 'watercolor' && React.createElement("div", { className: "space-y-3" },
+
+              React.createElement("div", { className: "flex items-center gap-2 flex-wrap bg-teal-50 rounded-xl p-3 border border-teal-200" },
+                React.createElement("label", { htmlFor: "artstudio-watercolor-color", className: "text-xs font-bold text-teal-800" }, __alloT('stem.artstudio.watercolor_color', "Pigment color")),
+                React.createElement("input", { id: "artstudio-watercolor-color", type: "color", value: d.watercolorColor || '#2f6fb0', onChange: function (e) { upd('watercolorColor', e.target.value); }, 'aria-label': __alloT('stem.artstudio.watercolor_color', "Pigment color"), className: "h-8 w-12 rounded cursor-pointer border border-teal-300 bg-white" }),
+                React.createElement("div", { className: "flex gap-1 ml-auto flex-wrap" },
+                  [{ color: '#2f6fb0', label: 'Ultramarine' }, { color: '#b4233c', label: 'Crimson' }, { color: '#c48a28', label: 'Ochre' }, { color: '#2f8063', label: 'Viridian' }, { color: '#453b72', label: 'Violet' }].map(function (swatch) {
+                    return React.createElement("button", { key: swatch.color, type: "button", onClick: function () { upd('watercolorColor', swatch.color); }, 'aria-label': 'Choose ' + swatch.label + ' watercolor', 'aria-pressed': (d.watercolorColor || '#2f6fb0').toLowerCase() === swatch.color, className: "h-7 w-7 rounded-full border-2 transition-transform hover:scale-110 " + ((d.watercolorColor || '#2f6fb0').toLowerCase() === swatch.color ? 'border-slate-900 scale-110' : 'border-white'), style: { background: swatch.color, boxShadow: '0 1px 3px rgba(0,0,0,0.25)' } });
+                  })
+                )
+              ),
+
+              React.createElement("div", { className: "flex items-center gap-2 flex-wrap" },
+                React.createElement("span", { className: "text-xs font-bold text-slate-600" }, __alloT('stem.artstudio.watercolor_brush', "Brush:")),
+                [{ id: 'round', icon: '\uD83D\uDD8C', label: __alloT('stem.artstudio.round_brush', 'Round') }, { id: 'wash', icon: '\uD83D\uDCA7', label: __alloT('stem.artstudio.wash_brush', 'Wash') }, { id: 'dry', icon: '\uD83C\uDF2C', label: __alloT('stem.artstudio.dry_brush', 'Dry') }, { id: 'water', icon: '\uD83D\uDCA6', label: __alloT('stem.artstudio.clear_water_brush', 'Clear water') }, { id: 'lift', icon: '\u2728', label: __alloT('stem.artstudio.lift_brush', 'Lift') }, { id: 'splatter', icon: '\u2726', label: __alloT('stem.artstudio.splatter_brush', 'Splatter') }, { id: 'salt', icon: '\u2744', label: __alloT('stem.artstudio.salt_texture_brush', 'Salt texture') }, { id: 'mask', icon: '\u25C7', label: __alloT('stem.artstudio.masking_fluid_brush', 'Masking fluid') }, { id: 'peel', icon: '\u25CC', label: __alloT('stem.artstudio.peel_mask_brush', 'Peel mask') }].map(function (brush) {
+                  return React.createElement("button", { type: "button", key: brush.id, "aria-pressed": (d.watercolorBrush || 'round') === brush.id, onClick: function () { upd('watercolorBrush', brush.id); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.watercolorBrush || 'round') === brush.id ? 'bg-teal-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-teal-50') }, brush.icon + ' ' + brush.label);
+                }),
+                React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-2" }, __alloT('stem.artstudio.watercolor_surface', "Paper:")),
+                [{ id: 'wet', label: __alloT('stem.artstudio.wet_on_wet', 'Wet-on-wet') }, { id: 'dry', label: __alloT('stem.artstudio.wet_on_dry', 'Wet-on-dry') }].map(function (surface) {
+                  return React.createElement("button", { type: "button", key: surface.id, "aria-pressed": (d.watercolorSurface || 'wet') === surface.id, onClick: function () { upd('watercolorSurface', surface.id); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.watercolorSurface || 'wet') === surface.id ? 'bg-cyan-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-cyan-50') }, surface.label);
+                }),
+                React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-2" }, __alloT('stem.artstudio.watercolor_flow', "Flow:")),
+                [{ id: 'down', label: '↓ Down' }, { id: 'right', label: '→ Right' }, { id: 'left', label: '← Left' }, { id: 'up', label: '↑ Up' }, { id: 'none', label: __alloT('stem.artstudio.no_flow', 'Still') }].map(function (direction) {
+                  return React.createElement("button", { type: "button", key: direction.id, "aria-pressed": (d.watercolorFlowDirection || 'down') === direction.id, onClick: function () { upd('watercolorFlowDirection', direction.id); }, className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.watercolorFlowDirection || 'down') === direction.id ? 'bg-indigo-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-indigo-50') }, direction.label);
+                })
+              ),
+
+              React.createElement("div", { className: "flex items-center gap-2 flex-wrap bg-indigo-50 rounded-xl p-2 border border-indigo-200" },
+                React.createElement("span", { className: "text-xs font-bold text-indigo-800" }, __alloT('stem.artstudio.paper_presets', "Paper preset:")),
+                [{ id: 'hot', label: __alloT('stem.artstudio.hot_press', 'Hot press'), values: { watercolorPaper: 18, watercolorGranulation: 22, watercolorAbsorption: 38, watercolorBleed: 58, watercolorDrying: 46 } }, { id: 'cold', label: __alloT('stem.artstudio.cold_press', 'Cold press'), values: { watercolorPaper: 48, watercolorGranulation: 54, watercolorAbsorption: 52, watercolorBleed: 62, watercolorDrying: 50 } }, { id: 'rough', label: __alloT('stem.artstudio.rough_paper', 'Rough'), values: { watercolorPaper: 82, watercolorGranulation: 84, watercolorAbsorption: 72, watercolorBleed: 46, watercolorDrying: 66 } }].map(function (preset) {
+                  return React.createElement("button", { type: "button", key: preset.id, onClick: function () { Object.keys(preset.values).forEach(function (key) { upd(key, preset.values[key]); }); if (typeof announceToSR === 'function') announceToSR(preset.label + ' paper preset applied.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-100" }, preset.label);
+                })
+              ),
+
+              React.createElement("div", { className: "grid grid-cols-2 lg:grid-cols-5 gap-2 bg-slate-50 rounded-xl p-3 border border-slate-200" },
+                [{ key: 'watercolorSize', label: __alloT('stem.artstudio.brush_size', 'Brush size'), min: 8, max: 80, fallback: 28, unit: 'px' }, { key: 'watercolorWater', label: __alloT('stem.artstudio.water_amount', 'Water'), min: 0, max: 100, fallback: 72, unit: '%' }, { key: 'watercolorPigment', label: __alloT('stem.artstudio.pigment_amount', 'Pigment'), min: 0, max: 100, fallback: 68, unit: '%' }, { key: 'watercolorPaper', label: __alloT('stem.artstudio.paper_texture', 'Paper texture'), min: 0, max: 100, fallback: 48, unit: '%' }, { key: 'watercolorGranulation', label: __alloT('stem.artstudio.granulation', 'Granulation'), min: 0, max: 100, fallback: 54, unit: '%' }, { key: 'watercolorBleed', label: __alloT('stem.artstudio.bleed', 'Bleed'), min: 0, max: 100, fallback: 62, unit: '%' }, { key: 'watercolorAbsorption', label: __alloT('stem.artstudio.absorption', 'Absorption'), min: 0, max: 100, fallback: 52, unit: '%' }, { key: 'watercolorDrying', label: __alloT('stem.artstudio.drying_rate', 'Drying rate'), min: 0, max: 100, fallback: 50, unit: '%' }, { key: 'watercolorFlowStrength', label: __alloT('stem.artstudio.tilt_strength', 'Tilt strength'), min: 0, max: 100, fallback: 60, unit: '%' }].map(function (control) {
+                  var value = Number(d[control.key]);
+                  if (!isFinite(value)) value = control.fallback;
+                  return React.createElement("label", { key: control.key, className: "text-[11px] font-bold text-slate-600" },
+                    control.label + ': ' + Math.round(value) + control.unit,
+                    React.createElement("input", { type: "range", min: control.min, max: control.max, value: value, 'aria-label': control.label, onChange: function (e) { upd(control.key, parseInt(e.target.value)); }, className: "block w-full accent-teal-700 mt-1" })
+                  );
+                })
+              ),
+
+              React.createElement("div", { className: "rounded-xl border-2 border-teal-200 bg-[#f8f7f1] p-2 shadow-lg" },
+                React.createElement("canvas", { id: "watercolorCanvas", tabIndex: 0, ref: watercolorRef, width: 512, height: 512, role: "img", 'aria-label': 'Watercolor painting canvas. Focus and use Arrow keys to move the brush, then press Enter or Space to dab.', 'aria-describedby': "artstudio-watercolor-keyboard-help artstudio-watercolor-status", 'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Home End Enter Space P Control+Z Control+Y Meta+Z Meta+Y", className: "rounded-lg cursor-crosshair mx-auto block w-full max-w-[640px] focus-visible:ring-4 focus-visible:ring-teal-700 focus-visible:ring-offset-2", style: { aspectRatio: '1 / 1', touchAction: 'none' } })
+              ),
+
+              React.createElement("p", { id: "artstudio-watercolor-keyboard-help", className: "text-[11px] text-slate-600 text-center" }, __alloT('stem.artstudio.watercolor_keyboard_help', "Draw with a pointer or stylus; pressure, tilt, and stroke speed shape the mark. Focus the canvas and use Arrow keys to move; press Enter or Space to dab, P to pause drying, and Ctrl/Command+Z to undo.")),
+
+              React.createElement("div", { id: "artstudio-watercolor-status", role: "status", 'aria-live': "polite", 'aria-atomic': "true", className: "text-[11px] font-semibold text-teal-900 text-center bg-teal-50 rounded-lg border border-teal-200 px-3 py-2" }, "Paper: Dry | active area 0%. Brush load: 100% water | 100% pigment. Masked area: 0%. Drying active."),
+
+              React.createElement("div", { className: "flex gap-2 flex-wrap" },
+                React.createElement("button", { id: "artstudio-watercolor-undo", type: "button", disabled: true, onClick: function () { var c = document.getElementById('watercolorCanvas'); var changed = !!(c && c._watercolorEngine && c._watercolorEngine.undo()); if (typeof announceToSR === 'function') announceToSR(changed ? 'Watercolor undone.' : 'Nothing to undo.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-violet-50 text-violet-800 border border-violet-200 hover:bg-violet-100 disabled:opacity-40 disabled:cursor-not-allowed" }, __alloT('stem.artstudio.undo_watercolor', "Undo")),
+                React.createElement("button", { id: "artstudio-watercolor-redo", type: "button", disabled: true, onClick: function () { var c = document.getElementById('watercolorCanvas'); var changed = !!(c && c._watercolorEngine && c._watercolorEngine.redo()); if (typeof announceToSR === 'function') announceToSR(changed ? 'Watercolor redone.' : 'Nothing to redo.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-violet-50 text-violet-800 border border-violet-200 hover:bg-violet-100 disabled:opacity-40 disabled:cursor-not-allowed" }, __alloT('stem.artstudio.redo_watercolor', "Redo")),
+                React.createElement("button", { id: "artstudio-watercolor-pause", type: "button", 'aria-pressed': false, 'data-pause-label': __alloT('stem.artstudio.pause_watercolor_drying', "Pause drying"), 'data-resume-label': __alloT('stem.artstudio.resume_watercolor_drying', "Resume drying"), onClick: function () { var c = document.getElementById('watercolorCanvas'); var isPaused = !!(c && c._watercolorEngine && c._watercolorEngine.togglePause()); if (typeof announceToSR === 'function') announceToSR(isPaused ? 'Watercolor drying paused.' : 'Watercolor drying resumed.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-cyan-50 text-cyan-800 border border-cyan-200 hover:bg-cyan-100" }, __alloT('stem.artstudio.pause_watercolor_drying', "Pause drying")),
+                React.createElement("button", { id: "artstudio-watercolor-remove-mask", type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); var changed = !!(c && c._watercolorEngine && c._watercolorEngine.removeMask()); if (typeof announceToSR === 'function') announceToSR(changed ? 'All watercolor masking fluid removed.' : 'No masking fluid to remove.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-50 text-slate-700 border border-slate-300 hover:bg-slate-100" }, __alloT('stem.artstudio.remove_all_masking_fluid', "Remove all mask")),
+                React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (c && c._watercolorEngine) c._watercolorEngine.clear(); upd('watercolorSnapshot', ''); if (typeof announceToSR === 'function') announceToSR('Watercolor canvas cleared.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 border border-red-200 hover:bg-red-100" }, __alloT('stem.artstudio.clear_watercolor', "Clear")),
+                React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (c && c._watercolorEngine) c._watercolorEngine.reload(); if (typeof announceToSR === 'function') announceToSR('Watercolor brush reloaded.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-50 text-sky-800 border border-sky-200 hover:bg-sky-100" }, __alloT('stem.artstudio.reload_watercolor_brush', "Reload brush")),
+                React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (c && c._watercolorEngine) c._watercolorEngine.dry(); if (typeof announceToSR === 'function') announceToSR('Watercolor dried.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100" }, __alloT('stem.artstudio.dry_watercolor', "Dry paint")),
+                React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'watercolor-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 Watercolor PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR('Watercolor PNG exported.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, __alloT('stem.artstudio.export_watercolor_png', "Export PNG"))
+              ),
+
+              React.createElement("div", { className: "bg-teal-50 rounded-xl p-3 border border-teal-200" },
+                React.createElement("p", { className: "text-[11px] text-teal-900 leading-relaxed" }, React.createElement("strong", null, __alloT('stem.artstudio.watercolor_science', "Why it looks wet: ")), __alloT('stem.artstudio.watercolor_science_desc', "Water diffuses pigment into nearby paper fibers. Slow, pressured strokes deposit more paint while stylus tilt spreads the brush footprint. Optical absorption deepens overlapping colors, and masking fluid forms a temporary barrier that preserves clean paper until peeled away. Drying rate controls evaporation while tilt strength controls gravity. Clear water, lifting, salt, texture, staining, blooms, and tide marks remain physically layered."))
               )
 
             ),

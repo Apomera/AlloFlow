@@ -1,7 +1,7 @@
 /**
  * AlloFlow — UI Font Library Module
  *
- * Holds the FONT_OPTIONS catalog (20 font families) and a self-contained
+ * Holds the FONT_OPTIONS catalog and a self-contained
  * CSS injection IIFE that loads the Google Fonts <link> and defines the
  * `.font-<id>` utility classes used throughout the app, plus responsive
  * and accessibility fixes that ride along.
@@ -28,6 +28,13 @@
 
 const FONT_OPTIONS = [
     { id: 'default', label: 'Default (System)', family: "", cssClass: '', category: 'default' },
+    // Cross-platform stacks keep working in offline and no-egress deployments.
+    { id: 'verdana', label: 'Verdana', family: "Verdana, Geneva, sans-serif", cssClass: 'font-verdana', googleFont: null, category: 'accessibility' },
+    { id: 'tahoma', label: 'Tahoma', family: "Tahoma, Verdana, sans-serif", cssClass: 'font-tahoma', googleFont: null, category: 'accessibility' },
+    { id: 'trebuchet', label: 'Trebuchet MS', family: "'Trebuchet MS', 'Segoe UI', sans-serif", cssClass: 'font-trebuchet', googleFont: null, category: 'sans-serif' },
+    { id: 'georgia', label: 'Georgia', family: "Georgia, 'Times New Roman', serif", cssClass: 'font-georgia', googleFont: null, category: 'serif' },
+    { id: 'palatino', label: 'Palatino', family: "Palatino, 'Palatino Linotype', 'Book Antiqua', Georgia, serif", cssClass: 'font-palatino', googleFont: null, category: 'serif' },
+    { id: 'courier', label: 'Courier New', family: "'Courier New', Courier, monospace", cssClass: 'font-courier', googleFont: null, category: 'monospace' },
     { id: 'opendyslexic', label: 'OpenDyslexic', family: "'OpenDyslexic', sans-serif", cssClass: 'font-opendyslexic', googleFont: null, category: 'accessibility' },
     { id: 'lexend', label: 'Lexend', family: "'Lexend', sans-serif", cssClass: 'font-lexend', googleFont: 'Lexend:wght@400;500;700', category: 'accessibility' },
     { id: 'atkinson', label: 'Atkinson Hyperlegible', family: "'Atkinson Hyperlegible', sans-serif", cssClass: 'font-atkinson', googleFont: 'Atkinson+Hyperlegible:wght@400;700', category: 'accessibility' },
@@ -38,11 +45,16 @@ const FONT_OPTIONS = [
     { id: 'andika', label: 'Andika (SIL)', family: "'Andika', sans-serif", cssClass: 'font-andika', googleFont: 'Andika:ital,wght@0,400;0,700;1,400;1,700', category: 'accessibility' },
     { id: 'andika-italic', label: 'Andika Italic (SIL)', family: "'Andika', sans-serif", cssClass: 'font-andika-italic', googleFont: null, category: 'accessibility' },
     { id: 'andika-bold-italic', label: 'Andika Bold Italic (SIL)', family: "'Andika', sans-serif", cssClass: 'font-andika-bold-italic', googleFont: null, category: 'accessibility' },
+    { id: 'noto-sans', label: 'Noto Sans', family: "'Noto Sans', sans-serif", cssClass: 'font-noto-sans', googleFont: 'Noto+Sans:wght@400;500;600;700', category: 'language' },
+    { id: 'noto-serif', label: 'Noto Serif', family: "'Noto Serif', serif", cssClass: 'font-noto-serif', googleFont: 'Noto+Serif:wght@400;500;600;700', category: 'language' },
     { id: 'inter', label: 'Inter', family: "'Inter', sans-serif", cssClass: 'font-inter', googleFont: 'Inter:wght@400;500;600;700', category: 'sans-serif' },
     { id: 'roboto', label: 'Roboto', family: "'Roboto', sans-serif", cssClass: 'font-roboto', googleFont: 'Roboto:wght@400;500;700', category: 'sans-serif' },
     { id: 'opensans', label: 'Open Sans', family: "'Open Sans', sans-serif", cssClass: 'font-opensans', googleFont: 'Open+Sans:wght@400;600;700', category: 'sans-serif' },
     { id: 'lato', label: 'Lato', family: "'Lato', sans-serif", cssClass: 'font-lato', googleFont: 'Lato:wght@400;700', category: 'sans-serif' },
     { id: 'nunito', label: 'Nunito', family: "'Nunito', sans-serif", cssClass: 'font-nunito', googleFont: 'Nunito:wght@400;600;700', category: 'sans-serif' },
+    { id: 'nunito-sans', label: 'Nunito Sans', family: "'Nunito Sans', sans-serif", cssClass: 'font-nunito-sans', googleFont: 'Nunito+Sans:wght@400;600;700', category: 'sans-serif' },
+    { id: 'fira-sans', label: 'Fira Sans', family: "'Fira Sans', sans-serif", cssClass: 'font-fira-sans', googleFont: 'Fira+Sans:wght@400;500;600;700', category: 'sans-serif' },
+    { id: 'ubuntu', label: 'Ubuntu', family: "'Ubuntu', sans-serif", cssClass: 'font-ubuntu', googleFont: 'Ubuntu:wght@400;500;700', category: 'sans-serif' },
     { id: 'sourcesans', label: 'Source Sans 3', family: "'Source Sans 3', sans-serif", cssClass: 'font-sourcesans', googleFont: 'Source+Sans+3:wght@400;600;700', category: 'sans-serif' },
     { id: 'poppins', label: 'Poppins', family: "'Poppins', sans-serif", cssClass: 'font-poppins', googleFont: 'Poppins:wght@400;500;600;700', category: 'modern' },
     { id: 'montserrat', label: 'Montserrat', family: "'Montserrat', sans-serif", cssClass: 'font-montserrat', googleFont: 'Montserrat:wght@400;500;600;700', category: 'modern' },
@@ -52,7 +64,11 @@ const FONT_OPTIONS = [
     { id: 'merriweather', label: 'Merriweather', family: "'Merriweather', serif", cssClass: 'font-merriweather', googleFont: 'Merriweather:wght@400;700', category: 'serif' },
     { id: 'gentium', label: 'Gentium Plus', family: "'Gentium Book Plus', serif", cssClass: 'font-gentium', googleFont: 'Gentium+Book+Plus:wght@400;700', category: 'serif' },
     { id: 'lora', label: 'Lora', family: "'Lora', serif", cssClass: 'font-lora', googleFont: 'Lora:wght@400;500;700', category: 'serif' },
-    { id: 'playfair', label: 'Playfair Display', family: "'Playfair Display', serif", cssClass: 'font-playfair', googleFont: 'Playfair+Display:wght@400;500;700', category: 'serif' }
+    { id: 'playfair', label: 'Playfair Display', family: "'Playfair Display', serif", cssClass: 'font-playfair', googleFont: 'Playfair+Display:wght@400;500;700', category: 'serif' },
+    { id: 'source-serif', label: 'Source Serif 4', family: "'Source Serif 4', serif", cssClass: 'font-source-serif', googleFont: 'Source+Serif+4:wght@400;600;700', category: 'serif' },
+    { id: 'roboto-slab', label: 'Roboto Slab', family: "'Roboto Slab', serif", cssClass: 'font-roboto-slab', googleFont: 'Roboto+Slab:wght@400;500;700', category: 'serif' },
+    { id: 'ibm-plex-mono', label: 'IBM Plex Mono', family: "'IBM Plex Mono', monospace", cssClass: 'font-ibm-plex-mono', googleFont: 'IBM+Plex+Mono:wght@400;500;700', category: 'monospace' },
+    { id: 'jetbrains-mono', label: 'JetBrains Mono', family: "'JetBrains Mono', monospace", cssClass: 'font-jetbrains-mono', googleFont: 'JetBrains+Mono:wght@400;500;700', category: 'monospace' }
 ];
 if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
 (function injectFontStyles() {
@@ -68,16 +84,27 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
     style.id = 'alloflow-ui-font-library-css';
     style.textContent = `
     .font-opendyslexic, .font-opendyslexic * { font-family: 'OpenDyslexic', cursive, sans-serif !important; }
+    .font-verdana, .font-verdana * { font-family: Verdana, Geneva, sans-serif !important; }
+    .font-tahoma, .font-tahoma * { font-family: Tahoma, Verdana, sans-serif !important; }
+    .font-trebuchet, .font-trebuchet * { font-family: 'Trebuchet MS', 'Segoe UI', sans-serif !important; }
+    .font-georgia, .font-georgia * { font-family: Georgia, 'Times New Roman', serif !important; }
+    .font-palatino, .font-palatino * { font-family: Palatino, 'Palatino Linotype', 'Book Antiqua', Georgia, serif !important; }
+    .font-courier, .font-courier * { font-family: 'Courier New', Courier, monospace !important; }
     .font-lexend, .font-lexend * { font-family: 'Lexend', sans-serif !important; }
     .font-atkinson, .font-atkinson * { font-family: 'Atkinson Hyperlegible', sans-serif !important; }
     .font-andika, .font-andika * { font-family: 'Andika', sans-serif !important; }
     .font-andika-italic, .font-andika-italic * { font-family: 'Andika', sans-serif !important; font-style: italic !important; }
     .font-andika-bold-italic, .font-andika-bold-italic * { font-family: 'Andika', sans-serif !important; font-style: italic !important; font-weight: 700 !important; }
+    .font-noto-sans, .font-noto-sans * { font-family: 'Noto Sans', sans-serif !important; }
+    .font-noto-serif, .font-noto-serif * { font-family: 'Noto Serif', serif !important; }
     .font-inter, .font-inter * { font-family: 'Inter', sans-serif !important; }
     .font-roboto, .font-roboto * { font-family: 'Roboto', sans-serif !important; }
     .font-opensans, .font-opensans * { font-family: 'Open Sans', sans-serif !important; }
     .font-lato, .font-lato * { font-family: 'Lato', sans-serif !important; }
     .font-nunito, .font-nunito * { font-family: 'Nunito', sans-serif !important; }
+    .font-nunito-sans, .font-nunito-sans * { font-family: 'Nunito Sans', sans-serif !important; }
+    .font-fira-sans, .font-fira-sans * { font-family: 'Fira Sans', sans-serif !important; }
+    .font-ubuntu, .font-ubuntu * { font-family: 'Ubuntu', sans-serif !important; }
     .font-sourcesans, .font-sourcesans * { font-family: 'Source Sans 3', sans-serif !important; }
     .font-poppins, .font-poppins * { font-family: 'Poppins', sans-serif !important; }
     .font-montserrat, .font-montserrat * { font-family: 'Montserrat', sans-serif !important; }
@@ -88,6 +115,10 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
     .font-gentium, .font-gentium * { font-family: 'Gentium Book Plus', serif !important; }
     .font-lora, .font-lora * { font-family: 'Lora', serif !important; }
     .font-playfair, .font-playfair * { font-family: 'Playfair Display', serif !important; }
+    .font-source-serif, .font-source-serif * { font-family: 'Source Serif 4', serif !important; }
+    .font-roboto-slab, .font-roboto-slab * { font-family: 'Roboto Slab', serif !important; }
+    .font-ibm-plex-mono, .font-ibm-plex-mono * { font-family: 'IBM Plex Mono', monospace !important; }
+    .font-jetbrains-mono, .font-jetbrains-mono * { font-family: 'JetBrains Mono', monospace !important; }
     @media (max-width: 768px) {
       select, [role="listbox"], [role="menu"], [role="combobox"] {
         z-index: 50 !important;

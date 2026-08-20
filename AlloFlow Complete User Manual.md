@@ -4,7 +4,7 @@
 
 > Practical, classroom-centered guidance for planning, teaching, accessibility, live lessons, and responsible use.
 >
-> Guide version **2026.08** · Content verified **2026-08-16**
+> Guide version **2026.08** · Content verified **2026-08-20**
 
 This consolidated Markdown edition is generated for repository browsing, review, and export. The polished searchable edition is in [guide/](guide/index.html), and the canonical chapter sources are in [docs/teacher-guide/chapters/](docs/teacher-guide/chapters/).
 
@@ -462,7 +462,9 @@ Open it from the top of the left column. Collapsed, it summarises itself, for ex
 - **Output language and translations**, which decide what language students receive. This is *not* the same as the interface language.
 - **Use emoji for visual support**, on or off.
 - **Differentiation Set**, for example *Target Level Only*, which decides whether you get one version or a range.
-- **Image Style**, a default used by Visuals, Glossary, Timeline and Concept Sort unless a tool overrides it.
+- **Image Style**, the lesson-wide default for new Visuals, Glossary, Timeline, Concept Sort and Word Sounds images. Adventure can choose it too.
+
+Visuals, Glossary and Word Sounds start on **Use Universal style**. Choose **Override for this resource** only when one resource genuinely needs a different look; its preset or custom-style field then appears. Timeline and Concept Sort use the Universal style directly, so there is no duplicate style field to reconcile. Adventure keeps its story-specific presets and adds **Use Universal style** when visual continuity matters. Style changes affect new or regenerated images, not images that already exist.
 
 **The coverage notes are the important detail.** Under many settings sits a small line reading something like *Applies to 12 of 19 resource types*. AlloFlow is telling you exactly how far that setting reaches instead of implying it governs everything. When a setting seems not to have worked, check whether the tool you used is inside its coverage.
 
@@ -996,6 +998,7 @@ The panel gathers the settings that would otherwise repeat in every tool.
 | **Student interests** | Adds a theme or context to examples. | Word problems, scenarios, and prompts. |
 | **Depth of Knowledge** | Sets the level of thinking the task should demand. | Question stems and task verbs. |
 | **Emoji** | Adds emoji as visual cues in generated material. | Glossary terms, headings, and directions. |
+| **Image style** | Sets the lesson-wide visual default for resources that create images. | Visuals, Glossary, Timeline, Concept Sort, Word Sounds, and Adventure when it uses the Universal style. |
 
 Each control tells you how many kinds of resource actually use it. Read that number before you spend time on a setting. Some controls reach almost everything; others reach two or three tools.
 
@@ -1014,6 +1017,12 @@ So if a pack looks inconsistent:
 3. Regenerate that resource, or regenerate the pack, so every part shares one setting.
 
 This is worth checking before you conclude a tool got something wrong. A mismatched pack is usually a settings history problem, not a generation problem.
+
+### Set image style once unless a resource needs an exception
+
+Use **Image style** in Universal Settings to keep one lesson visually coherent. Visuals, Glossary, and Word Sounds begin on **Use Universal style**; their own preset and custom-style controls appear only after you choose **Override for this resource**. Timeline and Concept Sort use the Universal style directly. Adventure keeps story-specific presets, with **Use Universal style** available when continuity matters more than a separate story look.
+
+Choose an override for an instructional reason—for example, a simple line-drawing style for a worksheet that must photocopy clearly—not merely because the same selector is visible. Return the resource to **Use Universal style** when the exception is no longer needed. A change affects new or regenerated images; it does not restyle images that already exist.
 
 ### Choose a grade level honestly
 
@@ -1095,14 +1104,14 @@ Use a homework link, accessible document, learning-management assignment, or oth
 
 #### Choose the pacing mode
 
-The **Live Session Center** can toggle between two pacing approaches.
+The **Live Dashboard** can toggle between two pacing approaches.
 
 | Mode | What it supports | Teacher responsibility |
 | --- | --- | --- |
-| **Teacher-paced** | The class follows the teacher's current resource; useful for modeling, discussion, and coordinated transitions. | Announce each change, watch delivery status, and allow enough time for assistive technology and reading. |
+| **Teacher-led** | The class follows the teacher's current resource; useful for modeling, discussion, and coordinated transitions. | Announce each change, watch delivery status, and allow enough time for assistive technology and reading. |
 | **Student-paced** | Students work more independently while the teacher monitors and may route targeted resources. | Make sequence and finish criteria explicit; do not assume every student is on the same screen. |
 
-Switch deliberately. A whole-class presentation or follow-up may require Teacher-paced mode, while independent work may be less disruptive in Student-paced mode. Tell students before changing the mode so a screen transition does not feel like lost work.
+Switch deliberately. A whole-class presentation or follow-up may require Teacher-led mode, while independent work may be less disruptive in Student-paced mode. Tell students before changing the mode so a screen transition does not feel like lost work.
 
 ### Prepare before students join
 
@@ -1118,6 +1127,12 @@ Complete the workflow in [Prepare a lesson](#prepare-a-purposeful-differentiated
 6. Follow-up, revision, or exit prompt.
 
 Open every student-facing resource once. Remove teacher notes and answer keys. If the workspace marks an item as teacher-only, do not try to send it to students.
+
+#### Import an existing lesson deck
+
+Use **Import lesson deck** in the Source panel to bring in material from another presentation tool. A PowerPoint `.pptx` is the best choice: it opens in Page Designer as editable slides and preserves supported text, pictures, alt text, and layout. A PDF opens in the document pipeline and is better treated as visual source material.
+
+Curipod, Nearpod, Pear Deck, and similar tools do not place their proprietary polls, response data, drawing prompts, or AI-feedback behavior inside an exported PowerPoint or PDF. After importing, review every slide and recreate the intended interactions as AlloFlow activities. For Google Slides or Keynote, export a `.pptx` first when possible.
 
 #### Rehearse the join and delivery path
 
@@ -1154,7 +1169,7 @@ Write the fallback task where students can see it. Decide whether the session co
 
 #### 1. Start from the teacher workspace
 
-Use the available **Live Session** or class-session control in the header or delivery workflow. Choose the session options shown in your deployment. Once a session is active, the **Live Session Center** becomes available to the teacher.
+Use **Teach live** in the header or delivery workflow. Choose the connection options shown in your deployment. Once a session is active, the **Live Dashboard** becomes available to the teacher.
 
 Open the session-code or projection view and verify that it shows only information students should see. Keep the teacher workspace on a non-projected screen if possible.
 
@@ -1166,7 +1181,7 @@ Ask students to stop after they reach the waiting or first-resource screen. This
 
 #### 3. Confirm presence
 
-In the **Live Session Center**, compare the visible roster with the students who should be present. Look for duplicate or unexpected codenames. A connected indicator or recent check-in is useful operational information, but it does not prove attention or understanding.
+In the **Live Dashboard**, compare the visible roster with the students who should be present. Look for duplicate or unexpected codenames. A connected indicator or recent check-in is useful operational information, but it does not prove attention or understanding.
 
 If an unknown participant appears, pause before sharing material. Use the session controls available to remove or resolve the entry, and change the session if required by school procedure.
 
@@ -1174,7 +1189,7 @@ If an unknown participant appears, pause before sharing material. Use the sessio
 
 Open the first student-facing resource and send or present it. Ask students for a simple confirmation, then inspect delivery status. Resolve a failed or pending device before launching a timed activity.
 
-### Use the Live Session Center
+### Use the Live Dashboard
 
 The center groups the main controls under **Run**, **Guide**, and **Signals**. Labels and available activities may vary with loaded modules and deployment settings.
 
@@ -1183,7 +1198,7 @@ The center groups the main controls under **Run**, **Guide**, and **Signals**. L
 Use **Run** for student interactions and the prepared lesson sequence. Current workspaces may include:
 
 - A live lesson run panel with resources, audiences, presenter cues, and activity snapshots.
-- **Quick Check** for a fast continuum such as confused to ready.
+- **Check understanding** for a fast continuum such as confused to ready.
 - **Word Cloud** for short contributions.
 - Open response or feedback activities.
 - Moderated live questions and answers when the teacher enables them.
@@ -1198,7 +1213,7 @@ Use **Guide** to manage the flow around the activities. Depending on the current
 
 - Presenter cues attached to a lesson step.
 - A class timer or focused display.
-- The Teacher-paced and Student-paced toggle.
+- The Teacher-led and Student-paced toggle.
 - **Groups** and audience management.
 - Other session guidance configured for the lesson.
 
@@ -1249,15 +1264,15 @@ Individual and group targets can take precedence over the whole-class resource. 
 
 #### Change pace carefully
 
-In Teacher-paced mode, changing the current class resource can move connected student devices and may affect devices that reconnect while it remains current. Give a spoken and visible transition cue first.
+In Teacher-led mode, changing the current class resource can move connected student devices and may affect devices that reconnect while it remains current. Give a spoken and visible transition cue first.
 
-In Student-paced mode, a whole-class follow pointer may not behave like a synchronized presentation. Use explicit directions and targeted sends as needed, then verify the result on the student device. If a prepared whole-class follow-up reports that Teacher-paced mode is required, switch modes only after warning the class.
+In Student-paced mode, a whole-class follow pointer may not behave like a synchronized presentation. Use explicit directions and targeted sends as needed, then verify the result on the student device. If a prepared whole-class follow-up reports that Teacher-led mode is required, switch modes only after warning the class.
 
 ### Facilitate live activities
 
-#### Quick Check
+#### Check understanding
 
-Use **Quick Check** for a decision you are prepared to make. Ask one focused question such as “How ready are you to explain the relationship?” Display what each response option means, allow a short wait, and decide in advance what will happen at each pattern of responses.
+Use **Check understanding** for a decision you are prepared to make. Ask one focused question such as “How ready are you to explain the relationship?” Display what each response option means, allow a short wait, and decide in advance what will happen at each pattern of responses.
 
 Do not use confidence as a substitute for knowledge. Pair it with a prompt, example, or subsequent evidence task when accuracy matters.
 
@@ -2502,7 +2517,7 @@ The export screen explains each format under its selector, so you do not need to
 The exported page carries its own accessibility toolbar, independent of AlloFlow:
 
 - **Text size** steps from 90% to 175%, with a live percentage readout. Content reflows instead of getting cut off, at every size, on every screen width.
-- **Fonts:** nine faces that work with no internet at all, including a readable serif, a rounded face, and a dyslexia-friendly option. Four high-legibility web fonts (OpenDyslexic, Atkinson Hyperlegible, Lexend, Andika) are available behind a clearly labeled "needs internet" checkbox at export time, off by default so no handout phones out unless you chose that.
+- **Fonts:** nine faces that work with no internet at all, including a readable serif, a rounded face, and a dyslexia-friendly option. Thirteen optional web fonts span accessibility (OpenDyslexic, Atkinson Hyperlegible, Lexend, Andika), multilingual reading (Noto Sans and Noto Serif), sans-serif, serif, and monospace choices. They are behind a clearly labeled "needs internet" checkbox at export time and are off by default.
 - **Reading themes**, sentence read-along where the lesson includes audio, and the annotation tools below.
 
 ### Annotations that stay put

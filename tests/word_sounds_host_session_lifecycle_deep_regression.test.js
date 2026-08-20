@@ -162,6 +162,7 @@ describe('Word Sounds host session lifecycle', () => {
     );
 
     expect(preview).toContain('prepareWordSoundsSession');
+    expect(preview).toContain('generatedContent, wsActivitySequence, isTeacherMode');
     expect(player).toContain('learnerId: wordSoundsSessionConfig?.learnerId');
     expect(player).toContain('sessionId: wordSoundsSessionConfig?.sessionId || null');
     expect(player).toContain('resourceId: wordSoundsSessionConfig?.resourceId || generatedContent?.id || null');

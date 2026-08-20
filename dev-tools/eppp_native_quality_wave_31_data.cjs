@@ -1,0 +1,301 @@
+'use strict';
+
+const reviewedAt = '2026-08-20';
+const reviewWave = 'eppp-native-quality-wave-31';
+const baselineMetrics = Object.freeze({
+  distractor: { totalItems: 1500, warningOnly: true, forbiddenAggregateChoices: 0, uniqueKeyStemLexicalLeakageCandidates: 50, asymmetricExtremeDistractorCandidates: 89, advancedDirectRecallCandidates: 3, semanticConceptDuplicatePairs: 52, semanticConceptDuplicateClusters: 35, editorialAnchorsWithActiveWarnings: 1, editorialAnchorsWithNoCurrentWarning: 9, priorityDocketItems: 20 },
+  feedback: { totalItems: 1500, totalIncorrectOptions: 4500, itemsWithWarnings: 522, incorrectOptionsWithWarnings: 1458, insufficientDetailOptions: 626, genericTemplateOptions: 773, choiceRestatementOptions: 271, fullKeyEchoOptions: 83, priorityDocketItems: 100 },
+});
+
+const revisions = [
+  {
+    id: 'eppp-v3-intervention-007', expectedAnswerIndex: 0, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: 'Which of the following is a key concept in Acceptance and Commitment Therapy (ACT)?',
+    prompt: 'A client notices anxiety before applying for a job and practices making room for it as she takes a step toward a personally meaningful direction. Which therapeutic construct best names this pattern?',
+    choices: ['Psychological flexibility: contacting the present while changing or persisting in behavior in service of values', 'Systematic desensitization: pairing a graded hierarchy with relaxation to reduce conditioned fear', 'Cognitive restructuring: testing evidence and replacing an inaccurate appraisal', 'Free association: allowing thoughts to emerge with minimal direction during exploration'],
+    rationale: 'Psychological flexibility means staying in contact with present experience while changing or persisting in behavior that serves chosen values. The client is not required to eliminate anxiety before taking a meaningful step.',
+    feedback: {
+      1: 'Systematic desensitization uses graded exposure with relaxation or competing responses for conditioned fear. The vignette instead emphasizes values-guided action in the presence of anxiety.',
+      2: 'Cognitive restructuring evaluates evidence and revises an inaccurate appraisal. ACT may notice thoughts differently, but this example centers on willingness and values-based behavior.',
+      3: 'Free association invites material to emerge with limited direction so it can be explored analytically. It does not describe the ACT emphasis on acceptance and committed action.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'intervention-apply-act-psychological-flexibility-to-values-guided-action', distractorDesign: ['systematic-desensitization-method-confusion', 'cognitive-restructuring-method-confusion', 'free-association-method-confusion'],
+  },
+  {
+    id: 'eppp-v3-intervention-009', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Transference in psychoanalytic therapy refers to:',
+    prompt: 'During a neutral scheduling discussion, a client suddenly treats the therapist as a critical parent and expects rejection. Which psychodynamic process best explains this shift?',
+    choices: ['Confidential record transfer between providers after a referral decision', 'Countertransference involving the therapist\'s emotional response to the client', 'Transference in which earlier relational expectations shape reactions to the current therapist', 'A formal transfer of treatment responsibility to a different clinician'],
+    rationale: 'Transference occurs when feelings, expectations, or relationship patterns from earlier attachments become organized around the current therapist. The client responds to a present interaction as though an earlier relationship were being repeated.',
+    feedback: {
+      0: 'Record transfer concerns information management after a referral and does not describe a client\'s relational reaction during treatment. The key issue is the meaning assigned to the therapist.',
+      1: 'Countertransference refers to the therapist\'s emotional responses and personal reactions in the treatment relationship. Here, the client is the person importing an earlier relational pattern.',
+      3: 'A treatment transfer is an administrative change in provider. It does not account for the client expecting rejection during an otherwise neutral interaction with the current therapist.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'intervention-identify-transference-from-relational-repetition', distractorDesign: ['record-transfer-confusion', 'countertransference-confusion', 'provider-transfer-confusion'],
+  },
+  {
+    id: 'eppp-v3-intervention-016', expectedAnswerIndex: 2, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: 'The Gottman method for couples therapy focuses on:',
+    prompt: 'A couple reports escalating contempt and defensiveness, little enjoyment together, and no agreed sense of what their partnership stands for. Which treatment formulation best fits the Gottman method?',
+    choices: ['Separate insight-oriented work that keeps partners apart during the treatment course', 'Skills training limited to negotiating a single disputed decision', 'Strengthening friendship, managing conflict, building shared meaning, and addressing destructive interaction patterns', 'Symbolic dream interpretation focused on unconscious themes in the relationship'],
+    rationale: 'The Gottman approach integrates friendship, conflict management, shared meaning, and targeted work on destructive interaction patterns such as criticism, contempt, defensiveness, and stonewalling. It treats the couple system as the clinical unit.',
+    feedback: {
+      0: 'The Gottman method is a conjoint couple approach rather than a plan that separates partners for insight work. It addresses interaction patterns in the relationship itself.',
+      1: 'Negotiating one decision may be useful, but the method is broader. It builds friendship, regulates conflict, and develops shared meaning alongside specific communication skills.',
+      3: 'Dream interpretation is associated with analytic traditions, not the Gottman model\'s research-based focus on observable interaction patterns and relationship processes.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'intervention-analyze-gottman-couple-processes-and-four-horsemen', distractorDesign: ['individual-insight-confusion', 'narrow-conflict-training-confusion', 'analytic-dream-confusion'],
+  },
+  {
+    id: 'eppp-b010-lifespan-2', expectedAnswerIndex: 3, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Baumrind\u2019s authoritarian parenting style is characterized by:',
+    prompt: 'A parent sets many rules, expects obedience, gives brief explanations, and responds to the child\'s distress with limited warmth. Which Baumrind pattern is most consistent?',
+    choices: ['High warmth with flexible limits and extensive child participation in decisions', 'Low behavioral control paired with substantial responsiveness to the child\'s cues', 'Low involvement with few expectations, monitoring, or consistent supports', 'High behavioral control paired with limited warmth and reciprocal discussion'],
+    rationale: 'Authoritarian parenting combines high demands and behavioral control with relatively low responsiveness or warmth. The style emphasizes obedience and unilateral rules, in contrast to authoritative parenting\'s warmth and bidirectional communication.',
+    feedback: {
+      0: 'High warmth with flexible, negotiated limits is closer to authoritative parenting. The vignette instead describes control with sparse emotional responsiveness.',
+      1: 'Low control with high responsiveness reflects a permissive or indulgent pattern, not the demanding, obedience-focused style described in the case.',
+      2: 'Low expectations and limited monitoring fit a neglectful or uninvolved pattern. The parent in the vignette is highly demanding rather than disengaged.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'lifespan-apply-baumrind-parenting-dimensions-to-a-caregiving-vignette', distractorDesign: ['authoritative-style-confusion', 'permissive-style-confusion', 'uninvolved-style-confusion'],
+  },
+  {
+    id: 'eppp-v3-lifespan-012', expectedAnswerIndex: 1, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Secure attachment (Ainsworth Type B) is characterized by:',
+    prompt: 'In a reunion episode, an infant seeks the caregiver, settles after contact, and returns to exploring while checking back periodically. Which attachment classification best fits?',
+    choices: ['Minimal observable response to separation or reunion and little use of the caregiver during exploration', 'Separation distress followed by effective comfort-seeking and renewed exploration from a secure base', 'Intense approach and resistance at reunion with difficulty settling despite contact', 'Contradictory, disoriented actions that do not form a coherent reunion strategy'],
+    rationale: 'Securely attached infants use the caregiver as a base for exploration, show separation distress, and are effectively comforted at reunion before returning to exploration. Their behavior remains organized around obtaining and using responsive care.',
+    feedback: {
+      0: 'Limited response and little caregiver use are more consistent with an avoidant pattern. Secure attachment includes active comfort-seeking and a return to exploration after reunion.',
+      2: 'Approach combined with resistance and poor soothing is characteristic of an ambivalent or resistant pattern. The vignette describes effective settling after contact.',
+      3: 'Disoriented or contradictory reunion behavior suggests a disorganized pattern. Secure behavior is organized, comfort-seeking, and followed by exploration.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'lifespan-classify-secure-attachment-from-reunion-behavior', distractorDesign: ['avoidant-attachment-confusion', 'resistant-attachment-confusion', 'disorganized-attachment-confusion'],
+  },
+  {
+    id: 'eppp-v3-lifespan-029', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: "Piaget's concept of 'centration' refers to:",
+    prompt: 'When comparing two glasses, a preschooler says the taller glass has more liquid and ignores its narrower width. Which Piagetian limitation is demonstrated?',
+    choices: ['Reversibility, or mentally undoing a sequence of transformations', 'Decentration, or coordinating several relevant dimensions at once', 'Centration, or attending to one salient dimension while overlooking another', 'Egocentrism, or difficulty representing another person\'s viewpoint'],
+    rationale: 'Centration is the tendency to focus on one perceptually salient dimension while overlooking other relevant dimensions. In conservation tasks, the child attends to liquid height and neglects the container\'s width.',
+    feedback: {
+      0: 'Reversibility concerns mentally reversing an operation, such as imagining liquid returned to its original container. The error here is selective attention to one dimension.',
+      1: 'Decentration is the developing ability to coordinate multiple dimensions. The preschooler has not yet coordinated height and width in the conservation judgment.',
+      3: 'Egocentrism concerns difficulty taking another person\'s perspective. This example concerns perceptual focus within a physical transformation, not a social viewpoint.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'lifespan-identify-centration-from-a-conservation-judgment', distractorDesign: ['reversibility-confusion', 'decentration-confusion', 'egocentrism-confusion'],
+  },
+  {
+    id: 'eppp-b018-cognitive-1', expectedAnswerIndex: 0, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Remembering to submit a report when arriving at work tomorrow is primarily an example of:',
+    prompt: 'A clinician writes a reminder to call a referral source upon arriving at the office tomorrow and plans to act then. Which memory function is central?',
+    choices: ['Prospective memory for carrying out an intended action at a later cue', 'Semantic memory for context-free facts and word meanings', 'Procedural memory for executing a well-practiced motor sequence', 'Retrospective memory for recognizing an event that has already occurred'],
+    rationale: 'Prospective memory supports remembering to perform an intention at a future time or event. The referral call is the intended action, and arriving at the office supplies the cue for retrieving that intention.',
+    feedback: {
+      1: 'Semantic memory stores general facts and meanings rather than an intention tied to a future event. The case hinges on remembering to act when the office cue appears.',
+      2: 'Procedural memory supports learned skills such as typing or driving. Remembering a planned call is an intention-based future action, not a motor routine.',
+      3: 'Retrospective memory concerns information or events from the past. The clinician must retrieve an intention at a later cue, which defines prospective memory.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'cognitive-affective-apply-prospective-memory-to-a-future-cue', distractorDesign: ['semantic-memory-confusion', 'procedural-memory-confusion', 'retrospective-memory-confusion'],
+  },
+  {
+    id: 'eppp-b023-cognitive-3', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'advanced',
+    expectedPrompt: 'After a tone has been conditioned to elicit salivation, the tone is repeatedly paired with a light. The light eventually elicits salivation even though it was never paired directly with food. This illustrates:',
+    prompt: 'A tone already elicits salivation following food exposure. A light is presented with that tone, and the light later evokes salivation despite no direct food association. Which learning process is shown?',
+    choices: ['Stimulus discrimination in which responding narrows to a selected cue', 'Negative reinforcement in which a response removes an aversive event', 'Second-order conditioning in which a new cue is paired with an established conditioned stimulus', 'Spontaneous recovery in which an extinguished response returns after a delay'],
+    rationale: 'Second-order conditioning occurs when a new neutral cue is paired with an established conditioned stimulus and later elicits the conditioned response. The light gains signaling value through the tone rather than through direct food pairings.',
+    feedback: {
+      0: 'Stimulus discrimination is learning to respond differently to similar cues. The light acquires responding through its pairing with an established conditioned stimulus.',
+      1: 'Negative reinforcement strengthens behavior by removing an aversive consequence. The vignette describes respondent conditioning between cues rather than an operant consequence.',
+      3: 'Spontaneous recovery is the return of a response after extinction and a rest interval. Here, a new cue acquires a response through pairing with the tone.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'cognitive-affective-analyze-second-order-conditioning-from-cue-pairings', distractorDesign: ['discrimination-confusion', 'negative-reinforcement-confusion', 'spontaneous-recovery-confusion'],
+  },
+  {
+    id: 'eppp-v3-cognitive-affective-008', expectedAnswerIndex: 1, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Confirmation bias is the tendency to:',
+    prompt: 'After forming a hypothesis about a client, a clinician gives extra weight to observations that support it and discounts observations that point in another direction. Which reasoning error is most apparent?',
+    choices: ['A disconfirmation strategy that actively searches for evidence against a favored hypothesis', 'Confirmation bias involving selective search, interpretation, and recall of belief-consistent information', 'Availability heuristic involving judgments based on how readily examples come to mind', 'Base-rate neglect involving underuse of prevalence information when judging a case'],
+    rationale: 'Confirmation bias is the tendency to seek, interpret, and remember information in ways that support an existing belief. The clinician discounts discrepant observations instead of giving them comparable evidentiary weight.',
+    feedback: {
+      0: 'A disconfirmation strategy is a corrective approach that deliberately tests a favored hypothesis against contrary evidence. It is the opposite of selectively discounting discrepant observations.',
+      2: 'Availability uses ease of recall as a cue for frequency or probability. No memorable example is driving the clinician\'s judgment in this vignette.',
+      3: 'Base-rate neglect concerns failing to use prevalence information. The central error here is selective treatment of evidence that supports a prior hypothesis.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'cognitive-affective-identify-confirmation-bias-in-clinical-reasoning', distractorDesign: ['falsification-process-confusion', 'availability-confusion', 'base-rate-neglect-confusion'],
+  },
+  {
+    id: 'eppp-v3-assessment-030', expectedAnswerIndex: 3, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: 'Base rate in assessment refers to:',
+    prompt: 'A disorder affects 2% of referrals. Even a screening measure with strong sensitivity and specificity yields many more false than true positive screens. Which assessment concept explains the result?',
+    choices: ['The fee or resource cost required to administer and score the instrument', 'The number of items and minutes needed to complete the assessment', 'The reproducibility of scores across raters or repeated administrations', 'The condition\'s prevalence in the tested population, which shapes predictive value'],
+    rationale: 'Base rate is the prevalence of a condition in the population being tested. When prevalence is low, positive predictive value can remain modest despite strong sensitivity and specificity because false positives outnumber true positives.',
+    feedback: {
+      0: 'Administration cost may affect feasibility, but it does not determine how many screened positives are true cases. The vignette concerns prevalence and predictive value.',
+      1: 'Test length affects burden and perhaps reliability, not the population proportion with the condition. Predictive value changes with the condition\'s base rate.',
+      2: 'Reliability concerns score consistency across occasions, forms, or raters. It does not explain why a rare condition produces many false positives in screening.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'assessment-apply-base-rate-to-predictive-value-interpretation', distractorDesign: ['cost-confusion', 'length-confusion', 'reliability-confusion'],
+  },
+  {
+    id: 'eppp-v3-assessment-011', expectedAnswerIndex: 0, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Split-half reliability assesses:',
+    prompt: 'A clinician divides one test into odd- and even-numbered items, correlates the two scores, and adjusts the estimate for full-test length. What property is being examined?',
+    choices: ['Internal consistency estimated by comparing two portions of one instrument', 'Agreement between independent clinicians who rate the same client', 'Validity evidence that the scores represent the intended theoretical construct', 'Temporal stability assessed by repeating the instrument on a later occasion'],
+    rationale: 'Split-half reliability estimates internal consistency by correlating scores from two portions of the same test, often followed by the Spearman-Brown correction. It asks whether items behave coherently as one instrument.',
+    feedback: {
+      1: 'Agreement between independent raters is interrater reliability. The described calculation divides items within one test rather than comparing clinician judgments.',
+      2: 'Construct validity concerns whether score interpretations are supported by evidence about the intended attribute. Splitting items and correlating them is a reliability procedure.',
+      3: 'Test-retest reliability evaluates stability across administrations separated in time. The vignette uses one administration and two item subsets.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'assessment-identify-split-half-as-internal-consistency-evidence', distractorDesign: ['interrater-reliability-confusion', 'construct-validity-confusion', 'test-retest-confusion'],
+  },
+  {
+    id: 'eppp-v3-assessment-021', expectedAnswerIndex: 2, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: 'The Trail Making Test (TMT) assesses:',
+    prompt: 'A patient completes numbered circles quickly but slows markedly when alternating numbers and letters. The examiner is especially interested in set shifting and scanning. Which abilities does the TMT sample?',
+    choices: ['Consolidation of new episodic memories within medial temporal systems', 'Severity and course of depressive symptoms across treatment visits', 'Visual attention, processing speed, and cognitive flexibility', 'Stable personality traits that persist across contexts and relationships'],
+    rationale: 'Trail Making Part A samples visual attention and processing speed, while Part B adds alternating-set demands that require cognitive flexibility. Performance is interpreted with language, motor, and other contextual factors in mind.',
+    feedback: {
+      0: 'Memory consolidation is assessed with learning and delayed-recall tasks rather than the visual sequencing and alternating-set demands described here.',
+      1: 'Depressive symptom severity is measured with symptom inventories and interviews. The TMT is a brief neuropsychological task focused on attention, speed, and shifting.',
+      3: 'Personality traits require trait-oriented inventories or interviews. Speeded visual sequencing does not directly measure enduring personality structure.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'assessment-interpret-trail-making-attention-speed-and-set-shifting-demands', distractorDesign: ['episodic-memory-confusion', 'depression-inventory-confusion', 'personality-assessment-confusion'],
+  },
+  {
+    id: 'eppp-v3-biological-004', expectedAnswerIndex: 3, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: "Glutamate is the brain's primary:",
+    prompt: 'A medication blocks NMDA receptors and disrupts long-term potentiation during a retention task. Which chemical messenger system is implicated?',
+    choices: ['A diffuse neuromodulatory system that adjusts motivation and arousal across networks', 'A bloodstream hormone released by endocrine glands to coordinate peripheral physiology', 'An inhibitory transmitter that lowers neuronal firing throughout central circuits', 'An excitatory neurotransmitter involved in learning, memory, and synaptic plasticity'],
+    rationale: 'Glutamate is the principal excitatory neurotransmitter in the central nervous system and activates receptors such as NMDA that contribute to synaptic plasticity, learning, and memory. Its effects depend on receptor and circuit context.',
+    feedback: {
+      0: 'Diffuse neuromodulatory systems shape arousal and motivation, but NMDA-mediated plasticity points to glutamatergic excitation rather than a broad modulatory transmitter.',
+      1: 'Hormones travel through the bloodstream and coordinate endocrine targets. The case concerns a fast synaptic receptor involved in learning-related plasticity.',
+      2: 'Inhibitory signaling reduces neuronal excitability, whereas NMDA receptor activity is a major route for excitatory plasticity. The mechanism is therefore not an inhibitory transmitter.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'biological-link-glutamate-nmda-receptors-to-synaptic-plasticity', distractorDesign: ['neuromodulator-confusion', 'endocrine-hormone-confusion', 'inhibitory-transmitter-confusion'],
+  },
+  {
+    id: 'eppp-v3-biological-005', expectedAnswerIndex: 0, expectedDifficulty: 'advanced', targetDifficulty: 'advanced',
+    expectedPrompt: 'Kindling in epilepsy refers to:',
+    prompt: 'In an animal model, brief electrical pulses below seizure threshold are delivered to the same circuit across trials. Later, those pulses produce a stronger seizure response. Which phenomenon is illustrated?',
+    choices: ['Progressive sensitization after repeated subthreshold stimulation', 'Surgical removal of a localized epileptogenic focus', 'Seizures caused by an adverse effect of a prescribed medication', 'A single isolated seizure that does not alter later response thresholds'],
+    rationale: 'Kindling is progressive sensitization produced by repeated subthreshold electrical or chemical stimulation. Over trials, the circuit becomes more responsive, so a stimulus that was initially insufficient can evoke increasingly severe seizures.',
+    feedback: {
+      1: 'Resection removes a seizure focus and is a treatment procedure, not a pattern of progressively increasing responses after repeated stimulation.',
+      2: 'Medication-induced seizures describe an adverse cause, whereas the vignette describes a learned-like escalation in circuit responsiveness across repeated trials.',
+      3: 'A single isolated seizure does not capture the progressive threshold and response changes that define kindling. Repetition and sensitization are central to the model.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'biological-analyze-kindling-as-progressive-neural-sensitization', distractorDesign: ['resection-confusion', 'medication-induced-seizure-confusion', 'isolated-seizure-confusion'],
+  },
+  {
+    id: 'eppp-v3-biological-006', expectedAnswerIndex: 1, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Anterograde amnesia involves:',
+    prompt: 'After bilateral medial temporal surgery, a patient can describe childhood events but cannot retain conversations from later that day. Which memory deficit is most consistent?',
+    choices: ['Loss of autobiographical information formed before the neurological event', 'Impaired encoding of experiences that occur after the neurological event', 'A selective disruption of motor skills acquired through repeated practice', 'A failure to recognize one\'s own identity across social situations'],
+    rationale: 'Anterograde amnesia is difficulty encoding or retaining new memories after the onset of brain injury. Preserved remote memories alongside impaired later learning is the classic contrast, although memory systems can be affected unevenly.',
+    feedback: {
+      0: 'Loss of memories from before an injury is retrograde amnesia. The patient can describe childhood events, so the deficit concerns later learning.',
+      2: 'Procedural learning can remain relatively preserved in some amnesias and is not the defining deficit here. The central problem is retaining experiences after surgery.',
+      3: 'Identity disturbance is a clinical and self-experience concern, not the temporal direction of a memory deficit. The vignette contrasts remote and post-event learning.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'biological-differentiate-anterograde-from-retrograde-amnesia', distractorDesign: ['retrograde-amnesia-confusion', 'procedural-memory-confusion', 'identity-disturbance-confusion'],
+  },
+  {
+    id: 'eppp-v3-professional-064', expectedAnswerIndex: 3, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: 'Repeated derogatory verbal conduct toward a trainee based on a protected characteristic, without sexual content, most directly raises which APA standard?',
+    prompt: 'A supervisor repeatedly mocks a trainee\'s disability during case conferences and uses the trainee\'s protected status as the basis for the remarks. Which APA Ethics Code provision is most directly implicated?',
+    choices: ['Standard 4.07 concerning use of confidential information for teaching purposes', 'Standard 8.10 concerning reporting research results', 'Standard 10.09 concerning interruption of therapy', 'Standard 3.03 concerning other harassment in professional activities'],
+    rationale: 'Standard 3.03 addresses demeaning verbal or nonverbal conduct based on protected or other status-related characteristics in work-related activities. The conduct can violate the standard even when it is not sexual in nature.',
+    feedback: {
+      0: 'Standard 4.07 concerns protecting confidential information when using case material for teaching. It does not address status-based mistreatment of a trainee.',
+      1: 'Standard 8.10 governs reporting research results accurately and completely. The vignette concerns workplace conduct, not scientific reporting.',
+      2: 'Standard 10.09 concerns an interruption in therapy and steps to protect patients. It is not the provision governing derogatory supervision conduct.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'professional-apply-apa-standard-303-to-status-based-harassment', distractorDesign: ['confidentiality-standard-confusion', 'research-reporting-standard-confusion', 'therapy-interruption-standard-confusion'],
+  },
+  {
+    id: 'eppp-v3-professional-066', expectedAnswerIndex: 1, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: 'Which circumstance makes a multiple relationship ethically problematic under Standard 3.05?',
+    prompt: 'A psychologist is asked to be both a client\'s therapist and business partner. This second professional capacity could compromise clinical judgment and open a path to misuse. What makes the arrangement ethically problematic?',
+    choices: ['The community is small, so overlapping roles require no further ethical analysis', 'The added role could impair objectivity or effectiveness or create a foreseeable risk of exploitation or harm', 'Any pair of professional and nonprofessional roles is unethical even when no risk is reasonably expected', 'Client consent resolves the concern despite power differences and foreseeable consequences'],
+    rationale: 'Standard 3.05 focuses on reasonably expected impairment, exploitation, or harm. A second role is concerning when it compromises professional judgment or creates a power-based risk, not merely because two roles exist.',
+    feedback: {
+      0: 'Small-community conditions may affect feasibility and risk, but they do not remove the duty to analyze impairment, exploitation, and harm in the proposed roles.',
+      2: 'The Code does not treat every overlapping role as inherently unethical. The relevant threshold is a reasonably expected impairment, exploitation, or harm.',
+      3: 'Consent is informative but does not erase power differences or excuse foreseeable exploitation and impairment. The psychologist remains responsible for evaluating the arrangement.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'professional-analyze-standard-305-multiple-relationship-risk-threshold', distractorDesign: ['small-community-exemption', 'categorical-role-ban', 'consent-overrides-risk'],
+  },
+  {
+    id: 'eppp-v3-professional-067', expectedAnswerIndex: 2, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: 'A financial interest could reasonably impair a psychologist\u2019s objectivity in recommending a service. What is the controlling concern?',
+    prompt: 'A psychologist owns part of a clinic and receives a referral payment when clients use one of its programs. The psychologist recommends the program without disclosing the financial tie. Which ethical standard is most directly implicated?',
+    choices: ['Standard 6.01 concerning documentation of fee arrangements', 'Standard 9.01 concerning the bases for assessment recommendations', 'Standard 3.06 concerning conflicts of interest that can impair professional objectivity', 'Standard 5.02 concerning statements made in public media'],
+    rationale: 'Standard 3.06 addresses conflicts of interest when personal, financial, or relational interests could reasonably impair objectivity, competence, or effectiveness or expose others to harm or exploitation. The undisclosed referral payment creates that concern.',
+    feedback: {
+      0: 'Fee documentation may matter in a service arrangement, but it does not capture the central risk that a financial tie could bias a clinical recommendation.',
+      1: 'Assessment standards concern the evidentiary basis and communication of assessment interpretations. The facts instead center on a personal financial interest in a referral.',
+      3: 'Public-media statements concern advertising and public communications. The ethical problem arises inside a professional recommendation shaped by an undisclosed financial relationship.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'professional-apply-standard-306-to-financial-conflict-of-interest', distractorDesign: ['fee-documentation-confusion', 'assessment-basis-confusion', 'public-media-standard-confusion'],
+  },
+  {
+    id: 'eppp-v3-research-023', expectedAnswerIndex: 2, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: 'In a positively skewed distribution:',
+    prompt: 'A community income distribution has a long tail toward higher values because a small number of earners make far more than the rest. Which ordering is most likely?',
+    choices: ['The mean and median coincide because the distribution is balanced around its center', 'The mean falls below the median because high scores pull the center downward', 'The mean exceeds the median because the upper tail pulls the arithmetic average upward', 'The mode exceeds the mean because the most frequent value lies in the upper tail'],
+    rationale: 'Positive skew has a right-hand tail, so unusually high observations pull the arithmetic mean upward more than the median. In a typical unimodal distribution, the ordering is mode, then median, then mean.',
+    feedback: {
+      0: 'Coincident mean and median are more characteristic of a symmetric distribution. A high-value right tail shifts the mean away from the median.',
+      1: 'A right tail pulls the mean upward rather than downward. The median is less sensitive to extreme high observations and therefore tends to fall below the mean.',
+      3: 'The mode is the most frequent value and generally lies toward the lower side of a positively skewed distribution, not above the pulled-up mean.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'research-interpret-positive-skew-through-mean-median-ordering', distractorDesign: ['symmetry-confusion', 'left-tail-direction-confusion', 'mode-mean-confusion'],
+  },
+  {
+    id: 'eppp-v3-research-031', expectedAnswerIndex: 3, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'A correlation of r = -.85 indicates:',
+    prompt: 'Across clients, higher sleep quality is associated with lower symptom scores, with r = -.85. Which interpretation is most accurate?',
+    choices: ['The variables have no systematic association in the observed sample', 'The variables show a moderate positive association as sleep quality rises', 'The variables show a weak inverse association with little practical relevance', 'The variables show a strong inverse association, while the coefficient alone does not establish causation'],
+    rationale: 'The magnitude .85 indicates a strong linear association and the negative sign indicates opposite direction: higher values of one variable accompany lower values of the other. Correlation alone does not establish that one variable causes the other.',
+    feedback: {
+      0: 'A coefficient near -.85 is far from zero, so it indicates a substantial linear association. The sign and magnitude both carry information.',
+      1: 'The sign is negative, not positive, and the magnitude is large enough to indicate a strong rather than moderate association in this context.',
+      2: 'The inverse direction is correct, but .85 represents a strong relationship rather than a weak one. Practical meaning still depends on design, measurement, and context.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'research-interpret-correlation-magnitude-direction-and-causal-limits', distractorDesign: ['zero-correlation-confusion', 'sign-confusion', 'magnitude-confusion'],
+  },
+  {
+    id: 'eppp-b004-research-2', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'advanced',
+    expectedPrompt: 'Participants infer a study\u2019s hypothesis from the researcher\u2019s wording and change their responses to fit what they think is expected. This threat is most directly associated with:',
+    prompt: 'During a study, a volunteer notices a researcher hint about the study aim and alters an answer to fit the perceived prediction. Which threat to research validity is most apparent?',
+    choices: ['Restriction of range caused by a sample with little variability on the measured attribute', 'Differential attrition in which dropout differs across the study conditions', 'Demand characteristics in which contextual cues signal how participants are expected to respond', 'Regression toward the mean after an unusually high or low initial score'],
+    rationale: 'Demand characteristics are cues in a research setting that communicate a possible hypothesis or expected behavior, prompting participants to alter responses. The resulting reactivity can bias the observed relation between the study variables.',
+    feedback: {
+      0: 'Restriction of range reduces observed association because scores vary too little in the sampled group. It does not describe changing an answer after inferring the study aim.',
+      1: 'Differential attrition concerns unequal dropout across groups or conditions. The participant in this vignette remains in the study but changes a response based on perceived cues.',
+      3: 'Regression toward the mean is a statistical tendency for extreme measurements to move closer to the average on retest. It does not involve reacting to researcher hints.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'research-identify-demand-characteristics-from-participant-reactivity', distractorDesign: ['range-restriction-confusion', 'differential-attrition-confusion', 'regression-to-mean-confusion'],
+  },
+  {
+    id: 'eppp-v3-social-cultural-008', expectedAnswerIndex: 2, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: 'The contact hypothesis (Allport) proposes that intergroup prejudice can be reduced by:',
+    prompt: 'Two student groups work toward a shared outcome, have comparable status, depend on one another, and receive support from school leaders. Which feature makes this contact most likely to reduce prejudice?',
+    choices: ['Structured online interaction selected as the primary route for managing group difference', 'Casual encounters lacking a shared task or institutional support', 'Comparable-standing cooperation around common goals with supportive norms from authorities', 'Avoidance of direct interaction so that disagreement does not become visible'],
+    rationale: 'Allport\'s contact hypothesis predicts stronger prejudice reduction when groups meet under equal-status conditions, pursue common goals cooperatively, and receive institutional support. Contact alone is not sufficient when competition or unequal power dominates.',
+    feedback: {
+      0: 'A digital format is not the defining condition. The hypothesis emphasizes equal status, cooperation, shared goals, and supportive norms, regardless of medium.',
+      1: 'Unstructured contact can preserve competition or stereotypes and may intensify conflict. The specified cooperative and supported conditions are what give contact its benefit.',
+      3: 'Avoidance prevents opportunities for corrective interaction and shared success. The hypothesis proposes carefully structured cooperation rather than separation.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'social-cultural-apply-contact-hypothesis-conditions-to-an-intergroup-program', distractorDesign: ['medium-substitution-confusion', 'casual-contact-overclaim', 'avoidance-confusion'],
+  },
+  {
+    id: 'eppp-v3-social-cultural-013', expectedAnswerIndex: 0, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: 'Social identity theory (Tajfel & Turner) proposes that:',
+    prompt: 'After being assigned to a minimal group, participants favor their own group in allocating points even when the categories have no history. Which social-psychological account best explains the pattern?',
+    choices: ['Group memberships become part of personal identity and can motivate in-group favoritism to protect positive regard', 'Collective categories have no relation to self-evaluation once personal traits are known', 'In-group preference reflects a valid hierarchy in which dominant groups possess more authentic identities', 'Identity is formed as a purely private construct that social comparison cannot influence'],
+    rationale: 'Social identity theory holds that group memberships contribute to self-concept. People may seek positive social identity through in-group favoritism and comparisons with out-groups, even when categories are newly assigned.',
+    feedback: {
+      1: 'The minimal-group finding shows that even arbitrary categories can affect evaluation and allocation. Social identity theory therefore treats group membership as psychologically meaningful.',
+      2: 'The theory does not claim that dominant groups possess more authentic identities. It explains comparison and favoritism as processes that can occur across status arrangements.',
+      3: 'Social identity theory explicitly links self-concept to group membership and intergroup comparison. A purely private account misses the social categorization mechanism.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'social-cultural-analyze-minimal-group-favoritism-through-social-identity-theory', distractorDesign: ['personal-identity-only-confusion', 'dominance-legitimacy-confusion', 'private-identity-confusion'],
+  },
+  {
+    id: 'eppp-v3-social-cultural-014', expectedAnswerIndex: 1, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: 'Heuristic processing (peripheral route in ELM) is most likely when:',
+    prompt: 'A tired audience has little personal stake in a product decision and relies on a speaker\'s warmth and apparent expertise rather than evaluating the evidence. Which persuasion route is most likely?',
+    choices: ['Central-route processing based on careful evaluation of argument quality', 'Peripheral-route processing based on surface cues when motivation or ability is limited', 'Source-monitoring correction based on deliberate comparison of message origins', 'Self-affirmation processing based on defending a threatened personal value'],
+    rationale: 'The peripheral route is more likely when motivation or ability to scrutinize arguments is limited, so people rely on cues such as attractiveness, expertise, or emotional tone. Such changes may be less durable when the cues change.',
+    feedback: {
+      0: 'Central processing requires motivation and ability to evaluate argument quality. The tired, low-stakes audience is relying on source cues instead.',
+      2: 'Source monitoring concerns remembering where information came from and correcting attribution errors. It is not the ELM route described by cue-based persuasion.',
+      3: 'Self-affirmation can buffer threat to a valued identity, but it does not label persuasion based on a speaker\'s surface cues under limited processing capacity.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'social-cultural-apply-elaboration-likelihood-routes-to-a-low-motivation-audience', distractorDesign: ['central-route-confusion', 'source-monitoring-confusion', 'self-affirmation-confusion'],
+  },
+];
+
+module.exports = { baselineMetrics, reviewedAt, reviewWave, revisions };

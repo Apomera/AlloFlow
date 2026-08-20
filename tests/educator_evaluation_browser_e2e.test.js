@@ -31,7 +31,7 @@ describe('Educator Evaluation — browser e2e', () => {
     await page.goto(PAGE);
     await page.waitForSelector('.ae-onboarding-overlay, .ae-tabs', { timeout: 15000 });
     const onboarding = page.locator('.ae-onboarding-overlay .ae-onboarding-option');
-    if (await onboarding.count()) await onboarding.nth(1).click(); // simulated workspace
+    if (await onboarding.count()) await onboarding.nth(0).click(); // guided fictional workspace
     await page.waitForSelector('.ae-tabs');
     return { page, errors };
   };
@@ -113,7 +113,7 @@ describe('Educator Evaluation — browser e2e', () => {
     const maineSelects = page.locator('.ae-rating-grid select').filter({ has: page.locator('option', { hasText: 'Ineffective' }) });
     expect(await maineSelects.count()).toBe(4);
     const text = await page.locator('main').innerText();
-    expect(text).toContain('four rubric domains average equally here');
+    expect(text).toContain('four rubric domains average equally in this generic planning profile');
     expect(errors).toEqual([]);
     await page.close();
   }, 60000);
@@ -141,19 +141,17 @@ describe('Educator Evaluation — browser e2e', () => {
     await page.close();
   }, 60000);
 
-  it('teacher role: growth-lens composer copy and a savable, owned statement', async () => {
+  it('local educator preview: growth-lens copy and visibly read-only educator controls', async () => {
     const { page, errors } = await openWorkspace();
-    await selectTeacher(page, 'Teacher 03 · T-03'); // non-finalized: statement stays editable
-    await page.locator('button', { hasText: 'Teacher' }).first().click();
+    await selectTeacher(page, 'Teacher 03 · T-03');
+    await page.getByRole('button', { name: 'Educator preview', exact: true }).click();
     await page.waitForTimeout(400);
     const text = await page.locator('main').innerText();
     expect(text).toContain('How your final rating is calculated');
     expect(text).toContain('Your statement for the record');
-    await page.locator('textarea').first().fill('I am proud of my students’ growth in discourse this year.');
-    await page.locator('button', { hasText: 'Save statement' }).click();
-    await page.waitForTimeout(300);
-    const after = await page.locator('main').innerText();
-    expect(after).toContain('Last saved');
+    expect(await page.getByLabel('Statement', { exact: true }).getAttribute('readonly')).not.toBeNull();
+    expect(await page.getByRole('button', { name: 'Save statement', exact: true }).isDisabled()).toBe(true);
+    expect(text).toContain('Preview only. The educator can write this statement');
     expect(errors).toEqual([]);
     await page.close();
   }, 60000);
@@ -209,11 +207,12 @@ describe('Educator Evaluation — browser e2e', () => {
     expect(await card.count()).toBe(1);
     expect(await card.locator('svg').count()).toBeGreaterThanOrEqual(1);
     const text = await card.innerText();
+    const shareLink = await card.getByLabel('Share link', { exact: true }).inputValue();
     // Loaded over file://, so the card must fall back to the canonical published
     // page: a disk path is unscannable elsewhere and leaks the local folder.
-    expect(text).toContain('https://alloflow-cdn.pages.dev/educator-evaluation');
-    expect(text).not.toMatch(/file:\/\//);
-    expect(text).not.toMatch(/OneDrive|C:\//);
+    expect(shareLink).toBe('https://alloflow-cdn.pages.dev/educator-evaluation');
+    expect(shareLink).not.toMatch(/file:\/\//);
+    expect(shareLink).not.toMatch(/OneDrive|C:\//);
     expect(text).toContain('Your data is not shared by the code');
     expect(errors).toEqual([]);
     await page.close();

@@ -300,7 +300,7 @@ function ProjectSettingsView(props) {
             <section aria-labelledby="principal-evaluation-title" className="rounded-2xl border border-indigo-200 bg-gradient-to-r from-indigo-50 via-white to-violet-50 p-4 shadow-sm sm:p-5">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  {/* Two genuinely different things behind one card, so the badge,
+                  {/* Three record paths sit behind this entry point, so the badge,
                       the button and the prose all have to say which one you are
                       about to get. Before this the not-connected state read
                       "Local preview available", which does not tell a principal
@@ -310,7 +310,7 @@ function ProjectSettingsView(props) {
                   <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-600">
                     {isEvaluationPortalConnected
                       ? 'Opens the Google-authenticated district portal for walkthroughs, formal observations, SPM and SLO workflow, feedback, and trends. Sign-in and server-side assignments decide what each person sees.'
-                      : 'Opens your private on-device workspace with walkthroughs, observations, SPM/SLO workflow, and trends. Nothing is uploaded. It is per-device (anyone using this device can open it) and is not the official personnel record; connect your district portal for shared, authenticated records.'}
+                      : 'Opens the evaluator setup center for three paths: private on-device work, a principal-managed Drive share helper, or the district portal. The private path is per-device (anyone using this device can open it) and is not the official personnel record; connect your district portal for shared, authenticated records. Nothing is uploaded until you deliberately use a district-approved sharing path.'}
                   </p>
                 </div>
                 <button
@@ -326,8 +326,9 @@ function ProjectSettingsView(props) {
                   rel="noreferrer"
                   className="text-indigo-700 underline hover:text-indigo-900"
                 >Read the user manual</a>
-                <span className="ml-1 font-normal text-slate-600">covers both versions, the evaluation cycle, privacy, and district setup.</span>
+                <span className="ml-1 font-normal text-slate-600">covers the private, principal-managed Drive, and district portal paths, plus the evaluation cycle and privacy.</span>
               </p>
+              {!isEvaluationPortalConnected && <p className="mt-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs leading-relaxed text-blue-900"><strong>Need the middle path?</strong> Open Educator Evaluation, choose <strong>Setup</strong>, then select <strong>Principal-managed Drive</strong>. A resumable seven-step checklist provides script.new, three source-copy buttons, private-deployment warnings, a helper-link field, and the deployment check.</p>}
               {typeof onSaveEvaluationPortalUrl === 'function' && (
                 <>
                   <form className="mt-4 border-t border-indigo-100 pt-4" onSubmit={function(event) { event.preventDefault(); applyEvaluationPortalUrl(portalUrlDraft); }}>

@@ -40,6 +40,10 @@ describe('Raptor Hunt resilient engine startup and mission flow', () => {
     expect(text).toContain("'data-raptor-engine-state': threeLoadStatus");
     expect(text).toMatch(/threeLoadStatus === 'error'[\s\S]{0,1100}setThreeLoadStatus\('idle'\)/);
     expect(text).toMatch(/initHuntSim\(canvas,\s*findSpecies\(flightSession\.speciesId\),\s*mission,\s*patchSimUI,\s*graphicsQuality\)/);
+    expect(text).toContain('canvas.isConnected && canvas.focus');
+    expect(text).toContain('window.clearTimeout(focusTimer)');
+    expect(text).toContain('flightResultRef.current && flightResultRef.current.focus');
+    expect(text).toContain('tabIndex: -1');
     expect(text).not.toContain('_threeLoaded');
   });
 
@@ -174,13 +178,126 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(text).toContain("'data-raptor-active-flight': 'true'");
     expect(text).toContain("'data-raptor-edit-flight': 'true'");
     expect(text).toContain("'data-raptor-flight-settings': 'true'");
+    expect(text).toContain("'data-raptor-performance': 'true'");
+    expect(text).toContain("'data-active': 'false'");
+    expect(text).toContain('telemetryCaloriesFill.style.width');
+    expect(text).toContain('data-energy-state');
+    expect(text).toContain('raptorFlightState');
+    expect(text).toContain('function updateFlightState(nextState)');
+    expect(text).toContain("var nextFlightState = raptor.crashed");
+    expect(text).toContain("'data-raptor-selected-profile': 'true'");
+    expect(text).toContain("'aria-keyshortcuts': 'W S A D Q E Shift Space F P V Z T'");
+    expect(text).toContain("'data-raptor-target-announcement': 'true'");
+    expect(text).toContain('targetStateChanged');
+    expect(text).toContain("'aria-live': 'polite'");
     expect(text).toContain("'data-raptor-flight-result': simUI.missionState");
+    expect(text).toContain("'data-raptor-flight-debrief': 'true'");
+    expect(text).toContain("setAttribute('data-raptor-mission-focus', 'true')");
+    expect(text).toContain('flightSummary: finalSummary');
+    expect(text).toContain('missionMetric: mission.id ===');
+    expect(text).toContain('function missionFocusText()');
+    expect(text).toContain('fpsSampleFrames');
+    expect(text).toContain('notifyUI({ fps: fpsValue });');
     expect(text).toContain("telemetryStrip.className = 'rh-flight-telemetry-strip'");
     expect(text).toContain("'data-raptor-section-switcher': 'true'");
     expect(text).toContain("'data-raptor-achievements': 'collapsed'");
     expect(text).toMatch(/activeSection === 'hub' && !activeCategoryId && !searchTerm/);
     expect(text).toMatch(/activeSection === 'hub' && !atHub && activeCategory/);
     expect(text).not.toContain("eventLogEl.setAttribute('aria-live', 'polite')");
+  });
+
+  it('adds depth cues to the flight world without turning them into permanent clutter', () => {
+    const text = source();
+    expect(text).toContain("thermalSpiral.name = 'mission-thermal-spiral'");
+    expect(text).toContain("thermalLiftParticles.name = 'mission-thermal-lift-particles'");
+    expect(text).toContain("biomeLandmarks.name = 'raptor-biome-landmarks'");
+    expect(text).toContain("horizonVeilGroup.name = 'raptor-horizon-veil'");
+    expect(text).toContain("wingtipVortices.name = 'raptor-wingtip-vortices'");
+    expect(text).toContain("waterWakeGroup.name = 'raptor-prey-water-wakes'");
+    expect(text).toContain("touchdownFx.name = 'raptor-touchdown-fx'");
+    expect(text).toContain("flightTrail.name = 'raptor-flight-trail'");
+    expect(text).toContain("targetGuide.name = 'raptor-target-guide'");
+    expect(text).toContain("airflowLines.name = 'raptor-airflow-lines'");
+    expect(text).toContain('updateFlightTrail();');
+    expect(text).toContain('updateAirflowLines(now);');
+    expect(text).toContain('updateWingtipVortices(now);');
+    expect(text).toContain('updateWaterWakes(now);');
+    expect(text).toContain('updateTouchdownFx(dt);');
+    expect(text).toContain('updateTargetGuide(targetInfo, nextTargetState, now);');
+    expect(text).toContain('updateBiomeLandmarks(now);');
+    expect(text).toContain('updateAltitudeLighting();');
+    expect(text).toMatch(/thermalLiftParticles\.visible = !_rmFX && thermalActive/);
+    expect(text).toMatch(/var vortexActive = !_rmFX && !raptor\.landed && !raptor\.crashed/);
+    expect(text).toMatch(/shadowAltitudeRatio = Math\.max\(0, Math\.min\(1, altAboveGround \/ 220\)\)/);
+    expect(text).toMatch(/var wakeActive = !_rmFX && wakeSpeed > 0\.16 && !wakePrey\.alerted/);
+    expect(text).toMatch(/if \(raptor\.landed && !wasLanded\) spawnTouchdownFx\('land'\)/);
+    expect(text).toMatch(/if \(raptor\.crashed && !wasCrashed\) spawnTouchdownFx\('crash'\)/);
+    expect(text).toMatch(/var trailActive = !_rmFX && \(raptor\.diving \|\| diveIntensity > 0\.18 \|\| strikeFeedbackActive\)/);
+  });
+
+  it('prioritizes a resumable mission briefing before compact topic discovery', () => {
+    resetStemLab();
+    loadTool(CANONICAL, 'raptorHunt');
+    const html = renderTool('raptorHunt', {
+      raptorHunt: {
+        activeSection: 'hub',
+        selectedSpecies: 'peregrine',
+        recentlyViewed: ['vision'],
+        visited: { vision: 1, fieldid: 1 },
+      },
+    });
+    expect(html).toContain('data-raptor-primary-action="resume"');
+    expect(html).toContain('Continue: Vision Lab');
+    expect(html).toContain('rh-command-deck');
+    expect(html).toContain('rh-category-grid');
+    expect(html).toContain('aria-label="Labs &amp; Physics, 1 of 13 sections visited"');
+    expect(html.indexOf('rh-command-deck')).toBeLessThan(html.indexOf('rh-category-grid'));
+
+    const text = source();
+    expect(text).toContain('.rh-category-grid{display:flex;gap:10px;overflow-x:auto');
+    expect(text).toContain('scroll-snap-type:x mandatory');
+    expect(text).toContain('.rh-nav-topbar{position:sticky');
+    expect(text).toContain('button:focus-visible');
+  });
+
+  it('keeps science surfaces inside the same field-station hierarchy', () => {
+    resetStemLab();
+    loadTool(CANONICAL, 'raptorHunt');
+    const rosterHtml = renderTool('raptorHunt', {
+      raptorHunt: {
+        activeSection: 'roster',
+        selectedSpecies: 'peregrine',
+        visited: { roster: 2, vision: 1, talons: 1 },
+      },
+    });
+    expect(rosterHtml).toContain('class="rh-section-intro"');
+    expect(rosterHtml).toContain('Species &amp; ID');
+    expect(rosterHtml).toContain('Species Roster');
+    expect(rosterHtml).toContain('class="rh-roster-toolbar');
+    expect(rosterHtml).toContain('Active / 🦅 Peregrine Falcon');
+    expect(rosterHtml).toContain('role="progressbar"');
+    expect(rosterHtml).toContain('data-raptor-section-nav="true"');
+    expect(rosterHtml).toContain('Return to collection');
+    expect(rosterHtml).toContain('class="rh-roster-profile"');
+    expect(rosterHtml).toContain('data-active="true"');
+
+    const text = source();
+    expect(text).toContain('.rh-section-intro{display:grid');
+    expect(text).toContain('.rh-section-progress>span');
+    expect(text).toContain('.rh-roster-active{display:inline-flex');
+    expect(text).toContain('rh-lab-page-talons');
+    expect(text).toContain('rh-lab-banner-vision');
+    expect(text).toContain('rh-lab-banner-flight');
+    expect(text).toContain("'aria-labelledby': 'rh-active-section-title'");
+    expect(text).toContain("'aria-labelledby': activeSection === 'hub' ? 'rh-command-title'");
+    expect(text).toContain('function openIntroSection(sectionMeta)');
+    expect(text).toContain('previousSectionMeta');
+    expect(text).toContain('nextSectionMeta');
+    expect(text).toContain('.rh-hub-challenge');
+    expect(text).toContain('rh-hub-progress');
+    expect(text).toContain('rh-hub-learn');
+    expect(text).toContain('function rosterPct(value, max)');
+    expect(text).toContain('.rh-roster-profile-track>span');
   });
 
   it('renders setup without mounting a flight until Start Flight is chosen', () => {
@@ -197,6 +314,8 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
         },
       });
       expect(html).toContain('data-raptor-flight-setup="true"');
+      expect(html).toContain('data-raptor-selected-profile="true"');
+      expect(html).toContain('data-raptor-flight-profile="peregrine"');
       expect(html).toContain('data-raptor-start-flight="true"');
       expect(html).not.toContain('data-raptor-flight-stage="true"');
       expect(html).not.toContain('data-raptor-controls="true"');
@@ -438,14 +557,19 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(text).toContain('.rh-flight-controls-group{display:grid;grid-template-columns:repeat(5,minmax(0,1fr))');
     expect(text).toContain('max-height:42vh;overflow-y:auto');
     expect(text).toContain('.rh-flight-metric:nth-child(6){display:none;}');
+    expect(text).toContain('[data-raptor-weather="true"][data-precipitation="rain"]');
+    expect(text).toContain('[data-raptor-mission-metric="true"][data-mission-state="success"]');
     expect(init).toContain("telemetryMission.parentElement.dataset.raptorMissionMetric = 'true'");
+    expect(init).toContain('telemetryMission.parentElement.dataset.missionState = missionOutcome');
     expect(text).not.toContain('.rh-flight-energy,.rh-flight-mission-hud{display:none!important;}');
     expect(init).toContain("nextTargetState === 'recovering'");
     expect(init).toContain("nextTargetState === 'ready' ? 'READY - press Strike'");
     expect(init).toContain("nextTargetState === 'close' ? 'CLOSE - '");
-    expect(init).toContain("targetInfo.verticalOffset > 0 ? 'ALIGN - pull up' : 'ALIGN - dive lower'");
+    expect(init).toContain("targetInfo.verticalOffset > 0 ? 'ALIGN ' + _alignPct + '% - pull up' : 'ALIGN ' + _alignPct + '% - dive lower'");
     expect(init).toContain('reticle.dataset.lockState = nextTargetState');
-    expect(init).toContain('notifyUI({ targetState: nextTargetState, targetHint: nextTargetHint })');
+    expect(init).toContain('var targetPatch = { targetState: nextTargetState, targetHint: nextTargetHint,');
+    expect(init).toContain('targetAlign: nextTargetAlign, targetRange: nextTargetRange };');
+    expect(init).toContain('targetPatch.targetAnnouncement =');
   });
 
   it('clamps offscreen guidance to the same target reticle and exposes diagnostics', () => {

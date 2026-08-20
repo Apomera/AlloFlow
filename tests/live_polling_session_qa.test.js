@@ -340,7 +340,8 @@ describe('session Q&A reuses the polling P2P star', () => {
 describe('session Q&A UI and privacy seams', () => {
   it('is hidden by default and opt-in on both existing React owners', () => {
     expect(pollingSource.match(/props\.enableSessionQa === true/g)).toHaveLength(2);
-    expect(pollingSource).toContain("sessionQaOptIn ? ce(SessionQaHostPanel");
+    expect(pollingSource).toContain("sessionQaOptIn ? ce('div', { 'data-live-workspace-section': 'questions'");
+    expect(pollingSource).toContain('ce(SessionQaHostPanel, {');
     expect(pollingSource).toContain("tr('Ask / Q&A')");
     expect(pollingSource).toContain("tr('Lock questions')");
     expect(pollingSource).toContain("tr('Restore')");

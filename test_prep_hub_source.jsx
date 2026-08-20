@@ -3714,6 +3714,12 @@ function TestPrepHub(props) {
   const [clarificationHistory, setClarificationHistory] = React.useState([]);
   const [assistedItemIds, setAssistedItemIds] = React.useState([]);
   const dialogRef = React.useRef(null);
+  // Hosts commonly pass inline close handlers. Keep the latest handler in a
+  // ref so routine parent renders do not tear down and restart the modal focus
+  // lifecycle. Restarting it calls focus() again, which dismisses native iOS
+  // select pickers while the user is still choosing an option.
+  const onCloseRef = React.useRef(onClose);
+  onCloseRef.current = onClose;
   const readAloudAudioRef = React.useRef(null);
   const readAloudUtteranceRef = React.useRef(null);
   const readAloudAbortRef = React.useRef(null);
@@ -4140,7 +4146,7 @@ function TestPrepHub(props) {
     if (++scrollLock.count === 1) { scrollLock.prev = document.body.style.overflow; document.body.style.overflow = 'hidden'; }
     if (dialogRef.current) dialogRef.current.focus();
     const onKeyDown = (event) => {
-      if (event.key === 'Escape') { event.preventDefault(); onClose(); return; }
+      if (event.key === 'Escape') { event.preventDefault(); if (typeof onCloseRef.current === 'function') onCloseRef.current(); return; }
       if (event.key !== 'Tab' || !dialogRef.current) return;
       const focusable = Array.from(dialogRef.current.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [href], [tabindex]:not([tabindex="-1"])')).filter((element) => element.getClientRects().length > 0);
       if (!focusable.length) return;
@@ -4156,7 +4162,7 @@ function TestPrepHub(props) {
       if (scrollLock.count === 0) document.body.style.overflow = scrollLock.prev;
       if (prior && typeof prior.focus === 'function') prior.focus();
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   React.useEffect(() => {
     if (!isOpen) return undefined;

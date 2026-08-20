@@ -1123,7 +1123,106 @@ const ConfettiEffect = ({ isActive }) => {
   );
 };
 // @section ESCAPE_ROOM — Escape Room student overlay
-const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionCode, targetAppId, t, playSound, setIsEscapeTimerRunning }) => {
+const StudentConceptQuestOverlay = React.memo(({ sessionData, user, activeSessionCode, targetAppId, playSound }) => {
+  const escapeState = sessionData?.escapeRoomState;
+  const quest = escapeState?.conceptQuest;
+  const engine = window.AlloModules?.ConceptQuestEngine;
+  const [abilityId, setAbilityId] = useState('analyze');
+  const [answerIndex, setAnswerIndex] = useState(null);
+  const [supportId, setSupportId] = useState('clarify');
+  const [supportTargetUid, setSupportTargetUid] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const userTeam = escapeState?.teams?.[user?.uid];
+  const progress = escapeState?.teamProgress?.All || {};
+  const currentRoom = engine?.getRoom?.(quest, quest?.currentRoomId);
+  const rooms = quest?.rooms || [];
+  const myVote = progress.questVotes?.[user?.uid];
+  const myAction = progress.questActions?.[user?.uid];
+  const myRole = progress.questRoles?.[user?.uid];
+  const peerRoster = Object.values(sessionData?.roster || {}).filter(entry => entry?.uid && entry.uid !== user?.uid);
+
+  useEffect(() => {
+    if (!escapeState?.isActive || !user?.uid || !activeSessionCode || userTeam === 'All') return;
+    const assign = async () => {
+      try {
+        const sessionRef = doc(db, 'artifacts', targetAppId, 'public', 'data', 'sessions', activeSessionCode);
+        await updateDoc(sessionRef, { [`escapeRoomState.teams.${user.uid}`]: 'All' });
+      } catch (error) { warnLog('Concept Quest party assignment failed:', error); }
+    };
+    assign();
+  }, [escapeState?.isActive, user?.uid, activeSessionCode, targetAppId, userTeam]);
+
+  useEffect(() => { setAnswerIndex(null); }, [quest?.turn, quest?.currentRoomId]);
+  useEffect(() => {
+    if (supportTargetUid && !peerRoster.some(entry => entry.uid === supportTargetUid)) setSupportTargetUid('');
+  }, [supportTargetUid, sessionData?.roster]);
+
+  if (!quest || !engine) return null;
+  const writeChoice = async (field, value) => {
+    if (!user?.uid || !activeSessionCode || escapeState.isPaused) return;
+    setIsSubmitting(true);
+    try {
+      const sessionRef = doc(db, 'artifacts', targetAppId, 'public', 'data', 'sessions', activeSessionCode);
+      await updateDoc(sessionRef, { [`escapeRoomState.teamProgress.All.${field}.${user.uid}`]: value });
+      playSound?.('click');
+    } catch (error) { warnLog('Concept Quest action failed:', error); }
+    finally { setIsSubmitting(false); }
+  };
+  const currentEnemy = currentRoom?.enemy;
+  const adjacent = (currentRoom?.neighbors || []).map(id => rooms.find(room => room.id === id)).filter(Boolean);
+  const partyHpPercent = Math.round((quest.party.hp / quest.party.maxHp) * 100);
+  const enemyHpPercent = currentEnemy ? Math.round((currentEnemy.hp / currentEnemy.maxHp) * 100) : 0;
+  const debrief = engine.createDebrief?.(quest);
+
+  return (
+    <div className="fixed inset-0 z-[9999] overflow-auto bg-gradient-to-br from-slate-950 via-indigo-950 to-purple-950 text-white" role="region" aria-labelledby="concept-quest-title">
+      <header className="sticky top-0 z-20 border-b border-indigo-400/30 bg-slate-950/95 p-3 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
+          <div><h2 id="concept-quest-title" className="text-xl font-black">🗺️ {quest.title}</h2><p className="text-xs text-indigo-200">Turn {quest.turn} · {currentRoom?.name}</p></div>
+          <div className="flex gap-3 text-sm font-bold" aria-label={`Party health ${quest.party.hp} of ${quest.party.maxHp}`}><span>❤️ {quest.party.hp}/{quest.party.maxHp}</span><span>🛡️ {quest.party.shield || 0}</span><span>✨ {quest.party.xp || 0} XP</span><span>🔷 {(quest.sigils || []).length}/{quest.sigilsRequired || 3}</span></div>
+        </div>
+        <div className="mx-auto mt-2 h-2 max-w-6xl overflow-hidden rounded-full bg-slate-700"><div className="h-full bg-emerald-500 transition-all motion-reduce:transition-none" style={{ width: `${partyHpPercent}%` }} /></div>
+      </header>
+      <main className="mx-auto grid max-w-6xl gap-5 p-4 lg:grid-cols-[1.25fr_.75fr]">
+        <section className="rounded-2xl border border-indigo-400/30 bg-slate-900/80 p-4" aria-labelledby="quest-map-heading">
+          <h3 id="quest-map-heading" className="mb-3 text-lg font-black">Cooperative map</h3>
+          <div className="relative min-h-[360px] rounded-xl border border-slate-700 bg-slate-950/70" aria-label="Eight-room game map">
+            {rooms.map(room => {
+              const isCurrent = room.id === quest.currentRoomId;
+              const isVisited = (quest.visited || []).includes(room.id);
+              const isAdjacent = (currentRoom?.neighbors || []).includes(room.id);
+              const isLocked = room.kind === 'boss' && (quest.sigils || []).length < (quest.sigilsRequired || 3);
+              return <button key={room.id} type="button" disabled={!isAdjacent || isLocked || quest.phase !== 'explore' || escapeState.isPaused || isSubmitting} onClick={() => writeChoice('questVotes', room.id)} style={{ left: `${room.x}%`, top: `${room.y}%`, transform: 'translate(-50%, -50%)' }} className={`absolute min-h-14 w-24 rounded-xl border-2 p-1 text-center text-[11px] font-bold focus:outline-none focus:ring-4 focus:ring-yellow-300 ${isCurrent ? 'border-yellow-300 bg-yellow-500 text-slate-950' : isAdjacent && !isLocked ? 'border-cyan-300 bg-indigo-800 hover:bg-indigo-700' : isVisited ? 'border-emerald-500 bg-slate-800' : 'border-slate-600 bg-slate-900 text-slate-300'} disabled:cursor-default`} aria-current={isCurrent ? 'location' : undefined} aria-label={`${room.name}, ${room.kind}${isLocked ? ', locked until more concept sigils are earned' : ''}${isCurrent ? ', current room' : ''}`}><span className="block text-xl" aria-hidden="true">{isLocked ? '🔒' : room.emoji}</span>{room.name}</button>;
+            })}
+          </div>
+          <div className="mt-3 rounded-xl bg-indigo-950/60 p-3"><p className="font-bold">{currentRoom?.emoji} {currentRoom?.name}</p><p className="text-sm text-indigo-100">Concept: {currentRoom?.concept}</p>
+            <div className="mt-3"><p className="mb-2 text-sm font-bold">Choose a party role</p><div className="grid grid-cols-2 gap-2">{(quest.roles || engine.ROLES || []).map(role => <button key={role.id} type="button" onClick={() => writeChoice('questRoles', role.id)} aria-pressed={myRole === role.id} className={`min-h-14 rounded-lg border p-2 text-left text-xs focus:ring-4 focus:ring-yellow-300 ${myRole === role.id ? 'border-emerald-300 bg-emerald-900' : 'border-slate-600 bg-slate-800'}`}><strong>{role.emoji} {role.name}</strong><span className="mt-1 block text-slate-300">{role.description}</span></button>)}</div></div>
+            {quest.phase === 'explore' && <div className="mt-3"><p className="mb-2 text-sm">Vote for a connected room. Earn {quest.sigilsRequired || 3} concept sigils to unlock the Mastery Gate.</p><div className="flex flex-wrap gap-2">{adjacent.map(room => { const locked = room.kind === 'boss' && (quest.sigils || []).length < (quest.sigilsRequired || 3); return <button key={room.id} type="button" disabled={isSubmitting || escapeState.isPaused || locked} onClick={() => writeChoice('questVotes', room.id)} className={`min-h-11 rounded-lg px-3 py-2 text-sm font-bold focus:ring-4 focus:ring-yellow-300 disabled:opacity-50 ${myVote === room.id ? 'bg-yellow-400 text-slate-950' : 'bg-indigo-700 hover:bg-indigo-600'}`}>{locked ? '🔒' : room.emoji} {room.name}</button>; })}</div>{myVote && <p role="status" className="mt-2 text-sm text-yellow-200">Your vote is recorded.</p>}</div>}
+          </div>
+        </section>
+        <section className="space-y-4" aria-label="Current encounter">
+          {quest.activeEvent && <div className="rounded-2xl border-2 border-amber-300 bg-amber-950/70 p-4" role="status" aria-live="polite"><p className="text-xs font-black uppercase text-amber-300">Teacher GM event</p><h3 className="text-lg font-black">{quest.activeEvent.title}</h3><p className="mt-1 text-sm">{quest.activeEvent.description}</p></div>}
+          {quest.lastRound && <div className="rounded-2xl border border-cyan-400/40 bg-cyan-950/60 p-4" role="status" aria-live="polite"><p className="font-black">Round recap: {quest.lastRound.correct}/{quest.lastRound.total} checks succeeded</p><p className="mt-1 text-sm">The party dealt {quest.lastRound.damage} damage and took {quest.lastRound.incoming}.</p>{quest.lastRound.combo && <p className="mt-1 font-bold text-yellow-200">⚡ Concept Combo! Three different abilities worked together.</p>}{quest.lastRound.synergyCount > 0 && <p className="text-sm text-emerald-200">{quest.lastRound.synergyCount} role synergies activated.</p>}{quest.lastRound.assistedCount > 0 && <p className="text-sm text-sky-200">🤝 {quest.lastRound.assistedCount} peer assists activated.</p>}{quest.lastRound.encounterRule && <p className="mt-1 rounded-lg bg-slate-900/60 p-2 text-sm text-cyan-100">{quest.lastRound.encounterRule}</p>}<details className="mt-2 text-sm"><summary className="cursor-pointer font-bold">Review the concept</summary><p className="mt-1 text-cyan-100">{quest.lastRound.explanation}</p></details></div>}
+          {quest.phase === 'battle' && currentEnemy && <div className="rounded-2xl border border-fuchsia-400/40 bg-slate-900 p-4">
+            <div className="text-center"><div className="text-6xl" aria-hidden="true">{currentEnemy.emoji}</div><h3 className="text-xl font-black">{currentEnemy.name}</h3><p className="text-sm text-fuchsia-200">A misconception about {currentRoom.concept}</p>{currentRoom.kind === 'puzzle' && <p className="mt-1 text-xs font-bold text-cyan-200">Reasoning Lock: reach two-thirds class consensus for bonus damage.</p>}{currentRoom.kind === 'boss' && <p className="mt-1 text-xs font-bold text-yellow-200">Mastery Barrier: reach 60% class accuracy to break through.</p>}</div>
+            <div className="my-3 h-3 overflow-hidden rounded-full bg-slate-700" aria-label={`Enemy health ${currentEnemy.hp} of ${currentEnemy.maxHp}`}><div className="h-full bg-fuchsia-500" style={{ width: `${enemyHpPercent}%` }} /></div>
+            <fieldset disabled={!!myAction || isSubmitting || escapeState.isPaused} className="space-y-3"><legend className="font-bold">{currentRoom.challenge.prompt}</legend>
+              <div className="grid grid-cols-2 gap-2">{(quest.abilities || []).map(ability => <button type="button" key={ability.id} onClick={() => setAbilityId(ability.id)} aria-pressed={abilityId === ability.id} className={`min-h-16 rounded-lg border p-2 text-left text-xs focus:ring-4 focus:ring-yellow-300 ${abilityId === ability.id ? 'border-cyan-300 bg-cyan-900' : 'border-slate-600 bg-slate-800'}`}><span className="font-black">{ability.emoji} {ability.name}</span><span className="mt-1 block text-slate-300">{ability.description}</span></button>)}</div>
+              <div className="space-y-2">{currentRoom.challenge.options.map((option, index) => <label key={index} className={`flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border p-2 text-sm ${answerIndex === index ? 'border-yellow-300 bg-yellow-950' : 'border-slate-600 bg-slate-800'}`}><input type="radio" name="concept-quest-answer" checked={answerIndex === index} onChange={() => setAnswerIndex(index)} />{option}</label>)}</div>
+              {peerRoster.length > 0 && <div className="rounded-xl border border-sky-500/40 bg-sky-950/50 p-3"><p className="font-bold text-sky-100">Support a teammate</p><p className="text-xs text-sky-200">Optional: a correct response can help one classmate this turn.</p><div className="mt-2 grid grid-cols-3 gap-1">{(quest.supports || engine.SUPPORTS || []).map(support => <button key={support.id} type="button" onClick={() => setSupportId(support.id)} aria-pressed={supportId === support.id} className={`min-h-11 rounded-lg border p-1 text-xs font-bold ${supportId === support.id ? 'border-sky-300 bg-sky-800' : 'border-slate-600 bg-slate-800'}`}>{support.emoji} {support.name}</button>)}</div><label className="mt-2 block text-xs font-bold text-sky-100">Teammate<select value={supportTargetUid} onChange={event => setSupportTargetUid(event.target.value)} className="mt-1 min-h-11 w-full rounded-lg border border-sky-400 bg-slate-900 p-2 text-white"><option value="">No assist this turn</option>{peerRoster.map(peer => <option key={peer.uid} value={peer.uid}>{peer.name || 'Classmate'}</option>)}</select></label></div>}
+              <button type="button" onClick={() => answerIndex != null && writeChoice('questActions', { abilityId, roleId: myRole || '', answerIndex, submittedAt: Date.now(), ...(supportTargetUid ? { supportId, supportTargetUid } : {}) })} disabled={answerIndex == null} className="min-h-12 w-full rounded-xl bg-emerald-600 px-4 py-2 font-black hover:bg-emerald-500 disabled:opacity-50">Commit turn</button>
+            </fieldset>{myAction && <p role="status" className="mt-3 rounded-lg bg-emerald-950 p-2 text-center text-sm text-emerald-200">Turn committed. Discuss your reasoning while the co-GM resolves the round.</p>}
+          </div>}
+          {quest.phase === 'complete' && <div className="rounded-2xl border-2 border-yellow-300 bg-emerald-950 p-6 text-center" role="status"><div className="text-6xl">🏆</div><h3 className="text-2xl font-black">Mastery Gate cleared!</h3><p>The class won by combining its ideas.</p>{debrief && <><div className="mt-4 grid grid-cols-2 gap-2 text-sm sm:grid-cols-3"><span className="rounded-lg bg-emerald-900 p-2"><strong className="block text-xl">{debrief.accuracy}%</strong>Accuracy</span><span className="rounded-lg bg-emerald-900 p-2"><strong className="block text-xl">{debrief.combos}</strong>Combos</span><span className="rounded-lg bg-emerald-900 p-2"><strong className="block text-xl">{debrief.roleSynergies}</strong>Role synergies</span><span className="rounded-lg bg-emerald-900 p-2"><strong className="block text-xl">{debrief.peerAssists}</strong>Peer assists</span><span className="rounded-lg bg-emerald-900 p-2"><strong className="block text-xl">{debrief.puzzlesSolved}</strong>Puzzles</span><span className="rounded-lg bg-emerald-900 p-2"><strong className="block text-xl">{debrief.rounds}</strong>Rounds</span></div>{debrief.strongestConcept && <p className="mt-3 text-sm text-emerald-100">Strongest concept: <strong>{debrief.strongestConcept.concept}</strong> ({debrief.strongestConcept.accuracy}%)</p>}</>}</div>}
+          {quest.phase === 'defeat' && <div className="rounded-2xl border-2 border-rose-400 bg-rose-950 p-6 text-center" role="alert"><h3 className="text-2xl font-black">The party needs a regroup</h3><p>The teacher can introduce help, an item, or a new challenge—this is not an individual loss.</p></div>}
+          <div className="rounded-2xl border border-slate-700 bg-slate-900 p-4"><h3 className="font-black">Shared inventory</h3>{quest.inventory.length ? <ul className="mt-2 space-y-2 text-sm">{quest.inventory.map((item, index) => <li key={`${item.id}-${index}`} className="rounded-lg bg-slate-800 p-2">{item.emoji} <strong>{item.name}</strong> — {item.description}</li>)}</ul> : <p className="mt-2 text-sm text-slate-300">Items awarded or generated by the teacher appear here.</p>}</div>
+        </section>
+      </main>
+    </div>
+  );
+});
+
+const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionCode, targetAppId, t, playSound, setIsEscapeTimerRunning }) => {
   const escapeState = sessionData?.escapeRoomState;
   const [selectedPuzzle, setSelectedPuzzle] = useState(null);
   const [userInput, setUserInput] = useState('');
@@ -1156,12 +1255,19 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
     const s = seconds % 60;
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
-  if (!escapeState?.isActive || !escapeState?.room) return null;
+  if ((!escapeState?.isActive && !escapeState?.isGameOver) || !escapeState?.room) return null;
   const isCoopMode = escapeState.isCoopMode || false;
   const isPaused = escapeState.isPaused || false;
   const userTeam = escapeState.teams?.[user?.uid];
   const teamProgress = escapeState.teamProgress?.[userTeam] || { solvedPuzzles: [] };
   const solvedPuzzlesSet = new Set(teamProgress.solvedPuzzles || []);
+  const teamMaxLives = Number.isFinite(teamProgress.maxLives) ? teamProgress.maxLives : 3;
+  const teamLives = Number.isFinite(teamProgress.lives) ? teamProgress.lives : teamMaxLives;
+  const teamWrongAttempts = teamProgress.wrongAttempts || 0;
+  const teamStreak = teamProgress.streak || 0;
+  const teamGameOver = teamProgress.isGameOver || false;
+  const teamHintsRemaining = Number.isFinite(teamProgress.hintsRemaining) ? teamProgress.hintsRemaining : 3;
+  const teamRevealedHints = teamProgress.revealedHints || {};
   const allTeams = Object.keys(escapeState.teamProgress || {});
   const puzzles = escapeState.puzzles || [];
   const objects = escapeState.objects || [];
@@ -1176,12 +1282,12 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
   };
   const myTeamColors = teamColors[userTeam] || teamColors.Blue;
   useEffect(() => {
-    const completedState = escapeState.isGameOver || teamEscaped;
+    const completedState = escapeState.isGameOver || teamGameOver || teamEscaped;
     if (!userTeam || completedState) escapeStateScreenRef.current?.focus();
     else if (isPaused) pauseDialogRef.current?.focus();
     else if (wasPausedRef.current) escapeMainRef.current?.focus();
     wasPausedRef.current = isPaused;
-  }, [userTeam, escapeState.isGameOver, teamEscaped, isPaused]);
+  }, [userTeam, escapeState.isGameOver, teamGameOver, teamEscaped, isPaused]);
   useEffect(() => {
     const escapedTeams = allTeams.filter(team =>
       escapeState.teamProgress?.[team]?.isEscaped && team !== userTeam
@@ -1244,11 +1350,11 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
         const sessionRef = doc(db, 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
         const newSolvedPuzzles = [...(teamProgress.solvedPuzzles || []), puzzleId];
         const allSolved = newSolvedPuzzles.length >= puzzles.length;
-        const newStreak = (escapeState.streak || 0) + 1;
+        const newStreak = teamStreak + 1;
         await updateDoc(sessionRef, {
           [`escapeRoomState.teamProgress.${userTeam}.solvedPuzzles`]: newSolvedPuzzles,
           [`escapeRoomState.teamProgress.${userTeam}.isEscaped`]: allSolved,
-          [`escapeRoomState.streak`]: newStreak
+          [`escapeRoomState.teamProgress.${userTeam}.streak`]: newStreak
         });
         if (allSolved) {
           setIsEscapeTimerRunning(false);
@@ -1265,15 +1371,17 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
       try {
         const effectiveAppId = targetAppId || appId;
         const sessionRef = doc(db, 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
-        const currentLives = escapeState.lives || 0;
-        const maxLives = escapeState.maxLives || 3;
-        const newLives = maxLives < 99 ? Math.max(0, currentLives - 1) : currentLives;
-        const isGameOver = newLives <= 0 && maxLives < 99;
+        // Legacy live sessions may not have team life fields. Treat a missing
+        // value as a full three-life pool so the first miss can never become
+        // an accidental immediate game over.
+        const newLives = teamMaxLives < 99 ? Math.max(0, teamLives - 1) : teamLives;
+        const isGameOver = newLives <= 0 && teamMaxLives < 99;
         await updateDoc(sessionRef, {
-          [`escapeRoomState.lives`]: newLives,
-          [`escapeRoomState.streak`]: 0,
-          [`escapeRoomState.wrongAttempts`]: (escapeState.wrongAttempts || 0) + 1,
-          [`escapeRoomState.isGameOver`]: isGameOver
+          [`escapeRoomState.teamProgress.${userTeam}.lives`]: newLives,
+          [`escapeRoomState.teamProgress.${userTeam}.maxLives`]: teamMaxLives,
+          [`escapeRoomState.teamProgress.${userTeam}.streak`]: 0,
+          [`escapeRoomState.teamProgress.${userTeam}.wrongAttempts`]: teamWrongAttempts + 1,
+          [`escapeRoomState.teamProgress.${userTeam}.isGameOver`]: isGameOver
         });
       } catch (e) {
         warnLog("Failed to sync life loss:", e);
@@ -1290,7 +1398,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
       </div>
     );
   }
-  if (escapeState.isGameOver) {
+  if (escapeState.isGameOver || teamGameOver) {
     return (
       <div ref={escapeStateScreenRef} tabIndex={-1} role="alert" aria-labelledby="escape-room-game-over-title" aria-describedby="escape-room-game-over-description" className="fixed top-0 right-0 bottom-0 left-0 z-[9999] bg-gradient-to-br from-red-900 via-slate-900 to-gray-900 flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-inset focus:ring-white">
         <div className="text-center text-white animate-in motion-reduce:animate-none zoom-in duration-500">
@@ -1302,7 +1410,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
               {t('escape_room.puzzles_remaining')}: {puzzles.length - solvedPuzzlesSet.size}
             </span>
             <span className="px-4 py-2 bg-slate-800 rounded-lg">
-              {t('escape_room.wrong_attempts')}: {escapeState.wrongAttempts || 0}
+              {t('escape_room.wrong_attempts')}: {teamWrongAttempts}
             </span>
           </div>
         </div>
@@ -1351,10 +1459,10 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
               <span className="text-purple-300">{solvedPuzzlesSet.size}</span>
               <span className="text-slate-400">/{puzzles.length}</span>
             </div>
-            {escapeState.maxLives < 99 && (
+            {teamMaxLives < 99 && (
               <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-slate-700/50" title={t('escape_room.lives')} data-help-key="escape_room_lives">
-                {Array.from({ length: escapeState.maxLives }).map((_, i) => (
-                  <span key={i} className={`text-sm ${i < (escapeState.lives || 0) ? 'text-red-500' : 'text-slate-600'}`}>
+                {Array.from({ length: teamMaxLives }).map((_, i) => (
+                  <span key={i} className={`text-sm ${i < teamLives ? 'text-red-500' : 'text-slate-600'}`}>
                     ❤️
                   </span>
                 ))}
@@ -1362,11 +1470,11 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
             )}
             <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-slate-700/50" title={t('escape_room.hints_used')}>
               <Lightbulb size={14} className="text-yellow-400" />
-              <span className="text-white text-xs font-bold">{escapeState.hintsRemaining || 0}</span>
+              <span className="text-white text-xs font-bold">{teamHintsRemaining}</span>
             </div>
-            {(escapeState.streak || 0) >= 3 && (
+            {teamStreak >= 3 && (
               <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-orange-500/20 text-orange-400 font-bold text-xs animate-pulse motion-reduce:animate-none" data-help-key="escape_room_streak">
-                🔥 x{escapeState.streak}
+                🔥 x{teamStreak}
               </div>
             )}
             <div className={`px-3 py-1.5 rounded-full font-mono font-bold ${timeRemaining < 60 ? 'bg-red-500 text-white animate-pulse motion-reduce:animate-none' : 'bg-slate-700 text-white'}`} data-help-key="escape_room_timer">
@@ -1458,7 +1566,7 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
             <h2 id="escape-room-puzzle-question" className="text-xl text-white font-bold mb-4">{currentPuzzle.question}</h2>
             {currentPuzzle.hint && (
               <div className="mb-4">
-                {escapeState.revealedHints?.[currentPuzzle.id] ? (
+                {teamRevealedHints[currentPuzzle.id] ? (
                   <div className="p-3 bg-yellow-500/20 border border-yellow-500/40 rounded-lg text-yellow-200 text-sm animate-in motion-reduce:animate-none fade-in">
                     <Lightbulb size={14} className="inline mr-2 text-yellow-400" />
                     {currentPuzzle.hint}
@@ -1466,30 +1574,30 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
                 ) : (
                   <button type="button"
                     onClick={async () => {
-                      if ((escapeState.hintsRemaining || 0) <= 0) return;
+                      if (teamHintsRemaining <= 0) return;
                       try {
                         const effectiveAppId = targetAppId || appId;
                         const sessionRef = doc(db, 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
                         await updateDoc(sessionRef, {
-                          [`escapeRoomState.hintsRemaining`]: (escapeState.hintsRemaining || 0) - 1,
-                          [`escapeRoomState.revealedHints.${currentPuzzle.id}`]: true,
-                          [`escapeRoomState.streak`]: 0
+                          [`escapeRoomState.teamProgress.${userTeam}.hintsRemaining`]: teamHintsRemaining - 1,
+                          [`escapeRoomState.teamProgress.${userTeam}.revealedHints.${currentPuzzle.id}`]: true,
+                          [`escapeRoomState.teamProgress.${userTeam}.streak`]: 0
                         });
                         playSound?.('notification');
                       } catch (e) {
                         warnLog("Failed to use hint:", e);
                       }
                     }}
-                    disabled={(escapeState.hintsRemaining || 0) <= 0}
+                    disabled={teamHintsRemaining <= 0}
                     data-help-key="escape_room_hint_button"
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-colors motion-reduce:transition-none whitespace-nowrap ${
-                      (escapeState.hintsRemaining || 0) > 0
+                      teamHintsRemaining > 0
                         ? 'bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30 border border-yellow-500/40'
                         : 'bg-slate-700 text-slate-300 cursor-not-allowed'
                     }`}
                   >
                     <span className="text-sm">💡</span>
-                    {t('escape_room.hint_btn')} ({escapeState.hintsRemaining || 0} {t('escape_room.left')})
+                    {t('escape_room.hint_btn')} ({teamHintsRemaining} {t('escape_room.left')})
                   </button>
                 )}
               </div>
@@ -1799,8 +1907,14 @@ const StudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionC
     </div>
   );
 });
+const StudentEscapeRoomOverlay = React.memo(props => (
+  props.sessionData?.escapeRoomState?.mode === 'concept-quest'
+    ? <StudentConceptQuestOverlay {...props} />
+    : <ClassicStudentEscapeRoomOverlay {...props} />
+));
+
 // @section ESCAPE_ROOM_TEACHER — Escape Room teacher controls
-const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, appId, t, addToast }) => {
+const ClassicEscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, appId, t, addToast }) => {
   const escapeState = sessionData?.escapeRoomState;
   const [showEndConfirm, setShowEndConfirm] = useState(false);
   const endGameDialogRef = useRef(null);
@@ -1999,14 +2113,41 @@ const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, 
     </div>
   );
 });
+const ConceptQuestTeacherControlsLoader = React.memo(props => {
+  const [ready, setReady] = useState(() => !!window.AlloModules?.ConceptQuestTeacherControls);
+  useEffect(() => {
+    if (window.AlloModules?.ConceptQuestTeacherControls) { setReady(true); return; }
+    const existing = document.querySelector('script[data-allo-concept-quest-teacher]');
+    if (existing) { existing.addEventListener('load', () => setReady(true), { once: true }); return; }
+    const script = document.createElement('script');
+    script.dataset.alloConceptQuestTeacher = 'true';
+    script.src = 'https://alloflow-cdn.pages.dev/concept_quest_teacher_module.js';
+    script.onload = () => setReady(true);
+    script.onerror = () => { script.onerror = null; script.src = './concept_quest_teacher_module.js'; };
+    document.head.appendChild(script);
+  }, []);
+  const ConceptControls = window.AlloModules?.ConceptQuestTeacherControls;
+  return ready && ConceptControls ? <ConceptControls {...props} /> : <div role="status" className="rounded-xl bg-indigo-50 p-4 text-indigo-800">Loading Concept Quest co-GM controls…</div>;
+});
+
+const EscapeRoomTeacherControls = React.memo(props => {
+  if (props.sessionData?.escapeRoomState?.mode === 'concept-quest') {
+    return <ConceptQuestTeacherControlsLoader {...props} />;
+  }
+  return <ClassicEscapeRoomTeacherControls {...props} />;
+});
+
 // @section LIVE_QUIZ — Teacher live quiz broadcast controls
-const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, activeSessionCode, appId, onGenerateImage, onRefineImage, onCreateGroup, onAssignStudent, onSetGroupResource, isPushingResource = {}, onSetGroupLanguage, onSetGroupProfile, onDeleteGroup, onUpdateQuestionRoutingRules, history = [] }) => {
+const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, activeSessionCode, appId, onGenerateImage, onRefineImage, onCreateGroup, onAssignStudent, onSetGroupResource, isPushingResource = {}, onSetGroupLanguage, onSetGroupProfile, onDeleteGroup, onUpdateQuestionRoutingRules, history = [], callGemini }) => {
     const { t } = useContext(LanguageContext);
     const { quizState, roster } = sessionData;
     const { currentQuestionIndex, phase, responses, responseReceipts, mode, bossStats, teamScores, scoringPolicy } = quizState;
     const question = generatedContent?.data.questions[currentQuestionIndex];
     const [showLocalStats, setShowLocalStats] = useState(false);
     const [bossDifficulty, setBossDifficulty] = useState('normal');
+    const [bossGmPrompt, setBossGmPrompt] = useState('');
+    const [bossGmDraft, setBossGmDraft] = useState(null);
+    const [bossGmBusy, setBossGmBusy] = useState(false);
     // Phase-2 quiz auto-routing: per-question rules. Mirrored to window
     // so the App-level useEffect (AlloFlowANTI.txt, near rosterKey
     // auto-grouping) can read them. Rule schema:
@@ -2413,6 +2554,51 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
         const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
         try { await updateDoc(sessionRef, { "quizState.phase": "answering", "quizState.responses": {}, "quizState.responseReceipts": {}, "quizState.currentQuestionIndex": currentQuestionIndex, "quizState.bossStats.lastDamage": 0 }); } catch(e) { warnLog('Firestore sync failed:', e); }
     };
+    const handleBossPacingAdjustment = async (kind) => {
+        if (mode !== 'boss-battle' || !bossStats) return;
+        const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+        const updates = {};
+        if (kind === 'rally') updates['quizState.bossStats.classHP'] = Math.min(bossStats.classMaxHP || 100, (bossStats.classHP ?? 100) + 10);
+        if (kind === 'soften') updates['quizState.bossStats.currentHP'] = Math.max(1, (bossStats.currentHP ?? bossStats.maxHP) - Math.round((bossStats.maxHP || 1000) * 0.05));
+        if (kind === 'intensify') updates['quizState.bossStats.currentHP'] = Math.min(bossStats.maxHP, (bossStats.currentHP ?? bossStats.maxHP) + Math.round((bossStats.maxHP || 1000) * 0.05));
+        updates['quizState.bossStats.gmEvent'] = kind === 'rally'
+            ? 'The teacher rallied the class: +10 class HP.'
+            : kind === 'soften' ? 'The teacher exposed a weakness in the monster.' : 'The monster entered a tougher phase.';
+        try { await updateDoc(sessionRef, updates); }
+        catch (error) { warnLog('Boss pacing adjustment failed:', error); }
+    };
+    const normalizeBossGmDraft = (draft = {}) => ({
+        title: String(draft.title || 'Monster Event').replace(/[<>]/g, '').trim().slice(0, 100),
+        description: String(draft.description || bossGmPrompt || 'The battle changes unexpectedly.').replace(/[<>]/g, '').trim().slice(0, 500),
+        effect: ['narrative', 'rally', 'expose', 'intensify'].includes(draft.effect) ? draft.effect : 'narrative',
+        amount: Math.max(1, Math.min(10, Number(draft.amount) || 5))
+    });
+    const createBossGmDraft = () => setBossGmDraft(normalizeBossGmDraft({ description: bossGmPrompt }));
+    const generateBossGmDraft = async () => {
+        if (typeof callGemini !== 'function') { createBossGmDraft(); return; }
+        setBossGmBusy(true);
+        try {
+            const prompt = `Draft one short, classroom-safe teacher GM event for an educational Class-vs-Monsters battle about ${generatedContent?.meta || 'the lesson'}. Teacher direction: "${bossGmPrompt || 'Create a dramatic concept-based event.'}". Return only JSON: {"title":"...","description":"...","effect":"narrative|rally|expose|intensify","amount":1-10}. rally helps class HP; expose lowers monster HP; intensify raises monster HP. Never decide individual student outcomes.`;
+            const response = await callGemini(prompt, true);
+            const jsonText = String(response || '').replace(/```json\s*/gi, '').replace(/```/g, '').trim();
+            setBossGmDraft(normalizeBossGmDraft(JSON.parse(jsonText)));
+        } catch (error) {
+            warnLog('Boss GM draft failed:', error);
+            createBossGmDraft();
+        } finally { setBossGmBusy(false); }
+    };
+    const publishBossGmDraft = async () => {
+        if (!bossGmDraft) return;
+        const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+        const draft = normalizeBossGmDraft(bossGmDraft);
+        const updates = { 'quizState.bossStats.gmEvent': `${draft.title}: ${draft.description}` };
+        if (draft.effect === 'rally') updates['quizState.bossStats.classHP'] = Math.min(bossStats?.classMaxHP || 100, (bossStats?.classHP ?? 100) + draft.amount);
+        const hpDelta = Math.round((bossStats?.maxHP || 1000) * (draft.amount / 100));
+        if (draft.effect === 'expose') updates['quizState.bossStats.currentHP'] = Math.max(1, (bossStats?.currentHP ?? bossStats?.maxHP) - hpDelta);
+        if (draft.effect === 'intensify') updates['quizState.bossStats.currentHP'] = Math.min(bossStats?.maxHP, (bossStats?.currentHP ?? bossStats?.maxHP) + hpDelta);
+        try { await updateDoc(sessionRef, updates); setBossGmDraft(null); setBossGmPrompt(''); }
+        catch (error) { warnLog('Boss GM event publish failed:', error); }
+    };
     const handleRevealResults = async () => {
         try {
             const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
@@ -2462,9 +2648,14 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                 const quizLength = Math.max(1, generatedContent?.data?.questions?.length || 10);
                 const perQuestionBudget = bossMaxHP / quizLength;
                 const answerAccuracy = earnedCredit / eligibleCount;
-                const damage = Math.round(answerAccuracy * perQuestionBudget * 1.2);
+                const baseDamage = Math.round(answerAccuracy * perQuestionBudget * 1.2);
+                const masteryStreak = answerAccuracy >= 0.7 ? (bossStats?.masteryStreak || 0) + 1 : 0;
+                const comboBonus = masteryStreak >= 3 ? Math.round(perQuestionBudget * 0.15) : 0;
+                const damage = baseDamage + comboBonus;
                 const currentHP = bossStats?.currentHP ?? bossMaxHP;
                 const newHP = Math.max(0, currentHP - damage);
+                const remainingBossPercent = newHP / bossMaxHP;
+                const bossPhaseName = remainingBossPercent <= 0.33 ? 'Final Form' : remainingBossPercent <= 0.66 ? 'Enraged' : 'Watchful';
                 const difficultyMultiplier = bossStats?.difficulty === 'easy' ? 0.5 : bossStats?.difficulty === 'hard' ? 1.5 : 1.0;
                 const baseClassDamage = Math.ceil((wrongCredit / eligibleCount) * 25);
                 const classDamage = Math.round(baseClassDamage * difficultyMultiplier);
@@ -2474,6 +2665,15 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                 updatePayload["quizState.bossStats.lastDamage"] = damage;
                 updatePayload["quizState.bossStats.classHP"] = newClassHP;
                 updatePayload["quizState.bossStats.lastClassDamage"] = classDamage;
+                updatePayload["quizState.bossStats.masteryStreak"] = masteryStreak;
+                updatePayload["quizState.bossStats.lastComboBonus"] = comboBonus;
+                updatePayload["quizState.bossStats.phaseName"] = bossPhaseName;
+                updatePayload["quizState.bossStats.roundFeedback"] = {
+                    accuracy: Math.round(answerAccuracy * 100),
+                    masteryStreak,
+                    comboBonus,
+                    explanation: question?.explanation || question?.rationale || ''
+                };
                 const battleLogEntry = {
                     questionIndex: currentQuestionIndex,
                     damage,
@@ -2482,7 +2682,10 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                     totalResponses,
                     earnedCredit,
                     eligibleCount,
-                    accuracy: Math.round(answerAccuracy * 100)
+                    accuracy: Math.round(answerAccuracy * 100),
+                    masteryStreak,
+                    comboBonus,
+                    bossPhase: bossPhaseName
                 };
                 const existingLog = bossStats?.battleLog || [];
                 updatePayload["quizState.bossStats.battleLog"] = [...existingLog, battleLogEntry];
@@ -2648,7 +2851,11 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                 image: existingImage,
                 isGenerating: false,
                 difficulty: bossDifficulty,
-                battleLog: []
+                battleLog: [],
+                masteryStreak: 0,
+                lastComboBonus: 0,
+                phaseName: 'Watchful',
+                roundFeedback: null
             };
             if (!existingImage) {
                 setTimeout(generateBossAsset, 100);
@@ -3290,6 +3497,9 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                          )}
                                      </div>
                                      <h3 className="text-xl font-black text-slate-800 uppercase tracking-widest mb-2">{bossStats.name || t('quiz.boss.default_name')}</h3>
+                                     <div className="mb-2 flex flex-wrap items-center justify-center gap-2 text-xs font-bold"><span className="rounded-full bg-red-100 px-2 py-1 text-red-800">Phase: {bossStats.phaseName || 'Watchful'}</span><span className="rounded-full bg-yellow-100 px-2 py-1 text-yellow-900">Mastery streak: {bossStats.masteryStreak || 0}</span>{bossStats.lastComboBonus > 0 && <span className="rounded-full bg-purple-100 px-2 py-1 text-purple-800">⚡ Combo +{bossStats.lastComboBonus}</span>}</div>
+                                     <div className="mb-3 flex flex-wrap justify-center gap-2" aria-label="Teacher monster pacing controls"><button type="button" onClick={() => handleBossPacingAdjustment('rally')} className="min-h-11 rounded-lg bg-emerald-700 px-3 text-xs font-bold text-white">Rally class +10 HP</button><button type="button" onClick={() => handleBossPacingAdjustment('soften')} className="min-h-11 rounded-lg bg-indigo-700 px-3 text-xs font-bold text-white">Expose weakness</button><button type="button" onClick={() => handleBossPacingAdjustment('intensify')} className="min-h-11 rounded-lg border border-red-300 bg-white px-3 text-xs font-bold text-red-800">Intensify monster</button></div>
+                                     <details className="mb-3 w-full max-w-sm rounded-xl border border-purple-200 bg-purple-50 p-3 text-left"><summary className="cursor-pointer text-sm font-black text-purple-900">🎲 Co-GM event workshop</summary><p className="mt-1 text-xs text-purple-700">AI drafts only. Preview and edit before publishing.</p><textarea value={bossGmPrompt} onChange={event => setBossGmPrompt(event.target.value)} rows={2} placeholder="Introduce an event tied to the current concept" className="mt-2 w-full rounded-lg border border-purple-300 p-2 text-sm" /><div className="mt-2 flex gap-2"><button type="button" onClick={createBossGmDraft} className="min-h-11 flex-1 rounded-lg border border-purple-300 bg-white text-xs font-bold text-purple-800">Manual draft</button><button type="button" disabled={bossGmBusy} onClick={generateBossGmDraft} className="min-h-11 flex-1 rounded-lg bg-purple-700 text-xs font-bold text-white disabled:opacity-50">{bossGmBusy ? 'Drafting…' : 'AI draft'}</button></div>{bossGmDraft && <div className="mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2"><label className="text-xs font-bold text-slate-700">Title<input value={bossGmDraft.title} onChange={event => setBossGmDraft({ ...bossGmDraft, title: event.target.value })} className="mt-1 min-h-11 w-full rounded border border-amber-300 p-2" /></label><label className="mt-2 block text-xs font-bold text-slate-700">Description<textarea value={bossGmDraft.description} onChange={event => setBossGmDraft({ ...bossGmDraft, description: event.target.value })} rows={2} className="mt-1 w-full rounded border border-amber-300 p-2" /></label><p className="mt-1 text-xs text-amber-900">Effect: <strong>{bossGmDraft.effect}</strong> · Strength {bossGmDraft.amount}</p><div className="mt-2 flex gap-2"><button type="button" onClick={() => setBossGmDraft(null)} className="min-h-11 flex-1 rounded-lg bg-slate-200 text-xs font-bold">Discard</button><button type="button" onClick={publishBossGmDraft} className="min-h-11 flex-1 rounded-lg bg-emerald-700 text-xs font-bold text-white">Publish event</button></div></div>}</details>
                                      <div className={`w-full max-w-sm bg-slate-300 h-8 rounded-full border-4 relative overflow-hidden shadow-inner mb-2 ${bossStats.currentHP > 0 && (bossStats.currentHP / bossStats.maxHP) < 0.25 ? 'border-red-500 animate-pulse motion-reduce:animate-none' : 'border-slate-400'}`}>
                                          <div
                                             className={`h-full transition-all motion-reduce:transition-none duration-1000 ease-out ${(bossStats.currentHP / bossStats.maxHP) < 0.25 ? 'bg-gradient-to-r from-red-700 to-red-500' : 'bg-gradient-to-r from-red-600 to-orange-500'}`}

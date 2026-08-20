@@ -1411,7 +1411,9 @@ window.StemLab = window.StemLab || {
   // shot at once, and the machine is what this tool is actually about.
   // ═══════════════════════════════════════════════════════════════════
 
+  var SHOP_HOME = { rotY: 28, rotX: 16, zoom: 1 };
   var MACHINE_HOME = { rotY: 22, rotX: 12, zoom: 1 };
+  var RANGE_HOME = { rotY: 72, rotX: 18, zoom: 1 };
   // Behind the machine, looking down the field at the castle. The camera
   // direction runs (sin rotY, ., cos rotY), so a rotY near 0 puts the camera on
   // the far side of the wall and you watch the impact from the defenders' side,
@@ -1427,6 +1429,329 @@ window.StemLab = window.StemLab || {
   // A torsion engine: a stout frame, one or two arms sprung from twisted rope
   // bundles, and a string. Same lifecycle and same tick contract as the
   // trebuchet, so the viewer does not care which machine is on screen.
+  // 3D SIMPLE-MACHINE WORKSHOP (P1)
+  // The machine is now the primary learning surface. Text panels remain as
+  // equivalents, while every control changes the geometry in this scene.
+  function buildSimpleMachineScene(THREE, S, m) {
+    var p = m.params || {};
+    var id = m.kind || 'lever';
+    var dark = m.dark !== false;
+    var contrast = !!m.contrast;
+    var C = contrast ? {
+      floor: 0x000000, platform: 0x111111, frame: 0xffffff, metal: 0xffffff,
+      wood: 0xffffff, effort: 0xffff00, load: 0x00ffff, rope: 0xffffff
+    } : dark ? {
+      floor: 0x07111f, platform: 0x17243a, frame: 0x6f8099, metal: 0xd7e1ee,
+      wood: 0xb7793f, effort: 0xffb020, load: 0x38bdf8, rope: 0xf4e4c1
+    } : {
+      floor: 0xdce5ef, platform: 0xf8fafc, frame: 0x64748b, metal: 0x334155,
+      wood: 0x9a5d2f, effort: 0xb45309, load: 0x0369a1, rope: 0x7c5a35
+    };
+
+    var clearColor = contrast ? 0x000000 : (dark ? 0x07111f : 0xeaf0f6);
+    if (S.renderer && S.renderer.setClearColor) {
+      S.renderer.setClearColor(clearColor, 1);
+    }
+    if (!contrast && S.scene && typeof THREE.Fog === 'function') S.scene.fog = new THREE.Fog(clearColor, 11, 27);
+    function mat(color, emissive) {
+      var cfg = { color: color };
+      if (emissive) { cfg.emissive = color; cfg.emissiveIntensity = 0.13; }
+      return new THREE.MeshLambertMaterial(cfg);
+    }
+    function finishMesh(mesh, receives) {
+      mesh.castShadow = !contrast;
+      mesh.receiveShadow = receives !== false && !contrast;
+      return mesh;
+    }
+    function box(x, y, z, px, py, pz, color, parent, rz) {
+      var mesh = finishMesh(new THREE.Mesh(new THREE.BoxGeometry(x, y, z), mat(color)));
+      mesh.position.set(px || 0, py || 0, pz || 0);
+      if (rz) mesh.rotation.z = rz;
+      (parent || S.model).add(mesh);
+      return mesh;
+    }
+    function cylinder(radius, height, px, py, pz, color, axis, parent) {
+      var mesh = finishMesh(new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, height, 24), mat(color)));
+      mesh.position.set(px || 0, py || 0, pz || 0);
+      if (axis === 'x') mesh.rotation.z = Math.PI / 2;
+      if (axis === 'z') mesh.rotation.x = Math.PI / 2;
+      (parent || S.model).add(mesh);
+      return mesh;
+    }
+    function torus(radius, tube, px, py, pz, color, axis, parent) {
+      var mesh = finishMesh(new THREE.Mesh(new THREE.TorusGeometry(radius, tube, 12, 32), mat(color)));
+      mesh.position.set(px || 0, py || 0, pz || 0);
+      if (axis === 'x') mesh.rotation.y = Math.PI / 2;
+      if (axis === 'y') mesh.rotation.x = Math.PI / 2;
+      (parent || S.model).add(mesh);
+      return mesh;
+    }
+    function arrow(px, top, length, color, direction) {
+      var group = new THREE.Group();
+      group.position.set(px, top, 1.05); S.model.add(group);
+      group.userData.mlBaseY = top;
+      var up = direction === 'up';
+      cylinder(0.055, length, 0, (up ? 1 : -1) * length / 2, 0, color, 'y', group);
+      var tip = finishMesh(new THREE.Mesh(new THREE.ConeGeometry(0.17, 0.34, 16), mat(color, true)), false);
+      tip.position.set(0, (up ? 1 : -1) * (length + 0.12), 0);
+      tip.rotation.z = up ? 0 : Math.PI;
+      group.add(tip);
+      return group;
+    }
+
+    // Shared workshop landmarks make scale and camera movement legible.
+    var ground = finishMesh(new THREE.Mesh(new THREE.PlaneGeometry(18, 14), mat(C.floor)), true);
+    ground.rotation.x = -Math.PI / 2;
+    S.model.add(ground);
+    if (typeof THREE.GridHelper === 'function') {
+      var grid = new THREE.GridHelper(16, 16, C.frame, dark ? 0x18283e : 0xb7c4d2);
+      grid.position.y = 0.008;
+      S.model.add(grid);
+    }
+    // A real room gives the learner a horizon, depth and an intuitive sense of
+    // scale. The muted architecture stays behind the bright force encoding.
+    var wallColor = contrast ? 0x000000 : (dark ? 0x0b192b : 0xd7e0ea);
+    var wallInset = contrast ? C.frame : (dark ? 0x20324b : 0xa9b8c9);
+    var roomLamps = [], roomBeacons = [];
+    box(10.8, 4.8, 0.16, 0, 2.4, -3.35, wallColor);
+    box(0.16, 4.8, 7.0, -5.35, 2.4, 0.05, wallColor);
+    [-4.8, -2.4, 0, 2.4, 4.8].forEach(function (x) {
+      box(0.055, 4.55, 0.08, x, 2.3, -3.23, wallInset, null, 0);
+    });
+    box(10.2, 0.07, 0.08, 0, 3.95, -3.22, wallInset);
+
+    // Pegboard, tools and overhead work lights make this a purposeful STEM bay
+    // rather than an object floating in an abstract scene.
+    box(2.65, 1.25, 0.09, -3.15, 2.35, -3.18, C.platform);
+    for (var pegRow = 0; pegRow < 3; pegRow++) {
+      for (var pegCol = 0; pegCol < 6; pegCol++) {
+        cylinder(0.025, 0.08, -4.05 + pegCol * 0.36, 1.98 + pegRow * 0.34, -3.09, C.frame, 'z');
+      }
+    }
+    box(0.12, 0.72, 0.08, -3.75, 2.34, -3.05, C.effort, null, -0.42);
+    box(0.12, 0.62, 0.08, -3.08, 2.37, -3.05, C.load, null, 0.38);
+    torus(0.26, 0.055, -2.45, 2.35, -3.03, C.metal, 'z');
+    [-2.3, 2.3].forEach(function (x) {
+      box(2.3, 0.13, 0.55, x, 4.25, -1.55, C.frame);
+      var lamp = finishMesh(new THREE.Mesh(
+        new THREE.BoxGeometry(1.85, 0.055, 0.42),
+        new THREE.MeshLambertMaterial({ color: contrast ? 0xffffff : 0xfff4cf, emissive: contrast ? 0xffffff : 0xffd56a, emissiveIntensity: 0.48 })
+      ), false);
+      lamp.position.set(x, 4.17, -1.55); S.model.add(lamp); roomLamps.push(lamp);
+    });
+
+    [-4.55, 4.55].forEach(function (x, beaconIndex) {
+      box(0.28, 0.48, 0.12, x, 3.55, -3.12, C.frame);
+      var beacon = finishMesh(new THREE.Mesh(new THREE.SphereGeometry(0.12, 14, 10), mat(beaconIndex ? C.load : C.effort, true)), false);
+      beacon.position.set(x, 3.55, -3.02);
+      beacon.material.emissiveIntensity = 0.24;
+      S.model.add(beacon); roomBeacons.push(beacon);
+    });
+
+    box(7.4, 0.28, 4.4, 0, 0.14, 0, C.platform);
+    // Alternating safety marks and anchor bolts visually lock the test bed to
+    // the room and make its front edge easy to read while orbiting.
+    for (var hazard = 0; hazard < 12; hazard++) {
+      box(0.46, 0.055, 0.12, -3.18 + hazard * 0.58, 0.31, 2.19,
+        hazard % 2 ? C.frame : C.effort, null, hazard % 2 ? 0.18 : -0.18);
+    }
+    [[-3.25, -1.75], [3.25, -1.75], [-3.25, 1.75], [3.25, 1.75]].forEach(function (bolt) {
+      cylinder(0.09, 0.06, bolt[0], 0.32, bolt[1], C.metal, 'y');
+    });
+    box(7.6, 0.12, 0.14, 0, 0.72, -2.02, C.frame);
+    [-3.55, 3.55].forEach(function (x) { box(0.12, 1.25, 0.12, x, 0.72, -2.02, C.frame); });
+
+    // Amber is the long effort path; blue is the shorter load path.
+    var cueMA = Math.max(0.2, Math.min(8, Number(p.ma) || 1));
+    var effortRail = Math.min(3.1, 0.7 + cueMA * 0.3);
+    var loadRail = Math.max(0.45, effortRail / cueMA);
+    box(effortRail, 0.055, 0.12, -3.25 + effortRail / 2, 0.42, 1.72, C.effort);
+    box(loadRail, 0.055, 0.12, 3.25 - loadRail / 2, 0.42, 1.72, C.load);
+    var effortDot = finishMesh(new THREE.Mesh(new THREE.SphereGeometry(0.11, 14, 10), mat(C.effort, true)), false);
+    effortDot.position.set(-3.25, 0.42, 1.72); S.model.add(effortDot);
+    var loadDot = finishMesh(new THREE.Mesh(new THREE.SphereGeometry(0.11, 14, 10), mat(C.load, true)), false);
+    loadDot.position.set(3.25, 0.42, 1.72); S.model.add(loadDot);
+    var demo = {
+      kind: id, effortStartX: -3.25, effortEndX: -3.25 + effortRail,
+      loadStartX: 3.25, loadEndX: 3.25 - loadRail,
+      lamps: roomLamps, beacons: roomBeacons
+    };
+    function makeMotionTrail(color, startX) {
+      var dots = [];
+      for (var trailIndex = 0; trailIndex < 4; trailIndex++) {
+        var trailMat = new THREE.MeshLambertMaterial({
+          color: color, emissive: color, emissiveIntensity: 0.18,
+          transparent: true, opacity: 0.16 + trailIndex * 0.08
+        });
+        var trailDot = finishMesh(new THREE.Mesh(new THREE.SphereGeometry(0.055 + trailIndex * 0.008, 12, 8), trailMat), false);
+        trailDot.position.set(startX, 0.42, 1.72);
+        trailDot.visible = false; S.model.add(trailDot); dots.push(trailDot);
+      }
+      return dots;
+    }
+    demo.effortTrail = makeMotionTrail(C.effort, demo.effortStartX);
+    demo.loadTrail = makeMotionTrail(C.load, demo.loadStartX);
+
+    if (id === 'lever') {
+      var ea = Math.max(0.1, Number(p.effortArm) || 2);
+      var la = Math.max(0.1, Number(p.loadArm) || 1);
+      var total = ea + la;
+      var eVis = 5.4 * ea / total, lVis = 5.4 * la / total;
+      var fulcrum = new THREE.Mesh(new THREE.ConeGeometry(0.55, 0.9, 3), mat(C.frame));
+      fulcrum.position.set(0, 0.72, 0); fulcrum.rotation.y = Math.PI / 2; S.model.add(fulcrum);
+      var leverMotion = new THREE.Group();
+      leverMotion.position.set(0, 1.24, 0); leverMotion.rotation.z = 0.055; S.model.add(leverMotion);
+      box(eVis + lVis, 0.22, 0.62, (lVis - eVis) / 2, 0, 0, C.wood, leverMotion);
+      box(0.7, 0.7, 0.7, lVis - 0.12, 0.58, 0, C.load, leverMotion);
+      demo.motion = leverMotion; demo.baseRotation = 0.055;
+      demo.effortArrow = arrow(-eVis + 0.12, 2.75, 0.8, C.effort);
+      demo.loadArrow = arrow(lVis - 0.12, 2.25, 0.48, C.load, 'up');
+    } else if (id === 'pulley') {
+      var segs = Math.max(1, Math.min(6, Math.round(Number(p.segments) || 2)));
+      box(5.4, 0.18, 0.45, 0, 3.25, 0, C.frame);
+      [-2.5, 2.5].forEach(function (x) { box(0.18, 3.0, 0.35, x, 1.72, 0, C.frame); });
+      var spread = Math.min(3.6, 0.62 * (segs - 1));
+      for (var si = 0; si < segs; si++) {
+        var sx = segs === 1 ? 0 : -spread / 2 + spread * si / (segs - 1);
+        cylinder(0.035, 1.55, sx, 2.25, 0, C.rope, 'y');
+      }
+      torus(0.48, 0.12, -0.62, 2.68, 0, C.metal, 'z');
+      var pulleyMotion = new THREE.Group(); S.model.add(pulleyMotion);
+      torus(0.48, 0.12, 0.62, 1.35, 0, C.metal, 'z', pulleyMotion);
+      box(2.2, 0.2, 0.72, 0, 0.82, 0, C.frame, pulleyMotion);
+      box(1.25, 0.72, 0.92, 0, 0.43, 0, C.load, pulleyMotion);
+      demo.motion = pulleyMotion;
+      demo.effortArrow = arrow(2.0, 2.75, 0.9, C.effort);
+      demo.loadArrow = arrow(0, 1.05, 0.45, C.load, 'up');
+    } else if (id === 'windlass') {
+      var handleR = Math.max(0.05, Number(p.handleR) || 0.45);
+      var drumR = Math.max(0.02, Number(p.drumR) || 0.1);
+      var wheelR = 0.85 + Math.min(0.75, handleR * 1.5);
+      var drumVis = 0.18 + Math.min(0.34, drumR * 0.8);
+      [-1.25, 1.25].forEach(function (z) { box(0.26, 2.25, 0.26, 0, 1.35, z, C.frame); });
+      var windlassDrum = cylinder(drumVis, 2.8, 0, 1.85, 0, C.wood, 'z');
+      var wheelMotion = new THREE.Group(); wheelMotion.position.set(0, 1.85, 1.52); S.model.add(wheelMotion);
+      torus(wheelR, 0.12, 0, 0, 0, C.effort, 'z', wheelMotion);
+      box(wheelR * 2, 0.09, 0.09, 0, 0, 0, C.effort, wheelMotion, 0.58);
+      cylinder(0.055, 1.4, 0.48, 1.05, -0.02, C.rope, 'y');
+      var windlassLoad = box(0.86, 0.72, 0.72, 0.48, 0.48, 0, C.load);
+      demo.motion = wheelMotion; demo.drum = windlassDrum; demo.load = windlassLoad; demo.loadY = 0.48;
+      demo.effortArrow = arrow(1.55, 3.25, 0.72, C.effort);
+      demo.loadArrow = arrow(0.48, 0.92, 0.42, C.load, 'up');
+    } else if (id === 'ramp') {
+      var L = Math.max(0.5, Number(p.length) || 4);
+      var H = Math.max(0.2, Math.min(L, Number(p.height) || 1));
+      var angle = Math.asin(Math.min(0.98, H / L));
+      var visL = 5.4, visH = Math.max(0.7, Math.min(2.8, visL * H / L));
+      box(visL, 0.24, 2.15, 0, 0.42 + visH / 2, 0, C.wood, null, angle);
+      var rampCrate = box(0.95, 0.85, 0.95, 0.72, 0.95 + visH / 2 + 0.72 * Math.sin(angle), 0, C.load, null, angle);
+      demo.motion = rampCrate; demo.baseX = rampCrate.position.x; demo.baseY = rampCrate.position.y; demo.angle = angle;
+      box(0.16, visH, 1.85, visL / 2 - 0.12, 0.28 + visH / 2, 0, C.frame);
+      demo.effortArrow = arrow(-2.1, 2.35, 0.72, C.effort);
+      demo.loadArrow = arrow(1.35, 2.0 + visH / 2, 0.46, C.load, 'up');
+    } else if (id === 'wedge') {
+      var ratio = Math.max(1, (Number(p.length) || 0.3) / Math.max(0.001, Number(p.thickness) || 0.06));
+      var splitLeft = new THREE.Group(), splitRight = new THREE.Group();
+      S.model.add(splitLeft); S.model.add(splitRight);
+      box(1.12, 2.0, 3.2, -0.57, 1.36, 0, C.wood, splitLeft);
+      box(1.12, 2.0, 3.2, 0.57, 1.36, 0, C.wood, splitRight);
+      // Dark end-grain seams make it obvious that this is one block about to
+      // separate, rather than two unrelated objects beside the wedge.
+      box(0.055, 1.72, 2.9, -0.015, 1.36, 0, C.frame, splitLeft);
+      box(0.055, 1.72, 2.9, 0.015, 1.36, 0, C.frame, splitRight);
+      var wedge = new THREE.Mesh(new THREE.ConeGeometry(Math.max(0.28, 1.4 / Math.sqrt(ratio)), 2.8, 3), mat(C.metal));
+      wedge.position.set(0, 2.05, 0); wedge.rotation.z = Math.PI; S.model.add(wedge);
+      demo.motion = wedge; demo.baseY = 2.05; demo.splitLeft = splitLeft; demo.splitRight = splitRight;
+      box(2.5, 0.24, 0.24, 0, 3.42, 0, C.effort);
+      demo.effortArrow = arrow(0, 4.0, 0.55, C.effort);
+    } else {
+      var pitch = Math.max(0.001, Number(p.pitch) || 0.005);
+      var hr = Math.max(0.02, Number(p.handleR) || 0.15);
+      var screwMotion = new THREE.Group(); S.model.add(screwMotion);
+      cylinder(0.35, 2.8, 0, 1.85, 0, C.metal, 'y', screwMotion);
+      var rings = Math.max(6, Math.min(22, Math.round(0.055 / pitch)));
+      for (var ri = 0; ri < rings; ri++) {
+        torus(0.4, 0.055, 0, 0.52 + ri * (2.55 / (rings - 1)), 0, C.effort, 'y', screwMotion);
+      }
+      var handleW = 1.8 + Math.min(2.2, hr * 5);
+      box(handleW, 0.2, 0.28, 0, 3.45, 0, C.effort, screwMotion);
+      cylinder(0.14, 0.52, -handleW / 2, 3.45, 0, C.wood, 'y', screwMotion);
+      box(1.55, 0.48, 1.55, 0, 0.4, 0, C.load);
+      demo.motion = screwMotion;
+      demo.effortArrow = arrow(-handleW / 2, 4.1, 0.5, C.effort);
+      demo.loadArrow = arrow(0, 0.66, 0.38, C.load, 'up');
+    }
+
+    S.target = new THREE.Vector3(0, 1.65, 0);
+    S.fitPts = [
+      new THREE.Vector3(-4.1, 0, -2.5), new THREE.Vector3(4.1, 4.4, 2.5),
+      new THREE.Vector3(0, 0, 2.8), new THREE.Vector3(0, 3.5, -2.8)
+    ];
+    demo.effortDot = effortDot; demo.loadDot = loadDot;
+    S.mlDemo = demo; S.mlDemoId = null;
+    S.tick = function (now) {
+      var data = S.data || {};
+      var active = data.demoId || 0;
+      if (active && S.mlDemoId !== active) { S.mlDemoId = active; S.mlDemoT0 = now; }
+      var elapsed = active ? Math.max(0, (now - (S.mlDemoT0 || now)) / 1000) : 0;
+      var reducedMotion = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var wave = active ? (reducedMotion ? 1 : Math.sin(Math.min(1, elapsed / 2.2) * Math.PI)) : 0;
+      var k = wave * wave * (3 - 2 * wave);
+      var D = S.mlDemo || {};
+      if (D.lamps) {
+        for (var li = 0; li < D.lamps.length; li++) {
+          D.lamps[li].material.emissiveIntensity = active ? 0.58 + 0.12 * Math.sin(elapsed * 10 + li) : 0.48;
+        }
+      }
+      if (D.beacons) {
+        for (var bi = 0; bi < D.beacons.length; bi++) {
+          var beaconPulse = active ? 1 + 0.18 * Math.sin(elapsed * 14 + bi * Math.PI) : 1;
+          D.beacons[bi].scale.setScalar(beaconPulse);
+          D.beacons[bi].material.emissiveIntensity = active ? 0.5 + 0.25 * (0.5 + 0.5 * Math.sin(elapsed * 14 + bi * Math.PI)) : 0.24;
+        }
+      }
+      if (D.kind === 'lever' && D.motion) D.motion.rotation.z = D.baseRotation - 0.22 * k;
+      if (D.kind === 'pulley' && D.motion) D.motion.position.y = 0.72 * k;
+      if (D.kind === 'windlass') {
+        if (D.motion) D.motion.rotation.z = Math.PI * 2 * k;
+        if (D.drum) D.drum.rotation.y = Math.PI * 2 * k;
+        if (D.load) D.load.position.y = D.loadY + 0.72 * k;
+      }
+      if (D.kind === 'ramp' && D.motion) {
+        D.motion.position.x = D.baseX + 1.45 * k;
+        D.motion.position.y = D.baseY + 1.45 * Math.sin(D.angle) * k;
+      }
+      if (D.kind === 'wedge' && D.motion) D.motion.position.y = D.baseY - 0.62 * k;
+      if (D.kind === 'wedge') {
+        if (D.splitLeft) { D.splitLeft.position.x = -0.42 * k; D.splitLeft.rotation.z = 0.1 * k; }
+        if (D.splitRight) { D.splitRight.position.x = 0.42 * k; D.splitRight.rotation.z = -0.1 * k; }
+      }
+      if (D.kind === 'screw' && D.motion) {
+        D.motion.rotation.y = Math.PI * 2 * k;
+        D.motion.position.y = -0.55 * k;
+      }
+      if (D.effortDot) D.effortDot.position.x = D.effortStartX + (D.effortEndX - D.effortStartX) * k;
+      if (D.loadDot) D.loadDot.position.x = D.loadStartX + (D.loadEndX - D.loadStartX) * k;
+      if (D.effortArrow) D.effortArrow.position.y = D.effortArrow.userData.mlBaseY - 0.16 * k;
+      if (D.loadArrow) {
+        D.loadArrow.position.y = D.loadArrow.userData.mlBaseY + 0.12 * k;
+        D.loadArrow.scale.setScalar(1 + 0.18 * k);
+      }
+      function trace(list, startX, endX) {
+        if (!list) return;
+        for (var ti = 0; ti < list.length; ti++) {
+          var fraction = ((ti + 1) / (list.length + 1)) * k;
+          list[ti].position.x = startX + (endX - startX) * fraction;
+          list[ti].visible = !!active && k > 0.04;
+        }
+      }
+      trace(D.effortTrail, D.effortStartX, D.effortEndX);
+      trace(D.loadTrail, D.loadStartX, D.loadEndX);
+      if (D.effortDot) D.effortDot.scale.setScalar(1 + 0.45 * k);
+      if (D.loadDot) D.loadDot.scale.setScalar(1 + 0.25 * k);
+    };
+  }
+
   function buildTorsionScene(THREE, S, m) {
     var g = m.geom || {};
     var twoArmed = m.kind === 'ballista';
@@ -1456,6 +1781,7 @@ window.StemLab = window.StemLab || {
     var deckH = 0.42;
     var deckLen = Math.max(1.3, armLen * 1.35);
     var deckW = Math.max(0.85, armLen * 0.95);
+    decorateEngineYard(THREE, S, m, Math.max(4.6, deckLen * 2.7), Math.max(3.6, deckW * 2.8), mat, frameCol, projCol);
     var deck = new THREE.Mesh(new THREE.BoxGeometry(deckLen, 0.12, deckW), mat(frameCol));
     deck.position.set(0, deckH, 0);
     S.model.add(deck);
@@ -1545,6 +1871,9 @@ window.StemLab = window.StemLab || {
       new THREE.Vector3(-reachX, 0, 0), new THREE.Vector3(reachX, reachY, 0),
       new THREE.Vector3(0, 0, deckW * 0.75), new THREE.Vector3(0, 0, -deckW * 0.75)
     ];
+    if (!m.embedded && !m.contrast && S.model && S.model.traverse) {
+      S.model.traverse(function (obj) { if (obj.isMesh) { obj.castShadow = true; obj.receiveShadow = true; } });
+    }
 
     function pose(k) {
       // k = 0 fully drawn back, k = 1 released.
@@ -1574,9 +1903,19 @@ window.StemLab = window.StemLab || {
 
     S.tick = function (now) {
       var data = S.data || {};
+      var reduced = !!data.reduced;
       var ml = S.ml;
       if (!ml) return;
+      var yardLights = S.mlYard && S.mlYard.signalLights;
+      function updateYardSignals(active, released) {
+        if (!yardLights || !yardLights.length) return;
+        var pulse = active ? (0.5 + 0.5 * Math.sin((now || 0) * 0.014)) : 0;
+        yardLights[0].material.emissiveIntensity = active ? 0.16 + pulse * 0.1 : 0.34;
+        yardLights[1].material.emissiveIntensity = active ? 0.24 + pulse * 0.24 : 0.12;
+        yardLights[2].material.emissiveIntensity = released ? 0.38 + pulse * 0.3 : 0.08;
+      }
       if (!data.shotId) {
+        updateYardSignals(false, false);
         var r0 = pose(0);
         ml.stone.visible = true;
         ml.stone.position.set(ml.pivotX + ml.armLen * Math.cos(r0), ml.pivotY + ml.armLen * Math.sin(r0) - ml.sling, 0);
@@ -1584,6 +1923,11 @@ window.StemLab = window.StemLab || {
       }
       if (S.mlShot !== data.shotId) { S.mlShot = data.shotId; S.mlT0 = now; }
       var el = Math.max(0, (now - (S.mlT0 || now)) / 1000);
+      // Reduced motion still communicates the release, but skips the arm whip
+      // and the moving stone entirely. The viewer is render-on-demand, so this
+      // settles the machine in one deterministic frame.
+      if (reduced) el = ml.twoArmed ? 1.3 : 1.6;
+      updateYardSignals(true, el > (ml.twoArmed ? 0.28 : 0.55));
       var SWING = ml.twoArmed ? 0.28 : 0.55;   // a ballista snaps; an onager kicks
       var k = Math.min(1, el / SWING);
       var eased = k * k * (3 - 2 * k);
@@ -1604,6 +1948,267 @@ window.StemLab = window.StemLab || {
   function buildMachineScene(THREE, S, m) {
     if (m && (m.kind === 'ballista' || m.kind === 'onager')) return buildTorsionScene(THREE, S, m);
     return buildTrebuchetScene(THREE, S, m);
+  }
+
+  // The range view is the one place where the student follows the payload,
+  // not the mechanism. Keep its 3D world deliberately sparse: the launch deck
+  // establishes scale, the lane marks distance, and one stone traces the same
+  // sampled path used by the graph and the scorer below it.
+  function buildRangeScene(THREE, S, m) {
+    m = m || {};
+    var dark = m.dark !== false;
+    var contrast = !!m.contrast;
+    var valid = m.valid !== false && !!(m.path && m.path.length > 1);
+    var revealed = !!m.reveal;
+    var rawPath = (m.path && m.path.length > 1) ? m.path : [];
+    // Before Fire the lane is intentionally a neutral launch bay. Showing the
+    // computed arc, endpoint or flag would answer the prediction prompt before
+    // the student has made a prediction. The fired path is restored atomically
+    // with the shot state, so the visual and the score always agree.
+    var path = (valid && revealed) ? rawPath : [
+      { x: 0, y: Math.max(1, Number(m.launchElevation) || 2), z: 0, t: 0 }
+    ];
+    var showPath = valid && revealed && path.length > 1;
+    var end = path[path.length - 1] || { x: 8, y: 0, z: 0 };
+    var maxX = Math.max(8, (showPath ? Number(m.range) : 0) || (showPath ? Number(end.x) : 0) || 8);
+    var maxY = Math.max(3, (showPath ? Number(m.apex) : 0) || path.reduce(function (acc, p) {
+      return Math.max(acc, Number(p.y) || 0);
+    }, 0));
+    var drift = Math.max(2.5, Math.abs(Number(m.drift) || Number(end.z) || 0) + 2.5);
+    var laneDepth = Math.max(8, drift * 2.4);
+    var colors = contrast ? {
+      ground: 0x000000, platform: 0x111111, frame: 0xffffff,
+      effort: 0xffff00, load: 0x00ffff, quiet: 0x777777
+    } : dark ? {
+      ground: 0x07111f, platform: 0x17243a, frame: 0x6f8099,
+      effort: 0xffb020, load: 0x38bdf8, quiet: 0x42536b
+    } : {
+      ground: 0xeaf0f6, platform: 0xf8fafc, frame: 0x64748b,
+      effort: 0xb45309, load: 0x0369a1, quiet: 0x9aa8b8
+    };
+
+    if (S.renderer && S.renderer.setClearColor) {
+      S.renderer.setClearColor(contrast ? 0x000000 : (dark ? 0x07111f : 0xeaf0f6), 1);
+    }
+    if (!contrast && S.scene && typeof THREE.Fog === 'function') {
+      S.scene.fog = new THREE.Fog(contrast ? 0x000000 : (dark ? 0x07111f : 0xeaf0f6), Math.max(20, maxX * 0.1), Math.max(100, maxX * 2.4));
+    }
+
+    function material(color, emissive, opacity) {
+      var cfg = { color: color };
+      if (emissive) { cfg.emissive = color; cfg.emissiveIntensity = 0.18; }
+      if (opacity != null && opacity < 1) { cfg.transparent = true; cfg.opacity = opacity; }
+      return new THREE.MeshLambertMaterial(cfg);
+    }
+    function box(w, h, d, x, y, z, color, emissive) {
+      var mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), material(color, emissive));
+      mesh.position.set(x || 0, y || 0, z || 0);
+      mesh.castShadow = !contrast; mesh.receiveShadow = !contrast;
+      S.model.add(mesh);
+      return mesh;
+    }
+    function line(points, color, opacity, dashed) {
+      var geo = new THREE.BufferGeometry();
+      geo.setFromPoints(points);
+      var matLine = dashed
+        ? new THREE.LineDashedMaterial({ color: color, transparent: opacity < 1, opacity: opacity, dashSize: 0.8, gapSize: 0.45 })
+        : new THREE.LineBasicMaterial({ color: color, transparent: opacity < 1, opacity: opacity });
+      var mesh = new THREE.Line(geo, matLine);
+      if (dashed && mesh.computeLineDistances) mesh.computeLineDistances();
+      S.model.add(mesh);
+      return mesh;
+    }
+    function tube(points, color, radius) {
+      if (!THREE.TubeGeometry || points.length < 2) return null;
+      var curve = new THREE.CatmullRomCurve3(points);
+      var mesh = new THREE.Mesh(
+        new THREE.TubeGeometry(curve, Math.max(12, Math.min(96, points.length * 2)), radius, 7, false),
+        material(color, true)
+      );
+      mesh.castShadow = !contrast; mesh.receiveShadow = !contrast;
+      S.model.add(mesh);
+      return mesh;
+    }
+    function worldPoint(p) {
+      return new THREE.Vector3(Number(p.x) || 0, Math.max(0.03, Number(p.y) || 0), Number(p.z) || 0);
+    }
+
+    var ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(maxX + 16, laneDepth),
+      material(colors.ground)
+    );
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.x = maxX / 2;
+    ground.receiveShadow = !contrast;
+    S.model.add(ground);
+
+    if (typeof THREE.GridHelper === 'function') {
+      var divisions = Math.max(10, Math.min(48, Math.round(maxX / 5)));
+      var grid = new THREE.GridHelper(maxX + 12, divisions, colors.frame, dark ? 0x18283e : 0xb7c4d2);
+      grid.position.set(maxX / 2, 0.012, 0);
+      S.model.add(grid);
+    }
+
+    // The launch deck is compact and close to the camera, so there is always
+    // a physical origin to compare with the far-away flag.
+    box(3.2, 0.22, 2.6, 0, 0.11, 0, colors.platform);
+    box(2.6, 0.12, 0.16, 0, 0.3, -1.02, colors.frame);
+    box(2.6, 0.12, 0.16, 0, 0.3, 1.02, colors.frame);
+    box(0.18, 1.1, 0.18, -1.1, 0.72, 0, colors.frame);
+    box(0.18, 1.1, 0.18, 0.82, 0.72, 0, colors.frame);
+    box(1.85, 0.16, 0.22, -0.1, 1.16, 0, colors.effort);
+    var launchStone = new THREE.Mesh(new THREE.SphereGeometry(Math.max(0.14, Math.min(0.42, (Number(m.projDiameter) || 0.26) * 0.72)), 16, 12), material(colors.load, true));
+    launchStone.position.copy(worldPoint(path[0]));
+    launchStone.position.y += 0.05;
+    launchStone.castShadow = !contrast;
+    S.model.add(launchStone);
+
+    // A low pair of rails turns the downrange axis into something the eye can
+    // measure. Ticks are capped so a 250 m throw does not become a picket fence.
+    box(maxX + 1.2, 0.045, 0.06, maxX / 2, 0.06, -2.35, colors.effort);
+    box(maxX + 1.2, 0.045, 0.06, maxX / 2, 0.06, 2.35, colors.load);
+    var tickCount = Math.max(4, Math.min(16, Math.ceil(maxX / 10)));
+    for (var ti = 0; ti <= tickCount; ti++) {
+      var tx = (maxX * ti) / tickCount;
+      box(0.045, 0.08, 0.28, tx, 0.08, -2.35, ti === tickCount ? colors.load : colors.quiet);
+      box(0.045, 0.08, 0.28, tx, 0.08, 2.35, ti === tickCount ? colors.load : colors.quiet);
+    }
+
+    var past = revealed ? (m.past || []).filter(function (r) { return r && r.length > 1; }).slice(-4) : [];
+    past.forEach(function (r, ri) {
+      line(r.map(worldPoint), colors.quiet, 0.24 + ri * 0.08, false);
+    });
+    var currentPoints = path.map(worldPoint);
+    var currentLine = showPath ? tube(currentPoints, colors.effort, maxX > 60 ? 0.095 : 0.07) : null;
+    if (!currentLine && showPath) currentLine = line(currentPoints, colors.effort, 0.98, false);
+    if (showPath) line([
+      new THREE.Vector3(0, 0.035, 0),
+      new THREE.Vector3(Number(end.x) || maxX, 0.035, Number(end.z) || 0)
+    ], colors.effort, 0.28, true);
+
+    // A simple impact flag makes the terminal point obvious even when the arc
+    // is shallow. Its height is deliberately independent of the trajectory.
+    if (showPath) {
+      var flagX = Number(end.x) || maxX, flagZ = Number(end.z) || 0;
+      box(0.08, 1.7, 0.08, flagX, 0.85, flagZ, colors.load);
+      box(0.7, 0.34, 0.06, flagX + 0.34, 1.5, flagZ, colors.load, true);
+    }
+    var stone = new THREE.Mesh(new THREE.SphereGeometry(Math.max(0.16, Math.min(0.48, (Number(m.projDiameter) || 0.26) * 0.8)), 16, 12), material(colors.effort, true));
+    stone.castShadow = !contrast;
+    S.model.add(stone);
+
+    S.target = new THREE.Vector3(maxX * 0.45, Math.max(1.1, maxY * 0.34), 0);
+    S.fitPts = [
+      new THREE.Vector3(-2.2, 0, -3.2),
+      new THREE.Vector3(maxX + 2.2, Math.max(2.2, maxY + 1.5), 3.2)
+    ];
+    if (showPath) path.forEach(function (p) { S.fitPts.push(worldPoint(p)); });
+    S.rangePath = showPath ? path : [];
+    S.rangeStone = stone;
+    S.rangeLaunchStone = launchStone;
+    S.rangeShotId = null;
+    S.tick = function (now) {
+      var data = S.data || {};
+      var active = !!(data.animating && data.shotId && S.rangePath && S.rangePath.length > 1);
+      if (S.rangeShotId !== data.shotId) { S.rangeShotId = data.shotId; S.rangeT0 = now; }
+      var fraction;
+      if (active) {
+        if (data.reduced) {
+          fraction = 1;
+        } else {
+          var seconds = Math.max(0.6, Number(data.flightTime) || 1.4);
+          fraction = Math.max(0, Math.min(1, (now - (S.rangeT0 || now)) / 1000 / seconds));
+        }
+      } else {
+        fraction = data.shotId ? 1 : 0;
+      }
+      var pts = S.rangePath || [];
+      if (!pts.length) {
+        // A previous shot ID can survive while the live controls describe an
+        // invalid machine. There is no path to place the stone on in that
+        // state; keep the launch prop visible and settle the field safely.
+        stone.visible = false;
+        launchStone.visible = true;
+        return;
+      }
+      var idx = Math.min(pts.length - 1, Math.max(0, Math.floor(fraction * (pts.length - 1))));
+      var next = Math.min(pts.length - 1, idx + 1);
+      var seg = (fraction * (pts.length - 1)) - idx;
+      var a = pts[idx] || pts[0], b = pts[next] || a;
+      var pos = new THREE.Vector3(
+        (Number(a.x) || 0) + ((Number(b.x) || 0) - (Number(a.x) || 0)) * seg,
+        Math.max(0.12, (Number(a.y) || 0) + ((Number(b.y) || 0) - (Number(a.y) || 0)) * seg),
+        (Number(a.z) || 0) + ((Number(b.z) || 0) - (Number(a.z) || 0)) * seg
+      );
+      stone.position.copy(pos);
+      stone.scale.setScalar(active && !data.reduced ? 1 + 0.18 * Math.sin((now || 0) * 0.018) : 1);
+      launchStone.visible = !active && !data.shotId;
+      stone.visible = active || !!data.shotId;
+    };
+  }
+
+  // The build bay used to float each engine over an unmarked plane. Keep the
+  // physics model untouched, but give the learner a repeatable yard: a bolted
+  // deck, a measurement rail, a backboard and a few safety marks. This same
+  // staging works for the three engines and disappears when one is embedded in
+  // the much larger target-wall field.
+  function decorateEngineYard(THREE, S, m, width, depth, mat, frameCol, accentCol) {
+    if (m && m.embedded) return;
+    var dark = m && m.dark !== false;
+    var contrast = !!(m && m.contrast);
+    var platformCol = contrast ? 0x111111 : (dark ? 0x17243a : 0xf4f7fb);
+    var wallCol = contrast ? 0x000000 : (dark ? 0x0b192b : 0xd7e0ea);
+    var railCol = contrast ? 0xffffff : (dark ? 0x6f8099 : 0x64748b);
+    function box(x, y, z, px, py, pz, color) {
+      var mesh = new THREE.Mesh(new THREE.BoxGeometry(x, y, z), mat(color));
+      mesh.position.set(px || 0, py || 0, pz || 0);
+      mesh.castShadow = !contrast; mesh.receiveShadow = !contrast;
+      S.model.add(mesh); return mesh;
+    }
+    box(width, 0.18, depth, 0, 0.09, 0, platformCol);
+    box(width, Math.min(4.6, depth + 1.6), 0.14, 0, 2.15, -depth / 2 - 0.16, wallCol);
+    [-width / 2 + 0.18, width / 2 - 0.18].forEach(function (x) {
+      box(0.12, 4.2, 0.12, x, 2.08, -depth / 2 - 0.04, railCol);
+    });
+    box(width - 0.25, 0.08, 0.08, 0, 3.78, -depth / 2 - 0.04, railCol);
+    box(Math.min(2.3, width * 0.34), 0.9, 0.08, -width * 0.27, 2.3, -depth / 2 - 0.04, platformCol);
+    for (var mark = 0; mark < 10; mark++) {
+      box(0.34, 0.045, 0.16, -width / 2 + 0.42 + mark * ((width - 0.84) / 9), 0.23, depth / 2 - 0.22,
+        mark % 2 ? railCol : accentCol);
+    }
+    for (var post = 0; post < 4; post++) {
+      var px = -width / 2 + 0.5 + post * ((width - 1) / 3);
+      box(0.045, 0.3, 0.045, px, 0.28, depth / 2 - 0.16, railCol);
+    }
+    // A compact status stack gives the yard a readable response to a launch.
+    // It stays intentionally small so it supports the machine instead of
+    // becoming a second interface: amber = ready, blue = energy stored, green
+    // = release. The materials are emissive so the signal remains legible in
+    // the dark workshop without changing the physics scene.
+    var signalLights = [];
+    // Put the stack on the near-side corner: the default camera looks across
+    // the deck toward the backboard, so a rear-mounted light would disappear
+    // behind the machine and read as a missing state rather than a quiet one.
+    var signalX = -width / 2 + 0.42;
+    var signalZ = depth / 2 + 0.22;
+    [accentCol, 0x38bdf8, 0x4ade80].forEach(function (signalColor, signalIndex) {
+      box(0.22, 0.22, 0.08, signalX, 0.62 + signalIndex * 0.32, signalZ + 0.04, railCol);
+      var signalMat = new THREE.MeshLambertMaterial({
+        color: signalColor,
+        emissive: signalColor,
+        emissiveIntensity: signalIndex === 0 ? 0.34 : 0.12
+      });
+      var bulb = new THREE.Mesh(new THREE.SphereGeometry(0.095, 12, 8), signalMat);
+      bulb.position.set(signalX, 0.62 + signalIndex * 0.32, signalZ - 0.04);
+      bulb.castShadow = !contrast;
+      S.model.add(bulb);
+      signalLights.push(bulb);
+    });
+    S.mlYard = { signalLights: signalLights };
+    if (typeof THREE.GridHelper === 'function') {
+      var grid = new THREE.GridHelper(Math.max(width, depth), Math.max(8, Math.round(width * 2)), railCol, dark ? 0x1b2c42 : 0xb8c5d3);
+      grid.position.y = 0.205; S.model.add(grid);
+    }
   }
 
   function buildTrebuchetScene(THREE, S, m) {
@@ -1633,6 +2238,8 @@ window.StemLab = window.StemLab || {
       ground.rotation.x = -Math.PI / 2;
       S.model.add(ground);
     }
+
+    decorateEngineYard(THREE, S, m, Math.max(7.6, (beamLong + beamShort) * 1.35), 4.4, mat, frameCol, projCol);
 
     // A-frame uprights
     [-0.7, 0.7].forEach(function (zz) {
@@ -1685,6 +2292,9 @@ window.StemLab = window.StemLab || {
       new THREE.Vector3(0, 0, 1.0),
       new THREE.Vector3(0, 0, -1.0)
     ];
+    if (!m.embedded && !m.contrast && S.model && S.model.traverse) {
+      S.model.traverse(function (obj) { if (obj.isMesh) { obj.castShadow = true; obj.receiveShadow = true; } });
+    }
 
     // Idle pose, so a freshly built scene is never a blank frame.
     arm.rotation.z = COCKED_DEG * Math.PI / 180;
@@ -1708,9 +2318,19 @@ window.StemLab = window.StemLab || {
     // which the tool sets for the ~1.5 s of a shot and nothing else.
     S.tick = function (now) {
       var data = S.data || {};
+      var reduced = !!data.reduced;
       var ml = S.ml;
       if (!ml) return;
+      var yardLights = S.mlYard && S.mlYard.signalLights;
+      function updateYardSignals(active, released) {
+        if (!yardLights || !yardLights.length) return;
+        var pulse = active ? (0.5 + 0.5 * Math.sin((now || 0) * 0.014)) : 0;
+        yardLights[0].material.emissiveIntensity = active ? 0.16 + pulse * 0.1 : 0.34;
+        yardLights[1].material.emissiveIntensity = active ? 0.24 + pulse * 0.24 : 0.12;
+        yardLights[2].material.emissiveIntensity = released ? 0.38 + pulse * 0.3 : 0.08;
+      }
       if (!data.shotId) {
+        updateYardSignals(false, false);
         var cockedRad = COCKED_DEG * Math.PI / 180;
         ml.arm.rotation.z = cockedRad;
         ml.sling.rotation.z = -cockedRad;   // cord hangs vertically in world
@@ -1720,6 +2340,8 @@ window.StemLab = window.StemLab || {
       }
       if (S.mlShot !== data.shotId) { S.mlShot = data.shotId; S.mlT0 = now; }
       var el = Math.max(0, (now - (S.mlT0 || now)) / 1000);
+      if (reduced) el = 1.8;
+      updateYardSignals(true, el > 0.75);
       var SWING = 0.75;                       // seconds of arm swing
       var releaseDeg = data.releaseAngle == null ? 45 : data.releaseAngle;
       var endDeg = 90 - releaseDeg;           // arm angle at release
@@ -1744,6 +2366,44 @@ window.StemLab = window.StemLab || {
     };
   }
 
+  var SHOP_GL = (typeof window !== 'undefined' && window.StemLab && typeof window.StemLab.makeOrbitViewer === 'function')
+    ? window.StemLab.makeOrbitViewer({
+        attr: 'data-machinelab-shop-gl', clearColor: 0x07111f, fov: 42,
+        fitSlack: 1.12, rot: { y: 28, x: 16 },
+        failMessage: '3D workshop unavailable. The live diagram and number panels carry the same mechanics.',
+        lights: function (THREE, scene, S) {
+          if (S && S.renderer && S.renderer.shadowMap) {
+            S.renderer.shadowMap.enabled = true;
+            S.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+          }
+          scene.add(new THREE.AmbientLight(0xffffff, 0.62));
+          var key = new THREE.DirectionalLight(0xffe2b2, 0.95);
+          key.castShadow = true;
+          key.shadow.mapSize.width = 1024; key.shadow.mapSize.height = 1024;
+          key.shadow.camera.left = -7; key.shadow.camera.right = 7;
+          key.shadow.camera.top = 7; key.shadow.camera.bottom = -3;
+          key.shadow.camera.near = 0.5; key.shadow.camera.far = 24;
+          key.position.set(4.5, 7, 5.5); scene.add(key);
+          var rim = new THREE.DirectionalLight(0x86c7ff, 0.45);
+          rim.position.set(-5, 3.5, -4); scene.add(rim);
+        },
+        build: buildSimpleMachineScene
+      })
+    : {
+        attach: function () {}, push: function () {}, onStatusChange: function () {},
+        status: function () { return 'failed'; },
+        debug: function () { return { state: 'failed', hostTooOld: true }; },
+        dispose: function () {}
+      };
+
+  // Pointer-orbit state deliberately lives beside the singleton viewer. React
+  // may re-render several times during a drag, but the physical gesture should
+  // remain continuous across those renders.
+  var SHOP_DRAG = null;
+  var RANGE_DRAG = null;
+  var MACHINE_DRAG = null;
+  var WALL_DRAG = null;
+
   var TREB_GL = (typeof window !== 'undefined' && window.StemLab && typeof window.StemLab.makeOrbitViewer === 'function')
     ? window.StemLab.makeOrbitViewer({
         attr: 'data-machinelab-treb-gl',
@@ -1752,9 +2412,18 @@ window.StemLab = window.StemLab || {
         fitSlack: 1.22,
         rot: { y: 22, x: 12 },
         failMessage: '3D view unavailable. The energy ledger and the trajectory graph below carry the same numbers.',
-        lights: function (THREE, scene) {
+        lights: function (THREE, scene, S) {
+          if (S && S.renderer && S.renderer.shadowMap) {
+            S.renderer.shadowMap.enabled = true;
+            S.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+          }
           scene.add(new THREE.AmbientLight(0xffffff, 0.52));
           var key = new THREE.DirectionalLight(0xfff4e0, 0.85);
+          key.castShadow = true;
+          key.shadow.mapSize.width = 1024; key.shadow.mapSize.height = 1024;
+          key.shadow.camera.left = -8; key.shadow.camera.right = 8;
+          key.shadow.camera.top = 8; key.shadow.camera.bottom = -3;
+          key.shadow.camera.near = 0.5; key.shadow.camera.far = 28;
           key.position.set(2.4, 4.6, 2.8);
           scene.add(key);
           var fill = new THREE.DirectionalLight(0xbcd4ff, 0.32);
@@ -1776,7 +2445,40 @@ window.StemLab = window.StemLab || {
   // ONE module-scope ref identity. An inline arrow is a new identity every
   // render, so React detaches and reattaches and the scene rebuilds on every
   // keystroke.
+  function shopGlRef(nodeOrNull) { SHOP_GL.attach(nodeOrNull); }
   function trebGlRef(nodeOrNull) { TREB_GL.attach(nodeOrNull); }
+
+  var RANGE_GL = (typeof window !== 'undefined' && window.StemLab && typeof window.StemLab.makeOrbitViewer === 'function')
+    ? window.StemLab.makeOrbitViewer({
+        attr: 'data-machinelab-range-gl', clearColor: 0x07111f, fov: 46,
+        fitSlack: 1.08, rot: { y: RANGE_HOME.rotY, x: RANGE_HOME.rotX },
+        failMessage: '3D range unavailable. The trajectory graph and flight numbers carry the same path.',
+        lights: function (THREE, scene, S) {
+          if (S && S.renderer && S.renderer.shadowMap) {
+            S.renderer.shadowMap.enabled = true;
+            S.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+          }
+          scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+          var key = new THREE.DirectionalLight(0xffe2b2, 0.9);
+          key.castShadow = true;
+          key.shadow.mapSize.width = 1024; key.shadow.mapSize.height = 1024;
+          key.shadow.camera.left = -10; key.shadow.camera.right = 10;
+          key.shadow.camera.top = 10; key.shadow.camera.bottom = -4;
+          key.shadow.camera.near = 0.5; key.shadow.camera.far = 80;
+          key.position.set(6, 9, 7); scene.add(key);
+          var rim = new THREE.DirectionalLight(0x86c7ff, 0.38);
+          rim.position.set(-8, 4, -5); scene.add(rim);
+        },
+        build: buildRangeScene
+      })
+    : {
+        attach: function () {}, push: function () {}, onStatusChange: function () {},
+        status: function () { return 'failed'; },
+        debug: function () { return { state: 'failed', hostTooOld: true }; },
+        dispose: function () {}
+      };
+
+  function rangeGlRef(nodeOrNull) { RANGE_GL.attach(nodeOrNull); }
 
   // ── Full screen ──
   //
@@ -1788,8 +2490,10 @@ window.StemLab = window.StemLab || {
   // Held at module scope with stable callbacks for the same reason trebGlRef
   // is: an inline ref is a new function every render, so React detaches and
   // re-attaches on each one.
-  var FS_HOSTS = { machine: null, wall: null };
+  var FS_HOSTS = { shop: null, machine: null, range: null, wall: null };
+  function shopFsRef(nodeOrNull) { FS_HOSTS.shop = nodeOrNull; }
   function machineFsRef(nodeOrNull) { FS_HOSTS.machine = nodeOrNull; }
+  function rangeFsRef(nodeOrNull) { FS_HOSTS.range = nodeOrNull; }
   function wallFsRef(nodeOrNull) { FS_HOSTS.wall = nodeOrNull; }
 
   // ═══════════════════════════════════════════════════════════════════
@@ -1903,6 +2607,86 @@ window.StemLab = window.StemLab || {
     S.model.add(stone);
     S.flyStone = stone;
 
+    // Carry the same sampled trajectory into the target-wall world. At rest it
+    // is a quiet amber guide; during a shot it becomes the shared visual spine
+    // between the range lane and the masonry impact.
+    var previewRaw = (m.previewPath && m.previewPath.length > 1) ? m.previewPath : [];
+    function pointAtDownrange(raw, xWanted) {
+      if (!raw.length) return null;
+      for (var pi = 0; pi < raw.length - 1; pi++) {
+        var pa = raw[pi], pb = raw[pi + 1];
+        var ax = Number(pa.x) || 0, bx = Number(pb.x) || 0;
+        if ((ax <= xWanted && bx >= xWanted) || (ax >= xWanted && bx <= xWanted)) {
+          var spanX = bx - ax;
+          var f = Math.abs(spanX) > 1e-6 ? (xWanted - ax) / spanX : 0;
+          return {
+            x: (Number(pa.x) || 0) + ((Number(pb.x) || 0) - (Number(pa.x) || 0)) * f,
+            y: (Number(pa.y) || 0) + ((Number(pb.y) || 0) - (Number(pa.y) || 0)) * f,
+            z: (Number(pa.z) || 0) + ((Number(pb.z) || 0) - (Number(pa.z) || 0)) * f
+          };
+        }
+      }
+      return raw[raw.length - 1];
+    }
+    function wallPathPoint(p) {
+      return new THREE.Vector3(Number(p.z) || 0, Math.max(0.04, Number(p.y) || 0), -standoff + (Number(p.x) || 0));
+    }
+    var wallPathPts = previewRaw.map(wallPathPoint).filter(function (p) { return p.z <= 1.2; });
+    var pathLine = null;
+    if (wallPathPts.length > 1) {
+      var pathGeo = new THREE.BufferGeometry();
+      pathGeo.setFromPoints(wallPathPts);
+      pathLine = new THREE.Line(pathGeo, new THREE.LineBasicMaterial({
+        color: contrast ? 0xffff00 : 0xf59e0b, transparent: true, opacity: 0.28
+      }));
+      S.model.add(pathLine);
+    }
+    var wallImpact = pointAtDownrange(previewRaw, standoff);
+    var impactRing = null;
+    var canReachWall = !!(previewRaw.length && (Number(previewRaw[previewRaw.length - 1].x) || 0) >= standoff);
+    if (canReachWall && wallImpact) {
+      var ringMat = new THREE.MeshLambertMaterial({
+        color: contrast ? 0xffff00 : 0xf59e0b,
+        emissive: contrast ? 0xffff00 : 0xf59e0b,
+        emissiveIntensity: contrast ? 0.55 : 0.28,
+        transparent: true, opacity: 0.75
+      });
+      impactRing = new THREE.Mesh(new THREE.TorusGeometry(0.72, 0.08, 8, 24), ringMat);
+      impactRing.position.set(Number(wallImpact.z) || 0, Math.max(0.35, Number(wallImpact.y) || 0), 0.08);
+      impactRing.visible = true;
+      S.model.add(impactRing);
+    }
+    S.siegePathLine = pathLine;
+    S.siegeImpactRing = impactRing;
+    S.siegeCanReach = canReachWall;
+    // A miss should read as a measurable engineering result, not as a silent
+    // absence of impact geometry. Mark the actual endpoint and bridge it to the
+    // wall so the learner can see the remaining distance in the world.
+    var shortfallMarker = null, shortfallLine = null;
+    if (!canReachWall && previewRaw.length > 1) {
+      var shortfallRaw = previewRaw[previewRaw.length - 1];
+      var shortfallPoint = wallPathPoint(shortfallRaw);
+      var shortMat = new THREE.MeshLambertMaterial({
+        color: contrast ? 0xffff00 : 0xf97316,
+        emissive: contrast ? 0xffff00 : 0xf97316,
+        emissiveIntensity: contrast ? 0.5 : 0.3
+      });
+      shortfallMarker = new THREE.Mesh(new THREE.SphereGeometry(0.42, 14, 10), shortMat);
+      shortfallMarker.position.copy(shortfallPoint);
+      shortfallMarker.position.y = Math.max(0.25, shortfallMarker.position.y);
+      S.model.add(shortfallMarker);
+      var shortGeo = new THREE.BufferGeometry();
+      shortGeo.setFromPoints([
+        shortfallMarker.position.clone(),
+        new THREE.Vector3(shortfallMarker.position.x, 0.08, 0)
+      ]);
+      shortfallLine = new THREE.Line(shortGeo, new THREE.LineBasicMaterial({
+        color: contrast ? 0xffff00 : 0xf97316, transparent: true, opacity: 0.72
+      }));
+      S.model.add(shortfallLine);
+    }
+    S.siegeShortfall = { marker: shortfallMarker, line: shortfallLine };
+
     // No single camera can make both the machine and the castle large across
     // 80 m of field, so the shot is a choice rather than a compromise.
     var framing = (m && m.framing) || 'field';
@@ -1939,6 +2723,7 @@ window.StemLab = window.StemLab || {
 
     S.tick = function (now) {
       var data = S.data || {};
+      var reduced = !!data.reduced;
 
       // The wall. While a stone is in the air the wall is still whole, so the
       // pre-impact blocks are drawn until it lands: a wall that broke while the
@@ -1949,9 +2734,27 @@ window.StemLab = window.StemLab || {
         if (S.flightId !== data.flight.id) { S.flightId = data.flight.id; S.flightT0 = now; }
         dur = Math.max(0.3, data.flight.seconds || 1.4);
         t = Math.max(0, (now - (S.flightT0 || now)) / 1000);
+        if (reduced) t = dur;
       }
       var landed = !flying || t >= dur;
       var list = (flying && !landed && data.prevBlocks) ? data.prevBlocks : (data.blocks || []);
+
+      if (S.siegePathLine && S.siegePathLine.material) {
+        S.siegePathLine.material.opacity = flying ? 0.52 : 0.28;
+      }
+      if (S.siegeImpactRing) {
+        var ringPulse = flying && !reduced ? (0.5 + 0.5 * Math.sin((now || 0) * 0.014)) : 0;
+        S.siegeImpactRing.scale.setScalar(flying ? 1 + ringPulse * 0.18 : 1);
+        S.siegeImpactRing.material.emissiveIntensity = flying ? 0.36 + ringPulse * 0.28 : 0.28;
+      }
+      if (S.siegeShortfall && S.siegeShortfall.marker) {
+        var missPulse = !reduced ? (0.5 + 0.5 * Math.sin((now || 0) * 0.01)) : 0;
+        S.siegeShortfall.marker.scale.setScalar(1 + missPulse * 0.12);
+        S.siegeShortfall.marker.material.emissiveIntensity = 0.3 + missPulse * 0.22;
+        if (S.siegeShortfall.line && S.siegeShortfall.line.material) {
+          S.siegeShortfall.line.material.opacity = 0.58 + missPulse * 0.18;
+        }
+      }
 
       if (S.wall.batch) {
         var n = 0;
@@ -1979,7 +2782,7 @@ window.StemLab = window.StemLab || {
       var g = S.siegeGuest;
       if (g && typeof g.tick === 'function') {
         g.data = flying
-          ? { shotId: data.flight.id, releaseAngle: data.releaseAngle, muzzleV: 0 }
+          ? { shotId: data.flight.id, releaseAngle: data.releaseAngle, muzzleV: data.muzzleV, reduced: reduced }
           : {};
         try { g.tick(flying ? (S.flightT0 || now) + Math.min(t, 0.9) * 1000 : now); }
         catch (e) {}
@@ -2140,6 +2943,9 @@ window.StemLab = window.StemLab || {
       benchResult: null,
       benchStreak: 0,
       provenBenches: {},
+      shopDemoId: 0,
+      shopAnimating: false,
+      shopDemoBench: null,
 
       // ── P2/P3: siege machines ──
       machine: 'trebuchet',          // trebuchet | ballista | onager
@@ -2155,7 +2961,9 @@ window.StemLab = window.StemLab || {
 
       // Camera, one per 3D bay. See MACHINE_LAB_SPEC.md: omitting these from a
       // push resets the view to dead-on and throws cfg.rot away.
+      shopRotY: 28, shopRotX: 16, shopZoom: 1,
       machineRotY: 22, machineRotX: 12, machineZoom: 1,
+      rangeRotY: 72, rangeRotX: 18, rangeZoom: 1,
       wallRotY: 14, wallRotX: 16, wallZoom: 1,
 
       // Torsion machines. Turns, arm and draw are the same idea on both, so
@@ -2164,6 +2972,11 @@ window.StemLab = window.StemLab || {
       ballistaStringMass: 0.35, onagerSling: 1.0,
 
       lastShot: null,
+      // Signature of the control set used for the last fired shot. Keeping it
+      // separate from lastShot lets the range show a live prediction without
+      // accidentally presenting an old result as if it belonged to the new
+      // slider values.
+      lastShotSig: '',
       shotId: 0,
       animating: false,
       // The shot the 3D field is currently playing: the arc, how long it takes
@@ -2305,6 +3118,8 @@ window.StemLab = window.StemLab || {
       var isContrast = !!ctx.isContrast;
       var isDark = !!ctx.isDark;
       var T = mkTheme(isDark, isContrast);
+      var reducedMotion = typeof window !== 'undefined' && window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
       // Single-argument-safe translator. ctx.t may be missing entirely under
       // the smoke harness, and must never surface the literal "undefined".
@@ -2360,6 +3175,8 @@ window.StemLab = window.StemLab || {
           break;
         }
       }
+      var provenCount = Object.keys(d.provenBenches || {}).length;
+      var firedCount = (d.machinesFired || []).length;
 
       var upd = function (key, val) {
         setLabToolData(function (prev) {
@@ -2484,26 +3301,37 @@ window.StemLab = window.StemLab || {
           key: 'tabs',
           role: 'tablist',
           'aria-label': __alloT('stem.machinelab.aria_benchlist', 'Simple machine benches'),
-          style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }
-        }, BENCHES.map(function (b) {
+          style: {
+            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(128px, 1fr))',
+            gap: 8, marginBottom: 12
+          }
+        }, BENCHES.map(function (b, stationIndex) {
           var active = b.id === bench.id;
           var done = !!(d.provenBenches || {})[b.id];
           return h('button', {
             key: b.id,
             role: 'tab',
             'aria-selected': active ? 'true' : 'false',
-            onClick: function () { updMulti({ bench: b.id, benchPrediction: '', benchChoice: null, benchResult: null }); },
+            onClick: function () { updMulti({ bench: b.id, benchPrediction: '', benchChoice: null, benchResult: null, shopAnimating: false }); },
             style: {
-              padding: '7px 11px', borderRadius: 999, cursor: 'pointer',
-              border: '1px solid ' + (active ? T.accent : T.border),
-              background: active ? T.accent : T.card,
-              color: active ? T.accentInk : T.text,
-              fontSize: 13, fontWeight: 700
+              minHeight: 58, padding: '8px 10px', borderRadius: 12, cursor: 'pointer',
+              border: '1px solid ' + (active ? T.accent : T.border), textAlign: 'left',
+              boxShadow: active ? '0 0 0 2px ' + T.accent + '33' : 'none',
+              background: active ? T.accent : T.card, color: active ? T.accentInk : T.text,
+              fontSize: 12, fontWeight: 750, display: 'grid', gridTemplateColumns: '28px 1fr auto',
+              alignItems: 'center', gap: 7
             }
           }, [
-            h('span', { key: 'i', 'aria-hidden': 'true' }, b.icon + ' '),
-            h('span', { key: 'l' }, b.label),
-            done ? h('span', { key: 'd', 'aria-hidden': 'true' }, ' ✓') : null
+            h('span', {
+              key: 'i', 'aria-hidden': 'true',
+              style: { fontSize: 20, lineHeight: 1, textAlign: 'center' }
+            }, b.icon),
+            h('span', { key: 'l', style: { lineHeight: 1.2 } }, [
+              h('span', { key: 'n', style: { display: 'block', fontSize: 9, opacity: 0.72, letterSpacing: 0.7, textTransform: 'uppercase' } },
+                __alloT('stem.machinelab.station', 'Station ') + (stationIndex + 1)),
+              h('span', { key: 't' }, b.label)
+            ]),
+            done ? h('span', { key: 'd', 'aria-hidden': 'true', style: { fontSize: 14 } }, '✓') : null
           ]);
         }));
       }
@@ -2790,6 +3618,21 @@ window.StemLab = window.StemLab || {
       var shotInputs = inputsFor(machineId);
       var preview = _machineMath.shot(shotInputs);
 
+      // A compact, deterministic fingerprint of every control that can change
+      // the range calculation. It is deliberately kept in the view layer so a
+      // fired result can be compared with the live controls without serialising
+      // the full physics object into state.
+      function rangeConfigSig() {
+        return [
+          machineId, d.gravity, d.drag !== false, d.windZ, d.launchElevation,
+          d.projMass, d.projDiameter, d.releaseAngle,
+          d.cwMass, d.cwDrop, d.beamLong, d.beamShort, d.slingLength, d.armMass,
+          d.torsionTurns, d.torsionArmLength, d.torsionDraw, d.torsionArmMass,
+          d.ballistaStringMass, d.onagerSling,
+          d.winchHandleR, d.winchDrumR, d.winchPulleys
+        ].join('|');
+      }
+
       function viewNav() {
         var views = [
           { id: 'machines', icon: '⚙️', label: __alloT('stem.machinelab.nav_machines', 'Machine Shop') },
@@ -2802,20 +3645,44 @@ window.StemLab = window.StemLab || {
         return h('div', {
           key: 'nav', role: 'tablist',
           'aria-label': __alloT('stem.machinelab.aria_views', 'Machine Lab sections'),
-          style: { display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }
-        }, views.map(function (v) {
+          style: {
+            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(115px, 1fr))',
+            gap: 6, marginBottom: 14, padding: 5, borderRadius: 14,
+            border: '1px solid ' + T.border, background: T.card
+          }
+        }, views.map(function (v, viewIndex) {
           var on = (d.view || 'machines') === v.id;
           return h('button', {
-            key: v.id, role: 'tab', 'aria-selected': on ? 'true' : 'false',
+            key: v.id, id: 'machinelab-tab-' + v.id, role: 'tab',
+            'aria-selected': on ? 'true' : 'false',
+            'aria-controls': 'machinelab-panel-' + v.id,
+            tabIndex: on ? 0 : -1,
             onClick: function () { upd('view', v.id); },
+            onKeyDown: function (e) {
+              if (!e || (e.key !== 'ArrowRight' && e.key !== 'ArrowDown' && e.key !== 'ArrowLeft' && e.key !== 'ArrowUp')) return;
+              if (e.preventDefault) e.preventDefault();
+              var step = (e.key === 'ArrowRight' || e.key === 'ArrowDown') ? 1 : -1;
+              var next = views[(viewIndex + step + views.length) % views.length];
+              upd('view', next.id);
+              if (typeof document !== 'undefined') {
+                var node = document.getElementById('machinelab-tab-' + next.id);
+                if (node && node.focus) node.focus();
+              }
+            },
             style: {
-              padding: '8px 14px', borderRadius: 10, cursor: 'pointer',
+              minHeight: 43, padding: '7px 9px', borderRadius: 10, cursor: 'pointer',
               border: '1px solid ' + (on ? T.accent : T.border),
               background: on ? T.accent : T.card,
               color: on ? T.accentInk : T.text,
-              fontSize: 14, fontWeight: 700
+              boxShadow: on ? '0 5px 14px ' + T.accent + '33' : 'none',
+              fontSize: 12, fontWeight: 750
             }
-          }, v.icon + ' ' + v.label);
+          }, [
+            h('span', { key: 'i', 'aria-hidden': 'true', style: { fontSize: 15, marginRight: 5 } }, v.icon),
+            h('span', { key: 'l' }, v.label),
+            h('span', { key: 'n', 'aria-hidden': 'true', style: { display: 'block', marginTop: 1, fontSize: 8, opacity: 0.65, letterSpacing: 0.6 } },
+              '0' + (viewIndex + 1))
+          ]);
         }));
       }
 
@@ -3084,6 +3951,7 @@ window.StemLab = window.StemLab || {
       }
 
       function fire() {
+        if (d.animating) return;
         if (!preview) {
           updMulti({ rangeResult: { ok: false, message: __alloT('stem.machinelab.bad_machine', 'This machine cannot fire. Check the sliders.') } });
           return;
@@ -3115,6 +3983,7 @@ window.StemLab = window.StemLab || {
         if (fired.indexOf(machineId) === -1) fired.push(machineId);
         updMulti({
           lastShot: preview,
+          lastShotSig: rangeConfigSig(),
           shotId: nextId,
           animating: true,
           shotHistory: hist,
@@ -3152,7 +4021,11 @@ window.StemLab = window.StemLab || {
           var on = mm.id === machineId;
           return h('button', {
             key: mm.id, 'aria-pressed': on ? 'true' : 'false',
-            onClick: function () { updMulti({ machine: mm.id, lastShot: null, rangeResult: null }); },
+            onClick: function () {
+              // Switching engines is a clean reset: do not let an in-flight
+              // shot from the previous machine continue through the new model.
+              updMulti({ machine: mm.id, lastShot: null, lastShotSig: '', rangeResult: null, animating: false });
+            },
             style: {
               padding: '7px 13px', borderRadius: 999, cursor: 'pointer',
               border: '1px solid ' + (on ? T.accent : T.border),
@@ -3223,10 +4096,14 @@ window.StemLab = window.StemLab || {
       // was no way for a user to look around at all. These are real buttons and
       // real arrow keys, so the camera is reachable without a mouse.
       function camFor(which) {
-        var home = (which === 'wall') ? WALL_HOME : MACHINE_HOME;
+        var home = (which === 'wall') ? WALL_HOME : (which === 'shop' ? SHOP_HOME : (which === 'range' ? RANGE_HOME : MACHINE_HOME));
         var k = (which === 'wall')
           ? { y: 'wallRotY', x: 'wallRotX', z: 'wallZoom' }
-          : { y: 'machineRotY', x: 'machineRotX', z: 'machineZoom' };
+          : (which === 'shop'
+            ? { y: 'shopRotY', x: 'shopRotX', z: 'shopZoom' }
+            : (which === 'range'
+              ? { y: 'rangeRotY', x: 'rangeRotX', z: 'rangeZoom' }
+              : { y: 'machineRotY', x: 'machineRotX', z: 'machineZoom' }));
         var yaw = finite(d[k.y]) ? d[k.y] : home.rotY;
         var pitch = finite(d[k.x]) ? d[k.x] : home.rotX;
         var zoom = pos(d[k.z]) ? d[k.z] : home.zoom;
@@ -3241,6 +4118,7 @@ window.StemLab = window.StemLab || {
           rotY: yaw, rotX: pitch, zoom: zoom,
           nudge: function (dy, dx) { set(yaw + dy, pitch + dx, zoom); },
           zoomBy: function (f) { set(yaw, pitch, zoom * f); },
+          setView: function (ny, nx, nz) { set(ny, nx, nz); },
           reset: function () { set(home.rotY, home.rotX, home.zoom); }
         };
       }
@@ -3314,7 +4192,22 @@ window.StemLab = window.StemLab || {
           }
         }, [
           h('span', { key: 'l', style: { fontSize: 11, color: T.dim, marginRight: 2 } },
-            __alloT('stem.machinelab.cam_view', 'View:')),
+            __alloT('stem.machinelab.cam_drag_hint', 'Drag scene or use:')),
+          fsWhich === 'shop' ? btn('side', __alloT('stem.machinelab.cam_side_short', 'Side'),
+            __alloT('stem.machinelab.cam_side', 'Show the machine from the side'),
+            function () { cam.setView(0, 8, 1.08); }) : null,
+          fsWhich === 'shop' ? btn('close', __alloT('stem.machinelab.cam_close_short', 'Close'),
+            __alloT('stem.machinelab.cam_close', 'Show a close three-quarter view'),
+            function () { cam.setView(24, 12, 1.38); }) : null,
+          fsWhich === 'range' ? btn('launch', __alloT('stem.machinelab.cam_launch_short', 'Launch'),
+            __alloT('stem.machinelab.cam_launch', 'Focus the launch deck'),
+            function () { cam.setView(48, 16, 1.18); }) : null,
+          fsWhich === 'range' ? btn('arc', __alloT('stem.machinelab.cam_arc_short', 'Arc'),
+            __alloT('stem.machinelab.cam_arc', 'Frame the full flight arc'),
+            function () { cam.setView(76, 27, 1.02); }) : null,
+          fsWhich === 'range' ? btn('impact', __alloT('stem.machinelab.cam_impact_short', 'Impact'),
+            __alloT('stem.machinelab.cam_impact', 'Focus the impact end of the lane'),
+            function () { cam.setView(112, 12, 1.2); }) : null,
           btn('yl', '◀', __alloT('stem.machinelab.cam_left', 'Turn left'), function () { cam.nudge(-15, 0); }),
           btn('yr', '▶', __alloT('stem.machinelab.cam_right', 'Turn right'), function () { cam.nudge(15, 0); }),
           btn('xu', '▲', __alloT('stem.machinelab.cam_up', 'Tilt up'), function () { cam.nudge(0, -10); }),
@@ -3640,6 +4533,27 @@ window.StemLab = window.StemLab || {
         var mCam = camFor('machine');
         var glStatus = TREB_GL.status();
         TREB_GL.onStatusChange(function () { upd('glTick', (d.glTick || 0) + 1); });
+        function beginMachineOrbit(ev) {
+          if (!ev || ev.button !== 0 || ev.pointerType === 'touch') return;
+          MACHINE_DRAG = {
+            id: ev.pointerId, x: ev.clientX, y: ev.clientY,
+            rotY: mCam.rotY, rotX: mCam.rotX, zoom: mCam.zoom
+          };
+          try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (e) {}
+          ev.currentTarget.style.cursor = 'grabbing';
+          if (ev.preventDefault) ev.preventDefault();
+        }
+        function moveMachineOrbit(ev) {
+          if (!MACHINE_DRAG || !ev || ev.pointerId !== MACHINE_DRAG.id) return;
+          var dx = ev.clientX - MACHINE_DRAG.x, dy = ev.clientY - MACHINE_DRAG.y;
+          mCam.setView(MACHINE_DRAG.rotY - dx * 0.32, MACHINE_DRAG.rotX + dy * 0.24, MACHINE_DRAG.zoom);
+          if (ev.preventDefault) ev.preventDefault();
+        }
+        function endMachineOrbit(ev) {
+          if (!MACHINE_DRAG || !ev || ev.pointerId !== MACHINE_DRAG.id) return;
+          try { ev.currentTarget.releasePointerCapture(ev.pointerId); } catch (e) {}
+          ev.currentTarget.style.cursor = 'grab'; MACHINE_DRAG = null;
+        }
         // sig drives the scene REBUILD, so it carries geometry and theme only.
         // Firing must not change it, or every shot would tear the scene down.
         TREB_GL.push({
@@ -3648,7 +4562,8 @@ window.StemLab = window.StemLab || {
                 d.projDiameter, isDark, isContrast].join('|'),
           kind: machineId,
           rotY: mCam.rotY, rotX: mCam.rotX, zoom: mCam.zoom,
-          static: !d.animating,
+          static: !d.animating || reducedMotion,
+          reduced: reducedMotion,
           shotId: d.animating ? d.shotId : 0,
           releaseAngle: d.releaseAngle,
           muzzleV: preview ? preview.muzzleV : 20,
@@ -3688,11 +4603,14 @@ window.StemLab = window.StemLab || {
               h('div', {
                 key: 'gl',
                 ref: trebGlRef,
-                role: 'img',
-                'aria-label': __alloT('stem.machinelab.aria_machine3d', 'Three-dimensional view of the ') + machineLabel(machineId) + __alloT('stem.machinelab.aria_machine3d2', '. The energy ledger beside it carries the same information as numbers.'),
+                role: 'img', 'data-ml-orbitable': 'true',
+                onPointerDown: beginMachineOrbit, onPointerMove: moveMachineOrbit,
+                onPointerUp: endMachineOrbit, onPointerCancel: endMachineOrbit,
+                'aria-label': __alloT('stem.machinelab.aria_machine3d', 'Three-dimensional view of the ') + machineLabel(machineId) + __alloT('stem.machinelab.aria_machine3d2', '. Drag with a mouse or pen to orbit. The camera buttons and ledger provide keyboard and numeric equivalents.'),
                 style: {
-                  width: '100%', height: 260, minHeight: 180, flex: '1 1 auto',
-                  borderRadius: 10, background: T.bg, border: '1px solid ' + T.border
+                  width: '100%', height: 'clamp(330px, 48vh, 480px)', minHeight: 260, flex: '1 1 auto',
+                  borderRadius: 10, background: T.bg, border: '1px solid ' + T.border,
+                  cursor: 'grab', userSelect: 'none'
                 }
               }, null),
               camControls(mCam, machineLabel(machineId), 'machine')
@@ -3808,10 +4726,167 @@ window.StemLab = window.StemLab || {
       // ── Range view ──
       function renderRange() {
         var s = d.lastShot;
+        var rangeCam = camFor('range');
+        var rangeStatus = RANGE_GL.status();
+        // Snapshots created before lastShotSig existed are treated as current
+        // once; new shots always carry the fingerprint and get strict stale
+        // result handling.
+        var shotIsCurrent = !!(s && (!d.lastShotSig || d.lastShotSig === rangeConfigSig()));
+        // During flight keep composing the shot that was actually fired. Once
+        // the animation is over, the world follows the live controls again;
+        // exact metrics are only revealed when those controls still match the
+        // fired signature.
+        var rangeScene = d.animating ? (s || preview) : preview;
+        var revealMetrics = !!(rangeScene && (d.animating || shotIsCurrent));
+        var rangePath = (revealMetrics && rangeScene && rangeScene.path) ? rangeScene.path : [];
+        var rangeValid = !!(rangeScene && rangeScene.path && rangeScene.path.length > 1);
+        var rangePast = (d.showOverlay === false) ? [] : (d.shotHistory || []).slice(0, -1)
+          .filter(function (r) { return r && r.path && r.path.length > 1; }).slice(-4)
+          .map(function (r) { return r.path; });
+        var rangePastSig = rangePast.map(function (p) {
+          var e = p[p.length - 1] || {};
+          return [p.length, e.x, e.y, e.z].join(',');
+        }).join(';');
+        RANGE_GL.onStatusChange(function () { upd('glTick', (d.glTick || 0) + 1); });
+        RANGE_GL.push({
+          sig: [machineId,
+            revealMetrics && rangeScene ? rangeScene.range : '', revealMetrics && rangeScene ? rangeScene.apex : '',
+            revealMetrics && rangeScene ? rangeScene.drift : '', revealMetrics && rangeScene ? rangeScene.flightTime : '',
+            rangePath.length, rangePast.length, rangePastSig, d.showOverlay !== false,
+            revealMetrics, rangeValid, reducedMotion,
+            d.projMass, d.projDiameter, d.gravity, d.drag, d.windZ, d.launchElevation,
+            isDark, isContrast].join('|'),
+          kind: machineId,
+          rotY: rangeCam.rotY, rotX: rangeCam.rotX, zoom: rangeCam.zoom,
+          static: !d.animating || reducedMotion,
+          reduced: reducedMotion,
+          animating: !!d.animating,
+          shotId: d.shotId || 0,
+          flightTime: revealMetrics && rangeScene ? rangeScene.flightTime : 1.4,
+          path: rangePath,
+          past: revealMetrics ? rangePast : [],
+          range: revealMetrics && rangeScene ? rangeScene.range : 8,
+          apex: revealMetrics && rangeScene ? rangeScene.apex : 2,
+          drift: revealMetrics && rangeScene ? rangeScene.drift : 0,
+          valid: rangeValid,
+          reveal: revealMetrics,
+          launchElevation: d.launchElevation,
+          projDiameter: d.projDiameter,
+          dark: isDark, contrast: isContrast
+        });
+        function beginRangeOrbit(ev) {
+          if (!ev || ev.button !== 0 || ev.pointerType === 'touch') return;
+          RANGE_DRAG = {
+            id: ev.pointerId, x: ev.clientX, y: ev.clientY,
+            rotY: rangeCam.rotY, rotX: rangeCam.rotX, zoom: rangeCam.zoom
+          };
+          try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (e) {}
+          ev.currentTarget.style.cursor = 'grabbing';
+          if (ev.preventDefault) ev.preventDefault();
+        }
+        function moveRangeOrbit(ev) {
+          if (!RANGE_DRAG || !ev || ev.pointerId !== RANGE_DRAG.id) return;
+          var dx = ev.clientX - RANGE_DRAG.x, dy = ev.clientY - RANGE_DRAG.y;
+          rangeCam.setView(RANGE_DRAG.rotY - dx * 0.28, RANGE_DRAG.rotX + dy * 0.22, RANGE_DRAG.zoom);
+          if (ev.preventDefault) ev.preventDefault();
+        }
+        function endRangeOrbit(ev) {
+          if (!RANGE_DRAG || !ev || ev.pointerId !== RANGE_DRAG.id) return;
+          try { ev.currentTarget.releasePointerCapture(ev.pointerId); } catch (e) {}
+          ev.currentTarget.style.cursor = 'grab'; RANGE_DRAG = null;
+        }
         return h('div', {
           key: 'rangeview',
           style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 12 }
         }, [
+          h('div', {
+            key: 'world', ref: rangeFsRef,
+            style: {
+              gridColumn: '1 / -1', position: 'relative', display: 'flex', flexDirection: 'column',
+              overflow: 'hidden', padding: 8, marginBottom: 0, borderRadius: 18,
+              background: T.card, border: '1px solid ' + T.border,
+              boxShadow: isDark ? '0 18px 45px rgba(0,0,0,.28)' : '0 18px 45px rgba(15,23,42,.11)'
+            }
+          }, [
+            h('div', {
+              key: 'bay', ref: rangeGlRef, role: 'img', 'data-ml-orbitable': 'true',
+              onPointerDown: beginRangeOrbit, onPointerMove: moveRangeOrbit,
+              onPointerUp: endRangeOrbit, onPointerCancel: endRangeOrbit,
+              'aria-label': __alloT('stem.machinelab.aria_range3d', 'Interactive three-dimensional range showing the selected machine’s launch path. Drag with a mouse or pen to orbit. The graph and controls below provide keyboard and numeric equivalents.'),
+              style: {
+                width: '100%', height: 'clamp(320px, 48vh, 500px)', minHeight: 280,
+                flex: '1 1 auto', borderRadius: 13, background: T.bg,
+                border: '1px solid ' + T.border, cursor: 'grab', userSelect: 'none'
+              }
+            }, null),
+            h('div', {
+              key: 'hud', 'aria-hidden': 'true',
+              style: {
+                position: 'absolute', top: 22, left: 22, right: 22,
+                display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+                gap: 10, flexWrap: 'wrap', pointerEvents: 'none'
+              }
+            }, [
+              h('div', {
+                key: 'title', style: {
+                  padding: '9px 12px', borderRadius: 12, color: '#f8fafc',
+                  background: 'rgba(7,17,31,.82)', border: '1px solid rgba(255,255,255,.2)',
+                  boxShadow: '0 8px 22px rgba(0,0,0,.24)', backdropFilter: 'blur(8px)'
+                }
+              }, [
+                h('div', { key: 'ey', style: { fontSize: 9, fontWeight: 800, letterSpacing: 1.4, textTransform: 'uppercase', color: '#fbbf24' } },
+                  d.animating ? '● ' + __alloT('stem.machinelab.range_in_flight', 'Stone in flight')
+                    : (revealMetrics ? __alloT('stem.machinelab.range_fired_lane', 'Fired result') : __alloT('stem.machinelab.range_live_lane', 'Live range lane'))),
+                h('div', { key: 'nm', style: { marginTop: 2, fontSize: 20, fontWeight: 850 } }, machineLabel(machineId))
+              ]),
+              h('div', {
+                key: 'metric', style: {
+                  minWidth: 160, padding: '9px 12px', borderRadius: 12, textAlign: 'right',
+                  color: '#f8fafc', background: 'rgba(7,17,31,.82)',
+                  border: '1px solid rgba(255,255,255,.2)', backdropFilter: 'blur(8px)'
+                }
+              }, [
+                h('div', { key: 'l', style: { fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', color: '#cbd5e1' } },
+                  revealMetrics ? __alloT('stem.machinelab.range_world_metric', 'Landing distance')
+                    : __alloT('stem.machinelab.range_prediction_locked', 'Prediction locked')),
+                h('div', { key: 'v', style: { marginTop: 1, fontSize: 22, fontWeight: 900, color: '#fbbf24' } },
+                  revealMetrics && rangeScene && rangeScene.range != null ? fmt(rangeScene.range, 1) + ' m' : '—'),
+                h('div', { key: 'a', style: { marginTop: 2, fontSize: 9, fontWeight: 750, color: '#cbd5e1' } },
+                  __alloT('stem.machinelab.range_world_apex', 'Apex ') +
+                  (revealMetrics && rangeScene && rangeScene.apex != null ? fmt(rangeScene.apex, 1) + ' m' : '—'))
+              ])
+            ]),
+            !revealMetrics ? h('div', {
+              key: 'prompt', 'aria-hidden': 'true',
+              style: {
+                position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)',
+                maxWidth: 300, padding: '12px 16px', borderRadius: 12, textAlign: 'center',
+                color: '#e2e8f0', background: 'rgba(7,17,31,.74)',
+                border: '1px dashed rgba(251,191,36,.65)', boxShadow: '0 10px 24px rgba(0,0,0,.2)',
+                fontSize: 13, fontWeight: 750, lineHeight: 1.4, pointerEvents: 'none', backdropFilter: 'blur(8px)'
+              }
+            }, __alloT('stem.machinelab.range_world_prompt', 'Make your prediction, then fire to reveal the trajectory.')) : null,
+            h('div', {
+              key: 'legend', 'aria-hidden': 'true',
+              style: {
+                position: 'absolute', left: 22, bottom: 104, display: 'flex', gap: 12,
+                padding: '6px 9px', borderRadius: 999, color: '#f8fafc',
+                background: 'rgba(7,17,31,.76)', fontSize: 10, fontWeight: 750,
+                pointerEvents: 'none', backdropFilter: 'blur(8px)'
+              }
+            }, [
+              revealMetrics
+                ? h('span', { key: 't', style: { color: '#fbbf24' } }, '● ' + __alloT('stem.machinelab.range_world_path', 'Computed path'))
+                : h('span', { key: 't', style: { color: '#fbbf24' } }, '● ' + __alloT('stem.machinelab.range_world_predict', 'Predict to reveal the path')),
+              revealMetrics ? h('span', { key: 'f', style: { color: '#38bdf8' } }, '⚑ ' + __alloT('stem.machinelab.range_world_flag', 'Impact flag')) : null
+            ]),
+            camControls(rangeCam, __alloT('stem.machinelab.range_lane', '3D range lane'), 'range'),
+            rangeStatus !== 'ready' ? h('p', {
+              key: 'st', style: { margin: '8px 0 0', fontSize: 12, color: T.dim }
+            }, rangeStatus === 'failed'
+              ? __alloT('stem.machinelab.range_gl_failed', '3D range unavailable. The graph below carries the same path.')
+              : __alloT('stem.machinelab.range_gl_loading', 'Opening the 3D range lane...')) : null
+          ]),
           h('div', { key: 'l' }, [
             oddStoneNote('rangeodd'),
             card([
@@ -3833,13 +4908,16 @@ window.StemLab = window.StemLab || {
                   }
                 }),
                 h('button', {
-                  key: 'fire', onClick: fire,
+                  key: 'fire', onClick: fire, disabled: !!d.animating || !preview,
                   style: {
-                    padding: '9px 20px', borderRadius: 8, cursor: 'pointer',
-                    border: '1px solid ' + T.accent, background: T.accent,
-                    color: T.accentInk, fontSize: 14, fontWeight: 800
+                    padding: '9px 20px', borderRadius: 8,
+                    cursor: (d.animating || !preview) ? 'not-allowed' : 'pointer',
+                    border: '1px solid ' + ((d.animating || !preview) ? T.border : T.accent),
+                    background: (d.animating || !preview) ? T.card : T.accent,
+                    color: (d.animating || !preview) ? T.dim : T.accentInk,
+                    fontSize: 14, fontWeight: 800
                   }
-                }, __alloT('stem.machinelab.fire', 'Fire'))
+                }, d.animating ? __alloT('stem.machinelab.in_flight', 'In flight…') : __alloT('stem.machinelab.fire', 'Fire'))
               ]),
               d.rangeResult ? h('p', {
                 key: 'res', role: 'status',
@@ -3865,6 +4943,10 @@ window.StemLab = window.StemLab || {
                   ? __alloT('stem.machinelab.hide_past', 'Hide earlier shots')
                   : __alloT('stem.machinelab.show_past', 'Show earlier shots')) : null
               ]),
+              !shotIsCurrent && !d.animating ? h('p', {
+                key: 'stale', role: 'status',
+                style: { margin: '0 0 8px', fontSize: 12, color: T.warn || T.accent, lineHeight: 1.45 }
+              }, __alloT('stem.machinelab.stale_shot', 'Current settings changed. Fire again to reveal the new result.')) : null,
               h('div', {
                 key: 'g', role: 'img',
                 'aria-label': __alloT('stem.machinelab.aria_traj', 'Trajectory. Range ') + fmt(s.range, 0) +
@@ -3935,7 +5017,7 @@ window.StemLab = window.StemLab || {
             ], 'cond')
           ]),
           h('div', { key: 'r' }, [
-            ledger(s || preview, 'rangeledger'),
+            ledger(d.animating ? (s || preview) : preview, 'rangeledger'),
             (d.shotHistory && d.shotHistory.length > 1) ? card([
               h('h4', { key: 'h', style: { margin: '0 0 6px', fontSize: 14, color: T.text } },
                 __alloT('stem.machinelab.shot_log', 'Shot log')),
@@ -4005,37 +5087,263 @@ window.StemLab = window.StemLab || {
 
       // ── Machines view (P1) ──
       function renderMachines() {
+        var shopCam = camFor('shop');
+        var shopStatus = SHOP_GL.status();
+        var benchIndex = BENCHES.indexOf(bench);
+        var nextBench = BENCHES[(benchIndex + 1) % BENCHES.length];
+        var hasRunDemo = d.shopDemoBench === bench.id;
+        var observationCues = {
+          lever: __alloT('stem.machinelab.observe_lever', 'The long effort arm travels farther while the load rises.'),
+          pulley: __alloT('stem.machinelab.observe_pulley', 'More supporting rope segments share the load.'),
+          windlass: __alloT('stem.machinelab.observe_windlass', 'The large wheel turns the smaller axle.'),
+          ramp: __alloT('stem.machinelab.observe_ramp', 'A longer path reduces the force needed.'),
+          wedge: __alloT('stem.machinelab.observe_wedge', 'Downward effort redirects force out to the sides.'),
+          screw: __alloT('stem.machinelab.observe_screw', 'Rotation becomes a small, powerful downward move.')
+        };
+        function beginShopOrbit(ev) {
+          if (!ev || ev.button !== 0 || ev.pointerType === 'touch') return;
+          SHOP_DRAG = {
+            id: ev.pointerId, x: ev.clientX, y: ev.clientY,
+            rotY: shopCam.rotY, rotX: shopCam.rotX, zoom: shopCam.zoom
+          };
+          try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (e) {}
+          ev.currentTarget.style.cursor = 'grabbing';
+          if (ev.preventDefault) ev.preventDefault();
+        }
+        function moveShopOrbit(ev) {
+          if (!SHOP_DRAG || !ev || ev.pointerId !== SHOP_DRAG.id) return;
+          var dx = ev.clientX - SHOP_DRAG.x, dy = ev.clientY - SHOP_DRAG.y;
+          shopCam.setView(SHOP_DRAG.rotY - dx * 0.32, SHOP_DRAG.rotX + dy * 0.24, SHOP_DRAG.zoom);
+          if (ev.preventDefault) ev.preventDefault();
+        }
+        function endShopOrbit(ev) {
+          if (!SHOP_DRAG || !ev || ev.pointerId !== SHOP_DRAG.id) return;
+          try { ev.currentTarget.releasePointerCapture(ev.pointerId); } catch (e) {}
+          ev.currentTarget.style.cursor = 'grab'; SHOP_DRAG = null;
+        }
+        function runShopDemo() {
+          if (d.shopAnimating || shopStatus === 'failed') return;
+          updMulti({ shopDemoId: (d.shopDemoId || 0) + 1, shopAnimating: true, shopDemoBench: bench.id });
+          announceToSR(__alloT('stem.machinelab.demo_started', 'Demonstration started for ') + bench.label + '.');
+          if (typeof setTimeout === 'function') {
+            setTimeout(function () {
+              setLabToolData(function (prev) {
+                var cur = (prev && prev.machineLab) || {};
+                return Object.assign({}, prev, { machineLab: Object.assign({}, cur, { shopAnimating: false }) });
+              });
+            }, 2300);
+          }
+        }
+        function openNextBench() {
+          updMulti({ bench: nextBench.id, benchPrediction: '', benchChoice: null, benchResult: null, shopAnimating: false });
+          announceToSR(__alloT('stem.machinelab.next_station_open', 'Opened the next station: ') + nextBench.label + '.');
+        }
+        SHOP_GL.onStatusChange(function () { upd('glTick', (d.glTick || 0) + 1); });
+        SHOP_GL.push({
+          sig: [bench.id, d.leverEffortArm, d.leverLoadArm, d.pulleySegments,
+                d.windlassHandleR, d.windlassDrumR, d.rampLength, d.rampHeight,
+                d.wedgeLength, d.wedgeThickness, d.screwHandleR, d.screwPitch,
+                ma, isDark, isContrast].join('|'),
+          kind: bench.id,
+          rotY: shopCam.rotY, rotX: shopCam.rotX, zoom: shopCam.zoom,
+          static: !d.shopAnimating,
+          demoId: d.shopAnimating ? d.shopDemoId : 0,
+          dark: isDark, contrast: isContrast,
+          params: {
+            ma: ma, effortArm: d.leverEffortArm, loadArm: d.leverLoadArm,
+            segments: d.pulleySegments, handleR: bench.id === 'screw' ? d.screwHandleR : d.windlassHandleR,
+            drumR: d.windlassDrumR, length: bench.id === 'wedge' ? d.wedgeLength : d.rampLength,
+            height: d.rampHeight, thickness: d.wedgeThickness, pitch: d.screwPitch
+          }
+        });
+
+        var completed = Object.keys(d.provenBenches || {}).length;
         return h('div', { key: 'machview' }, [
           benchTabs(),
           h('div', {
+            key: 'world', ref: shopFsRef,
+            style: {
+              position: 'relative', display: 'flex', flexDirection: 'column', overflow: 'hidden',
+              padding: 8, marginBottom: 12, borderRadius: 18, background: T.card,
+              border: '1px solid ' + T.border, boxShadow: isDark
+                ? '0 18px 45px rgba(0,0,0,.28)' : '0 18px 45px rgba(15,23,42,.11)'
+            }
+          }, [
+            h('div', {
+              key: 'bay', ref: shopGlRef, role: 'img',
+              'data-ml-orbitable': 'true',
+              onPointerDown: beginShopOrbit, onPointerMove: moveShopOrbit,
+              onPointerUp: endShopOrbit, onPointerCancel: endShopOrbit,
+              'aria-label': __alloT('stem.machinelab.aria_shop3d', 'Interactive three-dimensional workshop showing the selected simple machine: ') +
+                bench.label + '. ' + __alloT('stem.machinelab.aria_shop3d2', 'Amber marks the effort path and blue marks the load path. Drag with a mouse or pen to orbit. The camera buttons and panels below provide complete keyboard and numeric equivalents.'),
+              style: {
+                width: '100%', height: 'clamp(330px, 52vh, 520px)', minHeight: 280,
+                flex: '1 1 auto', borderRadius: 13, background: T.bg, border: '1px solid ' + T.border,
+                cursor: 'grab', userSelect: 'none'
+              }
+            }, null),
+            h('div', {
+              key: 'hud', 'aria-hidden': 'true',
+              style: {
+                position: 'absolute', top: 22, left: 22, right: 22, display: 'flex',
+                alignItems: 'flex-start', justifyContent: 'space-between', gap: 10,
+                flexWrap: 'wrap', pointerEvents: 'none'
+              }
+            }, [
+              h('div', {
+                key: 'title', style: {
+                  padding: '9px 12px', borderRadius: 12, color: '#f8fafc',
+                  background: 'rgba(7,17,31,.82)', border: '1px solid rgba(255,255,255,.2)',
+                  boxShadow: '0 8px 22px rgba(0,0,0,.24)', backdropFilter: 'blur(8px)'
+                }
+              }, [
+                h('div', { key: 'ey', style: { fontSize: 9, fontWeight: 800, letterSpacing: 1.4, textTransform: 'uppercase', color: '#fbbf24' } },
+                  (d.shopAnimating ? '● ' + __alloT('stem.machinelab.motion_active', 'Motion active') :
+                    __alloT('stem.machinelab.live_workshop', 'Live workshop'))),
+                h('div', { key: 'nm', style: { marginTop: 2, fontSize: 20, fontWeight: 850 } }, bench.label)
+              ]),
+              h('div', {
+                key: 'observe', style: {
+                  flex: '0 1 330px', maxWidth: '42%', padding: '8px 12px', borderRadius: 12,
+                  color: '#e2e8f0', background: d.shopAnimating ? 'rgba(146,64,14,.9)' : 'rgba(7,17,31,.78)',
+                  border: '1px solid ' + (d.shopAnimating ? 'rgba(251,191,36,.7)' : 'rgba(255,255,255,.16)'),
+                  boxShadow: '0 8px 22px rgba(0,0,0,.18)', backdropFilter: 'blur(8px)',
+                  fontSize: 10, lineHeight: 1.35, textAlign: 'center'
+                }
+              }, [
+                h('span', { key: 'eye', style: { display: 'block', marginBottom: 2, color: '#fbbf24', fontSize: 9, fontWeight: 850, letterSpacing: 1, textTransform: 'uppercase' } },
+                  d.shopAnimating ? __alloT('stem.machinelab.watch_motion', 'Watch the motion') : __alloT('stem.machinelab.what_to_notice', 'What to notice')),
+                h('span', { key: 'cue' }, observationCues[bench.id])
+              ]),
+              h('div', {
+                key: 'metric', style: {
+                  minWidth: 120, padding: '9px 12px', borderRadius: 12, textAlign: 'right',
+                  color: '#f8fafc', background: 'rgba(7,17,31,.82)',
+                  border: '1px solid rgba(255,255,255,.2)', backdropFilter: 'blur(8px)'
+                }
+              }, [
+                h('div', { key: 'l', style: { fontSize: 9, letterSpacing: 1, textTransform: 'uppercase', color: '#cbd5e1' } },
+                  __alloT('stem.machinelab.ma', 'Mechanical advantage')),
+                h('div', { key: 'v', style: { marginTop: 1, fontSize: 22, fontWeight: 900, color: '#fbbf24' } },
+                  ma === null ? '—' : fmt(ma, 2) + '×'),
+                ma !== null ? h('div', { key: 'trade', style: { marginTop: 2, fontSize: 9, fontWeight: 750, color: '#cbd5e1' } },
+                  __alloT('stem.machinelab.distance_times', 'Distance ×') + fmt(ma, 1) +
+                  '  ·  ' + __alloT('stem.machinelab.force_div', 'Force ÷') + fmt(ma, 1)) : null
+              ])
+            ]),
+            h('div', {
+              key: 'legend', 'aria-hidden': 'true',
+              style: {
+                position: 'absolute', left: 22, bottom: 104, display: 'flex', gap: 12,
+                padding: '6px 9px', borderRadius: 999, color: '#f8fafc',
+                background: 'rgba(7,17,31,.76)', fontSize: 10, fontWeight: 750,
+                pointerEvents: 'none', backdropFilter: 'blur(8px)'
+              }
+            }, [
+              h('span', { key: 'e', style: { color: '#fbbf24' } }, '● ' + __alloT('stem.machinelab.effort_path', 'Effort path')),
+              h('span', { key: 'l', style: { color: '#38bdf8' } }, '● ' + __alloT('stem.machinelab.load_path', 'Load path'))
+            ]),
+            camControls(shopCam, __alloT('stem.machinelab.workshop', 'simple-machine workshop'), 'shop'),
+            h('div', {
+              key: 'mission',
+              style: {
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                gap: 10, flexWrap: 'wrap', padding: '7px 6px 2px'
+              }
+            }, [
+              h('div', {
+                key: 'steps',
+                'aria-label': __alloT('stem.machinelab.station_flow', 'Station workflow: adjust, run, prove'),
+                style: { display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap' }
+              }, [
+                h('span', { key: 'a', style: {
+                  padding: '5px 9px', borderRadius: 999, fontSize: 10, fontWeight: 800,
+                  color: hasRunDemo ? T.muted : T.accentInk, background: hasRunDemo ? T.bg : T.accent,
+                  border: '1px solid ' + (hasRunDemo ? T.border : T.accent)
+                } }, '1 ' + __alloT('stem.machinelab.step_adjust', 'Adjust')),
+                h('span', { key: 'r', 'aria-hidden': 'true', style: { color: T.dim, fontSize: 11 } }, '→'),
+                h('span', { key: 'b', style: {
+                  padding: '5px 9px', borderRadius: 999, fontSize: 10, fontWeight: 800,
+                  color: d.shopAnimating ? T.accentInk : T.text,
+                  background: d.shopAnimating ? T.accent : T.bg,
+                  border: '1px solid ' + (d.shopAnimating ? T.accent : T.border)
+                } }, '2 ' + __alloT('stem.machinelab.step_run', 'Run')),
+                h('span', { key: 'r2', 'aria-hidden': 'true', style: { color: T.dim, fontSize: 11 } }, '→'),
+                h('span', { key: 'c', style: {
+                  padding: '5px 9px', borderRadius: 999, fontSize: 10, fontWeight: 800,
+                  color: hasRunDemo && !d.shopAnimating ? T.accentInk : T.text,
+                  background: hasRunDemo && !d.shopAnimating ? T.accent : T.bg,
+                  border: '1px solid ' + (hasRunDemo && !d.shopAnimating ? T.accent : T.border)
+                } }, '3 ' + __alloT('stem.machinelab.step_prove', 'Prove'))
+              ]),
+              h('div', { key: 'actions', style: { display: 'flex', gap: 6, flexWrap: 'wrap' } }, [
+                h('button', {
+                  key: 'run', type: 'button', onClick: runShopDemo,
+                  disabled: !!d.shopAnimating || shopStatus === 'failed',
+                  'aria-label': __alloT('stem.machinelab.run_demo_aria', 'Run the three-dimensional demonstration for ') + bench.label,
+                  style: {
+                    padding: '7px 13px', borderRadius: 9,
+                    cursor: d.shopAnimating || shopStatus === 'failed' ? 'default' : 'pointer',
+                    border: '1px solid ' + T.accent,
+                    background: d.shopAnimating ? T.bg : T.accent,
+                    color: d.shopAnimating ? T.dim : T.accentInk,
+                    fontSize: 11, fontWeight: 800, opacity: shopStatus === 'failed' ? 0.5 : 1
+                  }
+                }, d.shopAnimating
+                  ? __alloT('stem.machinelab.demo_running', 'Running...')
+                  : '▶ ' + __alloT('stem.machinelab.run_demo', 'Run demonstration')),
+                h('button', {
+                  key: 'next', type: 'button', onClick: openNextBench,
+                  'aria-label': __alloT('stem.machinelab.next_station', 'Next station: ') + nextBench.label,
+                  style: {
+                    padding: '7px 11px', borderRadius: 9, cursor: 'pointer',
+                    border: '1px solid ' + T.border, background: T.card,
+                    color: T.text, fontSize: 11, fontWeight: 750
+                  }
+                }, __alloT('stem.machinelab.next_short', 'Next: ') + nextBench.label + ' →')
+              ])
+            ])
+          ]),
+          shopStatus !== 'ready' ? card([
+            h('p', { key: 'st', style: { margin: '0 0 10px', fontSize: 12, color: T.dim } },
+              shopStatus === 'failed'
+                ? __alloT('stem.machinelab.shop_gl_failed', '3D workshop unavailable. This live diagram carries the same geometry.')
+                : __alloT('stem.machinelab.shop_gl_loading', 'Opening the 3D workshop...')),
+            h('div', {
+              key: 'fallback', role: 'img',
+              'aria-label': bench.label + '. ' + (ma === null
+                ? __alloT('stem.machinelab.aria_invalid', 'These settings do not describe a working machine.')
+                : __alloT('stem.machinelab.aria_ma', 'Mechanical advantage ') + fmt(ma, 2))
+            }, diagram(h, bench.id, d, T))
+          ], 'shopfallback', { borderStyle: 'dashed' }) : null,
+          h('div', {
             key: 'main',
-            style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12 }
+            style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 12 }
           }, [
             h('div', { key: 'left' }, [
               card([
-                h('div', {
-                  key: 'dia',
-                  role: 'img',
-                  'aria-label': bench.label + '. ' + (ma === null
-                    ? __alloT('stem.machinelab.aria_invalid', 'These settings do not describe a working machine.')
-                    : __alloT('stem.machinelab.aria_ma', 'Mechanical advantage ') + fmt(ma, 2))
-                }, diagram(h, bench.id, d, T))
-              ], 'diagram'),
-              card([
-                h('h3', { key: 'h', style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, [
-                  h('span', { key: 't' }, bench.icon + ' ' + bench.label),
+                h('div', { key: 'top', style: { display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'flex-start' } }, [
+                  h('div', { key: 'head' }, [
+                    h('div', { key: 'ey', style: { fontSize: 10, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: T.accent } },
+                      __alloT('stem.machinelab.now_exploring', 'Now exploring')),
+                    h('h3', { key: 'h', style: { margin: '2px 0 6px', fontSize: 18, color: T.text } }, bench.icon + ' ' + bench.label)
+                  ]),
                   readAloud(pick(bench.copy, band), 'tts')
                 ]),
                 h('p', { key: 'p', style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: T.muted } },
                   pick(bench.copy, band))
               ], 'copy'),
-              h('div', { key: 'sliders' }, [
-                card(bench.controls.map(slider).concat(
+              card([
+                h('div', { key: 'head', style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 10 } }, [
+                  h('h4', { key: 'h', style: { margin: 0, fontSize: 14, color: T.text } },
+                    __alloT('stem.machinelab.tune_station', 'Tune this station')),
+                  h('span', { key: 'p', style: { fontSize: 11, color: T.dim } }, completed + '/6 ' + __alloT('stem.machinelab.proven_short', 'proven'))
+                ])
+              ].concat(bench.controls.map(slider)).concat(
                   (band === 'g68' || band === 'g912')
                     ? [slider({ key: 'loadDistance', label: __alloT('stem.machinelab.lift_distance', 'Load moves'), min: 0.1, max: 3, step: 0.1, unit: 'm' })]
                     : []
                 ), 'controls')
-              ])
             ]),
             h('div', { key: 'right' }, [
               readout(),
@@ -4107,6 +5415,7 @@ window.StemLab = window.StemLab || {
       }
 
       function loose() {
+        if (d.siegeFlight) return;
         if (!preview) {
           upd('siegeFeedback', { ok: false, message: __alloT('stem.machinelab.bad_machine', 'This machine cannot fire. Check the sliders.') });
           return;
@@ -4247,6 +5556,27 @@ window.StemLab = window.StemLab || {
         var wCam = camFor('wall');
         var siegeGlStatus = SIEGE_GL.status();
         SIEGE_GL.onStatusChange(function () { upd('glTick', (d.glTick || 0) + 1); });
+        function beginWallOrbit(ev) {
+          if (!ev || ev.button !== 0 || ev.pointerType === 'touch') return;
+          WALL_DRAG = {
+            id: ev.pointerId, x: ev.clientX, y: ev.clientY,
+            rotY: wCam.rotY, rotX: wCam.rotX, zoom: wCam.zoom
+          };
+          try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (e) {}
+          ev.currentTarget.style.cursor = 'grabbing';
+          if (ev.preventDefault) ev.preventDefault();
+        }
+        function moveWallOrbit(ev) {
+          if (!WALL_DRAG || !ev || ev.pointerId !== WALL_DRAG.id) return;
+          var dx = ev.clientX - WALL_DRAG.x, dy = ev.clientY - WALL_DRAG.y;
+          wCam.setView(WALL_DRAG.rotY - dx * 0.28, WALL_DRAG.rotX + dy * 0.22, WALL_DRAG.zoom);
+          if (ev.preventDefault) ev.preventDefault();
+        }
+        function endWallOrbit(ev) {
+          if (!WALL_DRAG || !ev || ev.pointerId !== WALL_DRAG.id) return;
+          try { ev.currentTarget.releasePointerCapture(ev.pointerId); } catch (e) {}
+          ev.currentTarget.style.cursor = 'grab'; WALL_DRAG = null;
+        }
         // The signature decides when the scene is REBUILT rather than updated.
         // Standoff and machine identity belong in it because both change the
         // geometry of the field; block states do not, because those ride in on
@@ -4255,19 +5585,24 @@ window.StemLab = window.StemLab || {
           sig: [d.wallPreset || 'curtain', blocks.length, ext ? ext.cols : 0, ext ? ext.rows : 0,
                 machineId, Math.round(d.standoff), d.beamLong, d.beamShort, d.slingLength,
                 d.cwMass, d.cwDrop, d.torsionArmLength, d.torsionDraw, d.onagerSling,
-                d.projDiameter, d.siegeFraming || 'field', isDark, isContrast].join('|'),
+                d.projDiameter, preview ? preview.range : '', preview ? preview.apex : '',
+                preview ? preview.drift : '', preview && preview.path ? preview.path.length : 0,
+                d.siegeFraming || 'field', reducedMotion, isDark, isContrast].join('|'),
           // A shot in the air needs frames. Everything else is render-on-demand.
-          static: !d.siegeFlight,
+          static: !d.siegeFlight || reducedMotion,
+          reduced: reducedMotion,
           rotY: wCam.rotY, rotX: wCam.rotX, zoom: wCam.zoom,
           blocks: blocks,
           // Drawn instead of `blocks` until the stone lands: a wall that broke
           // while the stone was still halfway there would read as a cheat.
           prevBlocks: d.siegeFlight ? d.siegeFlight.before : null,
           flight: d.siegeFlight || null,
+          previewPath: preview && preview.path ? preview.path : null,
           standoff: d.standoff,
           framing: d.siegeFraming || 'field',
           kind: machineId,
           releaseAngle: d.releaseAngle,
+          muzzleV: preview ? preview.muzzleV : 0,
           projDiameter: d.projDiameter,
           dark: isDark, contrast: isContrast,
           geom: {
@@ -4340,11 +5675,14 @@ window.StemLab = window.StemLab || {
                 h('div', {
                   key: 'gl',
                   ref: siegeGlRef,
-                  role: 'img',
-                  'aria-label': __alloT('stem.machinelab.aria_wall3d', 'Three-dimensional view of the target wall. The diagram and course table below carry the same information.'),
+                  role: 'img', 'data-ml-orbitable': 'true',
+                  onPointerDown: beginWallOrbit, onPointerMove: moveWallOrbit,
+                  onPointerUp: endWallOrbit, onPointerCancel: endWallOrbit,
+                  'aria-label': __alloT('stem.machinelab.aria_wall3d', 'Three-dimensional view of the target wall. Drag with a mouse or pen to orbit. The diagram and course table below carry the same information.'),
                   style: {
-                    width: '100%', height: 220, minHeight: 160, flex: '1 1 auto',
-                    borderRadius: 10, background: T.bg, border: '1px solid ' + T.border
+                    width: '100%', height: 'clamp(340px, 48vh, 500px)', minHeight: 260, flex: '1 1 auto',
+                    borderRadius: 10, background: T.bg, border: '1px solid ' + T.border,
+                    cursor: 'grab', userSelect: 'none'
                   }
                 }, null),
                 camControls(wCam, presetMeta ? presetMeta.label : 'wall', 'wall'),
@@ -4415,16 +5753,18 @@ window.StemLab = window.StemLab || {
                 h('button', {
                   key: 'loose',
                   onClick: loose,
-                  disabled: !!wallBreached,
+                  disabled: !!wallBreached || !!d.siegeFlight,
                   style: {
-                    padding: '11px 22px', borderRadius: 10, cursor: wallBreached ? 'default' : 'pointer',
-                    border: '1px solid ' + T.accent, background: wallBreached ? T.card : T.accent,
-                    color: wallBreached ? T.dim : T.accentInk, fontSize: 15, fontWeight: 800,
+                    padding: '11px 22px', borderRadius: 10,
+                    cursor: (wallBreached || d.siegeFlight) ? 'default' : 'pointer',
+                    border: '1px solid ' + ((wallBreached || d.siegeFlight) ? T.border : T.accent),
+                    background: (wallBreached || d.siegeFlight) ? T.card : T.accent,
+                    color: (wallBreached || d.siegeFlight) ? T.dim : T.accentInk, fontSize: 15, fontWeight: 800,
                     marginRight: 8
                   }
                 }, wallBreached
                   ? __alloT('stem.machinelab.breached_btn', 'Breached')
-                  : __alloT('stem.machinelab.loose', 'Loose!')),
+                  : (d.siegeFlight ? __alloT('stem.machinelab.in_flight', 'In flight…') : __alloT('stem.machinelab.loose', 'Loose!'))),
                 h('button', {
                   key: 'reset',
                   onClick: function () { resetWall(d.wallPreset); },
@@ -4460,13 +5800,15 @@ window.StemLab = window.StemLab || {
                   [__alloT('stem.machinelab.st_work', 'Total crank work'), fmt((d.totalCrankWork || 0) / 1000, 1) + ' kJ'],
                   [__alloT('stem.machinelab.st_reach', 'This machine reaches'), preview ? fmt(preview.range, 1) + ' m' : '—'],
                   [__alloT('stem.machinelab.st_wallh', 'Wall height'), ext ? fmt(ext.rows, 0) + ' m' : '—']
-                ].map(function (r, i) {
+                ].concat(preview && d.standoff > preview.range ? [[
+                  __alloT('stem.machinelab.st_short', 'Short by'), fmt(d.standoff - preview.range, 1) + ' m', true
+                ]] : []).map(function (r, i) {
                   return h('div', {
                     key: i,
                     style: { display: 'flex', justifyContent: 'space-between', gap: 10, fontSize: 13 }
                   }, [
                     h('span', { key: 'k', style: { color: T.muted } }, r[0]),
-                    h('span', { key: 'v', style: { color: T.text, fontWeight: 700, fontVariantNumeric: 'tabular-nums' } }, r[1])
+                    h('span', { key: 'v', style: { color: r[2] ? T.warn : T.text, fontWeight: 700, fontVariantNumeric: 'tabular-nums' } }, r[1])
                   ]);
                 })),
                 h('div', { key: 'so', style: { marginTop: 10 } }, [
@@ -4980,6 +6322,97 @@ window.StemLab = window.StemLab || {
           if (bestEta === null || r.s.eta > bestEta) bestEta = r.s.eta;
         });
 
+        // A table is precise, but it makes the central comparison easy to miss:
+        // the machines throw the same stone into differently shaped flights.
+        // Keep this as a static SVG so it stays cheap, theme-aware and readable
+        // without turning the Compare tab into another animation surface.
+        function compareArcStrip() {
+          var plotted = rows.filter(function (r) {
+            return r.s && r.s.path && r.s.path.length > 1;
+          });
+          if (!plotted.length) return null;
+          var W = 660, H = 208, left = 34, right = 24, top = 22, bottom = 34;
+          var maxX = 0, maxY = 0;
+          plotted.forEach(function (r) {
+            r.s.path.forEach(function (p) {
+              if (p.x > maxX) maxX = p.x;
+              if (p.y > maxY) maxY = p.y;
+            });
+          });
+          if (maxX <= 0) maxX = 1;
+          if (maxY <= 0) maxY = 1;
+          var sx = (W - left - right) / maxX;
+          var sy = (H - top - bottom) / maxY;
+          var colors = isContrast ? [T.ok, T.accent, T.text] : [T.load, T.effort, T.hint];
+          function points(path) {
+            return path.map(function (p) {
+              return (left + p.x * sx).toFixed(1) + ',' +
+                (H - bottom - p.y * sy).toFixed(1);
+            }).join(' ');
+          }
+          var desc = __alloT('stem.machinelab.cmp_arc_aria', 'Flight comparison: ') +
+            plotted.map(function (r) {
+              return machineLabel(r.meta.id) + ' ' + fmt(r.s.range, 1) + ' m';
+            }).join(', ') + '.';
+          return h('div', {
+            key: 'arcstrip', role: 'img', 'aria-label': desc,
+            style: {
+              margin: '4px 0 12px', padding: '10px 10px 8px',
+              border: '1px solid ' + T.border, borderRadius: 10,
+              background: T.bg
+            }
+          }, [
+            h('div', {
+              key: 'head',
+              style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', marginBottom: 2 }
+            }, [
+              h('span', { key: 'title', style: { fontSize: 11, fontWeight: 800, color: T.text, letterSpacing: 0.5, textTransform: 'uppercase' } },
+                __alloT('stem.machinelab.cmp_arc_title', 'Flight shapes at a glance')),
+              h('span', { key: 'hint', style: { fontSize: 11, color: T.dim } },
+                __alloT('stem.machinelab.cmp_arc_hint', 'same stone · same release angle'))
+            ]),
+            h('svg', {
+              key: 'svg', viewBox: '0 0 ' + W + ' ' + H,
+              style: { display: 'block', width: '100%', height: 'auto' },
+              focusable: 'false', 'aria-hidden': 'true'
+            }, [
+              h('line', { key: 'gnd', x1: left, y1: H - bottom, x2: W - right, y2: H - bottom, stroke: T.ground, strokeWidth: 2 }),
+              h('line', { key: 'mid', x1: left, y1: top + (H - top - bottom) * 0.5, x2: W - right, y2: top + (H - top - bottom) * 0.5, stroke: T.border, strokeWidth: 1, strokeDasharray: '3 5' }),
+              h('text', { key: 'zero', x: left, y: H - 12, fill: T.dim, fontSize: 10 }, '0 m'),
+              h('text', { key: 'max', x: W - right, y: H - 12, fill: T.dim, fontSize: 10, textAnchor: 'end' }, fmt(maxX, 0) + ' m'),
+              plotted.map(function (r, i) {
+                var color = colors[i % colors.length];
+                var end = r.s.path[r.s.path.length - 1];
+                var nearEdge = left + end.x * sx > W - right - 72;
+                return h('g', { key: r.meta.id }, [
+                  h('polyline', {
+                    key: 'path', points: points(r.s.path), fill: 'none', stroke: color,
+                    strokeWidth: 3, strokeLinejoin: 'round', strokeLinecap: 'round'
+                  }),
+                  h('circle', {
+                    key: 'end', cx: left + end.x * sx, cy: H - bottom, r: 4,
+                    fill: color, stroke: T.bg, strokeWidth: 1.5
+                  }),
+                  h('text', {
+                    key: 'label', x: nearEdge ? W - right - 4 : left + end.x * sx + 7,
+                    y: H - bottom - 8 - i * 12, fill: color, fontSize: 11,
+                    fontWeight: 800, textAnchor: nearEdge ? 'end' : 'start'
+                  }, r.meta.icon + ' ' + fmt(r.s.range, 0) + ' m')
+                ]);
+              })
+            ]),
+            h('div', {
+              key: 'legend',
+              style: { display: 'flex', gap: 10, flexWrap: 'wrap', fontSize: 11, color: T.muted }
+            }, plotted.map(function (r, i) {
+              return h('span', { key: r.meta.id, style: { display: 'inline-flex', alignItems: 'center', gap: 4 } }, [
+                h('span', { key: 'sw', 'aria-hidden': 'true', style: { width: 18, height: 3, borderRadius: 4, background: colors[i % colors.length] } }),
+                r.meta.icon + ' ' + machineLabel(r.meta.id)
+              ]);
+            }))
+          ]);
+        }
+
         function cell(v, hi) {
           return h('td', {
             style: {
@@ -5001,6 +6434,7 @@ window.StemLab = window.StemLab || {
                 g68: __alloT('stem.machinelab.cmp_g68', 'Same stone, same release angle, same air. What differs is how the energy is stored and how much of the machine has to move to deliver it. Watch the efficiency column, not just the range.'),
                 g912: __alloT('stem.machinelab.cmp_g912', 'The comparison is only fair in the sense that the payload and the flight conditions match. Stored energy is not equalised, because each store has its own natural scale, so read stored energy and transfer efficiency as separate axes rather than collapsing them into range.')
               }, band)),
+            compareArcStrip(),
             h('div', { key: 'wrap', style: { overflowX: 'auto' } },
               h('table', { style: { width: '100%', minWidth: 460, borderCollapse: 'collapse', fontSize: 13, color: T.text } }, [
                 // Screen-reader text is text: it follows the band like the rest.
@@ -5392,16 +6826,42 @@ window.StemLab = window.StemLab || {
         }
       }, [
         tutorial,
-        h('div', { key: 'hd', style: { marginBottom: 10 } }, [
-          h('h2', { key: 'h', style: { margin: 0, fontSize: 20, fontWeight: 800, color: T.text } },
-            '⚙️ ' + __alloT('stem.machinelab.title', 'Machine Lab')),
-          h('p', { key: 's', style: { margin: '4px 0 0', fontSize: 13, color: T.muted } },
-            __alloT('stem.machinelab.subtitle', 'Six simple machines. One idea: trade distance for force.'))
+        h('div', { key: 'hd', style: {
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16,
+          flexWrap: 'wrap', marginBottom: 12, padding: '15px 17px', borderRadius: 16,
+          border: '1px solid ' + T.border,
+          background: isContrast ? T.card : (isDark ? 'linear-gradient(135deg,#1e293b,#2b2115)' : 'linear-gradient(135deg,#ffffff,#fff7ed)'),
+          boxShadow: isDark ? '0 12px 28px rgba(0,0,0,.18)' : '0 12px 28px rgba(15,23,42,.07)'
+        } }, [
+          h('div', { key: 'copy' }, [
+            h('div', { key: 'ey', style: { marginBottom: 3, fontSize: 9, fontWeight: 850, letterSpacing: 1.6, textTransform: 'uppercase', color: T.accent } },
+              __alloT('stem.machinelab.engineering_studio', 'Interactive engineering studio')),
+            h('h2', { key: 'h', style: { margin: 0, fontSize: 24, fontWeight: 850, color: T.text } },
+              '⚙️ ' + __alloT('stem.machinelab.title', 'Machine Lab')),
+            h('p', { key: 's', style: { margin: '4px 0 0', fontSize: 13, color: T.muted } },
+              __alloT('stem.machinelab.subtitle', 'Six simple machines. One idea: trade distance for force.'))
+          ]),
+          h('div', { key: 'progress', style: { minWidth: 175, flex: '0 1 230px' } }, [
+            h('div', { key: 'txt', style: { display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 10, fontWeight: 800, textTransform: 'uppercase', color: T.muted } }, [
+              h('span', { key: 'l' }, __alloT('stem.machinelab.mission_progress', 'Bench progress')),
+              h('span', { key: 'v', style: { color: T.accent } }, provenCount + ' / 6')
+            ]),
+            h('div', {
+              key: 'track', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 6,
+              'aria-valuenow': provenCount, 'aria-label': __alloT('stem.machinelab.bench_progress_aria', 'Simple-machine benches proven'),
+              style: { height: 8, overflow: 'hidden', borderRadius: 999, background: T.bg, border: '1px solid ' + T.border }
+            }, h('div', { style: { width: (100 * provenCount / 6) + '%', height: '100%', background: T.accent } })),
+            h('div', { key: 'sub', style: { marginTop: 5, fontSize: 10, color: T.dim, textAlign: 'right' } },
+              firedCount + ' / 3 ' + __alloT('stem.machinelab.machines_fired', 'machines fired'))
+          ])
         ]),
 
         bandPicker(),
         viewNav(),
-        body,
+        h('div', {
+          key: 'panel', id: 'machinelab-panel-' + view, role: 'tabpanel',
+          'aria-labelledby': 'machinelab-tab-' + view, tabIndex: 0
+        }, body),
 
         h('p', { key: 'sr', style: srOnlyStyle },
           __alloT('stem.machinelab.sr_summary', 'Machine Lab, ') + bench.label +

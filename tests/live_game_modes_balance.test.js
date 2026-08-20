@@ -36,6 +36,16 @@ describe('boss battle: class-size-fair pacing', () => {
       // both-zero: newHP <= 0 alone decides (no `&& newClassHP > 0` guard anymore)
       expect(s).not.toMatch(/newHP <= 0 && newClassHP > 0/);
     });
+    it(`teacher ${name}: sustained mastery creates phase-aware cooperative combos`, () => {
+      expect(s).toMatch(/masteryStreak = answerAccuracy >= 0\.7/);
+      expect(s).toMatch(/comboBonus = masteryStreak >= 3/);
+      expect(s).toMatch(/bossPhaseName = remainingBossPercent <= 0\.33/);
+      expect(s).toContain('handleBossPacingAdjustment');
+      expect(s).toContain('Rally class +10 HP');
+      expect(s).toContain('generateBossGmDraft');
+      expect(s).toContain('publishBossGmDraft');
+      expect(s).toContain('AI drafts only. Preview and edit before publishing.');
+    });
   }
 });
 

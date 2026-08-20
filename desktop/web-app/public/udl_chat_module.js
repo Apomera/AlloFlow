@@ -1883,7 +1883,9 @@ async function planAndSendUdlMessage(manualText, deps) {
             if (!manualText) setUdlInput('');
             const _label = _match.label || (t('chat_guide.cmd_generic') || 'run a command');
             const _q = (t('chat_guide.cmd_confirm_prompt') || 'It looks like you want to **{label}**. Run that, or keep chatting?').replace('{label}', _label);
-            setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: _q, choices: [
+            // This preview returns before _sendUdlToChat can record the turn.
+            // Keep the exact request immediately beside the review card.
+            setUdlMessages(prev => [...prev, { role: 'user', text: String(_rawUtter) }, { role: 'model', type: 'choices', text: _q, choices: [
               { label: '▶ ' + (t('chat_guide.cmd_confirm_do') || 'Do it'), value: '__allo_do' },
               { label: '💬 ' + (t('chat_guide.cmd_confirm_skip') || 'Just chat'), value: '__allo_skip' }
             ] }]);
@@ -1904,7 +1906,8 @@ async function planAndSendUdlMessage(manualText, deps) {
           // when the single-command router found nothing, the utterance
           // reads as a sequence (cheap deterministic smell test — no AI
           // call otherwise), and we're in teacher mode. planUtterance maps
-          // the ask to 2–6 registry commands; like the single-command chip,
+          // the ask to a bounded CommandWorkflow (up to 24 steps for complete
+          // lesson creation); like the single-command chip,
           // a plan only PROPOSES — nothing runs until "Run all".
           if ((!_match || (!_match.preview && !_match.handled)) &&
               typeof _AC.planUtterance === 'function' && typeof _AC.looksMultiStep === 'function' &&
@@ -1918,7 +1921,9 @@ async function planAndSendUdlMessage(manualText, deps) {
                 const _workflowPending = _preparePendingCommandWorkflow(_AC, _planCtx, _steps, _rawUtter);
                 _pendingBotPlanRef.current = _workflowPending;
                 if (!manualText) setUdlInput('');
-                setUdlMessages(prev => [...prev, _commandWorkflowPlanCard(_workflowPending, _AC, _planCtx, t)]);
+                // Planning is also a pre-pass: show the exact request in chat,
+                // while only sanitized command params enter the workflow draft.
+                setUdlMessages(prev => [...prev, { role: 'user', text: String(_rawUtter) }, _commandWorkflowPlanCard(_workflowPending, _AC, _planCtx, t)]);
                 try { if (window.alloAnnounce) window.alloAnnounce(t('chat_guide.plan_confirm_aria') || 'I proposed a multi-step plan. Confirm to run it, or keep chatting.'); } catch (_) {}
                 return;
               }

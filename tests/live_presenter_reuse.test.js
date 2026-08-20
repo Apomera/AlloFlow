@@ -13,7 +13,7 @@ const dock = anti.slice(dockStart, dockEnd > dockStart ? dockEnd : dockStart + 2
 describe('Live Session presenter controls reuse existing capabilities', () => {
   it('opens the existing zen display instead of implementing another fullscreen surface', () => {
     expect(dock).toContain('handleSetIsZenModeToTrue();');
-    expect(dock).toContain("t('live_dock.focus_display') || 'Focus display'");
+    expect(dock).toContain("t('live_dock.focus_display') || 'Present to class'");
     expect(anti).toContain('const handleSetIsZenModeToTrue = React.useCallback(() => setIsZenMode(true), []);');
     expect(anti).toContain('onClick={handleSetIsZenModeToFalse}');
     expect(dock).not.toContain('requestFullscreen');

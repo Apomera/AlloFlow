@@ -22,7 +22,7 @@ The export screen explains each format under its selector, so you do not need to
 The exported page carries its own accessibility toolbar, independent of AlloFlow:
 
 - **Text size** steps from 90% to 175%, with a live percentage readout. Content reflows instead of getting cut off, at every size, on every screen width.
-- **Fonts:** nine faces that work with no internet at all, including a readable serif, a rounded face, and a dyslexia-friendly option. Four high-legibility web fonts (OpenDyslexic, Atkinson Hyperlegible, Lexend, Andika) are available behind a clearly labeled "needs internet" checkbox at export time, off by default so no handout phones out unless you chose that.
+- **Fonts:** nine faces that work with no internet at all, including a readable serif, a rounded face, and a dyslexia-friendly option. Thirteen optional web fonts span accessibility (OpenDyslexic, Atkinson Hyperlegible, Lexend, Andika), multilingual reading (Noto Sans and Noto Serif), sans-serif, serif, and monospace choices. They are behind a clearly labeled "needs internet" checkbox at export time and are off by default.
 - **Reading themes**, sentence read-along where the lesson includes audio, and the annotation tools below.
 
 ## Annotations that stay put

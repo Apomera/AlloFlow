@@ -45,11 +45,26 @@
   var setPendingRole = props.setPendingRole;
   var setIsGateOpen = props.setIsGateOpen;
   var setShowAIBackendModal = props.setShowAIBackendModal;
+  // Resolve language before the voice setup hooks: model readiness is
+  // profile-specific, so changing Spanish -> English must re-check the cache.
+  var _langCtx = useContext(window.AlloLanguageContext) || {};
+  var currentUiLanguage = _langCtx.currentUiLanguage || 'English';
+  var setUiLanguage = _langCtx.setUiLanguage || function () {};
+  var isTranslating = !!_langCtx.isTranslating;
+  function selectedVoiceLanguageTag() {
+    try {
+      var langApi = window.AlloFlowLang;
+      if (langApi && typeof langApi.bcp47Full === 'function') return langApi.bcp47Full(currentUiLanguage) || 'en-US';
+    } catch (_) {}
+    return currentUiLanguage || 'en-US';
+  }
   var _voiceSetup = useState(function () {
     var whisperReady = false;
     var kokoroReady = false;
     try {
-      whisperReady = !!(window.AlloFlowVoice && window.AlloFlowVoice.isWhisperLoaded && window.AlloFlowVoice.isWhisperLoaded('tiny'));
+      whisperReady = !!(window.AlloFlowVoice && window.AlloFlowVoice.isWhisperLoaded && window.AlloFlowVoice.isWhisperLoaded('tiny', {
+        lang: selectedVoiceLanguageTag()
+      }));
     } catch (_) {}
     try {
       kokoroReady = !!(window._kokoroTTS && window._kokoroTTS.ready);
@@ -80,15 +95,15 @@
     var cancelled = false;
     var retryTimer = null;
     var attempts = 0;
-    function applyCachedStatus(whisper, kokoro) {
+    function applyCachedStatus(whisper, kokoro, whisperSupported) {
       if (cancelled) return;
       setVoiceSetup(function (previous) {
         var next = Object.assign({}, previous);
-        var whisperReady = !!whisper || previous.whisper.phase === 'ready';
+        var whisperReady = !!whisper;
         var kokoroReady = !!kokoro || previous.kokoro.phase === 'ready';
         if (previous.whisper.phase !== 'loading') {
           next.whisper = Object.assign({}, previous.whisper, {
-            phase: whisperReady ? 'ready' : 'idle',
+            phase: whisperSupported === false ? 'unsupported' : whisperReady ? 'ready' : 'idle',
             progress: whisperReady ? 100 : null
           });
         }
@@ -98,7 +113,9 @@
             progress: kokoroReady ? 100 : null
           });
         }
-        if (whisperReady || kokoroReady) {
+        if (whisperSupported === false) {
+          next.message = 'On-device Whisper does not support ' + currentUiLanguage + '; browser speech remains available when your browser supports it.';
+        } else if (whisperReady || kokoroReady) {
           next.message = 'Previously downloaded offline voice tools are ready.';
         } else if (next.message === 'Previously downloaded offline voice tools are ready.') {
           next.message = '';
@@ -112,14 +129,16 @@
         if (attempts++ < 20) retryTimer = setTimeout(refreshCachedStatus, 250);
         return;
       }
-      var whisperCheck = typeof mc.hasWhisper === 'function' ? Promise.resolve(mc.hasWhisper()).catch(function () {
+      var profile = typeof mc.resolveWhisperProfile === 'function' ? mc.resolveWhisperProfile(selectedVoiceLanguageTag()) : null;
+      var whisperSupported = !profile || profile.supported !== false;
+      var whisperCheck = typeof mc.hasWhisper === 'function' && whisperSupported ? Promise.resolve(mc.hasWhisper(profile || selectedVoiceLanguageTag())).catch(function () {
         return false;
       }) : Promise.resolve(false);
       var kokoroCheck = typeof mc.hasKokoro === 'function' ? Promise.resolve(mc.hasKokoro()).catch(function () {
         return false;
       }) : Promise.resolve(false);
       Promise.all([whisperCheck, kokoroCheck]).then(function (result) {
-        applyCachedStatus(result[0], result[1]);
+        applyCachedStatus(result[0], result[1], whisperSupported);
       });
     }
     function onModuleRegistryChanged() {
@@ -132,7 +151,7 @@
       if (retryTimer) clearTimeout(retryTimer);
       window.removeEventListener('alloflow:module-registry-changed', onModuleRegistryChanged);
     };
-  }, []);
+  }, [currentUiLanguage]);
   function updateVoiceSetup(engine, patch, message) {
     setVoiceSetup(function (previous) {
       var next = Object.assign({}, previous);
@@ -142,7 +161,7 @@
     });
   }
   async function downloadWhisperFromLaunchPad() {
-    if (voiceSetup.whisper.phase === 'loading' || voiceSetup.whisper.phase === 'ready') return;
+    if (voiceSetup.whisper.phase === 'loading' || voiceSetup.whisper.phase === 'ready' || voiceSetup.whisper.phase === 'unsupported') return;
     var voice = window.AlloFlowVoice;
     if (!voice || typeof voice.preloadWhisper !== 'function') {
       updateVoiceSetup('whisper', {
@@ -168,7 +187,9 @@
       progress: null
     }, 'Preparing the Whisper speech-recognition download…');
     try {
-      await voice.preloadWhisper('tiny');
+      await voice.preloadWhisper('tiny', {
+        lang: selectedVoiceLanguageTag()
+      });
       updateVoiceSetup('whisper', {
         phase: 'ready',
         progress: 100
@@ -247,10 +268,6 @@
     if (typeof requestMicPermission === 'function') requestMicPermission();
   }
   // Compact language switcher state (LanguageContext is mirrored to window.AlloLanguageContext at AlloFlowANTI.txt:1583)
-  var _langCtx = useContext(window.AlloLanguageContext) || {};
-  var currentUiLanguage = _langCtx.currentUiLanguage || 'English';
-  var setUiLanguage = _langCtx.setUiLanguage || function () {};
-  var isTranslating = !!_langCtx.isTranslating;
   var _langMenu = useState(false);
   var langMenuOpen = _langMenu[0];
   var setLangMenuOpen = _langMenu[1];
@@ -1188,9 +1205,9 @@
     className: "lp-download-button",
     "aria-describedby": "launch-pad-whisper-desc",
     "aria-busy": voiceSetup.whisper.phase === 'loading',
-    disabled: voiceSetup.whisper.phase === 'loading' || voiceSetup.whisper.phase === 'ready',
+    disabled: voiceSetup.whisper.phase === 'loading' || voiceSetup.whisper.phase === 'ready' || voiceSetup.whisper.phase === 'unsupported',
     onClick: downloadWhisperFromLaunchPad
-  }, voiceSetup.whisper.phase === 'ready' ? '✓ Whisper ready' : voiceSetup.whisper.phase === 'loading' ? voiceSetup.whisper.progress == null ? 'Preparing Whisper…' : 'Downloading Whisper · ' + voiceSetup.whisper.progress + '%' : voiceSetup.whisper.phase === 'error' ? 'Retry Whisper download' : 'Download Whisper')), /*#__PURE__*/React.createElement("div", {
+  }, voiceSetup.whisper.phase === 'ready' ? '✓ Whisper ready' : voiceSetup.whisper.phase === 'unsupported' ? 'Whisper unavailable for this language' : voiceSetup.whisper.phase === 'loading' ? voiceSetup.whisper.progress == null ? 'Preparing Whisper…' : 'Downloading Whisper · ' + voiceSetup.whisper.progress + '%' : voiceSetup.whisper.phase === 'error' ? 'Retry Whisper download' : 'Download Whisper')), /*#__PURE__*/React.createElement("div", {
     className: "lp-voice-option"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("strong", {
     className: "lp-voice-option-title"

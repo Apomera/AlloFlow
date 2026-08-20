@@ -7925,9 +7925,9 @@ function ExportPreviewView(props) {
                       onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, readerWebFonts: e.target.checked }))}
                       aria-describedby="doc-builder-readerfonts-help" />
                     <span>
-                      <span className="font-bold">Let readers pick OpenDyslexic, Atkinson, Lexend or Andika</span>
+                      <span className="font-bold">Let readers pick additional web fonts</span>
                       <span id="doc-builder-readerfonts-help" className="block text-slate-600">
-                        Adds these to the font menu inside the exported page. They are downloaded when the page opens, so leave this off for offline use or if your district blocks outside requests. The nine built-in fonts always work offline.
+                        Adds accessibility, multilingual, sans-serif, serif and monospace web fonts to the menu inside the exported page. They are downloaded when the page opens, so leave this off for offline use or if your district blocks outside requests. The nine built-in fonts always work offline.
                       </span>
                     </span>
                   </label>

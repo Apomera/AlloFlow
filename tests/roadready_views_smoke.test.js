@@ -96,7 +96,9 @@ const VIEWS = {
     sig: 'solid yellow line',
   },
   debrief: { d: { drivingStats: STATS }, sig: null },
-  driveDebrief: { d: { drivingStats: STATS }, sig: null },
+  // The coaching debrief should surface positive stop/yield evidence, not
+  // only deductions. STATS includes three clean full stops.
+  driveDebrief: { d: { drivingStats: STATS }, sig: 'verified' },
   maineWinter: { d: {}, sig: null },
   neurodivergentGuide: { d: {}, sig: null },
   nightVisionIntro: { d: {}, sig: null },

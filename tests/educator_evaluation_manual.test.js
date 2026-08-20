@@ -30,13 +30,18 @@ describe('educator evaluation user manual', () => {
     expect(MANUAL).toContain('<meta name="viewport"');
   });
 
-  it('covers both versions and how to choose between them', () => {
-    expect(MANUAL).toContain('On-device workspace compared with the district portal');
+  it('covers all three record paths and how to choose between them', () => {
+    expect(MANUAL).toContain('Private, principal-managed, and district-hosted paths');
+    expect(MANUAL).toContain('Principal Drive helper');
     expect(MANUAL).toContain('alloflow-cdn.pages.dev/educator-evaluation');
     expect(MANUAL).toContain('Setting Up the District Portal');
     expect(MANUAL).toContain('setupEvaluationRepository');
     expect(MANUAL).toContain('verifyDeploymentIdentity');
     expect(MANUAL).toContain('Execute as: Me');
+    for (const name of ['Code.gs', 'Index.html', 'Portal.html', 'appsscript.json']) {
+      expect(MANUAL).toContain(`educator_evaluation/${name}`);
+    }
+    expect(MANUAL).toContain('function runDistrictSetupOnce()');
   });
 
   it('documents the ten-step cycle with the tracker labels the tool actually renders', () => {
@@ -62,16 +67,20 @@ describe('educator evaluation user manual', () => {
   it('explains Drive sharing, receipts, and content-free notifications accurately', () => {
     expect(MANUAL).toContain('Google Doc');
     expect(MANUAL).toContain('viewer');
-    expect(MANUAL).toContain('opened receipt');
+    expect(MANUAL).toContain('link-opened receipt');
+    expect(MANUAL).toContain('not that the document was read, understood, or actually received');
     expect(MANUAL).toContain('content-free');
     expect(MANUAL).toContain('never a silent background job');
   });
 
   it('keeps the honest privacy and records boundaries', () => {
-    expect(MANUAL).toContain('nothing is uploaded');
-    expect(MANUAL).toContain('no external network calls');
-    expect(MANUAL).toContain('Role switching is a preview, not authentication');
-    expect(MANUAL).toMatch(/district(?:&#39;|’|')s authorized personnel system/);
+    expect(MANUAL).toContain('Where information goes and what triggers it');
+    expect(MANUAL).toContain('AI provider configured in AlloFlow');
+    expect(MANUAL).toContain('Google Drive is asked to notify the recipient');
+    expect(MANUAL).toContain('Names-limited is not anonymous');
+    expect(MANUAL).toContain('Role switching and Educator preview are not authentication');
+    expect(MANUAL).toContain('The district decides the official record');
+    expect(PROSE).not.toMatch(/nothing is uploaded, ever|all data stays inside/i);
     expect(MANUAL).toContain('not legal or contractual advice');
     expect(MANUAL).not.toMatch(/demonstration/i);
   });
@@ -127,6 +136,18 @@ describe('educator evaluation user manual', () => {
     expect(MANUAL).toContain('@media (prefers-color-scheme: dark)');
     expect(MANUAL).toContain('@media print');
     expect(MANUAL).toMatch(/body\{margin:0;background:var\(--bg\)/);
+    expect(MANUAL).toContain('figure.phone-shot img');
+    expect(MANUAL).toContain('beforeprint');
+  });
+
+  it('keeps the manual reading controls labelled, keyboard-capable, and outside headings', () => {
+    expect(MANUAL).toContain('min-width:28px;min-height:28px');
+    expect(MANUAL).toContain("'Read section aloud: ' + sectionLabel");
+    expect(MANUAL).toContain("h2.insertAdjacentElement('afterend', btn)");
+    expect(MANUAL).toContain("n.querySelectorAll('p, li, dt, dd, h3, h4, caption, th, td, figcaption')");
+    expect(MANUAL).toContain("wrap.setAttribute('role', 'region')");
+    expect(MANUAL).toContain("on('rt-ruler', 'keydown'");
+    expect(PROSE).not.toMatch(/zero violations/i);
   });
 
   it('uses no em dashes or en dashes in its own prose', () => {
@@ -157,11 +178,13 @@ describe('educator evaluation user manual', () => {
   });
 
   it('warns that browser data loss erases an on-device workspace, and names the fix', () => {
-    expect(MANUAL).toContain('clearing your browser data will erase it');
+    expect(MANUAL).toContain('clearing browser data can erase it');
     expect(MANUAL).toContain('Export workspace JSON');
-    expect(MANUAL).toContain('Import <em>replaces</em> the current workspace');
+    expect(MANUAL).toContain('Import workspace or educator response');
+    expect(MANUAL).toContain('downloads a pre-import checkpoint');
+    expect(MANUAL).toContain('Download emergency backup');
     expect(SOURCE).toContain('Export workspace JSON');
-    expect(SOURCE).toContain('Import replaces this on-device workspace after validation');
+    expect(SOURCE).toContain('Download backup and replace workspace');
   });
 
   it('states the cohort suppression threshold the Trends tab enforces', () => {
@@ -217,12 +240,35 @@ describe('educator evaluation user manual', () => {
     // manual is the other place a reader meets them, so it must agree.
     expect(MANUAL).toContain('AlloFlow adds no encryption of its own');
     expect(SOURCE).toContain('encryption AlloFlow adds');
-    expect(MANUAL).toContain("district's retention and discoverability rules");
-    expect(MANUAL).toContain('signed-in browser profile');
+    expect(MANUAL).toContain('Retention and discoverability apply everywhere');
+    expect(MANUAL).toContain('browser profile');
+  });
+
+  it('documents simulation language, manual controls, corrections, preview, and undo', () => {
+    expect(MANUAL).toContain('Natural language only:');
+    expect(MANUAL).toContain('Manual only:');
+    expect(MANUAL).toContain('Combined:');
+    expect(MANUAL).toContain('clauses it ignored');
+    expect(MANUAL).toContain('requested-to-applied correction');
+    expect(MANUAL).toContain('Preview changes');
+    expect(MANUAL).toContain('Undo last simulation');
+  });
+
+  it('keeps the principal-helper setup and operational sequence aligned to the product', () => {
+    for (const stage of ['Confirm approval and account', 'Create the private project', 'Replace Code.gs',
+      'Add the Index page', 'Enable Drive API v3', 'Deploy privately and save the link',
+      'Run the deployment check']) {
+      expect(MANUAL).toContain(stage);
+      expect(SOURCE).toContain(stage);
+    }
+    expect(MANUAL).toContain('helper version 3');
+    expect(MANUAL).toContain('Review; do not share yet');
+    expect(MANUAL).toContain('Filed packets and live access status');
+    expect(MANUAL).toContain('Revoke this live access');
   });
 
   it('is linked from the workspace Setup tab', () => {
     expect(SOURCE).toContain('https://alloflow-cdn.pages.dev/educator-evaluation-manual');
-    expect(SOURCE).toContain('User manual: how to use both versions');
+    expect(SOURCE).toContain('User manual: private, principal-managed, and district portal paths');
   });
 });

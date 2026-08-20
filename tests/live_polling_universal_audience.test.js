@@ -406,7 +406,7 @@ describe('universal live polling audience composer', () => {
     const { broadcastSpy } = await renderTargetedHost('rating', panelProps);
     click(findButton('Broadcast to'));
     const pollId = broadcastSpy.mock.calls[0][0].id;
-    expect(findButton('Close poll')).toBeTruthy();
+    expect(findButton('End poll')).toBeTruthy();
     expect(onActivitySnapshot.mock.calls.at(-1)[0]).toMatchObject({ activityId: pollId, phase: 'collecting' });
 
     await act(async () => {
@@ -422,7 +422,7 @@ describe('universal live polling audience composer', () => {
       await Promise.resolve();
     });
 
-    expect(findButton('Close poll')).toBeUndefined();
+    expect(findButton('End poll')).toBeUndefined();
     expect(findButton('Broadcast to')).toBeTruthy();
     expect(onActivitySnapshot.mock.calls.slice(closedCallCount).some(([snapshot]) => (
       snapshot.activityId === pollId && (snapshot.phase === 'collecting' || snapshot.phase === 'review')

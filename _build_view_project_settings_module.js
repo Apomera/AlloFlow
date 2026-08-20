@@ -5,6 +5,20 @@
  */
 const babel = require('@babel/core');
 const fs = require('fs');
+const os = require('os');
+const path = require('path');
+
+function writeGenerated(target, data) {
+  const staged = path.join(os.tmpdir(), 'alloflow-' + path.basename(target) + '-' + process.pid + '-' + Date.now());
+  fs.writeFileSync(staged, data);
+  try {
+    fs.mkdirSync(path.dirname(path.resolve(target)), { recursive: true });
+    try { fs.renameSync(staged, target); return; }
+    catch (renameError) { fs.copyFileSync(staged, target); }
+  } finally {
+    try { fs.unlinkSync(staged); } catch (_) {}
+  }
+}
 
 const source = fs.readFileSync('view_project_settings_source.jsx', 'utf-8');
 
@@ -54,6 +68,6 @@ const moduleSrc = `/**
 })();
 `;
 
-fs.writeFileSync('view_project_settings_module.js', moduleSrc);
-fs.writeFileSync('desktop/web-app/public/view_project_settings_module.js', moduleSrc);
+writeGenerated('view_project_settings_module.js', moduleSrc);
+writeGenerated('desktop/web-app/public/view_project_settings_module.js', moduleSrc);
 console.log('Wrote view_project_settings_module.js (' + moduleSrc.length + ' bytes)');

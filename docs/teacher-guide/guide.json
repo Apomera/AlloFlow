@@ -65,6 +65,28 @@
             ]
         },
         {
+            "title": "I am a parent or caregiver",
+            "description": "See what Family Mode includes, how work is saved, and the simplest way to create or receive support at home.",
+            "chapterSlugs": [
+                "family-mode",
+                "start-here",
+                "privacy-and-responsible-ai",
+                "saving-and-storage",
+                "troubleshooting"
+            ]
+        },
+        {
+            "title": "I support multilingual learners",
+            "description": "Set language and translation choices, protect learner dignity, and verify that supports preserve the learning goal.",
+            "chapterSlugs": [
+                "accessibility-and-udl",
+                "universal-settings",
+                "classroom-workflows",
+                "specialist-reference",
+                "privacy-and-responsible-ai"
+            ]
+        },
+        {
             "title": "Something is not working",
             "description": "Protect instructional time with a recovery sequence and a stable fallback.",
             "chapterSlugs": [
@@ -75,7 +97,7 @@
         }
     ],
     "version": "2026.08",
-    "lastVerified": "2026-08-16",
+    "lastVerified": "2026-08-20",
     "chapters": [
         {
             "source": "chapters/01-start-here.md",

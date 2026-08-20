@@ -23,13 +23,24 @@ const expectedUnits = [
   'social-psychology-and-personality',
   'mental-and-physical-health',
 ];
-const expectedPractices = { P1: 13, P2: 5, P3: 2, P4: 0 };
-const expectedAnswerPositions = { 0: 5, 1: 5, 2: 5, 3: 5 };
+const expectedItemsPerUnit = 100;
+const expectedItemCount = expectedUnits.length * expectedItemsPerUnit;
+const expectedBankSize = 20;
+const expectedBankCount = expectedItemCount / expectedBankSize;
+const expectedPractices = { P1: 325, P2: 125, P3: 50, P4: 0 };
+const expectedAnswerPositions = { 0: 125, 1: 125, 2: 125, 3: 125 };
+const expectedTopicCoverage = {
+  '1.1': 17, '1.2': 17, '1.3': 17, '1.4': 17, '1.5': 16, '1.6': 16,
+  '2.1': 13, '2.2': 13, '2.3': 13, '2.4': 13, '2.5': 12, '2.6': 12, '2.7': 12, '2.8': 12,
+  '3.1': 12, '3.2': 11, '3.3': 11, '3.4': 11, '3.5': 11, '3.6': 11, '3.7': 11, '3.8': 11, '3.9': 11,
+  '4.1': 15, '4.2': 15, '4.3': 14, '4.4': 14, '4.5': 14, '4.6': 14, '4.7': 14,
+  '5.1': 20, '5.2': 20, '5.3': 20, '5.4': 20, '5.5': 20,
+};
 const signalDefinitions = [
   ['asset-identity', 'Pack and library identities, versions, preview state, and cross-links are structurally consistent.'],
-  ['blueprint-and-unit-balance', 'The five current public framework units are declared and receive four pilot items each.'],
-  ['science-practice-balance', 'The pilot preserves its declared P1/P2/P3/P4 allocation of 13/5/2/0.'],
-  ['answer-key-balance', 'Answer positions are exactly balanced at five keys in each A-D position.'],
+  ['blueprint-and-unit-balance', 'The five current public framework units receive 100 internal-kit items each and all 37 public framework topics meet their coverage targets.'],
+  ['science-practice-balance', 'The 500-item pilot preserves its declared P1/P2/P3/P4 allocation of 325/125/50/0.'],
+  ['answer-key-balance', 'Answer positions are exactly balanced at 125 keys in each A-D position.'],
   ['answer-key-sequence', 'Ordered key transitions avoid a mechanically dominant modulo-four progression; sequence metrics do not establish psychometric quality.'],
   ['one-best-answer', 'Every item and chapter check has one prompt, four distinct options, and a valid key.'],
   ['substantive-feedback', 'Every pilot item has a substantive rationale and four substantive option explanations.'],
@@ -330,6 +341,12 @@ requireCondition(
 const domains = Array.isArray(pack.domains) ? pack.domains : [];
 const items = Array.isArray(pack.items) ? pack.items : [];
 const itemCountsByUnit = countBy(items, (item) => item.domainId);
+const topicCounts = {};
+for (const item of items) {
+  for (const topicId of Array.isArray(item.topicIds) ? item.topicIds : []) {
+    topicCounts[topicId] = (topicCounts[topicId] || 0) + 1;
+  }
+}
 requireCondition(
   domains.length === 5 &&
     new Set(domains.map((domain) => domain.id)).size === 5 &&
@@ -344,10 +361,10 @@ for (const unit of expectedUnits) {
       domain.weight === 0.2 &&
       domain.officialWeightMin === 0.15 &&
       domain.officialWeightMax === 0.25 &&
-      domain.itemCount === 4 &&
-      itemCountsByUnit[unit] === 4,
+      domain.itemCount === expectedItemsPerUnit &&
+      itemCountsByUnit[unit] === expectedItemsPerUnit,
     'blueprint-and-unit-balance',
-    `${unit} must declare the 15%-25% official range and contain exactly four pilot items.`
+    `${unit} must declare the 15%-25% official range and contain exactly ${expectedItemsPerUnit} internal-kit items.`
   );
 }
 requireCondition(
@@ -356,9 +373,25 @@ requireCondition(
   'Pilot midpoint unit weights must total 1.0.'
 );
 requireCondition(
-  items.length === 20 && pack.batchSize === 20,
+  Object.entries(expectedTopicCoverage).every(([topicId, minimum]) => topicCounts[topicId] >= minimum),
+  'blueprint-and-unit-balance',
+  'Every current AP Psychology framework topic must meet its declared minimum item coverage.'
+);
+const bankUnitCounts = [];
+for (let bankIndex = 0; bankIndex < expectedBankCount; bankIndex += 1) {
+  const bankItems = items.slice(bankIndex * expectedBankSize, (bankIndex + 1) * expectedBankSize);
+  const unitCounts = countBy(bankItems, (item) => item.domainId);
+  bankUnitCounts.push(unitCounts);
+}
+requireCondition(
+  items.length === expectedItemCount &&
+    pack.batchSize === expectedBankSize &&
+    Array.isArray(pack.sections) &&
+    pack.sections.length === expectedBankCount &&
+    new Set(pack.sections.map((section) => section.id)).size === expectedBankCount &&
+    bankUnitCounts.every((counts) => expectedUnits.every((unit) => counts[unit] === expectedBankSize / expectedUnits.length)),
   'asset-identity',
-  'The internal pilot and declared batch size must remain exactly 20 items.'
+  'The internal pilot must contain exactly 500 items across 25 balanced 20-item banks, with five units represented four times in every bank.'
 );
 
 const itemIds = new Set();
@@ -424,7 +457,8 @@ for (const item of items) {
     ['P1', 'P2', 'P3'].includes(item.practiceId) &&
       new RegExp(`^${item.practiceId.slice(1)}\\.[A-D]$`).test(String(item.skillId || '')) &&
       Array.isArray(item.topicIds) &&
-      item.topicIds.length > 0,
+      item.topicIds.length > 0 &&
+      item.topicIds.every((topicId) => Object.prototype.hasOwnProperty.call(expectedTopicCoverage, topicId)),
     'science-practice-balance',
     'Practice, skill, or topic alignment metadata is incomplete.',
     { recordId }
@@ -642,20 +676,20 @@ for (const item of items) {
 
 requireCondition(
   Object.entries(expectedPractices).every(([practice, count]) => practiceCounts[practice] === count) &&
-    pack.practiceDistribution?.['P1-concept-application'] === 13 &&
-    pack.practiceDistribution?.['P2-research-methods-and-design'] === 5 &&
-    pack.practiceDistribution?.['P3-data-interpretation'] === 2 &&
+    pack.practiceDistribution?.['P1-concept-application'] === expectedPractices.P1 &&
+    pack.practiceDistribution?.['P2-research-methods-and-design'] === expectedPractices.P2 &&
+    pack.practiceDistribution?.['P3-data-interpretation'] === expectedPractices.P3 &&
     pack.practiceDistribution?.['P4-argumentation'] === 0,
   'science-practice-balance',
-  'Observed or declared science-practice allocation is not exactly 13/5/2/0.'
+  'Observed or declared science-practice allocation is not exactly 325/125/50/0.'
 );
 requireCondition(
   Object.entries(expectedAnswerPositions).every(([position, count]) => answerPositions[position] === count) &&
     Object.entries(expectedAnswerPositions).every(
       ([position, count]) => pack.answerPositionDistribution?.[position] === count
-    ),
+  ),
   'answer-key-balance',
-  'Observed or declared answer positions are not exactly 5/5/5/5.'
+  'Observed or declared answer positions are not exactly 125/125/125/125.'
 );
 
 const orderedAnswerKeys = items.map((item) => item.answerIndex);
@@ -1401,6 +1435,10 @@ const report = {
       targetExamYear: null,
       itemCount: items.length,
       unitItemCounts: sortedObject(itemCountsByUnit, expectedUnits),
+      topicItemCounts: sortedObject(topicCounts, Object.keys(expectedTopicCoverage).sort()),
+      minimumTopicCoverage: expectedTopicCoverage,
+      bankCount: expectedBankCount,
+      bankSize: expectedBankSize,
       declaredUnitWeight: 0.2,
       officialUnitWeightRange: [0.15, 0.25],
     },

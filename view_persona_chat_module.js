@@ -2461,9 +2461,9 @@
   }, transcriptSavePending ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 15,
     className: "animate-spin motion-reduce:animate-none"
-  }), " Saving private session...") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Save, {
+  }), " ", t('common.save'), "…") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Save, {
     size: 15
-  }), " Save private session with narration")), personaSummary && /*#__PURE__*/React.createElement("button", {
+  }), " ", t('persona.chat_save'))), personaSummary && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: _retryPersonaSummary,
     disabled: summaryBusy || !canGeneratePersonaSummary,

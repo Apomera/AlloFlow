@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Collaborative Memory Palace QA</title>
+  <style>
+    body { margin: 0; padding: 18px; background: #020617; color: #e2e8f0; font: 15px system-ui, sans-serif; }
+    h1 { font-size: 20px; }
+    .users { display: grid; grid-template-columns: repeat(auto-fit,minmax(320px,1fr)); gap: 18px; }
+    .user { border: 2px solid #334155; border-radius: 14px; padding: 14px; background: #0f172a; min-width: 0; }
+    .user > h2 { margin: 0 0 10px; font-size: 17px; }
+    .toast { min-height: 22px; margin-top: 8px; color: #bfdbfe; }
+    #walk { position: fixed; inset: 12%; padding: 20px; border: 3px solid #60a5fa; border-radius: 16px; background: #111827; z-index: 5; overflow: auto; }
+    #walk[hidden] { display: none; }
+    #walk button { min-height: 44px; }
+  </style>
+</head>
+<body>
+  <h1>Real plugin · two-user shared-session harness</h1>
+  <div class="users">
+    <section class="user" aria-label="Teacher device"><h2>Teacher device</h2><div id="teacher"></div><div id="teacher-toast" class="toast" role="status"></div></section>
+    <section class="user" aria-label="Student device"><h2>Student device</h2><div id="student"></div><div id="student-toast" class="toast" role="status"></div></section>
+  </div>
+  <section id="walk" role="dialog" aria-label="3D memory palace walk" hidden>
+    <h2 id="walk-title"></h2><pre id="walk-data"></pre><button id="walk-close">Close 3D walk</button>
+  </section>
+  <script src="/desktop/web-app/node_modules/react/umd/react.development.js"></script>
+  <script src="/desktop/web-app/node_modules/react-dom/umd/react-dom.development.js"></script>
+  <script>
+    window.AlloHavenArcade = {
+      modes: {},
+      registerMode: function (id, mode) { this.modes[id] = mode; },
+      isRegistered: function (id) { return !!this.modes[id]; }
+    };
+    window.AlloFlowVoice = {
+      initWebSpeechCapture: function (options) {
+        return { supported: true, start: function () { setTimeout(function () { options.onTranscript('orbit around the sun'); }, 20); return true; }, stop: function () { if (options.onEnd) options.onEnd(); } };
+      }
+    };
+  </script>
+  <script src="/arcade_mode_realm_builder.js?v=voice-stop"></script>
+  <script>
+    (function () {
+      var sessionData = { collaborativeMemoryPalace: null };
+      var listeners = [];
+      var palette = { bg:'#020617', surface:'#1e293b', border:'#475569', text:'#f8fafc', textDim:'#cbd5e1', accent:'#60a5fa', onAccent:'#0f172a' };
+      function publish() { listeners.slice().forEach(function (fn) { fn(sessionData); }); }
+      function mergePalace(patch) {
+        var current = sessionData.collaborativeMemoryPalace || {};
+        var next = Object.assign({}, current, patch || {});
+        ['submissions', 'participants'].forEach(function (mapName) {
+          if (!patch || !patch[mapName]) return;
+          next[mapName] = Object.assign({}, current[mapName] || {});
+          Object.keys(patch[mapName]).forEach(function (key) {
+            if (patch[mapName][key] == null) delete next[mapName][key];
+            else next[mapName][key] = patch[mapName][key];
+          });
+        });
+        sessionData = { collaborativeMemoryPalace: next };
+        publish();
+      }
+      function walk(data, options) {
+        document.getElementById('walk-title').textContent = options.title;
+        document.getElementById('walk-data').textContent = JSON.stringify(data, null, 2);
+        document.getElementById('walk').hidden = false;
+      }
+      document.getElementById('walk-close').onclick = function () { document.getElementById('walk').hidden = true; };
+      function makeCtx(isHost, nickname, toastId, participantId) {
+        return {
+          React: window.React, isHost: isHost, studentNickname: nickname, sessionCode: 'PAL55',
+          sessionParticipantId: participantId,
+          session: { modeId: 'class-memory-palace', startedAt: 1 }, palette: palette,
+          sessionSubscribe: function (fn) { listeners.push(fn); fn(sessionData); return function () { listeners = listeners.filter(function (item) { return item !== fn; }); }; },
+          sessionUpdate: function (update) { mergePalace(update.collaborativeMemoryPalace); return Promise.resolve(); },
+          addToast: function (message) { document.getElementById(toastId).textContent = message; },
+          onEndSession: function (reason) { document.getElementById(toastId).textContent = 'Session ended: ' + reason; },
+          openMemoryPalaceWalk: walk,
+          tokens: 20, minutesPerToken: 5, onLaunch: function () {}
+        };
+      }
+      var mode = window.AlloHavenArcade.modes['class-memory-palace'];
+      ReactDOM.createRoot(document.getElementById('teacher')).render(mode.render(makeCtx(true, 'Teacher', 'teacher-toast', 'teacher-1')));
+      ReactDOM.createRoot(document.getElementById('student')).render(mode.render(makeCtx(false, 'Clever Dolphin', 'student-toast', 'student-1')));
+    })();
+  </script>
+</body>
+</html>

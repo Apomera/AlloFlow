@@ -3,7 +3,7 @@
  *
  * Extracted from AlloFlowANTI.txt activeView==='word-sounds' && !isWordSoundsMode block.
  * Source range: 27 lines body. The simplest renderer in the project — a launcher
- * card with two buttons (Pre-Activity Review, Launch Word Sounds Studio).
+ * card with an educator-only review button and a learner launch button.
  * The actual modal lives in word_sounds_module.js (separate CDN module).
  */
 (function() {
@@ -32,6 +32,25 @@
   var setIsWordSoundsMode = props.setIsWordSoundsMode;
   var setWordSoundsAutoReview = props.setWordSoundsAutoReview;
   var prepareWordSoundsSession = props.prepareWordSoundsSession;
+  var wordSoundsAudioCoverage = props.wordSoundsAudioCoverage;
+  var requestIncompleteAudioConfirmation = props.requestIncompleteAudioConfirmation;
+  var missingAudioLabels = wordSoundsAudioCoverage && Array.isArray(wordSoundsAudioCoverage.missingLabels) ? wordSoundsAudioCoverage.missingLabels : wordSoundsAudioCoverage && Array.isArray(wordSoundsAudioCoverage.missingWords) ? wordSoundsAudioCoverage.missingWords : [];
+  // Treat an omitted role as the educator view so older call sites retain the
+  // review path. Learner call sites pass false explicitly.
+  var isTeacherMode = props.isTeacherMode !== false;
+  var launchPreparedActivity = function () {
+    var initialActivity = wsActivitySequence && wsActivitySequence.length > 0 ? wsActivitySequence[0] : 'counting';
+    if (typeof prepareWordSoundsSession === 'function') {
+      prepareWordSoundsSession({
+        ...(generatedContent?.sessionConfig || {}),
+        resourceId: generatedContent?.id || null,
+        initialActivity
+      });
+    }
+    setWordSoundsActivity(initialActivity);
+    setWordSoundsAutoReview(false);
+    setIsWordSoundsMode(true);
+  };
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
   }, /*#__PURE__*/React.createElement("div", {
@@ -44,9 +63,15 @@
     className: "text-sm text-slate-600 mb-1"
   }, generatedContent?.configSummary || 'Ready to practice'), generatedContent?.data && /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-violet-500 font-medium"
-  }, generatedContent.data.length, " words loaded"), /*#__PURE__*/React.createElement("div", {
-    className: "grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5"
-  }, /*#__PURE__*/React.createElement("button", {
+  }, generatedContent.data.length, " words loaded"), isTeacherMode && wordSoundsAudioCoverage && wordSoundsAudioCoverage.total > 0 && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    "aria-live": "polite",
+    className: `mt-2 text-xs font-bold ${wordSoundsAudioCoverage.complete ? 'text-emerald-700' : 'text-amber-700'}`
+  }, "Audio ready: ", wordSoundsAudioCoverage.ready, "/", wordSoundsAudioCoverage.total, " required clips", !wordSoundsAudioCoverage.complete && ' - Review missing audio before sending to students', !wordSoundsAudioCoverage.complete && missingAudioLabels.length > 0 && /*#__PURE__*/React.createElement("span", {
+    className: "mt-1 block font-medium text-amber-800"
+  }, "Missing: ", missingAudioLabels.slice(0, 5).join(', '), missingAudioLabels.length > 5 && `, plus ${missingAudioLabels.length - 5} more`)), /*#__PURE__*/React.createElement("div", {
+    className: `grid grid-cols-1 ${isTeacherMode ? 'sm:grid-cols-2' : ''} gap-3 mt-5`
+  }, isTeacherMode && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => {
       const initialActivity = wsActivitySequence && wsActivitySequence.length > 0 ? wsActivitySequence[0] : 'counting';
@@ -74,20 +99,14 @@
   }, "Check or edit the lesson before students begin"))), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => {
+      if (isTeacherMode && wordSoundsAudioCoverage && wordSoundsAudioCoverage.total > 0 && !wordSoundsAudioCoverage.complete && typeof requestIncompleteAudioConfirmation === 'function') {
+        requestIncompleteAudioConfirmation(wordSoundsAudioCoverage, launchPreparedActivity);
+        return;
+      }
       // Honor the lesson-plan sequence exactly like the
       // Review button above — 'counting' is only the
       // no-sequence fallback.
-      const initialActivity = wsActivitySequence && wsActivitySequence.length > 0 ? wsActivitySequence[0] : 'counting';
-      if (typeof prepareWordSoundsSession === 'function') {
-        prepareWordSoundsSession({
-          ...(generatedContent?.sessionConfig || {}),
-          resourceId: generatedContent?.id || null,
-          initialActivity
-        });
-      }
-      setWordSoundsActivity(initialActivity);
-      setWordSoundsAutoReview(false);
-      setIsWordSoundsMode(true);
+      launchPreparedActivity();
     },
     className: "min-h-14 flex items-center justify-center gap-3 px-5 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-offset-2"
   }, /*#__PURE__*/React.createElement(Play, {
@@ -97,7 +116,7 @@
     className: "text-left"
   }, /*#__PURE__*/React.createElement("span", {
     className: "block"
-  }, "Student: Start Practice"), /*#__PURE__*/React.createElement("span", {
+  }, isTeacherMode ? 'Student: Start Practice' : 'Start Activity'), /*#__PURE__*/React.createElement("span", {
     className: "block text-xs font-medium text-indigo-100"
   }, "Begin the prepared activities now"))))));
 }

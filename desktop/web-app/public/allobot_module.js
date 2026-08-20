@@ -454,7 +454,667 @@ const cancelAlloBotBrowserSpeech = () => {
   }
   return true;
 };
-const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, onHide, isListening, isIdleDisabled = false, disableAnimations = false, stemLabTool = null, showStemLab = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voiceVolume = 1, onGenerateAudio, theme = "light", colorOverlay = "none", onSpeechEnd, onSpeechStart, activeView, isFlying = false, isSystemAudioActive = false, history = [], isParentMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic, canPlayIntro = true, aimAt = null, idleSleepMs = 18e4 }, ref) => {
+const alloBotTipText = (value, maxLength = 90) => String(value || "").replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, maxLength);
+const alloBotTipList = (value) => Array.isArray(value) ? value : [];
+const alloBotWordCount = (value) => typeof value === "string" ? value.trim().split(/\s+/).filter(Boolean).length : 0;
+const alloBotAacChoiceCount = (data) => {
+  const direct = alloBotTipList(data?.buttons || data?.cells || data?.items).length;
+  if (direct) return direct;
+  return alloBotTipList(data?.pages).reduce((total, page) => total + alloBotTipList(page?.buttons || page?.cells || page?.items).length, 0);
+};
+const alloBotLinguaLanguage = (data) => alloBotTipText(
+  data?.targetLanguage || data?.language?.target || data?.profile?.target || (typeof data?.language === "string" ? data.language : "") || data?.practiceSet?.language,
+  60
+);
+const latestAlloBotResource = (history, types) => {
+  const accepted = new Set(Array.isArray(types) ? types : [types]);
+  const items = Array.isArray(history) ? history : [];
+  for (let index = items.length - 1; index >= 0; index -= 1) {
+    const item = items[index];
+    if (item && accepted.has(item.type)) return item;
+  }
+  return null;
+};
+const STUDENT_TIP_VIEW_ALIASES = Object.freeze({
+  "sentence-frames": ["sentence-frames", "scaffolds"],
+  scaffolds: ["sentence-frames", "scaffolds"],
+  "alignment-report": ["alignment-report", "alignment"],
+  alignment: ["alignment-report", "alignment"],
+  "word-sounds-generator": ["word-sounds", "glossary"],
+  output: ["word-sounds"]
+});
+const STUDENT_IDLE_TIP_KEYS = Object.freeze({
+  input: "tips.student_input_choose",
+  simplified: "tips.student_simplified_summary",
+  glossary: "tips.student_glossary_practice",
+  quiz: "tips.student_quiz_reasoning",
+  adventure: "tips.student_adventure_evidence",
+  timeline: "tips.student_timeline_sequence",
+  math: "tips.student_math_steps",
+  faq: "tips.student_faq_predict",
+  outline: "tips.student_outline_checkpoint",
+  "concept-sort": "tips.student_concept_sort_reason",
+  "sentence-frames": "tips.student_scaffolds_own_idea",
+  scaffolds: "tips.student_scaffolds_own_idea",
+  analysis: "tips.student_analysis_question",
+  image: "tips.student_image_notice",
+  brainstorm: "tips.student_brainstorm_choose",
+  persona: "tips.student_persona_question",
+  dbq: "tips.student_dbq_evidence",
+  "note-taking": "tips.student_notes_recall",
+  "anchor-chart": "tips.student_anchor_chart_recall",
+  "lesson-plan": "tips.student_study_guide_plan",
+  "alignment-report": "tips.student_alignment_next_step",
+  alignment: "tips.student_alignment_next_step",
+  "gemini-bridge": "tips.student_simulation_predict",
+  "word-sounds": "tips.student_word_sounds_practice",
+  "word-sounds-generator": "tips.student_word_sounds_practice",
+  output: "tips.student_word_sounds_practice",
+  directions: "tips.student_directions_check",
+  "video-transcript": "tips.student_video_transcript",
+  "video-ref": "tips.student_video_notice",
+  readingBook: "tips.student_reading_book",
+  readingSet: "tips.student_reading_set",
+  "aac-board": "tips.student_aac_board",
+  "math-fluency-maze": "tips.student_fluency_strategy",
+  "math-fluency-probe": "tips.student_fluency_probe_reflect",
+  "fluency-record": "tips.student_fluency_record_reflect",
+  "manipulative-resource": "tips.student_manipulative_explain",
+  "stem-assessment": "tips.student_assessment_evidence",
+  "explore-challenge": "tips.student_explore_reflect",
+  "storyforge-config": "tips.student_creative_assignment_plan",
+  "storyforge-submission": "tips.student_creative_submission_review",
+  "poettree-config": "tips.student_creative_assignment_plan",
+  "poettree-submission": "tips.student_creative_submission_review",
+  "litlab-config": "tips.student_creative_assignment_plan",
+  "litlab-submission": "tips.student_creative_submission_review",
+  "lingua-config": "tips.student_lingua_practice",
+  "lingua-submission": "tips.student_lingua_reflect",
+  "udl-advice": "tips.student_guide_choice"
+});
+const STUDENT_EVENT_TIP_KEYS = Object.freeze({
+  quiz: "bot_events.student_quiz_ready",
+  glossary: "bot_events.student_glossary_ready",
+  simplified: "bot_events.student_simplified_ready",
+  adventure: "bot_events.student_adventure_ready",
+  analysis: "bot_events.student_analysis_ready",
+  scaffolds: "bot_events.student_scaffolds_ready",
+  "sentence-frames": "bot_events.student_scaffolds_ready",
+  faq: "bot_events.student_faq_ready",
+  outline: "bot_events.student_outline_ready",
+  brainstorm: "bot_events.student_brainstorm_ready",
+  "concept-sort": "bot_events.student_concept_sort_ready",
+  math: "bot_events.student_math_ready",
+  persona: "bot_events.student_persona_ready",
+  alignment: "bot_events.student_alignment_ready",
+  "alignment-report": "bot_events.student_alignment_ready",
+  "gemini-bridge": "bot_events.student_simulation_ready",
+  timeline: "bot_events.student_timeline_ready",
+  "lesson-plan": "bot_events.student_study_guide_ready",
+  image: "bot_events.student_image_ready",
+  dbq: "bot_events.student_dbq_ready",
+  "note-taking": "bot_events.student_notes_ready",
+  "anchor-chart": "bot_events.student_anchor_chart_ready",
+  "word-sounds": "bot_events.student_word_sounds_ready",
+  directions: "bot_events.student_directions_ready",
+  "video-transcript": "bot_events.student_video_ready",
+  "video-ref": "bot_events.student_video_ready",
+  readingBook: "bot_events.student_reading_ready",
+  readingSet: "bot_events.student_reading_set_ready",
+  "aac-board": "bot_events.student_aac_ready",
+  "math-fluency-probe": "bot_events.student_fluency_probe_ready",
+  "fluency-record": "bot_events.student_fluency_record_ready",
+  "math-fluency-maze": "bot_events.student_fluency_ready",
+  "manipulative-resource": "bot_events.student_manipulative_ready",
+  "stem-assessment": "bot_events.student_assessment_ready",
+  "explore-challenge": "bot_events.student_explore_ready",
+  "storyforge-config": "bot_events.student_creative_assignment_ready",
+  "storyforge-submission": "bot_events.student_creative_submission_ready",
+  "poettree-config": "bot_events.student_creative_assignment_ready",
+  "poettree-submission": "bot_events.student_creative_submission_ready",
+  "litlab-config": "bot_events.student_creative_assignment_ready",
+  "litlab-submission": "bot_events.student_creative_submission_ready",
+  "lingua-config": "bot_events.student_lingua_ready",
+  "lingua-submission": "bot_events.student_lingua_record_ready",
+  "udl-advice": "bot_events.student_guide_ready"
+});
+const STUDENT_DIVERSE_TIP_KEYS = Object.freeze({
+  input: ["tips.student_extra_goal", "tips.student_extra_reflect"],
+  simplified: ["tips.student_extra_retrieve", "tips.student_extra_question"],
+  glossary: ["tips.student_extra_retrieve", "tips.student_extra_connect"],
+  quiz: ["tips.student_extra_evidence", "tips.student_extra_check"],
+  adventure: ["tips.student_extra_transfer", "tips.student_extra_reflect"],
+  timeline: ["tips.student_extra_compare", "tips.student_extra_cause"],
+  math: ["tips.student_extra_explain", "tips.student_extra_check"],
+  faq: ["tips.student_extra_retrieve", "tips.student_extra_question"],
+  outline: ["tips.student_extra_retrieve", "tips.student_extra_sequence"],
+  "concept-sort": ["tips.student_extra_compare", "tips.student_extra_explain"],
+  "sentence-frames": ["tips.student_extra_create", "tips.student_extra_evidence"],
+  scaffolds: ["tips.student_extra_create", "tips.student_extra_evidence"],
+  analysis: ["tips.student_extra_question", "tips.student_extra_connect"],
+  image: ["tips.student_extra_observe", "tips.student_extra_question"],
+  brainstorm: ["tips.student_extra_choice", "tips.student_extra_create"],
+  persona: ["tips.student_extra_question", "tips.student_extra_evidence"],
+  dbq: ["tips.student_extra_evidence", "tips.student_extra_compare"],
+  "note-taking": ["tips.student_extra_retrieve", "tips.student_extra_organize"],
+  "anchor-chart": ["tips.student_extra_retrieve", "tips.student_extra_connect"],
+  "lesson-plan": ["tips.student_extra_goal", "tips.student_extra_retrieve"],
+  "alignment-report": ["tips.student_extra_feedback", "tips.student_extra_goal"],
+  alignment: ["tips.student_extra_feedback", "tips.student_extra_goal"],
+  "gemini-bridge": ["tips.student_extra_predict", "tips.student_extra_explain"],
+  "word-sounds": ["tips.student_extra_pattern", "tips.student_extra_check"],
+  "word-sounds-generator": ["tips.student_extra_pattern", "tips.student_extra_check"],
+  output: ["tips.student_extra_pattern", "tips.student_extra_check"],
+  directions: ["tips.student_extra_plan", "tips.student_extra_check"],
+  "video-transcript": ["tips.student_extra_summarize", "tips.student_extra_question"],
+  "video-ref": ["tips.student_extra_predict", "tips.student_extra_summarize"],
+  readingBook: ["tips.student_extra_predict", "tips.student_extra_summarize"],
+  readingSet: ["tips.student_extra_compare", "tips.student_extra_evidence"],
+  "aac-board": ["tips.student_extra_choice", "tips.student_extra_rehearse"],
+  "math-fluency-maze": ["tips.student_extra_strategy", "tips.student_extra_reflect"],
+  "math-fluency-probe": ["tips.student_extra_strategy", "tips.student_extra_feedback"],
+  "fluency-record": ["tips.student_extra_feedback", "tips.student_extra_reflect"],
+  "manipulative-resource": ["tips.student_extra_explain", "tips.student_extra_check"],
+  "stem-assessment": ["tips.student_extra_evidence", "tips.student_extra_check"],
+  "explore-challenge": ["tips.student_extra_predict", "tips.student_extra_reflect"],
+  "storyforge-config": ["tips.student_extra_goal", "tips.student_extra_create"],
+  "storyforge-submission": ["tips.student_extra_revise", "tips.student_extra_reflect"],
+  "poettree-config": ["tips.student_extra_goal", "tips.student_extra_create"],
+  "poettree-submission": ["tips.student_extra_revise", "tips.student_extra_reflect"],
+  "litlab-config": ["tips.student_extra_goal", "tips.student_extra_rehearse"],
+  "litlab-submission": ["tips.student_extra_revise", "tips.student_extra_reflect"],
+  "lingua-config": ["tips.student_extra_rehearse", "tips.student_extra_pattern"],
+  "lingua-submission": ["tips.student_extra_feedback", "tips.student_extra_reflect"],
+  "udl-advice": ["tips.student_extra_choice", "tips.student_extra_reflect"]
+});
+const EDUCATOR_IDLE_TIP_KEYS = Object.freeze({
+  input: ["tips.educator_sequence_resources", "tips.educator_check_prior_knowledge"],
+  simplified: ["tips.educator_monitor_access", "tips.educator_plan_retrieval"],
+  glossary: ["tips.educator_monitor_access", "tips.educator_plan_retrieval"],
+  quiz: ["tips.educator_surface_misconceptions", "tips.educator_require_evidence"],
+  adventure: ["tips.educator_plan_transfer", "tips.educator_student_voice"],
+  timeline: ["tips.educator_model_thinking", "tips.educator_plan_discussion"],
+  math: ["tips.educator_model_thinking", "tips.educator_surface_misconceptions"],
+  faq: ["tips.educator_check_prior_knowledge", "tips.educator_plan_discussion"],
+  outline: ["tips.educator_sequence_resources", "tips.educator_plan_retrieval"],
+  "concept-sort": ["tips.educator_surface_misconceptions", "tips.educator_plan_discussion"],
+  "sentence-frames": ["tips.educator_fade_scaffold", "tips.educator_student_voice"],
+  scaffolds: ["tips.educator_fade_scaffold", "tips.educator_student_voice"],
+  analysis: ["tips.educator_check_prior_knowledge", "tips.educator_monitor_access"],
+  image: ["tips.educator_plan_discussion", "tips.educator_accessibility_check"],
+  brainstorm: ["tips.educator_offer_choice", "tips.educator_plan_transfer"],
+  persona: ["tips.educator_compare_perspectives", "tips.educator_require_evidence"],
+  dbq: ["tips.educator_compare_perspectives", "tips.educator_require_evidence"],
+  "note-taking": ["tips.educator_fade_scaffold", "tips.educator_plan_retrieval"],
+  "anchor-chart": ["tips.educator_model_thinking", "tips.educator_plan_retrieval"],
+  "lesson-plan": ["tips.educator_sequence_resources", "tips.educator_feedback_loop"],
+  "alignment-report": ["tips.educator_feedback_loop", "tips.educator_plan_transfer"],
+  alignment: ["tips.educator_feedback_loop", "tips.educator_plan_transfer"],
+  "gemini-bridge": ["tips.educator_model_thinking", "tips.educator_surface_misconceptions"],
+  "word-sounds": ["tips.educator_monitor_access", "tips.educator_feedback_loop"],
+  "word-sounds-generator": ["tips.educator_monitor_access", "tips.educator_feedback_loop"],
+  output: ["tips.educator_monitor_access", "tips.educator_feedback_loop"],
+  directions: ["tips.educator_accessibility_check", "tips.educator_offer_choice"],
+  "video-transcript": ["tips.educator_accessibility_check", "tips.educator_plan_discussion"],
+  "video-ref": ["tips.educator_accessibility_check", "tips.educator_check_prior_knowledge"],
+  readingBook: ["tips.educator_plan_discussion", "tips.educator_plan_retrieval"],
+  readingSet: ["tips.educator_compare_perspectives", "tips.educator_require_evidence"],
+  "aac-board": ["tips.educator_offer_choice", "tips.educator_monitor_access"],
+  "math-fluency-maze": ["tips.educator_feedback_loop", "tips.educator_surface_misconceptions"],
+  "math-fluency-probe": ["tips.educator_feedback_loop", "tips.educator_surface_misconceptions"],
+  "fluency-record": ["tips.educator_feedback_loop", "tips.educator_monitor_access"],
+  "manipulative-resource": ["tips.educator_model_thinking", "tips.educator_offer_choice"],
+  "stem-assessment": ["tips.educator_require_evidence", "tips.educator_feedback_loop"],
+  "explore-challenge": ["tips.educator_plan_transfer", "tips.educator_student_voice"],
+  "storyforge-config": ["tips.educator_offer_choice", "tips.educator_student_voice"],
+  "storyforge-submission": ["tips.educator_feedback_loop", "tips.educator_student_voice"],
+  "poettree-config": ["tips.educator_offer_choice", "tips.educator_student_voice"],
+  "poettree-submission": ["tips.educator_feedback_loop", "tips.educator_student_voice"],
+  "litlab-config": ["tips.educator_offer_choice", "tips.educator_student_voice"],
+  "litlab-submission": ["tips.educator_feedback_loop", "tips.educator_student_voice"],
+  "lingua-config": ["tips.educator_monitor_access", "tips.educator_plan_transfer"],
+  "lingua-submission": ["tips.educator_feedback_loop", "tips.educator_student_voice"],
+  "udl-advice": ["tips.educator_offer_choice", "tips.educator_monitor_access"]
+});
+const EDUCATOR_EVENT_TIP_KEYS = Object.freeze({
+  quiz: "bot_events.educator_assessment_ready",
+  glossary: "bot_events.educator_vocabulary_ready",
+  simplified: "bot_events.educator_text_ready",
+  adventure: "bot_events.educator_transfer_ready",
+  analysis: "bot_events.educator_analysis_ready",
+  scaffolds: "bot_events.educator_scaffold_ready",
+  "sentence-frames": "bot_events.educator_scaffold_ready",
+  faq: "bot_events.educator_questions_ready",
+  outline: "bot_events.educator_organizer_ready",
+  brainstorm: "bot_events.educator_choice_ready",
+  "concept-sort": "bot_events.educator_sort_ready",
+  math: "bot_events.educator_math_ready",
+  persona: "bot_events.educator_perspective_ready",
+  alignment: "bot_events.educator_alignment_ready",
+  "alignment-report": "bot_events.educator_alignment_ready",
+  timeline: "bot_events.educator_sequence_ready",
+  "lesson-plan": "bot_events.educator_plan_ready",
+  image: "bot_events.educator_media_ready",
+  dbq: "bot_events.educator_inquiry_ready",
+  "note-taking": "bot_events.educator_notes_ready",
+  "anchor-chart": "bot_events.educator_anchor_ready",
+  "gemini-bridge": "bot_events.educator_simulation_ready",
+  "word-sounds": "bot_events.educator_language_ready",
+  directions: "bot_events.educator_directions_ready",
+  "video-transcript": "bot_events.educator_media_ready",
+  "video-ref": "bot_events.educator_media_ready",
+  readingBook: "bot_events.educator_reading_ready",
+  readingSet: "bot_events.educator_reading_set_ready",
+  "aac-board": "bot_events.educator_aac_ready",
+  "math-fluency-maze": "bot_events.educator_fluency_ready",
+  "math-fluency-probe": "bot_events.educator_fluency_ready",
+  "fluency-record": "bot_events.educator_fluency_record_ready",
+  "manipulative-resource": "bot_events.educator_model_ready",
+  "stem-assessment": "bot_events.educator_assessment_ready",
+  "explore-challenge": "bot_events.educator_transfer_ready",
+  "storyforge-config": "bot_events.educator_creative_ready",
+  "storyforge-submission": "bot_events.educator_submission_ready",
+  "poettree-config": "bot_events.educator_creative_ready",
+  "poettree-submission": "bot_events.educator_submission_ready",
+  "litlab-config": "bot_events.educator_creative_ready",
+  "litlab-submission": "bot_events.educator_submission_ready",
+  "lingua-config": "bot_events.educator_language_ready",
+  "lingua-submission": "bot_events.educator_submission_ready",
+  "udl-advice": "bot_events.educator_support_ready"
+});
+const buildStudentEventTip = (latest, topic, t) => {
+  const type = latest?.type || "";
+  const data = latest?.data;
+  const topicName = alloBotTipText(topic || latest?.topic || data?.topic || latest?.title);
+  const questions = alloBotTipList(data?.questions || (Array.isArray(data) && type === "faq" ? data : []));
+  const glossaryTerms = alloBotTipList(Array.isArray(data) ? data : data?.terms);
+  const firstTerm = alloBotTipText(glossaryTerms[0]?.term || glossaryTerms[0]?.word || glossaryTerms[0]);
+  const level = alloBotTipText(data?.gradeLevel || data?.level, 50);
+  const concepts = alloBotTipList(data?.keyConcepts || data?.concepts);
+  const frames = alloBotTipList(data?.frames || (Array.isArray(data) ? data : []));
+  const sections = alloBotTipList(data?.sections || data?.outline);
+  const activities = alloBotTipList(data?.activities || (Array.isArray(data) ? data : []));
+  const categories = alloBotTipList(data?.categories);
+  const items = alloBotTipList(data?.items);
+  const problems = alloBotTipList(data?.problems || data?.equations || (Array.isArray(data) ? data : []));
+  const events = alloBotTipList(data?.events || (Array.isArray(data) ? data : []));
+  const personaName = alloBotTipText(data?.name || data?.character?.name, 60);
+  const documents = alloBotTipList(data?.documents || data?.sources);
+  const noteSections = alloBotTipList(data?.sections || data?.notes || data?.templates);
+  const words = alloBotTipList(data?.words || data?.terms || (Array.isArray(data) && type === "word-sounds" ? data : []));
+  const steps = alloBotTipList(data?.steps || data?.directions || data?.instructions);
+  const readingItems = alloBotTipList(data?.books || data?.items || data?.pages || data?.chapters);
+  const fluencyAccuracy = Number(data?.metrics?.accuracy ?? data?.accuracy);
+  const aacChoiceCount = alloBotAacChoiceCount(data);
+  const creativeVocabularyCount = alloBotTipList(data?.vocabTerms || data?.practiceSet?.lesson?.vocabulary).length;
+  const creativeWordCount = Number(data?.analytics?.totalWords) || alloBotWordCount(data?.text || data?.story || data?.sourceText);
+  const creativeLineCount = Number(data?.lineCount) || alloBotTipList(data?.lines).length;
+  const linguaLanguage = alloBotLinguaLanguage(data);
+  const linguaActivityCount = Array.isArray(data?.activity) ? data.activity.reduce((total, event) => total + Math.max(0, Number(event?.count || 0)), 0) : alloBotTipList(data?.events || data?.activityLog).length;
+  const localized = (key, params, fallbackKey) => t(key, params) || (fallbackKey ? t(fallbackKey) : void 0);
+  if (type === "quiz" && questions.length) return localized("bot_events.student_quiz_ready_count", { count: questions.length }, "bot_events.student_quiz_ready");
+  if (type === "glossary" && firstTerm) return localized("bot_events.student_glossary_ready_term", { count: glossaryTerms.length, term: firstTerm }, "bot_events.student_glossary_ready");
+  if (type === "simplified" && level) return localized("bot_events.student_simplified_ready_level", { level }, "bot_events.student_simplified_ready");
+  if (type === "adventure" && topicName) return localized("bot_events.student_adventure_ready_topic", { topic: topicName }, "bot_events.student_adventure_ready");
+  if (type === "analysis" && concepts.length) return localized("bot_events.student_analysis_ready_count", { count: concepts.length }, "bot_events.student_analysis_ready");
+  if ((type === "scaffolds" || type === "sentence-frames") && frames.length) return localized("bot_events.student_scaffolds_ready_count", { count: frames.length }, "bot_events.student_scaffolds_ready");
+  if (type === "faq" && questions.length) return localized("bot_events.student_faq_ready_count", { count: questions.length }, "bot_events.student_faq_ready");
+  if (type === "outline" && sections.length) return localized("bot_events.student_outline_ready_count", { count: sections.length }, "bot_events.student_outline_ready");
+  if (type === "brainstorm" && activities.length) return localized("bot_events.student_brainstorm_ready_count", { count: activities.length }, "bot_events.student_brainstorm_ready");
+  if (type === "concept-sort" && (categories.length || items.length)) return localized("bot_events.student_concept_sort_ready_counts", { itemCount: items.length, categoryCount: categories.length }, "bot_events.student_concept_sort_ready");
+  if (type === "math" && problems.length) return localized("bot_events.student_math_ready_count", { count: problems.length }, "bot_events.student_math_ready");
+  if (type === "persona" && personaName) return localized("bot_events.student_persona_ready_name", { name: personaName }, "bot_events.student_persona_ready");
+  if (type === "timeline" && events.length) return localized("bot_events.student_timeline_ready_count", { count: events.length }, "bot_events.student_timeline_ready");
+  if (type === "image" && topicName) return localized("bot_events.student_image_ready_topic", { topic: topicName }, "bot_events.student_image_ready");
+  if (type === "dbq" && documents.length) return localized("bot_events.student_dbq_ready_count", { count: documents.length }, "bot_events.student_dbq_ready");
+  if ((type === "note-taking" || type === "anchor-chart") && noteSections.length) {
+    const key = type === "note-taking" ? "bot_events.student_notes_ready_count" : "bot_events.student_anchor_chart_ready_count";
+    return localized(key, { count: noteSections.length }, STUDENT_EVENT_TIP_KEYS[type]);
+  }
+  if (type === "word-sounds" && words.length) return localized("bot_events.student_word_sounds_ready_count", { count: words.length }, "bot_events.student_word_sounds_ready");
+  if (type === "directions" && steps.length) return localized("bot_events.student_directions_ready_count", { count: steps.length }, "bot_events.student_directions_ready");
+  if ((type === "readingBook" || type === "readingSet") && readingItems.length) {
+    const key = type === "readingBook" ? "bot_events.student_reading_ready_count" : "bot_events.student_reading_set_ready_count";
+    return localized(key, { count: readingItems.length }, STUDENT_EVENT_TIP_KEYS[type]);
+  }
+  if (type === "aac-board" && aacChoiceCount) return localized("bot_events.student_aac_ready_count", { count: aacChoiceCount }, "bot_events.student_aac_ready");
+  if (type === "fluency-record" && Number.isFinite(fluencyAccuracy)) {
+    return localized("bot_events.student_fluency_record_ready_accuracy", { accuracy: Math.round(fluencyAccuracy) }, "bot_events.student_fluency_record_ready");
+  }
+  if (type === "lingua-config" && linguaLanguage) {
+    const key = creativeVocabularyCount ? "bot_events.student_lingua_ready_context" : "bot_events.student_lingua_ready_language";
+    return localized(key, { language: linguaLanguage, count: creativeVocabularyCount }, STUDENT_EVENT_TIP_KEYS[type]);
+  }
+  if (type.endsWith("-config") && creativeVocabularyCount) {
+    return localized("bot_events.student_creative_assignment_ready_vocab", { count: creativeVocabularyCount }, STUDENT_EVENT_TIP_KEYS[type]);
+  }
+  if (type === "storyforge-submission" && creativeWordCount) {
+    return localized("bot_events.student_story_ready_words", { count: creativeWordCount }, STUDENT_EVENT_TIP_KEYS[type]);
+  }
+  if ((type === "poettree-submission" || type === "litlab-submission") && creativeLineCount) {
+    return localized("bot_events.student_creative_submission_ready_lines", { count: creativeLineCount }, STUDENT_EVENT_TIP_KEYS[type]);
+  }
+  if (type === "lingua-submission" && (linguaLanguage || linguaActivityCount)) {
+    const key = linguaActivityCount ? "bot_events.student_lingua_record_ready_context" : "bot_events.student_lingua_record_ready_language";
+    return localized(key, { language: linguaLanguage || "the target language", count: linguaActivityCount }, STUDENT_EVENT_TIP_KEYS[type]);
+  }
+  return t(STUDENT_EVENT_TIP_KEYS[type] || "bot_events.student_resource_ready");
+};
+const buildEducatorEventTip = (latest, topic, t) => {
+  const type = latest?.type || "";
+  const data = latest?.data;
+  const questions = alloBotTipList(data?.questions || (Array.isArray(data) && type === "quiz" ? data : []));
+  const terms = alloBotTipList(Array.isArray(data) && type === "glossary" ? data : data?.terms);
+  const higherOrderQuestionCount = questions.filter((question) => {
+    const prompt = alloBotTipText(question?.question || question?.text || question, 300).toLowerCase();
+    return ["analyze", "evaluate", "compare", "contrast", "justify", "predict", "infer", "synthesize"].some((word) => prompt.includes(word));
+  }).length;
+  const complexTermCount = terms.filter((term) => {
+    const label = alloBotTipText(term?.term || term?.word || term, 100);
+    return label.length > 8 || label.includes(" ");
+  }).length;
+  const concepts = alloBotTipList(data?.keyConcepts || data?.concepts);
+  const vocabulary = alloBotTipList(data?.vocabulary || data?.tier2Words);
+  const documents = alloBotTipList(data?.documents || data?.sources);
+  const sections = alloBotTipList(data?.sections || data?.outline || data?.notes || data?.templates);
+  const categories = alloBotTipList(data?.categories);
+  const items = alloBotTipList(data?.items);
+  const steps = alloBotTipList(data?.steps || data?.directions || data?.instructions);
+  const readings = alloBotTipList(data?.books || data?.items || data?.pages || data?.chapters);
+  const accuracy = Number(data?.metrics?.accuracy ?? data?.accuracy);
+  const aacChoiceCount = alloBotAacChoiceCount(data);
+  const frames = alloBotTipList(data?.frames || (Array.isArray(data) && (type === "scaffolds" || type === "sentence-frames") ? data : []));
+  const activities = alloBotTipList(data?.activities || (Array.isArray(data) && type === "brainstorm" ? data : []));
+  const problems = alloBotTipList(data?.problems || data?.equations || (Array.isArray(data) && type === "math" ? data : []));
+  const events = alloBotTipList(data?.events || (Array.isArray(data) && type === "timeline" ? data : []));
+  const creativeVocabularyCount = alloBotTipList(data?.vocabTerms || data?.practiceSet?.lesson?.vocabulary).length;
+  const submissionWordCount = Number(data?.analytics?.totalWords) || alloBotWordCount(data?.text || data?.story || data?.sourceText);
+  const submissionLineCount = Number(data?.lineCount) || alloBotTipList(data?.lines).length;
+  const linguaLanguage = alloBotLinguaLanguage(data);
+  const resourceName = alloBotTipText(latest?.title || type.replace(/-/g, " "), 70);
+  const topicName = alloBotTipText(topic || latest?.topic || data?.topic, 90);
+  const localized = (key, params, fallbackKey) => t(key, params) || (fallbackKey ? t(fallbackKey) : void 0);
+  if (type === "quiz" && questions.length) {
+    return localized("bot_events.educator_quiz_ready_context", { count: questions.length, higherOrderCount: higherOrderQuestionCount }, EDUCATOR_EVENT_TIP_KEYS[type]);
+  }
+  if (type === "glossary" && terms.length) {
+    return localized("bot_events.educator_glossary_ready_context", { count: terms.length, complexCount: complexTermCount }, EDUCATOR_EVENT_TIP_KEYS[type]);
+  }
+  if (type === "analysis" && (concepts.length || vocabulary.length)) {
+    return localized("bot_events.educator_analysis_ready_counts", { conceptCount: concepts.length, vocabularyCount: vocabulary.length }, EDUCATOR_EVENT_TIP_KEYS[type]);
+  }
+  if (type === "dbq" && documents.length) return localized("bot_events.educator_dbq_ready_count", { count: documents.length }, EDUCATOR_EVENT_TIP_KEYS[type]);
+  if ((type === "outline" || type === "note-taking" || type === "anchor-chart" || type === "lesson-plan") && sections.length) {
+    return localized("bot_events.educator_sections_ready_count", { count: sections.length, resource: resourceName }, EDUCATOR_EVENT_TIP_KEYS[type]);
+  }
+  if (type === "concept-sort" && (categories.length || items.length)) {
+    return localized("bot_events.educator_sort_ready_counts", { itemCount: items.length, categoryCount: categories.length }, EDUCATOR_EVENT_TIP_KEYS[type]);
+  }
+  if ((type === "scaffolds" || type === "sentence-frames") && frames.length) {
+    return localized("bot_events.educator_scaffold_ready_count", { count: frames.length }, EDUCATOR_EVENT_TIP_KEYS[type]);
+  }
+  if (type === "brainstorm" && activities.length) return localized("bot_events.educator_brainstorm_ready_count", { count: activities.length }, EDUCATOR_EVENT_TIP_KEYS[type]);
+  if (type === "math" && problems.length) return localized("bot_events.educator_math_ready_count", { count: problems.length }, EDUCATOR_EVENT_TIP_KEYS[type]);
+  if (type === "timeline" && events.length) return localized("bot_events.educator_timeline_ready_count", { count: events.length }, EDUCATOR_EVENT_TIP_KEYS[type]);
+  if (type === "directions" && steps.length) return localized("bot_events.educator_directions_ready_count", { count: steps.length }, EDUCATOR_EVENT_TIP_KEYS[type]);
+  if ((type === "readingBook" || type === "readingSet") && readings.length) {
+    return localized("bot_events.educator_reading_ready_count", { count: readings.length }, EDUCATOR_EVENT_TIP_KEYS[type]);
+  }
+  if ((type === "fluency-record" || type === "math-fluency-probe") && Number.isFinite(accuracy)) {
+    return localized("bot_events.educator_fluency_ready_accuracy", { accuracy: Math.round(accuracy) }, EDUCATOR_EVENT_TIP_KEYS[type]);
+  }
+  if (type === "aac-board" && aacChoiceCount) return localized("bot_events.educator_aac_ready_count", { count: aacChoiceCount }, EDUCATOR_EVENT_TIP_KEYS[type]);
+  if (type === "lingua-config" && linguaLanguage) {
+    const key = creativeVocabularyCount ? "bot_events.educator_lingua_ready_context" : "bot_events.educator_lingua_ready_language";
+    return localized(key, { language: linguaLanguage, count: creativeVocabularyCount }, EDUCATOR_EVENT_TIP_KEYS[type]);
+  }
+  if (type.endsWith("-config") && creativeVocabularyCount) {
+    return localized("bot_events.educator_creative_ready_vocab", { count: creativeVocabularyCount }, EDUCATOR_EVENT_TIP_KEYS[type]);
+  }
+  if (type === "storyforge-submission" && submissionWordCount) {
+    return localized("bot_events.educator_story_submission_ready_words", { count: submissionWordCount }, EDUCATOR_EVENT_TIP_KEYS[type]);
+  }
+  if ((type === "poettree-submission" || type === "litlab-submission") && submissionLineCount) {
+    return localized("bot_events.educator_submission_ready_lines", { count: submissionLineCount }, EDUCATOR_EVENT_TIP_KEYS[type]);
+  }
+  if (type === "lingua-submission" && linguaLanguage) {
+    return localized("bot_events.educator_lingua_ready_language", { language: linguaLanguage }, EDUCATOR_EVENT_TIP_KEYS[type]);
+  }
+  if (!EDUCATOR_EVENT_TIP_KEYS[type] && topicName) {
+    return localized("bot_events.educator_resource_ready_topic", { resource: resourceName, topic: topicName }, "bot_events.educator_resource_ready");
+  }
+  return t(EDUCATOR_EVENT_TIP_KEYS[type] || "bot_events.educator_resource_ready");
+};
+const buildStudentIdleTips = ({ activeView, history, topic, t }) => {
+  const tips = [];
+  const add = (key, params) => {
+    const message = t(key, params);
+    if (typeof message === "string" && message.trim()) tips.push(message);
+  };
+  const historyItems = (Array.isArray(history) ? history : []).filter((item) => item && item.type);
+  const resources = historyItems.filter((item) => item.type !== "directions");
+  const current = latestAlloBotResource(historyItems, STUDENT_TIP_VIEW_ALIASES[activeView] || activeView);
+  const data = current?.data;
+  const topicName = alloBotTipText(topic || current?.topic || data?.topic || current?.title);
+  if (activeView === "simplified") {
+    const glossary = latestAlloBotResource(resources, "glossary");
+    const terms = alloBotTipList(Array.isArray(glossary?.data) ? glossary.data : glossary?.data?.terms);
+    const word = alloBotTipText(terms[0]?.term || terms[0]?.word || terms[0]);
+    if (word) add("tips.student_simplified_word", { word });
+    if (topicName) add("tips.student_simplified_topic", { topic: topicName });
+    if (!tips.length) add("tips.student_simplified_definition");
+    add("tips.student_simplified_summary");
+  } else if (activeView === "glossary") {
+    const terms = alloBotTipList(Array.isArray(data) ? data : data?.terms);
+    const term1 = alloBotTipText(terms[0]?.term || terms[0]?.word || terms[0]);
+    const term2 = alloBotTipText(terms[1]?.term || terms[1]?.word || terms[1]);
+    if (term1) add("tips.student_glossary_term", { term: term1 });
+    if (term1 && term2) add("tips.student_glossary_pair", { term1, term2 });
+    if (!tips.length) add("tips.student_glossary_practice");
+    add("tips.student_glossary_connection");
+  } else if (activeView === "quiz") {
+    const count = alloBotTipList(data?.questions).length;
+    if (count) add("tips.student_quiz_count", { count });
+    add("tips.student_quiz_reasoning");
+    add("tips.student_quiz_review");
+  } else if (activeView === "adventure") {
+    if (topicName) add("tips.student_adventure_topic", { topic: topicName });
+    add("tips.student_adventure_evidence");
+    add("tips.student_adventure_inventory");
+  } else if (activeView === "timeline") {
+    const count = alloBotTipList(data?.events || (Array.isArray(data) ? data : [])).length;
+    if (count) add("tips.student_timeline_count", { count });
+    add("tips.student_timeline_sequence");
+  } else if (activeView === "math") {
+    const count = alloBotTipList(data?.problems || data?.equations || (Array.isArray(data) ? data : [])).length;
+    if (count) add("tips.student_math_count", { count });
+    else add("tips.student_math_steps");
+  } else if (activeView === "faq") {
+    const count = alloBotTipList(data?.questions || (Array.isArray(data) ? data : [])).length;
+    if (count) add("tips.student_faq_count", { count });
+    else add("tips.student_faq_predict");
+  } else if (activeView === "outline") {
+    const count = alloBotTipList(data?.sections || data?.outline).length;
+    if (count) add("tips.student_outline_count", { count });
+    else add("tips.student_outline_checkpoint");
+  } else if (activeView === "concept-sort") {
+    const categoryCount = alloBotTipList(data?.categories).length;
+    const itemCount = alloBotTipList(data?.items).length;
+    if (categoryCount || itemCount) add("tips.student_concept_sort_counts", { itemCount, categoryCount });
+    else add("tips.student_concept_sort_reason");
+  } else if (activeView === "sentence-frames" || activeView === "scaffolds") {
+    const count = alloBotTipList(data?.frames || (Array.isArray(data) ? data : [])).length;
+    if (count) add("tips.student_scaffolds_count", { count });
+    else add("tips.student_scaffolds_own_idea");
+  } else if (activeView === "analysis") {
+    const count = alloBotTipList(data?.keyConcepts || data?.concepts).length;
+    if (count) add("tips.student_analysis_count", { count });
+    else add("tips.student_analysis_question");
+  } else if (activeView === "image") {
+    if (topicName) add("tips.student_image_topic", { topic: topicName });
+    else add("tips.student_image_notice");
+  } else if (activeView === "brainstorm") {
+    const count = alloBotTipList(data?.activities || (Array.isArray(data) ? data : [])).length;
+    if (count) add("tips.student_brainstorm_count", { count });
+  } else if (activeView === "persona") {
+    const name = alloBotTipText(data?.name || data?.character?.name, 60);
+    if (name) add("tips.student_persona_name", { name });
+  } else if (activeView === "dbq") {
+    const count = alloBotTipList(data?.documents || data?.sources).length;
+    if (count) add("tips.student_dbq_count", { count });
+  } else if (activeView === "note-taking" || activeView === "anchor-chart") {
+    const count = alloBotTipList(data?.sections || data?.notes || data?.templates).length;
+    if (count) add(activeView === "note-taking" ? "tips.student_notes_count" : "tips.student_anchor_chart_count", { count });
+  } else if (activeView === "lesson-plan") {
+    if (topicName) add("tips.student_study_guide_topic", { topic: topicName });
+  } else if (activeView === "alignment-report" || activeView === "alignment") {
+    if (topicName) add("tips.student_alignment_topic", { topic: topicName });
+  } else if (activeView === "gemini-bridge") {
+    if (topicName) add("tips.student_simulation_topic", { topic: topicName });
+  } else if (activeView === "word-sounds" || activeView === "word-sounds-generator" || activeView === "output") {
+    const count = alloBotTipList(data?.words || data?.terms || (Array.isArray(data) ? data : [])).length;
+    if (count) add("tips.student_word_sounds_count", { count });
+  } else if (activeView === "directions") {
+    const count = alloBotTipList(data?.steps || data?.directions || data?.instructions).length;
+    if (count) add("tips.student_directions_count", { count });
+  } else if (activeView === "readingBook" || activeView === "readingSet") {
+    const count = alloBotTipList(data?.books || data?.items || data?.pages || data?.chapters).length;
+    if (count) add(activeView === "readingBook" ? "tips.student_reading_book_count" : "tips.student_reading_set_count", { count });
+  } else if (activeView === "aac-board") {
+    const count = alloBotAacChoiceCount(data);
+    if (count) add("tips.student_aac_count", { count });
+  } else if (activeView === "fluency-record" || activeView === "math-fluency-probe") {
+    const accuracy = Number(data?.metrics?.accuracy ?? data?.accuracy);
+    if (Number.isFinite(accuracy)) add("tips.student_fluency_accuracy", { accuracy: Math.round(accuracy) });
+  } else if (String(activeView || "").endsWith("-config")) {
+    const count = alloBotTipList(data?.vocabTerms || data?.practiceSet?.lesson?.vocabulary).length;
+    const language = alloBotLinguaLanguage(data);
+    if (count) add("tips.student_creative_vocab_count", { count });
+    if (activeView === "lingua-config" && language) add("tips.student_lingua_language", { language });
+  } else if (String(activeView || "").endsWith("-submission")) {
+    const wordCount = Number(data?.analytics?.totalWords) || alloBotWordCount(data?.text || data?.story || data?.sourceText);
+    const lineCount = Number(data?.lineCount) || alloBotTipList(data?.lines).length;
+    const language = alloBotLinguaLanguage(data);
+    const activityCount = Array.isArray(data?.activity) ? data.activity.reduce((total, event) => total + Math.max(0, Number(event?.count || 0)), 0) : alloBotTipList(data?.events || data?.activityLog).length;
+    if (wordCount) add("tips.student_story_word_count", { count: wordCount });
+    else if (lineCount) add("tips.student_submission_line_count", { count: lineCount });
+    if (activeView === "lingua-submission" && language) {
+      add(activityCount ? "tips.student_lingua_record_context" : "tips.student_lingua_record_language", { language, count: activityCount });
+    }
+  } else if (activeView === "input" && resources.length) {
+    const latestTitle = alloBotTipText(resources[resources.length - 1]?.title, 70);
+    if (latestTitle) add("tips.student_recent_resource", { count: resources.length, title: latestTitle });
+    else add("tips.student_input_choose");
+  }
+  if (!tips.length) {
+    const coveredKey = STUDENT_IDLE_TIP_KEYS[activeView];
+    if (coveredKey) add(coveredKey);
+    if (!tips.length) {
+      add("tips.student_fallback_explain");
+      add("tips.student_fallback_progress");
+    }
+  }
+  (STUDENT_DIVERSE_TIP_KEYS[activeView] || []).forEach((key) => add(key));
+  return [...new Set(tips)];
+};
+const buildEducatorIdleTips = ({ activeView, history, topic, t }) => {
+  const tips = [];
+  const add = (key, params) => {
+    const message = t(key, params);
+    if (typeof message === "string" && message.trim()) tips.push(message);
+  };
+  const resources = (Array.isArray(history) ? history : []).filter((item) => item && item.type);
+  const current = latestAlloBotResource(resources, STUDENT_TIP_VIEW_ALIASES[activeView] || activeView);
+  const data = current?.data;
+  const topicName = alloBotTipText(topic || current?.topic || data?.topic || current?.title, 90);
+  const resourceName = alloBotTipText(current?.title || activeView?.replace(/-/g, " "), 70);
+  if (activeView === "quiz") {
+    const count = alloBotTipList(data?.questions || (Array.isArray(data) ? data : [])).length;
+    if (count) add("tips.educator_quiz_count", { count });
+  } else if (activeView === "glossary") {
+    const count = alloBotTipList(Array.isArray(data) ? data : data?.terms).length;
+    if (count) add("tips.educator_glossary_count", { count });
+  } else if (activeView === "dbq") {
+    const count = alloBotTipList(data?.documents || data?.sources).length;
+    if (count) add("tips.educator_document_count", { count });
+  } else if (["outline", "note-taking", "anchor-chart", "lesson-plan"].includes(activeView)) {
+    const count = alloBotTipList(data?.sections || data?.outline || data?.notes || data?.templates).length;
+    if (count) add("tips.educator_section_count", { count, resource: resourceName });
+  } else if (activeView === "concept-sort") {
+    const categoryCount = alloBotTipList(data?.categories).length;
+    const itemCount = alloBotTipList(data?.items).length;
+    if (categoryCount || itemCount) add("tips.educator_sort_counts", { itemCount, categoryCount });
+  } else if (activeView === "readingSet") {
+    const count = alloBotTipList(data?.books || data?.items).length;
+    if (count) add("tips.educator_reading_set_count", { count });
+  } else if (activeView === "directions") {
+    const count = alloBotTipList(data?.steps || data?.directions || data?.instructions).length;
+    if (count) add("tips.educator_directions_count", { count });
+  } else if (activeView === "fluency-record" || activeView === "math-fluency-probe") {
+    const accuracy = Number(data?.metrics?.accuracy ?? data?.accuracy);
+    if (Number.isFinite(accuracy)) add("tips.educator_fluency_accuracy", { accuracy: Math.round(accuracy) });
+  } else if (activeView === "aac-board") {
+    const count = alloBotAacChoiceCount(data);
+    if (count) add("tips.educator_aac_count", { count });
+  } else if (String(activeView || "").endsWith("-config")) {
+    const vocabularyCount = alloBotTipList(data?.vocabTerms || data?.practiceSet?.lesson?.vocabulary).length;
+    const language = alloBotLinguaLanguage(data);
+    if (vocabularyCount) add("tips.educator_creative_vocab_count", { count: vocabularyCount });
+    if (activeView === "lingua-config" && language) add("tips.educator_lingua_language", { language });
+  } else if (String(activeView || "").endsWith("-submission")) {
+    const wordCount = Number(data?.analytics?.totalWords) || alloBotWordCount(data?.text || data?.story || data?.sourceText);
+    const lineCount = Number(data?.lineCount) || alloBotTipList(data?.lines).length;
+    const language = alloBotLinguaLanguage(data);
+    if (wordCount) add("tips.educator_story_word_count", { count: wordCount });
+    else if (lineCount) add("tips.educator_submission_line_count", { count: lineCount });
+    if (activeView === "lingua-submission" && language) add("tips.educator_lingua_record_context", { language });
+  } else if (activeView === "input" && resources.length) {
+    const latestTitle = alloBotTipText(resources[resources.length - 1]?.title, 70);
+    if (latestTitle) add("tips.educator_recent_resource", { count: resources.length, title: latestTitle });
+  }
+  if (topicName && activeView !== "input") add("tips.educator_topic_lens", { topic: topicName });
+  (EDUCATOR_IDLE_TIP_KEYS[activeView] || []).forEach((key) => add(key));
+  if (!tips.length) {
+    add("tips.educator_fallback_review");
+    add("tips.educator_fallback_sequence");
+  }
+  return [...new Set(tips)];
+};
+const ALLOBOT_GENERATION_FAMILY_BY_TYPE = Object.freeze({
+  analysis: "analyze",
+  "alignment-report": "analyze",
+  dbq: "analyze",
+  outline: "organize",
+  "lesson-plan": "organize",
+  "note-taking": "organize",
+  "anchor-chart": "organize",
+  "concept-sort": "organize",
+  simplified: "clarify",
+  glossary: "clarify",
+  "sentence-frames": "clarify",
+  "word-sounds": "clarify",
+  "word-sounds-generator": "clarify",
+  translation: "clarify",
+  quiz: "assess",
+  faq: "assess",
+  image: "create",
+  brainstorm: "create",
+  "gemini-bridge": "create",
+  timeline: "explore",
+  adventure: "explore",
+  persona: "interview",
+  math: "solve",
+  chat: "generic",
+  source: "generic",
+  "full-pack": "generic",
+  input: "generic"
+});
+const alloBotGenerationFamily = (generationType, activeView) => {
+  const explicit = String(generationType || "").trim().toLowerCase();
+  const view = String(activeView || "").trim().toLowerCase();
+  return ALLOBOT_GENERATION_FAMILY_BY_TYPE[explicit] || ALLOBOT_GENERATION_FAMILY_BY_TYPE[view] || "generic";
+};
+const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, onHide, isListening, isIdleDisabled = false, disableAnimations = false, stemLabTool = null, showStemLab = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voiceVolume = 1, onGenerateAudio, theme = "light", colorOverlay = "none", onSpeechEnd, onSpeechStart, activeView, generationType = null, generationProgress = null, generationError = null, isFlying = false, isSystemAudioActive = false, history = [], isParentMode = false, isStudentMode = false, isEducatorMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic, canPlayIntro = true, aimAt = null, idleSleepMs = 18e4 }, ref) => {
   const motionDisabled = useAlloMotionDisabled(disableAnimations);
   const coarsePointer = useAlloCoarsePointer();
   const satelliteBase = coarsePointer ? "inline-flex min-h-9 min-w-9 items-center justify-center rounded-full shadow-md z-50 border-2 duration-200 focus:outline-none" : "inline-flex min-h-8 min-w-8 items-center justify-center rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 focus:opacity-100 focus:outline-none";
@@ -588,9 +1248,32 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
   const [idleAnimation, setIdleAnimation] = useState(null);
   const [internalMood, setInternalMood] = useState(null);
   const effectiveMood = internalMood || mood;
+  const generationProgressCurrent = Number(generationProgress?.current);
+  const generationProgressTotal = Number(generationProgress?.total);
+  const generationProgressFraction = Number.isFinite(generationProgressCurrent) && Number.isFinite(generationProgressTotal) && generationProgressTotal > 0 ? Math.min(1, Math.max(0, generationProgressCurrent / generationProgressTotal)) : null;
+  const generationProgressRingClass = generationProgressFraction === null ? "animate-allobot-generation-progress" : "allobot-generation-progress";
+  const generationOutcome = generationError ? /(?:cancel|abort)/i.test(String(generationError?.message || generationError)) ? "cancelled" : "error" : "success";
+  const generationHistorySignature = Array.isArray(history) ? history.slice(-32).map((item) => `${item?.id || ""}:${item?.type || ""}:${item?.data == null ? "empty" : "ready"}`).join("|") : "";
+  const [generationPhase, setGenerationPhase] = useState(0);
+  useEffect(() => {
+    if (effectiveMood !== "thinking" || motionDisabled) {
+      setGenerationPhase(0);
+      return void 0;
+    }
+    const phaseTimer = setInterval(() => {
+      setGenerationPhase((previous) => (previous + 1) % 3);
+    }, 3200);
+    return () => clearInterval(phaseTimer);
+  }, [effectiveMood, motionDisabled]);
+  const generationProgressDasharray = generationProgressFraction === null ? ["18 82", "26 74", "12 88"][generationPhase] : "100 0";
   const [viseme, setViseme] = useState("neutral");
   const [blinkScale, setBlinkScale] = useState(1);
   const [accPop, setAccPop] = useState(false);
+  const [completedGenerationFamily, setCompletedGenerationFamily] = useState(null);
+  const [completedGenerationOutcome, setCompletedGenerationOutcome] = useState(null);
+  const lastGenerationFamilyRef = useRef("generic");
+  const generationHistoryBaselineRef = useRef("");
+  const generationSessionActiveRef = useRef(false);
   const [displayedAccessory, setDisplayedAccessory] = useState(null);
   const [accExiting, setAccExiting] = useState(false);
   const prevMoodRef = useRef("idle");
@@ -731,12 +1414,15 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
   const dragStartRef = useRef({ x: 0, y: 0 });
   const startPosRef = useRef({ x: 0, y: 0 });
   const currentAudioRef = useRef(null);
+  const audioPlaybackStartedRef = useRef(false);
   const lastAudioUrlRef = useRef(null);
   const authFailedRef = useRef(false);
   const soundEnabledRef = useRef(soundEnabled);
   useEffect(() => {
     soundEnabledRef.current = soundEnabled;
     if (!soundEnabled) {
+      const wasPlaying = audioPlaybackStartedRef.current;
+      audioPlaybackStartedRef.current = false;
       try {
         speechRequestAbortRef.current?.abort();
       } catch (_) {
@@ -754,9 +1440,12 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       }
       cancelAlloBotBrowserSpeech();
       setIsTalking(false);
+      if (wasPlaying && onSpeechEnd) onSpeechEnd();
     }
-  }, [soundEnabled]);
+  }, [soundEnabled, onSpeechEnd]);
   useEffect(() => () => {
+    const wasPlaying = audioPlaybackStartedRef.current;
+    audioPlaybackStartedRef.current = false;
     try {
       speechRequestAbortRef.current?.abort();
     } catch (_) {
@@ -774,7 +1463,8 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
     }
     if (speechTimeoutRef.current) clearTimeout(speechTimeoutRef.current);
     cancelAlloBotBrowserSpeech();
-  }, []);
+    if (wasPlaying && onSpeechEnd) onSpeechEnd();
+  }, [onSpeechEnd]);
   useEffect(() => {
     try {
       safeSetItem("allo_bot_pos_v2", JSON.stringify(position));
@@ -808,14 +1498,38 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
     };
   }, [isSleeping, motionDisabled]);
   useEffect(() => {
+    if (effectiveMood === "thinking") {
+      if (!generationSessionActiveRef.current) {
+        generationSessionActiveRef.current = true;
+        generationHistoryBaselineRef.current = generationHistorySignature;
+      }
+      return;
+    }
+    generationSessionActiveRef.current = false;
+  }, [effectiveMood, generationHistorySignature]);
+  useEffect(() => {
+    if (effectiveMood !== "thinking") return;
+    lastGenerationFamilyRef.current = alloBotGenerationFamily(generationType, activeView);
+    setAccPop(false);
+    setCompletedGenerationFamily(null);
+    setCompletedGenerationOutcome(null);
+  }, [effectiveMood, generationType, activeView]);
+  useEffect(() => {
     const prev = prevMoodRef.current;
     prevMoodRef.current = effectiveMood;
-    if (prev === "thinking" && effectiveMood !== "thinking" && !isSleeping && !motionDisabled) {
+    const hasVisibleResource = generationHistoryBaselineRef.current !== generationHistorySignature;
+    if (prev === "thinking" && effectiveMood !== "thinking" && !isSleeping && !motionDisabled && (generationOutcome !== "success" || hasVisibleResource)) {
+      setCompletedGenerationFamily(lastGenerationFamilyRef.current || "generic");
+      setCompletedGenerationOutcome(generationOutcome);
       setAccPop(true);
-      const t2 = setTimeout(() => setAccPop(false), 650);
+      const t2 = setTimeout(() => {
+        setAccPop(false);
+        setCompletedGenerationFamily(null);
+        setCompletedGenerationOutcome(null);
+      }, 650);
       return () => clearTimeout(t2);
     }
-  }, [effectiveMood, isSleeping, motionDisabled]);
+  }, [effectiveMood, isSleeping, motionDisabled, generationHistorySignature, generationOutcome]);
   useEffect(() => {
     if (!isTalking || motionDisabled) {
       setViseme("neutral");
@@ -960,6 +1674,11 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       lastGlobalSpeech.text = safeText;
       lastGlobalSpeech.time = now;
     }
+    if (audioPlaybackStartedRef.current) {
+      audioPlaybackStartedRef.current = false;
+      setIsTalking(false);
+      if (onSpeechEnd) onSpeechEnd();
+    }
     speechGenerationRef.current += 1;
     try {
       speechRequestAbortRef.current?.abort();
@@ -968,6 +1687,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
     const speechRequestController = typeof AbortController !== "undefined" ? new AbortController() : null;
     speechRequestAbortRef.current = speechRequestController;
     const myGenId = speechGenerationRef.current;
+    audioPlaybackStartedRef.current = false;
     if (currentAudioRef.current) {
       currentAudioRef.current.pause();
       currentAudioRef.current = null;
@@ -978,7 +1698,6 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
     }
     if (speechTimeoutRef.current) clearTimeout(speechTimeoutRef.current);
     cancelAlloBotBrowserSpeech();
-    if (onSpeechStart) onSpeechStart();
     if (!motionDisabled) {
       setWobbleState({ active: true, deg: 3 });
       setTimeout(() => setWobbleState({ active: false, deg: 0 }), 200);
@@ -1001,21 +1720,91 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
     }
     setCustomMessage(cleanText);
     setIsTruncated(truncated);
+    let speechStarted = false;
+    let stateReset = false;
+    const markSpeechStarted = () => {
+      if (stateReset || speechStarted || myGenId !== speechGenerationRef.current) return false;
+      speechStarted = true;
+      audioPlaybackStartedRef.current = true;
+      setIsTalking(true);
+      if (onSpeechStart) onSpeechStart();
+      return true;
+    };
     const resetState = () => {
+      if (stateReset) return;
+      stateReset = true;
+      if (myGenId !== speechGenerationRef.current) return;
       setCustomMessage(null);
       setIsTruncated(false);
       setInternalMood(null);
       setIsTalking(false);
+      audioPlaybackStartedRef.current = false;
       currentAudioRef.current = null;
       if (speechRequestAbortRef.current === speechRequestController) speechRequestAbortRef.current = null;
-      if (onSpeechEnd) onSpeechEnd();
+      if (speechStarted && onSpeechEnd) onSpeechEnd();
     };
     let audioStarted = false;
-    if (!isSilent) {
-      setIsTalking(true);
-    }
-    if (!isSilent && soundEnabledRef.current && !authFailedRef.current) {
+    const configuredVolume = Math.max(0, Math.min(1, Number.isFinite(Number(voiceVolume)) ? Number(voiceVolume) : 1));
+    const reportPlaybackFailure = (message) => {
+      warnLog(message);
+      try {
+        const toast = window.__alloAddToast || window.AlloFlowUX && window.AlloFlowUX.toast;
+        if (typeof toast === "function") toast(message, "warning");
+      } catch (_) {
+      }
+    };
+    if (!isSilent && soundEnabledRef.current && !authFailedRef.current && configuredVolume > 0) {
       let cloudSuccess = false;
+      let browserQueued = false;
+      const playBrowserFallback = () => {
+        if (browserQueued || stateReset || myGenId !== speechGenerationRef.current || isGlobalMuted() || isAlloBotTtsOff()) return false;
+        try {
+          if (!window.speechSynthesis || typeof SpeechSynthesisUtterance !== "function" || !ttsText) return false;
+          cancelAlloBotBrowserSpeech();
+          const utter = new SpeechSynthesisUtterance(ttsText);
+          let browserStarted = false;
+          browserQueued = true;
+          utter.rate = Math.max(0.1, Math.min(10, Number(voiceSpeed) || 1));
+          utter.volume = configuredVolume;
+          const browserLanguage = document?.documentElement?.lang || navigator?.language || "";
+          if (browserLanguage) utter.lang = browserLanguage;
+          try {
+            const baseLanguage = String(browserLanguage).toLowerCase().split("-")[0];
+            const voices = window.speechSynthesis.getVoices?.() || [];
+            const matchingVoice = voices.find((v) => String(v.lang || "").toLowerCase().split("-")[0] === baseLanguage);
+            if (matchingVoice) utter.voice = matchingVoice;
+          } catch (_) {
+          }
+          utter.onstart = () => {
+            browserStarted = true;
+            markSpeechStarted();
+          };
+          utter.onend = () => {
+            alloBotReleaseBrowserSpeech();
+            resetState();
+          };
+          utter.onerror = () => {
+            alloBotReleaseBrowserSpeech();
+            reportPlaybackFailure("AlloBot couldn't play the spoken response. Check Voice volume and your device audio output.");
+            resetState();
+          };
+          alloBotClaimBrowserSpeech();
+          window.speechSynthesis.speak(utter);
+          audioStarted = true;
+          cloudSuccess = true;
+          setTimeout(() => {
+            if (stateReset || browserStarted || myGenId !== speechGenerationRef.current) return;
+            cancelAlloBotBrowserSpeech();
+            reportPlaybackFailure("AlloBot's device voice did not start. Check Voice volume and your device audio output.");
+            resetState();
+          }, 8e3);
+          debugLog("AlloBot: Using browser TTS fallback");
+          return true;
+        } catch (fallbackErr) {
+          warnLog("AlloBot: Browser TTS fallback failed:", fallbackErr);
+          return false;
+        }
+      };
       debugLog("AlloBot Speak Debug:", {
         hasOnGenerate: !!onGenerateAudio,
         voice: selectedVoice,
@@ -1078,14 +1867,16 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
             lastAudioUrlRef.current = audioUrl;
             const audio = new Audio(audioUrl);
             audio.playbackRate = voiceSpeed;
-            audio.volume = Math.max(0, Math.min(1, Number.isFinite(Number(voiceVolume)) ? Number(voiceVolume) : 1));
+            audio.volume = configuredVolume;
             currentAudioRef.current = audio;
+            let generatedStarted = false;
             if (window._kokoroTTS && window._kokoroTTS.chainPlay) {
               window._kokoroTTS.chainPlay(audio, voiceSpeed, voiceVolume, resetState);
             } else {
               audio.onended = resetState;
             }
             const handleAudioError = (e) => {
+              if (stateReset || myGenId !== speechGenerationRef.current) return;
               warnLog("Bot audio error/interrupted", e);
               const shouldInvalidate = !e || e.name !== "NotAllowedError" && e.name !== "AbortError";
               if (shouldInvalidate) {
@@ -1095,12 +1886,28 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
                 }
                 if (lastAudioUrlRef.current === audioUrl) lastAudioUrlRef.current = null;
               }
-              resetState();
+              if (currentAudioRef.current === audio) currentAudioRef.current = null;
+              try {
+                audio.pause();
+              } catch (_) {
+              }
+              if (!playBrowserFallback()) {
+                reportPlaybackFailure("AlloBot couldn't play the generated voice. Check Voice volume and your device audio output.");
+                resetState();
+              }
             };
             audio.onerror = handleAudioError;
+            audio.onplaying = () => {
+              generatedStarted = true;
+              markSpeechStarted();
+            };
             await audio.play().then(() => {
               cloudSuccess = true;
               audioStarted = true;
+              setTimeout(() => {
+                if (stateReset || generatedStarted || myGenId !== speechGenerationRef.current || currentAudioRef.current !== audio) return;
+                handleAudioError(new Error("Generated AlloBot audio accepted play() but never started"));
+              }, 8e3);
             }).catch(handleAudioError);
           }
         } catch (e) {
@@ -1108,53 +1915,57 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
         }
       }
       if (!cloudSuccess && myGenId === speechGenerationRef.current && !isGlobalMuted() && !isAlloBotTtsOff()) {
-        try {
-          if (window.speechSynthesis && ttsText && ttsText.length > 0) {
-            cancelAlloBotBrowserSpeech();
-            const utter = new SpeechSynthesisUtterance(ttsText);
-            utter.rate = Math.max(0.1, Math.min(10, Number(voiceSpeed) || 1));
-            utter.volume = Math.max(0, Math.min(1, Number.isFinite(Number(voiceVolume)) ? Number(voiceVolume) : 1));
-            const browserLanguage = document?.documentElement?.lang || navigator?.language || "";
-            if (browserLanguage) utter.lang = browserLanguage;
-            try {
-              const baseLanguage = String(browserLanguage).toLowerCase().split("-")[0];
-              const voices = window.speechSynthesis.getVoices?.() || [];
-              const matchingVoice = voices.find((v) => String(v.lang || "").toLowerCase().split("-")[0] === baseLanguage);
-              if (matchingVoice) utter.voice = matchingVoice;
-            } catch (_) {
+        if (!playBrowserFallback()) {
+          try {
+            if (window.speechSynthesis && ttsText && ttsText.length > 0) {
+              cancelAlloBotBrowserSpeech();
+              const utter = new SpeechSynthesisUtterance(ttsText);
+              utter.rate = Math.max(0.1, Math.min(10, Number(voiceSpeed) || 1));
+              utter.volume = Math.max(0, Math.min(1, Number.isFinite(Number(voiceVolume)) ? Number(voiceVolume) : 1));
+              const browserLanguage = document?.documentElement?.lang || navigator?.language || "";
+              if (browserLanguage) utter.lang = browserLanguage;
+              try {
+                const baseLanguage = String(browserLanguage).toLowerCase().split("-")[0];
+                const voices = window.speechSynthesis.getVoices?.() || [];
+                const matchingVoice = voices.find((v) => String(v.lang || "").toLowerCase().split("-")[0] === baseLanguage);
+                if (matchingVoice) utter.voice = matchingVoice;
+              } catch (_) {
+              }
+              utter.onend = () => {
+                alloBotReleaseBrowserSpeech();
+                resetState();
+              };
+              utter.onerror = () => {
+                alloBotReleaseBrowserSpeech();
+                resetState();
+              };
+              alloBotClaimBrowserSpeech();
+              window.speechSynthesis.speak(utter);
+              audioStarted = true;
+              cloudSuccess = true;
+              debugLog("AlloBot: Using browser TTS fallback");
+            } else {
+              warnLog("AlloBot: No browser TTS available \u2014 text bubble only");
+              setIsTalking(false);
             }
-            utter.onend = () => {
-              alloBotReleaseBrowserSpeech();
-              resetState();
-            };
-            utter.onerror = () => {
-              alloBotReleaseBrowserSpeech();
-              resetState();
-            };
-            alloBotClaimBrowserSpeech();
-            window.speechSynthesis.speak(utter);
-            audioStarted = true;
-            cloudSuccess = true;
-            debugLog("AlloBot: Using browser TTS fallback");
-          } else {
-            warnLog("AlloBot: No browser TTS available \u2014 text bubble only");
+          } catch (fallbackErr) {
+            warnLog("AlloBot: Browser TTS fallback failed:", fallbackErr);
             setIsTalking(false);
           }
-        } catch (fallbackErr) {
-          warnLog("AlloBot: Browser TTS fallback failed:", fallbackErr);
-          setIsTalking(false);
         }
       }
+    } else if (!isSilent && soundEnabledRef.current && configuredVolume <= 0) {
+      reportPlaybackFailure("AlloBot voice volume is set to zero. Raise Voice volume in Settings to hear responses.");
     }
     if (!audioStarted) {
       const duration = Math.min(9e4, 4e3 + cleanText.length * 80);
       speechTimeoutRef.current = setTimeout(resetState, duration);
     }
-  }, [selectedVoice, voiceSpeed, voiceVolume, onGenerateAudio, motionDisabled]);
+  }, [selectedVoice, voiceSpeed, voiceVolume, onGenerateAudio, motionDisabled, onSpeechStart, onSpeechEnd]);
   const handleTypingState = useCallback((isTyping) => {
     if (isTyping) {
       setIsTalking(true);
-    } else if (!currentAudioRef.current) {
+    } else if (!audioPlaybackStartedRef.current) {
       setIsTalking(false);
     }
   }, []);
@@ -1176,7 +1987,9 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
   const silenceSpeech = useCallback(() => {
     setCustomMessage(null);
     setIsTruncated(false);
+    const wasPlaying = audioPlaybackStartedRef.current;
     setIsTalking(false);
+    audioPlaybackStartedRef.current = false;
     try {
       speechRequestAbortRef.current?.abort();
     } catch (_) {
@@ -1198,7 +2011,8 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       speechTimeoutRef.current = null;
     }
     cancelAlloBotBrowserSpeech();
-  }, []);
+    if (wasPlaying && onSpeechEnd) onSpeechEnd();
+  }, [onSpeechEnd]);
   const fallAsleep = useCallback(() => {
     if (isSleepingRef.current) return;
     isSleepingRef.current = true;
@@ -1396,6 +2210,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
     setKeyboardMoveStatus(`AlloBot moved ${movement.label}${e.shiftKey ? " by a larger step" : ""}.`);
   };
   const pendingSpeechTimerRef = useRef(null);
+  const recentTipHistoryRef = useRef([]);
   useEffect(() => {
     if (!history || history.length === 0) return;
     const latest = history[history.length - 1];
@@ -1414,7 +2229,11 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
         const type = latest.type;
         let message = "";
         const topicStr = topic ? ` about ${topic}` : "";
-        if (type === "quiz") {
+        if (isStudentMode) {
+          message = buildStudentEventTip(latest, topic, t);
+        } else if (isEducatorMode) {
+          message = buildEducatorEventTip(latest, topic, t);
+        } else if (type === "quiz") {
           const questions = latest.data?.questions || [];
           const qCount = questions.length;
           const questionTexts = questions.map((q) => q.question || q.text || "").filter(Boolean);
@@ -1526,7 +2345,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
         }
       };
     }
-  }, [history, speak, t, isTalking]);
+  }, [history, speak, t, isTalking, isStudentMode, isEducatorMode, isSystemAudioActive, topic]);
   useEffect(() => {
     let ambientTimer;
     let fallbackTimer;
@@ -1537,7 +2356,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       const has = (type) => history && Array.isArray(history) && history.some((h) => h && h.type === type);
       const tips = [];
       const latestText = history && Array.isArray(history) && history.find((h) => h && h.type === "simplified");
-      const topic2 = latestText && latestText.topic || typeof generatedContent !== "undefined" && generatedContent && generatedContent.topic || "";
+      const tipTopic = alloBotTipText(topic || latestText && latestText.topic || typeof generatedContent !== "undefined" && generatedContent && generatedContent.topic || "");
       const glossaryEntry = history && Array.isArray(history) && history.find((h) => h && h.type === "glossary");
       const glossaryTerms = glossaryEntry && glossaryEntry.data && glossaryEntry.data.terms || [];
       const resourceCount = history && Array.isArray(history) ? history.length : 0;
@@ -1547,7 +2366,11 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       const randomWord = glossaryTerms.length > 0 ? glossaryTerms[Math.floor(Math.random() * glossaryTerms.length)].term || glossaryTerms[Math.floor(Math.random() * glossaryTerms.length)] : "";
       const term1 = glossaryTerms.length > 0 ? glossaryTerms[0].term || glossaryTerms[0] : "";
       const term2 = glossaryTerms.length > 1 ? glossaryTerms[1].term || glossaryTerms[1] : "";
-      if (activeView === "simplified") {
+      if (isStudentMode) {
+        tips.push(...buildStudentIdleTips({ activeView, history, topic: tipTopic, t }));
+      } else if (isEducatorMode) {
+        tips.push(...buildEducatorIdleTips({ activeView, history, topic: tipTopic, t }));
+      } else if (activeView === "simplified") {
         if (randomWord) {
           tips.push(t("tips.simplified_def", { word: randomWord }));
         } else {
@@ -1567,41 +2390,45 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       } else if (activeView === "quiz") {
         tips.push(t("tips.quiz_autograder"));
       } else if (activeView === "adventure") {
-        if (topic2) {
-          tips.push(t("tips.adventure_context", { topic: topic2, suggestion }));
+        if (tipTopic) {
+          tips.push(t("tips.adventure_context", { topic: tipTopic, suggestion }));
         } else {
           tips.push(t("tips.adventure_context_fallback") || t("tips.adventure_context"));
         }
       } else if (activeView === "input") {
         if (history.length === 0) {
         } else {
-          if (topic2) {
-            tips.push(t("tips.input_next", { count: resourceCount, topic: topic2, suggestion }));
+          if (tipTopic) {
+            tips.push(t("tips.input_next", { count: resourceCount, topic: tipTopic, suggestion }));
           } else {
             tips.push(t("tips.input_next_fallback") || t("tips.input_next"));
           }
         }
       }
-      if (typeof userRole !== "undefined" && userRole === "parent") {
+      if (!isStudentMode && isParentMode) {
         tips.push(t("tips.parent_bedtime"));
         tips.push(t("tips.parent_adventure"));
         tips.push(t("tips.parent_read_along"));
       }
-      if (resourceCount >= 3 && !has("lesson-plan")) {
+      if (!isStudentMode && resourceCount >= 3 && !has("lesson-plan")) {
         tips.push(t("tips.fallback_lesson_plan"));
       }
       if (tips.length === 0) {
         tips.push(t("tips.fallback_brainstorm"));
-        if (topic2 && resourceCount > 0) {
-          tips.push(t("tips.fallback_export", { count: resourceCount, topic: topic2 }));
+        if (tipTopic && resourceCount > 0) {
+          tips.push(t("tips.fallback_export", { count: resourceCount, topic: tipTopic }));
         } else {
           tips.push(t("tips.fallback_export_fallback") || t("tips.fallback_export"));
         }
       }
-      const unspoken = tips.filter((t2) => !spokenTips.has(t2));
-      const pool = unspoken.length > 0 ? unspoken : tips;
+      const recentTips = new Set(recentTipHistoryRef.current);
+      const unspoken = tips.filter((tip) => !spokenTips.has(tip));
+      const freshUnspoken = unspoken.filter((tip) => !recentTips.has(tip));
+      const fresh = tips.filter((tip) => !recentTips.has(tip));
+      const pool = freshUnspoken.length > 0 ? freshUnspoken : unspoken.length > 0 ? unspoken : fresh.length > 0 ? fresh : tips;
       const chosen = pool[Math.floor(Math.random() * pool.length)];
       spokenTips.add(chosen);
+      recentTipHistoryRef.current = [chosen, ...recentTipHistoryRef.current.filter((tip) => tip !== chosen)].slice(0, 10);
       return chosen;
     };
     const scheduleAmbientAction = () => {
@@ -1653,7 +2480,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       window.removeEventListener("click", resetInactivity);
       window.removeEventListener("scroll", resetInactivity);
     };
-  }, [speak, isDragging, isTalking, customMessage, isIdleDisabled, isSleeping, activeView, history, isParentMode, t, motionDisabled]);
+  }, [speak, isDragging, isTalking, customMessage, isIdleDisabled, isSleeping, activeView, history, isParentMode, isStudentMode, isEducatorMode, topic, t, motionDisabled]);
   const handleMouseDown = (e) => {
     e.preventDefault();
     setIsDragging(true);
@@ -1812,23 +2639,25 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
   };
   const trailFilter = isFlightActive ? `drop-shadow(-6px 4px 0px ${colors.gradFrom}40) drop-shadow(-12px 8px 0px ${colors.gradFrom}20)` : "none";
   const renderHologramContent = () => {
-    switch (activeView) {
-      case "math":
+    const generationFamily = alloBotGenerationFamily(generationType, activeView);
+    switch (generationFamily) {
+      case "solve":
         return /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("animateTransform", { attributeName: "transform", type: "rotate", from: "0 0 0", to: "360 0 0", dur: motionDisabled ? "indefinite" : "12s", repeatCount: "indefinite" }), /* @__PURE__ */ React.createElement("text", { x: "0", y: "4", fontSize: "16", fill: "#E0F2FE", textAnchor: "middle", fontWeight: "bold", style: { fontFamily: "serif" } }, "\u03C0"), /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("animateTransform", { attributeName: "transform", type: "rotate", from: "360 0 0", to: "0 0 0", dur: motionDisabled ? "indefinite" : "6s", repeatCount: "indefinite" }), /* @__PURE__ */ React.createElement("text", { x: "0", y: "-12", fontSize: "6", fill: "#67E8F9", textAnchor: "middle" }, "1"), /* @__PURE__ */ React.createElement("text", { x: "10", y: "6", fontSize: "6", fill: "#67E8F9", textAnchor: "middle" }, "2"), /* @__PURE__ */ React.createElement("text", { x: "-10", y: "6", fontSize: "6", fill: "#67E8F9", textAnchor: "middle" }, "3")), /* @__PURE__ */ React.createElement("circle", { r: "14", stroke: "#22D3EE", strokeWidth: "0.5", strokeDasharray: "2 1", fill: "none", opacity: "0.5" }));
-      case "adventure":
-      case "timeline":
+      case "explore":
         return /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("animateTransform", { attributeName: "transform", type: "rotate", from: "0 0 0", to: "360 0 0", dur: motionDisabled ? "indefinite" : "8s", repeatCount: "indefinite" }), /* @__PURE__ */ React.createElement("circle", { r: "10", stroke: "#67E8F9", strokeWidth: "0.8", fill: "rgba(34, 211, 238, 0.1)" }), /* @__PURE__ */ React.createElement("ellipse", { rx: "10", ry: "4", stroke: "#67E8F9", strokeWidth: "0.5", fill: "none" }), /* @__PURE__ */ React.createElement("ellipse", { rx: "4", ry: "10", stroke: "#67E8F9", strokeWidth: "0.5", fill: "none" }), /* @__PURE__ */ React.createElement("line", { x1: "-10", y1: "0", x2: "10", y2: "0", stroke: "#67E8F9", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "-10", x2: "0", y2: "10", stroke: "#67E8F9", strokeWidth: "0.5" }));
-      case "simplified":
-      case "sentence-frames":
-      case "glossary":
-      case "outline":
-      case "lesson-plan":
+      case "organize":
         return /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("animateTransform", { attributeName: "transform", type: "translate", values: "0,0; 0,-3; 0,0", dur: motionDisabled ? "indefinite" : "3s", repeatCount: "indefinite" }), /* @__PURE__ */ React.createElement("rect", { x: "-7", y: "-9", width: "14", height: "18", rx: "1", stroke: "#E0F2FE", strokeWidth: "1", fill: "rgba(255, 255, 255, 0.1)" }), /* @__PURE__ */ React.createElement("line", { x1: "-4", y1: "-5", x2: "4", y2: "-5", stroke: "#67E8F9", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("line", { x1: "-4", y1: "-2", x2: "4", y2: "-2", stroke: "#67E8F9", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("line", { x1: "-4", y1: "1", x2: "4", y2: "1", stroke: "#67E8F9", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("line", { x1: "-4", y1: "4", x2: "2", y2: "4", stroke: "#67E8F9", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M 4 4 L 10 10", stroke: "#FDBA74", strokeWidth: "1.5", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M 10 10 L 12 8 L 14 10 L 12 12 Z", fill: "#FDBA74" }));
-      case "persona":
-        return /* @__PURE__ */ React.createElement("g", { transform: "scale(0.8)" }, /* @__PURE__ */ React.createElement("circle", { cx: "0", cy: "0", r: "14", stroke: "#67E8F9", strokeWidth: "1.5", fill: "none" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 -8 V 0 L 6 4", stroke: "#67E8F9", strokeWidth: "1.5", fill: "none", strokeLinecap: "round", strokeLinejoin: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M -10 -12 L -6 -8 M 6 -12 L 10 -8", stroke: "#67E8F9", strokeWidth: "1.5", strokeLinecap: "round", opacity: "0.6" }));
-      case "analysis":
-      case "image":
-      case "quiz":
+      case "interview":
+        return /* @__PURE__ */ React.createElement("g", { transform: "scale(0.8)" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-generation-clock" }, /* @__PURE__ */ React.createElement("circle", { cx: "0", cy: "0", r: "14", stroke: "#67E8F9", strokeWidth: "1.5", fill: "none" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 -8 V 0 L 6 4", stroke: "#67E8F9", strokeWidth: "1.5", fill: "none", strokeLinecap: "round", strokeLinejoin: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M -10 -12 L -6 -8 M 6 -12 L 10 -8", stroke: "#67E8F9", strokeWidth: "1.5", strokeLinecap: "round", opacity: "0.6" })));
+      case "analyze":
+        return /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-generation-card" }, /* @__PURE__ */ React.createElement("rect", { x: "-14", y: "-10", width: "28", height: "20", rx: "2", stroke: "#67E8F9", strokeWidth: "0.8", fill: "rgba(34, 211, 238, 0.08)" }), /* @__PURE__ */ React.createElement("line", { x1: "-10", y1: "-5", x2: "7", y2: "-5", stroke: "#E0F2FE", strokeWidth: "1", opacity: "0.7" }), /* @__PURE__ */ React.createElement("line", { x1: "-10", y1: "0", x2: "10", y2: "0", stroke: "#E0F2FE", strokeWidth: "1", opacity: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "-10", y1: "5", x2: "4", y2: "5", stroke: "#E0F2FE", strokeWidth: "1", opacity: "0.7" })), /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-generation-scan" }, /* @__PURE__ */ React.createElement("line", { x1: "-12", y1: "-12", x2: "-12", y2: "12", stroke: "#FDBA74", strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "-12", cy: "0", r: "3", stroke: "#FDBA74", strokeWidth: "0.8", fill: "none" })));
+      case "clarify":
+        return /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("path", { d: "M -14 -9 H 14 V 9 H -14 Z", stroke: "#67E8F9", strokeWidth: "0.8", fill: "rgba(34, 211, 238, 0.08)" }), /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-generation-resolve" }, /* @__PURE__ */ React.createElement("line", { x1: "-10", y1: "-4", x2: "10", y2: "-4", stroke: "#E0F2FE", strokeWidth: "1.2", className: "animate-allobot-generation-line" }), /* @__PURE__ */ React.createElement("line", { x1: "-10", y1: "0", x2: "6", y2: "0", stroke: "#67E8F9", strokeWidth: "1.2", className: "animate-allobot-generation-line", style: { animationDelay: "0.18s" } }), /* @__PURE__ */ React.createElement("line", { x1: "-10", y1: "4", x2: "9", y2: "4", stroke: "#E0F2FE", strokeWidth: "1.2", className: "animate-allobot-generation-line", style: { animationDelay: "0.36s" } })), /* @__PURE__ */ React.createElement("circle", { cx: "10", cy: "-7", r: "2", fill: "#FDBA74", className: "animate-allobot-generation-dot" }));
+      case "assess":
+        return /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-generation-question" }, /* @__PURE__ */ React.createElement("circle", { cx: "-6", cy: "-3", r: "8", stroke: "#67E8F9", strokeWidth: "0.9", fill: "rgba(34, 211, 238, 0.08)" }), /* @__PURE__ */ React.createElement("text", { x: "-6", y: "1", fontSize: "10", fill: "#E0F2FE", textAnchor: "middle", fontWeight: "bold" }, "?")), /* @__PURE__ */ React.createElement("path", { d: "M 2 5 L 6 9 L 14 -1", stroke: "#FDBA74", strokeWidth: "1.8", strokeLinecap: "round", strokeLinejoin: "round", fill: "none", strokeDasharray: "20", className: "animate-allobot-generation-check" }));
+      case "create":
+        return /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-generation-card" }, /* @__PURE__ */ React.createElement("rect", { x: "-13", y: "-9", width: "26", height: "18", rx: "2", stroke: "#67E8F9", strokeWidth: "0.8", fill: "rgba(34, 211, 238, 0.08)" }), /* @__PURE__ */ React.createElement("path", { d: "M -9 5 L -2 -2 L 2 2 L 7 -4 L 11 5 Z", stroke: "#E0F2FE", strokeWidth: "1", fill: "none", strokeLinejoin: "round" })), /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-generation-spark" }, /* @__PURE__ */ React.createElement("path", { d: "M 0 -15 L 1.5 -10 L 6 -9 L 1.5 -7.5 L 0 -2 L -1.5 -7.5 L -6 -9 L -1.5 -10 Z", fill: "#FDBA74" })), /* @__PURE__ */ React.createElement("g", { transform: "translate(10, 5) scale(0.45)" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-generation-spark", style: { animationDelay: "0.35s" } }, /* @__PURE__ */ React.createElement("path", { d: "M 0 -15 L 1.5 -10 L 6 -9 L 1.5 -7.5 L 0 -2 L -1.5 -7.5 L -6 -9 L -1.5 -10 Z", fill: "#FDBA74" }))));
+      case "generic":
       default:
         return /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement(
           "animateTransform",
@@ -1844,7 +2673,49 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
         ), /* @__PURE__ */ React.createElement("circle", { r: "2.5", fill: "#E0F2FE", className: "animate-pulse motion-reduce:animate-none" }), /* @__PURE__ */ React.createElement("ellipse", { rx: "12", ry: "4", stroke: "#67E8F9", strokeWidth: "0.8", fill: "none" }), /* @__PURE__ */ React.createElement("ellipse", { rx: "12", ry: "4", stroke: "#67E8F9", strokeWidth: "0.8", fill: "none", transform: "rotate(60)" }), /* @__PURE__ */ React.createElement("ellipse", { rx: "12", ry: "4", stroke: "#67E8F9", strokeWidth: "0.8", fill: "none", transform: "rotate(120)" }));
     }
   };
-  return /* @__PURE__ */ React.createElement("aside", { "aria-label": t("bot.assistant_landmark") || "AlloBot assistant" }, /* @__PURE__ */ React.createElement("p", { id: "allobot-move-instructions", className: "sr-only" }, "Use the arrow keys to move AlloBot. Hold Shift with an arrow key for a larger step."), /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "sr-only" }, keyboardMoveStatus), /* @__PURE__ */ React.createElement("style", null, `
+  const renderGenerationCompletion = (generationFamily, outcome = "success") => {
+    const completionCheck = /* @__PURE__ */ React.createElement(
+      "path",
+      {
+        d: "M -8 0 L -2 6 L 9 -7",
+        stroke: "#86EFAC",
+        strokeWidth: "2",
+        strokeLinecap: "round",
+        strokeLinejoin: "round",
+        fill: "none",
+        strokeDasharray: "24",
+        className: "animate-allobot-generation-completion-check"
+      }
+    );
+    if (outcome === "error") {
+      return /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("circle", { r: "12", stroke: "#FDA4AF", strokeWidth: "1", fill: "rgba(244, 63, 94, 0.08)" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 -7 V 2", stroke: "#FDA4AF", strokeWidth: "2", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("circle", { cx: "0", cy: "6", r: "1.2", fill: "#FDA4AF" }));
+    }
+    if (outcome === "cancelled") {
+      return /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("circle", { r: "12", stroke: "#CBD5E1", strokeWidth: "1", fill: "rgba(148, 163, 184, 0.08)" }), /* @__PURE__ */ React.createElement("path", { d: "M -6 0 H 6", stroke: "#CBD5E1", strokeWidth: "2", strokeLinecap: "round" }));
+    }
+    switch (generationFamily) {
+      case "create":
+        return /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("circle", { r: "12", stroke: "#67E8F9", strokeWidth: "0.9", fill: "rgba(34, 211, 238, 0.08)" }), /* @__PURE__ */ React.createElement("path", { d: "M -8 4 L -2 -2 L 2 1 L 8 -5", stroke: "#E0F2FE", strokeWidth: "1", fill: "none", strokeLinejoin: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 -14 L 1.5 -10 L 5 -9 L 1.5 -7.5 L 0 -3 L -1.5 -7.5 L -5 -9 L -1.5 -10 Z", fill: "#FDBA74" }));
+      case "explore":
+        return /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("circle", { r: "12", stroke: "#67E8F9", strokeWidth: "0.9", fill: "none" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 -9 L 2 0 L 9 3 L 2 4 L 0 10 L -2 4 L -9 3 L -2 0 Z", fill: "#FDBA74", opacity: "0.9" }));
+      case "solve":
+        return /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("circle", { r: "12", stroke: "#67E8F9", strokeWidth: "0.9", fill: "rgba(34, 211, 238, 0.08)" }), /* @__PURE__ */ React.createElement("text", { x: "0", y: "4", fontSize: "12", fill: "#E0F2FE", textAnchor: "middle", fontWeight: "bold", style: { fontFamily: "serif" } }, "="), completionCheck);
+      case "interview":
+        return /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("circle", { r: "12", stroke: "#67E8F9", strokeWidth: "0.9", fill: "none" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 -7 V 0 L 5 3", stroke: "#FDBA74", strokeWidth: "1.4", strokeLinecap: "round", strokeLinejoin: "round" }), completionCheck);
+      case "analyze":
+        return /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("rect", { x: "-14", y: "-10", width: "28", height: "20", rx: "2", stroke: "#67E8F9", strokeWidth: "0.9", fill: "rgba(34, 211, 238, 0.08)" }), /* @__PURE__ */ React.createElement("line", { x1: "-10", y1: "-5", x2: "7", y2: "-5", stroke: "#E0F2FE", strokeWidth: "1", opacity: "0.7" }), /* @__PURE__ */ React.createElement("line", { x1: "-10", y1: "0", x2: "-1", y2: "0", stroke: "#E0F2FE", strokeWidth: "1", opacity: "0.5" }), completionCheck);
+      case "clarify":
+        return /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("path", { d: "M -14 -9 H 14 V 9 H -14 Z", stroke: "#67E8F9", strokeWidth: "0.9", fill: "rgba(34, 211, 238, 0.08)" }), /* @__PURE__ */ React.createElement("line", { x1: "-10", y1: "-4", x2: "10", y2: "-4", stroke: "#E0F2FE", strokeWidth: "1.1" }), /* @__PURE__ */ React.createElement("line", { x1: "-10", y1: "1", x2: "4", y2: "1", stroke: "#67E8F9", strokeWidth: "1.1" }), completionCheck);
+      case "organize":
+        return /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("rect", { x: "-13", y: "-9", width: "26", height: "18", rx: "2", stroke: "#67E8F9", strokeWidth: "0.9", fill: "rgba(34, 211, 238, 0.08)" }), /* @__PURE__ */ React.createElement("line", { x1: "-9", y1: "-4", x2: "8", y2: "-4", stroke: "#E0F2FE", strokeWidth: "1.1" }), /* @__PURE__ */ React.createElement("line", { x1: "-9", y1: "0", x2: "5", y2: "0", stroke: "#E0F2FE", strokeWidth: "1.1" }), /* @__PURE__ */ React.createElement("line", { x1: "-9", y1: "4", x2: "2", y2: "4", stroke: "#E0F2FE", strokeWidth: "1.1" }), completionCheck);
+      case "assess":
+        return /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("circle", { r: "12", stroke: "#FDBA74", strokeWidth: "1", fill: "rgba(251, 186, 116, 0.08)" }), completionCheck);
+      case "generic":
+      default:
+        return /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("circle", { r: "12", stroke: "#67E8F9", strokeWidth: "0.9", fill: "rgba(34, 211, 238, 0.08)" }), completionCheck);
+    }
+  };
+  return /* @__PURE__ */ React.createElement("aside", { "aria-label": t("bot.assistant_landmark") || "AlloBot assistant" }, /* @__PURE__ */ React.createElement("p", { id: "allobot-move-instructions", className: "sr-only" }, t("bot.move_instructions") || "Use the arrow keys to move AlloBot. Hold Shift with an arrow key for a larger step."), /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "sr-only" }, keyboardMoveStatus), /* @__PURE__ */ React.createElement("style", null, `
         @keyframes allo-float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
         /* allo-talk keyframe removed \u2014 defined but never applied to any element. Audit confirmed dead code. */
         @keyframes allo-backflip { 0% { transform: translateY(0) rotate(0deg); } 40% { transform: translateY(-50px) rotate(-180deg); } 100% { transform: translateY(0) rotate(-360deg); } }
@@ -2115,6 +2986,40 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
 @keyframes allobotPop { 0% { transform: translateY(0); } 35% { transform: translateY(-6px); } 70% { transform: translateY(-1px); } 100% { transform: translateY(0); } }
 .allobot-thinking .animate-allobot-float, .allobot-thinking .animate-allobot-perk { animation: allobotWorking 0.85s ease-in-out infinite; }
 .allobot-pop .animate-allobot-float, .allobot-pop .animate-allobot-perk { animation: allobotPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 1; }
+/* Generation signatures. These stay inside the existing hologram so the
+   orange body remains the universal working state. Every class includes
+   "animate-" so the existing reduced-motion kill switch catches it. */
+@keyframes allobotGenerationScan { 0%, 100% { transform: translateX(-12px); opacity: 0.25; } 50% { transform: translateX(12px); opacity: 1; } }
+.animate-allobot-generation-scan { transform-box: fill-box; transform-origin: center; animation: allobotGenerationScan 1.5s ease-in-out infinite; }
+@keyframes allobotGenerationProgress { to { transform: rotate(360deg); } }
+.allobot-generation-progress { transform-box: fill-box; transform-origin: center; transition: stroke-dashoffset 0.35s ease-out; }
+.animate-allobot-generation-progress { transform-box: fill-box; transform-origin: center; animation: allobotGenerationProgress 1.6s linear infinite; }
+@keyframes allobotGenerationEnter { 0% { transform: translateY(8px) scale(0.72); opacity: 0; } 65% { transform: translateY(-1px) scale(1.04); opacity: 1; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
+.animate-allobot-generation-enter { transform-box: fill-box; transform-origin: center; animation: allobotGenerationEnter 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) 1 both; }
+[data-allo-generation-phase="1"] .animate-hologram-3d { animation-duration: 10s; }
+[data-allo-generation-phase="2"] .animate-hologram-3d { animation-duration: 6.5s; }
+[data-allo-generation-phase="1"] .animate-allobot-generation-scan { animation-duration: 1.9s; }
+[data-allo-generation-phase="2"] .animate-allobot-generation-spark { animation-duration: 1.8s; }
+@keyframes allobotGenerationCard { 0%, 100% { transform: translateY(2px); opacity: 0.45; } 50% { transform: translateY(-2px); opacity: 1; } }
+.animate-allobot-generation-card { transform-box: fill-box; transform-origin: center; animation: allobotGenerationCard 1.8s ease-in-out infinite; }
+@keyframes allobotGenerationResolve { 0%, 100% { transform: scaleX(0.65); opacity: 0.3; } 50% { transform: scaleX(1); opacity: 1; } }
+.animate-allobot-generation-resolve { transform-box: fill-box; transform-origin: left center; animation: allobotGenerationResolve 1.7s ease-in-out infinite; }
+@keyframes allobotGenerationLine { 0%, 100% { opacity: 0.3; } 45%, 70% { opacity: 1; } }
+.animate-allobot-generation-line { animation: allobotGenerationLine 1.7s ease-in-out infinite; }
+@keyframes allobotGenerationDot { 0%, 100% { transform: scale(0.65); opacity: 0.35; } 50% { transform: scale(1.2); opacity: 1; } }
+.animate-allobot-generation-dot { transform-box: fill-box; transform-origin: center; animation: allobotGenerationDot 1.2s ease-in-out infinite; }
+@keyframes allobotGenerationQuestion { 0%, 100% { transform: translateY(2px); opacity: 0.45; } 50% { transform: translateY(-2px); opacity: 1; } }
+.animate-allobot-generation-question { transform-box: fill-box; transform-origin: center; animation: allobotGenerationQuestion 1.6s ease-in-out infinite; }
+@keyframes allobotGenerationClock { 0%, 100% { transform: rotate(-4deg); opacity: 0.7; } 50% { transform: rotate(4deg); opacity: 1; } }
+.animate-allobot-generation-clock { transform-box: fill-box; transform-origin: center; animation: allobotGenerationClock 2.4s steps(8, end) infinite; }
+@keyframes allobotGenerationCheck { 0% { stroke-dashoffset: 20; opacity: 0.2; } 45%, 100% { stroke-dashoffset: 0; opacity: 1; } }
+.animate-allobot-generation-check { animation: allobotGenerationCheck 1.6s ease-out infinite; }
+@keyframes allobotGenerationSpark { 0%, 100% { transform: scale(0.65) rotate(-10deg); opacity: 0.35; } 50% { transform: scale(1.1) rotate(10deg); opacity: 1; } }
+.animate-allobot-generation-spark { transform-box: fill-box; transform-origin: center; animation: allobotGenerationSpark 1.4s ease-in-out infinite; }
+@keyframes allobotGenerationComplete { 0% { transform: translateY(6px) scale(0.65); opacity: 0; } 25% { transform: translateY(-2px) scale(1.08); opacity: 1; } 60% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-4px) scale(1.04); opacity: 0; } }
+.animate-allobot-generation-complete { transform-box: fill-box; transform-origin: center; animation: allobotGenerationComplete 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) 1 both; }
+@keyframes allobotGenerationCompletionCheck { 0% { stroke-dashoffset: 24; opacity: 0; } 35% { opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 1; } }
+.animate-allobot-generation-completion-check { animation: allobotGenerationCompletionCheck 0.45s ease-out 0.08s 1 both; }
 /* Exit transition: the outgoing accessory fades up briefly before the new enters. */
 @keyframes allobotExit { to { opacity: 0; transform: translateY(-3px); } }
 .allobot-exiting > * { animation: allobotExit 0.2s ease-in forwards; }
@@ -2336,7 +3241,23 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
             fill: "#000",
             className: isSleeping || motionDisabled ? "opacity-20" : "animate-shadow-pulse"
           }
-        ), /* @__PURE__ */ React.createElement("rect", { x: "25", y: "42", width: "50", height: "8", rx: "2", fill: colors.jetpackStroke }), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "46", r: "6", fill: "#06B6D4", stroke: colors.jetpackStroke, strokeWidth: "2" }), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "46", r: "3", fill: "#67E8F9", className: "animate-pulse motion-reduce:animate-none" }), /* @__PURE__ */ React.createElement("path", { d: "M10 36 A10 6 0 0 1 30 36 V 68 L 27 76 H 13 L 10 68 Z", fill: colors.jetpackFill, stroke: colors.jetpackStroke, strokeWidth: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M10 46 H30 M10 60 H30", stroke: colors.jetpackStroke, strokeWidth: "1", fill: "none", opacity: "0.6" }), /* @__PURE__ */ React.createElement("path", { d: "M70 36 A10 6 0 0 1 90 36 V 68 L 87 76 H 73 L 70 68 Z", fill: colors.jetpackFill, stroke: colors.jetpackStroke, strokeWidth: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M70 46 H90 M70 60 H90", stroke: colors.jetpackStroke, strokeWidth: "1", fill: "none", opacity: "0.6" }), isFlightActive && /* @__PURE__ */ React.createElement("g", { className: "animate-jetpack-flame" }, /* @__PURE__ */ React.createElement("path", { d: "M14 78 Q20 100 26 78 Z", fill: "#F59E0B" }), /* @__PURE__ */ React.createElement("path", { d: "M17 78 Q20 90 23 78 Z", fill: "#FEF3C7" }), /* @__PURE__ */ React.createElement("path", { d: "M74 78 Q80 100 86 78 Z", fill: "#F59E0B" }), /* @__PURE__ */ React.createElement("path", { d: "M77 78 Q80 90 83 78 Z", fill: "#FEF3C7" })), isFlightActive && /* @__PURE__ */ React.createElement("g", { transform: "translate(-10, 0)", className: "animate-fade-in", style: { opacity: 0.6 } }, /* @__PURE__ */ React.createElement("rect", { x: "-20", y: "20", width: "30", height: "2", rx: "1", fill: "white", className: "animate-wind-streak", style: { animationDuration: "0.4s", animationDelay: "0s" } }), /* @__PURE__ */ React.createElement("rect", { x: "-10", y: "50", width: "40", height: "1", rx: "0.5", fill: "white", className: "animate-wind-streak", style: { animationDuration: "0.6s", animationDelay: "0.2s" } }), /* @__PURE__ */ React.createElement("rect", { x: "-15", y: "80", width: "25", height: "2", rx: "1", fill: "white", className: "animate-wind-streak", style: { animationDuration: "0.5s", animationDelay: "0.1s" } })), effectiveMood === "thinking" && !isSleeping && !motionDisabled && /* @__PURE__ */ React.createElement("g", { className: "animate-pulse motion-reduce:animate-none", style: { animationDuration: "2s" } }, /* @__PURE__ */ React.createElement(
+        ), /* @__PURE__ */ React.createElement("rect", { x: "25", y: "42", width: "50", height: "8", rx: "2", fill: colors.jetpackStroke }), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "46", r: "6", fill: "#06B6D4", stroke: colors.jetpackStroke, strokeWidth: "2" }), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "46", r: "3", fill: "#67E8F9", className: "animate-pulse motion-reduce:animate-none" }), /* @__PURE__ */ React.createElement("path", { d: "M10 36 A10 6 0 0 1 30 36 V 68 L 27 76 H 13 L 10 68 Z", fill: colors.jetpackFill, stroke: colors.jetpackStroke, strokeWidth: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M10 46 H30 M10 60 H30", stroke: colors.jetpackStroke, strokeWidth: "1", fill: "none", opacity: "0.6" }), /* @__PURE__ */ React.createElement("path", { d: "M70 36 A10 6 0 0 1 90 36 V 68 L 87 76 H 73 L 70 68 Z", fill: colors.jetpackFill, stroke: colors.jetpackStroke, strokeWidth: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M70 46 H90 M70 60 H90", stroke: colors.jetpackStroke, strokeWidth: "1", fill: "none", opacity: "0.6" }), isFlightActive && /* @__PURE__ */ React.createElement("g", { className: "animate-jetpack-flame" }, /* @__PURE__ */ React.createElement("path", { d: "M14 78 Q20 100 26 78 Z", fill: "#F59E0B" }), /* @__PURE__ */ React.createElement("path", { d: "M17 78 Q20 90 23 78 Z", fill: "#FEF3C7" }), /* @__PURE__ */ React.createElement("path", { d: "M74 78 Q80 100 86 78 Z", fill: "#F59E0B" }), /* @__PURE__ */ React.createElement("path", { d: "M77 78 Q80 90 83 78 Z", fill: "#FEF3C7" })), isFlightActive && /* @__PURE__ */ React.createElement("g", { transform: "translate(-10, 0)", className: "animate-fade-in", style: { opacity: 0.6 } }, /* @__PURE__ */ React.createElement("rect", { x: "-20", y: "20", width: "30", height: "2", rx: "1", fill: "white", className: "animate-wind-streak", style: { animationDuration: "0.4s", animationDelay: "0s" } }), /* @__PURE__ */ React.createElement("rect", { x: "-10", y: "50", width: "40", height: "1", rx: "0.5", fill: "white", className: "animate-wind-streak", style: { animationDuration: "0.6s", animationDelay: "0.2s" } }), /* @__PURE__ */ React.createElement("rect", { x: "-15", y: "80", width: "25", height: "2", rx: "1", fill: "white", className: "animate-wind-streak", style: { animationDuration: "0.5s", animationDelay: "0.1s" } })), effectiveMood === "thinking" && !isSleeping && !motionDisabled && /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-generation-enter" }, /* @__PURE__ */ React.createElement("g", { "data-allo-generation-family": alloBotGenerationFamily(generationType, activeView), "data-allo-generation-phase": generationPhase, className: "animate-pulse motion-reduce:animate-none", style: { animationDuration: "2s" } }, /* @__PURE__ */ React.createElement(
+          "circle",
+          {
+            cx: "50",
+            cy: "-25",
+            r: "18",
+            pathLength: "100",
+            stroke: "#FDBA74",
+            strokeWidth: "1",
+            strokeOpacity: "0.8",
+            strokeDasharray: generationProgressDasharray,
+            strokeDashoffset: generationProgressFraction === null ? 24 : 100 - generationProgressFraction * 100,
+            fill: "none",
+            className: generationProgressRingClass,
+            "aria-hidden": "true"
+          }
+        ), /* @__PURE__ */ React.createElement(
           "path",
           {
             d: "M 20 -50 L 80 -50 L 54 5 L 46 5 Z",
@@ -2354,7 +3275,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
             dur: motionDisabled ? "indefinite" : "3s",
             repeatCount: "indefinite"
           }
-        ), /* @__PURE__ */ React.createElement("g", { className: "animate-hologram-3d" }, renderHologramContent()))), isSleeping && /* @__PURE__ */ React.createElement("g", { className: "animate-zzz", style: { transformOrigin: "top right" } }, /* @__PURE__ */ React.createElement("text", { x: "65", y: "10", fontSize: "14", fill: "#93C5FD", fontWeight: "bold", style: { opacity: 0.8 } }, "z"), /* @__PURE__ */ React.createElement("text", { x: "75", y: "-5", fontSize: "18", fill: "#60A5FA", fontWeight: "bold", style: STYLE_ANIMATION_DELAY_HALF }, "Z")), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "50", r: "45", fill: colors.glow, fillOpacity: "0.2", className: isSleeping || motionDisabled ? "" : "animate-pulse motion-reduce:animate-none" }), /* @__PURE__ */ React.createElement(
+        ), /* @__PURE__ */ React.createElement("g", { className: "animate-hologram-3d" }, renderHologramContent())))), accPop && completedGenerationFamily && !isSleeping && !motionDisabled && /* @__PURE__ */ React.createElement("g", { transform: "translate(50, -25)", "data-allo-generation-complete": completedGenerationFamily, "data-allo-generation-outcome": completedGenerationOutcome, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-generation-complete" }, renderGenerationCompletion(completedGenerationFamily, completedGenerationOutcome))), isSleeping && /* @__PURE__ */ React.createElement("g", { className: "animate-zzz", style: { transformOrigin: "top right" } }, /* @__PURE__ */ React.createElement("text", { x: "65", y: "10", fontSize: "14", fill: "#93C5FD", fontWeight: "bold", style: { opacity: 0.8 } }, "z"), /* @__PURE__ */ React.createElement("text", { x: "75", y: "-5", fontSize: "18", fill: "#60A5FA", fontWeight: "bold", style: STYLE_ANIMATION_DELAY_HALF }, "Z")), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "50", r: "45", fill: colors.glow, fillOpacity: "0.2", className: isSleeping || motionDisabled ? "" : "animate-pulse motion-reduce:animate-none" }), /* @__PURE__ */ React.createElement(
           "g",
           {
             className: isSleeping || motionDisabled ? "" : isMoving ? "transition-transform motion-reduce:transition-none duration-100 ease-out" : wobbleState.active ? "animate-antenna-spring" : "animate-antenna-sway",

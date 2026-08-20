@@ -2130,6 +2130,13 @@ describe('Demo Autopilot preflight and quality analysis', () => {
   });
 });
 describe('vsDemoContinuationPlan', () => {
+  it('preserves all sixteen steps in a comprehensive agentic demo', () => {
+    const steps = Array.from({ length: 16 }, (_, index) => ({ commandId: 'step_' + index }));
+    const stopped = VS.vsDemoContinuationPlan(steps, { ok: false, stopped: true, completed: 9 });
+    expect(stopped.completed).toBe(9);
+    expect(stopped.remainingSteps).toEqual(steps.slice(9));
+  });
+
   it('keeps the exact unfinished sequence after an ordinary stop', () => {
     const steps = [
       { commandId: 'one' },

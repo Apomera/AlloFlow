@@ -1,0 +1,301 @@
+'use strict';
+
+const reviewedAt = '2026-08-20';
+const reviewWave = 'eppp-native-quality-wave-32';
+const baselineMetrics = Object.freeze({
+  distractor: { totalItems: 1500, warningOnly: true, forbiddenAggregateChoices: 0, uniqueKeyStemLexicalLeakageCandidates: 47, asymmetricExtremeDistractorCandidates: 87, advancedDirectRecallCandidates: 3, semanticConceptDuplicatePairs: 47, semanticConceptDuplicateClusters: 32, editorialAnchorsWithActiveWarnings: 1, editorialAnchorsWithNoCurrentWarning: 9, priorityDocketItems: 20 },
+  feedback: { totalItems: 1500, totalIncorrectOptions: 4500, itemsWithWarnings: 498, incorrectOptionsWithWarnings: 1386, insufficientDetailOptions: 625, genericTemplateOptions: 704, choiceRestatementOptions: 207, fullKeyEchoOptions: 70, priorityDocketItems: 100 },
+});
+
+const revisions = [
+  {
+    id: 'eppp-v3-assessment-024', expectedAnswerIndex: 1, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Standard scores on the WAIS have a mean of 100 and SD of 15. A score of 130 is:',
+    prompt: 'A WAIS subtest uses a mean of 100 and standard deviation of 15. A student earns 130. How should the examiner interpret the score?',
+    choices: ['About one standard deviation above the mean, near the 84th percentile', 'About two standard deviations above the mean, near the 98th percentile', 'About three standard deviations above the mean, near the 99.9th percentile', 'At the mean because standard scores are not interpreted by distance from the mean'],
+    rationale: 'A score of 130 is 30 points above a mean of 100; dividing by the 15-point standard deviation gives z = 2. That location is approximately the 98th percentile, subject to the norm group and the score interpretation being used.',
+    feedback: {
+      0: 'One standard deviation above 100 would be 115, not 130. The examiner should divide the score difference by 15 before describing its percentile location.',
+      2: 'Three standard deviations above the mean would be 145 on this scale. The observed score is 30 points above the mean, which equals two standard deviations.',
+      3: 'Standard scores are specifically designed to express distance from a norm-group mean in standard-deviation units. A score of 130 therefore has an interpretable relative position.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'assessment-apply-wais-standard-score-to-z-score-and-percentile-interpretation', distractorDesign: ['one-sd-arithmetic-error', 'three-sd-arithmetic-error', 'standard-score-misconception'],
+  },
+  {
+    id: 'eppp-v3-assessment-037', expectedAnswerIndex: 2, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: "In signal detection theory applied to diagnostic testing, a 'hit' refers to:",
+    prompt: 'In a 2-by-2 diagnostic table, the highlighted cell represents a person who has the condition and receives a positive screen. Which signal-detection label applies?',
+    choices: ['A miss: the condition is present but the screen is negative', 'A false alarm: the screen is positive when the condition is absent', 'A hit: the screen is positive when the condition is present', 'A correct rejection: the screen is negative when the condition is absent'],
+    rationale: 'Signal detection theory calls a correctly detected signal a hit. In diagnostic terms, that is a true positive: the condition is present and the screening result is positive. The other cells represent a miss, false alarm, or correct rejection.',
+    feedback: {
+      0: 'A miss is a false negative: the target condition is present but the procedure fails to detect it. The highlighted cell shows successful detection.',
+      1: 'A false alarm is a positive result in a case lacking the condition. The highlighted case contains the condition, so the positive result is accurate.',
+      3: 'A correct rejection is a true negative, in which the condition is absent and the screen is negative. The highlighted cell has a present condition.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'assessment-classify-signal-detection-hit-from-a-diagnostic-contingency-table', distractorDesign: ['miss-false-negative-confusion', 'false-alarm-false-positive-confusion', 'correct-rejection-true-negative-confusion'],
+  },
+  {
+    id: 'eppp-v3-assessment-040', expectedAnswerIndex: 1, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: 'Factor analysis is used in test development to:',
+    prompt: 'An item pool shows recurring associations, and a developer wants to infer a smaller set of constructs before finalizing the scales. Which method fits this goal?',
+    choices: ['Internal-consistency analysis estimating how coherently items behave as one score', 'Exploratory factor analysis identifying latent dimensions that account for item correlations', 'Test-retest analysis estimating score stability across separated administrations', 'Criterion-validity analysis comparing scores with an external outcome'],
+    rationale: 'Exploratory factor analysis examines the covariance among items to identify a smaller set of latent dimensions that may organize the item pool. It supports construct development, whereas reliability and criterion analyses answer different questions.',
+    feedback: {
+      0: 'Internal consistency asks whether items produce a coherent score, often using a reliability coefficient. It does not identify the latent dimensions underlying patterns of item covariance.',
+      2: 'Test-retest analysis addresses temporal stability by comparing scores across occasions. It cannot discover the dimensional structure of a new item pool.',
+      3: 'Criterion validity evaluates association with an external outcome or standard. The developer first needs to examine the internal dimensional organization of the items.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'assessment-select-exploratory-factor-analysis-for-item-pool-dimension-discovery', distractorDesign: ['internal-consistency-confusion', 'test-retest-confusion', 'criterion-validity-confusion'],
+  },
+  {
+    id: 'eppp-v3-biological-008', expectedAnswerIndex: 3, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: 'Serotonin syndrome can result from:',
+      prompt: 'A patient taking an SSRI receives another medication that raises serotonin activity and soon develops agitation, sweating, hyperreflexia, and clonus. Which mechanism best explains the presentation?',
+    choices: ['Reduced dopamine transmission after blockade of a movement-related receptor pathway', 'Excess GABA activity from accumulation of sedating medication', 'Loss of acetylcholine after peripheral neuromuscular injury', 'Excess serotonergic signaling caused by interacting medications'],
+    rationale: 'Serotonin syndrome reflects excessive serotonergic activity, often after combining medications that increase serotonin release, inhibit its breakdown, or block reuptake. Autonomic activation, neuromuscular hyperreflexia, and clonus support this medication-interaction mechanism.',
+    feedback: {
+      0: 'Dopamine blockade can produce movement-related adverse effects, but it does not account for the serotonergic interaction and clonus pattern described here.',
+      1: 'Excess GABA activity more typically produces sedation, slowed coordination, or respiratory suppression. The patient instead shows autonomic and neuromuscular activation.',
+      2: 'Acetylcholine loss at the neuromuscular junction causes weakness or paralysis rather than the agitation, sweating, hyperreflexia, and clonus of this syndrome.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'biological-infer-serotonin-syndrome-from-medication-interaction-and-neuromuscular-signs', distractorDesign: ['dopamine-blockade-confusion', 'gaba-excess-confusion', 'acetylcholine-loss-confusion'],
+  },
+  {
+    id: 'eppp-v3-biological-009', expectedAnswerIndex: 0, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: 'Chronic traumatic encephalopathy (CTE) is associated with:',
+    prompt: 'A retired contact-sport athlete later develops impulsivity, mood change, and progressive memory problems. Which neuropathological explanation is most consistent with the history?',
+    choices: ['Cumulative head impacts associated with abnormal tau accumulation and neurodegeneration', 'Typical aging-related cognitive change with no trauma-linked pathology', 'Thiamine depletion producing a diencephalic amnestic syndrome', 'One uncomplicated concussion producing a brief, resolved reaction'],
+    rationale: 'CTE has been associated with cumulative traumatic head impacts and abnormal deposition of phosphorylated tau in vulnerable neural regions. Clinical symptoms can include behavioral change, mood disturbance, cognitive decline, and later dementia, although diagnosis requires careful neuropathological interpretation.',
+    feedback: {
+      1: 'Normal aging can affect cognition, but it does not explain the trauma-linked syndrome being considered. The exposure history raises a distinct neurodegenerative concern.',
+      2: 'Thiamine deficiency with severe new-learning impairment and confabulation is more characteristic of Korsakoff syndrome. It does not fit the contact-sport exposure described here.',
+      3: 'A brief uncomplicated concussion does not by itself name the cumulative-exposure pathology under consideration. The case emphasizes a later progressive pattern after contact-sport participation.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'biological-apply-traumatic-exposure-history-to-cte-neuropathology', distractorDesign: ['normal-aging-confusion', 'korsakoff-thiamine-confusion', 'single-concussion-confusion'],
+  },
+  {
+    id: 'eppp-v3-biological-010', expectedAnswerIndex: 1, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: 'The basal ganglia are primarily involved in:',
+    prompt: 'A patient with Parkinsonian bradykinesia also has difficulty initiating well-practiced routines and incorporating feedback. Which functional system is most directly implicated?',
+    choices: ['Posterior temporal language comprehension and semantic integration', 'Movement selection, procedural learning, and reward-related action updating', 'Primary occipital processing of visual scenes and retinal input', 'Auditory frequency coding through the medial geniculate pathway'],
+    rationale: 'The basal ganglia help select and regulate movement, support procedural and habit learning, and update action values through dopaminergic circuits. Parkinsonian bradykinesia reflects disrupted basal-ganglia pathways rather than primary language, visual, or auditory processing.',
+    feedback: {
+      0: 'Posterior temporal systems contribute to language comprehension and semantic processing. They do not best explain bradykinesia and impaired action selection.',
+      2: 'Occipital systems analyze visual input, whereas the case concerns movement initiation, habits, and feedback-guided action values. Those functions point to basal-ganglia circuitry.',
+      3: 'The medial geniculate pathway relays auditory information. It does not organize the motor and reinforcement-learning functions highlighted in the vignette.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'biological-localize-basal-ganglia-functions-from-motor-and-reinforcement-learning-signs', distractorDesign: ['language-network-confusion', 'visual-cortex-confusion', 'auditory-relay-confusion'],
+  },
+  {
+    id: 'eppp-b004-cognitive-1', expectedAnswerIndex: 1, expectedDifficulty: 'foundation', targetDifficulty: 'advanced',
+    expectedPrompt: 'When rehearsal and long-term-memory strategies are controlled and each item counts as one chunk, Cowan\u2019s review placed the central adult short-term storage limit near:',
+    prompt: 'A researcher prevents rehearsal and recoding, presents unrelated units, and asks adults to retain them briefly. Which capacity estimate best fits this controlled short-term-memory task?',
+    choices: ['About one independent unit', 'About four independent units or chunks', 'About seven independent units plus or minus two', 'About twenty independent units'],
+    rationale: 'Cowan\'s review placed the central capacity limit near four chunks when rehearsal, recoding, and grouping are controlled. The estimate is lower than the classic unqualified seven-plus-or-minus-two slogan because meaningful chunking can inflate apparent capacity.',
+    feedback: {
+      0: 'One unit is too small for the controlled adult capacity estimate. The evidence supports a small set of independently maintained units rather than a single item.',
+      2: 'Seven plus or minus two is the older broad estimate often associated with Miller. Cowan\'s controlled-capacity account places the central limit nearer four chunks.',
+      3: 'Twenty independent units greatly exceeds the controlled short-term capacity estimate. Such performance would usually require grouping, rehearsal, or other support excluded by the task.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'cognitive-affective-interpret-cowan-controlled-short-term-capacity-estimate', distractorDesign: ['one-unit-underestimate', 'miller-seven-plus-two-confusion', 'large-capacity-overestimate'],
+  },
+  {
+    id: 'eppp-b005-cognitive-2', expectedAnswerIndex: 3, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'A person in a sad mood recalls a greater proportion of negatively toned personal experiences than positively toned experiences. This pattern best illustrates:',
+    prompt: 'During a depressed state, a client retrieves sad autobiographical episodes more readily than equally available pleasant episodes. Which memory phenomenon best explains the pattern?',
+    choices: ['State-dependent memory requiring a matching internal state at encoding and retrieval', 'Context-dependent retrieval based on the physical environment in which material was learned', 'Mood-incongruent recall favoring material that contrasts with the current affective state', 'Mood-congruent memory favoring material whose emotional tone matches the current mood'],
+    rationale: 'Mood-congruent memory describes greater accessibility of material matching the person\'s current emotional tone. It differs from state-dependent memory, which predicts better retrieval when the internal state at encoding and retrieval matches even if the material\'s content is emotionally neutral.',
+    feedback: {
+      0: 'State-dependent memory concerns matching internal states across encoding and retrieval. The case instead emphasizes the emotional tone of the memories that become accessible.',
+      1: 'Context-dependent retrieval depends on the physical setting or environmental cues. The retrieval difference here follows current mood rather than a change in location.',
+      2: 'Mood-incongruent recall would favor material that contrasts with the client\'s depressed state. The vignette describes the matching, not contrasting, emotional content.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'cognitive-affective-distinguish-mood-congruent-from-state-dependent-memory', distractorDesign: ['state-dependent-confusion', 'context-dependent-confusion', 'mood-incongruent-confusion'],
+  },
+  {
+    id: 'eppp-v3-cognitive-affective-040', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'advanced',
+    expectedPrompt: 'Metacognition refers to:',
+    prompt: 'A student pauses during reading, notices confusion, and switches from rereading to generating questions about the passage. Which process is illustrated?',
+    choices: ['Functional neuroimaging used to map activity during cognitive tasks', 'Semantic memory for factual knowledge stored in long-term memory', 'Monitoring and regulating one\'s own cognitive processes and strategies', 'Affect regulation focused on emotional experience rather than cognitive monitoring'],
+    rationale: 'Metacognition is awareness of one\'s own thinking together with the ability to monitor and regulate that thinking. The student detects a comprehension problem, evaluates the current strategy, and chooses a more effective approach.',
+    feedback: {
+      0: 'Neuroimaging is a measurement technology, not a self-monitoring process. The student is changing a learning strategy based on awareness of comprehension.',
+      1: 'Semantic memory stores facts and meanings. It may contribute to reading, but it does not describe noticing one\'s cognitive state and changing strategy.',
+      3: 'Affect regulation concerns managing emotion. The case centers on monitoring comprehension and selecting a cognitive strategy, which is metacognitive regulation.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'cognitive-affective-apply-metacognition-to-strategy-monitoring-and-control', distractorDesign: ['neuroimaging-confusion', 'semantic-memory-confusion', 'affect-regulation-confusion'],
+  },
+  {
+    id: 'eppp-v3-intervention-022', expectedAnswerIndex: 0, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Psychoeducation as a therapeutic intervention involves:',
+    prompt: 'After a bipolar diagnosis, a clinician explains symptom patterns, early warning signs, medication questions, and a plan for responding to future changes to the client and family. Which intervention is being used?',
+    choices: ['Psychoeducation linking understandable information with coping and relapse-prevention planning', 'Interpretive exploration of unconscious conflict and relationship symbolism', 'Exposure practice designed to reduce a conditioned fear response', 'Contingency management using rewards to shape a selected behavior'],
+    rationale: 'Psychoeducation gives clients and families understandable information about a condition, treatment choices, warning signs, and self-management. In this case, education is integrated with coping and relapse-prevention planning rather than delivered as detached facts.',
+    feedback: {
+      1: 'Interpretive exploration seeks meaning in unconscious conflict and relationship patterns. The clinician here is providing practical illness and self-management information.',
+      2: 'Exposure targets feared cues through planned contact and new learning. The vignette focuses on understanding bipolar symptoms and planning responses to warning signs.',
+      3: 'Contingency management changes behavior through systematically arranged consequences. It does not name the educational and coping-focused intervention described here.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'intervention-apply-psychoeducation-to-condition-management-and-family-coping', distractorDesign: ['psychodynamic-interpretation-confusion', 'exposure-confusion', 'contingency-management-confusion'],
+  },
+  {
+    id: 'eppp-v3-intervention-035', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Trauma-Focused CBT (TF-CBT) was specifically developed for:',
+    prompt: 'A 10-year-old develops nightmares, avoidance, and guilt after a traumatic event; treatment includes family sessions and structured coping and trauma processing. Which protocol best fits?',
+    choices: ['Older adults coping with complicated grief after a spouse\'s death', 'Adults with chronic post-traumatic stress symptoms following combat exposure', 'Children and adolescents with trauma-related symptoms and caregiver involvement', 'Couples working through betrayal and conflict after a traumatic relationship event'],
+    rationale: 'Trauma-Focused CBT was developed for children and adolescents with trauma-related symptoms, commonly incorporating nonoffending caregiver participation. It combines psychoeducation, coping skills, cognitive processing, trauma narration, and safety work in a structured course.',
+    feedback: {
+      0: 'Complicated-grief treatment addresses bereavement and loss in later life, not the child-focused trauma protocol with caregiver participation described here.',
+      1: 'Adult trauma protocols can be evidence based, but the developmental target and caregiver component point specifically to TF-CBT for young people.',
+      3: 'Couple therapy may address relational trauma, yet it does not match the child-and-caregiver structure or trauma-processing sequence in this vignette.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'intervention-select-trauma-focused-cbt-from-developmental-and-treatment-features', distractorDesign: ['complicated-grief-confusion', 'adult-ptsd-protocol-confusion', 'couple-trauma-confusion'],
+  },
+  {
+    id: 'eppp-v3-intervention-037', expectedAnswerIndex: 0, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: 'The working alliance, according to Bordin (1979), consists of:',
+    prompt: 'In early sessions, therapist and client agree on what they want to change, how sessions will proceed, and develop a trusting emotional connection. Which model captures these elements?',
+    choices: ['Bordin\'s working alliance of goals, tasks, and bond', 'Rogers\' core conditions of empathy, congruence, and unconditional positive regard', 'A treatment sequence organized as assessment, intervention, and termination', 'A psychodynamic formulation centered on transference and countertransference'],
+    rationale: 'Bordin\'s pantheoretical working alliance has three linked components: agreement on therapeutic goals, agreement on tasks or methods, and the emotional bond between therapist and client. These elements can operate across different treatment orientations.',
+    feedback: {
+      1: 'Empathy, congruence, and unconditional positive regard describe Rogers\' relational conditions. They overlap with alliance quality but are not Bordin\'s three-component formulation.',
+      2: 'Assessment, intervention, and termination describe broad treatment phases rather than the relational agreement and bond that define the working alliance.',
+      3: 'Transference and countertransference describe psychodynamic relationship processes. Bordin\'s model is deliberately pantheoretical and specifies goals, tasks, and bond.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'intervention-analyze-bordin-working-alliance-components-in-therapy-process', distractorDesign: ['rogerian-conditions-confusion', 'treatment-phase-confusion', 'psychodynamic-process-confusion'],
+  },
+  {
+    id: 'eppp-v3-lifespan-030', expectedAnswerIndex: 3, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: "Piaget's concrete operational stage (approximately ages 7-11) is characterized by:",
+    prompt: 'A nine-year-old conserves quantity, organizes items into nested classes, and handles reversible transformations but struggles with abstract hypotheticals. Which Piagetian stage fits?',
+    choices: ['Sensorimotor thought organized around action and immediate perceptual exploration', 'Preoperational thought marked by egocentrism and intuitive appearance-based judgments', 'Formal operational thought involving systematic reasoning about abstract possibilities', 'Concrete operational thought involving logic applied to tangible objects and relations'],
+    rationale: 'Concrete operational thought supports conservation, classification, seriation, and reversible logic when the child can work with tangible examples. Abstract and hypothetical reasoning becomes more characteristic of the later formal operational period.',
+    feedback: {
+      0: 'Sensorimotor development describes infancy, when knowledge is organized through action and perception. The child in the vignette uses logical operations on representational content.',
+      1: 'Preoperational children rely more on appearance and have difficulty coordinating perspectives and dimensions. Conservation and nested classification indicate a later stage.',
+      2: 'Formal operations extend logic to abstract and hypothetical propositions. The vignette specifically limits the child\'s success to concrete, tangible examples.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'lifespan-classify-concrete-operational-reasoning-from-developmental-evidence', distractorDesign: ['sensorimotor-stage-confusion', 'preoperational-stage-confusion', 'formal-operational-stage-confusion'],
+  },
+  {
+    id: 'eppp-v3-lifespan-040', expectedAnswerIndex: 1, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: 'Selective optimization with compensation (SOC) is a theory of:',
+    prompt: 'An older adult narrows goals to what matters most, practices the remaining skills, and uses a hearing aid and written reminders to offset losses. Which lifespan model best explains this pattern?',
+    choices: ['Stage-like cognitive changes that follow a fixed sequence during early childhood', 'Successful aging through selection, optimization, and compensation for changing resources', 'Adolescent identity formation through exploration of social roles and commitments', 'Prenatal physical growth involving cellular differentiation and organ formation'],
+    rationale: 'Baltes and Baltes\' SOC model describes adaptive development through selecting priorities, optimizing available abilities, and compensating with strategies or aids when resources decline. The model treats gains and losses as coordinated across the lifespan.',
+    feedback: {
+      0: 'Early-childhood stage theories address developmental reorganization in childhood, not the adaptive management of goals and resources in later adulthood.',
+      2: 'Identity exploration and commitment are central to adolescent development, whereas this case concerns prioritizing goals and using aids to maintain functioning.',
+      3: 'Prenatal development concerns biological formation before birth. The vignette describes behavioral adaptation to changing abilities in later life.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'lifespan-apply-soc-model-to-adaptive-aging-and-resource-allocation', distractorDesign: ['childhood-stage-confusion', 'identity-development-confusion', 'prenatal-development-confusion'],
+  },
+  {
+    id: 'eppp-v3-lifespan-042', expectedAnswerIndex: 3, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: 'Teratogenic effects are MOST severe during:',
+      prompt: 'A pregnant patient experiences a substantial teratogen exposure during week 6, when body structures are forming. Which developmental period carries the greatest structural vulnerability?',
+    choices: ['The fetal period, when formed systems grow and refine their functions', 'The neonatal period after birth, when the newborn adapts to extrauterine life', 'The germinal period, when the zygote divides and implants during the first two weeks', 'The embryonic period, when weeks 3 through 8 include major organ formation'],
+    rationale: 'The embryonic period, roughly weeks 3 through 8, is especially vulnerable to structural teratogenic effects because organogenesis is underway. Timing, dose, route, and the developing system still modify the actual risk.',
+    feedback: {
+      0: 'The fetal period emphasizes growth and functional maturation after the major organ plan is established. Some systems remain vulnerable, but week 6 is embryonic.',
+      1: 'Neonatal adaptation occurs after birth and is not the prenatal organogenesis window described in the case.',
+      2: 'The germinal period covers the first two weeks, when implantation and cell division dominate. The stated week 6 exposure falls in the embryonic period.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'lifespan-identify-embryonic-teratogen-vulnerability-from-gestational-timing', distractorDesign: ['fetal-period-confusion', 'neonatal-period-confusion', 'germinal-period-confusion'],
+  },
+  {
+    id: 'eppp-v3-professional-068', expectedAnswerIndex: 3, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: 'When services are requested by a third party, what should the psychologist clarify at the outset?',
+    prompt: 'A school district hires a psychologist to counsel students and requests progress summaries. Before the first meeting, what should the psychologist explain to the student and district?',
+    choices: ['That the district controls records produced during counseling', 'That the student has no need to understand the referral arrangement or information flow', 'That confidentiality has no limits in a school-based organizational referral', 'The psychologist\'s role, likely uses of information, intended recipients, and relevant confidentiality limits'],
+    rationale: 'When a third party requests services, the psychologist should clarify the professional role, probable uses and recipients of information, and relevant limits on confidentiality. This lets the student and organization understand the arrangement before services begin.',
+    feedback: {
+      0: 'A contracting organization may have defined access, but it does not automatically control every record. The psychologist must explain the actual role and permitted information flow.',
+      1: 'People receiving services need understandable information about who requested care and how information may be used. Organizational involvement does not remove that clarification duty.',
+      2: 'School-based services can involve specific confidentiality limits, but describing them as absent is inaccurate. The limits and their practical implications should be explained.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'professional-apply-standard-307-to-third-party-services-and-confidentiality-clarification', distractorDesign: ['organizational-record-ownership-confusion', 'service-recipient-exclusion-confusion', 'unlimited-confidentiality-confusion'],
+  },
+  {
+    id: 'eppp-v3-professional-069', expectedAnswerIndex: 0, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: 'Which description best reflects informed consent under Standard 3.10?',
+    prompt: 'Before treatment, a clinician explains the service, foreseeable risks and benefits, alternatives, fees, and practical confidentiality limits in plain language, then invites questions. Which description best fits?',
+    choices: ['Use understandable language, provide appropriate information, and document consent when indicated', 'Obtain a signature while skipping discussion of the service or its limits', 'Use technical language even when the person cannot understand it', 'Treat consent as irrevocable once the first appointment begins'],
+    rationale: 'Meaningful informed consent uses language reasonably understandable to the person, covers relevant information about the service and its limits, and documents consent when appropriate. It is an ongoing communication process rather than a signature alone.',
+    feedback: {
+      1: 'A signature without discussion does not show that the person understood the service, risks, alternatives, or limits. Consent requires an informative exchange.',
+      2: 'Technical language that the person cannot understand defeats the communication purpose of consent. The psychologist should adapt explanations to the person\'s comprehension.',
+      3: 'Consent is not made irrevocable by an initial appointment. People can ask questions, decline, or withdraw subject to clearly explained practical and legal limits.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'professional-analyze-informed-consent-elements-and-communication-standard-310', distractorDesign: ['signature-only-confusion', 'technical-language-confusion', 'irrevocable-consent-confusion'],
+  },
+  {
+    id: 'eppp-v3-professional-077', expectedAnswerIndex: 0, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: 'A psychologist notices that a personal problem may interfere with competent work. What does Standard 2.06 require?',
+    prompt: 'A psychologist notices severe insomnia and irritability are reducing attention during sessions. What is the most ethical first response under the personal-problems standard?',
+    choices: ['Seek consultation or assistance and consider limiting, suspending, or ending duties when appropriate', 'Continue the same caseload until a client demonstrates actual harm', 'Tell clients detailed private information about the psychologist\'s personal circumstances', 'Assume professional training prevents personal difficulties from affecting services'],
+    rationale: 'Standard 2.06 calls for awareness of personal problems that could interfere with competent work and appropriate action, such as consultation, assistance, or limiting duties. Waiting for demonstrated harm is not the ethical threshold.',
+    feedback: {
+      1: 'The standard does not require waiting for a client to be harmed before responding. Early consultation and a realistic review of capacity protect clients and the psychologist.',
+      2: 'Personal disclosure to clients is not the primary remedy and can shift the professional relationship. Consultation and decisions about duties address the competence concern directly.',
+      3: 'Training does not make psychologists immune to impairment. The relevant duty is to monitor functioning and obtain help or modify work when personal problems interfere.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'professional-apply-standard-206-to-personal-problems-and-competence-protection', distractorDesign: ['wait-for-harm-confusion', 'indiscriminate-self-disclosure-confusion', 'immunity-from-impairment-confusion'],
+  },
+  {
+    id: 'eppp-v3-social-cultural-016', expectedAnswerIndex: 3, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: 'Relative deprivation theory explains that dissatisfaction arises when:',
+    prompt: 'A family has food and housing but feels deprived after comparing its opportunities with a much wealthier neighborhood. Which social process best explains the dissatisfaction?',
+    choices: ['A stable temperament that produces dissatisfaction across social settings', 'Physical deprivation of necessities measured by an absolute poverty threshold', 'Objective hardship that is independent of comparison standards', 'Perceived disadvantage relative to a comparison group despite adequate absolute resources'],
+    rationale: 'Relative deprivation is the perceived gap between one\'s circumstances and those of a relevant comparison group. Dissatisfaction can arise even when basic needs are met because subjective comparison, not an absolute threshold alone, shapes the judgment.',
+    feedback: {
+      0: 'Temperament may influence well-being, but the case specifically introduces a comparison with a wealthier group. The perceived relative gap is the explanatory mechanism.',
+      1: 'Absolute deprivation concerns objective access to necessities. The family has those necessities, so the distress is not defined by an absolute poverty threshold.',
+      2: 'Objective hardship can matter, but relative deprivation emphasizes the perceived discrepancy from a reference group rather than circumstances considered in isolation.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'social-cultural-apply-relative-deprivation-to-comparison-based-dissatisfaction', distractorDesign: ['temperament-confusion', 'absolute-poverty-confusion', 'objective-hardship-confusion'],
+  },
+  {
+    id: 'eppp-v3-social-cultural-021', expectedAnswerIndex: 0, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: 'Individualistic cultures tend to show MORE of which attribution pattern compared to collectivistic cultures?',
+    prompt: 'A supervisor in an individualistic setting explains a trainee\'s lateness as a personality flaw while discounting a transit disruption. Which attributional pattern is most consistent with the cultural comparison?',
+    choices: ['The fundamental attribution error, which overweights disposition when explaining another person\'s behavior', 'Group-based attribution that explains conduct primarily through collective membership', 'External attribution for success that credits circumstances rather than personal agency', 'Situational attribution for others\' behavior that emphasizes context over personal characteristics'],
+    rationale: 'Individualistic cultural contexts tend to show a stronger fundamental attribution error: observers emphasize dispositional traits and underweight situational constraints when explaining another person\'s behavior. The transit disruption is the discounted context in this case.',
+    feedback: {
+      1: 'Group-based explanations emphasize collective membership and are more characteristic of a context-focused attributional style. The vignette instead privileges a personal trait explanation.',
+      2: 'An external explanation for success credits circumstances and does not capture the supervisor\'s trait-focused explanation of another person\'s lateness.',
+      3: 'Situational attribution gives weight to context, such as the transit disruption. The supervisor discounts that context, which is the reverse of the described pattern.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'social-cultural-apply-cultural-attribution-patterns-to-fundamental-attribution-error', distractorDesign: ['group-attribution-confusion', 'external-success-confusion', 'situational-attribution-confusion'],
+  },
+  {
+    id: 'eppp-v3-social-cultural-035', expectedAnswerIndex: 0, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: 'Which model describes therapist multicultural competence as including awareness, knowledge, and skills?',
+    prompt: 'A training plan asks therapists to examine their own assumptions, learn about clients\' cultural worldviews, and adapt interventions responsively. Which model organizes these three competency areas?',
+    choices: ['Sue, Arredondo, and McDavis\' tripartite model of multicultural competence', 'Helms\' racial-identity model describing statuses across identity development', 'Bronfenbrenner\'s ecological model describing nested environmental systems', 'Berry\'s acculturation model describing strategies for cultural adaptation'],
+    rationale: 'The tripartite multicultural-competence model organizes practice around awareness of the clinician\'s assumptions, knowledge of clients\' worldviews and contexts, and skills for culturally responsive intervention. It links self-reflection to applied clinical behavior.',
+    feedback: {
+      1: 'Helms\' model addresses racial-identity development and status patterns. It does not name the awareness, knowledge, and skills framework used for therapist competence.',
+      2: 'Bronfenbrenner\'s model maps nested environmental systems that shape development. It is not the competency framework described in the training plan.',
+      3: 'Berry\'s model concerns acculturation strategies such as integration or separation. It does not organize therapist competence into awareness, knowledge, and skills.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'social-cultural-identify-tripartite-multicultural-competence-model-from-training-goals', distractorDesign: ['racial-identity-model-confusion', 'ecological-systems-confusion', 'acculturation-model-confusion'],
+  },
+  {
+    id: 'eppp-b003-research-2', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'A correctly computed p-value is .03. Which interpretation is most accurate?',
+    prompt: 'An analyst obtains p = .03 while evaluating a specified null hypothesis. Which statement accurately interprets the finding?',
+    choices: ['There is a 3% chance that the null hypothesis itself is true', 'The treatment has a 97% chance of succeeding in the population', 'If the null model were true, results this extreme or more would occur about 3% of the time', 'The treatment explains 3% of the variance in the outcome'],
+    rationale: 'A p-value is the probability, under the specified null model and analysis assumptions, of observing a result at least as extreme as the one obtained. It is not a probability that the hypothesis is true or an effect-size measure.',
+    feedback: {
+      0: 'The p-value conditions on the null model; it does not assign a 3% probability that the null hypothesis is true. That would require a different inferential framework.',
+      1: 'A p-value does not estimate the probability that a treatment will succeed. Predictive success depends on effect size, uncertainty, design, and the target population.',
+      3: 'Variance explained is an effect-size concept such as R-squared. A p-value describes compatibility with the null model, not the magnitude of explained outcome variance.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'research-interpret-p-value-as-tail-probability-under-a-specified-null-model', distractorDesign: ['inverse-null-probability-confusion', 'success-probability-confusion', 'variance-explained-confusion'],
+  },
+  {
+    id: 'eppp-b005-research-2', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'In null-hypothesis significance testing, a Type I error occurs when a researcher:',
+    prompt: 'A study discards the null hypothesis that a treatment has no effect, but the null hypothesis is actually true. Which error has occurred?',
+    choices: ['A Type II error caused by retaining a false null hypothesis', 'A correct retention of a true null hypothesis', 'A Type I error caused by rejecting a true null hypothesis', 'A correct rejection of a false null hypothesis'],
+    rationale: 'A Type I error is a false positive: the researcher rejects a null hypothesis that is actually true. A Type II error is the complementary false-negative decision of retaining a false null hypothesis.',
+    feedback: {
+      0: 'Type II error involves failing to reject a false null hypothesis. The study instead rejects the null, and the null is true, so the decision is a false positive.',
+      1: 'Retaining a true null is a correct decision, not an error. The case states that the researcher rejected the true null hypothesis.',
+      3: 'Correct rejection occurs when a false null hypothesis is rejected. Here the null is true, so the rejection is classified as Type I error.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'research-classify-type-one-error-from-null-decision-and-truth-status', distractorDesign: ['type-two-confusion', 'correct-retention-confusion', 'correct-rejection-confusion'],
+  },
+  {
+    id: 'eppp-v3-research-028', expectedAnswerIndex: 3, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: "A researcher wants to predict a college student's final GPA (continuous dependent variable) based on their SAT score, high school GPA, and number of extracurricular activities. The appropriate statistical technique is:",
+    prompt: 'An admissions office models a student\'s final GPA from SAT performance, high-school grades, and activity involvement. Which analysis is appropriate for this outcome and set of inputs?',
+    choices: ['Factor analysis for identifying latent dimensions among correlated measures', 'Logistic regression for a categorical outcome with two or more classes', 'MANOVA for comparing several continuous outcomes across categorical groups', 'Multiple linear regression for one continuous outcome with several predictors'],
+    rationale: 'Multiple linear regression estimates a continuous outcome from two or more predictors and can quantify the unique and combined contribution of each predictor. Final GPA is continuous, so logistic regression and MANOVA address different outcome structures.',
+    feedback: {
+      0: 'Factor analysis studies covariance among measures to identify latent dimensions. It does not model a student outcome from a set of predictors.',
+      1: 'Logistic regression is used for categorical outcomes, such as a binary classification. Final GPA is continuous, so a linear model is more appropriate.',
+      2: 'MANOVA compares multiple continuous outcomes across categorical groups. The case has one continuous outcome and several predictors, matching multiple regression.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'research-select-multiple-regression-for-one-continuous-outcome-and-several-predictors', distractorDesign: ['factor-analysis-confusion', 'logistic-regression-confusion', 'manova-confusion'],
+  },
+];
+
+module.exports = { baselineMetrics, reviewedAt, reviewWave, revisions };

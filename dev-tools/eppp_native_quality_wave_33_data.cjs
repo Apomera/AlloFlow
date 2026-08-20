@@ -1,0 +1,301 @@
+'use strict';
+
+const reviewedAt = '2026-08-20';
+const reviewWave = 'eppp-native-quality-wave-33';
+const baselineMetrics = Object.freeze({
+  distractor: { totalItems: 1500, warningOnly: true, forbiddenAggregateChoices: 0, uniqueKeyStemLexicalLeakageCandidates: 47, asymmetricExtremeDistractorCandidates: 86, advancedDirectRecallCandidates: 3, semanticConceptDuplicatePairs: 51, semanticConceptDuplicateClusters: 36, editorialAnchorsWithActiveWarnings: 1, editorialAnchorsWithNoCurrentWarning: 9, priorityDocketItems: 20 },
+  feedback: { totalItems: 1500, totalIncorrectOptions: 4500, itemsWithWarnings: 474, incorrectOptionsWithWarnings: 1314, insufficientDetailOptions: 624, genericTemplateOptions: 636, choiceRestatementOptions: 148, fullKeyEchoOptions: 64, priorityDocketItems: 100 },
+});
+
+const revisions = [
+  {
+    id: 'eppp-v2-assessment-011', expectedAnswerIndex: 3, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: 'Complete the statement: Divergent validity demonstrates that a test:',
+    prompt: 'A clinician compares a new depression inventory with an established depression scale and a spatial-reasoning test. The new score aligns with the former but shows little relation to the latter. Which evidence is demonstrated?',
+    choices: ['Evidence that the instrument converges with related measures', 'Evidence that scores remain stable across repeated administrations', 'Evidence that the instrument predicts later treatment response', 'Evidence that the measure remains distinct from a different construct'],
+    rationale: 'Divergent, or discriminant, validity is supported when a measure relates to theoretically similar constructs yet shows a weaker relationship with an unrelated construct. The comparison with spatial reasoning tests that boundary rather than reliability or prediction.',
+    feedback: {
+      0: 'Convergent validity concerns alignment with measures of a similar construct, which the depression-scale comparison supports but does not capture the full contrast in this case.',
+      1: 'Stability across administrations is test-retest reliability. The vignette compares constructs measured at the same validation stage rather than repeated scores over time.',
+      2: 'Prediction of later treatment response is criterion-related evidence. No future outcome or treatment response is examined in the cross-construct comparison.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'assessment-apply-divergent-validity-to-related-and-unrelated-construct-evidence', distractorDesign: ['convergent-validity-confusion', 'test-retest-reliability-confusion', 'criterion-prediction-confusion'],
+  },
+  {
+    id: 'eppp-v2-assessment-013', expectedAnswerIndex: 1, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: 'Complete the statement: Response bias in self-report measures can include:',
+    prompt: 'On a 1–5 symptom inventory, a respondent agrees with nearly every item, selects socially approved answers, and avoids both endpoints. Which measurement problem should the examiner consider?',
+    choices: ['Random responding caused by inattention alone', 'A pattern of acquiescence, social-desirability, central-tendency, and patterned scale use', 'A stable symptom pattern that makes item wording irrelevant', 'Disagreement among raters during behavioral coding'],
+    rationale: 'The pattern combines several response tendencies: acquiescence favors agreement, social desirability favors favorable presentation, and central or endpoint styles shape scale use. These are measurement processes that can distort self-report interpretation.',
+    feedback: {
+      0: 'Inattention can produce inconsistent answers, but the organized pattern of agreement and socially favorable responding points to response styles rather than random inattention alone.',
+      2: 'A symptom pattern is a substantive interpretation, not an explanation for systematic scale-use tendencies across differently worded items.',
+      3: 'Interrater disagreement belongs to observer-based coding. The described distortion occurs within one person’s self-report responses during score interpretation.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'assessment-differentiate-self-report-response-bias-patterns-from-other-measurement-errors', distractorDesign: ['random-inattention-confusion', 'construct-versus-response-style-confusion', 'interrater-reliability-confusion'],
+  },
+  {
+    id: 'eppp-v2-assessment-024', expectedAnswerIndex: 0, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: 'Complete the statement: Regression to the mean is most likely to affect:',
+    prompt: 'A student with a very low first test score repeats the same test weeks later; the retest is closer to the class average despite no targeted intervention. Which account is most defensible?',
+    choices: ['Regression toward the mean, amplified when scores are extreme and measurement is imperfect', 'A practice effect that raises retest performance in a predictable direction', 'A ceiling effect caused by an overly easy item set', 'A change in the measured construct caused by retesting alone'],
+    rationale: 'An unusually low observed score can partly reflect random measurement error. On retesting, that error may be smaller and the score move toward the population mean, with larger movement expected when reliability is lower.',
+    feedback: {
+      1: 'Practice can influence a retest, but the vignette emphasizes an unusually low initial observation and movement toward the average without a targeted change.',
+      2: 'A ceiling effect compresses high scores near the upper limit; it does not explain a low score becoming more moderate on a later administration.',
+      3: 'Retesting does not by itself establish that the underlying construct changed. Random error and the initial score’s extremity provide the stronger explanation.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'assessment-apply-regression-to-the-mean-to-an-extreme-retest-score', distractorDesign: ['practice-effect-confusion', 'ceiling-effect-confusion', 'construct-change-confusion'],
+  },
+  {
+    id: 'eppp-b013-biological-2', expectedAnswerIndex: 2, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: 'In a classic complete-commissurotomy study, an adult with left-hemisphere-dominant speech fixates centrally while a picture of a key is flashed to the left visual field. Which response pattern was classically reported?',
+    prompt: 'After the cerebral commissures are severed, a briefly presented object enters the left visual field. The person cannot say its name but can choose the matching object with the left hand. Which neural arrangement explains the dissociation?',
+    choices: ['Language access and left-hand control remain in the same processing route', 'The left visual field projects directly to the speech-dominant hemisphere', 'Information remains available to the hemisphere controlling the responding hand while language access is limited', 'The visual stimulus is not registered, so the hand choice reflects guessing'],
+    rationale: 'A left-visual-field stimulus initially reaches the right hemisphere, which primarily controls the left hand. With commissural transfer disrupted and speech usually left-lateralized, the person may select the object manually yet fail to name it.',
+    feedback: {
+      0: 'The classic dissociation arises because manual selection and spoken naming depend on partly separated processing routes after commissural transfer is disrupted.',
+      1: 'Left-visual-field input is initially routed to the right hemisphere, not directly to the speech-dominant left hemisphere in the described arrangement.',
+      3: 'The accurate matching choice indicates useful visual processing. The naming failure reflects limited transfer to language systems rather than absent registration.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'biological-analyze-split-brain-visual-field-and-manual-response-dissociation', distractorDesign: ['hemisphere-route-reversal', 'visual-field-projection-confusion', 'absent-registration-confusion'],
+  },
+  {
+    id: 'eppp-v2-biological-042', expectedAnswerIndex: 1, expectedDifficulty: 'advanced', targetDifficulty: 'advanced',
+    expectedPrompt: 'Complete the statement: The insula cortex has been implicated in:',
+    prompt: 'During an interoceptive task, a participant reports visceral sensations and disgust while giving emotional meaning to them. A lesion in which region would most directly disrupt this combination?',
+    choices: ['Primary motor cortex, which organizes voluntary movement', 'The insular cortex, which integrates internal bodily signals with affective awareness', 'Primary visual cortex, which extracts early visual features', 'The cerebellar vermis, which calibrates posture and timing'],
+    rationale: 'The insula integrates signals about internal bodily states with subjective feeling and salience, and it contributes to disgust and related social-affective processing. The vignette combines those functions rather than movement, vision, or coordination.',
+    feedback: {
+      0: 'Primary motor cortex supports voluntary movement planning and execution, not the central integration of visceral sensations with disgust and feeling states.',
+      2: 'Primary visual cortex analyzes visual input. It does not best account for interoceptive awareness paired with affective interpretation.',
+      3: 'The cerebellar vermis contributes to balance and motor timing. Those functions do not explain the visceral and disgust-related profile.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'biological-select-insula-from-interoceptive-and-affective-function-pattern', distractorDesign: ['motor-cortex-function-confusion', 'visual-cortex-function-confusion', 'cerebellar-function-confusion'],
+  },
+  {
+    id: 'eppp-v3-biological-050', expectedAnswerIndex: 1, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: "Huntington's disease is caused by:",
+    prompt: 'A 42-year-old with progressive chorea, executive changes, and a parent who had a similar illness seeks genetic counseling. Which mechanism best accounts for the pattern?',
+    choices: ['A recessive metabolic disorder affecting peripheral nerves', 'An autosomal-dominant CAG-repeat disorder affecting the striatum', 'An acquired toxin-related degeneration after environmental exposure', 'A developmental nutritional syndrome affecting motor learning'],
+    rationale: 'Huntington disease is an autosomal-dominant CAG-repeat neurodegenerative disorder. Progressive striatal involvement can produce chorea, executive changes, psychiatric symptoms, and a family pattern consistent with vertical transmission.',
+    feedback: {
+      0: 'A recessive peripheral metabolic disorder would not fit the characteristic movement, executive, and multigenerational pattern described here.',
+      2: 'An acquired toxin can cause movement or cognitive symptoms, but it would not explain the consistent parent-to-child transmission pattern in this vignette.',
+      3: 'Nutritional developmental disorders can affect motor learning, yet they do not produce this later-onset inherited neurodegenerative presentation.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'biological-infer-huntington-disease-mechanism-from-inheritance-and-striatal-symptoms', distractorDesign: ['recessive-peripheral-disorder-confusion', 'toxin-versus-inherited-confusion', 'developmental-nutrition-confusion'],
+  },
+  {
+    id: 'eppp-b024-cognitive-1', expectedAnswerIndex: 0, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'The original Dunning-Kruger studies most directly suggested that people with low skill in a domain may:',
+    prompt: 'In a training exercise, novice performers miss several items and rate their performance near the top; after feedback and practice, their self-ratings become more calibrated. Which interpretation fits?',
+    choices: ['Limited domain skill can impair the metacognitive judgments used to detect one’s own errors', 'Experts lose their ability to judge performance whenever tasks become difficult', 'Confidence is unrelated to performance feedback and practice', 'The pattern proves a fixed trait shared by many novices'],
+    rationale: 'The original account proposed a dual burden: lower skill can increase errors while also limiting the knowledge needed to recognize those errors. Feedback and learning can improve calibration, so the effect is a probabilistic performance pattern rather than a fixed label.',
+    feedback: {
+      1: 'The finding concerns calibration among lower-skilled performers; it does not claim that skilled people lose judgment whenever a task is difficult.',
+      2: 'The changing self-ratings after feedback indicate that experience and information can affect calibration, so confidence is not unrelated to learning conditions.',
+      3: 'The pattern does not justify labeling every novice. Study design, task familiarity, feedback, and individual differences all shape calibration.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'cognitive-affective-apply-dunning-kruger-metacognitive-account-to-feedback-and-skill', distractorDesign: ['expertise-reversal-confusion', 'feedback-independence-confusion', 'fixed-trait-overgeneralization'],
+  },
+  {
+    id: 'eppp-b025-cognitive-2', expectedAnswerIndex: 1, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Which study plan best applies retrieval-practice evidence to durable learning?',
+    prompt: 'A trainee studies 20 flashcards across four sessions, first generating each answer and then checking corrections. Which feature most likely supports later recall?',
+    choices: ['One long rereading session with no self-test', 'Spaced retrieval attempts followed by corrective feedback', 'Copying definitions while the answer remains visible', 'Postponing practice until the examination day'],
+    rationale: 'Actively retrieving information creates a useful test of access, and spacing those attempts distributes practice over time. Corrective feedback repairs errors so later retrieval is both effortful and accurate.',
+    feedback: {
+      0: 'Rereading can support familiarity, but a single uninterrupted exposure provides less practice at generating the answer from memory.',
+      2: 'Copying with the answer visible emphasizes exposure rather than successful retrieval, making it harder to diagnose what can be produced unaided.',
+      3: 'Concentrating practice on the examination day reduces spacing and leaves little opportunity to correct misunderstandings before performance matters.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'cognitive-affective-apply-spaced-retrieval-and-feedback-to-durable-learning', distractorDesign: ['rereading-versus-retrieval-confusion', 'visible-answer-confusion', 'massed-practice-confusion'],
+  },
+  {
+    id: 'eppp-b026-cognitive-2', expectedAnswerIndex: 1, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Why can chunking improve immediate recall of a long sequence?',
+    prompt: 'A learner remembers a phone number more accurately after grouping its digits into familiar patterns. What mechanism best explains the benefit?',
+    choices: ['Increasing the biological capacity of working memory', 'Organizing individual elements into meaningful units that reduce active load', 'Preventing prior knowledge from shaping encoding', 'Converting the material directly into procedural memory'],
+    rationale: 'Chunking recodes separate elements as larger meaningful units, reducing how many units must be actively maintained. Prior knowledge often supplies useful groupings, but the underlying capacity is not thereby unlimited.',
+    feedback: {
+      0: 'Chunking improves organization and effective use of working memory; it does not establish a permanent expansion of the system’s biological capacity.',
+      2: 'Useful chunks depend on prior knowledge and meaning, so the process does not block prior knowledge from influencing encoding.',
+      3: 'Procedural memory supports learned skills and routines. Grouping digits primarily changes the organization of actively maintained information.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'cognitive-affective-explain-chunking-as-meaningful-working-memory-organization', distractorDesign: ['capacity-expansion-confusion', 'prior-knowledge-reversal', 'procedural-memory-confusion'],
+  },
+  {
+    id: 'eppp-b022-intervention-2', expectedAnswerIndex: 1, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Strategic family therapy is especially associated with the deliberate use of:',
+    prompt: 'A therapist maps a recurring interaction sequence, then assigns a carefully timed task that changes who does what between sessions. Which approach is represented?',
+    choices: ['Nondirective supportive counseling centered on free expression', 'Strategic family therapy, which uses formulated directives to interrupt maintaining patterns', 'A standardized exposure protocol for phobic cues', 'Psychoanalysis focused on dream interpretation'],
+    rationale: 'Strategic family therapy links symptoms to interactional sequences and uses planned directives to alter the pattern maintaining the problem. A directive is selected from a formulation, not delivered as a generic trick.',
+    feedback: {
+      0: 'Nondirective support emphasizes acceptance and exploration rather than a deliberately assigned task designed to alter a specific interaction sequence.',
+      2: 'Exposure protocols target fear learning through planned contact with cues; the vignette instead describes an interpersonal task embedded in family interaction.',
+      3: 'Psychoanalytic dream work addresses symbolic and intrapsychic material, whereas this intervention directly reorganizes a current relational pattern.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'intervention-identify-strategic-family-therapy-directive-from-interactional-formulation', distractorDesign: ['nondirective-versus-directive-confusion', 'exposure-versus-family-task-confusion', 'psychoanalytic-versus-strategic-confusion'],
+  },
+  {
+    id: 'eppp-b023-intervention-2', expectedAnswerIndex: 1, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'A central rationale for using play in psychotherapy with children is that play can:',
+    prompt: 'A 7-year-old who struggles to describe family conflict uses puppets to enact scenes while the clinician checks age-appropriate and safety context. What is the main therapeutic rationale?',
+    choices: ['Replace assessment and caregiver collaboration during treatment', 'Offer a developmentally congruent medium for communication, relationship, and practice', 'Provide literal proof of the events represented in a scene', 'Make verbal communication unnecessary for the remainder of treatment'],
+    rationale: 'Play can give children a familiar medium for communicating, symbolizing experience, building a therapeutic relationship, and practicing alternatives. Its meaning remains contextual and must be integrated with assessment and caregiver information.',
+    feedback: {
+      0: 'Play supplements clinical assessment and collaboration; it does not remove the need to evaluate safety, development, family context, and treatment goals.',
+      2: 'A child’s enactment may express themes or concerns, but symbolic play is not a literal record that proves an event occurred exactly as represented.',
+      3: 'Play can support children who have difficulty with verbal description, yet clinicians still use language and other methods when they fit the child and treatment.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'intervention-apply-developmental-rationale-for-play-therapy-with-contextual-interpretation', distractorDesign: ['play-replaces-assessment-confusion', 'symbolic-versus-literal-evidence-confusion', 'nonverbal-exclusivity-confusion'],
+  },
+  {
+    id: 'eppp-b024-intervention-1', expectedAnswerIndex: 0, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Lithium is most accurately described as:',
+    prompt: 'A patient with recurrent manic episodes begins lithium; the prescriber orders serum levels and thyroid and renal monitoring. Which medication description best fits?',
+    choices: ['A mood stabilizer for bipolar-spectrum illness with a narrow therapeutic range', 'A short-acting sedative intended for isolated panic symptoms', 'A stimulant used to treat episodic mania', 'An opioid-receptor medication used mainly for withdrawal'],
+    rationale: 'Lithium is a mood stabilizer used in bipolar-spectrum illness, and its relatively narrow therapeutic range makes serum, renal, thyroid, and clinical monitoring important. The monitoring plan is part of the treatment context.',
+    feedback: {
+      1: 'A short-acting sedative may reduce acute anxiety, but it does not explain lithium’s role in preventing manic recurrence or the specified monitoring.',
+      2: 'Stimulants do not describe lithium’s pharmacologic role in bipolar treatment and would not account for serum, thyroid, and renal surveillance.',
+      3: 'Opioid-receptor medications address different indications, so that description does not fit a mood-stabilization plan with lithium monitoring.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'intervention-identify-lithium-as-monitored-mood-stabilizer-in-bipolar-treatment', distractorDesign: ['sedative-indication-confusion', 'stimulant-versus-mood-stabilizer-confusion', 'opioid-medication-confusion'],
+  },
+  {
+    id: 'eppp-v2-lifespan-019', expectedAnswerIndex: 3, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Complete the statement: Identity foreclosure (Marcia) occurs when an adolescent:',
+    prompt: 'A 16-year-old adopts a parent’s career and religious commitments, reports little consideration of alternatives, and feels certain about the path. Which status is illustrated?',
+    choices: ['Achievement after broad exploration and a considered decision', 'Moratorium during active exploration before a decision', 'Diffusion with neither an adopted direction nor active search', 'Foreclosure, in which an identity is adopted before option searching'],
+    rationale: 'Marcia’s foreclosure status involves commitment made with little or no prior exploration. The adolescent has adopted important values and plans but has not meaningfully considered alternative identities.',
+    feedback: {
+      0: 'Identity achievement combines exploration with commitment. The vignette specifically describes limited consideration of alternatives before the commitment.',
+      1: 'Moratorium describes active exploration without a settled commitment, whereas this adolescent already feels committed to a prescribed path.',
+      2: 'Diffusion involves an absence of both sustained exploration and commitment. The adolescent has a clear commitment even though exploration is limited.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'lifespan-classify-marcia-foreclosure-from-commitment-with-limited-exploration', distractorDesign: ['achievement-versus-foreclosure-confusion', 'moratorium-versus-foreclosure-confusion', 'diffusion-versus-foreclosure-confusion'],
+  },
+  {
+    id: 'eppp-v2-lifespan-037', expectedAnswerIndex: 1, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: "In attachment theory, what does the 'internal working model' mean?",
+    prompt: 'An adult expects partners to be reliable and views their own worth as secure; these expectations resemble patterns in early caregiving. Which concept best organizes the pattern?',
+    choices: ['A stable physical-growth sequence that determines later relationships', 'Internal working models: mental representations of self and others shaped by attachment history', 'A formal cognitive stage that appears at one fixed childhood age', 'A classroom curriculum used to teach social-emotional skills'],
+    rationale: 'Bowlby’s internal working models are mental representations of self and other people formed through attachment experiences. They guide expectations and interpretations in later relationships while remaining open to revision.',
+    feedback: {
+      0: 'Physical growth sequences describe bodily development, not the relationship expectations and self-evaluations organized by attachment representations.',
+      2: 'A cognitive stage model uses age-linked developmental structures; the vignette instead concerns relational expectations that derive from attachment history.',
+      3: 'A curriculum is an educational intervention. It does not explain how early relationships shape expectations about self and others.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'lifespan-analyze-attachment-internal-working-model-from-adult-relationship-expectations', distractorDesign: ['physical-development-confusion', 'stage-model-confusion', 'curriculum-versus-attachment-confusion'],
+  },
+  {
+    id: 'eppp-v2-lifespan-038', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Complete the statement: Developmental milestones for walking typically occur around:',
+    prompt: 'A 13-month-old has just begun independent steps and otherwise shows steady motor progress. Which interpretation is most defensible?',
+    choices: ['The timing indicates a definite motor disorder', 'Independent walking normally begins in the preschool years', 'Variable first-year walking onset within a broad normative range', 'A single milestone date should be used as a rigid cutoff'],
+    rationale: 'First independent steps commonly emerge around the end of the first year, with meaningful variation across typically developing children. A single observation should be interpreted with the broader developmental pattern and not a rigid cutoff.',
+    feedback: {
+      0: 'A 13-month onset can fall within ordinary variation, so the timing alone does not establish a motor disorder without broader developmental evidence.',
+      1: 'Independent walking generally emerges well before the preschool years; the described timing is consistent with the usual developmental window.',
+      3: 'Milestones are useful reference points, but development varies. A rigid date would overinterpret normal individual differences and ignore the full pattern.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'lifespan-apply-normative-variability-to-independent-walking-milestone', distractorDesign: ['pathology-from-single-milestone', 'preschool-timing-confusion', 'rigid-cutoff-confusion'],
+  },
+  {
+    id: 'eppp-v2-professional-030', expectedAnswerIndex: 3, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: 'At the start of therapy, a psychologist reviews fees and cancellation policies but has not discussed the likely course of therapy, third-party involvement, or limits of confidentiality. What is the best next step under APA Ethics Code Standard 10.01?',
+    prompt: 'Before meeting a new patient, a psychologist has explained billing but not what treatment may involve, who else may receive information, or the boundaries on privacy. What should happen next?',
+    choices: ['Move directly to treatment because billing disclosure is sufficient', 'Provide a diagnosis before discussing the service arrangement', 'Ask the payer to decide which information the client receives', 'Finish the consent explanation and invite questions about those omitted topics'],
+    rationale: 'Standard 10.01 calls for early information about the nature and anticipated course of therapy, fees, third-party involvement, and confidentiality limits, with a meaningful opportunity for questions. Fee disclosure alone leaves the consent process incomplete.',
+    feedback: {
+      0: 'Fees are one consent topic, but proceeding without discussing therapy expectations, third-party roles, and confidentiality limits leaves the client underinformed.',
+      1: 'A diagnosis is not the missing ethical step. The immediate issue is clarifying the service arrangement and its relevant limits before treatment proceeds.',
+      2: 'A payer’s role does not replace the psychologist’s duty to explain the arrangement directly to the client and address questions about confidentiality.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'professional-apply-standard-10-01-informed-consent-topics-before-therapy', distractorDesign: ['fee-only-consent-confusion', 'diagnosis-before-consent-confusion', 'payer-control-confusion'],
+  },
+  {
+    id: 'eppp-b025-professional-3', expectedAnswerIndex: 3, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Valid informed consent for psychological services most centrally requires:',
+    prompt: 'A client accurately explains the proposed therapy, likely material downsides, alternatives, and the option to decline; no pressure is present, and the clinician checks understanding. Which consent standard is illustrated?',
+    choices: ['A completed form even when the person cannot understand the information', 'Disclosure after services end so expectations do not influence participation', 'A promise that unforeseen discomfort or outcomes will not occur', 'Understandable information, decision-making ability, free choice, and an opportunity to ask'],
+    rationale: 'Ethically meaningful consent is an ongoing process: relevant information must be understandable, the person must be able to decide, the choice must be free of undue pressure, and questions should be addressed. A signature alone is not enough.',
+    feedback: {
+      0: 'A signed form documents part of a process but cannot substitute for comprehension and decision-making ability when those are absent.',
+      1: 'Consent information is needed before participation so the person can make an informed choice; delayed disclosure defeats that purpose.',
+      2: 'Consent requires honest discussion of foreseeable uncertainty and material risks, not an assurance that unexpected discomfort or outcomes are impossible.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'professional-apply-informed-consent-elements-to-a-therapy-decision', distractorDesign: ['form-versus-process-confusion', 'delayed-disclosure-confusion', 'risk-certainty-confusion'],
+  },
+  {
+    id: 'eppp-b028-professional-4', expectedAnswerIndex: 3, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'When ethical principles point in different directions, the psychologist should:',
+    prompt: 'A psychologist must balance a client’s privacy, a third party’s safety, applicable law, and consultation advice in a novel case. Which process is most defensible?',
+    choices: ['Follow whichever duty feels strongest at first glance', 'Treat legal compliance as the complete ethical analysis', 'Let the payer select the governing obligation', 'Use a transparent stakeholder-based analysis that records reasons and minimizes foreseeable harm'],
+    rationale: 'Conflicting duties call for a documented, context-sensitive process that identifies stakeholders, considers rights and welfare, consults relevant authorities, follows law, and minimizes foreseeable harm. The reasoning should remain open to revision as facts change.',
+    feedback: {
+      0: 'An intuitive first preference may overlook affected people, competing duties, or important facts. Ethical defensibility requires a reasoned comparison of options.',
+      1: 'Legal compliance is necessary but does not exhaust professional ethics; privacy, welfare, consultation, and the specific context still require analysis.',
+      2: 'Payment does not determine which ethical duties apply. The psychologist remains responsible for evaluating rights, risk, law, and professional obligations.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'professional-analyze-conflicting-ethical-duties-with-documentation-and-consultation', distractorDesign: ['intuition-only-confusion', 'law-as-complete-analysis-confusion', 'payer-authority-confusion'],
+  },
+  {
+    id: 'eppp-b026-social-2', expectedAnswerIndex: 1, expectedDifficulty: 'advanced', targetDifficulty: 'advanced',
+    expectedPrompt: 'A recruiter asks a student to mentor 10 hours each week for two years. After the student refuses, the same recruiter asks for help at one two-hour event; a comparison group receives only the event request. Compliance is higher after the two-request sequence. Which interpretation best matches the original door-in-the-face research?',
+    prompt: 'A campus volunteer first asks a student to lead a month-long project, then—after refusal—asks for one afternoon shift. Compared with a one-shift-only request, the second request gets more yeses. Which process best explains the pattern?',
+    choices: ['Consistency pressure from agreeing to the initial request', 'A perceived concession by the requester can prompt reciprocal concession by the target', 'An agreement followed by a hidden cost', 'A change in memory caused by repeated questioning'],
+    rationale: 'Door-in-the-face uses a large request followed by a smaller one after refusal. The requester’s apparent retreat can be experienced as a concession, making reciprocal movement toward the smaller request more likely than in a small-request-only comparison.',
+    feedback: {
+      0: 'The student refused the initial request, so there is no prior agreement requiring consistency. The sequence instead involves a retreat followed by a smaller request.',
+      2: 'A hidden-cost tactic changes terms after agreement, whereas this sequence obtains a refusal first and then presents a reduced request.',
+      3: 'Repeated requests may affect attention, but the established interpretation centers on the social meaning of the requester’s apparent concession.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'social-cultural-analyze-door-in-the-face-reciprocal-concession-design', distractorDesign: ['foot-in-the-door-confusion', 'low-ball-confusion', 'memory-interference-confusion'],
+  },
+  {
+    id: 'eppp-v3-social-cultural-012', expectedAnswerIndex: 3, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: 'Cultural dimensions theory (Hofstede) includes:',
+    prompt: 'A cross-national survey compares how societies distribute authority, coordinate individual and group goals, and respond to ambiguity. Which use of Hofstede’s framework is most accurate?',
+    choices: ['It ranks cultures on one universal personality scale', 'It identifies biologically inherited personality types', 'It provides a clinical diagnosis for individual respondents', 'It summarizes several country-level cultural dimensions, not fixed traits of each person'],
+    rationale: 'Hofstede’s framework compares broad cultural dimensions such as power distance, individualism–collectivism, and uncertainty avoidance at a country or group level. Those summaries should not be treated as deterministic descriptions of every individual.',
+    feedback: {
+      0: 'The framework is multidimensional rather than a single universal personality ranking, and country comparisons do not establish personal traits.',
+      1: 'Cultural dimensions describe patterned social values and practices; they are not biological classifications of personality inherited by group members.',
+      2: 'A clinical diagnosis requires individual assessment and diagnostic criteria. A national cultural comparison cannot serve that function.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'social-cultural-analyze-hofstede-dimensions-with-level-of-analysis-caution', distractorDesign: ['single-scale-confusion', 'biological-essentialism-confusion', 'diagnosis-level-confusion'],
+  },
+  {
+    id: 'eppp-v2-social-cultural-011', expectedAnswerIndex: 1, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: 'Which statement most accurately defines Group polarization?',
+    prompt: 'Before discussion, members show a modest preference for a risky investment; after exchanging arguments, the group’s recommendation favors substantially more risk than the initial average. Which process fits?',
+    choices: ['Group discussion makes members uniformly moderate and compromise-oriented', 'Group polarization shifts a preexisting lean toward a more extreme collective position', 'Social loafing reduces individual effort during a shared task', 'Deindividuation reduces self-awareness in a crowded setting'],
+    rationale: 'Group polarization occurs when discussion moves a group toward a more extreme position in the direction of its members’ initial lean. Persuasive arguments and social comparison can both contribute to the shift.',
+    feedback: {
+      0: 'The observed recommendation becomes riskier rather than more moderate. Compromise is not the defining direction of the change described.',
+      2: 'Social loafing concerns reduced effort when responsibility is shared; it does not explain a shift in the group’s decision position.',
+      3: 'Deindividuation concerns self-awareness and restraint in certain group contexts, whereas this vignette focuses on directional opinion change after discussion.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'social-cultural-apply-group-polarization-to-preference-shift-after-discussion', distractorDesign: ['moderation-confusion', 'social-loafing-confusion', 'deindividuation-confusion'],
+  },
+  {
+    id: 'eppp-v2-research-012', expectedAnswerIndex: 0, expectedDifficulty: 'advanced', targetDifficulty: 'advanced',
+    expectedPrompt: 'Complete the statement: Criterion contamination threatens validity when:',
+    prompt: 'A supervisor rates an employee’s performance after seeing the employee’s score on a screening test. Which validity threat is introduced by that information?',
+    choices: ['Criterion contamination: predictor knowledge biases the criterion', 'Restriction of range caused by a homogeneous workforce', 'Incremental validity from adding a second predictor', 'Test-retest reliability from repeating the measure'],
+    rationale: 'Criterion contamination occurs when information that should be separate from the criterion influences its rating. If a supervisor knows the screening score, that knowledge can bias the performance evaluation and inflate the apparent predictor–criterion relation.',
+    feedback: {
+      1: 'Restriction of range concerns limited variability in a predictor or criterion sample. The central problem here is rater knowledge influencing the evaluation.',
+      2: 'Incremental validity asks whether a new predictor adds useful prediction beyond existing predictors. It does not describe contamination of the criterion rating.',
+      3: 'Test-retest reliability concerns stability across administrations. The vignette describes bias in a rating, not repeated measurement consistency.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'research-analyze-criterion-contamination-from-predictor-informed-ratings', distractorDesign: ['restriction-of-range-confusion', 'incremental-validity-confusion', 'test-retest-confusion'],
+  },
+  {
+    id: 'eppp-v2-research-006', expectedAnswerIndex: 2, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: 'Complete the statement: Random sampling differs from random assignment in that:',
+    prompt: 'A study draws a probability sample from a city, then uses a lottery to place enrolled participants into two treatment conditions. Which distinction is illustrated?',
+    choices: ['Both steps serve the same inferential purpose', 'The lottery determines who enters the citywide sampling frame', 'The first step supports generalizability, whereas the second supports causal comparability', 'The probability draw is the treatment manipulation itself'],
+    rationale: 'Sampling determines who is selected from a population and therefore bears on generalizability. Assignment determines which condition selected participants receive and, when implemented well, supports comparable groups for causal inference.',
+    feedback: {
+      0: 'The steps operate at different stages and answer different questions: who enters the study versus how enrolled participants are compared.',
+      1: 'The probability draw creates the sampling frame; the later lottery allocates already enrolled participants to conditions rather than selecting residents.',
+      3: 'A probability draw selects participants but does not manipulate the treatment. The condition lottery is the allocation procedure.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'research-apply-random-sampling-versus-random-assignment-to-study-design', distractorDesign: ['same-purpose-confusion', 'sampling-frame-confusion', 'selection-versus-manipulation-confusion'],
+  },
+  {
+    id: 'eppp-v2-research-008', expectedAnswerIndex: 0, expectedDifficulty: 'intermediate', targetDifficulty: 'advanced',
+    expectedPrompt: 'Complete the statement: Stratified random sampling:',
+    prompt: 'To ensure enough observations from rural, suburban, and urban areas, a researcher divides the population into those categories and draws a separate subset inside each. What design feature is being used?',
+    choices: ['Stratified random sampling, which samples within defined population subgroups', 'Convenience recruitment from whichever site responds first', 'Cluster assignment after participants enroll', 'A complete enumeration of the population'],
+    rationale: 'Stratified random sampling divides a population into relevant subgroups and randomly samples within each one. It can preserve representation of smaller or substantively important groups while retaining probability selection within strata.',
+    feedback: {
+      1: 'Convenience recruitment selects accessible people rather than creating defined population strata and drawing a random subset within each.',
+      2: 'Cluster methods sample intact groups or units, while the vignette describes dividing the population by category and sampling within each category.',
+      3: 'A complete enumeration measures the population rather than selecting a random subset from each defined subgroup.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'research-apply-stratified-random-sampling-to-subgroup-representation', distractorDesign: ['convenience-sampling-confusion', 'cluster-versus-stratified-confusion', 'census-versus-sample-confusion'],
+  },
+];
+
+module.exports = { baselineMetrics, reviewedAt, reviewWave, revisions };

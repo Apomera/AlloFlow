@@ -39742,8 +39742,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         ? `@import url('https://fonts.googleapis.com/css2?family=${appFontEntry.googleFont}&display=swap');`
         : (_useExportFont && appFontEntry.id === 'opendyslexic' ? _odFontFace : '');
       // ── Reader-side font choices (2026-08-16) ────────────────────────────
-      // The teacher's build-time font picker offers the whole 22-font app
-      // catalog, but the READER's picker inside the exported handout only ever
+      // The teacher's build-time font picker offers the full app catalog, but
+      // the READER's picker inside the exported handout only ever
       // offered six system stacks — and its "Dyslexia-friendly" entry was Comic
       // Sans, not the OpenDyslexic a user who chose that font in the app expects.
       //
@@ -39753,9 +39753,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       // Two honest fixes rather than one dishonest one:
       //   1. Widen the always-offline list to every genuinely cross-platform
       //      system face, and label the Comic Sans entry for what it is.
-      //   2. Offer the high-legibility web faces (OpenDyslexic, Atkinson
-      //      Hyperlegible, Lexend, Andika) as an explicit opt-in the teacher
-      //      turns on at build time, clearly marked as needing internet. Off by
+      //   2. Offer the web-loaded faces as an explicit opt-in the teacher turns
+      //      on at build time, clearly marked as needing internet. Off by
       //      default so no export starts phoning out that did not before.
       // The document's own build-time font is always offered back to the reader,
       // because whatever CSS that font needed already shipped inside this file.
@@ -39763,11 +39762,24 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       const _atkinsonImport = "@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap');";
       const _lexendImport = "@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;700&display=swap');";
       const _andikaImport = "@import url('https://fonts.googleapis.com/css2?family=Andika:ital,wght@0,400;0,700;1,400;1,700&display=swap');";
-      // @import must precede every other rule in a stylesheet, so the opt-in
-      // imports are emitted alongside exportFontImport at the top of the block.
+      const _notoSansImport = "@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap');";
+      const _notoSerifImport = "@import url('https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;500;600;700&display=swap');";
+      const _nunitoSansImport = "@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap');";
+      const _firaSansImport = "@import url('https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&display=swap');";
+      const _ubuntuImport = "@import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap');";
+      const _sourceSerifImport = "@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600;700&display=swap');";
+      const _robotoSlabImport = "@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;500;700&display=swap');";
+      const _ibmPlexMonoImport = "@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap');";
+      const _jetbrainsMonoImport = "@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');";
+      // @import must precede every other rule in a stylesheet. Keep the reader
+      // imports separate from the OpenDyslexic @font-face block so a teacher
+      // can choose OpenDyslexic as the document font and still enable the rest.
       const readerWebFontImports = _readerWebFontsOn
-        ? [_atkinsonImport, _lexendImport, _andikaImport, _odFontFace].join('\n          ')
+        ? [_atkinsonImport, _lexendImport, _andikaImport, _notoSansImport, _notoSerifImport,
+          _nunitoSansImport, _firaSansImport, _ubuntuImport, _sourceSerifImport,
+          _robotoSlabImport, _ibmPlexMonoImport, _jetbrainsMonoImport].join('\n          ')
         : '';
+      const readerWebFontFaces = _readerWebFontsOn ? _odFontFace : '';
       const _docFontLabel = _useExportFont ? String(appFontEntry.label || '').replace(/[<>&"]/g, '') : '';
       const _readerWebFontOptions = [
         _useExportFont ? `<optgroup label="This document"><option value="document">Document font (${_docFontLabel})</option></optgroup>` : '',
@@ -39777,6 +39789,15 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             + '<option value="atkinson">Atkinson Hyperlegible</option>'
             + '<option value="lexend">Lexend</option>'
             + '<option value="andika">Andika (SIL)</option>'
+            + '<option value="noto-sans">Noto Sans</option>'
+            + '<option value="noto-serif">Noto Serif</option>'
+            + '<option value="nunito-sans">Nunito Sans</option>'
+            + '<option value="fira-sans">Fira Sans</option>'
+            + '<option value="ubuntu">Ubuntu</option>'
+            + '<option value="source-serif">Source Serif 4</option>'
+            + '<option value="roboto-slab">Roboto Slab</option>'
+            + '<option value="ibm-plex-mono">IBM Plex Mono</option>'
+            + '<option value="jetbrains-mono">JetBrains Mono</option>'
             + '</optgroup>'
           : '',
       ].join('');
@@ -39991,8 +40012,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         <style>
           /* Keep downloaded HTML useful offline: only explicit teacher-selected
              web fonts are imported; default themes use system fallbacks. */
-          ${exportFontImport}
           ${readerWebFontImports}
+          ${exportFontImport}
+          ${readerWebFontFaces}
           body { font-family: ${exportFontFamily}; font-size: ${exportFontSize};${exportFontStyleExtras} line-height: 1.7; max-width: 800px; margin: 0 auto; padding: 2rem; color: ${theme.textColor || '#334155'}; background: ${theme.bgColor}; direction: ${direction}; text-align: ${textAlign}; }
           h1, h2, h3 { color: ${theme.headingColor}; }
           h1 { font-size: 1.75rem; font-weight: 800; margin-bottom: 0.25rem; }
@@ -40998,7 +41020,16 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               opendyslexic: "'OpenDyslexic', 'Comic Sans MS', Verdana, sans-serif",
               atkinson: "'Atkinson Hyperlegible', Verdana, system-ui, sans-serif",
               lexend: "'Lexend', system-ui, sans-serif",
-              andika: "'Andika', Verdana, system-ui, sans-serif"
+              andika: "'Andika', Verdana, system-ui, sans-serif",
+              'noto-sans': "'Noto Sans', system-ui, sans-serif",
+              'noto-serif': "'Noto Serif', Georgia, serif",
+              'nunito-sans': "'Nunito Sans', system-ui, sans-serif",
+              'fira-sans': "'Fira Sans', system-ui, sans-serif",
+              ubuntu: "'Ubuntu', system-ui, sans-serif",
+              'source-serif': "'Source Serif 4', Georgia, serif",
+              'roboto-slab': "'Roboto Slab', Georgia, serif",
+              'ibm-plex-mono': "'IBM Plex Mono', ui-monospace, monospace",
+              'jetbrains-mono': "'JetBrains Mono', ui-monospace, monospace"
             };
             var st = { s: 1, l: 0, c: 0, f: 'original' };
             function clampIndex(v, len, fallback) {

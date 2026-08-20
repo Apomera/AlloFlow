@@ -1,0 +1,301 @@
+'use strict';
+
+const reviewedAt = '2026-08-20';
+const reviewWave = 'eppp-native-quality-wave-34';
+const baselineMetrics = Object.freeze({
+  distractor: { totalItems: 1500, warningOnly: true, forbiddenAggregateChoices: 0, uniqueKeyStemLexicalLeakageCandidates: 40, asymmetricExtremeDistractorCandidates: 72, advancedDirectRecallCandidates: 1, semanticConceptDuplicatePairs: 51, semanticConceptDuplicateClusters: 36, editorialAnchorsWithActiveWarnings: 0, editorialAnchorsWithNoCurrentWarning: 10, priorityDocketItems: 20 },
+  feedback: { totalItems: 1500, totalIncorrectOptions: 4500, itemsWithWarnings: 470, incorrectOptionsWithWarnings: 1303, insufficientDetailOptions: 616, genericTemplateOptions: 633, choiceRestatementOptions: 145, fullKeyEchoOptions: 64, priorityDocketItems: 100 },
+});
+
+const revisions = [
+  {
+    id: "eppp-b026-assessment-1", expectedAnswerIndex: 0, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "Which feature is characteristic of the adult Personality Assessment Inventory (PAI)?",
+    prompt: "During an intake battery, a psychologist wants a broad objective personality inventory to organize personality and symptom information. Which feature identifies the PAI?",
+    choices: ["It uses 344 items organized into 22 nonoverlapping scales spanning validity, clinical, treatment, and interpersonal domains", "It presents ambiguous inkblots scored for location, determinants, and content", "It yields a single global intelligence quotient from timed problem solving", "It relies on an adaptive interview in which items change after each response"],
+    rationale: "The PAI is a 344-item objective inventory organized into 22 nonoverlapping scales covering validity, clinical, treatment, and interpersonal content. The other formats describe projective assessment, cognitive testing, or adaptive interviewing rather than the PAI.",
+    feedback: {
+      1: "Inkblot interpretation describes a projective method such as the Rorschach. The vignette asks for the structured, multi-scale inventory used to assess personality and clinical features.",
+      2: "A global intelligence quotient comes from cognitive testing, not a personality inventory. PAI interpretation uses several validity and personality scales rather than one ability composite.",
+      3: "An adaptive interview changes questions in response to prior answers. The PAI is a fixed-format objective inventory with standardized items and scale scoring.",
+    }, cognitiveProcess: "application", learningObjectiveId: "assessment-apply-pai-structure-to-multiscale-personality-assessment", distractorDesign: ["projective-method-confusion", "cognitive-test-confusion", "adaptive-interview-confusion"],
+  },
+  {
+    id: "eppp-v2-assessment-040", expectedAnswerIndex: 0, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "Complete the statement: Regression to the mean explains why:",
+    prompt: "A clinic retests clients selected for unusually high symptom scores; scores are closer to the sample mean at follow-up before a new treatment begins. Which explanation best fits?",
+    choices: ["Regression toward the mean: extreme observed scores tend to be less extreme on repeat measurement when error is present", "A ceiling effect: the scale compresses scores because the items were too easy", "A demand effect: participants change reports to satisfy the examiner's hypothesis", "A maturation effect: the measured trait changed during the short interval"],
+    rationale: "Selection for an unusually high observed score can include positive measurement error. On retesting, that error may be smaller, so scores move toward the sample mean even before treatment produces change.",
+    feedback: {
+      1: "A ceiling effect compresses scores near the upper limit of a scale. It does not explain why selected high observations become more typical on a retest.",
+      2: "Demand characteristics could influence reporting, but the vignette supplies no cue that clients are responding to an examiner expectation. Extremity and retesting support regression.",
+      3: "Maturation refers to time-related change in the person, yet the short interval and pre-treatment retest make measurement error around an extreme score the stronger account.",
+    }, cognitiveProcess: "application", learningObjectiveId: "assessment-apply-regression-to-mean-to-selected-extreme-scores", distractorDesign: ["ceiling-effect-confusion", "demand-characteristic-confusion", "maturation-threat-confusion"],
+  },
+  {
+    id: "eppp-v2-assessment-042", expectedAnswerIndex: 2, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "Complete the statement: Response sets on personality inventories include:",
+    prompt: "A protocol shows the same direction on reversed statements, flattering self-descriptions, and discordant validity checks. Which interpretation should guide score review?",
+    choices: ["The response pattern reflects a single stable personality trait, so validity checks add little information", "The protocol demonstrates strong construct validity because the client answered quickly", "Yea-saying, impression management, and erratic protocols are response-set concerns to investigate", "The pattern establishes intentional malingering and warrants a malingering diagnosis"],
+    rationale: "A repeated response direction suggests yea-saying, flattering descriptions suggest impression management, and discordant validity checks raise concern about erratic protocols. These response sets require review before substantive interpretation.",
+    feedback: {
+      0: "A substantive trait interpretation should follow, not replace, examination of systematic response tendencies. The described pattern can distort scores across several constructs.",
+      1: "Fast responding does not establish construct validity. Validity evidence concerns the meaning and use of scores, whereas the vignette highlights potentially distorted response processes.",
+      3: "Malingering is an intentional clinical hypothesis that needs corroborating evidence. Response-style indicators can flag a protocol for review but do not establish motive or diagnosis.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "assessment-analyze-response-sets-before-interpreting-personality-inventory-scores", distractorDesign: ["trait-versus-response-style-confusion", "speed-versus-validity-confusion", "malingering-overinterpretation"],
+  },
+  {
+    id: "eppp-b005-biological-1", expectedAnswerIndex: 0, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "A neuropsychological study models performance on tasks requiring participants to switch task rules, replace no-longer-relevant working-memory contents, and suppress a dominant response. Which latent constructs correspond to those operations in Miyake and colleagues' model?",
+    prompt: "In an executive-function experiment, participants switch rules, replace the contents of working memory, and suppress a prepotent response. Which interpretation best maps the tasks to Miyake's model?",
+    choices: ["They index shifting, updating, and inhibition—correlated but separable executive functions", "They index planning, verbal fluency, and prospective memory as the model's three core factors", "They index processing speed, sustained attention, and storage capacity as interchangeable resources", "They index encoding, consolidation, and retrieval stages of episodic memory"],
+    rationale: "Miyake's model distinguishes shifting between task sets, updating working-memory representations, and inhibiting prepotent responses. These functions correlate but are separable, so the task pattern is not a list of broad abilities or memory stages.",
+    feedback: {
+      1: "Planning, fluency, and prospective memory are related abilities, but they do not match the three operations manipulated in this task set. The model emphasizes executive control processes.",
+      2: "Processing speed and storage capacity can influence performance, yet the stem specifies rule switching, content updating, and response inhibition rather than interchangeable resources.",
+      3: "Encoding, consolidation, and retrieval describe memory stages. They do not account for changing rules and suppressing a dominant response during an executive task.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "biological-analyze-miyake-executive-function-components-from-task-demands", distractorDesign: ["broad-executive-ability-confusion", "resource-capacity-confusion", "memory-stage-confusion"],
+  },
+  {
+    id: "eppp-b006-biological-1", expectedAnswerIndex: 0, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "A newborn has biallelic PAH variants and markedly elevated blood phenylalanine. Which intervention best illustrates how environmental management can alter the phenotypic outcome without changing the genotype?",
+    prompt: "A newborn screens positive for phenylketonuria, with biallelic PAH variants and elevated phenylalanine. Which plan best demonstrates an environmental intervention that changes outcome while leaving genotype intact?",
+    choices: ["Start a prescribed phenylalanine-restricted diet with medical-food supplementation and biochemical monitoring", "Wait for developmental concerns, then add dietary changes after cognitive testing", "Replace monitored nutrition with an unstructured low-protein diet chosen by the family", "Provide enrichment activities while continuing unrestricted phenylalanine intake"],
+    rationale: "Phenylalanine hydroxylase deficiency creates a preventable toxic exposure. Early prescribed restriction, medical foods, and laboratory monitoring reduce neurocognitive risk while the PAH variants remain unchanged, illustrating a gene–environment interaction.",
+    feedback: {
+      1: "Waiting for cognitive concerns allows elevated phenylalanine to affect development before treatment. Newborn detection is valuable because dietary management begins before injury accumulates.",
+      2: "An unstructured diet may not control phenylalanine or provide adequate nutrition. Management requires individualized restriction, medical-food support, and biochemical follow-up.",
+      3: "Enrichment can support development but does not remove the metabolic exposure caused by PAH deficiency. Phenylalanine control is the relevant environmental intervention.",
+    }, cognitiveProcess: "application", learningObjectiveId: "biological-apply-pku-treatment-to-gene-environment-phenotype-interaction", distractorDesign: ["delayed-treatment-confusion", "unmonitored-diet-confusion", "enrichment-versus-metabolic-treatment-confusion"],
+  },
+  {
+    id: "eppp-b006-biological-2", expectedAnswerIndex: 3, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "Following a focal central nervous system injury, which response most specifically reflects microglial rather than astrocytic, oligodendroglial, or neuronal function?",
+    prompt: "After a focal CNS injury, imaging shows an inflammatory response around damaged tissue. Which observed process most specifically identifies microglia?",
+    choices: ["Buffering extracellular potassium and taking up glutamate near synapses", "Forming compact myelin around segments of multiple CNS axons", "Generating action potentials in cortical projection pathways", "Migrating toward the lesion followed by phagocytosis of cellular debris"],
+    rationale: "Microglia are resident immune-effector cells of the CNS. Injury activates their migration and phagocytosis, whereas astrocytes regulate the extracellular environment, oligodendrocytes form myelin, and neurons transmit electrical signals.",
+    feedback: {
+      0: "Ionic buffering and glutamate uptake are characteristic astrocytic support functions. They help stabilize synapses but do not describe the resident immune response to damaged tissue.",
+      1: "Compact CNS myelin is produced by oligodendrocytes. Myelination supports conduction and is distinct from the inflammatory debris-clearing response in the vignette.",
+      2: "Action potentials in projection pathways are neuronal signaling events. They do not identify the immune surveillance and phagocytic activity that follows focal injury.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "biological-analyze-glial-functions-after-central-nervous-system-injury", distractorDesign: ["astrocyte-function-confusion", "oligodendrocyte-function-confusion", "neuronal-signaling-confusion"],
+  },
+  {
+    id: "eppp-b027-cognitive-2", expectedAnswerIndex: 1, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "Which learning activity best illustrates the generation effect?",
+    prompt: "A student reads a definition, completes a word fragment, and subsequently remembers that entry better than a comparable item that was merely reread. Which learning process is illustrated?",
+    choices: ["Rereading the complete definition several times while omitting production of an answer", "Generating the target from a cue before study strengthens later retrieval", "Hearing unrelated syllables during study to occupy phonological rehearsal", "Viewing the answer after study and relying on recognition familiarity"],
+    rationale: "The generation effect is improved later memory for material actively produced by the learner compared with material passively read or heard. The cue-based production is the critical difference in the vignette.",
+    feedback: {
+      0: "Repeated rereading is a passive study activity. It may support familiarity, but it lacks the learner-generated retrieval operation that distinguishes the described memory advantage.",
+      2: "Unrelated sounds manipulate rehearsal or distraction, not production of the target. The learning benefit here follows from generating an answer from a cue.",
+      3: "Seeing the answer supports recognition, whereas the generation effect depends on producing the target during learning. The later recall advantage is tied to that production step.",
+    }, cognitiveProcess: "application", learningObjectiveId: "cognitive-apply-generation-effect-to-active-learning-example", distractorDesign: ["passive-rereading-confusion", "phonological-load-confusion", "recognition-versus-generation-confusion"],
+  },
+  {
+    id: "eppp-b028-cognitive-1", expectedAnswerIndex: 0, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "A temporally graded retrograde amnesia pattern means that:",
+    prompt: "After a head injury, a patient recalls childhood events but has difficulty recalling conversations from the week before injury. What pattern does this distribution suggest?",
+    choices: ["Temporally graded retrograde amnesia, with remote memories relatively better preserved", "Anterograde amnesia, with new learning impaired after injury", "Semantic dementia, with word meaning progressively lost", "State-dependent retrieval, with recall changing across emotional contexts"],
+    rationale: "Temporally graded retrograde amnesia preferentially disrupts memories formed near the injury while older memories are relatively more accessible. The pattern concerns past events, not the formation of new memories afterward.",
+    feedback: {
+      1: "Anterograde amnesia concerns learning new information after the injury. The vignette instead contrasts remote memories with events that occurred before the injury.",
+      2: "Semantic dementia involves progressive loss of conceptual knowledge, often with a degenerative course. A time-linked memory gradient after injury points to retrograde amnesia.",
+      3: "State-dependent retrieval varies with internal or environmental context. It does not predict the systematic preservation of remote memories after a head injury.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "cognitive-analyze-temporal-gradient-in-retrograde-amnesia", distractorDesign: ["anterograde-versus-retrograde-confusion", "neurodegenerative-semantic-memory-confusion", "context-dependent-retrieval-confusion"],
+  },
+  {
+    id: "eppp-v2-cognitive-affective-005", expectedAnswerIndex: 2, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "Complete the statement: The Garcia effect (conditioned taste aversion) is significant because it demonstrates that:",
+    prompt: "A patient develops nausea after a novel flavor paired once with illness hours later, while an equally delayed tone–illness pairing is weak. Which learning principle is illustrated?",
+    choices: ["A conditioned association requires repeated pairings at a fixed short interval", "Sensory cues acquire aversions at comparable rates when illness follows", "Biological preparedness makes some stimulus–outcome associations easier to acquire", "Operant reinforcement explains the flavor preference through consequences delivered after behavior"],
+    rationale: "The Garcia effect shows that organisms are biologically prepared to associate certain cues, such as taste, with nausea across a relatively long delay. Learning is therefore constrained by species-specific predispositions.",
+    feedback: {
+      0: "Taste aversion can emerge after a single pairing and a relatively long delay. The finding challenges a strict requirement for repeated, closely timed pairings.",
+      1: "The unequal strength of flavor and tone associations is the important result. Comparable timing does not make sensory cues equally associable.",
+      3: "Operant conditioning depends on consequences following an emitted behavior. The vignette describes a stimulus–illness association, which is a classical conditioning pattern shaped by preparedness.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "cognitive-analyze-garcia-effect-as-biological-preparedness", distractorDesign: ["contiguity-requirement-confusion", "equal-associability-confusion", "operant-versus-classical-confusion"],
+  },
+  {
+    id: "eppp-b026-intervention-1", expectedAnswerIndex: 0, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "In group psychotherapy, universality is the therapeutic experience of:",
+    prompt: "In an early group session, a client who viewed shame as a private defect hears several peers describe similar fears and begins participating. Which therapeutic factor is most directly operating?",
+    choices: ["Universality: recognizing that other members share struggles that once felt isolating", "The therapist assigns each member to diagnose the others' presenting problems", "The group removes confidentiality so members can compare personal histories freely", "The therapist interprets the client's dream as a symbolic account of family conflict"],
+    rationale: "Universality is the relief that comes from discovering one's difficulties are shared by other group members. That recognition reduces isolation and can make participation feel safer.",
+    feedback: {
+      1: "Peer diagnosis is not the therapeutic factor described and would create role and boundary concerns. The helpful shift comes from shared experience, not assigning clinical judgments.",
+      2: "Confidentiality supports safety in group work; removing it would undermine trust. The vignette emphasizes relief through commonality rather than unrestricted disclosure.",
+      3: "Dream interpretation is an interpretive intervention focused on symbolic meaning. It does not explain the client's new sense that others share similar struggles.",
+    }, cognitiveProcess: "application", learningObjectiveId: "intervention-apply-universality-to-group-therapy-process", distractorDesign: ["peer-diagnosis-confusion", "confidentiality-reversal", "interpretation-versus-universality-confusion"],
+  },
+  {
+    id: "eppp-v2-intervention-015", expectedAnswerIndex: 0, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "Complete the statement: Relapse prevention (Marlatt) distinguishes between:",
+    prompt: "A client in smoking treatment has one cigarette, interprets it as evidence of failure, and then resumes daily smoking. Which relapse-prevention formulation best captures the sequence?",
+    choices: ["A lapse can trigger an abstinence-violation response and progress to relapse", "A lapse and relapse are interchangeable labels for any change in use", "Relapse prevention focuses on eliminating cravings before coping skills are practiced", "A single lapse demonstrates that treatment produced no durable behavior change"],
+    rationale: "Marlatt distinguishes a lapse, or initial slip, from relapse, a return to the prior pattern. The abstinence-violation response can turn a slip into continued use through guilt and perceived failure.",
+    feedback: {
+      1: "The distinction matters clinically: a brief slip and a sustained return to the prior pattern call for different interpretations and interventions.",
+      2: "Relapse prevention teaches coping with triggers and high-risk situations; it does not wait for cravings to disappear before skills are used.",
+      3: "A slip provides information about risk and coping, not proof that treatment failed. Addressing the interpretation can interrupt progression to a broader return to use.",
+    }, cognitiveProcess: "application", learningObjectiveId: "intervention-apply-marlatt-lapse-relapse-and-abstinence-violation-sequence", distractorDesign: ["lapse-relapse-equivalence", "craving-elimination-confusion", "single-slip-treatment-failure"],
+  },
+  {
+    id: "eppp-v2-intervention-040", expectedAnswerIndex: 1, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "Complete the statement: Crisis intervention is typically:",
+    prompt: "Following an assault, a client is disoriented and unsafe but has no established long-term treatment plan. Which description best fits an initial crisis intervention?",
+    choices: ["A yearlong exploratory treatment aimed at restructuring personality patterns", "A brief, focused response addressing safety, stabilization, and return to baseline functioning", "A protocol devoted to medication selection for chronic psychotic symptoms", "A supportive conversation that postpones risk assessment until rapport is stronger"],
+    rationale: "Crisis intervention is time-limited and directed toward immediate safety, stabilization, practical coping, and restoration of functioning. Longer-term formulation or medication planning may follow when the acute crisis is contained.",
+    feedback: {
+      0: "Exploratory personality work is a longer-term treatment aim. The immediate clinical task after an assault is safety and stabilization rather than extensive restructuring.",
+      2: "Medication selection for chronic psychosis addresses a different treatment problem. Crisis work first evaluates danger, organizes support, and reduces acute disorganization.",
+      3: "Rapport matters, but risk assessment cannot be deferred in an unsafe crisis. A focused intervention combines engagement with immediate evaluation and stabilization.",
+    }, cognitiveProcess: "application", learningObjectiveId: "intervention-apply-crisis-intervention-scope-to-acute-safety-and-stabilization", distractorDesign: ["long-term-therapy-confusion", "chronic-medication-planning-confusion", "rapport-before-safety-confusion"],
+  },
+  {
+    id: "eppp-v2-lifespan-016", expectedAnswerIndex: 0, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "In Piaget's theory, what does 'accommodation' mean?",
+    prompt: "A preschooler treats birds as flying pets; after meeting a penguin, the child reorganizes that category to include a nonflying bird. Which process is illustrated?",
+    choices: ["Accommodation: modifying a schema when new information does not fit", "Assimilation: fitting the penguin into the existing flying-bird category", "Conservation: recognizing that appearance changes do not alter quantity", "Operant shaping: strengthening a response through arranged consequences"],
+    rationale: "Accommodation changes an existing schema or creates a new one when an experience conflicts with the current organization of knowledge. Assimilation would preserve the existing flying-bird schema.",
+    feedback: {
+      1: "Assimilation incorporates an experience into an existing schema. The child's need to revise the flying-bird category indicates accommodation instead.",
+      2: "Conservation concerns understanding that quantity remains stable despite perceptual transformations. The vignette concerns revising a category after contradictory information.",
+      3: "Operant shaping changes behavior through consequences. The example describes cognitive schema revision rather than reinforcement of an observable response.",
+    }, cognitiveProcess: "application", learningObjectiveId: "lifespan-apply-piaget-accommodation-to-schema-revision", distractorDesign: ["assimilation-versus-accommodation-confusion", "conservation-confusion", "operant-shaping-confusion"],
+  },
+  {
+    id: "eppp-v2-lifespan-017", expectedAnswerIndex: 1, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "Complete the statement: Lev Vygotsky's concept of 'private speech' suggests that:",
+    prompt: "While working through a difficult puzzle, a child whispers the steps aloud, then gradually stops vocalizing while using the same self-guidance. Which developmental account best explains this change?",
+    choices: ["Language remains a social display and has no role in self-regulation", "Private speech scaffolds problem solving and becomes internalized as inner speech", "Theory of mind requires children to suppress self-directed language during tasks", "Classical conditioning pairs puzzle cues with an involuntary vocal response"],
+    rationale: "Vygotsky viewed private speech as a self-regulatory tool. Children externalize problem-solving guidance and gradually internalize that language as inner speech, linking social language to cognitive control.",
+    feedback: {
+      0: "The child's whispered instructions are directed toward regulating action, not merely displaying language socially. Their later internalization is central to Vygotsky's account.",
+      2: "Theory of mind concerns understanding mental states in self and others. It does not explain the internalization of self-directed instructions during problem solving.",
+      3: "Conditioning could pair cues with vocal behavior, but it would not explain strategic verbal guidance that becomes silent self-regulation across development.",
+    }, cognitiveProcess: "application", learningObjectiveId: "lifespan-apply-vygotsky-private-speech-to-self-regulated-problem-solving", distractorDesign: ["language-as-display-confusion", "theory-of-mind-confusion", "conditioning-versus-private-speech-confusion"],
+  },
+  {
+    id: "eppp-v2-lifespan-018", expectedAnswerIndex: 2, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "Complete the statement: Gilligan criticized Kohlberg's moral development theory for:",
+    prompt: "A researcher applies Kohlberg's stages to a diverse sample and finds that care-based reasoning is scored as less mature than abstract justice reasoning. Which critique follows Gilligan's analysis?",
+    choices: ["Moral reasoning develops independently of culture, relationships, and context", "The stages measure problem-solving speed rather than moral judgment", "The framework may reflect gendered sampling and undervalue relational care orientations", "Care reasoning is an operant habit acquired through reward schedules"],
+    rationale: "Gilligan argued that a justice-centered model built largely from male samples could undervalue an ethic of care and relationships. Her critique concerns whose reasoning was represented and how maturity was defined.",
+    feedback: {
+      0: "Gilligan's critique emphasizes relationships and context rather than excluding them. Treating moral reasoning as independent of those influences misses the concern about the framework's scope.",
+      1: "The issue is the content and cultural framing of moral judgment, not the speed of solving a task. Stage scoring can privilege one moral orientation over another.",
+      3: "Care reasoning is a moral orientation, not simply a habit shaped by reinforcement. The critique addresses gendered assumptions in developmental theory and assessment.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "lifespan-analyze-gilligan-critique-of-kohlberg-care-and-justice-orientations", distractorDesign: ["context-independence-confusion", "processing-speed-confusion", "operant-account-of-morality-confusion"],
+  },
+  {
+    id: "eppp-v2-professional-006", expectedAnswerIndex: 3, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "Complete the statement: Test security means:",
+    prompt: "A training program proposes posting live test items in a public study guide. Which ethical concern is most directly implicated?",
+    choices: ["Informed consent: examinees need permission before receiving any score report", "Beneficence: a study guide must include a therapeutic referral", "Multiple relationships: item access creates a dual-role relationship with the test developer", "Test security: unauthorized exposure can compromise validity and future score interpretation"],
+    rationale: "Test security protects restricted items from unauthorized disclosure. Publicly posting live content can alter preparation and exposure patterns, weakening score validity for later examinees.",
+    feedback: {
+      0: "Informed consent concerns participation and permission for procedures or uses of information. The proposed public posting instead exposes protected assessment content.",
+      1: "Beneficence concerns promoting welfare and reducing harm; a referral is not the central issue. The ethical risk is compromised assessment security and validity.",
+      2: "A dual-role concern involves overlapping professional relationships. Sharing live items creates an assessment-security problem even when the developer has no personal relationship with trainees.",
+    }, cognitiveProcess: "application", learningObjectiveId: "professional-apply-test-security-to-public-disclosure-of-live-items", distractorDesign: ["consent-versus-security-confusion", "beneficence-versus-security-confusion", "multiple-relationship-confusion"],
+  },
+  {
+    id: "eppp-v2-professional-012", expectedAnswerIndex: 1, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "A psychotherapy client asks their psychologist to write a letter supporting their disability claim. The psychologist should:",
+    prompt: "A current psychotherapy client asks for a disability letter, but the psychologist has not assessed work functioning. What is the most defensible next step?",
+    choices: ["Decline requests from therapy clients as a rule because advocacy is incompatible with treatment", "Provide objective information supported by evaluation, clarify limits, and refer when additional expertise is needed", "Write the requested conclusion first and gather supporting details later", "Transfer the client to a forensic evaluator before discussing the purpose or scope of the letter"],
+    rationale: "A psychologist should describe evaluated facts within competence, distinguish clinical observations from conclusions requiring additional assessment, clarify the letter's purpose, and seek consultation or referral when the requested opinion exceeds the evaluation.",
+    feedback: {
+      0: "Therapy and advocacy can coexist when roles, competence, and the basis for statements are clear. A blanket refusal avoids the specific assessment and communication decisions required.",
+      2: "Writing a conclusion before gathering support reverses responsible evaluation and risks an advocacy-driven opinion. Documentation should follow assessment, evidence, and stated limits.",
+      3: "Referral may be appropriate, but transferring the client before clarifying the request skips informed role discussion. The psychologist should first define scope and identify what evidence is available.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "professional-analyze-competence-and-role-boundaries-in-disability-documentation", distractorDesign: ["blanket-refusal-confusion", "conclusion-before-evidence-confusion", "premature-referral-confusion"],
+  },
+  {
+    id: "eppp-v2-professional-029", expectedAnswerIndex: 2, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "When using psychological tests with culturally diverse clients, the psychologist MUST?",
+    prompt: "A standardized test was normed on a population unlike the client, and translation changes several item meanings. How should the psychologist proceed?",
+    choices: ["Use the score as the primary conclusion because standardized norms remove contextual concerns", "Replace objective measures with informal impressions to avoid cultural complexity", "Examine cultural and linguistic limits, supplement data, and interpret scores in context", "Select a test marketed for the client's group and treat its result as self-validating"],
+    rationale: "Ethical interpretation requires attention to cultural and linguistic validity, norm-group fit, translation effects, and the limits of inference. Scores should be integrated with other relevant data rather than treated as context-free facts.",
+    feedback: {
+      0: "Standardization does not erase construct, language, or norm-group differences. A score may be useful, but its limits and the surrounding evidence must be considered.",
+      1: "Abandoning objective data is not a culturally responsive solution. The psychologist should evaluate fit, supplement the assessment, and explain how context affects interpretation.",
+      3: "A marketing label does not establish validity for a particular client or translation. Evidence about norms, language, and construct meaning still guides responsible use.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "professional-analyze-cultural-and-linguistic-limits-in-test-interpretation", distractorDesign: ["standardization-erases-context-confusion", "informal-only-assessment-confusion", "marketing-label-validity-confusion"],
+  },
+  {
+    id: "eppp-v2-social-cultural-022", expectedAnswerIndex: 0, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "Complete the statement: The bystander effect is most reduced when:",
+    prompt: "At a crowded transit platform, a passerby sees a fallen stranger who shares their language; when one other observer remains, the passerby calls for help. Which condition likely reduced the bystander effect?",
+    choices: ["Perceived similarity and a smaller audience increased personal responsibility", "Ambiguous danger and a larger audience increased diffusion of responsibility", "Anonymity reduced self-awareness and made helping less likely", "A competitive task orientation shifted attention away from the victim"],
+    rationale: "Helping is more likely when the situation is less ambiguous, the audience is smaller, and the potential helper feels connected to the victim. Similarity can increase concern and personal responsibility.",
+    feedback: {
+      1: "Ambiguity and a larger audience generally make inaction easier through pluralistic ignorance and diffusion of responsibility. Those conditions would not explain the observed helping.",
+      2: "Anonymity can reduce self-awareness, but the vignette highlights social connection and audience size as the more direct influences on responsibility.",
+      3: "A competitive goal may distract from helping, yet it does not account for the increased response after the audience becomes smaller and the victim seems similar.",
+    }, cognitiveProcess: "application", learningObjectiveId: "social-cultural-apply-bystander-effect-moderators-to-helping-decision", distractorDesign: ["audience-size-direction-reversal", "anonymity-confusion", "competition-distraction-confusion"],
+  },
+  {
+    id: "eppp-v2-social-cultural-025", expectedAnswerIndex: 3, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "Complete the statement: According to the frustration-aggression hypothesis:",
+    prompt: "After a blocked goal, a participant becomes irritable but chooses to exercise rather than confront a coworker. Which conclusion is most consistent with the frustration–aggression hypothesis?",
+    choices: ["Frustration produces aggression in a person whenever a goal is blocked", "Aggression reflects frustration when another person caused the blocked goal", "Exercise after frustration shows that the goal was not psychologically important", "Frustration raises the probability of aggression but does not determine the response"],
+    rationale: "The frustration–aggression hypothesis treats blocked goals as increasing readiness for aggressive behavior, while situational cues, learning, and alternative coping can shape what the person does. Frustration is a risk factor, not a fixed outcome.",
+    feedback: {
+      0: "The participant's alternative coping response illustrates why frustration is not a fixed cause of aggression. Probability increases, but behavior remains sensitive to context and regulation.",
+      1: "Aggression can follow frustration even when another person is not responsible, and other cues influence the response. Limiting the process to interpersonal blame is too narrow.",
+      2: "Choosing exercise shows regulation or an available alternative, not that the blocked goal lacked importance. Strongly valued goals can still produce frustration without aggression.",
+    }, cognitiveProcess: "analysis", learningObjectiveId: "social-cultural-analyze-frustration-aggression-as-probabilistic-process", distractorDesign: ["deterministic-aggression-confusion", "interpersonal-blame-restriction", "goal-importance-inference"],
+  },
+  {
+    id: "eppp-v2-social-cultural-026", expectedAnswerIndex: 0, expectedDifficulty: "intermediate", targetDifficulty: "advanced",
+    expectedPrompt: "Which situation best illustrates Group polarization?",
+    prompt: "At a campus meeting, members initially support modest limits on phone use; after comparing personal anecdotes, the committee endorses a substantially stricter policy. Which process best accounts for the shift?",
+    choices: ["Group polarization: a starting position moves farther in its original direction after discussion", "Groupthink: pressure suppresses dissent while preserving the committee's starting policy", "Social loafing: shared responsibility reduces effort on a joint task", "Deindividuation: anonymity weakens self-awareness and personal restraint"],
+    rationale: "Group polarization occurs when discussion moves a group toward a more extreme position in the direction of its members' initial lean. Persuasive arguments and social comparison can reinforce that shift.",
+    feedback: {
+      1: "Groupthink concerns defective decision-making linked to pressure for consensus and reduced dissent. The defining observation here is directional movement toward greater risk.",
+      2: "Social loafing is reduced effort in a shared task. It does not explain why the group's judgment becomes more extreme after exchanging arguments.",
+      3: "Deindividuation involves reduced self-awareness and restraint under certain conditions. The vignette instead describes opinion change following group discussion.",
+    }, cognitiveProcess: "application", learningObjectiveId: "social-cultural-apply-group-polarization-to-directional-risk-shift", distractorDesign: ["groupthink-versus-polarization-confusion", "social-loafing-confusion", "deindividuation-confusion"],
+  },
+  {
+    id: "eppp-b011-research-1", expectedAnswerIndex: 0, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "Ceiling and floor effects both reduce a measure’s ability to:",
+    prompt: "A classroom test has many scores packed at the maximum, making high-performing students look similar. Which measurement problem and consequence are present?",
+    choices: ["A ceiling effect reduces discrimination among people near the upper score limit", "A floor effect compresses scores near the lower limit and hides low-end differences", "Attrition bias removes participants before scores can be recorded", "Interrater drift makes different graders use inconsistent scoring rules"],
+    rationale: "A ceiling effect occurs when scores cluster near the maximum, leaving little room to distinguish higher performers or detect further improvement. The analogous floor effect compresses scores near the minimum.",
+    feedback: {
+      1: "A floor effect would be expected when scores cluster near the minimum. The observed compression at the maximum identifies a ceiling effect instead.",
+      2: "Attrition concerns loss of participants over a study, not compression of observed scores at a scale endpoint. The problem here is limited measurement discrimination.",
+      3: "Interrater drift concerns changing or inconsistent scoring across evaluators. The vignette describes a scale-range limitation among high scores.",
+    }, cognitiveProcess: "application", learningObjectiveId: "research-apply-ceiling-effect-to-score-compression-and-discrimination", distractorDesign: ["floor-versus-ceiling-direction-confusion", "attrition-versus-range-confusion", "interrater-versus-range-confusion"],
+  },
+  {
+    id: "eppp-b014-research-1", expectedAnswerIndex: 0, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "Ecological validity concerns the extent to which:",
+    prompt: "A lab task uses virtual tokens and simplified instructions; the researcher wants to know whether performance reflects how people behave in everyday settings. Which validity question is being asked?",
+    choices: ["Whether the findings and procedure correspond to behavior in relevant real-world contexts", "Whether the sample was selected by a probability method from the national population", "Whether items show high internal consistency across repeated scoring", "Whether the statistical test preserves the planned familywise error rate"],
+    rationale: "Ecological validity asks whether a task, setting, and observed behavior resemble meaningful real-world contexts. It is related to broader generalizability but focuses on correspondence between the research situation and everyday behavior.",
+    feedback: {
+      1: "Probability sampling bears on population generalizability, not whether the task resembles everyday behavior. A representative sample can still complete an artificial laboratory task.",
+      2: "Internal consistency concerns how coherently items measure a construct. It does not address whether the task or findings transfer to ordinary settings and behavior.",
+      3: "Familywise error control concerns statistical decision rules. It does not evaluate the realism of the task or the similarity between laboratory performance and daily life.",
+    }, cognitiveProcess: "application", learningObjectiveId: "research-apply-ecological-validity-to-laboratory-task-realism", distractorDesign: ["sampling-versus-ecological-validity-confusion", "internal-consistency-confusion", "familywise-error-confusion"],
+  },
+  {
+    id: "eppp-b015-research-1", expectedAnswerIndex: 0, expectedDifficulty: "foundation", targetDifficulty: "intermediate",
+    expectedPrompt: "Maturation threatens internal validity when:",
+    prompt: "In a six-month counseling study with no comparison group, clients improve as they age, recover, and gain practice. Which threat could rival the intervention as the explanation?",
+    choices: ["Maturation: time-related changes within participants can mimic a treatment effect", "Instrumentation: the scoring tool changes its construct definition between assessments", "Selection: random assignment creates equivalent groups before treatment", "Testing: repeated measurement improves performance through familiarity with the items"],
+    rationale: "Maturation is naturally occurring change within participants, including growth, recovery, fatigue, or practice. In a one-group longitudinal study, such change can be mistaken for an intervention effect.",
+    feedback: {
+      1: "Instrumentation involves change in the measurement process or tool. The vignette describes changes in clients over time while the scoring method remains unspecified.",
+      2: "Random assignment is a design feature that can improve group comparability, not a threat explaining improvement in a single group with no comparison condition.",
+      3: "Testing effects arise from prior exposure to the measure, which may contribute here, but the stem emphasizes broader developmental, recovery, and practice changes across six months.",
+    }, cognitiveProcess: "application", learningObjectiveId: "research-apply-maturation-threat-to-one-group-longitudinal-counseling-study", distractorDesign: ["instrumentation-versus-maturation-confusion", "random-assignment-versus-threat-confusion", "testing-versus-maturation-confusion"],
+  },
+];
+
+module.exports = { baselineMetrics, reviewedAt, reviewWave, revisions };

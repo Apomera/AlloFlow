@@ -11238,25 +11238,31 @@
   // Escape/✕ closes, walk state is ephemeral, nothing about the 2D haven
   // changes. A footer strip mirrors the current locus for sighted users; the
   // palace module owns the aria-live announcements and the route-list fallback.
-  function openHavenWalk3D(state) {
+  function openHavenWalk3D(state, walkOptions) {
+    walkOptions = walkOptions || {};
     var store = window.AlloModules && window.AlloModules.StudentArtifactStore;
     var returnFocus = document.activeElement;
     var artifacts = (store && typeof store.read === 'function') ? store.read() : [];
-    var built = buildHavenPalaceData(state, artifacts);
+    var built = walkOptions.built || buildHavenPalaceData(state, artifacts);
+    built.images = built.images || {};
+    built.objects = built.objects || {};
+    built.landmarks = built.landmarks || {};
+    var walkTitle = String(walkOptions.title || 'My AlloHaven').slice(0, 120);
+    var dialogLabel = String(walkOptions.ariaLabel || 'Walk your haven in 3D').slice(0, 160);
     var totalLoci = built.data.branches.reduce(function(s, b) { return s + b.items.length; }, 0);
     var overlay = document.createElement('div');
     overlay.setAttribute('role', 'dialog');
     overlay.setAttribute('aria-modal', 'true');
-    overlay.setAttribute('aria-label', 'Walk your haven in 3D');
+    overlay.setAttribute('aria-label', dialogLabel);
     overlay.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(2,6,23,0.94);display:flex;flex-direction:column;';
     var header = document.createElement('div');
     header.style.cssText = 'display:flex;align-items:center;gap:12px;padding:10px 16px;background:#0b1020;border-bottom:1px solid #1e293b;color:#e2e8f0;';
     var titleWrap = document.createElement('div'); titleWrap.style.cssText = 'flex:1;min-width:0;';
-    var title = document.createElement('div'); title.style.cssText = 'font-weight:800;font-size:14px;'; title.textContent = '🏛 My AlloHaven';
+    var title = document.createElement('div'); title.style.cssText = 'font-weight:800;font-size:14px;'; title.textContent = '🏛 ' + walkTitle;
     var hint = document.createElement('div'); hint.style.cssText = 'font-size:11px;color:#94a3b8;';
     hint.textContent = totalLoci
-      ? 'Walk with ◀ ▶ or the arrow keys · O = overview · your decorations hang where you placed them'
-      : 'Your haven is waiting — earn tokens and place decorations, then walk through them here';
+      ? (walkOptions.hint || 'Walk with ◀ ▶ or the arrow keys · O = overview · your decorations hang where you placed them')
+      : (walkOptions.emptyHint || 'Your haven is waiting — earn tokens and place decorations, then walk through them here');
     titleWrap.appendChild(title); titleWrap.appendChild(hint);
     var closeBtn = document.createElement('button');
     closeBtn.setAttribute('aria-label', 'Close'); closeBtn.textContent = '✕';
@@ -11265,7 +11271,7 @@
     var body = document.createElement('div'); body.style.cssText = 'flex:1;position:relative;min-height:0;';
     var status = document.createElement('div');
     status.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:#cbd5e1;font-size:14px;line-height:1.5;';
-    status.textContent = '🧭 Loading your haven…';
+    status.textContent = walkOptions.loadingText || '🧭 Loading your haven…';
     body.appendChild(status);
     var footer = document.createElement('div');
     footer.style.cssText = 'padding:8px 16px;background:#0b1020;border-top:1px solid #1e293b;color:#cbd5e1;font-size:12px;min-height:20px;';
@@ -11292,7 +11298,7 @@
     closeBtn.onclick = destroy;
     closeBtn.focus();
     if (!totalLoci) {
-      status.textContent = 'No loci yet. Place a decoration in an unlocked room, then attach a flashcard, acronym, note, or image association to make this walk memorable.';
+      status.textContent = walkOptions.emptyText || 'No loci yet. Place a decoration in an unlocked room, then attach a flashcard, acronym, note, or image association to make this walk memorable.';
       return destroy;
     }
     _havenPalaceEnsure().then(function(ok) {
@@ -20380,6 +20386,33 @@
       return true;
     }
 
+    function launchHostedArcadeMode(modeId, minutes) {
+      // A teacher-authorized live-session activity is classroom instruction,
+      // not an individual arcade purchase. Hosts and students receive the
+      // same local timer shell without spending personal AlloHaven tokens.
+      var mode = window.AlloHavenArcade && window.AlloHavenArcade._registry && window.AlloHavenArcade._registry[modeId];
+      if (!mode) {
+        addToast('That class activity isn\'t registered.');
+        return false;
+      }
+      var mpt = (state.arcade && state.arcade.minutesPerToken) || 5;
+      var minutesAsked = Math.max(1, Math.floor(minutes || mode.timeCost || mpt));
+      var nowMs = Date.now();
+      setStateField('arcade', Object.assign({}, state.arcade, {
+        session: {
+          modeId: modeId,
+          startedAt: new Date(nowMs).toISOString(),
+          minutes: minutesAsked,
+          endsAt: new Date(nowMs + minutesAsked * 60 * 1000).toISOString(),
+          timerPaused: false,
+          pausedRemainingMs: null,
+          classroomHosted: true
+        }
+      }));
+      addToast('🎓 ' + (mode.label || modeId) + ' · class session · no token cost');
+      return true;
+    }
+
     function pauseArcadeTimer() {
       if (!state.arcade || !state.arcade.session || state.arcade.session.timerPaused) return;
       var remainingMs = getArcadeRemainingMs(state.arcade.session);
@@ -20417,6 +20450,18 @@
       // reason: 'expired' | 'closed' | 'forfeit'
       if (!state.arcade || !state.arcade.session) return;
       var modeId = state.arcade.session.modeId;
+      // A teacher ending the local Class Memory Palace must also close the
+      // shared activity. This covers the global End early control and timer
+      // expiry in addition to the mode's own Close for everyone button.
+      if (modeId === 'class-memory-palace' && props.isHost && typeof props.sessionUpdate === 'function') {
+        try {
+          Promise.resolve(props.sessionUpdate({
+            collaborativeMemoryPalace: { status: 'closed', closedAt: new Date().toISOString() }
+          })).catch(function() { addToast('The local palace closed, but the remote stop could not be confirmed.'); });
+        } catch (e) {
+          addToast('The local palace closed, but the remote stop could not be confirmed.');
+        }
+      }
       setStateField('arcade', Object.assign({}, state.arcade, { session: null }));
       var mode = window.AlloHavenArcade && window.AlloHavenArcade._registry && window.AlloHavenArcade._registry[modeId];
       var label = mode ? (mode.label || modeId) : modeId;
@@ -20694,6 +20739,7 @@
                 minutesPerToken: mpt,
                 session: session,
                 onLaunch: function(minutes) { return launchArcadeMode(mode.id, minutes); },
+                onLaunchHosted: function(minutes) { return launchHostedArcadeMode(mode.id, minutes); },
                 onClose: close,
                 onEndSession: function(reason) { return endArcadeSession(reason || 'forfeit'); },
                 // Phase 3b.history — plugin calls this with an encounter
@@ -20757,6 +20803,26 @@
                   if (gc && gc.type === 'glossary' && Array.isArray(gc.data)) return gc.data;
                   return [];
                 })(),
+                // Shared palace renderer for collaborative arcade modes. The
+                // plugin supplies normalized Memory Palace data; this host
+                // retains lazy loading, focus trapping, fallback, and teardown.
+                openMemoryPalaceWalk: function(data, options) {
+                  options = options || {};
+                  return openHavenWalk3D(null, {
+                    built: {
+                      data: data || { main: 'Class Memory Palace', branches: [] },
+                      images: options.images || {},
+                      objects: options.objects || {},
+                      landmarks: options.landmarks || {}
+                    },
+                    title: options.title || 'Class Memory Palace',
+                    ariaLabel: options.ariaLabel || 'Walk the class memory palace in 3D',
+                    hint: options.hint || 'Walk with ◀ ▶ or the arrow keys · O = overview · each locus shows who contributed it',
+                    emptyHint: options.emptyHint || 'The class palace is waiting for its first approved locus',
+                    loadingText: options.loadingText || '🧭 Loading the class memory palace…',
+                    emptyText: options.emptyText || 'No approved loci yet. Add or approve a contribution, then open the walk again.'
+                  });
+                },
                 // Phase 3b.full — live-session bindings. sessionCode is
                 // null when not in a live session (most of the time);
                 // non-null + a Firestore db handle means the plugin can
@@ -20765,6 +20831,7 @@
                 // is true for the teacher who launched the session.
                 sessionCode: props.sessionCode || null,
                 studentNickname: props.studentNickname || '',
+                sessionParticipantId: props.sessionParticipantId || '',
                 isHost: !!props.isHost,
                 firestoreDb: props.firestoreDb || null,
                 firestoreAppId: props.firestoreAppId || null,

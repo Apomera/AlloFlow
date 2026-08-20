@@ -24,7 +24,7 @@
  * Apps Script cannot answer). GET on the /exec URL shows a human status line.
  */
 
-var VERSION = 13;
+var VERSION = 16;
 var SESSION_TTL_SEC = 6 * 60 * 60;      // live session marker + counters
 var MESSAGE_TTL_SEC = 45 * 60;          // live messages
 var UPLOAD_TTL_SEC = 30 * 60;           // pack upload parts awaiting finalize
@@ -628,12 +628,17 @@ function validWsMetricNumber(value, max) {
 function validWsProgressValue(value) {
   if (value === null) return true;
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
-  var allowed = { kind: 1, activity: 1, correct: 1, total: 1, goal: 1, done: 1, at: 1 };
+  var allowed = { kind: 1, activity: 1, correct: 1, total: 1, goal: 1, done: 1, audioStatus: 1, audioReady: 1, audioTotal: 1, audioRequestAt: 1, audioDeliveryAt: 1, at: 1 };
   var keys = Object.keys(value);
   for (var i = 0; i < keys.length; i++) { if (!allowed[keys[i]]) return false; }
   if (value.kind != null && value.kind !== 'practice' && value.kind !== 'probe') return false;
   if (value.activity != null && !(typeof value.activity === 'string' && /^[a-z_]{1,32}$/.test(value.activity))) return false;
   if (value.done != null && typeof value.done !== 'boolean') return false;
+  if (value.audioStatus != null && ['ready', 'missing', 'runtime', 'unknown', 'checking', 'unsupported', 'damaged', 'blocked', 'requested', 'resending'].indexOf(value.audioStatus) === -1) return false;
+  if (value.audioReady != null && !validWsMetricNumber(value.audioReady)) return false;
+  if (value.audioTotal != null && !validWsMetricNumber(value.audioTotal)) return false;
+  if (value.audioRequestAt != null && !validWsMetricNumber(value.audioRequestAt, 999999999999999)) return false;
+  if (value.audioDeliveryAt != null && !validWsMetricNumber(value.audioDeliveryAt, 999999999999999)) return false;
   if (value.correct != null && !validWsMetricNumber(value.correct)) return false;
   if (value.total != null && !validWsMetricNumber(value.total)) return false;
   if (value.goal != null && !validWsMetricNumber(value.goal)) return false;
@@ -724,6 +729,23 @@ function validQuizResponseReceipt(value) {
 function validQuizTeam(value) {
   return value === 'Red' || value === 'Blue' || value === 'Green' || value === 'Yellow';
 }
+function validConceptQuestAction(value, uid) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  var keys = Object.keys(value);
+  var allowed = { abilityId: 1, roleId: 1, answerIndex: 1, submittedAt: 1, supportId: 1, supportTargetUid: 1 };
+  for (var i = 0; i < keys.length; i++) if (!allowed[keys[i]]) return false;
+  if (['analyze', 'explain', 'connect', 'question'].indexOf(value.abilityId) === -1) return false;
+  if (value.roleId != null && value.roleId !== '' && ['analyst', 'explainer', 'connector', 'investigator'].indexOf(value.roleId) === -1) return false;
+  var hasSupport = value.supportId != null || value.supportTargetUid != null;
+  if (hasSupport && ['clarify', 'guard', 'encourage'].indexOf(value.supportId) === -1) return false;
+  if (hasSupport && (typeof value.supportTargetUid !== 'string'
+      || !/^[A-Za-z0-9_-]{1,128}$/.test(value.supportTargetUid)
+      || value.supportTargetUid === uid)) return false;
+  return typeof value.answerIndex === 'number' && isFinite(value.answerIndex)
+    && Math.floor(value.answerIndex) === value.answerIndex
+    && value.answerIndex >= 0 && value.answerIndex <= 5
+    && typeof value.submittedAt === 'number' && isFinite(value.submittedAt) && value.submittedAt > 0;
+}
 function participantCanPatchSession(updates, uid, sessionData) {
   var keys = Object.keys(updates);
   var rosterRoot = 'roster.' + uid;
@@ -740,8 +762,39 @@ function participantCanPatchSession(updates, uid, sessionData) {
     'escapeRoomState.teams.' + uid,
     'escapeRoomState.teamProgress'
   ];
+  var questVoteLeaf = 'escapeRoomState.teamProgress.All.questVotes.' + uid;
+  var questActionLeaf = 'escapeRoomState.teamProgress.All.questActions.' + uid;
+  var questRoleLeaf = 'escapeRoomState.teamProgress.All.questRoles.' + uid;
+  var questCollectionRoots = [
+    'escapeRoomState.teamProgress.All.questVotes',
+    'escapeRoomState.teamProgress.All.questActions',
+    'escapeRoomState.teamProgress.All.questRoles'
+  ];
+  var escapeTeamLeaf = 'escapeRoomState.teams.' + uid;
   for (var i = 0; i < keys.length; i++) {
     var key = keys[i];
+    var isQuestCollectionPatch = false;
+    for (var q = 0; q < questCollectionRoots.length; q++) {
+      if (pathStarts(key, questCollectionRoots[q])) { isQuestCollectionPatch = true; break; }
+    }
+    if (isQuestCollectionPatch) {
+      if (key === questVoteLeaf) {
+        if (typeof updates[key] !== 'string' || !/^room-[1-8]$/.test(updates[key])) return false;
+      } else if (key === questActionLeaf) {
+        if (!validConceptQuestAction(updates[key], uid)) return false;
+      } else if (key === questRoleLeaf) {
+        if (['analyst', 'explainer', 'connector', 'investigator'].indexOf(updates[key]) === -1) return false;
+      } else return false;
+      continue;
+    }
+    if (pathStarts(key, escapeTeamLeaf)) {
+      if (key !== escapeTeamLeaf) return false;
+      var isConceptQuest = sessionData && sessionData.escapeRoomState
+        && sessionData.escapeRoomState.mode === 'concept-quest';
+      if (isConceptQuest ? updates[key] !== 'All'
+          : ['Red', 'Blue', 'Green', 'Yellow', 'All'].indexOf(updates[key]) === -1) return false;
+      continue;
+    }
     if (pathStarts(key, rosterRoot)) {
       var rest = key === rosterRoot ? '' : key.slice(rosterRoot.length + 1);
       if (rest) {

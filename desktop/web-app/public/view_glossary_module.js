@@ -427,6 +427,20 @@ function GlossaryView(props) {
   var autoRemoveWords = props.autoRemoveWords;
   var visualStyle = props.visualStyle;
   var glossaryImageStyle = props.glossaryImageStyle;
+  var universalImageStyle = props.universalImageStyle;
+  var glossaryStyleModeState = React.useState(function () {
+    return String(glossaryImageStyle || '').trim() ? 'override' : 'inherit';
+  });
+  var glossaryStyleMode = glossaryStyleModeState[0];
+  var setGlossaryStyleMode = glossaryStyleModeState[1];
+  var handleGlossaryStyleModeChange = function (event) {
+    var nextMode = event.target.value;
+    setGlossaryStyleMode(nextMode);
+    if (nextMode === 'inherit') setGlossaryImageStyle('');
+    if (nextMode === 'override' && !String(glossaryImageStyle || '').trim()) {
+      setGlossaryImageStyle('Simple flat vector art');
+    }
+  };
   // Refs
   var alloBotRef = props.alloBotRef;
   // Components from host scope
@@ -2344,16 +2358,35 @@ function GlossaryView(props) {
     className: "hidden sm:block shrink-0 bg-indigo-100 p-2 rounded-full text-indigo-600"
   }, /*#__PURE__*/React.createElement(Plus, {
     size: 16
-  })), /*#__PURE__*/React.createElement("input", {
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "w-full sm:w-1/3 min-w-0 rounded-lg border border-indigo-200 bg-indigo-50/60 p-2"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "block text-[11px] font-bold text-indigo-900 mb-1"
+  }, "Image style"), /*#__PURE__*/React.createElement("select", {
+    "aria-label": "Glossary image style source",
+    "data-help-key": "glossary_image_style_mode",
+    value: glossaryStyleMode,
+    onChange: handleGlossaryStyleModeChange,
+    disabled: isAddingTerm,
+    className: "w-full rounded border border-indigo-300 bg-white px-2 py-2 text-xs focus:ring-2 focus:ring-indigo-500"
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "inherit"
+  }, "Use Universal style"), /*#__PURE__*/React.createElement("option", {
+    value: "override"
+  }, "Override for this resource")), glossaryStyleMode === 'inherit' ? /*#__PURE__*/React.createElement("p", {
+    className: "mt-1 text-[10px] leading-snug text-indigo-800"
+  }, String(universalImageStyle || '').trim() ? 'Using Universal style: ' + String(universalImageStyle).trim() : 'No Universal style is set; the app default will be used.') : /*#__PURE__*/React.createElement("input", {
     "aria-label": t('common.enter_glossary_image_style'),
     "data-help-key": "glossary_image_style",
     type: "text",
     value: glossaryImageStyle,
     onChange: e => setGlossaryImageStyle(e.target.value),
     placeholder: t('glossary.style_placeholder'),
-    className: "w-full sm:w-1/3 min-w-0 text-sm border border-slate-300 sm:border-y-0 sm:border-l-0 sm:border-r sm:border-slate-200 py-2 px-2 focus:ring-2 focus:ring-indigo-500 bg-transparent placeholder:text-slate-600 rounded",
+    className: "mt-2 w-full rounded border border-indigo-300 bg-white px-2 py-2 text-xs placeholder:text-slate-600 focus:ring-2 focus:ring-indigo-500",
     disabled: isAddingTerm
-  }), /*#__PURE__*/React.createElement("input", {
+  }), /*#__PURE__*/React.createElement("p", {
+    className: "mt-1 text-[10px] leading-snug text-slate-600"
+  }, "Applies to new or regenerated term images.")), /*#__PURE__*/React.createElement("input", {
     "aria-label": t('common.enter_new_glossary_term'),
     type: "text",
     value: newGlossaryTerm,

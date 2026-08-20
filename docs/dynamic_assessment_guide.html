@@ -5,6 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dynamic Assessment Studio — Clinician User Guide | AlloFlow</title>
 <meta name="description" content="A clinician's guide to AlloFlow's Dynamic Assessment Studio: running a pretest-mediation-posttest cycle, interpreting the Modifiability Index, the access-contrast framework for multilingual learners, and responsible-use limitations.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://apomera.github.io/AlloFlow/docs/dynamic_assessment_guide.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="AlloFlow">
+<meta property="og:title" content="Dynamic Assessment Studio — Clinician User Guide">
+<meta property="og:description" content="A responsible-use workflow guide for AlloFlow's non-normed Dynamic Assessment Studio.">
+<meta property="og:url" content="https://apomera.github.io/AlloFlow/docs/dynamic_assessment_guide.html">
+<meta property="og:image" content="https://apomera.github.io/AlloFlow/assets/alloflow-social-preview.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="AlloFlow: open tools for learning, access, and creation.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:url" content="https://apomera.github.io/AlloFlow/docs/dynamic_assessment_guide.html">
+<meta name="twitter:title" content="Dynamic Assessment Studio — Clinician User Guide">
+<meta name="twitter:description" content="A responsible-use workflow guide for AlloFlow's non-normed Dynamic Assessment Studio.">
+<meta name="twitter:image" content="https://apomera.github.io/AlloFlow/assets/alloflow-social-preview.png">
+<meta name="twitter:image:alt" content="AlloFlow: open tools for learning, access, and creation.">
 <style>
 :root{--ink:#0f172a;--soft:#64748b;--line:#e2e8f0;--accent:#4f46e5;--accent-soft:#eef2ff;--warn-bg:#fffbeb;--warn-bd:#fcd34d;--warn-ink:#92400e;--bg:#f8fafc;}
 *{box-sizing:border-box;}
@@ -15,6 +33,8 @@ h1{font-size:30px;font-weight:900;letter-spacing:-0.5px;line-height:1.2;margin:0
 h2{font-size:22px;font-weight:800;margin:38px 0 10px;padding-top:12px;border-top:1px solid var(--line);}
 h3{font-size:16px;font-weight:800;color:#1e293b;margin:24px 0 6px;}
 p{margin:0 0 14px;color:#1e293b;}
+a{color:#4338ca;}
+a:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:3px;}
 ul{margin:0 0 16px;padding-left:22px;}
 li{margin:0 0 7px;color:#1e293b;}
 strong{font-weight:700;}
@@ -22,39 +42,61 @@ code{background:#f1f5f9;border:1px solid var(--line);border-radius:5px;padding:1
 hr{border:0;border-top:1px solid var(--line);margin:30px 0;}
 blockquote{margin:18px 0;padding:12px 16px;background:var(--warn-bg);border:1px solid var(--warn-bd);border-left:4px solid #f59e0b;border-radius:10px;}
 blockquote p{margin:0;color:var(--warn-ink);font-size:14.5px;}
+.manual-home{margin:0 0 18px;font-weight:800;}
+.guide-meta{color:var(--soft);font-size:13.5px;}
+.toc{margin:22px 0 30px;padding:16px 18px;background:#fff;border:1px solid var(--line);border-radius:12px;}
+.toc strong{display:block;margin-bottom:6px;}
+.toc ul{columns:2;column-gap:26px;margin:0;padding-left:20px;}
+.toc li{break-inside:avoid;margin-bottom:4px;}
 footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:var(--soft);font-size:12.5px;}
-@media (max-width:600px){.wrap{padding:20px 16px 60px;}h1{font-size:25px;}}
+@media (max-width:600px){.wrap{padding:20px 16px 60px;}h1{font-size:25px;}.toc ul{columns:1;}}
 </style>
 </head>
 <body>
 <main class="wrap">
+<p class="manual-home"><a href="../manuals.html">← All manuals and guides</a></p>
 <div class="banner">🔬 <strong>Clinical tool · v1.</strong> Dynamic Assessment is a structured clinical observation of how a student responds to teaching — <strong>not a normed or standardized test</strong>, and not a basis for eligibility on its own. Use it to plan intervention and generate hypotheses, alongside other evidence.</div>
 <article>
 <h1>AlloFlow Dynamic Assessment Studio — Clinician User Guide</h1>
-<h2>What Dynamic Assessment Is</h2>
+<p class="guide-meta">Clinical workflow reference · reviewed August 20, 2026 · operational guidance, not legal advice</p>
+<nav class="toc" aria-label="Guide contents">
+<strong>On this page</strong>
+<ul>
+  <li><a href="#what-it-is">What Dynamic Assessment is</a></li>
+  <li><a href="#when-to-use">When to use it</a></li>
+  <li><a href="#workflow">Full workflow</a></li>
+  <li><a href="#multilingual-access">Multilingual access contrasts</a></li>
+  <li><a href="#interpretation">Interpreting results</a></li>
+  <li><a href="#limitations">Limitations and responsible use</a></li>
+  <li><a href="#outputs">Outputs</a></li>
+  <li><a href="#accessibility">Accessibility</a></li>
+  <li><a href="#tips">Practical tips</a></li>
+</ul>
+</nav>
+<h2 id="what-it-is">What Dynamic Assessment Is</h2>
 <p>Dynamic Assessment (DA) measures <strong>how a student responds to teaching</strong>, not just what they already know. Where a traditional test photographs current performance, DA runs a structured cycle — <strong>pretest → mediation → posttest</strong> (with an optional <strong>transfer</strong> probe) — and watches what changes when you scaffold. The central question is not "Did the student get it right?" but "<strong>How much, and how easily, did performance improve when we mediated learning?</strong>"</p>
 <p>AlloFlow's DA Studio is a technology-supported implementation of this approach. It draws on the established DA tradition — <strong>Vygotsky's</strong> zone of proximal development (the gap between independent performance and what's possible with support) and <strong>Feuerstein's</strong> mediated learning experience — operationalizing that tradition with graduated prompt hierarchies and a descriptive growth metric. It does <strong>not</strong> reproduce or claim equivalence to any specific published instrument (LPAD, ACFS, ARROW, and the like); its methodology is grounded in the tradition but its scoring was designed for this tool and is not normed against any published population.</p>
 <p>The Studio is labeled <strong>"Clinical tool · v1."</strong> It supports both an <strong>examiner-led</strong> path (you control every scaffold) and an <strong>AI-mediated</strong> path (the model decides which pre-authored scaffold comes next). It is not a substitute for training in dynamic-assessment methodology — it assumes you bring the clinical judgment.</p>
 <hr>
-<h2>When to Use It — and When Not To</h2>
+<h2 id="when-to-use">When to Use It — and When Not To</h2>
 <h3>Use DA when you want to:</h3>
 <ul>
   <li><strong>Plan intervention.</strong> Find which supports actually move a student and at what intensity.</li>
   <li><strong>Drive pre-referral / MTSS problem-solving.</strong> Generate and test hypotheses before (or instead of) a formal referral.</li>
-  <li>**Understand <em>how</em> a student learns** — where they get stuck, what kind of scaffold unlocks them, whether learning sticks and generalizes.</li>
+  <li><strong>Understand <em>how</em> a student learns</strong> — where they get stuck, what kind of scaffold unlocks them, whether learning sticks and generalizes.</li>
   <li><strong>Add a structured observation</strong> to an existing evaluation, alongside standardized data.</li>
 </ul>
 <h3>Do NOT use DA:</h3>
 <ul>
   <li><strong>As a normed or standardized test.</strong> It produces descriptive observations, not standard scores or percentiles against any external population.</li>
-  <li><strong>As a basis for eligibility on its own.</strong> Eligibility decisions require standardized batteries with established reliability and validity. DA <em>supplements</em>, never replaces, the standardized component of an evaluation.</li>
+  <li><strong>As a basis for eligibility on its own.</strong> In U.S. IDEA contexts, eligibility teams must use a variety of assessment tools and strategies and may not use one measure as the sole criterion. This Studio is non-normed and can contribute structured observations only; follow state and district requirements for the full evaluation.</li>
   <li><strong>As your primary progress-monitoring tool.</strong> That role belongs to CBM probes. DA is a hypothesis-testing tool used at <strong>intake and review</strong>, not for frequent progress data.</li>
   <li><strong>To compare one student against another.</strong> The growth metric is a <em>within-student</em> observation; comparing two students' indices is not meaningful without normative data the tool does not provide.</li>
-  <li><strong>Without parent/guardian consent</strong> for non-standardized procedures, or <strong>when a student is acutely dysregulated.</strong></li>
+  <li><strong>Outside the consent and authorization that apply to your purpose.</strong> Consent rules differ for routine instructional screening, an initial special-education evaluation, and a reevaluation. Follow district and state procedures, provide required notice, and obtain informed parent/guardian consent when required. Do not administer when a student is acutely dysregulated.</li>
 </ul>
 <p>Say this plainly in your reports: DA results are <strong>clinical observations of learning behavior, not test scores.</strong></p>
 <hr>
-<h2>The Full Workflow</h2>
+<h2 id="workflow">The Full Workflow</h2>
 <h3>1. Intake (Referral Context)</h3>
 <p>The start screen opens with an optional, collapsible <strong>"Referral context"</strong> panel — six free-text fields, all stored on the device:</p>
 <ul>
@@ -105,7 +147,7 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:v
 <h3>7. Generate Outputs</h3>
 <p>From the outputs dashboard you can generate a narrative, teacher handoff, family letter, IEP goals, accommodations, and a monitoring plan, then print or export. (Detail below.)</p>
 <hr>
-<h2>Supports and the Access-Contrast Framework for Multilingual Learners</h2>
+<h2 id="multilingual-access">Supports and the Access-Contrast Framework for Multilingual Learners</h2>
 <h3>Supports</h3>
 <p>Items can carry up to five inline <strong>supports</strong> (at most one per kind), each anchored to a specific scaffold rung and minted as a clickable resource:</p>
 <ul>
@@ -124,7 +166,7 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:v
 <blockquote><p>The home-language translation is AI-generated. <strong>Verify equivalence with a proficient speaker before relying on it — the problem must be unchanged.</strong></p></blockquote>
 <p>Together these triangulate <em>where the barrier sits</em> by elimination. A flip on the read-aloud contrast points at decoding; a flip on simpler-language points at academic-language load; a flip on home-language points at the language of testing. All three are <strong>hypothesis-generating</strong> observations, never determinations. (The tool deliberately uses no theoretical jargon to label any of this — it describes observations only.)</p>
 <hr>
-<h2>Interpreting Results</h2>
+<h2 id="interpretation">Interpreting Results</h2>
 <h3>Modifiability Index (MI)</h3>
 <p>The MI is the proportion of <em>available</em> growth the student realized under mediation:</p>
 <p><strong>MI = (posttest − pretest) / (maximum possible − pretest)</strong>, bounded from −1 to 1.</p>
@@ -162,11 +204,11 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:v
 </ul>
 <p>If language-reducing supports dominate, the lens raises the hypothesis that academic-language access — rather than the underlying skill — limited performance. <strong>It is a hypothesis, not a determination.</strong> Interpret it only alongside the student's language-proficiency data and home-language context, weigh it against opportunity to learn, and verify any translation with a proficient speaker. It is never a determination of disability or its absence.</p>
 <hr>
-<h2>Limitations and Responsible Use</h2>
+<h2 id="limitations">Limitations and Responsible Use</h2>
 <p>Read this section as the floor for every DA report.</p>
 <ul>
   <li><strong>Structured clinical observation, not a normed measure.</strong> The MI is descriptive and must not be used for eligibility decisions on its own.</li>
-  <li><strong>Not for eligibility alone.</strong> Eligibility requires standardized batteries with established reliability and validity. DA supplements, never replaces, the standardized component of an evaluation.</li>
+  <li><strong>Not for eligibility alone.</strong> IDEA requires a variety of assessment tools and strategies and prohibits using one measure as the sole criterion. The Studio can add descriptive observations, but it is not normed and does not establish eligibility or replace the rest of a compliant evaluation.</li>
   <li><strong>Not tied to a published instrument.</strong> The methodology is grounded in the DA tradition but does not implement LPAD, ACFS, ARROW, or any specific normed instrument, and is not normed against published populations.</li>
   <li><strong>Within-student only.</strong> Comparing two students' indices is not meaningful.</li>
   <li><strong>Small-N throughout.</strong> Fewer than 5 items per phase → broad direction only; fewer than 10 saved sessions → highly unstable, illustrative only; fewer than 30 → exploratory.</li>
@@ -176,12 +218,13 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:v
   <li><strong>Verify translations.</strong> Home-language versions are AI-generated; confirm equivalence with a proficient speaker.</li>
   <li><strong>Access-condition findings are hypotheses,</strong> to be weighed alongside language-proficiency data, home-language history, and opportunity to learn — <em>not a determination of disability or its absence.</em></li>
   <li><strong>Privacy.</strong> Free-text examiner observations stay on the device and are never synced. All session history lives in local storage. PII-stripping on custom-probe context is a soft defense, not a guarantee — nothing reaches the AI or the Report Writer until you choose to send it.</li>
-  <li><strong>Consent and regulation.</strong> Use only with parent/guardian consent for non-standardized procedures, and never when a student is acutely dysregulated.</li>
+  <li><strong>Consent and regulation.</strong> Match consent and notice to the actual use. In U.S. IDEA contexts, informed parental consent is generally required before an initial evaluation and before a reevaluation, with specific exceptions and state-law variation; routine instructional screening is treated differently. Follow local procedures and never administer when a student is acutely dysregulated.</li>
   <li><strong>Generated outputs are drafts.</strong> Everything the AI produces is "drafted from DA findings; clinician to review and finalize." The Report Writer auto-draft is a starting point, not a final draft.</li>
 </ul>
 <p>In reports: present DA as clinical observations of learning behavior; avoid framing the MI as a standard score, percentile, or classification; do not draw eligibility conclusions from DA alone; and do not frame DA as a "better test" than standardized measures.</p>
+<p>For U.S. teams, verify current requirements in <a href="https://sites.ed.gov/idea/regs/b/d/300.304">34 CFR §300.304, Evaluation procedures</a> and <a href="https://sites.ed.gov/idea/regs/b/d/300.300">34 CFR §300.300, Parental consent</a>, plus state and district policy. This guide is operational guidance, not legal advice.</p>
 <hr>
-<h2>Outputs You Can Generate</h2>
+<h2 id="outputs">Outputs You Can Generate</h2>
 <p>From the summary screen's outputs dashboard:</p>
 <ul>
   <li><strong>Clinical narrative</strong> — deterministic, template-built (editable), covering referral context, pretest/posttest/MI, scaffold use, transfer, observed patterns, the learning-zone snapshot, and the access-condition note. Ends with a fixed caveat that the finding is descriptive, not normed, and should be interpreted alongside standardized measures.</li>
@@ -193,10 +236,10 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:v
 </ul>
 <p><strong>Export and backup:</strong> a self-contained black-and-white <strong>print packet</strong> (with the full clinical caveat in its footer), per-session and full-history <strong>JSON</strong> backup/restore (non-destructive — your local sessions always win), <strong>CSV</strong> exports for research/instrument development, and a <strong>Send to Report Writer</strong> hand-off that carries fact chunks, a pre-drafted section, and all generated outputs.</p>
 <hr>
-<h2>Accessibility and Theming</h2>
+<h2 id="accessibility">Accessibility and Theming</h2>
 <p>The Studio renders as a proper dialog (labeled, focus-trapped, Escape closes it from the start screen, and focus returns to the button that opened it). Every focusable control shows a high-contrast focus ring, tables carry proper header semantics, progress bars and charts expose text alternatives, and status changes are announced to screen readers. Destructive actions (discard, delete) confirm through a themed, keyboard-managed dialog rather than the browser's native popup, and Windows High Contrast Mode keeps card structure and focus visible via system colors. The interface follows the app's <strong>light / dark / high-contrast</strong> theme automatically — including all charts — while <strong>printed packets, family letters, and teacher handoffs always print dark-on-white</strong> regardless of the on-screen theme. Reduced-motion preferences suppress all animation.</p>
 <hr>
-<h2>Practical Tips for a Good Session</h2>
+<h2 id="tips">Practical Tips for a Good Session</h2>
 <ul>
   <li><strong>Fill in intake, especially the language field</strong> — it unlocks the access-condition lens and surfaces first in every report.</li>
   <li><strong>Default to clinician-led mediation</strong> when you have the training; reserve AI-mediated mode for non-specialist settings.</li>

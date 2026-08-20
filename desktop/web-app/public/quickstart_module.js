@@ -833,7 +833,7 @@ const QuickStartWizard = React.memo(({
     "aria-valuemin": 1,
     "aria-valuemax": 4,
     "aria-valuenow": step,
-    "aria-valuetext": `Step ${step} of 4`
+    "aria-valuetext": wt('wizard.progress_value', 'Step {current} of {total}').replace('{current}', String(step)).replace('{total}', '4')
   }, [1, 2, 3, 4].map(s => /*#__PURE__*/React.createElement("div", {
     key: s,
     "aria-hidden": "true",
@@ -867,7 +867,7 @@ const QuickStartWizard = React.memo(({
     className: "text-xs text-indigo-700 mt-1 leading-relaxed"
   }, wizardStepHelp[step].text), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-indigo-500 mt-2 italic"
-  }, "💡 Click any element below for a detailed explanation")), /*#__PURE__*/React.createElement("button", {
+  }, "💡 ", wt('wizard.help_click_element', 'Click any element below for a detailed explanation'))), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('common.close'),
     onClick: () => setIsHelpMode(false),

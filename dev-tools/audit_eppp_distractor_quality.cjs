@@ -82,6 +82,11 @@ const editorialPriorityAnchors = [
 ];
 
 function writeFileWithRetry(filePath, contents) {
+  try {
+    if (fs.readFileSync(filePath, 'utf8') === String(contents)) return;
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
   let lastError;
   for (let attempt = 0; attempt < 20; attempt += 1) {
     try {

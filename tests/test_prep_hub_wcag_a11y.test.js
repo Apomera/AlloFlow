@@ -26,6 +26,15 @@ describe('Test Prep Hub WCAG focus and timing safeguards', () => {
     expect(source).toContain("if (prior && typeof prior.focus === 'function') prior.focus()");
   });
 
+  it('does not restart the focus lifecycle when a host recreates its close callback', () => {
+    expect(source).toContain('const onCloseRef = React.useRef(onClose)');
+    expect(source).toContain('onCloseRef.current = onClose');
+    expect(source).toContain("typeof onCloseRef.current === 'function'");
+    expect(source).toContain('onCloseRef.current()');
+    expect(source).toContain('}, [isOpen]);');
+    expect(source).not.toContain('}, [isOpen, onClose]);');
+  });
+
   it('lets users repeatedly extend a timed simulation before it expires', () => {
     expect(source).toContain('function extendSimulationTime()');
     expect(source).toContain('setTimeRemainingSeconds((seconds) => seconds + 600)');

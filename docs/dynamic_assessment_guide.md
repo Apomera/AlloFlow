@@ -1,5 +1,7 @@
 # AlloFlow Dynamic Assessment Studio — Clinician User Guide
 
+> **Guide status:** Clinical workflow reference, reviewed August 20, 2026. This guide describes a non-normed tool and does not replace professional judgment, local policy, or legal review.
+
 ## What Dynamic Assessment Is
 
 Dynamic Assessment (DA) measures **how a student responds to teaching**, not just what they already know. Where a traditional test photographs current performance, DA runs a structured cycle — **pretest → mediation → posttest** (with an optional **transfer** probe) — and watches what changes when you scaffold. The central question is not "Did the student get it right?" but "**How much, and how easily, did performance improve when we mediated learning?**"
@@ -20,10 +22,10 @@ The Studio is labeled **"Clinical tool · v1."** It supports both an **examiner-
 
 ### Do NOT use DA:
 - **As a normed or standardized test.** It produces descriptive observations, not standard scores or percentiles against any external population.
-- **As a basis for eligibility on its own.** Eligibility decisions require standardized batteries with established reliability and validity. DA *supplements*, never replaces, the standardized component of an evaluation.
+- **As a basis for eligibility on its own.** In U.S. IDEA contexts, eligibility teams must use a variety of assessment tools and strategies and may not use one measure as the sole criterion. This Studio is non-normed and can contribute structured observations only; follow state and district requirements for the full evaluation.
 - **As your primary progress-monitoring tool.** That role belongs to CBM probes. DA is a hypothesis-testing tool used at **intake and review**, not for frequent progress data.
 - **To compare one student against another.** The growth metric is a *within-student* observation; comparing two students' indices is not meaningful without normative data the tool does not provide.
-- **Without parent/guardian consent** for non-standardized procedures, or **when a student is acutely dysregulated.**
+- **Outside the consent and authorization that apply to your purpose.** Consent rules differ for routine instructional screening, an initial special-education evaluation, and a reevaluation. Follow district and state procedures, provide required notice, and obtain informed parent/guardian consent when required. Do not administer when a student is acutely dysregulated.
 
 Say this plainly in your reports: DA results are **clinical observations of learning behavior, not test scores.**
 
@@ -192,7 +194,7 @@ If language-reducing supports dominate, the lens raises the hypothesis that acad
 Read this section as the floor for every DA report.
 
 - **Structured clinical observation, not a normed measure.** The MI is descriptive and must not be used for eligibility decisions on its own.
-- **Not for eligibility alone.** Eligibility requires standardized batteries with established reliability and validity. DA supplements, never replaces, the standardized component of an evaluation.
+- **Not for eligibility alone.** IDEA requires a variety of assessment tools and strategies and prohibits using one measure as the sole criterion. The Studio can add descriptive observations, but it is not normed and does not establish eligibility or replace the rest of a compliant evaluation.
 - **Not tied to a published instrument.** The methodology is grounded in the DA tradition but does not implement LPAD, ACFS, ARROW, or any specific normed instrument, and is not normed against published populations.
 - **Within-student only.** Comparing two students' indices is not meaningful.
 - **Small-N throughout.** Fewer than 5 items per phase → broad direction only; fewer than 10 saved sessions → highly unstable, illustrative only; fewer than 30 → exploratory.
@@ -202,10 +204,12 @@ Read this section as the floor for every DA report.
 - **Verify translations.** Home-language versions are AI-generated; confirm equivalence with a proficient speaker.
 - **Access-condition findings are hypotheses,** to be weighed alongside language-proficiency data, home-language history, and opportunity to learn — *not a determination of disability or its absence.*
 - **Privacy.** Free-text examiner observations stay on the device and are never synced. All session history lives in local storage. PII-stripping on custom-probe context is a soft defense, not a guarantee — nothing reaches the AI or the Report Writer until you choose to send it.
-- **Consent and regulation.** Use only with parent/guardian consent for non-standardized procedures, and never when a student is acutely dysregulated.
+- **Consent and regulation.** Match consent and notice to the actual use. In U.S. IDEA contexts, informed parental consent is generally required before an initial evaluation and before a reevaluation, with specific exceptions and state-law variation; routine instructional screening is treated differently. Follow local procedures and never administer when a student is acutely dysregulated.
 - **Generated outputs are drafts.** Everything the AI produces is "drafted from DA findings; clinician to review and finalize." The Report Writer auto-draft is a starting point, not a final draft.
 
 In reports: present DA as clinical observations of learning behavior; avoid framing the MI as a standard score, percentile, or classification; do not draw eligibility conclusions from DA alone; and do not frame DA as a "better test" than standardized measures.
+
+For U.S. teams, verify current requirements in [34 CFR §300.304, Evaluation procedures](https://sites.ed.gov/idea/regs/b/d/300.304) and [34 CFR §300.300, Parental consent](https://sites.ed.gov/idea/regs/b/d/300.300), plus state and district policy. This guide is operational guidance, not legal advice.
 
 ---
 

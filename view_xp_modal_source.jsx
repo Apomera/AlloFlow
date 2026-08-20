@@ -106,13 +106,13 @@ function XPModal({
             </div>
           </div>
           <div className="flex justify-between text-[11px] font-mono font-bold text-slate-600 mt-1.5">
-            <span>{currentLevelXP} XP</span>
-            <span>{globalXPNext} XP to Lvl {globalLevel + 1}</span>
+            <span>{currentLevelXP} {t('common.xp')}</span>
+            <span>{globalXPNext} {t('common.xp')} · {t('learner.level')} {globalLevel + 1}</span>
           </div>
         </div>
         <div className="border-t border-slate-100 pt-4">
           <h3 id="xp-history-title" className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-3 flex items-center gap-1">
-            <HistoryIcon size={12} aria-hidden="true"/> Recent History
+            <HistoryIcon size={12} aria-hidden="true"/> {t('modals.xp_history')}
           </h3>
           <ul className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1" aria-labelledby="xp-history-title" tabIndex={pointHistory.length > 0 ? 0 : undefined}>
             {pointHistory.length === 0 ? (

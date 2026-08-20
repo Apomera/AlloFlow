@@ -5201,7 +5201,7 @@ ${modeListForAuto}
              const MAX_RETRIES = 1;
              const progression = content.progressionLabel || 'sequential order';
              const generateOne = async (item) => {
-                 const _timelineStyle = (timelineImageStyle || '').trim() || (universalImageStyle || '').trim();
+                 const _timelineStyle = (universalImageStyle || '').trim();
                  const styleInstruction = _timelineStyle ? `Style: ${_timelineStyle}.` : 'Educational style.';
                  const imgPrompt = `Simple vector icon/illustration of: "${item.event}" (sequence position: "${item.date || ''}"). Context: part of a sequence ordered by ${progression}. White background. ${styleInstruction} No text. Visual only.`;
                  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
@@ -5522,7 +5522,7 @@ ${modeListForAuto}
                  const POOL_SIZE = 2;
                  const generateOne = async (item) => {
                      try {
-                         const _csDeckStyle = (conceptSortImageStyle || '').trim() || (universalImageStyle || '').trim();
+                         const _csDeckStyle = (universalImageStyle || '').trim();
                          const styleInstruction = _csDeckStyle ? `Style: ${_csDeckStyle}.` : 'Educational style.';
                          const imgPrompt = `Simple, clear vector icon or illustration of: "${item.content}". White background. ${styleInstruction} No text.`;
                          const imageUrl = await callImagenWithSignal(imgPrompt);

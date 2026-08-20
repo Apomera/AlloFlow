@@ -67,7 +67,7 @@ function restoreWindowProperty(name, value) {
   else window[name] = value;
 }
 
-function installVoiceFakes({ kokoro, autoEndBrowser = true } = {}) {
+function installVoiceFakes({ kokoro, autoEndBrowser = true, autoStartBrowser = true, audioPlay } = {}) {
   const previous = {
     SpeechRecognition: window.SpeechRecognition,
     webkitSpeechRecognition: window.webkitSpeechRecognition,
@@ -95,7 +95,13 @@ function installVoiceFakes({ kokoro, autoEndBrowser = true } = {}) {
       this.url = url;
       this.duration = 1;
       this.pause = vi.fn();
-      this.play = vi.fn(() => Promise.resolve());
+      this.play = vi.fn(() => {
+        const result = audioPlay ? audioPlay(this) : Promise.resolve();
+        Promise.resolve(result).then(() => {
+          if (typeof this.onplaying === 'function') this.onplaying();
+        }).catch(() => {});
+        return result;
+      });
       audios.push(this);
     }
   }
@@ -104,6 +110,7 @@ function installVoiceFakes({ kokoro, autoEndBrowser = true } = {}) {
     cancel: vi.fn(),
     speak: vi.fn((utterance) => {
       utterances.push(utterance);
+      if (autoStartBrowser && typeof utterance.onstart === 'function') utterance.onstart();
       if (autoEndBrowser && typeof utterance.onend === 'function') utterance.onend();
     }),
   };
@@ -290,6 +297,144 @@ describe('voice-only pause recovery', () => {
 });
 
 describe('voice reply speech preferences and fallback', () => {
+  it('narrates a long lesson workflow in order without the old 300-character truncation', async () => {
+    vi.useFakeTimers();
+    const fake = installVoiceFakes();
+    const longReply = Array.from({ length: 12 }, (_, index) =>
+      `Step ${index + 1} prepares a distinct lesson resource for the reviewed instructional sequence.`
+    ).join(' ');
+    try {
+      const { loop, rec } = startLoop(fake, { converse: vi.fn(async () => longReply) });
+      rec.onresult(finalEvent('tell me the complete lesson workflow'));
+      await flush();
+
+      expect(fake.utterances.length).toBeGreaterThan(1);
+      expect(fake.utterances.map((utterance) => utterance.text).join(' ')).toBe(longReply);
+      expect(fake.utterances.at(-1).text).toContain('Step 12');
+      loop.stop();
+    } finally {
+      vi.clearAllTimers();
+      fake.restore();
+    }
+  });
+
+  it('does not claim to be speaking when reply volume is zero', () => {
+    vi.useFakeTimers();
+    const statuses = [];
+    const coordinator = {
+      acquireVoiceSession: vi.fn(() => ({
+        isActive: () => true,
+        update: (detail) => { statuses.push(detail); return true; },
+        release: vi.fn(),
+      })),
+    };
+    const fake = installVoiceFakes();
+    try {
+      const { loop, ctx } = startLoop(fake, { voiceVolume: 0 }, { voiceCoordinator: coordinator });
+      loop.pause();
+
+      expect(fake.speechSynthesis.speak).not.toHaveBeenCalled();
+      expect(statuses.some((status) => status.state === 'speaking')).toBe(false);
+      expect(ctx.addToast).toHaveBeenCalledWith(expect.stringContaining('volume is set to zero'), 'warning');
+      loop.stop();
+    } finally {
+      vi.clearAllTimers();
+      fake.restore();
+    }
+  });
+
+  it('warns and resumes when browser speech accepts a reply but never starts it', async () => {
+    vi.useFakeTimers();
+    const fake = installVoiceFakes({ autoEndBrowser: false, autoStartBrowser: false });
+    try {
+      const { loop, ctx, rec } = startLoop(fake);
+      rec.start.mockClear();
+      loop.pause();
+      expect(fake.speechSynthesis.speak).toHaveBeenCalled();
+
+      await vi.advanceTimersByTimeAsync(8000);
+      expect(ctx.addToast).toHaveBeenCalledWith(expect.stringContaining("couldn't play"), 'warning');
+      expect(loop.getState().speaking).toBe(false);
+      loop.stop();
+    } finally {
+      vi.clearAllTimers();
+      fake.restore();
+    }
+  });
+
+  it('reports preparing until Kokoro audio actually starts playing', async () => {
+    vi.useFakeTimers();
+    let resolveKokoro;
+    const kokoro = {
+      ready: true,
+      speak: vi.fn(() => new Promise((resolve) => { resolveKokoro = resolve; })),
+    };
+    const statuses = [];
+    const coordinator = {
+      acquireVoiceSession: vi.fn((_owner, leaseOpts) => ({
+        isActive: () => true,
+        update: (detail) => { statuses.push(detail); return true; },
+        release: vi.fn(),
+      })),
+    };
+    const fake = installVoiceFakes({ kokoro });
+    try {
+      const { loop } = startLoop(fake, {}, { voiceCoordinator: coordinator });
+      loop.pause();
+
+      expect(statuses.at(-1)).toMatchObject({ state: 'processing', message: 'Preparing the spoken response.' });
+      expect(statuses.some((status) => status.state === 'speaking')).toBe(false);
+
+      resolveKokoro('blob:delayed-voice-reply');
+      await flush();
+      expect(statuses.at(-1)).toMatchObject({ state: 'speaking', message: 'Speaking a response.' });
+      loop.stop();
+    } finally {
+      vi.clearAllTimers();
+      fake.restore();
+    }
+  });
+
+  it('falls back to browser speech when generated neural audio cannot play', async () => {
+    vi.useFakeTimers();
+    const kokoro = { ready: true, speak: vi.fn(() => Promise.resolve('blob:blocked-voice-reply')) };
+    const fake = installVoiceFakes({
+      kokoro,
+      audioPlay: () => Promise.reject(new Error('playback blocked')),
+    });
+    try {
+      const { loop } = startLoop(fake);
+      loop.pause();
+      await flush();
+
+      expect(fake.audios[0].play).toHaveBeenCalled();
+      expect(fake.speechSynthesis.speak).toHaveBeenCalled();
+      loop.stop();
+    } finally {
+      vi.clearAllTimers();
+      fake.restore();
+    }
+  });
+
+  it('falls back to browser speech when neural synthesis stalls', async () => {
+    vi.useFakeTimers();
+    const kokoro = { ready: true, speak: vi.fn(() => new Promise(() => {})) };
+    const fake = installVoiceFakes({ kokoro });
+    try {
+      const { loop } = startLoop(fake);
+      loop.pause();
+      expect(fake.speechSynthesis.speak).not.toHaveBeenCalled();
+
+      await vi.advanceTimersByTimeAsync(8000);
+      await flush();
+      expect(fake.speechSynthesis.speak).toHaveBeenCalled();
+      loop.stop();
+    } finally {
+      vi.clearAllTimers();
+      fake.restore();
+    }
+  });
+
   it('applies configured rate and volume to browser speech', () => {
     vi.useFakeTimers();
     const fake = installVoiceFakes();

@@ -12,13 +12,16 @@ describe('Code.gs — sharePortalReleasedEvaluation', () => {
   const gs = read(path.join('apps_script', 'educator_evaluation', 'Code.gs'));
 
   it('exposes the server function with evaluator/admin gating and finalization gate', () => {
+    expect(gs).toMatch(/function reviewPortalReleasedEvaluationShare\(request\)/);
     expect(gs).toMatch(/function sharePortalReleasedEvaluation\(request\)/);
     expect(gs).toMatch(/Only an assigned evaluator or administrator can share a released evaluation/);
     expect(gs).toMatch(/must be finalized before the evaluation can be shared/);
   });
 
   it('shares a single file view-only inside the district domain, never the folder', () => {
-    expect(gs).toMatch(/addViewer\(recipient\)/);
+    expect(gs).toMatch(/grantReleasedDocAccess_\(file, accessEmails\)/);
+    expect(gs).toMatch(/file\.addViewer\(email\)/);
+    expect(gs).toMatch(/fileHasAccess_\(file, email\)/);
     expect(gs).toMatch(/setShareableByEditors\(false\)/);
     expect(gs).toMatch(/emailDomain_\(recipient\) !== allowedDomain/);
     // the folder itself is never shared
@@ -54,7 +57,26 @@ describe('Code.gs — sharePortalReleasedEvaluation', () => {
 
   it('records the share in the audit log and on the educator record', () => {
     expect(gs).toMatch(/RELEASED_DOC_SHARED/);
-    expect(gs).toMatch(/teacher\.releasedDoc = \{ url: built\.url/);
+    expect(gs).toMatch(/teacher\.releasedDoc = \{/);
+    expect(gs).toMatch(/id: built\.id/);
+    expect(gs).toMatch(/url: built\.url/);
+    expect(gs).toMatch(/appendWorkspaceAudit_\(workspace, mutation, actor\)/);
+  });
+
+  it('requires a short-lived server-bound review and avoids duplicate documents', () => {
+    expect(gs).toMatch(/requireReleaseReview_\(request, actor, teacher, recipient, state\.revision\)/);
+    expect(gs).toMatch(/review\.actorEmail !== actor\.email/);
+    expect(gs).toMatch(/cache\.remove\(key\)/);
+    expect(gs).toMatch(/teacher\.releasedDoc \? \(existingId && existingAccessible \? 'verify_existing' : 'replace_unavailable'\) : 'create'/);
+    expect(gs).toMatch(/idempotent: !created/);
+    expect(gs).toMatch(/RELEASED_DOC_ACCESS_VERIFIED/);
+  });
+
+  it('quarantines an uncommitted new file and surfaces recovery state', () => {
+    expect(gs).toMatch(/quarantineUncommittedRelease_/);
+    expect(gs).toMatch(/file\.setTrashed\(true\)/);
+    expect(gs).toMatch(/EE_RELEASE_RECOVERY_REQUIRED/);
+    expect(gs).toMatch(/recoveryPending: recoveryPending/);
   });
 });
 
@@ -84,7 +106,7 @@ describe('Code.gs — 2026-08-16 refinement batch', () => {
   });
 
   it('setup health is admin-only and reports counts, never member emails', () => {
-    const fn = gs.slice(gs.indexOf('function getPortalSetupHealth'), gs.indexOf('function getPortalCohortStats'));
+    const fn = gs.slice(gs.indexOf('function getPortalSetupHealth'), gs.indexOf('/* ---------------- district administrator operations ---------------- */'));
     expect(fn).toMatch(/requireAdmin_\(\)/);
     expect(fn).toMatch(/educatorsWithoutMemberAccount/);
     expect(fn).not.toMatch(/m\.email|member\.email|\.email\b.*push/);
@@ -108,6 +130,8 @@ describe('Code.gs — 2026-08-16 refinement batch', () => {
 describe('portal adapter and client panel', () => {
   it('the Apps Script portal repository wires shareReleasedEvaluation', () => {
     const builder = read('_build_educator_evaluation_apps_script.js');
+    expect(builder).toMatch(/reviewReleasedEvaluation: reviewPortalReleasedEvaluation/);
+    expect(builder).toMatch(/\.reviewPortalReleasedEvaluationShare\(request\)/);
     expect(builder).toMatch(/shareReleasedEvaluation: sharePortalReleasedEvaluation/);
     expect(builder).toMatch(/\.sharePortalReleasedEvaluation\(request\)/);
     // the generated portal bundle carries it too
@@ -122,11 +146,14 @@ describe('portal adapter and client panel', () => {
   ])('%s carries the share button, released-doc link, and normalizer passthrough', (relPath) => {
     const src = read(relPath);
     expect(src).toMatch(/shareReleasedEvaluation/);
+    expect(src).toMatch(/reviewReleasedEvaluation/);
     expect(src).toMatch(/releasedDoc/);
     // the link renders only for Google Docs URLs
     expect(src).toMatch(/docs\\\.google\\\.com|docs\\.google\\.com/);
     // teachers never see the share button, only the link
-    expect(src).toMatch(/role !== ["']teacher["'] && typeof repository\.shareReleasedEvaluation === ["']function["']/);
+    expect(src).toMatch(/role !== ["']teacher["'] && typeof repository\.reviewReleasedEvaluation === ["']function["']/);
+    expect(src).toMatch(/Required disclosure review/);
+    expect(src).toMatch(/Nothing has been shared by opening this review/);
   });
 
   it('the demo panel explains the portal setup steps and the mailbox distinction', () => {

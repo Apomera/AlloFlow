@@ -410,9 +410,26 @@ function HeaderBar(props) {
   };
   const selectedReadingThemeKey = readingThemeLabelKeys[readingTheme] || readingThemeLabelKeys.default;
   const selectedReadingThemeLabel = t("header." + selectedReadingThemeKey) || readingThemeFallbackLabels[readingTheme] || readingThemeFallbackLabels.default;
+  const readingThemeOrder = ["default", "warm", "sepia", "dark", "highContrast", "blue", "green", "rose", "dyslexia", "dim"];
+  const handleReadingThemeKeyDown = (event, currentTheme) => {
+    const key = event.key;
+    if (!["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp", "Home", "End"].includes(key)) return;
+    event.preventDefault();
+    const index = Math.max(0, readingThemeOrder.indexOf(currentTheme));
+    const nextIndex = key === "Home" ? 0 : key === "End" ? readingThemeOrder.length - 1 : (index + (key === "ArrowRight" || key === "ArrowDown" ? 1 : -1) + readingThemeOrder.length) % readingThemeOrder.length;
+    const next = readingThemeOrder[nextIndex];
+    setReadingTheme(next);
+    if (typeof window !== "undefined" && typeof document !== "undefined" && typeof window.requestAnimationFrame === "function") {
+      window.requestAnimationFrame(() => {
+        const target = document.querySelector(`[data-reading-theme-option="${next}"]`);
+        if (target && typeof target.focus === "function") target.focus();
+      });
+    }
+  };
   const piiWarningText = t("header.pii_warning");
-  const compactRoleLabel = isIndependentMode ? t("roles.independent") || "Independent Learner" : isParentMode ? t("roles.parent") || "Parent" : isTeacherMode ? t("roles.teacher") || "Teacher" : t("roles.student") || "Student";
-  const dashboardNavLabel = isParentMode ? t("dashboard.title_parent") || "Family Dashboard" : t("dashboard.title") || "Dashboard";
+  const compactRoleLabel = isIndependentMode ? t("roles.independent") || "Independent Learner" : isParentMode ? t("parent_mode.label") || t("roles.parent") || "Family Mode" : isTeacherMode ? t("roles.teacher") || "Teacher" : t("roles.student") || "Student";
+  const dashboardNavLabel = isParentMode ? t("parent_mode.dashboard_title") || t("dashboard.title_parent") || "Family Dashboard" : t("dashboard.title") || "Dashboard";
+  const parentProgressLabel = isParentMode ? t("parent_mode.progress_label") || t("common.assessment_center") || "Child Progress" : t("common.assessment_center") || "Assessment Center";
   const compactViewFallback = String(activeView || "").replace(/[-_]+/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
   const compactContextLabel = guidedMode ? t("launch_pad.guided_title") || "Guided Mode" : activeView === "dashboard" ? dashboardNavLabel : activeView === "input" ? t("tools.source") || "Source Material" : compactViewFallback || (t("common.ready") || "Ready");
   const openJoinFromCompactHeader = () => {
@@ -683,17 +700,17 @@ function HeaderBar(props) {
         "data-help-key": "header_settings_text_spacing",
         className: "w-full h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
       }
-    )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { className: `text-xs font-bold flex items-center gap-1 ${_skin.label}` }, t("settings.reading_theme") || "\u{1F3A8} Reading Theme"), /* @__PURE__ */ React.createElement("span", { className: `text-[11px] font-mono ${_skin.chip} px-1.5 py-0.5 rounded` }, selectedReadingThemeLabel)), /* @__PURE__ */ React.createElement("p", { className: `text-[11px] ${theme === "light" ? "text-slate-600" : "text-slate-300"} mb-2` }, t("settings.reading_theme_desc") || "Background & text color for all content views"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-5 gap-1.5", role: "radiogroup", "aria-label": t("header.reading_theme_aria") || "Reading theme" }, [
-      { id: "default", label: t("header.reading_theme_default") || "Default", bg: "#ffffff", fg: "#1e293b", border: "#e2e8f0", emoji: "\u25CB" },
-      { id: "warm", label: t("header.reading_theme_warm") || "Warm", bg: "#fdcba5", fg: "#432714", border: "#f97e1f", emoji: "\u2600\uFE0F" },
-      { id: "sepia", label: t("header.reading_theme_sepia") || "Sepia", bg: "#d1bfa9", fg: "#2a1f13", border: "#b48950", emoji: "\u{1F4DC}" },
-      { id: "dark", label: t("header.reading_theme_dark") || "Dark", bg: "#1a1a2e", fg: "#e2e8f0", border: "#334155", emoji: "\u{1F319}" },
-      { id: "highContrast", label: t("header.reading_theme_contrast") || "Contrast", bg: "#000000", fg: "#ffff00", border: "#ffff00", emoji: "\u25FC\uFE0F" },
-      { id: "blue", label: t("header.reading_theme_blue") || "Blue", bg: "#b9dbf4", fg: "#16304b", border: "#4aa9ed", emoji: "\u{1F4A7}" },
-      { id: "green", label: t("header.reading_theme_green") || "Green", bg: "#caeccf", fg: "#123f21", border: "#34c548", emoji: "\u{1F33F}" },
-      { id: "rose", label: t("header.reading_theme_rose") || "Rose", bg: "#f9c8d8", fg: "#561530", border: "#f877a2", emoji: "\u{1F338}" },
-      { id: "dyslexia", label: t("header.reading_theme_easy_read") || "Easy Read", bg: "#f4ebbe", fg: "#3f3b31", border: "#cfb017", emoji: "\u{1F524}" },
-      { id: "dim", label: t("header.reading_theme_dim") || "Dim", bg: "#adb3bd", fg: "#000000", border: "#7486a4", emoji: "\u{1F32B}\uFE0F" }
+    )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { className: `text-xs font-bold flex items-center gap-1 ${_skin.label}` }, t("settings.reading_theme") || "\u{1F3A8} Reading Theme"), /* @__PURE__ */ React.createElement("span", { "aria-live": "polite", className: `text-[11px] font-mono ${_skin.chip} px-1.5 py-0.5 rounded` }, selectedReadingThemeLabel)), /* @__PURE__ */ React.createElement("p", { className: `text-[11px] ${theme === "light" ? "text-slate-600" : "text-slate-300"} mb-2` }, t("settings.reading_theme_desc") || "Background & text color for all content views", " ", t("settings.reading_theme_scope") || "Changes lesson colors only; your app theme stays the same."), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-5 gap-1.5", role: "radiogroup", "aria-label": t("header.reading_theme_aria") || "Reading theme" }, [
+      { id: "default", label: t("header.reading_theme_default") || "Default", bg: "#ffffff", fg: "#1e293b", border: "#64748b", focus: "#4f46e5", emoji: "\u25CB" },
+      { id: "warm", label: t("header.reading_theme_warm") || "Warm", bg: "#fdcba5", fg: "#432714", border: "#a85b2f", focus: "#1d4ed8", emoji: "\u2600\uFE0F" },
+      { id: "sepia", label: t("header.reading_theme_sepia") || "Sepia", bg: "#d1bfa9", fg: "#2a1f13", border: "#7f5e3d", focus: "#174ea6", emoji: "\u{1F4DC}" },
+      { id: "dark", label: t("header.reading_theme_dark") || "Dark", bg: "#1a1a2e", fg: "#e2e8f0", border: "#7979ab", focus: "#fbbf24", emoji: "\u{1F319}" },
+      { id: "highContrast", label: t("header.reading_theme_contrast") || "Contrast", bg: "#000000", fg: "#ffff00", border: "#ffff00", focus: "#ffff00", emoji: "\u25FC\uFE0F" },
+      { id: "blue", label: t("header.reading_theme_blue") || "Blue", bg: "#b9dbf4", fg: "#16304b", border: "#3b78a5", focus: "#174ea6", emoji: "\u{1F4A7}" },
+      { id: "green", label: t("header.reading_theme_green") || "Green", bg: "#caeccf", fg: "#123f21", border: "#3b7f4c", focus: "#1455a5", emoji: "\u{1F33F}" },
+      { id: "rose", label: t("header.reading_theme_rose") || "Rose", bg: "#f9c8d8", fg: "#561530", border: "#a7476b", focus: "#174ea6", emoji: "\u{1F338}" },
+      { id: "dyslexia", label: t("header.reading_theme_easy_read") || "Easy Read", bg: "#f4ebbe", fg: "#3f3b31", border: "#8d7621", focus: "#174ea6", emoji: "\u{1F524}" },
+      { id: "dim", label: t("header.reading_theme_dim") || "Dim", bg: "#adb3bd", fg: "#000000", border: "#46505d", focus: "#1d4ed8", emoji: "\u{1F32B}\uFE0F" }
     ].map(function(th) {
       var isActive = readingTheme === th.id;
       return /* @__PURE__ */ React.createElement(
@@ -704,13 +721,23 @@ function HeaderBar(props) {
           role: "radio",
           "aria-checked": isActive,
           "aria-label": th.label,
+          "aria-posinset": readingThemeOrder.indexOf(th.id) + 1,
+          "aria-setsize": 10,
+          tabIndex: isActive ? 0 : -1,
+          "data-reading-theme-option": th.id,
           onClick: () => setReadingTheme(th.id),
+          onKeyDown: (event) => handleReadingThemeKeyDown(event, th.id),
           title: th.label,
-          className: `flex flex-col items-center gap-0.5 p-1.5 rounded-lg transition-all border-2 cursor-pointer ${isActive ? "ring-2 ring-indigo-500 ring-offset-1 scale-105" : "hover:scale-105"}`,
-          style: { background: th.bg, color: th.fg, borderColor: isActive ? "#6366f1" : th.border }
+          className: `allo-reading-theme-swatch flex flex-col items-center gap-0.5 p-1.5 rounded-lg transition-all border-2 cursor-pointer ${isActive ? "scale-105" : "hover:scale-105"}`,
+          style: {
+            "--allo-reading-swatch-bg": th.bg,
+            "--allo-reading-swatch-fg": th.fg,
+            "--allo-reading-swatch-border": th.border,
+            "--allo-reading-swatch-focus": th.focus
+          }
         },
         /* @__PURE__ */ React.createElement("span", { className: "text-sm leading-none" }, th.emoji),
-        /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold leading-none", style: { color: th.fg } }, th.label)
+        /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold leading-none" }, th.label)
       );
     }))))))
   )), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
@@ -785,7 +812,7 @@ function HeaderBar(props) {
         },
         "aria-label": t("header.browser_tts_fallback_aria") || "Use browser voice as fallback when Gemini TTS refuses or fails"
       }
-    ), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] leading-tight" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold block" }, t("header.browser_tts_fallback_label") || "Browser-voice fallback"), /* @__PURE__ */ React.createElement("span", { className: "opacity-80" }, t("header.browser_tts_fallback_desc") || "Read refused/failed sentences with the system voice instead of skipping.")))), leveledTextLanguage && leveledTextLanguage !== "English" && /* @__PURE__ */ React.createElement("div", { className: `mt-2 p-2 rounded-lg border ${_skin.note}` }, /* @__PURE__ */ React.createElement("div", { className: `text-[11px] uppercase font-bold ${_skin.noteHead}` }, t("header.voice_active_language") || "Reading language", ": ", leveledTextLanguage), /* @__PURE__ */ React.createElement("div", { className: `text-[11px] ${_skin.noteBody} mt-0.5` }, !window._piperTTS?.supportsLanguage(languageToTTSCode(leveledTextLanguage)) ? t("header.voice_lang_no_offline") || "Cloud voice, then the device voice. There is no offline voice for this language yet." : window._piperTTS?.isLanguageReady?.(languageToTTSCode(leveledTextLanguage)) ? t("header.voice_lang_offline_ready") || "An offline voice for this language is saved on this device." : t("header.voice_lang_offline_on_demand") || "Cloud voice first. An offline voice for this language downloads the first time it is needed."), /* @__PURE__ */ React.createElement("div", { className: `text-[11px] ${_skin.noteHead} mt-0.5` }, t("header.kokoro_english_only") || "Kokoro voice applies to English content")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mt-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("label", { className: `text-[11px] uppercase font-bold ${_skin.label} block mb-1` }, "Speed: ", voiceSpeed, "x"), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] leading-tight" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold block" }, t("header.browser_tts_fallback_label") || "Browser-voice fallback"), /* @__PURE__ */ React.createElement("span", { className: "opacity-80" }, t("header.browser_tts_fallback_desc") || "Read refused/failed sentences with the system voice instead of skipping.")))), leveledTextLanguage && leveledTextLanguage !== "English" && /* @__PURE__ */ React.createElement("div", { className: `mt-2 p-2 rounded-lg border ${_skin.note}` }, /* @__PURE__ */ React.createElement("div", { className: `text-[11px] uppercase font-bold ${_skin.noteHead}` }, t("header.voice_active_language") || "Reading language", ": ", leveledTextLanguage), /* @__PURE__ */ React.createElement("div", { className: `text-[11px] ${_skin.noteBody} mt-0.5` }, !window._piperTTS?.supportsLanguage(languageToTTSCode(leveledTextLanguage)) ? t("header.voice_lang_no_offline") || "Cloud voice, then the device voice. There is no offline voice for this language yet." : window._piperTTS?.isLanguageReady?.(languageToTTSCode(leveledTextLanguage)) ? t("header.voice_lang_offline_ready") || "An offline voice for this language is saved on this device." : t("header.voice_lang_offline_on_demand") || "Cloud voice first. An offline voice for this language downloads the first time it is needed."), /* @__PURE__ */ React.createElement("div", { className: `text-[11px] ${_skin.noteHead} mt-0.5` }, t("header.kokoro_english_only") || "Kokoro voice applies to English content")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mt-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("label", { className: `text-[11px] uppercase font-bold ${_skin.label} block mb-1` }, t("header.voice_speed") || "Speed", ": ", voiceSpeed, "x"), /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-label": t("common.range_slider"),
@@ -798,7 +825,7 @@ function HeaderBar(props) {
         "data-help-key": "header_settings_voice_speed",
         className: "w-full accent-indigo-600 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
       }
-    )), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("label", { className: `text-[11px] uppercase font-bold ${_skin.label} block mb-1` }, "Volume: ", Math.round(voiceVolume * 100), "%"), /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("label", { className: `text-[11px] uppercase font-bold ${_skin.label} block mb-1` }, t("header.voice_volume") || "Volume", ": ", Math.round(voiceVolume * 100), "%"), /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-label": t("common.range_slider"),
@@ -811,7 +838,20 @@ function HeaderBar(props) {
         "data-help-key": "header_settings_voice_volume",
         className: "w-full accent-indigo-600 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
       }
-    ))), /* @__PURE__ */ React.createElement("p", { className: `text-[11px] ${theme === "light" ? "text-slate-600" : "text-slate-300"} mt-2 italic leading-tight` }, t("settings.voice.helper"))))))
+    ))), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => {
+          const testVoice = typeof window !== "undefined" && window.__alloTestVoice;
+          if (typeof testVoice === "function") testVoice();
+        },
+        disabled: !(typeof window !== "undefined" && typeof window.__alloTestVoice === "function"),
+        className: `mt-3 w-full min-h-9 rounded-lg border px-3 py-2 text-xs font-bold ${_skin.surface} ${_skin.action} disabled:opacity-50 disabled:cursor-not-allowed`,
+        "aria-label": t("header.voice_test_aria") || "Test the selected voice and audio output"
+      },
+      t("header.voice_test") || "Test voice"
+    ), /* @__PURE__ */ React.createElement("p", { className: `text-[11px] ${theme === "light" ? "text-slate-600" : "text-slate-300"} mt-2 italic leading-tight` }, t("settings.voice.helper"))))))
   )), /* @__PURE__ */ React.createElement("div", { className: "w-px h-6 bg-white/20 mx-1" }), /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -1197,12 +1237,12 @@ function HeaderBar(props) {
         type: "button",
         onClick: () => setShowClassAnalytics(true),
         className: "bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border border-white/10 hover:border-white/30 ring-1 ring-violet-400/40",
-        title: t("common.assessment_center") || "Assessment Center",
+        title: parentProgressLabel,
         "data-help-key": "header_analytics"
       },
       /* @__PURE__ */ React.createElement(ClipboardList, { size: 14 }),
       " ",
-      /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, t("common.assessment_center") || "Assessment Center")
+      /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, parentProgressLabel)
     )
   ), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-end gap-2" }, isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",

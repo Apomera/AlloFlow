@@ -1159,6 +1159,16 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'ConceptQuestEngineModule',
+        filename: 'concept_quest_engine.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ConceptQuestTeacherModule',
+        filename: 'concept_quest_teacher_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'EscapeRoomModule',
         filename: 'escape_room_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -1188,6 +1198,15 @@ const PLUGIN_FILES = [
     'translate_loader.js',
     'dictionary_loader.js',
     'sd_turbo_loader.js',
+    // AlloHaven Arcade modes are lazy-loaded with pluginCdnBase. Keep local
+    // desktop builds self-contained so live classroom activities do not depend
+    // on the public CDN (and so a freshly built palace can be QA'd before push).
+    'arcade_mode_sage_launcher.js',
+    'arcade_mode_boss_encounter.js',
+    'arcade_mode_realm_builder.js',
+    'arcade_mode_concept_atlas.js',
+    'arcade_mode_modelun.js',
+    'arcade_mode_concept_pictionary.js',
     'stem_lab/stem_tool_machinelab.js',
     'stem_lab/stem_tool_arccity.js',
     'stem_lab/stem_tool_dna.js',
@@ -1266,6 +1285,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_cell.js',
     'stem_lab/stem_tool_chembalance.js',
     'stem_lab/stem_tool_coding.js',
+    'stem_lab/stem_tool_trajectorycomputing.js',
     'stem_lab/stem_tool_epidemic.js',
     'stem_lab/stem_tool_funcgrapher.js',
     'stem_lab/stem_tool_heatlab.js',
@@ -1424,6 +1444,7 @@ const COMPANION_ASSET_DIRS = [
     'life_skills_kitchen',
     'life_skills_laundry',
     'life_skills_transit',
+    'apps_script/educator_evaluation_share',
     'timeline_studio',
     'verapdf',
     'zoom_gallery'
@@ -2228,6 +2249,7 @@ if (dryRun) {
         'teacher_module.js',
         'ui_strings.js',
         'qrcode.js',
+        'concept_quest_engine.js',
         'escape_room_module.js',
         // stem_lab hub and Lumen support modules
         'stem_lab/stem_lab_module.js',

@@ -58,7 +58,7 @@ describe('the boundaries that are TRUE stay put (this is not a confidence edit)'
     // but the tool must never imply it encrypts data it does not encrypt.
     expect(source).toMatch(/no encryption of its own|rather than by encryption AlloFlow adds|rather than by separate encryption/i);
     expect(source).toMatch(/never uploaded/i);
-    expect(source).toMatch(/signed-in profile/i);
+    expect(source).toMatch(/signed-in (?:browser )?profile/i);
   });
   it('the tool still refuses to imply state approval of the instrument', () => {
     expect(source).toMatch(/approved form|state-approved|PDE approves/i);
@@ -88,7 +88,9 @@ describe('the manual is reachable from inside the app', () => {
   it('every surface points at the SAME url (one manual, one address)', () => {
     const urls = new Set();
     for (const text of [source, portal]) {
-      for (const m of text.matchAll(/https:\/\/alloflow-cdn\.pages\.dev\/educator-evaluation-manual[^"'\s<)]*/g)) urls.add(m[0]);
+      for (const m of text.matchAll(/https:\/\/alloflow-cdn\.pages\.dev\/educator-evaluation-manual[^"'\s<)]*/g)) {
+        urls.add(m[0].split('#')[0]);
+      }
     }
     expect([...urls]).toEqual([URL]);
   });

@@ -115,6 +115,7 @@
     }
     caps.whisperLoaded = !!whisperPipeline;
     caps.whisperLoadedTier = whisperLoadedTier;
+    caps.whisperLoadedModelId = whisperLoadedModelId;
     return caps;
   }
 
@@ -549,7 +550,39 @@
   var whisperPipeline = null;
   var whisperLoadingPromise = null;
   var whisperLoadedTier = null;
+  var whisperLoadedModelId = null;
+  var whisperLoadSerial = 0;
   var progressObservers = [];
+
+  var WHISPER_LANGUAGE_CODES = ("en zh de es ru ko fr ja pt tr pl ca nl ar sv it id hi fi vi he uk el ms cs ro da hu ta no th ur hr bg lt la mi ml cy sk te fa lv bn sr az sl kn et mk br eu is hy ne mn bs kk sq sw gl mr pa si km sn yo so af oc ka be tg sd gu am yi lo uz fo ht ps tk nn mt sa lb my bo tl mg as tt haw ln ha ba jw su yue").split(" ");
+  var WHISPER_LANGUAGE_ALIASES = { fil: "tl", jv: "jw", cmn: "zh", nb: "no", iw: "he" };
+
+  function resolveWhisperProfile(language, tier) {
+    tier = tier || 'tiny';
+    var requested = String(language || 'en-US').trim().replace(/_/g, '-');
+    // Callers sometimes have the UI's friendly language name rather than a
+    // BCP-47 tag. Use the host's canonical mapper when it is available.
+    if (!/^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(requested)) {
+      try {
+        var langApi = window.AlloFlowLang;
+        if (langApi && typeof langApi.bcp47Full === 'function') requested = langApi.bcp47Full(requested) || requested;
+      } catch (_) {}
+    }
+    var lowered = requested.toLowerCase();
+    var primary = lowered.split('-')[0] || 'en';
+    if (primary === 'zh' && /^(?:zh-)?(?:hk|mo)(?:-|$)/.test(lowered)) primary = 'yue';
+    primary = WHISPER_LANGUAGE_ALIASES[primary] || primary;
+    var supported = WHISPER_LANGUAGE_CODES.indexOf(primary) >= 0;
+    var multilingual = primary !== 'en';
+    return {
+      supported: supported,
+      tier: tier,
+      key: supported ? (multilingual ? 'multilingual' : 'english') : null,
+      language: supported ? primary : null,
+      requestedLanguage: requested || 'en-US',
+      modelId: supported ? ('Xenova/whisper-' + tier + (multilingual ? '' : '.en')) : null
+    };
+  }
 
   function notifyProgress(payload) {
     for (var i = 0; i < progressObservers.length; i++) {
@@ -612,22 +645,26 @@
     } catch (_) {}
   }
 
-  function loadWhisperModel(tier) {
+  function loadWhisperModel(tier, opts) {
     tier = tier || 'tiny';
-    if (whisperPipeline && whisperLoadedTier === tier) {
+    opts = opts || {};
+    var profile = resolveWhisperProfile(opts.lang, tier);
+    if (!profile.supported) return Promise.reject(new Error('Whisper does not support ' + profile.requestedLanguage + '.'));
+    if (whisperPipeline && whisperLoadedModelId === profile.modelId) {
       return Promise.resolve(whisperPipeline);
     }
     // If a different tier is already loaded, drop it; we don't keep
     // multiple models in memory.
-    if (whisperLoadingPromise && whisperLoadedTier === tier) {
+    if (whisperLoadingPromise && whisperLoadedModelId === profile.modelId) {
       return whisperLoadingPromise;
     }
     whisperPipeline = null;
     whisperLoadedTier = tier;
-    whisperLoadingPromise = loadTransformersModule().then(function (transformers) {
+    whisperLoadedModelId = profile.modelId;
+    var loadSerial = ++whisperLoadSerial;
+    var loading = loadTransformersModule().then(function (transformers) {
       installDurableWhisperCache(transformers);
-      var modelId = 'Xenova/whisper-' + tier + '.en';
-      return transformers.pipeline('automatic-speech-recognition', modelId, {
+      return transformers.pipeline('automatic-speech-recognition', profile.modelId, {
         quantized: true,
         progress_callback: function (p) {
           // p.status: 'progress' | 'done' | 'ready' | 'initiate' | 'download'
@@ -635,6 +672,7 @@
           notifyProgress({
             phase: 'model-fetch-progress',
             tier: tier,
+            profile: profile.key,
             file: p && p.file,
             status: p && p.status,
             progress: typeof p.progress === 'number' ? p.progress : null,
@@ -644,27 +682,38 @@
         }
       });
     }).then(function (pipe) {
+      if (loadSerial !== whisperLoadSerial || whisperLoadedModelId !== profile.modelId) {
+        try { if (pipe && typeof pipe.dispose === 'function') pipe.dispose(); } catch (_) {}
+        var superseded = new Error('Whisper model load was superseded by a language change.');
+        superseded.name = 'AbortError';
+        throw superseded;
+      }
       whisperPipeline = pipe;
-      notifyProgress({ phase: 'model-loaded', tier: tier });
+      notifyProgress({ phase: 'model-loaded', tier: tier, profile: profile.key, language: profile.language });
       return pipe;
     }).catch(function (err) {
-      whisperLoadingPromise = null;
-      whisperLoadedTier = null;
-      notifyProgress({ phase: 'model-error', tier: tier, error: err });
+      if (loadSerial === whisperLoadSerial) {
+        whisperLoadingPromise = null;
+        whisperLoadedTier = null;
+        whisperLoadedModelId = null;
+      }
+      notifyProgress({ phase: 'model-error', tier: tier, profile: profile.key, error: err });
       throw err;
     });
+    whisperLoadingPromise = loading;
     return whisperLoadingPromise;
   }
 
   // Public preloader — call this from Settings UI when user clicks
   // "Load Whisper" so the model fetches without performing a transcribe.
-  function preloadWhisper(tier) {
-    return loadWhisperModel(tier);
+  function preloadWhisper(tier, opts) {
+    return loadWhisperModel(tier, opts);
   }
 
-  function isWhisperLoaded(tier) {
+  function isWhisperLoaded(tier, opts) {
     if (!whisperPipeline) return false;
     if (tier && whisperLoadedTier !== tier) return false;
+    if (opts && opts.lang && whisperLoadedModelId !== resolveWhisperProfile(opts.lang, tier || whisperLoadedTier).modelId) return false;
     return true;
   }
 
@@ -690,22 +739,24 @@
     var prefs = loadPreference();
     var engine = opts.engine || prefs.engine || 'auto';
     var tier = opts.tier || prefs.whisperTier || 'tiny';
+    var lang = opts.lang || prefs.lang || 'en-US';
+    var whisperProfile = resolveWhisperProfile(lang, tier);
     if (!audioBase64) {
       return Promise.reject(new Error('No audio data provided'));
     }
 
     function runWhisper() {
       var startedAt = Date.now();
-      return loadWhisperModel(tier).then(function (transcriber) {
-        notifyProgress({ phase: 'transcribe-start', tier: tier });
-        return transcriber(audioBase64, {
-          language: 'english',
-          task: 'transcribe',
-          return_timestamps: false
-        });
+      if (!whisperProfile.supported) return Promise.reject(new Error('Whisper does not support ' + whisperProfile.requestedLanguage + '.'));
+      return loadWhisperModel(tier, { lang: lang }).then(function (transcriber) {
+        notifyProgress({ phase: 'transcribe-start', tier: tier, profile: whisperProfile.key, language: whisperProfile.language });
+        var inferenceOptions = whisperProfile.key === 'multilingual'
+          ? { language: whisperProfile.language, task: 'transcribe', return_timestamps: false }
+          : { return_timestamps: false };
+        return transcriber(audioBase64, inferenceOptions);
       }).then(function (output) {
         var text = (output && output.text) ? output.text.trim() : '';
-        notifyProgress({ phase: 'transcribe-done', tier: tier, transcript: text });
+        notifyProgress({ phase: 'transcribe-done', tier: tier, profile: whisperProfile.key, language: whisperProfile.language, transcript: text });
         return {
           transcript: text,
           engine: 'whisper-' + tier,
@@ -725,7 +776,7 @@
     // auto-download a Whisper model on auto — that would surprise users
     // with a 75–500 MB fetch.
     if (engine === 'auto') {
-      if (isWhisperLoaded()) return runWhisper();
+      if (isWhisperLoaded(tier, { lang: lang })) return runWhisper();
       return Promise.reject(new Error(
         'Whisper not loaded. Use initWebSpeechCapture for live transcription, ' +
         'or call preloadWhisper(tier) first to download the model.'
@@ -1430,6 +1481,7 @@
     preloadWhisper: preloadWhisper,
     isWhisperLoaded: isWhisperLoaded,
     getLoadedWhisperTier: getLoadedWhisperTier,
+    resolveWhisperProfile: resolveWhisperProfile,
     subscribeToVoiceProgress: subscribeToVoiceProgress,
 
     // Phase 3v.4 — shipped
@@ -1455,7 +1507,7 @@
     _shipped: [
       'initWebSpeechCapture', 'getCapabilities', 'loadPreference', 'savePreference',
       'recordAudioBlob', 'recordAudioBlob.onStream', 'recordAudioBlob.result.blob',
-      'transcribeAudio', 'preloadWhisper', 'isWhisperLoaded', 'getLoadedWhisperTier', 'subscribeToVoiceProgress',
+      'transcribeAudio', 'preloadWhisper', 'isWhisperLoaded', 'getLoadedWhisperTier', 'resolveWhisperProfile', 'subscribeToVoiceProgress',
       'gradeAudioJustification', 'buildJustificationRubricPrompt', 'parseRubricResponse',
       'createDictationController', 'isDictationSupported', 'getActiveDictationStatus', 'subscribeToDictationStatus', 'stopActiveDictation',
       'acquireVoiceSession', 'stopActiveVoiceSession', 'getActiveVoiceSessionStatus', 'subscribeToVoiceSessionStatus'

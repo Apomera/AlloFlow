@@ -2208,7 +2208,7 @@ function PersonaChatView(props) {
                                     {t('persona.summary.back_to_chat')}
                                 </button>
                                 <button type="button" onClick={_savePersonaTranscript} disabled={(personaState.chatHistory || []).length === 0 || personaState.isLoading || transcriptSavePending} aria-busy={transcriptSavePending ? 'true' : 'false'} className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-800 hover:bg-emerald-100 disabled:opacity-50 sm:w-auto">
-                                    {transcriptSavePending ? <><RefreshCw size={15} className="animate-spin motion-reduce:animate-none" /> Saving private session...</> : <><Save size={15} /> Save private session with narration</>}
+                                    {transcriptSavePending ? <><RefreshCw size={15} className="animate-spin motion-reduce:animate-none" /> {t('common.save')}…</> : <><Save size={15} /> {t('persona.chat_save')}</>}
                                 </button>
                                 {personaSummary && (
                                     <button type="button" onClick={_retryPersonaSummary} disabled={summaryBusy || !canGeneratePersonaSummary} aria-busy={summaryBusy ? 'true' : 'false'} className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-violet-700 px-4 py-2 text-sm font-bold text-white hover:bg-violet-800 disabled:opacity-50 sm:w-auto">

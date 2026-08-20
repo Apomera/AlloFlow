@@ -37,9 +37,9 @@ describe('AP Psychology practiceId skill targeting', () => {
     const rawP1Ids = rawPack.items.filter((item) => item.practiceId === 'P1').map((item) => item.id);
 
     expect(p1Items.map((item) => item.id)).toEqual(rawP1Ids);
-    expect(p1Items).toHaveLength(13);
+    expect(p1Items).toHaveLength(325);
     const score = Hub.scoreAttempt(pack, {});
-    expect(score.bySkill.p1).toMatchObject({ correct: 0, total: 13 });
+    expect(score.bySkill.p1).toMatchObject({ correct: 0, total: 325 });
     const diagnostic = Hub.buildBatchDiagnostic(pack, {}, {}, 1);
     expect(diagnostic.skillRows.find((row) => row.id === 'p1')).toMatchObject({ correct: 0, total: 13 });
   });

@@ -22,6 +22,9 @@
 
   // ── Audio (auto-injected) ──
   var _cyberdAC = null;
+  // Password lesson samples are intentionally ephemeral. Never place the
+  // learner's sample in ctx.toolData, which may be persisted as progress.
+  var _cyberPasswordSample = '';
   function getCyberdAC() { if (!_cyberdAC) { try { _cyberdAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_cyberdAC && _cyberdAC.state === "suspended") { try { _cyberdAC.resume(); } catch(e) {} } return _cyberdAC; }
   function cyberdTone(f,d,tp,v) { var ac = getCyberdAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxCyberdClick() { if (window.__cyberWarMuted) return; cyberdTone(600, 0.03, "sine", 0.04); }
@@ -140,8 +143,17 @@
       '  25% { transform: translateX(-3px); }',
       '  75% { transform: translateX(3px); }',
       '}',
+      '@keyframes cyberdPanelReveal {',
+      '  from { opacity: 0; transform: translateY(8px); }',
+      '  to { opacity: 1; transform: translateY(0); }',
+      '}',
+      '@keyframes cyberdBeacon {',
+      '  0%,100% { box-shadow: 0 0 0 0 rgba(52,211,153,0.5); }',
+      '  50% { box-shadow: 0 0 0 5px rgba(52,211,153,0); }',
+      '}',
       '@media (prefers-reduced-motion: reduce) {',
-      '  .war-pulse, .war-victory, .war-shake { animation: none !important; }',
+      '  .war-pulse, .war-victory, .war-shake, .cyberd-content, .cyberd-status-dot { animation: none !important; }',
+      '  #cyber-defense-region button { transition: none !important; }',
       '}',
       // Focus-visible styles — show a clear keyboard-focus outline on any button, input, textarea, or role-switch/radio inside the War Room
       '.allo-warroom-root button:focus-visible,',
@@ -166,6 +178,165 @@
       '.allo-sr-only {',
       '  position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;',
       '  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;',
+      '}',
+      '#cyber-defense-region button:focus-visible, #cyber-defense-region input:focus-visible,',
+      '#cyber-defense-region textarea:focus-visible, #cyber-defense-region select:focus-visible,',
+      '#cyber-defense-region a:focus-visible, #cyber-defense-region [tabindex]:focus-visible {',
+      '  outline: 3px solid #fbbf24 !important; outline-offset: 3px !important;',
+      '}',
+      '#cyber-defense-region {',
+      '  --cyberd-accent: #818cf8; --cyberd-accent-rgb: 129,140,248;',
+      '  position: relative; isolation: isolate; overflow: hidden;',
+      '  border: 1px solid rgba(129,140,248,0.22);',
+      '  box-shadow: 0 28px 70px rgba(2,6,23,0.38), 0 0 0 1px rgba(255,255,255,0.025) inset !important;',
+      '}',
+      '#cyber-defense-region[data-cyber-mode="phish"] { --cyberd-accent: #fb7185; --cyberd-accent-rgb: 251,113,133; }',
+      '#cyber-defense-region[data-cyber-mode="password"] { --cyberd-accent: #34d399; --cyberd-accent-rgb: 52,211,153; }',
+      '#cyber-defense-region[data-cyber-mode="cipher"] { --cyberd-accent: #fbbf24; --cyberd-accent-rgb: 251,191,36; }',
+      '#cyber-defense-region[data-cyber-mode="network"] { --cyberd-accent: #38bdf8; --cyberd-accent-rgb: 56,189,248; }',
+      '#cyber-defense-region[data-cyber-mode="social"] { --cyberd-accent: #e879f9; --cyberd-accent-rgb: 232,121,249; }',
+      '#cyber-defense-region[data-cyber-mode="warroom"] { --cyberd-accent: #f87171; --cyberd-accent-rgb: 248,113,113; }',
+      '#cyber-defense-region[data-cyber-mode="defenseHunt"] { --cyberd-accent: #2dd4bf; --cyberd-accent-rgb: 45,212,191; }',
+      '#cyber-defense-region::before {',
+      '  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;',
+      '  background: radial-gradient(circle at 12% 0%, rgba(var(--cyberd-accent-rgb),0.14), transparent 28%), radial-gradient(circle at 88% 18%, rgba(168,85,247,0.09), transparent 26%), linear-gradient(rgba(148,163,184,0.022) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.022) 1px, transparent 1px);',
+      '  background-size: auto, auto, 32px 32px, 32px 32px;',
+      '}',
+      '.cyberd-shell-header {',
+      '  position: relative; background: linear-gradient(110deg, rgba(15,23,42,0.9), rgba(30,27,75,0.56));',
+      '  box-shadow: 0 12px 32px rgba(2,6,23,0.18); backdrop-filter: blur(14px);',
+      '}',
+      '.cyberd-header-icon {',
+      '  width: 44px; height: 44px; display: grid; place-items: center; border-radius: 13px;',
+      '  background: linear-gradient(145deg, rgba(var(--cyberd-accent-rgb),0.2), rgba(99,102,241,0.08));',
+      '  border: 1px solid rgba(var(--cyberd-accent-rgb),0.32); box-shadow: 0 10px 24px rgba(var(--cyberd-accent-rgb),0.12);',
+      '}',
+      '.cyberd-title {',
+      '  background: linear-gradient(90deg, var(--cyberd-accent), #c084fc, #818cf8) !important;',
+      '  -webkit-background-clip: text !important; background-clip: text !important;',
+      '  filter: drop-shadow(0 0 8px rgba(var(--cyberd-accent-rgb),0.28)) !important;',
+      '}',
+      '.cyberd-lab-status {',
+      '  display: inline-flex; align-items: center; gap: 6px; color: #a7f3d0; font-size: 9px; font-weight: 900;',
+      '  letter-spacing: 0.09em; text-transform: uppercase; white-space: nowrap;',
+      '}',
+      '.cyberd-status-dot { width: 7px; height: 7px; border-radius: 50%; background: #34d399; animation: cyberdBeacon 2.2s ease-in-out infinite; }',
+      '.cyberd-tabs {',
+      '  scrollbar-width: thin; scrollbar-color: var(--cyberd-accent) #0f172a; gap: 4px;',
+      '  background: rgba(2,6,23,0.38); box-shadow: 0 1px 0 rgba(255,255,255,0.025) inset;',
+      '}',
+      '.cyberd-tab { position: relative; border-radius: 10px 10px 0 0; }',
+      '.cyberd-tab[aria-selected="true"] {',
+      '  color: #f8fafc !important; background: linear-gradient(180deg, rgba(var(--cyberd-accent-rgb),0.18), rgba(var(--cyberd-accent-rgb),0.06)) !important;',
+      '  border-bottom-color: var(--cyberd-accent) !important; text-shadow: 0 0 18px rgba(var(--cyberd-accent-rgb),0.45);',
+      '}',
+      '.cyberd-tab-icon {',
+      '  width: 25px; height: 25px; display: inline-grid; place-items: center; border-radius: 8px;',
+      '  background: rgba(148,163,184,0.08); transition: transform 0.2s ease, background 0.2s ease;',
+      '}',
+      '.cyberd-tab[aria-selected="true"] .cyberd-tab-icon { background: rgba(var(--cyberd-accent-rgb),0.2); transform: translateY(-1px); }',
+      '.cyberd-tab-progress {',
+      '  width: 6px; height: 6px; border-radius: 50%; background: rgba(148,163,184,0.28);',
+      '  box-shadow: 0 0 0 1px rgba(2,6,23,0.42); transition: background 0.2s ease, box-shadow 0.2s ease;',
+      '}',
+      '.cyberd-tab[data-progress="started"] .cyberd-tab-progress { background: #fbbf24; box-shadow: 0 0 0 2px rgba(251,191,36,0.12); }',
+      '.cyberd-tab[data-progress="complete"] .cyberd-tab-progress { background: #34d399; box-shadow: 0 0 0 2px rgba(52,211,153,0.14); }',
+      '.cyberd-readiness {',
+      '  display: flex; align-items: center; gap: 10px; min-height: 31px; padding: 6px 24px;',
+      '  background: rgba(2,6,23,0.22); border-bottom: 1px solid rgba(148,163,184,0.08);',
+      '}',
+      '.cyberd-readiness__label { color: #94a3b8; font-size: 9px; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap; }',
+      '.cyberd-readiness__count { color: #cbd5e1; font-size: 10px; font-weight: 800; white-space: nowrap; }',
+      '.cyberd-readiness__track { display: flex; align-items: center; gap: 5px; flex: 1; }',
+      '.cyberd-readiness-step { flex: 1; height: 4px; max-width: 96px; border-radius: 99px; background: rgba(148,163,184,0.18); }',
+      '.cyberd-readiness-step[data-state="started"] { background: #fbbf24; }',
+      '.cyberd-readiness-step[data-state="complete"] { background: #34d399; box-shadow: 0 0 10px rgba(52,211,153,0.22); }',
+      '.cyberd-readiness-step[data-state="active"] { background: var(--cyberd-accent); box-shadow: 0 0 10px rgba(var(--cyberd-accent-rgb),0.45); }',
+      '.cyberd-readiness__action { max-width: 148px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 5px 9px; border: 1px solid rgba(var(--cyberd-accent-rgb),0.38); border-radius: 7px; background: rgba(var(--cyberd-accent-rgb),0.1); color: #dbeafe; font-size: 9px; font-weight: 900; cursor: pointer; }',
+      '.cyberd-readiness__action:hover { background: rgba(var(--cyberd-accent-rgb),0.18); }',
+      '.cyberd-content { animation: cyberdPanelReveal 0.32s ease-out both; position: relative; }',
+      '.cyberd-content::before {',
+      '  content: ""; position: absolute; top: 0; left: 8%; right: 8%; height: 1px;',
+      '  background: linear-gradient(90deg, transparent, rgba(var(--cyberd-accent-rgb),0.45), transparent);',
+      '}',
+      '.cyberd-learning-brief {',
+      '  max-width: 960px; margin: 0 auto 18px; padding: 13px 15px;',
+      '  display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 12px 18px; align-items: center;',
+      '  border: 1px solid rgba(var(--cyberd-accent-rgb),0.25); border-radius: 13px;',
+      '  background: linear-gradient(105deg, rgba(var(--cyberd-accent-rgb),0.12), rgba(99,102,241,0.045) 62%, rgba(15,23,42,0.38));',
+      '  box-shadow: 0 12px 28px rgba(2,6,23,0.14);',
+      '}',
+      '.cyberd-learning-brief__eyebrow { color: var(--cyberd-accent); font-size: 9px; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 3px; }',
+      '.cyberd-learning-brief__title { color: #f8fafc; font-size: 14px; line-height: 1.25; font-weight: 900; }',
+      '.cyberd-learning-brief__body { color: #cbd5e1; font-size: 11px; line-height: 1.5; margin-top: 3px; max-width: 760px; }',
+      '.cyberd-learning-brief__start { display: flex; align-items: flex-start; gap: 7px; margin-top: 8px; color: #dbeafe; font-size: 10.5px; line-height: 1.45; }',
+      '.cyberd-learning-brief__start-label { flex: 0 0 auto; padding: 3px 6px; border-radius: 5px; background: rgba(var(--cyberd-accent-rgb),0.16); color: var(--cyberd-accent); font-size: 9px; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; }',
+      '.cyberd-learning-brief__meta { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; max-width: 330px; }',
+      '.cyberd-learning-brief__chip { padding: 5px 8px; border-radius: 7px; border: 1px solid rgba(148,163,184,0.18); background: rgba(2,6,23,0.26); color: #cbd5e1; font-size: 10px; font-weight: 700; white-space: nowrap; }',
+      '.cyberd-learning-brief__chip strong { color: var(--cyberd-accent); font-weight: 900; }',
+      '.cyberd-learning-brief__flow { grid-column: 1 / -1; margin-top: 2px; padding: 10px 11px 11px; border: 1px solid rgba(148,163,184,0.16); border-radius: 10px; background: rgba(2,6,23,0.24); }',
+      '.cyberd-learning-brief__flow-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 8px; }',
+      '.cyberd-learning-brief__flow-eyebrow { color: #c4b5fd; font-size: 9px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; }',
+      '.cyberd-learning-brief__flow-caption { color: #94a3b8; font-size: 9.5px; line-height: 1.35; text-align: right; }',
+      '.cyberd-learning-brief__flow-grid { display: grid; grid-template-columns: minmax(0,1fr) 22px minmax(0,1fr) 22px minmax(0,1fr); align-items: stretch; gap: 7px; }',
+      '.cyberd-learning-brief__flow-step { min-width: 0; padding: 8px 9px; border: 1px solid rgba(var(--cyberd-accent-rgb),0.25); border-radius: 9px; background: linear-gradient(145deg, rgba(var(--cyberd-accent-rgb),0.11), rgba(15,23,42,0.42)); box-shadow: 0 7px 16px rgba(2,6,23,0.12); }',
+      '.cyberd-learning-brief__flow-step[data-step="decision"] { border-color: rgba(168,85,247,0.3); background: linear-gradient(145deg, rgba(168,85,247,0.14), rgba(15,23,42,0.42)); }',
+      '.cyberd-learning-brief__flow-step[data-step="action"] { border-color: rgba(52,211,153,0.28); background: linear-gradient(145deg, rgba(16,185,129,0.12), rgba(15,23,42,0.42)); }',
+      '.cyberd-learning-brief__flow-index { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 6px; background: rgba(var(--cyberd-accent-rgb),0.18); color: var(--cyberd-accent); font-size: 9px; font-weight: 900; letter-spacing: 0.04em; }',
+      '.cyberd-learning-brief__flow-step[data-step="decision"] .cyberd-learning-brief__flow-index { background: rgba(168,85,247,0.2); color: #c4b5fd; }',
+      '.cyberd-learning-brief__flow-step[data-step="action"] .cyberd-learning-brief__flow-index { background: rgba(16,185,129,0.2); color: #6ee7b7; }',
+      '.cyberd-learning-brief__flow-label { margin-top: 6px; color: #f8fafc; font-size: 10px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; }',
+      '.cyberd-learning-brief__flow-value { margin-top: 3px; color: #dbeafe; font-size: 10.5px; line-height: 1.4; font-weight: 800; }',
+      '.cyberd-learning-brief__flow-hint { margin-top: 5px; color: #94a3b8; font-size: 9px; line-height: 1.35; }',
+      '.cyberd-learning-brief__flow-connector { display: grid; place-items: center; color: var(--cyberd-accent); font-size: 16px; font-weight: 900; opacity: 0.8; }',
+      '.cyberd-learning-brief__flow-note { margin-top: 7px; color: #94a3b8; font-size: 9.5px; line-height: 1.4; }',
+      '.cyberd-learning-brief__decision { grid-column: 1 / -1; display: flex; align-items: flex-start; gap: 7px; margin-top: 1px; padding: 8px 9px; border-radius: 8px; border: 1px solid rgba(var(--cyberd-accent-rgb),0.22); background: rgba(var(--cyberd-accent-rgb),0.07); color: #dbeafe; font-size: 10.5px; line-height: 1.45; }',
+      '.cyberd-learning-brief__decision-label { flex: 0 0 auto; color: var(--cyberd-accent); font-size: 9px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; }',
+      '.cyberd-reflection-card {',
+      '  max-width: 960px; margin: 20px auto 0; padding: 14px 15px;',
+      '  border: 1px solid rgba(52,211,153,0.28); border-radius: 13px;',
+      '  background: linear-gradient(105deg, rgba(16,185,129,0.1), rgba(59,130,246,0.055) 72%, rgba(15,23,42,0.4));',
+      '  box-shadow: 0 12px 28px rgba(2,6,23,0.14);',
+      '}',
+      '.cyberd-reflection-card__eyebrow { color: #6ee7b7; font-size: 9px; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 4px; }',
+      '.cyberd-reflection-card__title { color: #f0fdf4; font-size: 14px; font-weight: 900; line-height: 1.3; }',
+      '.cyberd-reflection-card__prompt { color: #d1fae5; font-size: 11px; line-height: 1.5; margin-top: 4px; }',
+      '.cyberd-reflection-card__next { margin-top: 10px; padding: 9px 10px; border-radius: 8px; background: rgba(2,6,23,0.28); border: 1px solid rgba(96,165,250,0.2); color: #bfdbfe; font-size: 10.5px; line-height: 1.5; }',
+      '.cyberd-reflection-card__next strong { color: #93c5fd; font-weight: 900; }',
+      '#cyber-defense-region input:not([type="range"]), #cyber-defense-region textarea {',
+      '  box-shadow: 0 8px 24px rgba(2,6,23,0.16) inset; transition: border-color 0.2s ease, box-shadow 0.2s ease;',
+      '}',
+      '#cyber-defense-region input:not([type="range"]):focus, #cyber-defense-region textarea:focus {',
+      '  border-color: rgba(var(--cyberd-accent-rgb),0.72) !important; box-shadow: 0 0 0 3px rgba(var(--cyberd-accent-rgb),0.13), 0 8px 24px rgba(2,6,23,0.16) inset;',
+      '}',
+      '#cyber-defense-region button:not(:disabled) { transition: transform 0.18s ease, filter 0.18s ease, border-color 0.18s ease, background 0.18s ease; }',
+      '@media (hover: hover) {',
+      '  #cyber-defense-region button:not(:disabled):hover { filter: brightness(1.12); transform: translateY(-1px); }',
+      '  #cyber-defense-region button:not(:disabled):active { filter: brightness(0.98); transform: translateY(0); }',
+      '}',
+      '@media (max-width: 800px) {',
+      '  .cyberd-shell-header { flex-wrap: wrap; padding: 14px 12px 12px !important; }',
+      '  .cyberd-header-controls { width: 100%; margin-left: 0 !important; flex-wrap: wrap; }',
+      '  .cyberd-header-controls--compact { width: auto; margin-left: auto !important; }',
+      '  .cyberd-tabs { overflow-x: auto; padding: 5px 8px 0 !important; scroll-snap-type: x proximity; }',
+      '  .cyberd-readiness { padding: 6px 12px; gap: 8px; }',
+      '  .cyberd-readiness__label { display: none; }',
+      '  .cyberd-tab { flex: 0 0 auto; padding: 11px 13px !important; scroll-snap-align: start; }',
+      '  .cyberd-content { padding: 16px 12px !important; }',
+      '  .cyberd-learning-brief { grid-template-columns: 1fr; gap: 10px; padding: 12px; }',
+      '  .cyberd-learning-brief__meta { justify-content: flex-start; max-width: none; }',
+      '  .cyberd-learning-brief__flow-head { align-items: flex-start; flex-direction: column; gap: 2px; }',
+      '  .cyberd-learning-brief__flow-caption { text-align: left; }',
+      '  .cyberd-learning-brief__flow-grid { grid-template-columns: 1fr; gap: 4px; }',
+      '  .cyberd-learning-brief__flow-connector { min-height: 15px; font-size: 14px; transform: rotate(90deg); }',
+      '  .cyberd-two-column, .cyberd-defense-controls { grid-template-columns: 1fr !important; }',
+      '  .cyberd-verdict-actions { position: sticky; bottom: 8px; z-index: 5; padding: 8px; border: 1px solid rgba(99,102,241,0.32); border-radius: 12px; background: rgba(15,23,42,0.96); box-shadow: 0 -8px 24px rgba(2,6,23,0.45); }',
+      '}',
+      '@media (max-width: 480px) {',
+      '  .cyberd-header-icon { display: none !important; }',
+      '  .cyberd-title-subtitle { display: none; }',
+      '  .cyberd-tab { font-size: 12px !important; }',
+      '  .cyberd-lab-status { display: none; }',
       '}'
     ].join('\n');
     document.head.appendChild(style);
@@ -202,6 +373,24 @@
       return String.fromCharCode(ch.charCodeAt(0) ^ k);
     }).join('');
   }
+  function xorEncodeBase64(text, key) {
+    if (typeof TextEncoder === 'undefined') return '[UTF-8 encoding is unavailable in this browser]';
+    var bytes = new TextEncoder().encode(String(text));
+    var binary = '';
+    for (var i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i] ^ (key || 42));
+    return btoa(binary);
+  }
+  function xorDecodeBase64(encoded, key) {
+    try {
+      if (typeof TextDecoder === 'undefined') return '[UTF-8 decoding is unavailable in this browser]';
+      var binary = atob(String(encoded).trim());
+      var bytes = new Uint8Array(binary.length);
+      for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i) ^ (key || 42);
+      return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+    } catch (e) {
+      return '[Invalid Base64 or UTF-8 input]';
+    }
+  }
   var CIPHER_CHALLENGES = [
     { type: 'caesar', shift: 3, encoded: 'FRPSXWHU VFLHQFH LV IXQ', answer: 'COMPUTER SCIENCE IS FUN', hintKey: 'stem.cyberdefense.shift_of_3_classic_caesar', hintFallback: 'Shift of 3 (classic Caesar)' },
     { type: 'caesar', shift: 7, encoded: 'JFILY KLMLUZL', answer: 'CYBER DEFENSE', hintKey: 'stem.cyberdefense.shift_of_7', hintFallback: 'Shift of 7' },
@@ -212,7 +401,57 @@
     { type: 'caesar', shift: 10, encoded: 'VYMU IYEB CMBOOX', answer: 'LOCK YOUR SCREEN', hintKey: 'stem.cyberdefense.shift_of_10', hintFallback: 'Shift of 10' },
     { type: 'atbash', shift: 0, encoded: 'HGZB HZUV LMORMV', answer: 'STAY SAFE ONLINE', hintKey: 'stem.cyberdefense.mirror_the_alphabet', hintFallback: 'Mirror the alphabet (A=Z)' }
   ];
-  try { window.__cyberDefensePure = { caesarCipher: caesarCipher, atbashCipher: atbashCipher, xorCipher: xorCipher, CIPHER_CHALLENGES: CIPHER_CHALLENGES }; } catch (_e) {}
+  function secureRandomIndex(max) {
+    if (!max || max < 1) return null;
+    var cryptoApi = window.crypto || window.msCrypto;
+    if (!cryptoApi || typeof cryptoApi.getRandomValues !== 'function') return null;
+    var limit = Math.floor(0x100000000 / max) * max;
+    var sample = new Uint32Array(1);
+    do { cryptoApi.getRandomValues(sample); } while (sample[0] >= limit);
+    return sample[0] % max;
+  }
+
+  // Treat generated lesson content as untrusted structured input. React escapes
+  // the displayed strings, but strict typing and size limits keep malformed AI
+  // responses from changing scoring or overwhelming the learning interface.
+  function sanitizeGeneratedPhishEmail(raw, difficulty) {
+    if (!raw || typeof raw !== 'object' || typeof raw.isPhish !== 'boolean') return null;
+    function clean(value, max) {
+      if (typeof value !== 'string') return '';
+      return value.replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
+    }
+    var from = clean(raw.from, 160);
+    var fromDisplay = clean(raw.fromDisplay, 80);
+    var subject = clean(raw.subject, 180);
+    var body = clean(raw.body, 1200);
+    if (!from || from.indexOf('@') <= 0 || !fromDisplay || !subject || !body) return null;
+    var flags = Array.isArray(raw.flags) ? raw.flags.map(function(flag) { return clean(flag, 240); }).filter(Boolean).slice(0, 4) : [];
+    var allowedZones = ['sender', 'subject', 'body', 'link'];
+    var seenZones = {};
+    var clues = Array.isArray(raw.clues) ? raw.clues.map(function(clue) {
+      if (!clue || typeof clue !== 'object' || allowedZones.indexOf(clue.zone) === -1 || seenZones[clue.zone] || typeof clue.suspicious !== 'boolean') return null;
+      var label = clean(clue.label, 80);
+      var desc = clean(clue.desc, 300);
+      if (!label || !desc) return null;
+      seenZones[clue.zone] = true;
+      return { zone: clue.zone, icon: clean(clue.icon, 8) || '\uD83D\uDD0D', label: label, desc: desc, suspicious: clue.suspicious };
+    }).filter(Boolean).slice(0, 4) : [];
+    if (flags.length < 2 || clues.length < 3 || !seenZones.sender || !seenZones.subject || !seenZones.body) return null;
+    return {
+      from: from,
+      fromDisplay: fromDisplay,
+      subject: subject,
+      body: body,
+      link: raw.link == null ? null : clean(raw.link, 300),
+      isPhish: raw.isPhish,
+      difficulty: ['easy', 'medium', 'hard'].indexOf(difficulty) !== -1 ? difficulty : 'medium',
+      flags: flags,
+      clues: clues,
+      _aiGenerated: true
+    };
+  }
+
+  try { window.__cyberDefensePure = { caesarCipher: caesarCipher, atbashCipher: atbashCipher, xorCipher: xorCipher, xorEncodeBase64: xorEncodeBase64, xorDecodeBase64: xorDecodeBase64, secureRandomIndex: secureRandomIndex, sanitizeGeneratedPhishEmail: sanitizeGeneratedPhishEmail, CIPHER_CHALLENGES: CIPHER_CHALLENGES }; } catch (_e) {}
 
   window.StemLab.registerTool('cyberDefense', {
     name: 'Cyber Defense Lab',
@@ -224,7 +463,7 @@
       { id: 'phish_score_3', label: 'Identify 3 phishing emails correctly', icon: '\uD83C\uDFA3', check: function(d) { return (d.phishScore || 0) >= 3; }, progress: function(d) { return (d.phishScore || 0) + '/3'; } },
       { id: 'phish_score_5', label: 'Identify 5 phishing emails correctly', icon: '\uD83D\uDEE1\uFE0F', check: function(d) { return (d.phishScore || 0) >= 5; }, progress: function(d) { return (d.phishScore || 0) + '/5'; } },
       { id: 'phish_streak_3', label: 'Get a 3-answer phishing streak', icon: '\uD83D\uDD25', check: function(d) { return (d.phishStreak || 0) >= 3; }, progress: function(d) { return (d.phishStreak || 0) + '/3 streak'; } },
-      { id: 'test_password', label: 'Test a password in the strength checker', icon: '\uD83D\uDD10', check: function(d) { return !!(d.pwInput && d.pwInput.length > 0); }, progress: function(d) { return d.pwInput ? 'Tested!' : 'Enter a password'; } },
+      { id: 'test_password', label: 'Test a sample in the password lab', icon: '\uD83D\uDD10', check: function(d) { return !!d.pwSampleTested; }, progress: function(d) { return d.pwSampleTested ? 'Tested!' : 'Use a made-up sample'; } },
       { id: 'warroom_complete_campaign', label: 'Complete a SOC War Room campaign', icon: '\u2694\uFE0F', check: function(d) { return (d.warRoomCampaignsCompleted || 0) >= 1; }, progress: function(d) { return (d.warRoomCampaignsCompleted || 0) + '/1'; } },
       { id: 'warroom_win_analyst', label: 'Win a campaign on Analyst difficulty', icon: '\uD83C\uDF96\uFE0F', check: function(d) { return !!d.warRoomWonAnalyst; }, progress: function(d) { return d.warRoomWonAnalyst ? 'Achieved!' : 'In progress'; } },
       { id: 'warroom_perfect_defense', label: 'Zero assets lost on Threat Hunter difficulty', icon: '\uD83D\uDEE1\uFE0F', check: function(d) { return !!d.warRoomPerfectDefense; }, progress: function(d) { return d.warRoomPerfectDefense ? 'Achieved!' : 'In progress'; } }
@@ -247,13 +486,24 @@
               });
             });
           };
+          function setPasswordSample(value, extra) {
+            _cyberPasswordSample = String(value || '').slice(0, 128);
+            var sampleStrength = calcPasswordStrength(_cyberPasswordSample);
+            upd(Object.assign({
+              // Version is only a render trigger; the sample itself never enters
+              // persisted progress state.
+              pwSampleVersion: (d.pwSampleVersion || 0) + 1,
+              pwSampleTested: !!d.pwSampleTested || !!_cyberPasswordSample,
+              pwSampleStrong: !!d.pwSampleStrong || (_cyberPasswordSample.length >= 15 && !sampleStrength.checks.isCommon)
+            }, extra || {}));
+          }
 
           var cyberTab       = d.cyberTab || 'phish';
           var phishIdx        = d.phishIdx || 0;
           var phishAnswer     = d.phishAnswer || null;
           var phishScore      = d.phishScore || 0;
           var phishStreak     = d.phishStreak || 0;
-          var pwInput         = d.pwInput || '';
+          var pwInput         = _cyberPasswordSample;
           var cipherMode      = d.cipherMode || 'caesar';
           var cipherInput     = d.cipherInput || '';
           var caesarShift      = d.caesarShift != null ? d.caesarShift : 3;
@@ -277,8 +527,8 @@
           var aiEmailHistory  = d.aiEmailHistory || [];
           // Password Forge enhancements
           var pwShowPassword  = d.pwShowPassword || false;
-          var pwBruteAnim     = d.pwBruteAnim || null; // { running, attempts, speed, found }
-          var pwBreachResult  = d.pwBreachResult || null; // { checked, breached, count }
+          var pwBruteAnim     = d.pwBruteAnim || null; // derived estimate only; never includes the sample
+          var pwBreachResult  = d.pwBreachResult || null; // { checked, breached }
           var pwGenLength     = d.pwGenLength || 16;
           var pwGenInclude    = d.pwGenInclude || { upper: true, lower: true, digits: true, symbols: true };
           // Network traffic analyzer
@@ -607,12 +857,20 @@
 
           // ── Triage Timer (hook-free: state-driven setTimeout) ──
           if (window._cyberTriageTimer) { clearTimeout(window._cyberTriageTimer); window._cyberTriageTimer = null; }
-          if (phishMode === 'triage' && triageActive && !phishAnswer && triageTimeLeft > 0) {
+          if (cyberTab === 'phish' && phishMode === 'triage' && triageActive && !phishAnswer && triageTimeLeft > 0) {
+            window._cyberTriageTimeoutKey = null;
             window._cyberTriageTimer = setTimeout(function() {
-              upd('triageTimeLeft', triageTimeLeft - 1);
+              var phishTab = document.getElementById('cyber-tab-phish');
+              if (!phishTab || phishTab.getAttribute('aria-selected') !== 'true') return;
+              upd('triageTimeLeft', Math.max(0, triageTimeLeft - 1));
             }, 1000);
-          } else if (phishMode === 'triage' && triageActive && !phishAnswer && triageTimeLeft <= 0) {
-            upd({ phishAnswer: 'timeout', phishStreak: 0 });
+          } else if (cyberTab === 'phish' && phishMode === 'triage' && triageActive && !phishAnswer && triageTimeLeft <= 0) {
+            var timeoutKey = difficulty + '|' + phishIdx + '|' + casesClosed + '|' + ((aiGeneratedEmail && aiGeneratedEmail.subject) || 'static');
+            if (window._cyberTriageTimeoutKey !== timeoutKey) {
+              window._cyberTriageTimeoutKey = timeoutKey;
+              upd({ phishAnswer: 'timeout', phishStreak: 0, triageActive: false, casesClosed: casesClosed + 1 });
+              if (ctx.announceToSR) ctx.announceToSR('Time expired. Review the case evidence before continuing.');
+            }
           }
 
           // ── War Room Timer (Threat Hunter difficulty only; auto-resolves when time hits 0 if plays exist) ──
@@ -774,43 +1032,59 @@
 
           // ── Handle Verdict ──
           function handleVerdict(isSafe) {
+            if (phishAnswer || !activeEmail) return;
             var isCorrect = isSafe ? !activeEmail.isPhish : activeEmail.isPhish;
+            var verdictResult = isCorrect ? 'correct' : 'wrong';
+            // Update this render closure immediately so rapid repeat activation
+            // cannot score twice while the host schedules the state update.
+            phishAnswer = verdictResult;
             var baseXP = 2;
             var evidenceBonus = cluesFound.length >= (activeEmail.clues || []).length ? 2 : (cluesFound.length >= 2 ? 1 : 0);
             var streakBonus = phishStreak >= 2 ? 1 : 0;
             var speedBonus = (phishMode === 'triage' && triageTimeLeft >= 10) ? 2 : 0;
-            upd('phishAnswer', isCorrect ? 'correct' : 'wrong');
-            if (isCorrect) {
-              upd('phishScore', phishScore + 1);
-              upd('phishStreak', phishStreak + 1);
-              ctx.awardXP('cyberDefense', baseXP + evidenceBonus + streakBonus + speedBonus);
-            } else {
-              upd('phishStreak', 0);
-            }
-            upd('casesClosed', casesClosed + 1);
+            upd({
+              phishAnswer: verdictResult,
+              phishScore: phishScore + (isCorrect ? 1 : 0),
+              phishStreak: isCorrect ? phishStreak + 1 : 0,
+              casesClosed: casesClosed + 1,
+              triageActive: false
+            });
+            if (isCorrect) ctx.awardXP('cyberDefense', baseXP + evidenceBonus + streakBonus + speedBonus);
+            if (ctx.announceToSR) ctx.announceToSR(isCorrect ? 'Correct verdict. Review the response steps.' : 'Incorrect verdict. Review the evidence and response steps.');
           }
 
           // ── Advance to Next Case ──
           function advanceCase() {
-            upd('phishIdx', phishIdx + 1);
-            upd('phishAnswer', null);
-            upd('cluesFound', []);
-            upd('triageTimeLeft', 15);
-            upd('showHeaders', false);
-            upd('aiGeneratedEmail', null); // clear AI email so next defaults to static pool
-            if (phishMode === 'triage') upd('triageActive', true);
+            upd({
+              phishIdx: phishIdx + 1,
+              phishAnswer: null,
+              cluesFound: [],
+              triageTimeLeft: 15,
+              showHeaders: false,
+              aiGeneratedEmail: null,
+              triageActive: phishMode === 'triage'
+            });
           }
 
           // ── AI Email Generator (Gemini-powered with static fallback) ──
           function generateAIEmail() {
             if (aiEmailLoading) return;
+            function useStaticPracticeEmail(message) {
+              upd({
+                aiGeneratedEmail: null,
+                phishIdx: phishIdx + 1,
+                phishAnswer: null,
+                cluesFound: [],
+                showHeaders: false,
+                triageTimeLeft: 15,
+                triageActive: phishMode === 'triage',
+                aiEmailLoading: false
+              });
+              if (ctx.addToast) ctx.addToast(message, 'info');
+            }
             if (!ctx.callGemini) {
               // No Gemini available — silently use next static email
-              if (ctx.addToast) ctx.addToast('AI unavailable — using practice email', 'info');
-              upd('aiGeneratedEmail', null);
-              upd('phishIdx', phishIdx + 1);
-              upd('phishAnswer', null);
-              upd('cluesFound', []);
+              useStaticPracticeEmail('AI unavailable — using practice email');
               return;
             }
             upd('aiEmailLoading', true);
@@ -840,36 +1114,26 @@
 
             ctx.callGemini(prompt, true, false, 0.9).then(function(response) {
               try {
-                var parsed = typeof response === 'string' ? JSON.parse(response) : response;
-                if (parsed && parsed.from && parsed.subject && parsed.body && parsed.flags && parsed.clues && parsed.clues.length >= 3) {
-                  // Ensure isPhish is boolean
-                  parsed.isPhish = !!parsed.isPhish;
-                  parsed.difficulty = parsed.difficulty || difficulty;
-                  parsed._aiGenerated = true;
-                  upd('aiGeneratedEmail', parsed);
-                  upd('phishAnswer', null);
-                  upd('cluesFound', []);
-                  upd('triageTimeLeft', 15);
-                  if (phishMode === 'triage') upd('triageActive', true);
-                  upd('aiEmailHistory', aiEmailHistory.concat([parsed.subject.substring(0, 40)]));
-                  upd('aiEmailLoading', false);
+                var rawEmail = typeof response === 'string' ? JSON.parse(response) : response;
+                var parsed = sanitizeGeneratedPhishEmail(rawEmail, difficulty);
+                if (parsed) {
+                  upd({
+                    aiGeneratedEmail: parsed,
+                    phishAnswer: null,
+                    cluesFound: [],
+                    showHeaders: false,
+                    triageTimeLeft: 15,
+                    triageActive: phishMode === 'triage',
+                    aiEmailHistory: aiEmailHistory.concat([parsed.subject.substring(0, 40)]),
+                    aiEmailLoading: false
+                  });
                   return;
                 }
               } catch (e) { /* fall through to fallback */ }
               // Fallback: use next static email
-              upd('aiGeneratedEmail', null);
-              upd('phishIdx', phishIdx + 1);
-              upd('phishAnswer', null);
-              upd('cluesFound', []);
-              upd('aiEmailLoading', false);
-              if (ctx.addToast) ctx.addToast('AI generation failed — here\'s a practice email instead', 'info');
+              useStaticPracticeEmail('AI generation failed — here\'s a practice email instead');
             }).catch(function() {
-              upd('aiGeneratedEmail', null);
-              upd('phishIdx', phishIdx + 1);
-              upd('phishAnswer', null);
-              upd('cluesFound', []);
-              upd('aiEmailLoading', false);
-              if (ctx.addToast) ctx.addToast('AI generation failed — here\'s a practice email instead', 'info');
+              useStaticPracticeEmail('AI generation failed — here\'s a practice email instead');
             });
           }
 
@@ -940,7 +1204,7 @@
             if (hasDigit) poolSize += 10;
             if (hasSymbol) poolSize += 33;
             var entropy = poolSize > 0 ? len * Math.log2(poolSize) : 0;
-            var commonPasswords = ['password','123456','12345678','qwerty','abc123','monkey','letmein','dragon','111111','baseball','iloveyou','trustno1','sunshine','master','welcome','shadow','ashley','football','jesus','michael','ninja','mustang','password1','password123','admin','login','hello','charlie','donald','batman'];
+            var commonPasswords = ['password','123456','12345678','qwerty','abc123','monkey','letmein','dragon','111111','baseball','iloveyou','trustno1','sunshine','master','welcome','shadow','ashley','football','jesus','michael','ninja','mustang','password1','password123','admin','login','hello','charlie','donald','batman','p@ssw0rd','welcome1','qwerty123'];
             var isCommon = commonPasswords.indexOf(pw.toLowerCase()) !== -1;
             var crackSeconds = Math.pow(2, entropy) / 1e10;
             var crackTime;
@@ -954,16 +1218,10 @@
             else if (crackSeconds < 86400 * 365 * 1e6) crackTime = Math.round(crackSeconds / (86400 * 365 * 1000)) + ' thousand years';
             else if (crackSeconds < 86400 * 365 * 1e9) crackTime = Math.round(crackSeconds / (86400 * 365 * 1e6)) + ' million years';
             else crackTime = Math.round(crackSeconds / (86400 * 365 * 1e9)) + ' billion years';
-            var score = 0;
-            if (len >= 8) score += 1;
-            if (len >= 12) score += 1;
-            if (len >= 16) score += 1;
-            if (hasLower && hasUpper) score += 1;
-            if (hasDigit) score += 1;
-            if (hasSymbol) score += 1;
-            if (!isCommon) score += 1;
-            if (entropy > 60) score += 1;
-            score = Math.min(score, 5);
+            // NIST SP 800-63B-4 centers length and blocklists. Character-class
+            // mixtures are useful for generated secrets, but are not treated as
+            // mandatory composition rules for learner-created passphrases.
+            var score = len >= 20 ? 5 : len >= 15 ? 4 : len >= 12 ? 3 : len >= 8 ? 2 : 1;
             if (isCommon) score = 0;
             var labels = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong', 'Excellent'];
             var colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#8b5cf6'];
@@ -978,15 +1236,32 @@
 
           // ── Password Generator ──
           function generatePassword(len, include) {
-            var chars = '';
-            if (include.lower) chars += 'abcdefghijkmnopqrstuvwxyz';
-            if (include.upper) chars += 'ABCDEFGHJKLMNPQRSTUVWXYZ';
-            if (include.digits) chars += '23456789';
-            if (include.symbols) chars += '!@#$%^&*()-_=+[]{}|;:,.<>?';
-            if (!chars) chars = 'abcdefghijkmnopqrstuvwxyz';
-            var pw = '';
-            for (var i = 0; i < len; i++) pw += chars.charAt(Math.floor(Math.random() * chars.length));
-            return pw;
+            var groups = [];
+            if (include.lower) groups.push('abcdefghijkmnopqrstuvwxyz');
+            if (include.upper) groups.push('ABCDEFGHJKLMNPQRSTUVWXYZ');
+            if (include.digits) groups.push('23456789');
+            if (include.symbols) groups.push('!@#$%^&*()-_=+[]{}|;:,.<>?');
+            if (!groups.length) groups.push('abcdefghijkmnopqrstuvwxyz');
+            var all = groups.join('');
+            var chars = [];
+            var pick;
+            // Include every selected group once, then fill and securely shuffle.
+            for (var g = 0; g < groups.length && chars.length < len; g++) {
+              pick = secureRandomIndex(groups[g].length);
+              if (pick == null) return null;
+              chars.push(groups[g].charAt(pick));
+            }
+            while (chars.length < len) {
+              pick = secureRandomIndex(all.length);
+              if (pick == null) return null;
+              chars.push(all.charAt(pick));
+            }
+            for (var i = chars.length - 1; i > 0; i--) {
+              pick = secureRandomIndex(i + 1);
+              if (pick == null) return null;
+              var tmp = chars[i]; chars[i] = chars[pick]; chars[pick] = tmp;
+            }
+            return chars.join('');
           }
 
           // ── Brute Force Simulator ──
@@ -1006,17 +1281,16 @@
             if (/[A-Z]/.test(target)) charSets.push('A-Z');
             if (/\d/.test(target)) charSets.push('0-9');
             if (/[^a-zA-Z0-9]/.test(target)) charSets.push('symbols');
-            upd('pwBruteAnim', { running: true, target: target, entropy: strength.entropy, totalGuesses: totalGuesses, speeds: speeds, charSets: charSets, crackTime: strength.crackTime });
+            upd('pwBruteAnim', { running: true, entropy: strength.entropy, totalGuesses: totalGuesses, speeds: speeds, charSets: charSets, crackTime: strength.crackTime });
           }
 
-          // ── Simulated Breach Database ──
+          // ── Small classroom blocklist (not a live breach service) ──
           var breachedPasswords = ['password', '123456', '12345678', 'qwerty', 'abc123', 'monkey', 'letmein', 'dragon', 'shadow', 'master', 'welcome', 'football', 'iloveyou', 'trustno1', 'sunshine', 'password1', 'password123', 'admin', 'login', 'batman', 'ninja', 'mustang', 'charlie', 'donald', 'princess', 'summer', 'flower', 'cheese', 'cookie', 'soccer', 'hockey', 'winter2024', 'Spring2025!', 'P@ssw0rd', 'Passw0rd!', 'Welcome1', 'Hello123', 'Test1234'];
           function checkBreach(pw) {
             if (!pw) return null;
             var lower = pw.toLowerCase();
             var found = breachedPasswords.some(function(b) { return b.toLowerCase() === lower; });
-            var count = found ? (Math.floor(Math.random() * 500000) + 10000) : 0;
-            return { checked: true, breached: found, count: count, password: pw };
+            return { checked: true, breached: found };
           }
 
           function formatSeconds(sec) {
@@ -1034,8 +1308,8 @@
           // ── Network Traffic Data ──
           var packetTemplates = {
             safe: [
-              { proto: 'HTTPS', src: '192.168.1.42', dst: '142.250.80.46', port: 443, payload: 'TLS 1.3 Encrypted Application Data', size: 1420, suspicious: false, reason: 'Normal encrypted web traffic to Google' },
-              { proto: 'HTTPS', src: '192.168.1.42', dst: '151.101.1.69', port: 443, payload: 'TLS 1.3 Handshake ClientHello', size: 517, suspicious: false, reason: 'Encrypted connection to Reddit CDN' },
+              { proto: 'HTTPS', src: '192.168.1.42', dst: '142.250.80.46', port: 443, payload: 'TLS 1.3 Encrypted Application Data', size: 1420, suspicious: false, reason: 'Expected encrypted web traffic in this scenario. HTTPS alone does not prove a destination is trustworthy.' },
+              { proto: 'HTTPS', src: '192.168.1.42', dst: '151.101.1.69', port: 443, payload: 'TLS 1.3 Handshake ClientHello', size: 517, suspicious: false, reason: 'Expected TLS handshake in this scenario; an analyst would still correlate destination, process, and timing.' },
               { proto: 'DNS', src: '192.168.1.42', dst: '8.8.8.8', port: 53, payload: 'Query: A docs.google.com', size: 64, suspicious: false, reason: 'Standard DNS lookup to Google DNS' },
               { proto: 'HTTPS', src: '192.168.1.42', dst: '13.107.42.14', port: 443, payload: 'TLS 1.3 Application Data [Teams]', size: 890, suspicious: false, reason: 'Encrypted Microsoft Teams traffic' },
               { proto: 'NTP', src: '192.168.1.1', dst: '129.6.15.28', port: 123, payload: 'NTP v4 Client Request', size: 76, suspicious: false, reason: 'Normal time sync from router' },
@@ -1044,11 +1318,11 @@
             bad: [
               { proto: 'HTTP', src: '192.168.1.42', dst: '45.33.32.156', port: 80, payload: 'POST /login.php username=admin&password=hunter2', size: 256, suspicious: true, reason: 'Unencrypted HTTP sending login credentials in plaintext!' },
               { proto: 'DNS', src: '192.168.1.105', dst: '185.243.115.8', port: 53, payload: 'Query: TXT aGVsbG8gd29ybGQ.evil-c2.ru', size: 128, suspicious: true, reason: 'DNS tunneling! Base64 data hidden in DNS queries to a suspicious domain' },
-              { proto: 'TCP', src: '192.168.1.42', dst: '103.224.182.250', port: 4444, payload: 'BINARY [reverse shell payload detected]', size: 2048, suspicious: true, reason: 'Port 4444 is commonly used by Metasploit. This looks like a reverse shell!' },
+              { proto: 'TCP', src: '192.168.1.42', dst: '103.224.182.250', port: 4444, payload: 'BINARY [reverse shell behavior detected]', size: 2048, suspicious: true, reason: 'The suspicious evidence is the unexpected outbound binary session plus reverse-shell behavior, not port 4444 by itself.' },
               { proto: 'SMTP', src: '192.168.1.200', dst: '91.134.128.50', port: 25, payload: 'MAIL FROM: <ceo@company.com> Subject: Wire Transfer Urgent', size: 4096, suspicious: true, reason: 'Email spoofing CEO address about wire transfer (Business Email Compromise attack)' },
               { proto: 'HTTP', src: '10.0.0.55', dst: '192.168.1.42', port: 80, payload: 'GET /../../etc/passwd HTTP/1.1', size: 180, suspicious: true, reason: 'Path traversal attack! Attempting to read system password file' },
               { proto: 'TCP', src: '192.168.1.42', dst: '198.51.100.7', port: 6667, payload: 'JOIN #botnet-c2 PRIVMSG: DDOS 203.0.113.5', size: 320, suspicious: true, reason: 'IRC botnet C2! Machine receiving DDoS commands' },
-              { proto: 'ICMP', src: '10.0.0.1', dst: '192.168.1.255', port: 0, payload: 'Echo Request (oversized: 65535 bytes)', size: 65535, suspicious: true, reason: 'Ping of Death! Oversized ICMP packet targeting broadcast address' },
+              { proto: 'ICMP', src: '10.0.0.1', dst: '192.168.1.255', port: 0, payload: 'Rapid echo requests to broadcast address', size: 1400, suspicious: true, reason: 'A burst of ICMP sent to a broadcast address can indicate discovery or amplification activity; confirm with rate and host context.' },
               { proto: 'HTTP', src: '192.168.1.42', dst: '172.67.182.31', port: 80, payload: 'GET /search?q=' + String.fromCharCode(60) + 'script' + String.fromCharCode(62) + 'document.cookie' + String.fromCharCode(60) + '/script' + String.fromCharCode(62), size: 210, suspicious: true, reason: 'Cross-Site Scripting (XSS) attempt! Injected script to steal cookies' },
               { proto: 'FTP', src: '192.168.1.42', dst: '45.77.65.211', port: 21, payload: 'STOR confidential_financials_2026.xlsx', size: 15200, suspicious: true, reason: 'Data exfiltration via unencrypted FTP to external server!' }
             ]
@@ -1063,6 +1337,11 @@
             for (var k = shuffled.length - 1; k > 0; k--) { var r = Math.floor(Math.random() * (k + 1)); var tmp = shuffled[k]; shuffled[k] = shuffled[r]; shuffled[r] = tmp; }
             return shuffled.map(function(p, idx) { return Object.assign({}, p, { id: idx }); });
           }
+          function toggleNetPacket(pkt) {
+            if (netShowAnswer) return;
+            var isFlagged = netFlagged.indexOf(pkt.id) !== -1;
+            upd('netFlagged', isFlagged ? netFlagged.filter(function(f) { return f !== pkt.id; }) : netFlagged.concat([pkt.id]));
+          }
 
           // ── Social Engineering Scenarios ──
           var seScenarios = [
@@ -1075,17 +1354,17 @@
               { id: 'plug', label: t('stem.cyberdefense.plug_it_into_your_computer_to_check', 'Plug it into your computer to check'), feedback: t('stem.cyberdefense.usb_baiting_attack_malicious_usb_drive', 'USB baiting attack! Malicious USB drives can auto-run malware the moment they\'re plugged in.') },
               { id: 'report', label: t('stem.cyberdefense.turn_it_in_to_security_without_pluggin', 'Turn it in to security without plugging it in'), feedback: t('stem.cyberdefense.correct_the_stuxnet_worm_that_damaged_', 'Correct! The Stuxnet worm that damaged Iran\'s nuclear program spread via USB drives.') },
               { id: 'friend', label: t('stem.cyberdefense.give_it_to_a_friend_to_try', 'Give it to a friend to try'), feedback: t('stem.cyberdefense.this_just_puts_your_friend_at_risk_nev', 'This just puts your friend at risk. Never plug in unknown USB devices.') }
-            ], type: 'USB Baiting', lesson: 'In a study, 48% of USB drives dropped on a university campus were plugged in by finders.' },
+            ], type: 'USB Baiting', lesson: 'Treat unknown removable media as untrusted. Do not connect it; follow your school or organization\'s reporting process.' },
             { scenario: 'Someone in a delivery uniform asks you to hold the secure office door open because their hands are full.', correct: 'verify', options: [
               { id: 'hold', label: t('stem.cyberdefense.hold_the_door_they_look_legitimate', 'Hold the door \u2014 they look legitimate'), feedback: t('stem.cyberdefense.tailgating_attackers_dress_as_delivery', 'Tailgating! Attackers dress as delivery workers or employees to gain physical access.') },
               { id: 'verify', label: t('stem.cyberdefense.ask_them_to_badge_in_or_contact_recept', 'Ask them to badge in or contact reception'), feedback: t('stem.cyberdefense.correct_everyone_must_authenticate_ind', 'Correct! Everyone must authenticate individually. Physical security matters!') },
               { id: 'ignore', label: t('stem.cyberdefense.walk_away_without_saying_anything', 'Walk away without saying anything'), feedback: t('stem.cyberdefense.better_than_letting_them_in_but_alerti', 'Better than letting them in, but alerting security is the best practice.') }
-            ], type: 'Tailgating', lesson: 'Physical access is game over. Once inside, an attacker can install keyloggers or access unlocked computers.' },
+            ], type: 'Tailgating', lesson: 'Unauthorized physical access can bypass technical controls. Use individual badges and report access concerns without confronting someone.' },
             { scenario: 'Your “boss” texts from an unknown number, urgently asking you to buy gift cards and send the codes.', correct: 'verify', options: [
               { id: 'buy', label: t('stem.cyberdefense.rush_to_buy_the_gift_cards', 'Rush to buy the gift cards'), feedback: t('stem.cyberdefense.gift_card_scam_no_legitimate_boss_asks', 'Gift card scam! No legitimate boss asks for gift card codes via text.') },
               { id: 'verify', label: t('stem.cyberdefense.contact_your_boss_through_usual_channe', 'Contact your boss through usual channels to verify'), feedback: t('stem.cyberdefense.correct_always_verify_unusual_requests', 'Correct! Always verify unusual requests through established channels.') },
               { id: 'reply', label: t('stem.cyberdefense.ask_the_texter_for_proof_they_are_your', 'Ask the texter for proof they are your boss'), feedback: t('stem.cyberdefense.attackers_can_fake_proof_only_trust_co', 'Attackers can fake proof. Only trust communication through verified channels.') }
-            ], type: 'Pretexting', lesson: 'The FBI reported $241 million lost to gift card scams in 2023. Urgency + authority = red flags.' },
+            ], type: 'Pretexting', lesson: 'Gift-card payment requests are a common impersonation pattern. Urgency plus authority is a cue to pause and verify through a known channel.' },
             { scenario: 'You get an email saying you won a $500 Amazon gift card. Just fill out a survey with your credit card for “shipping.”', correct: 'delete', options: [
               { id: 'fill', label: t('stem.cyberdefense.fill_out_the_survey_to_claim_your_priz', 'Fill out the survey to claim your prize'), feedback: t('stem.cyberdefense.phishing_scam_legitimate_prizes_never_', 'Phishing scam. Legitimate prizes never require credit card info for shipping.') },
               { id: 'delete', label: t('stem.cyberdefense.delete_it_you_never_entered_a_contest', 'Delete it \u2014 you never entered a contest'), feedback: t('stem.cyberdefense.correct_if_you_didn_t_enter_you_can_t_', 'Correct! If you didn\'t enter, you can\'t win. This harvests personal and financial data.') },
@@ -1097,10 +1376,10 @@
               { id: 'some', label: t('stem.cyberdefense.answer_some_but_not_technical_question', 'Answer some but not technical questions'), feedback: t('stem.cyberdefense.even_non_technical_details_help_build_', 'Even non-technical details help build spear-phishing profiles. Names, schedules, software \u2014 all valuable.') }
             ], type: 'Reconnaissance', lesson: 'Information is the currency of social engineering. Every detail shared helps craft a more convincing attack.' },
             { scenario: 'A pop-up screams “YOUR COMPUTER IS INFECTED! Call Microsoft Support at 1-800-555-0199 immediately!”', correct: 'close', options: [
-              { id: 'call', label: t('stem.cyberdefense.call_the_number_for_help', 'Call the number for help'), feedback: t('stem.cyberdefense.tech_support_scam_microsoft_never_show', 'Tech support scam! Microsoft never shows phone numbers in pop-ups. The “technicians” install remote access malware.') },
-              { id: 'close', label: t('stem.cyberdefense.close_the_tab_and_run_your_actual_anti', 'Close the tab and run your actual antivirus'), feedback: t('stem.cyberdefense.correct_these_are_fake_warnings_real_s', 'Correct! These are fake warnings. Real security alerts come from your installed antivirus, not browser pop-ups.') },
+              { id: 'call', label: t('stem.cyberdefense.call_the_number_for_help', 'Call the number for help'), feedback: t('stem.cyberdefense.tech_support_scam_microsoft_never_show', 'Tech support scam! Do not use a phone number or download link supplied by an unexpected warning.') },
+              { id: 'close', label: t('stem.cyberdefense.close_the_tab_and_run_your_actual_anti', 'Close the tab and open your trusted security tool'), feedback: t('stem.cyberdefense.correct_these_are_fake_warnings_real_s', 'Correct! Use a trusted route, such as the security tool already on the device or the official support site, and report the pop-up if required.') },
               { id: 'pay', label: t('stem.cyberdefense.pay_for_their_removal_service', 'Pay for their removal service'), feedback: t('stem.cyberdefense.you_d_be_paying_scammers_who_may_insta', 'You\'d be paying scammers who may install more malware.') }
-            ], type: 'Tech Support Scam', lesson: 'Over 100,000 tech support scam reports in 2023. Real warnings come from YOUR installed software.' },
+            ], type: 'Tech Support Scam', lesson: 'Do not trust contact instructions in an unexpected pop-up. Close it, then open your device\'s security tools or support site through a known route.' },
             { scenario: 'A classmate borrows your phone “for a second” and walks around a corner with it.', correct: 'watch', options: [
               { id: 'let', label: t('stem.cyberdefense.let_them_go_they_ll_be_right_back', 'Let them go \u2014 they\'ll be right back'), feedback: t('stem.cyberdefense.a_few_seconds_with_your_unlocked_phone', 'A few seconds with your unlocked phone = access to all accounts, messages, and payment apps.') },
               { id: 'watch', label: t('stem.cyberdefense.stay_with_them_and_watch', 'Stay with them and watch'), feedback: t('stem.cyberdefense.correct_never_let_unlocked_devices_out', 'Correct! Never let unlocked devices out of sight. Seconds of access can install spyware.') },
@@ -1114,7 +1393,7 @@
           if (cipherInput) {
             if (cipherMode === 'caesar') cipherOutput = caesarCipher(cipherInput, caesarShift, cipherEncode);
             else if (cipherMode === 'atbash') cipherOutput = atbashCipher(cipherInput);
-            else cipherOutput = cipherEncode ? btoa(xorCipher(cipherInput, 42)) : (function() { try { return xorCipher(atob(cipherInput), 42); } catch(e) { return '[Invalid XOR input]'; } })();
+            else cipherOutput = cipherEncode ? xorEncodeBase64(cipherInput, 42) : xorDecodeBase64(cipherInput, 42);
           }
 
           // ══════════════════════════════════════════════════════════════
@@ -1419,9 +1698,9 @@
               if (b.freeFirstUse.indexOf('awareness_blast') === -1) b.freeFirstUse.push('awareness_blast');
               b.earned.push({ id: 'seasoned_detective', icon: '\uD83D\uDD75\uFE0F', label: t('stem.cyberdefense.seasoned_detective', 'Seasoned Detective'), perk: 'First Awareness Blast is free', source: 'Cyber Detective: 10+ cases closed' });
             }
-            if (dd.pwInput && dd.pwInput.length >= 12) {
+            if (dd.pwSampleStrong) {
               if (b.freeFirstUse.indexOf('reset_credential') === -1) b.freeFirstUse.push('reset_credential');
-              b.earned.push({ id: 'password_pro', icon: '\uD83D\uDD10', label: t('stem.cyberdefense.password_pro', 'Password Pro'), perk: 'First Reset Credential is free', source: 'Password Forge: tested a 12+ char password' });
+              b.earned.push({ id: 'password_pro', icon: '\uD83D\uDD10', label: t('stem.cyberdefense.password_pro', 'Password Pro'), perk: 'First Reset Credential is free', source: 'Password Forge: tested a 15+ character sample outside the blocklist' });
             }
             if ((dd.seQuizScore || 0) >= 5) {
               if (b.freeFirstUse.indexOf('investigate') === -1) b.freeFirstUse.push('investigate');
@@ -2730,7 +3009,178 @@
             return { label: t('stem.cyberdefense.junior_analyst', 'Junior Analyst'), icon: '\uD83D\uDD0D', color: '#22c55e' };
           })();
 
-          return el('div', { id: 'cyber-defense-region', className: 'animate-in fade-in duration-300', style: { background: 'linear-gradient(135deg, #0f172a 0%, #16172e 50%, var(--allo-stem-canvas, #0f172a) 100%)', borderRadius: 16, minHeight: '70vh', padding: 0, boxShadow: '0 0 40px rgba(99,102,241,0.15)' } },
+          var cyberTabs = [
+            { id: 'phish', icon: '\uD83D\uDD75\uFE0F', label: t('stem.cyberdefense.cyber_detective', 'Cyber Detective') },
+            { id: 'password', icon: '\uD83D\uDD10', label: t('stem.cyberdefense.password_forge', 'Password Forge') },
+            { id: 'cipher', icon: '\uD83D\uDD11', label: t('stem.cyberdefense.cipher_lab', 'Cipher Lab') },
+            { id: 'network', icon: '\uD83D\uDCE1', label: t('stem.cyberdefense.traffic_analyzer', 'Traffic Analyzer') },
+            { id: 'social', icon: '\uD83C\uDFAD', label: t('stem.cyberdefense.social_engineering', 'Social Engineering') },
+            { id: 'warroom', icon: '\u2694\uFE0F', label: t('stem.cyberdefense.soc_war_room', 'SOC War Room') },
+            { id: 'defenseHunt', icon: '\uD83D\uDEE1\uFE0F', label: t('stem.cyberdefense.defense_metrics', 'Defense Metrics') }
+          ];
+          var cyberLearningBriefs = {
+            phish: {
+              title: 'Build a phishing-evidence habit',
+              body: 'Slow down the story, inspect the sender and destination, then make a verdict only when multiple clues agree. A polished logo or HTTPS lock is not proof of legitimacy.',
+              firstMove: 'Inspect two sender, link, or body clues before choosing a verdict.',
+              decision: 'slow down and verify independently',
+              evidence: 'sender + link + context',
+              transfer: 'pause before clicking'
+            },
+            password: {
+              title: 'Design for resistance, not complexity theater',
+              body: 'Compare length, uniqueness, and exposure risk. Longer unique samples and phishing-resistant MFA usually matter more than forcing a predictable mix of symbols.',
+              firstMove: 'Generate a made-up sample or type one you will never reuse.',
+              decision: 'choose length and uniqueness over predictable rules',
+              evidence: 'length + blocklist + reuse',
+              transfer: 'use a password manager'
+            },
+            cipher: {
+              title: 'Separate encoding, transformation, and security',
+              body: 'Use the playground to see what a reversible transformation does, then ask what real encryption must add: secret keys, safe nonces, authentication, and reviewed implementations.',
+              firstMove: 'Pick a transformation, then compare its input, key, and output.',
+              decision: 'name what the toy model cannot protect',
+              evidence: 'operation + key + threat model',
+              transfer: 'never invent crypto'
+            },
+            network: {
+              title: 'Correlate signals before escalating',
+              body: 'A port or protocol is a clue, not a verdict. Compare source, destination, timing, payload, and the expected baseline before you flag activity for investigation.',
+              firstMove: 'Start capture, then read each packet as a bundle of signals.',
+              decision: 'investigate before you contain',
+              evidence: 'multiple indicators + baseline',
+              transfer: 'investigate, then contain'
+            },
+            social: {
+              title: 'Turn pressure into a verification pause',
+              body: 'Social engineering works by changing the decision environment. Name the pressure tactic, switch to a known channel, and report the attempt so the next person has context.',
+              firstMove: 'Read the request once without acting; name the pressure tactic.',
+              decision: 'switch to a known official channel',
+              evidence: 'urgency + identity + channel',
+              transfer: 'pause → verify → report'
+            },
+            warroom: {
+              title: 'Practice defense as a sequence of decisions',
+              body: 'Threats move through a chain. Early detection buys time, targeted mitigations protect the most valuable assets, and escalation is a tradeoff—not a reflex.',
+              firstMove: 'Choose a difficulty, scan the red-team stage, then play one defense.',
+              decision: 'protect the highest-value asset first',
+              evidence: 'stage + asset + cost',
+              transfer: 'prioritize under pressure'
+            },
+            defenseHunt: {
+              title: 'Measure a defense system, not one alert',
+              body: 'Detection, response, and training reinforce one another. Use the metrics and hypothesis log to explain what changed, what remains uncertain, and what you would test next.',
+              firstMove: 'Set one capability low, predict the outcome, then log the observation.',
+              decision: 'change one capability and observe the system',
+              evidence: 'signal + response + learning',
+              transfer: 'improve the system'
+            }
+          };
+          var activeCyberBrief = cyberLearningBriefs[cyberTab] || cyberLearningBriefs.phish;
+          var activeCyberTabIndex = Math.max(0, cyberTabs.findIndex(function(tab) { return tab.id === cyberTab; }));
+          var defenseHuntProgress = d.defenseHunt || {};
+          var cyberModuleProgress = {
+            phish: { started: casesClosed > 0 || cluesFound.length > 0, complete: casesClosed > 0 },
+            password: { started: !!pwInput || !!d.pwSampleTested, complete: !!d.pwSampleTested },
+            cipher: { started: !!cipherInput || Object.keys(solvedCiphers).length > 0, complete: Object.keys(solvedCiphers).length > 0 },
+            network: { started: netRound > 0 || netPackets.length > 0, complete: netShowAnswer || netScore > 0 },
+            social: { started: seQuizIdx > 0 || !!seQuizAnswer, complete: !!seQuizAnswer || seQuizIdx > 0 || seQuizScore > 0 },
+            warroom: { started: warRoomActive || warRoomCampaignsCompleted > 0, complete: warRoomCampaignsCompleted > 0 },
+            defenseHunt: { started: !!defenseHuntProgress.hypothesis || (defenseHuntProgress.log || []).length > 0, complete: !!defenseHuntProgress.understood }
+          };
+          var cyberReadyCount = cyberTabs.reduce(function(total, tab) {
+            return total + (cyberModuleProgress[tab.id] && cyberModuleProgress[tab.id].complete ? 1 : 0);
+          }, 0);
+          var cyberNextIncomplete = cyberTabs.filter(function(tab) {
+            return !(cyberModuleProgress[tab.id] && cyberModuleProgress[tab.id].complete);
+          })[0] || null;
+          var cyberContinueTab = (cyberModuleProgress[cyberTab] && cyberModuleProgress[cyberTab].complete) ? cyberNextIncomplete : null;
+          var cyberReflectionCards = {
+            phish: { ready: !!phishAnswer, prompt: 'Which clue most changed your confidence, and what would you verify through a known route?', next: 'In a real inbox, do not use the message\'s phone number or link. Open the official app or type the trusted address yourself.' },
+            password: { ready: !!pwChallengeDone || !!pwBreachResult, prompt: 'What made this sample stronger or weaker: length, reuse, predictability, or exposure?', next: 'Use a password manager to create a unique passphrase, then add phishing-resistant MFA where it is available.' },
+            cipher: { ready: Object.keys(solvedCiphers).length > 0, prompt: 'What can an observer learn from a reversible transformation, even when the output looks scrambled?', next: 'Treat Base64 and toy ciphers as learning tools. For real data, use reviewed authenticated-encryption libraries.' },
+            network: { ready: !!netShowAnswer, prompt: 'Which combination of signals separated a suspicious packet from normal traffic?', next: 'Carry the same habit into logs: compare timing, process, destination, volume, and baseline before containing activity.' },
+            social: { ready: !!seQuizAnswer, prompt: 'What pressure tactic was used, and which trusted channel would you use to verify the request?', next: 'Pause, verify independently, and report the attempt so other people inherit the context.' },
+            warroom: { ready: !!warRoomLastResolution || !!warRoomVerdict, prompt: 'Which stage or asset deserved your next decision, and what evidence supported that priority?', next: 'Review the campaign log and after-action report. Early detection often buys more options than late escalation.' },
+            defenseHunt: { ready: !!defenseHuntProgress.understood, prompt: 'What changed when the weakest capability moved, and which observation supports your explanation?', next: 'Use the same hypothesis → change → observe loop when improving a real team or system.' }
+          };
+          var activeCyberReflection = cyberReflectionCards[cyberTab] || cyberReflectionCards.phish;
+          var cyberReasoningFlow = [
+            { key: 'signal', label: 'Signal', value: activeCyberBrief.evidence, hint: 'Notice the evidence before the story.' },
+            { key: 'decision', label: 'Decision', value: activeCyberBrief.decision, hint: 'Name the tradeoff you are managing.' },
+            { key: 'action', label: 'Action', value: activeCyberBrief.transfer, hint: 'Carry the habit into the next move.' }
+          ];
+          function renderCyberReasoningFlow() {
+            var summary = 'Reasoning chain. Signal: ' + cyberReasoningFlow[0].value + '. Decision: ' + cyberReasoningFlow[1].value + '. Action: ' + cyberReasoningFlow[2].value + '.';
+            var flowChildren = [];
+            cyberReasoningFlow.forEach(function(step, index) {
+              flowChildren.push(el('div', { key: step.key, className: 'cyberd-learning-brief__flow-step', 'data-step': step.key },
+                el('span', { className: 'cyberd-learning-brief__flow-index', 'aria-hidden': true }, '0' + (index + 1)),
+                el('div', { className: 'cyberd-learning-brief__flow-label' }, step.label),
+                el('div', { className: 'cyberd-learning-brief__flow-value' }, step.value),
+                el('div', { className: 'cyberd-learning-brief__flow-hint' }, step.hint)
+              ));
+              if (index < cyberReasoningFlow.length - 1) flowChildren.push(el('div', { key: step.key + '-connector', className: 'cyberd-learning-brief__flow-connector', 'aria-hidden': true }, '→'));
+            });
+            return el('figure', { className: 'cyberd-learning-brief__flow', role: 'img', 'aria-label': summary },
+              el('div', { className: 'cyberd-learning-brief__flow-head' },
+                el('div', { className: 'cyberd-learning-brief__flow-eyebrow' }, 'Reasoning chain'),
+                el('div', { className: 'cyberd-learning-brief__flow-caption' }, 'Trace the evidence before you act.')
+              ),
+              el('div', { className: 'cyberd-learning-brief__flow-grid' }, flowChildren),
+              el('figcaption', { className: 'cyberd-learning-brief__flow-note' }, 'Use the same loop every time: notice a signal, choose a defensible response, then transfer the habit to the next scenario.')
+            );
+          }
+          function selectCyberTab(nextTab) {
+            var patch = { cyberTab: nextTab };
+            // Password samples are lesson inputs, not progress data. Remove them
+            // and their derived artifacts whenever the learner leaves the lab.
+            if (cyberTab === 'password' && nextTab !== 'password') {
+              _cyberPasswordSample = '';
+              patch.pwInput = '';
+              patch.pwShowPassword = false;
+              patch.pwBruteAnim = null;
+              patch.pwBreachResult = null;
+            }
+            upd(patch);
+            centerCyberTab(nextTab);
+            var nextTabMeta = cyberTabs.filter(function(tab) { return tab.id === nextTab; })[0];
+            var nextBrief = cyberLearningBriefs[nextTab] || cyberLearningBriefs.phish;
+            if (announceToSR && nextTabMeta && nextBrief) announceToSR(nextTabMeta.label + '. ' + nextBrief.title + '. Start here: ' + nextBrief.firstMove);
+          }
+          function centerCyberTab(tabId) {
+            window._cyberCenteredLearningTab = tabId;
+            setTimeout(function() {
+              var target = document.getElementById('cyber-tab-' + tabId);
+              if (!target || typeof target.scrollIntoView !== 'function') return;
+              var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+              target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'nearest', inline: 'center' });
+            }, 0);
+          }
+          function handleCyberTabKeyDown(event, index) {
+            var next = index;
+            if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (index + 1) % cyberTabs.length;
+            else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = (index - 1 + cyberTabs.length) % cyberTabs.length;
+            else if (event.key === 'Home') next = 0;
+            else if (event.key === 'End') next = cyberTabs.length - 1;
+            else return;
+            event.preventDefault();
+            selectCyberTab(cyberTabs[next].id);
+            setTimeout(function() {
+              var target = document.getElementById('cyber-tab-' + cyberTabs[next].id);
+              if (target) target.focus();
+            }, 0);
+          }
+
+          // When a saved session opens directly into a later mode, bring the
+          // selected tab into view instead of leaving it off-screen in the
+          // horizontally scrolling mobile tab bar.
+          if (typeof document !== 'undefined') {
+            if (!document.getElementById('cyber-defense-region')) window._cyberCenteredLearningTab = null;
+            if (window._cyberCenteredLearningTab !== cyberTab) centerCyberTab(cyberTab);
+          }
+
+          return el('div', { id: 'cyber-defense-region', 'data-cyber-mode': cyberTab, className: 'cyberd-shell animate-in fade-in duration-300', style: { background: 'linear-gradient(145deg, #0b1120 0%, #11152b 46%, var(--allo-stem-canvas, #0f172a) 100%)', borderRadius: 18, minHeight: '70vh', padding: 0, boxShadow: '0 0 40px rgba(99,102,241,0.15)' } },
             // Dark-designed tool on a hardcoded #0f172a surface: rebind the theme
             // palette variables for THIS SUBTREE ONLY so surface and text come
             // from the same palette. Without this, light theme resolves
@@ -2741,35 +3191,86 @@
               '#cyber-defense-region{--allo-stem-text:#e2e8f0;--allo-stem-text-soft:#94a3b8;--allo-stem-canvas:#0f172a;}' +
               '.theme-contrast #cyber-defense-region{--allo-stem-text:#ffff00;--allo-stem-text-soft:#ffff00;--allo-stem-canvas:#000000;}'),
             // Header
-            el('div', { style: { padding: '20px 24px 16px', borderBottom: '1px solid rgba(99,102,241,0.2)', display: 'flex', alignItems: 'center', gap: 12 } },
-              el('button', { onClick: function() { ctx.setStemLabTool(null); }, 'aria-label': t('stem.cyberdefense.back_to_stem_tools', 'Back to STEM tools'), title: t('stem.cyberdefense.back', 'Back'), style: { background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 16 } }, '\u2190'),
-              el('div', { style: { fontSize: 28, filter: 'drop-shadow(0 0 8px rgba(244,63,94,0.6))' } }, '\uD83D\uDEE1\uFE0F'),
-              el('div', null,
-                el('h2', { style: { margin: 0, fontSize: 20, fontWeight: 900, background: 'linear-gradient(90deg, #f43f5e, #a855f7, #6366f1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0 0 8px rgba(168,85,247,0.35))' } }, 'Cyber Defense Lab'),
-                el('p', { style: { margin: 0, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, 'Digital Citizenship \u2022 Cybersecurity Fundamentals')
+            el('div', { className: 'cyberd-shell-header', style: { padding: '20px 24px 16px', borderBottom: '1px solid rgba(99,102,241,0.2)', display: 'flex', alignItems: 'center', gap: 12 } },
+              el('button', { onClick: function() { if (cyberTab === 'password') { _cyberPasswordSample = ''; upd({ pwInput: '', pwShowPassword: false, pwBruteAnim: null, pwBreachResult: null }); } ctx.setStemLabTool(null); }, 'aria-label': t('stem.cyberdefense.back_to_stem_tools', 'Back to STEM tools'), title: t('stem.cyberdefense.back', 'Back'), style: { background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 8, padding: '8px 12px', minWidth: 44, minHeight: 44, cursor: 'pointer', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 16 } }, '\u2190'),
+              el('div', { className: 'cyberd-header-icon', 'aria-hidden': true, style: { fontSize: 28, filter: 'drop-shadow(0 0 8px rgba(244,63,94,0.6))' } }, '\uD83D\uDEE1\uFE0F'),
+              el('div', { style: { minWidth: 0 } },
+                el('h2', { className: 'cyberd-title', style: { margin: 0, fontSize: 20, fontWeight: 900, background: 'linear-gradient(90deg, #f43f5e, #a855f7, #6366f1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0 0 8px rgba(168,85,247,0.35))' } }, 'Cyber Defense Lab'),
+                el('p', { className: 'cyberd-title-subtitle', style: { margin: '2px 0 0', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, cyberTabs.filter(function(tab) { return tab.id === cyberTab; })[0].label + ' \u2022 Hands-on safety practice')
               ),
-              el('div', { style: { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 } },
-                el('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, textTransform: 'uppercase' } }, 'Level:'),
-                ['easy', 'medium', 'hard'].map(function(dl) {
-                  return el('button', { key: dl, onClick: function() { upd({ difficulty: dl, phishIdx: 0, phishAnswer: null }); },
-                    style: { padding: '4px 10px', borderRadius: 6, border: difficulty === dl ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.1)', background: difficulty === dl ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.05)', color: difficulty === dl ? '#a5b4fc' : '#94a3b8', fontSize: 11, fontWeight: 700, cursor: 'pointer', textTransform: 'capitalize' } }, dl);
-                }),
-                el('div', { style: { marginLeft: 12, padding: '4px 12px', borderRadius: 20, background: 'linear-gradient(135deg, #f59e0b, #eab308)', fontSize: 11, fontWeight: 900, color: '#1e293b', boxShadow: '0 0 14px rgba(245,158,11,0.4)' } }, '\u2B50 ' + ctx.getXP('cyberDefense') + ' XP')
-              )
+              el('div', { className: 'cyberd-header-controls' + (cyberTab === 'phish' ? '' : ' cyberd-header-controls--compact'), style: { marginLeft: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 } },
+                el('div', { className: 'cyberd-lab-status', 'aria-label': t('stem.cyberdefense.training_environment_active', 'Training environment active') },
+                  el('span', { className: 'cyberd-status-dot', 'aria-hidden': true }), 'Lab active'),
+                cyberTab === 'phish' && el('div', { role: 'group', 'aria-label': t('stem.cyberdefense.phishing_difficulty', 'Phishing case difficulty'), style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8 } },
+                  el('span', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, textTransform: 'uppercase' } }, 'Email level:'),
+                  ['easy', 'medium', 'hard'].map(function(dl) {
+                    return el('button', { key: dl, onClick: function() { upd({ difficulty: dl, phishIdx: 0, phishAnswer: null, cluesFound: [], showHeaders: false, aiGeneratedEmail: null, triageTimeLeft: 15, triageActive: phishMode === 'triage' && cyberTab === 'phish' }); }, 'aria-pressed': difficulty === dl,
+                      style: { padding: '4px 10px', minHeight: 30, borderRadius: 6, border: difficulty === dl ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.1)', background: difficulty === dl ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.05)', color: difficulty === dl ? '#a5b4fc' : '#94a3b8', fontSize: 11, fontWeight: 700, cursor: 'pointer', textTransform: 'capitalize' } }, dl);
+                  })),
+                el('div', { 'aria-label': ctx.getXP('cyberDefense') + ' Cyber Defense experience points', style: { marginLeft: cyberTab === 'phish' ? 4 : 'auto', padding: '4px 12px', borderRadius: 20, background: 'linear-gradient(135deg, #f59e0b, #eab308)', fontSize: 11, fontWeight: 900, color: '#1e293b', boxShadow: '0 0 14px rgba(245,158,11,0.4)', whiteSpace: 'nowrap' } }, '\u2B50 ' + ctx.getXP('cyberDefense') + ' XP')
+              ),
             ),
 
             // Tab Bar
-            el('div', { style: { display: 'flex', borderBottom: '1px solid rgba(99,102,241,0.15)', padding: '0 24px' } },
-              [{ id: 'phish', icon: '\uD83D\uDD75\uFE0F', label: t('stem.cyberdefense.cyber_detective', 'Cyber Detective') }, { id: 'password', icon: '\uD83D\uDD10', label: t('stem.cyberdefense.password_forge', 'Password Forge') }, { id: 'cipher', icon: '\uD83D\uDD11', label: t('stem.cyberdefense.cipher_lab', 'Cipher Lab') }, { id: 'network', icon: '\uD83D\uDCE1', label: t('stem.cyberdefense.traffic_analyzer', 'Traffic Analyzer') }, { id: 'social', icon: '\uD83C\uDFAD', label: t('stem.cyberdefense.social_engineering', 'Social Engineering') }, { id: 'warroom', icon: '\u2694\uFE0F', label: t('stem.cyberdefense.soc_war_room', 'SOC War Room') }, { id: 'defenseHunt', icon: '\uD83D\uDEE1\uFE0F', label: t('stem.cyberdefense.defense_metrics', 'Defense Metrics') }].map(function(tab) {
+            el('div', { className: 'cyberd-tabs', role: 'tablist', 'aria-label': t('stem.cyberdefense.learning_modes', 'Cyber Defense learning modes'), style: { display: 'flex', borderBottom: '1px solid rgba(99,102,241,0.15)', padding: '0 24px' } },
+              cyberTabs.map(function(tab, tabIndex) {
                 var isActive = cyberTab === tab.id;
-                return el('button', { key: tab.id, onClick: function() { upd('cyberTab', tab.id); },
+                var moduleProgress = cyberModuleProgress[tab.id] || {};
+                var progressState = moduleProgress.complete ? 'complete' : (isActive ? 'active' : (moduleProgress.started ? 'started' : 'idle'));
+                var progressLabel = moduleProgress.complete ? 'module ready' : (moduleProgress.started ? 'module in progress' : 'module not started');
+                return el('button', { key: tab.id, id: 'cyber-tab-' + tab.id, className: 'cyberd-tab', 'data-progress': progressState, role: 'tab', 'aria-label': tab.label + ', ' + progressLabel, 'aria-selected': isActive, 'aria-controls': 'cyber-panel-' + tab.id, tabIndex: isActive ? 0 : -1, onClick: function() { selectCyberTab(tab.id); }, onKeyDown: function(event) { handleCyberTabKeyDown(event, tabIndex); },
                   style: { padding: '12px 20px', borderTop: 'none', borderRight: 'none', borderLeft: 'none', borderBottom: isActive ? '2px solid #6366f1' : '2px solid transparent', background: 'none', color: isActive ? '#a5b4fc' : '#94a3b8', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s' } },
-                  el('span', null, tab.icon), tab.label);
+                  el('span', { className: 'cyberd-tab-icon', 'aria-hidden': true }, tab.icon), el('span', { className: 'cyberd-tab-label' }, tab.label), el('span', { className: 'cyberd-tab-progress', 'aria-hidden': true, title: moduleProgress.complete ? 'Module ready' : moduleProgress.started ? 'Module in progress' : 'Module not started' }));
               })
             ),
 
+            el('div', { className: 'cyberd-readiness', role: 'group', 'aria-label': cyberReadyCount + ' of ' + cyberTabs.length + ' Cyber Defense modules ready' },
+              el('span', { className: 'cyberd-readiness__label' }, 'Field readiness'),
+              el('span', { className: 'cyberd-readiness__count', role: 'status', 'aria-live': 'polite', 'aria-label': cyberReadyCount + ' of ' + cyberTabs.length + ' Cyber Defense modules ready' }, cyberReadyCount + '/' + cyberTabs.length + ' ready'),
+              el('div', { className: 'cyberd-readiness__track', 'aria-hidden': true },
+                cyberTabs.map(function(tab) {
+                  var moduleProgress = cyberModuleProgress[tab.id] || {};
+                  var state = moduleProgress.complete ? 'complete' : (tab.id === cyberTab ? 'active' : (moduleProgress.started ? 'started' : 'idle'));
+                  return el('span', { key: tab.id, className: 'cyberd-readiness-step', 'data-state': state, title: tab.label + ': ' + state });
+                })
+              ),
+              cyberContinueTab && el('button', {
+                className: 'cyberd-readiness__action',
+                onClick: function() {
+                  selectCyberTab(cyberContinueTab.id);
+                  setTimeout(function() {
+                    var target = document.getElementById('cyber-tab-' + cyberContinueTab.id);
+                    if (target) target.focus();
+                  }, 0);
+                },
+                'aria-label': 'Continue learning with ' + cyberContinueTab.label,
+                title: 'Continue learning with ' + cyberContinueTab.label
+              }, '\u2192 Continue: ' + cyberContinueTab.label)
+            ),
+
             // Content Area
-            el('div', { style: { padding: 24 } },
+            el('div', { id: 'cyber-panel-' + cyberTab, className: 'cyberd-content', role: 'tabpanel', 'aria-labelledby': 'cyber-tab-' + cyberTab, 'aria-describedby': 'cyberd-learning-brief-title cyberd-learning-brief-start cyberd-learning-brief-decision', tabIndex: 0, style: { padding: 24 } },
+
+              // Shared instructional spine: every mode opens with a clear
+              // objective and a transfer cue before the interactive controls.
+              el('section', { className: 'cyberd-learning-brief', role: 'note', 'aria-labelledby': 'cyberd-learning-brief-title' },
+                el('div', null,
+                  el('div', { className: 'cyberd-learning-brief__eyebrow' }, 'Mission brief \u2022 Module ' + (activeCyberTabIndex + 1) + ' of ' + cyberTabs.length),
+                  el('div', { id: 'cyberd-learning-brief-title', className: 'cyberd-learning-brief__title' }, activeCyberBrief.title),
+                    el('div', { className: 'cyberd-learning-brief__body' }, activeCyberBrief.body),
+                    el('div', { id: 'cyberd-learning-brief-start', className: 'cyberd-learning-brief__start' },
+                      el('span', { className: 'cyberd-learning-brief__start-label' }, 'Start here'),
+                      activeCyberBrief.firstMove)
+                ),
+                el('div', { className: 'cyberd-learning-brief__meta', 'aria-label': 'Mission transfer cues' },
+                  el('span', { className: 'cyberd-learning-brief__chip' }, el('strong', null, 'Look for: '), activeCyberBrief.evidence),
+                  el('span', { className: 'cyberd-learning-brief__chip' }, el('strong', null, 'Take away: '), activeCyberBrief.transfer)
+                ),
+                renderCyberReasoningFlow(),
+                el('div', { id: 'cyberd-learning-brief-decision', className: 'cyberd-learning-brief__decision', role: 'note', 'aria-label': 'Decision lens' },
+                  el('span', { className: 'cyberd-learning-brief__decision-label' }, 'Decision lens'),
+                  activeCyberBrief.decision)
+              ),
 
               // ═══════ CYBER DETECTIVE ═══════
               cyberTab === 'phish' && el('div', { style: { maxWidth: 680, margin: '0 auto' } },
@@ -2797,16 +3298,16 @@
 
                 // Mode Toggle
                 el('div', { style: { display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' } },
-                  el('button', { onClick: function() { upd({ phishMode: 'investigate', triageActive: false, cluesFound: [], phishAnswer: null }); upd('cluesFound', []); upd('phishAnswer', null); },
+                  el('button', { onClick: function() { upd({ phishMode: 'investigate', triageActive: false, cluesFound: [], phishAnswer: null, showHeaders: false, triageTimeLeft: 15 }); }, 'aria-pressed': phishMode === 'investigate',
                     style: { flex: 1, minWidth: 130, padding: '10px 16px', borderRadius: 10, border: phishMode === 'investigate' ? '2px solid #6366f1' : '2px solid rgba(255,255,255,0.1)', background: phishMode === 'investigate' ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.04)', color: phishMode === 'investigate' ? '#a5b4fc' : '#94a3b8', fontSize: 12, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s' } },
                     el('span', null, '\uD83D\uDD0D'), 'Investigation Mode'),
-                  el('button', { onClick: function() { upd({ phishMode: 'triage', triageActive: true, cluesFound: [], phishAnswer: null, triageTimeLeft: 15 }); },
+                  el('button', { onClick: function() { upd({ phishMode: 'triage', triageActive: true, cluesFound: [], phishAnswer: null, showHeaders: false, triageTimeLeft: 15 }); }, 'aria-pressed': phishMode === 'triage',
                     style: { flex: 1, minWidth: 130, padding: '10px 16px', borderRadius: 10, border: phishMode === 'triage' ? '2px solid #f59e0b' : '2px solid rgba(255,255,255,0.1)', background: phishMode === 'triage' ? 'rgba(245,158,11,0.15)' : 'rgba(255,255,255,0.04)', color: phishMode === 'triage' ? '#fbbf24' : '#94a3b8', fontSize: 12, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s' } },
                     el('span', null, '\u23F1\uFE0F'), 'Inbox Triage'),
                   // AI Case Generator Button
                   el('button', { onClick: generateAIEmail, disabled: aiEmailLoading,
                     style: { flex: 1, minWidth: 130, padding: '10px 16px', borderRadius: 10, border: aiGeneratedEmail ? '2px solid #a855f7' : '2px solid rgba(168,85,247,0.3)', background: aiGeneratedEmail ? 'rgba(168,85,247,0.2)' : 'linear-gradient(135deg, rgba(168,85,247,0.08), rgba(99,102,241,0.08))', color: aiGeneratedEmail ? '#c084fc' : '#a78bfa', fontSize: 12, fontWeight: 800, cursor: aiEmailLoading ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s', opacity: aiEmailLoading ? 0.6 : 1, animation: aiEmailLoading ? 'pulse 1.5s ease-in-out infinite' : 'none' } },
-                    el('span', null, aiEmailLoading ? '\u23F3' : '\uD83E\uDD16'), aiEmailLoading ? 'Generating...' : (aiGeneratedEmail ? '\uD83E\uDD16 New AI Case' : '\uD83E\uDD16 AI Case'))
+                    el('span', null, aiEmailLoading ? '\u23F3' : '\uD83E\uDD16'), aiEmailLoading ? 'Generating...' : (aiGeneratedEmail ? 'New AI Case' : 'AI Case'))
                 ),
 
                 // Case Counter
@@ -2815,8 +3316,8 @@
                     '\uD83D\uDCC1 Case #' + (casesClosed + 1) + (aiGeneratedEmail ? '' : ' \u2022 Email ' + ((phishIdx % filteredEmails.length) + 1) + '/' + filteredEmails.length),
                     aiGeneratedEmail && el('span', { style: { padding: '2px 6px', borderRadius: 6, background: 'rgba(168,85,247,0.2)', color: '#c084fc', fontSize: 11, fontWeight: 800, border: '1px solid rgba(168,85,247,0.3)' } }, '\uD83E\uDD16 AI')
                   ),
-                  phishMode === 'triage' && !phishAnswer && triageActive && el('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
-                    el('div', { style: { width: 100, height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.1)', overflow: 'hidden' } },
+                  phishMode === 'triage' && !phishAnswer && triageActive && el('div', { role: 'timer', 'aria-live': triageTimeLeft <= 5 ? 'assertive' : 'off', 'aria-label': triageTimeLeft + ' seconds remaining', style: { display: 'flex', alignItems: 'center', gap: 6 } },
+                    el('div', { role: 'progressbar', 'aria-label': 'Inbox triage time remaining', 'aria-valuemin': 0, 'aria-valuemax': 15, 'aria-valuenow': triageTimeLeft, 'aria-valuetext': triageTimeLeft + ' seconds remaining', style: { width: 100, height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.1)', overflow: 'hidden' } },
                       el('div', { style: { width: (triageTimeLeft / 15 * 100) + '%', height: '100%', borderRadius: 3, background: triageTimeLeft > 10 ? '#22c55e' : triageTimeLeft > 5 ? '#f59e0b' : '#ef4444', boxShadow: '0 0 10px ' + (triageTimeLeft > 10 ? 'rgba(34,197,94,0.5)' : triageTimeLeft > 5 ? 'rgba(245,158,11,0.5)' : 'rgba(239,68,68,0.6)'), transition: 'width 1s linear, background 0.5s, box-shadow 0.5s' } })
                     ),
                     el('span', { style: { color: triageTimeLeft > 5 ? '#94a3b8' : '#ef4444', fontSize: 12, fontWeight: 900, fontFamily: 'monospace', minWidth: 24, textAlign: 'right' } }, triageTimeLeft + 's')
@@ -2838,7 +3339,8 @@
                             var found = cluesFound.indexOf(ci) !== -1;
                             return el('button', { key: 'clue-s-' + ci, onClick: function() { handleClueClick(ci); },
                               title: t('stem.cyberdefense.investigate_sender', 'Investigate sender'),
-                              style: { background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '2px 5px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#94a3b8', transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite' } },
+                              'aria-label': (found ? 'Reviewed: ' : 'Investigate: ') + clue.label + ' in sender', 'aria-pressed': found,
+                              style: { minWidth: 36, minHeight: 36, background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '6px 9px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#94a3b8', transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite' } },
                               '\uD83D\uDD0D');
                           })
                         ),
@@ -2846,11 +3348,14 @@
                         el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 } },
                           el('button', {
                             onClick: function() { upd('showHeaders', !showHeaders); },
+                            'aria-expanded': showHeaders,
+                            'aria-controls': 'cyber-email-headers',
                             style: {
                               background: showHeaders ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.06)',
                               border: '1px solid ' + (showHeaders ? '#6366f1' : 'rgba(255,255,255,0.15)'),
                               borderRadius: 6,
                               padding: '2px 8px',
+                              minHeight: 36,
                               cursor: 'pointer',
                               fontSize: 10,
                               color: showHeaders ? '#a5b4fc' : '#94a3b8',
@@ -2867,7 +3372,8 @@
                             var found = cluesFound.indexOf(ci) !== -1;
                             return el('button', { key: 'clue-h-' + ci, onClick: function() { handleClueClick(ci); },
                               title: t('stem.cyberdefense.investigate_email_headers', 'Investigate email headers'),
-                              style: { background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '2px 5px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#94a3b8', transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite' } },
+                              'aria-label': (found ? 'Reviewed: ' : 'Investigate: ') + clue.label + ' in email headers', 'aria-pressed': found,
+                              style: { minWidth: 36, minHeight: 36, background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '6px 9px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#94a3b8', transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite' } },
                               '\uD83D\uDD0D');
                           })
                         )
@@ -2881,13 +3387,14 @@
                         var found = cluesFound.indexOf(ci) !== -1;
                         return el('button', { key: 'clue-sub-' + ci, onClick: function() { handleClueClick(ci); },
                           title: t('stem.cyberdefense.investigate_subject', 'Investigate subject'),
-                          style: { background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '2px 5px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#94a3b8', flexShrink: 0, transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite' } },
+                          'aria-label': (found ? 'Reviewed: ' : 'Investigate: ') + clue.label + ' in subject', 'aria-pressed': found,
+                          style: { minWidth: 36, minHeight: 36, background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '6px 9px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#94a3b8', flexShrink: 0, transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite' } },
                           '\uD83D\uDD0D');
                       })
                     )
                   ),
                   // Technical Header Inspector Panel
-                  showHeaders && activeEmail && activeEmail.headers && el('div', {
+                  showHeaders && activeEmail && activeEmail.headers && el('div', { id: 'cyber-email-headers', role: 'region', 'aria-label': 'Technical email header details',
                     style: {
                       background: '#0f172a',
                       borderBottom: '1px solid rgba(255,255,255,0.06)',
@@ -2953,7 +3460,8 @@
                       var found = cluesFound.indexOf(ci) !== -1;
                       return el('button', { key: 'clue-b-' + ci, onClick: function() { handleClueClick(ci); },
                         title: t('stem.cyberdefense.investigate_this', 'Investigate this'),
-                        style: { marginLeft: 6, background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '2px 5px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#94a3b8', transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite', verticalAlign: 'middle' } },
+                        'aria-label': (found ? 'Reviewed: ' : 'Investigate: ') + clue.label + ' in message body', 'aria-pressed': found,
+                        style: { marginLeft: 6, minWidth: 36, minHeight: 36, background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '6px 9px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#94a3b8', transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite', verticalAlign: 'middle' } },
                         '\uD83D\uDD0D');
                     }),
                     activeEmail.link && el('div', { style: { marginTop: 12, padding: '8px 12px', borderRadius: 8, background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', fontFamily: 'monospace', fontSize: 11, color: '#818cf8', wordBreak: 'break-all', display: 'flex', alignItems: 'center', gap: 6 } },
@@ -2964,7 +3472,8 @@
                         var found = cluesFound.indexOf(ci) !== -1;
                         return el('button', { key: 'clue-l-' + ci, onClick: function() { handleClueClick(ci); },
                           title: t('stem.cyberdefense.investigate_link', 'Investigate link'),
-                          style: { marginLeft: 'auto', flexShrink: 0, background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '2px 5px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#94a3b8', transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite' } },
+                          'aria-label': (found ? 'Reviewed: ' : 'Investigate: ') + clue.label + ' in displayed link', 'aria-pressed': found,
+                          style: { marginLeft: 'auto', minWidth: 36, minHeight: 36, flexShrink: 0, background: found ? 'rgba(99,102,241,0.3)' : 'rgba(255,255,255,0.08)', border: found ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.15)', borderRadius: 6, padding: '6px 9px', cursor: 'pointer', fontSize: 10, color: found ? '#a5b4fc' : '#94a3b8', transition: 'all 0.3s', animation: found ? 'none' : 'pulse 2s ease-in-out infinite' } },
                           '\uD83D\uDD0D');
                       })
                     )
@@ -2994,7 +3503,7 @@
                 ),
 
                 // Verdict Buttons
-                !phishAnswer && (phishMode === 'triage' || cluesFound.length >= 2) && el('div', { style: { display: 'flex', gap: 12, marginTop: 12 } },
+                !phishAnswer && (phishMode === 'triage' || cluesFound.length >= 2) && el('div', { className: 'cyberd-verdict-actions', role: 'group', 'aria-label': 'Choose your email verdict', style: { display: 'flex', gap: 12, marginTop: 12 } },
                   el('button', { onClick: function() { handleVerdict(true); },
                     style: { flex: 1, padding: '14px', borderRadius: 10, border: '2px solid rgba(34,197,94,0.3)', background: 'rgba(34,197,94,0.1)', color: '#4ade80', fontSize: 14, fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 } },
                     '\u2705', ' Safe Email'),
@@ -3006,13 +3515,13 @@
                 // Investigation hint (need more clues)
                 !phishAnswer && phishMode === 'investigate' && cluesFound.length < 2 && el('div', { style: { marginTop: 12, padding: '10px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(99,102,241,0.3)', textAlign: 'center' } },
                   el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12, fontWeight: 600 } },
-                    '\uD83D\uDD0D Click the magnifying glasses to investigate \u2022 Find at least 2 clues to unlock your verdict')
+                    '\uD83D\uDD0D Select the investigation buttons around the message \u2022 Review at least 2 clues to unlock your verdict')
                 ),
 
                 // Case File Recap (replaces old result reveal)
                 phishAnswer && el('div', { style: { marginTop: 16, borderRadius: 12, overflow: 'hidden', border: '1px solid ' + (phishAnswer === 'correct' ? 'rgba(34,197,94,0.3)' : phishAnswer === 'timeout' ? 'rgba(245,158,11,0.3)' : 'rgba(239,68,68,0.3)'), boxShadow: '0 4px 20px rgba(0,0,0,0.2)' } },
                   // Case File Header
-                  el('div', { style: { padding: '14px 18px', background: phishAnswer === 'correct' ? 'rgba(34,197,94,0.12)' : phishAnswer === 'timeout' ? 'rgba(245,158,11,0.12)' : 'rgba(239,68,68,0.12)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.06)' } },
+                  el('div', { role: 'status', 'aria-live': 'polite', style: { padding: '14px 18px', background: phishAnswer === 'correct' ? 'rgba(34,197,94,0.12)' : phishAnswer === 'timeout' ? 'rgba(245,158,11,0.12)' : 'rgba(239,68,68,0.12)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.06)' } },
                     el('div', null,
                       el('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 } }, '\uD83D\uDCC1 Case File #' + casesClosed),
                       el('div', { style: { fontSize: 16, fontWeight: 900, color: phishAnswer === 'correct' ? '#4ade80' : phishAnswer === 'timeout' ? '#fbbf24' : '#f87171' } },
@@ -3029,6 +3538,16 @@
                         el('span', { style: { color: activeEmail.isPhish ? '#f87171' : '#4ade80', fontSize: 10, marginTop: 2 } }, activeEmail.isPhish ? '\u26A0' : '\u2714'),
                         flag);
                     }),
+                    el('div', { role: 'note', style: { marginTop: 12, padding: '11px 14px', borderRadius: 8, background: activeEmail.isPhish ? 'rgba(239,68,68,0.08)' : 'rgba(34,197,94,0.08)', border: '1px solid ' + (activeEmail.isPhish ? 'rgba(239,68,68,0.24)' : 'rgba(34,197,94,0.24)') } },
+                      el('div', { style: { color: activeEmail.isPhish ? '#fca5a5' : '#86efac', fontSize: 12, fontWeight: 900, marginBottom: 5 } }, activeEmail.isPhish ? '\uD83D\uDEE1\uFE0F Respond safely' : '\u2705 Verify without relying on the message'),
+                      activeEmail.isPhish
+                        ? el('ol', { style: { margin: '0 0 0 18px', padding: 0, color: 'var(--allo-stem-text-soft, #cbd5e1)', fontSize: 11, lineHeight: 1.55 } },
+                            el('li', null, 'Do not reply, open attachments, or use the displayed link.'),
+                            el('li', null, 'Report it with your school or organization\'s official phishing-report process.'),
+                            el('li', null, 'Delete or quarantine it after reporting, following local policy.'))
+                        : el('div', { style: { color: 'var(--allo-stem-text-soft, #cbd5e1)', fontSize: 11, lineHeight: 1.55 } }, 'A message can look legitimate and still request risky action. For sensitive tasks, open the known official app or type the organization\'s address yourself instead of using the message link.'),
+                      activeEmail.isPhish && el('div', { style: { marginTop: 8, color: '#fde68a', fontSize: 11, lineHeight: 1.55, fontWeight: 650 } },
+                        'Already interacted? Stop and contact a trusted adult, teacher, or your IT/security team immediately. If you entered a password, change it through the official site from a trusted device, sign out other sessions, and enable MFA.')),
                     // XP Breakdown
                     phishAnswer === 'correct' && el('div', { style: { marginTop: 12, padding: '10px 14px', borderRadius: 8, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)' } },
                       el('div', { style: { color: '#fbbf24', fontSize: 11, fontWeight: 800, marginBottom: 4 } }, '\u2B50 XP Earned:'),
@@ -3053,37 +3572,42 @@
 
               // ======= PASSWORD FORGE =======
               cyberTab === 'password' && el('div', { style: { maxWidth: 640, margin: '0 auto' } },
+                  el('div', { id: 'cyber-password-safety-note', role: 'note', style: { marginBottom: 14, padding: '12px 14px', borderRadius: 10, background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.35)', color: '#fde68a', fontSize: 12, lineHeight: 1.55 } },
+                    el('strong', null, '\u26A0\uFE0F Practice samples only. '),
+                    'Never type a password you actually use. Generate a sample or invent one. The sample stays out of saved progress and is cleared when you switch modes or use Back/Clear.'),
                   // Password input + controls
                   el('div', { style: { marginBottom: 16 } },
-                    el('div', { style: { color: '#a5b4fc', fontSize: 13, fontWeight: 800, marginBottom: 8 } }, '\uD83D\uDD10 Enter a Password to Test'),
-                    el('div', { style: { display: 'flex', gap: 8, alignItems: 'center' } },
-                      el('div', { style: { flex: 1, position: 'relative' } },
-                        el('input', { value: pwInput, type: pwShowPassword ? 'text' : 'password',
-                          onChange: function(e) { upd({ pwInput: e.target.value, pwBruteAnim: null, pwBreachResult: null }); },
-                          placeholder: t('stem.cyberdefense.type_a_password_to_analyze', 'Type a password to analyze...'),
-                          'aria-label': t('stem.cyberdefense.password_to_analyze', 'Password to analyze'),
-                          style: { width: '100%', padding: '12px 40px 12px 14px', borderRadius: 10, border: '2px solid ' + (pwInput ? pwStrength.color : 'rgba(255,255,255,0.1)'), background: 'rgba(255,255,255,0.06)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, fontWeight: 600, boxSizing: 'border-box', fontFamily: pwShowPassword ? 'monospace' : 'inherit' }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
+                    el('label', { htmlFor: 'cyber-password-sample', style: { display: 'block', color: '#a5b4fc', fontSize: 13, fontWeight: 800, marginBottom: 8 } }, '\uD83D\uDD10 Enter a made-up sample'),
+                    el('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
+                      el('div', { style: { flex: '1 1 260px', position: 'relative' } },
+                        el('input', { id: 'cyber-password-sample', value: pwInput, type: pwShowPassword ? 'text' : 'password', autoComplete: 'new-password', autoCapitalize: 'none', spellCheck: false, maxLength: 128,
+                          onChange: function(e) { setPasswordSample(e.target.value, { pwBruteAnim: null, pwBreachResult: null }); },
+                          placeholder: t('stem.cyberdefense.type_a_password_to_analyze', 'Invent a sample or generate one...'),
+                          'aria-describedby': 'cyber-password-safety-note',
+                          style: { width: '100%', padding: '12px 64px 12px 14px', borderRadius: 10, border: '2px solid ' + (pwInput ? pwStrength.color : 'rgba(255,255,255,0.1)'), background: 'rgba(255,255,255,0.06)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, fontWeight: 600, boxSizing: 'border-box', fontFamily: pwShowPassword ? 'monospace' : 'inherit' }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
                         el('button', { onClick: function() { upd('pwShowPassword', !pwShowPassword); },
                           'aria-label': pwShowPassword ? 'Hide password' : 'Show password',
-                          style: { position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 16, padding: 4 } },
-                          pwShowPassword ? '\uD83D\uDC41\uFE0F' : '\uD83D\uDEE1\uFE0F')
+                          style: { position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)', minWidth: 48, minHeight: 32, background: 'rgba(15,23,42,0.72)', border: '1px solid rgba(148,163,184,0.24)', borderRadius: 7, cursor: 'pointer', color: '#cbd5e1', fontSize: 11, fontWeight: 800, padding: '5px 8px' } },
+                          pwShowPassword ? 'Hide' : 'Show')
                       ),
-                      el('button', { onClick: function() { var gp = generatePassword(pwGenLength, pwGenInclude); upd({ pwInput: gp, pwShowPassword: true, pwBruteAnim: null, pwBreachResult: null }); },
+                      el('button', { onClick: function() { var gp = generatePassword(pwGenLength, pwGenInclude); if (!gp) { if (ctx.addToast) ctx.addToast('Secure random generation is unavailable in this browser.', 'warning'); return; } setPasswordSample(gp, { pwShowPassword: true, pwBruteAnim: null, pwBreachResult: null }); },
                         style: { padding: '10px 14px', borderRadius: 10, border: '1px solid rgba(99,102,241,0.3)', background: 'rgba(99,102,241,0.15)', color: '#a5b4fc', fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' } },
-                        '\uD83C\uDFB2 Generate')
+                        '\uD83C\uDFB2 Secure sample'),
+                      pwInput && el('button', { onClick: function() { setPasswordSample('', { pwShowPassword: false, pwBruteAnim: null, pwBreachResult: null }); },
+                        style: { padding: '10px 14px', borderRadius: 10, border: '1px solid rgba(148,163,184,0.3)', background: 'rgba(148,163,184,0.08)', color: '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, 'Clear')
                     ),
                     // Generator config
                     el('div', { style: { display: 'flex', gap: 8, marginTop: 8, alignItems: 'center', flexWrap: 'wrap' } },
                       el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700 } }, 'LENGTH:'),
-                      [8, 12, 16, 20, 24].map(function(len) {
-                        return el('button', { key: len, onClick: function() { upd('pwGenLength', len); },
+                      [15, 16, 20, 24, 32].map(function(len) {
+                        return el('button', { key: len, onClick: function() { upd('pwGenLength', len); }, 'aria-pressed': pwGenLength === len,
                           style: { padding: '3px 8px', borderRadius: 6, border: pwGenLength === len ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.08)', background: pwGenLength === len ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.03)', color: pwGenLength === len ? '#a5b4fc' : '#94a3b8', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, String(len));
                       }),
                       el('span', { style: { color: 'var(--allo-stem-text-soft, #475569)', margin: '0 4px' } }, '|'),
                       ['upper', 'lower', 'digits', 'symbols'].map(function(cat) {
                         var labels = { upper: 'A-Z', lower: 'a-z', digits: '0-9', symbols: '!@#' };
                         var on = pwGenInclude[cat];
-                        return el('button', { key: cat, onClick: function() { var ni = Object.assign({}, pwGenInclude); ni[cat] = !ni[cat]; upd('pwGenInclude', ni); },
+                        return el('button', { key: cat, onClick: function() { var ni = Object.assign({}, pwGenInclude); ni[cat] = !ni[cat]; upd('pwGenInclude', ni); }, 'aria-pressed': on,
                           style: { padding: '3px 8px', borderRadius: 6, border: on ? '1px solid #22c55e' : '1px solid rgba(255,255,255,0.08)', background: on ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.03)', color: on ? '#4ade80' : '#94a3b8', fontSize: 10, fontWeight: 700, cursor: 'pointer' } }, labels[cat]);
                       })
                     )
@@ -3091,28 +3615,26 @@
                   // Strength display
                   pwInput && el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
                     el('span', { style: { fontSize: 16, fontWeight: 900, color: pwStrength.color } }, pwStrength.label),
-                    el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, fontWeight: 600 } }, pwStrength.entropy + ' bits entropy'),
-                    el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11 } }, '\u2022 Pool: ' + (pwStrength.checks.poolSize || 0) + ' chars')
+                    el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, fontWeight: 600 } }, pwStrength.checks.length + ' characters'),
+                    el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11 } }, '\u2022 ' + (pwStrength.checks.isCommon ? 'Classroom blocklist match' : 'No classroom blocklist match'))
                   ),
                   // Strength bar
-                  el('div', { style: { width: '100%', height: 10, borderRadius: 5, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
+                  el('div', { role: 'meter', 'aria-label': t('stem.cyberdefense.sample_strength', 'Sample strength'), 'aria-valuemin': 0, 'aria-valuemax': 5, 'aria-valuenow': pwStrength.score, 'aria-valuetext': pwInput ? pwStrength.label : t('stem.cyberdefense.empty', 'Empty'), style: { width: '100%', height: 10, borderRadius: 5, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
                     el('div', { style: { width: (pwStrength.score / 5 * 100) + '%', height: '100%', borderRadius: 5, background: pwStrength.color, transition: 'all 0.5s ease-out', boxShadow: '0 0 10px ' + pwStrength.color + '60' } })
                   ),
-                  // Crack time
+                  // Illustrative search-space estimate
                   el('div', { style: { marginTop: 12, padding: '12px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' } },
-                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, '\u231B Time to crack (10B guesses/sec):'),
-                    el('div', { style: { color: pwStrength.color, fontSize: 18, fontWeight: 900 } }, pwStrength.crackTime)
+                    el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, '\u231B Uniform-random search-space estimate (10B guesses/sec):'),
+                    el('div', { style: { color: pwStrength.color, fontSize: 18, fontWeight: 900 } }, pwStrength.crackTime),
+                    el('div', { style: { marginTop: 5, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.45 } }, 'Illustration only. Human patterns and leaked passwords can make real guessing much faster; rate limits and salted password hashing also change the result.')
                   ),
                   // Checklist
                   el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 14 } },
                     [
-                      { label: t('stem.cyberdefense.8_characters', '8+ characters'), ok: pwStrength.checks.length >= 8 },
-                      { label: t('stem.cyberdefense.12_characters', '12+ characters'), ok: pwStrength.checks.length >= 12 },
-                      { label: t('stem.cyberdefense.uppercase_letters', 'Uppercase letters'), ok: pwStrength.checks.hasUpper },
-                      { label: t('stem.cyberdefense.lowercase_letters', 'Lowercase letters'), ok: pwStrength.checks.hasLower },
-                      { label: t('stem.cyberdefense.numbers', 'Numbers'), ok: pwStrength.checks.hasDigit },
-                      { label: t('stem.cyberdefense.symbols', 'Symbols (!@#$)'), ok: pwStrength.checks.hasSymbol },
-                      { label: t('stem.cyberdefense.not_a_common_password', 'Not a common password'), ok: !pwStrength.checks.isCommon && pwInput.length > 0 }
+                      { label: t('stem.cyberdefense.8_characters', '8+ characters (with MFA)'), ok: pwStrength.checks.length >= 8 },
+                      { label: t('stem.cyberdefense.15_characters', '15+ characters (single factor)'), ok: pwStrength.checks.length >= 15 },
+                      { label: t('stem.cyberdefense.20_characters', '20+ characters is even stronger'), ok: pwStrength.checks.length >= 20 },
+                      { label: t('stem.cyberdefense.not_a_common_password', 'Not on the classroom blocklist'), ok: !pwStrength.checks.isCommon && pwInput.length > 0 }
                     ].map(function(check, ci) {
                       return el('div', { key: ci, style: { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 6, background: check.ok ? 'rgba(34,197,94,0.08)' : 'rgba(255,255,255,0.03)', border: '1px solid ' + (check.ok ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.06)') } },
                         el('span', { style: { fontSize: 12, color: check.ok ? '#4ade80' : '#64748b' } }, check.ok ? '\u2714' : '\u25CB'),
@@ -3120,19 +3642,19 @@
                     })
                   ),
                   // Action buttons
-                  pwInput && el('div', { style: { display: 'flex', gap: 8, marginTop: 14 } },
+                  pwInput && el('div', { style: { display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' } },
                     el('button', { onClick: startBruteForce,
                       style: { flex: 1, padding: '10px 14px', borderRadius: 10, border: '1px solid rgba(244,63,94,0.3)', background: 'rgba(244,63,94,0.1)', color: '#fb7185', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 } },
                       '\u26A1 Brute Force Sim'),
                     el('button', { onClick: function() { upd('pwBreachResult', checkBreach(pwInput)); },
                       style: { flex: 1, padding: '10px 14px', borderRadius: 10, border: '1px solid rgba(168,85,247,0.3)', background: 'rgba(168,85,247,0.1)', color: '#c084fc', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 } },
-                      '\uD83D\uDD0D Breach Check')
+                      '\uD83D\uDD0D Demo Blocklist Check')
                   ),
                   // Brute Force Visualization
                   pwBruteAnim && el('div', { style: { marginTop: 14, padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(244,63,94,0.08), rgba(239,68,68,0.05))', border: '1px solid rgba(244,63,94,0.2)' } },
                     el('div', { style: { color: '#fb7185', fontSize: 13, fontWeight: 900, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 } }, '\u26A1 Brute Force Attack Simulation'),
                     el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginBottom: 8 } },
-                      pwBruteAnim.entropy + ' bits entropy \u2022 Character sets: ' + pwBruteAnim.charSets.join(', ')),
+                      pwBruteAnim.entropy + ' estimated bits under a uniform-random model \u2022 Character sets: ' + pwBruteAnim.charSets.join(', ')),
                     el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6 } }, 'Attack Speed Comparison:'),
                     pwBruteAnim.speeds.map(function(spd, si) {
                       var secs = pwBruteAnim.totalGuesses / spd.rate;
@@ -3151,35 +3673,35 @@
                       );
                     }),
                     el('div', { style: { marginTop: 8, padding: '8px 12px', borderRadius: 8, background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', color: '#a5b4fc', fontSize: 11, fontWeight: 600 } },
-                      '\uD83D\uDCA1 Every additional character multiplies crack time exponentially!')
+                      '\uD83D\uDCA1 Length expands the search space, but predictable patterns and reused passwords bypass that advantage.')
                   ),
                   // Breach Check Results
                   pwBreachResult && el('div', { style: { marginTop: 14, padding: 16, borderRadius: 12, background: pwBreachResult.breached ? 'linear-gradient(135deg, rgba(239,68,68,0.1), rgba(220,38,38,0.05))' : 'linear-gradient(135deg, rgba(34,197,94,0.08), rgba(22,163,74,0.05))', border: '1px solid ' + (pwBreachResult.breached ? 'rgba(239,68,68,0.3)' : 'rgba(34,197,94,0.3)') } },
                     el('div', { style: { fontSize: 28, textAlign: 'center', marginBottom: 6 } }, pwBreachResult.breached ? '\uD83D\uDEA8' : '\u2705'),
                     el('div', { style: { textAlign: 'center', color: pwBreachResult.breached ? '#fca5a5' : '#86efac', fontSize: 15, fontWeight: 900, marginBottom: 4 } },
-                      pwBreachResult.breached ? 'PASSWORD FOUND IN BREACH DATABASE!' : 'Not Found in Known Breaches'),
+                      pwBreachResult.breached ? 'MATCHES THE CLASSROOM BLOCKLIST' : 'No Classroom Blocklist Match'),
                     pwBreachResult.breached && el('div', { style: { textAlign: 'center', color: '#f87171', fontSize: 12, marginBottom: 8 } },
-                      'This password appeared in ' + pwBreachResult.count.toLocaleString() + ' breaches! Do NOT use it.'),
+                      'Attackers try common choices early. Do not use this sample as a real password.'),
                     !pwBreachResult.breached && el('div', { style: { textAlign: 'center', color: '#6ee7b7', fontSize: 12, marginBottom: 8 } },
-                      'Not found in our simulated breach database. Always use unique passwords per site.'),
+                      'This only checks a small built-in teaching list. It does not prove the sample is safe or absent from real breaches.'),
                     el('div', { style: { padding: '8px 12px', borderRadius: 8, background: 'rgba(0,0,0,0.2)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.6 } },
-                      '\uD83D\uDD12 Real services like "Have I Been Pwned" use k-anonymity to check passwords against billions of breached credentials without seeing your full password.')
+                      '\uD83D\uDD12 This demo makes no network request. In real systems, services should reject commonly used or compromised choices while protecting the full password.')
                   ),
                   // Challenge
-                  !pwChallengeDone && pwStrength.entropy > 60 && el('div', { style: { marginTop: 16, padding: 14, borderRadius: 10, background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(234,179,8,0.1))', border: '1px solid rgba(245,158,11,0.3)', textAlign: 'center' } },
+                  !pwChallengeDone && pwStrength.checks.length >= 15 && !pwStrength.checks.isCommon && el('div', { style: { marginTop: 16, padding: 14, borderRadius: 10, background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(234,179,8,0.1))', border: '1px solid rgba(245,158,11,0.3)', textAlign: 'center' } },
                     el('div', { style: { fontSize: 14, fontWeight: 900, color: '#fbbf24', marginBottom: 4 } }, '\uD83C\uDFC6 Challenge Complete!'),
-                    el('div', { style: { fontSize: 12, color: '#fcd34d' } }, 'Your password would take ' + pwStrength.crackTime + ' to crack!'),
+                    el('div', { style: { fontSize: 12, color: '#fcd34d' } }, 'Your made-up sample is 15+ characters and avoids this lesson\'s blocklist.'),
                     el('button', { onClick: function() { ctx.awardXP('cyberDefense', 5); upd('pwChallengeDone', true); if (ctx.addToast) ctx.addToast('\uD83D\uDEE1\uFE0F +5 XP! Password Master!', 'success'); if (announceToSR) announceToSR('Password challenge complete! Plus 5 XP.'); },
                       style: { marginTop: 10, padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #f59e0b, #eab308)', color: '#1e293b', fontSize: 12, fontWeight: 800, cursor: 'pointer' } }, 'Claim +5 XP \u2B50')
                   ),
                   // Tips
                   el('div', { style: { marginTop: 16, padding: 16, borderRadius: 10, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)' } },
                     el('div', { style: { color: '#818cf8', fontSize: 12, fontWeight: 800, marginBottom: 8 } }, '\uD83D\uDCA1 Password Tips'),
-                    ['Use a passphrase: combine 4+ random words (e.g., "correct-horse-battery-staple")',
-                     'Never reuse passwords across different sites',
-                     'Add symbols and numbers between words, not just at the end',
-                     'Longer is always stronger \u2014 aim for 16+ characters',
-                     'Consider using a password manager to generate and store strong passwords'
+                    ['Prefer a long passphrase or a password-manager-generated password; aim for at least 15 characters when the password is used alone',
+                     'Use a unique password for every account so one breach cannot unlock another',
+                     'Do not rely on predictable substitutions such as Password1!; forced symbol and number rules are not a substitute for length',
+                     'Use a password manager to generate, store, and autofill unique passwords',
+                     'Turn on phishing-resistant MFA when a service offers it'
                     ].map(function(tip, ti) {
                       return el('div', { key: ti, style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, padding: '3px 0', display: 'flex', gap: 6, alignItems: 'flex-start' } },
                         el('span', { style: { color: '#6366f1', fontSize: 8, marginTop: 4 } }, '\u25C6'), tip);
@@ -3188,19 +3710,22 @@
               ),
               // ═══════ CIPHER PLAYGROUND ═══════
               cyberTab === 'cipher' && el('div', { style: { maxWidth: 640, margin: '0 auto' } },
+                el('div', { role: 'note', style: { marginBottom: 14, padding: '12px 14px', borderRadius: 10, background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.35)', color: '#fde68a', fontSize: 12, lineHeight: 1.55 } },
+                  el('strong', null, '\uD83E\uDDEA Learning transformations, not secure encryption. '),
+                  'Caesar and Atbash are easy to break. This repeating-key XOR demo is also insecure, and Base64 only makes bytes displayable. Real applications use reviewed cryptographic libraries and authenticated encryption.'),
                 // Cipher type selector
-                el('div', { style: { display: 'flex', gap: 8, marginBottom: 20 } },
+                el('div', { role: 'group', 'aria-label': t('stem.cyberdefense.cipher_type', 'Cipher type'), style: { display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' } },
                   [{ id: 'caesar', label: t('stem.cyberdefense.caesar_cipher', 'Caesar Cipher'), icon: '\uD83D\uDD04' }, { id: 'atbash', label: t('stem.cyberdefense.atbash_cipher', 'Atbash Cipher'), icon: '\uD83D\uDD00' }, { id: 'xor', label: t('stem.cyberdefense.xor_cipher', 'XOR Cipher'), icon: '\u2295' }].map(function(c) {
-                    return el('button', { key: c.id, onClick: function() { upd('cipherMode', c.id); },
+                    return el('button', { key: c.id, onClick: function() { upd('cipherMode', c.id); }, 'aria-pressed': cipherMode === c.id,
                       style: { flex: 1, padding: '10px 14px', borderRadius: 10, border: cipherMode === c.id ? '2px solid #6366f1' : '1px solid rgba(255,255,255,0.1)', background: cipherMode === c.id ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.04)', color: cipherMode === c.id ? '#a5b4fc' : '#94a3b8', fontSize: 12, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 } },
                       el('span', null, c.icon), c.label);
                   })
                 ),
                 // Encode/Decode toggle
                 el('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 16 } },
-                  el('div', { style: { display: 'flex', borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' } },
-                    el('button', { onClick: function() { upd('cipherEncode', true); }, style: { padding: '6px 18px', border: 'none', background: cipherEncode ? '#6366f1' : 'rgba(255,255,255,0.04)', color: cipherEncode ? 'white' : '#94a3b8', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD12 Encode'),
-                    el('button', { onClick: function() { upd('cipherEncode', false); }, style: { padding: '6px 18px', border: 'none', background: !cipherEncode ? '#6366f1' : 'rgba(255,255,255,0.04)', color: !cipherEncode ? 'white' : '#94a3b8', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD13 Decode')
+                  el('div', { role: 'group', 'aria-label': t('stem.cyberdefense.operation', 'Operation'), style: { display: 'flex', borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' } },
+                    el('button', { onClick: function() { upd('cipherEncode', true); }, 'aria-pressed': cipherEncode, style: { padding: '8px 18px', border: 'none', background: cipherEncode ? '#6366f1' : 'rgba(255,255,255,0.04)', color: cipherEncode ? 'white' : '#94a3b8', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD12 Encode'),
+                    el('button', { onClick: function() { upd('cipherEncode', false); }, 'aria-pressed': !cipherEncode, style: { padding: '8px 18px', border: 'none', background: !cipherEncode ? '#6366f1' : 'rgba(255,255,255,0.04)', color: !cipherEncode ? 'white' : '#94a3b8', fontSize: 12, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDD13 Decode')
                   )
                 ),
                 // Caesar shift control
@@ -3227,15 +3752,15 @@
                   )
                 ),
                 // Input/Output
-                el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 } },
+                el('div', { className: 'cyberd-two-column', style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 } },
                   el('div', null,
                     el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, cipherEncode ? 'Plain Text' : 'Encoded Text'),
-                    el('textarea', { value: cipherInput, onChange: function(e) { upd('cipherInput', e.target.value.toUpperCase()); }, placeholder: cipherEncode ? 'Type your message...' : 'Paste encoded text...', 'aria-label': cipherEncode ? 'Plain text to encode' : 'Encoded text to decode',
+                    el('textarea', { value: cipherInput, maxLength: 2000, onChange: function(e) { upd('cipherInput', cipherMode === 'xor' ? e.target.value : e.target.value.toUpperCase()); }, placeholder: cipherEncode ? 'Type your message...' : 'Paste encoded text...', 'aria-label': cipherEncode ? 'Plain text to encode' : 'Encoded text to decode',
                       style: { width: '100%', height: 100, padding: 12, borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.06)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, fontFamily: 'monospace', fontWeight: 600, resize: 'none', boxSizing: 'border-box' }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' })
                   ),
                   el('div', null,
                     el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, cipherEncode ? 'Encoded Output' : 'Decoded Output'),
-                    el('div', { style: { width: '100%', height: 100, padding: 12, borderRadius: 8, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(99,102,241,0.08)', color: '#a5b4fc', fontSize: 13, fontFamily: 'monospace', fontWeight: 700, overflowY: 'auto', boxSizing: 'border-box', wordBreak: 'break-all' } },
+                    el('div', { role: 'status', 'aria-live': 'polite', 'aria-label': cipherEncode ? 'Encoded output' : 'Decoded output', style: { width: '100%', height: 100, padding: 12, borderRadius: 8, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(99,102,241,0.08)', color: '#a5b4fc', fontSize: 13, fontFamily: 'monospace', fontWeight: 700, overflowY: 'auto', boxSizing: 'border-box', wordBreak: 'break-all' } },
                       cipherOutput || el('span', { style: { color: 'var(--allo-stem-text-soft, #475569)', fontStyle: 'italic', fontWeight: 400 } }, 'Output will appear here...'))
                   )
                 ),
@@ -3246,7 +3771,7 @@
                   el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, lineHeight: 1.6 } },
                     cipherMode === 'caesar' ? 'Each letter is shifted forward in the alphabet by the shift amount. Julius Caesar used a shift of 3 to encrypt military messages. With 26 possible shifts, this is one of the simplest ciphers to break \u2014 but a great introduction to cryptography!' :
                     cipherMode === 'atbash' ? 'The alphabet is simply reversed: A\u2192Z, B\u2192Y, C\u2192X, and so on. Originally used for Hebrew text, Atbash is a "mirror cipher." It\'s its own inverse \u2014 encoding and decoding use the same operation!' :
-                    'XOR (exclusive or) compares the binary digits of each character with a key number. If the bits match, the result is 0; if they differ, the result is 1. XOR is used in real-world encryption because it\'s fast, reversible, and forms the basis of modern stream ciphers.')
+                    'XOR (exclusive or) combines each input bit with a key bit. It is a building block inside some secure designs, but security depends on correct key generation, nonce use, authentication, and the complete algorithm. Repeating the fixed key 42, as this demo does, is easy to attack. Base64 in the output is encoding, not encryption.')
                 ),
                 // Challenge Mode
                 el('div', { style: { padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(245,158,11,0.08), rgba(234,179,8,0.08))', border: '1px solid rgba(245,158,11,0.2)' } },
@@ -3279,7 +3804,7 @@
 
               // ======= NETWORK TRAFFIC ANALYZER =======
               cyberTab === 'network' && el('div', { style: { maxWidth: 700, margin: '0 auto' } },
-                el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 } },
+                el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, marginBottom: 16 } },
                   el('div', null,
                     el('div', { style: { color: '#a5b4fc', fontSize: 14, fontWeight: 900 } }, '\uD83D\uDCE1 Network Traffic Analyzer'),
                     el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginTop: 2 } }, 'Inspect packets and flag suspicious traffic')
@@ -3291,10 +3816,22 @@
                       netPackets.length === 0 ? '\uD83D\uDCE1 Start Capture' : '\uD83D\uDD04 New Capture')
                   )
                 ),
+                el('div', { role: 'note', className: 'cyberd-defense-controls', style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 14 } },
+                  [{ n: '1', title: 'Observe', text: 'Read the source, destination, protocol, port, and payload together.' },
+                   { n: '2', title: 'Correlate', text: 'Compare several indicators with the expected network baseline.' },
+                   { n: '3', title: 'Escalate', text: 'Flag evidence for investigation; do not block traffic from one clue alone.' }].map(function(step) {
+                    return el('div', { key: step.n, style: { padding: 10, borderRadius: 8, background: 'rgba(96,165,250,0.08)', border: '1px solid rgba(96,165,250,0.22)' } },
+                      el('div', { style: { color: '#93c5fd', fontSize: 11, fontWeight: 900 } }, step.n + '. ' + step.title),
+                      el('div', { style: { color: '#bfdbfe', fontSize: 10, lineHeight: 1.45, marginTop: 3 } }, step.text));
+                  })),
+                el('div', { role: 'note', style: { marginBottom: 14, padding: '10px 12px', borderRadius: 8, background: 'rgba(96,165,250,0.08)', border: '1px solid rgba(96,165,250,0.25)', color: '#bfdbfe', fontSize: 11, lineHeight: 1.55 } },
+                  el('strong', null, 'Analyst rule: '), 'one port or protocol is rarely proof. Use several indicators, compare traffic with the organization\'s normal baseline, and treat a flag as a reason to investigate.'),
+                netPackets.length > 0 && el('div', { id: 'cyber-packet-table-help', role: 'note', style: { marginBottom: 8, color: '#cbd5e1', fontSize: 11, lineHeight: 1.5 } },
+                  '\u2194 Scroll sideways to inspect every field. Select rows you would investigate; with a keyboard, use Tab and then Enter or Space.'),
                 // Packet list
-                netPackets.length > 0 && el('div', { style: { borderRadius: 10, overflow: 'hidden', border: '1px solid rgba(99,102,241,0.15)' } },
+                netPackets.length > 0 && el('div', { role: 'region', 'aria-label': t('stem.cyberdefense.packet_capture', 'Packet capture'), 'aria-describedby': 'cyber-packet-table-help', tabIndex: 0, style: { borderRadius: 10, overflowX: 'auto', border: '1px solid rgba(99,102,241,0.15)' } },
                   // Header
-                  el('div', { style: { display: 'grid', gridTemplateColumns: '70px 120px 120px 50px 1fr', gap: 0, background: 'rgba(99,102,241,0.1)', padding: '8px 12px' } },
+                  el('div', { 'aria-hidden': true, style: { display: 'grid', gridTemplateColumns: '70px 120px 120px 50px minmax(180px,1fr)', minWidth: 600, gap: 0, background: 'rgba(99,102,241,0.1)', padding: '8px 12px' } },
                     el('span', { style: { color: '#a5b4fc', fontSize: 10, fontWeight: 800 } }, 'PROTO'),
                     el('span', { style: { color: '#a5b4fc', fontSize: 10, fontWeight: 800 } }, 'SOURCE'),
                     el('span', { style: { color: '#a5b4fc', fontSize: 10, fontWeight: 800 } }, 'DESTINATION'),
@@ -3306,12 +3843,9 @@
                     var isFlagged = netFlagged.indexOf(pkt.id) !== -1;
                     var protoColors = { HTTPS: '#22c55e', HTTP: '#f97316', DNS: '#60a5fa', TCP: '#a78bfa', SMTP: '#f472b6', FTP: '#fbbf24', ICMP: '#94a3b8', NTP: '#94a3b8' };
                     var pColor = protoColors[pkt.proto] || '#94a3b8';
-                    return el('div', { key: pi, onClick: function() {
-                        if (netShowAnswer) return;
-                        var newFlagged = isFlagged ? netFlagged.filter(function(f) { return f !== pkt.id; }) : netFlagged.concat([pkt.id]);
-                        upd('netFlagged', newFlagged);
-                      },
-                      style: { display: 'grid', gridTemplateColumns: '70px 120px 120px 50px 1fr', gap: 0, padding: '8px 12px', cursor: netShowAnswer ? 'default' : 'pointer', background: netShowAnswer ? (pkt.suspicious ? 'rgba(239,68,68,0.06)' : 'rgba(34,197,94,0.03)') : isFlagged ? 'rgba(244,63,94,0.08)' : 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.04)', transition: 'background 0.2s' } },
+                    var packetLabel = pkt.proto + ' packet from ' + pkt.src + ' to ' + pkt.dst + ', port ' + pkt.port + ', payload ' + pkt.payload + '. ' + (netShowAnswer ? (pkt.suspicious ? 'Suspicious. ' : 'Expected. ') + pkt.reason : (isFlagged ? 'Flagged for investigation.' : 'Not flagged.'));
+                    return el('div', { key: pi, role: netShowAnswer ? 'group' : 'button', tabIndex: netShowAnswer ? -1 : 0, 'aria-pressed': netShowAnswer ? undefined : isFlagged, 'aria-label': packetLabel, onClick: function() { toggleNetPacket(pkt); }, onKeyDown: function(event) { if (!netShowAnswer && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); toggleNetPacket(pkt); } },
+                      style: { display: 'grid', gridTemplateColumns: '70px 120px 120px 50px minmax(180px,1fr)', minWidth: 600, gap: 0, padding: '8px 12px', cursor: netShowAnswer ? 'default' : 'pointer', background: netShowAnswer ? (pkt.suspicious ? 'rgba(239,68,68,0.06)' : 'rgba(34,197,94,0.03)') : isFlagged ? 'rgba(244,63,94,0.08)' : 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.04)', transition: 'background 0.2s' } },
                       el('div', { style: { display: 'flex', alignItems: 'center', gap: 4 } },
                         isFlagged && el('span', { style: { color: '#f43f5e', fontSize: 10 } }, '\u26A0\uFE0F'),
                         netShowAnswer && pkt.suspicious && el('span', { style: { color: '#ef4444', fontSize: 10 } }, '\uD83D\uDEA8'),
@@ -3330,7 +3864,7 @@
                 ),
                 // Submit / Results
                 netPackets.length > 0 && !netShowAnswer && el('div', { style: { marginTop: 14, textAlign: 'center' } },
-                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginBottom: 8 } }, 'Click packets you think are suspicious, then submit your analysis'),
+                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginBottom: 8 } }, 'When your evidence review is complete, submit your analysis.'),
                   el('button', { onClick: function() {
                       var correct = 0;
                       netPackets.forEach(function(pkt) {
@@ -3340,34 +3874,47 @@
                       var xp = Math.round(correct / netPackets.length * 10);
                       ctx.awardXP('cyberDefense', xp);
                       if (ctx.addToast) ctx.addToast('\uD83D\uDCE1 +' + xp + ' XP! ' + correct + '/' + netPackets.length + ' correct', 'success');
+                      if (announceToSR) announceToSR('Analysis complete. ' + correct + ' of ' + netPackets.length + ' classifications correct. Review false alerts and missed threats below.');
                       upd({ netShowAnswer: true, netScore: netScore + correct });
                     },
                     style: { padding: '10px 28px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: 'white', fontSize: 13, fontWeight: 700, cursor: 'pointer' } },
                     '\uD83D\uDD0D Submit Analysis (' + netFlagged.length + ' flagged)')
                 ),
-                netShowAnswer && el('div', { style: { marginTop: 14, padding: 14, borderRadius: 10, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)' } },
+                netShowAnswer && (function() {
+                  var correct = 0, falseAlerts = 0, missed = 0;
+                  netPackets.forEach(function(pkt) {
+                    var flagged = netFlagged.indexOf(pkt.id) !== -1;
+                    if (flagged === pkt.suspicious) correct++;
+                    else if (flagged) falseAlerts++;
+                    else missed++;
+                  });
+                  return el('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 14, padding: 14, borderRadius: 10, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)' } },
+                  el('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 } },
+                    el('span', { style: { padding: '4px 8px', borderRadius: 6, background: 'rgba(34,197,94,0.1)', color: '#86efac', fontSize: 11, fontWeight: 800 } }, correct + '/' + netPackets.length + ' correct'),
+                    el('span', { style: { padding: '4px 8px', borderRadius: 6, background: 'rgba(245,158,11,0.1)', color: '#fde68a', fontSize: 11, fontWeight: 800 } }, falseAlerts + ' false alert' + (falseAlerts === 1 ? '' : 's')),
+                    el('span', { style: { padding: '4px 8px', borderRadius: 6, background: 'rgba(239,68,68,0.1)', color: '#fca5a5', fontSize: 11, fontWeight: 800 } }, missed + ' missed threat' + (missed === 1 ? '' : 's'))),
                   el('div', { style: { color: '#818cf8', fontSize: 12, fontWeight: 800, marginBottom: 8 } }, '\uD83D\uDCA1 Network Security Tips'),
-                  ['HTTPS (port 443) encrypts data in transit \u2014 HTTP (port 80) sends everything in plaintext',
-                   'Unusual ports (4444, 6667) often indicate malware or botnet activity',
+                  ['HTTPS protects data in transit, but a malicious site can also use HTTPS',
+                   'Ports are clues, not verdicts; correlate the process, destination, volume, timing, and baseline',
                    'DNS tunneling hides data inside DNS queries to bypass firewalls',
-                   'Always verify email sender domains \u2014 spoofed emails enable BEC attacks',
-                   'FTP sends files unencrypted \u2014 use SFTP or SCP for sensitive data'
+                   'False alerts consume analyst time, while missed threats increase risk; detection rules balance both',
+                   'Plain FTP lacks transport encryption; organizations should use an approved protected transfer method'
                   ].map(function(tip, ti) {
                     return el('div', { key: ti, style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, padding: '3px 0', display: 'flex', gap: 6 } },
                       el('span', { style: { color: '#6366f1', fontSize: 8, marginTop: 4 } }, '\u25C6'), tip);
-                  })
-                ),
+                  }));
+                })(),
                 // Empty state
                 netPackets.length === 0 && el('div', { style: { textAlign: 'center', padding: '40px 20px' } },
                   el('div', { style: { fontSize: 48, marginBottom: 12 } }, '\uD83D\uDCE1'),
-                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13, fontWeight: 600 } }, 'Click "Start Capture" to intercept network packets'),
+                  el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13, fontWeight: 600 } }, 'Select "Start Capture" to intercept network packets'),
                   el('div', { style: { color: 'var(--allo-stem-text-soft, #475569)', fontSize: 11, marginTop: 4 } }, 'Analyze traffic and identify threats like a SOC analyst')
                 )
               ),
 
               // ======= SOCIAL ENGINEERING QUIZ =======
               cyberTab === 'social' && el('div', { style: { maxWidth: 640, margin: '0 auto' } },
-                el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 } },
+                el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, marginBottom: 16 } },
                   el('div', null,
                     el('div', { style: { color: '#a5b4fc', fontSize: 14, fontWeight: 900 } }, '\uD83C\uDFAD Social Engineering Defense'),
                     el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, marginTop: 2 } }, 'Scenario ' + (seQuizIdx + 1) + ' of ' + seScenarios.length)
@@ -3377,6 +3924,9 @@
                     el('div', { style: { padding: '4px 10px', borderRadius: 8, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', color: '#4ade80', fontSize: 11, fontWeight: 700 } }, '\u2705 ' + seQuizScore + '/' + seScenarios.length)
                   )
                 ),
+                el('div', { role: 'note', style: { marginBottom: 12, padding: '10px 12px', borderRadius: 9, background: 'rgba(96,165,250,0.08)', border: '1px solid rgba(96,165,250,0.24)', color: '#bfdbfe', fontSize: 11, lineHeight: 1.55 } },
+                  el('strong', { style: { color: '#93c5fd' } }, 'Pause \u2192 Verify \u2192 Report. '),
+                  'Resist urgency, verify through a known official channel, then report the attempt so others can be protected.'),
                 // Attack type badge
                 el('div', { style: { display: 'inline-block', padding: '4px 12px', borderRadius: 20, background: 'rgba(244,63,94,0.1)', border: '1px solid rgba(244,63,94,0.2)', color: '#fb7185', fontSize: 11, fontWeight: 700, marginBottom: 12 } },
                   '\uD83C\uDFAF Attack Type: ' + (seQuizAnswer ? activeSeScenario.type : '???')),
@@ -3413,7 +3963,7 @@
                   );
                 }),
                 // Lesson + Next
-                seQuizAnswer && el('div', { style: { marginTop: 16 } },
+                seQuizAnswer && el('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 16 } },
                   el('div', { style: { padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(245,158,11,0.08), rgba(234,179,8,0.05))', border: '1px solid rgba(245,158,11,0.2)' } },
                     el('div', { style: { color: '#fbbf24', fontSize: 12, fontWeight: 800, marginBottom: 4 } }, '\uD83D\uDCDA Did You Know?'),
                     el('div', { style: { color: '#fcd34d', fontSize: 12, lineHeight: 1.6 } }, activeSeScenario.lesson)
@@ -5706,11 +6256,13 @@
               cyberTab === 'defenseHunt' && (function() {
                 var iq = d.defenseHunt || { detection: 50, response: 50, training: 50, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
                 function setIQ(patch) { upd('defenseHunt', Object.assign({}, iq, patch)); }
-                var defense = iq.detection * 0.4 + iq.response * 0.35 + iq.training * 0.25;
+                // Transparent teaching model: defense-in-depth is constrained by
+                // the weakest of the three capabilities, not a hidden weighted score.
+                var weakestCapability = Math.min(iq.detection, iq.response, iq.training);
                 var state;
-                if (defense > 80) state = 'mitigated';
-                else if (defense > 55) state = 'detected';
-                else if (defense > 30) state = 'succeeded';
+                if (weakestCapability >= 75) state = 'mitigated';
+                else if (weakestCapability >= 50) state = 'detected';
+                else if (weakestCapability >= 25) state = 'succeeded';
                 else state = 'lost';
                 var sm = {
                   mitigated: { label: t('stem.cyberdefense.mitigated', '🛡️ Mitigated'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: t('stem.cyberdefense.attack_blocked_before_damage_strong_de', 'Attack blocked before damage. Strong defense.') },
@@ -5721,12 +6273,13 @@
                 return el('div', { style: { padding: 24 } },
                   el('div', { style: { padding: 16, background: 'rgba(15,23,42,0.6)', borderRadius: 10, border: '1px solid rgba(99,102,241,0.3)', color: '#e2e8f0' } },
                     el('h3', { style: { fontSize: 14, fontWeight: 800, color: '#a5b4fc', margin: '0 0 6px 0' } }, '🛡️ Defense metrics discovery'),
-                    el('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 12 } }, 'Adjust detection, response, training capability. Widget shows 4 discrete defense outcomes. No score, no reveal.'),
-                    el('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 12 } },
+                    el('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 6 } }, 'Change one capability at a time, log the outcome, and compare evidence.'),
+                    el('p', { role: 'note', style: { fontSize: 11, color: '#bfdbfe', lineHeight: 1.5, margin: '0 0 12px', padding: 9, borderRadius: 6, background: 'rgba(96,165,250,0.08)', border: '1px solid rgba(96,165,250,0.22)' } }, 'Sandbox assumption: the weakest capability sets the outcome band. This is a systems-thinking model, not a real organizational risk score.'),
+                    el('div', { role: 'status', 'aria-live': 'polite', 'aria-label': 'Modeled defense outcome: ' + String(sm.label).replace(/[^A-Za-z ()]/g, ''), style: { padding: 12, borderRadius: 8, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 12 } },
                       el('div', { style: { fontSize: 14, fontWeight: 900, color: sm.color } }, sm.label),
                       el('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, sm.desc)
                     ),
-                    el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 10 } },
+                    el('div', { className: 'cyberd-defense-controls', style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 10 } },
                       [{ k: 'detection', l: 'Detection (%)' },
                        { k: 'response', l: 'Response speed (%)' },
                        { k: 'training', l: 'Staff training (%)' }].map(function(s) {
@@ -5738,24 +6291,40 @@
                       })
                     ),
                     el('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 } },
-                      el('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ d: iq.detection, r: iq.response, t: iq.training, st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
-                      el('button', { onClick: function() { setIQ({ detection: 50, response: 50, training: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset')
+                      el('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ d: iq.detection, r: iq.response, t: iq.training, st: state }]).slice(-8) }); if (announceToSR) announceToSR('Observation logged: detection ' + iq.detection + ', response ' + iq.response + ', training ' + iq.training + ', outcome ' + state + '.'); }, style: { minHeight: 36, padding: '6px 12px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log observation'),
+                      el('button', { onClick: function() { setIQ({ detection: 50, response: 50, training: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { minHeight: 36, padding: '6px 12px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset experiment')
                     ),
-                    el('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.cyberdefense.hypothesis_which_is_the_strongest_defe', 'Hypothesis: Which is the strongest defense lever?'),
+                    (iq.log || []).length > 0 && el('div', { style: { marginBottom: 10, padding: 10, borderRadius: 6, background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(100,116,139,0.3)' } },
+                      el('div', { style: { color: '#a5b4fc', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, 'Observation log (' + iq.log.length + '/8)'),
+                      el('div', { role: 'list', 'aria-label': 'Logged defense observations' }, iq.log.map(function(row, idx) {
+                        return el('div', { key: idx, role: 'listitem', style: { display: 'grid', gridTemplateColumns: '28px repeat(3, 1fr) minmax(82px, 1.2fr)', gap: 5, padding: '4px 0', borderTop: idx ? '1px solid rgba(100,116,139,0.18)' : 'none', color: '#cbd5e1', fontSize: 10 } },
+                          el('span', null, '#' + (idx + 1)), el('span', null, 'D ' + row.d), el('span', null, 'R ' + row.r), el('span', null, 'T ' + row.t), el('strong', { style: { color: '#e2e8f0', textTransform: 'capitalize' } }, row.st));
+                      }))
+                    ),
+                    el('label', { htmlFor: 'dh-hypothesis', style: { display: 'block', color: '#cbd5e1', fontSize: 11, fontWeight: 800, marginBottom: 4 } }, 'Your hypothesis'),
+                    el('textarea', { id: 'dh-hypothesis', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.cyberdefense.hypothesis_which_is_the_strongest_defe', 'Predict what happens when one capability becomes the weakest link.'),
                       style: { width: '100%', minHeight: 50, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 8 }, rows: 2 }),
                     !iq.stuckRevealed && el('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, '🤔 Stuck — show open prompts'),
                     iq.stuckRevealed && el('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: '#cbd5e1', marginBottom: 8 } },
                       el('ul', { style: { margin: 0, paddingLeft: 18 } },
-                        el('li', null, 'Detection without response speed = breach. Investigate.'),
-                        el('li', null, 'Real SOCs weight training high. Why?'))),
+                        el('li', null, 'Hold two controls at 80, lower the third, and log where the outcome changes.'),
+                        el('li', null, 'Can high technology settings compensate for low staff training in this model? Should they?'))),
                     el('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
                       el('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain in own words'),
-                    iq.understood && el('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.cyberdefense.explain_how_detection_response_and_tra', 'Explain how detection, response, and training compose security posture.'),
-                      style: { width: '100%', minHeight: 60, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 3 }),
-                    el('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: '#94a3b8' } }, 'Design note: discrete 4-state defense marker; no security score; no reveal — by design.')
+                    iq.understood && el('div', { style: { marginTop: 8 } },
+                      el('label', { htmlFor: 'dh-explanation', style: { display: 'block', color: '#6ee7b7', fontSize: 11, fontWeight: 800, marginBottom: 4 } }, 'Explain the relationship in your own words'),
+                      el('textarea', { id: 'dh-explanation', value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.cyberdefense.explain_how_detection_response_and_tra', 'Use evidence from at least two logged observations.'),
+                        style: { width: '100%', minHeight: 60, padding: 6, background: '#1e293b', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 12, fontFamily: 'monospace' }, rows: 3 })),
+                    el('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: '#94a3b8' } }, 'Four transparent outcome bands based on the weakest capability; no hidden weighted score and no single “correct” slider setting.')
                   )
                 );
-              })()
+              })(),
+              activeCyberReflection.ready && el('section', { className: 'cyberd-reflection-card', role: 'region', 'aria-live': 'polite', 'aria-labelledby': 'cyberd-reflection-title' },
+                el('div', { className: 'cyberd-reflection-card__eyebrow' }, 'Reflect & transfer'),
+                el('div', { id: 'cyberd-reflection-title', className: 'cyberd-reflection-card__title' }, 'Make the lesson portable'),
+                el('div', { className: 'cyberd-reflection-card__prompt' }, activeCyberReflection.prompt),
+                el('div', { className: 'cyberd-reflection-card__next' }, el('strong', null, 'Next in real life: '), activeCyberReflection.next)
+              )
             )
           );
 

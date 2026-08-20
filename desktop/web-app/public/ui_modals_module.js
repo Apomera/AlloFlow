@@ -933,6 +933,14 @@ const StudentQuizOverlay = React.memo(({
   }, "-", bossStats.lastDamage)), /*#__PURE__*/React.createElement("div", {
     className: "w-full"
   }, /*#__PURE__*/React.createElement("div", {
+    className: "mb-2 flex flex-wrap items-center justify-center gap-2 text-xs font-bold"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "rounded-full bg-red-950 px-2 py-1 text-red-200"
+  }, "Phase: ", bossStats.phaseName || 'Watchful'), /*#__PURE__*/React.createElement("span", {
+    className: "rounded-full bg-yellow-950 px-2 py-1 text-yellow-200"
+  }, "Mastery streak: ", bossStats.masteryStreak || 0), bossStats.lastComboBonus > 0 && /*#__PURE__*/React.createElement("span", {
+    className: "rounded-full bg-purple-950 px-2 py-1 text-purple-200"
+  }, "⚡ Combo +", bossStats.lastComboBonus)), /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between text-xs font-bold text-slate-300 mb-1 uppercase tracking-wider"
   }, /*#__PURE__*/React.createElement("span", null, bossStats.name || "Boss", " HP"), /*#__PURE__*/React.createElement("span", null, Math.round(bossStats.currentHP), " / ", bossStats.maxHP)), /*#__PURE__*/React.createElement("div", {
     className: "w-full h-6 bg-slate-800 rounded-full overflow-hidden border-2 border-slate-700 relative shadow-inner"
@@ -967,7 +975,19 @@ const StudentQuizOverlay = React.memo(({
     className: "text-orange-400 text-xs font-bold mt-1 animate-pulse motion-reduce:animate-none text-center"
   }, t('quiz.boss.counter_attack_msg', {
     damage: bossStats.lastClassDamage
-  })))), /*#__PURE__*/React.createElement("div", {
+  })), bossStats.gmEvent && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    "aria-live": "polite",
+    className: "mt-2 rounded-lg border border-amber-400/40 bg-amber-950/70 p-2 text-center text-xs font-bold text-amber-100"
+  }, "🎲 Teacher GM: ", bossStats.gmEvent), phase === 'revealed' && bossStats.roundFeedback && /*#__PURE__*/React.createElement("details", {
+    className: "mt-2 rounded-lg bg-slate-800 p-2 text-left text-xs text-slate-200"
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "cursor-pointer font-bold"
+  }, "Round concept recap · ", bossStats.roundFeedback.accuracy, "% accuracy"), bossStats.roundFeedback.explanation ? /*#__PURE__*/React.createElement("p", {
+    className: "mt-1"
+  }, bossStats.roundFeedback.explanation) : /*#__PURE__*/React.createElement("p", {
+    className: "mt-1"
+  }, "Discuss which evidence made the strongest answer work.")))), /*#__PURE__*/React.createElement("div", {
     className: "bg-white/10 backdrop-blur-md p-5 md:p-8 rounded-3xl border border-white/10 shadow-2xl max-w-3xl w-full"
   }, currentQuestion?.imageUrl && /*#__PURE__*/React.createElement("img", {
     src: currentQuestion.imageUrl,
@@ -1169,9 +1189,9 @@ const StudentQuizOverlay = React.memo(({
   }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "uppercase tracking-widest text-xs opacity-90 mb-1 font-medium"
   }, t('quiz.result_label')), mode === 'boss-battle' ? isCorrect ? t('quiz.status.result_hit', {
-    damage: 10
+    damage: bossStats?.lastDamage || 0
   }) : t('quiz.status.result_miss', {
-    hp: 5
+    hp: bossStats?.lastClassDamage || 0
   }) : mode === 'team-showdown' ? isCorrect ? t('quiz.status.result_correct') : t('quiz.status.result_incorrect') : isCorrect ? t('quiz.status.result_correct') : t('quiz.status.result_incorrect'))), currentQuestion.factCheck && /*#__PURE__*/React.createElement("div", {
     className: "bg-white/95 backdrop-blur-xl text-slate-800 p-6 rounded-3xl border border-white/20 shadow-2xl w-full text-left relative overflow-hidden z-20"
   }, /*#__PURE__*/React.createElement("div", {
@@ -1483,7 +1503,9 @@ const RoleSelectionModal = React.memo(({
     size: 32
   })), /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-slate-700 group-hover:text-orange-700"
-  }, t('roles.parent')), lastTimeBadge('parent')), /*#__PURE__*/React.createElement("button", {
+  }, t('roles.parent')), /*#__PURE__*/React.createElement("span", {
+    className: "text-[11px] leading-tight text-slate-500 text-center max-w-[13rem]"
+  }, t('parent_mode.role_description') || 'Support learning at home with family-friendly tools.'), lastTimeBadge('parent')), /*#__PURE__*/React.createElement("button", {
     onClick: () => handleRoleClick('independent'),
     className: "flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-cyan-400 hover:bg-cyan-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-cyan-500 focus:ring-offset-2 focus:outline-none",
     "data-help-key": "role_independent"

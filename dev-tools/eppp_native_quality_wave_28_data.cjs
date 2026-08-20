@@ -1,0 +1,301 @@
+'use strict';
+
+const reviewedAt = '2026-08-20';
+const reviewWave = 'eppp-native-quality-wave-28';
+const baselineMetrics = Object.freeze({
+  distractor: { totalItems: 1500, warningOnly: true, forbiddenAggregateChoices: 0, uniqueKeyStemLexicalLeakageCandidates: 52, asymmetricExtremeDistractorCandidates: 91, advancedDirectRecallCandidates: 4, semanticConceptDuplicatePairs: 69, semanticConceptDuplicateClusters: 42, editorialAnchorsWithActiveWarnings: 1, editorialAnchorsWithNoCurrentWarning: 9, priorityDocketItems: 20 },
+  feedback: { totalItems: 1500, totalIncorrectOptions: 4500, itemsWithWarnings: 594, incorrectOptionsWithWarnings: 1674, insufficientDetailOptions: 627, genericTemplateOptions: 987, choiceRestatementOptions: 396, fullKeyEchoOptions: 240, priorityDocketItems: 100 },
+});
+
+const revisions = [
+  {
+    id: 'eppp-v3-biological-016', expectedAnswerIndex: 1, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: "The thalamus is often described as the brain's:",
+    prompt: 'A patient can detect that a tone occurred but has difficulty integrating auditory input for conscious cortical analysis after a focal subcortical lesion. Which disrupted function best fits this finding?',
+    choices: ['Generation of emotional valence by limbic nuclei before sensory registration', 'Routing and modulating sensory signals on their way to relevant higher brain regions', 'Initiation of voluntary movement through primary motor cortex output', 'Long-term stabilization of episodic memories within medial temporal structures'],
+    rationale: 'The thalamus routes and modulates most sensory information before it reaches the relevant cortical regions. Different nuclei participate in modality-specific pathways, while thalamic networks also contribute to attention, arousal, and coordinated cortical processing.',
+    feedback: {
+      0: 'Limbic systems contribute to emotional appraisal, but the described deficit concerns transfer and integration of sensory input for cortical processing. Emotional valence is not the thalamus\'s defining role in this case.',
+      2: 'Primary motor cortex helps generate voluntary motor commands. A subcortical sensory-integration problem points to relay and modulation of incoming information rather than initiation of movement.',
+      3: 'Medial temporal structures are central to forming and consolidating episodic memories. The vignette instead describes impaired sensory transmission before conscious cortical analysis occurs.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'biological-infer-thalamic-sensory-relay-dysfunction', distractorDesign: ['limbic-appraisal-confusion', 'motor-output-confusion', 'memory-consolidation-confusion'],
+  },
+  {
+    id: 'eppp-v3-biological-029', expectedAnswerIndex: 0, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: 'The fight-or-flight response is primarily mediated by which division of the nervous system?',
+    prompt: 'Seconds after narrowly avoiding a collision, a driver has a rapid pulse, dilated pupils, reduced digestive activity, and sweating. Which pathway most directly organized this response?',
+    choices: ['Sympathetic autonomic activation coupled with adrenal medullary signaling', 'Enteric regulation confined to local digestive reflexes and intestinal motility', 'Somatic motor activation directed toward voluntary skeletal-muscle contraction', 'Parasympathetic autonomic activity supporting restoration and energy conservation'],
+    rationale: 'Acute threat activates sympathetic autonomic pathways and the adrenal medulla, producing coordinated cardiovascular, pupillary, metabolic, and sudomotor changes. Somatic movement can occur concurrently, but it does not organize the broad visceral response described.',
+    feedback: {
+      1: 'The enteric system regulates gastrointestinal function and communicates with autonomic pathways. It does not coordinate the widespread cardiovascular, pupillary, and sweating response elicited by acute threat.',
+      2: 'Somatic motor pathways control voluntary skeletal muscles and may support evasive action. They do not account for the coordinated changes in heart rate, pupils, digestion, and sweating.',
+      3: 'Parasympathetic activity generally supports recovery, digestion, and energy conservation after a stressor. The acute mobilization pattern in the vignette reflects the complementary autonomic branch.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'biological-apply-autonomic-pathways-to-acute-threat-response', distractorDesign: ['enteric-local-reflex-confusion', 'somatic-response-confusion', 'parasympathetic-recovery-confusion'],
+  },
+  {
+    id: 'eppp-v3-biological-030', expectedAnswerIndex: 1, expectedDifficulty: 'advanced', targetDifficulty: 'advanced',
+    expectedPrompt: "Which structure connects the hippocampus to the hypothalamus and is damaged in Korsakoff's syndrome?",
+    prompt: 'A patient with prolonged thiamine deficiency shows severe anterograde amnesia and confabulation. Imaging indicates disruption of the memory circuit carrying hippocampal output toward diencephalic structures. Which anatomical pair is most implicated?',
+    choices: ['Corpus callosum and caudate nucleus', 'Fornix and mammillary bodies', 'Anterior commissure and putamen', 'Arcuate fasciculus and inferior colliculus'],
+    rationale: 'The fornix is a major hippocampal output pathway that projects toward the mammillary bodies within the Papez circuit. Thiamine-related Korsakoff pathology commonly affects diencephalic memory structures and disrupts this circuit, contributing to profound memory impairment.',
+    feedback: {
+      0: 'The corpus callosum connects the cerebral hemispheres, and the caudate participates in corticostriatal functions. This pair does not form the hippocampal-diencephalic memory pathway implicated by the syndrome.',
+      2: 'The anterior commissure carries interhemispheric fibers, while the putamen contributes to basal-ganglia motor circuits. Neither identifies the principal route from hippocampus toward diencephalic memory structures.',
+      3: 'The arcuate fasciculus supports language-network connectivity, and the inferior colliculus participates in auditory processing. These structures do not explain the characteristic amnestic circuit disruption.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'biological-localize-korsakoff-memory-circuit-disruption', distractorDesign: ['interhemispheric-striatal-pair', 'commissural-motor-pair', 'language-auditory-pair'],
+  },
+  {
+    id: 'eppp-v3-cognitive-affective-044', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: "Loftus's research on eyewitness testimony showed that:",
+    prompt: 'After viewing the same minor crash, witnesses are asked either how fast the cars “hit” or “smashed into” each other. A week later, the second group reports higher speeds and more nonexistent broken glass. What process best explains the difference?',
+    choices: ['A durable increase in visual acuity caused by emotionally vivid wording', 'Retrieval of an unchanged memory through a more efficient semantic cue', 'Integration of misleading information into subsequent reconstruction', 'Transfer of a practiced motor response from the interview to the report'],
+    rationale: 'Leading wording can supply misleading information after an event that becomes incorporated into subsequent memory reconstruction. The effect demonstrates that eyewitness recall is reconstructive and can be altered by material encountered after the original experience.',
+    feedback: {
+      0: 'Emotionally vivid language may affect arousal, but it does not improve visual input that was encoded earlier. Reports of nonexistent details indicate altered reconstruction rather than increased perceptual acuity.',
+      1: 'A retrieval cue can make stored information easier to access, but that account predicts access to existing details. It does not explain systematic reports of an object that was absent.',
+      3: 'Motor-response transfer concerns learned actions across tasks. The outcome here is a change in reported event content following suggestive language, which implicates reconstructive memory processes.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'cognitive-affective-infer-misinformation-effect-from-eyewitness-data', distractorDesign: ['arousal-improves-acuity', 'neutral-retrieval-cue', 'motor-transfer-confusion'],
+  },
+  {
+    id: 'eppp-v3-cognitive-affective-043', expectedAnswerIndex: 1, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Change blindness demonstrates that:',
+    prompt: 'During a brief visual obstruction, the person asking a pedestrian for directions is replaced by another person wearing different clothing. The pedestrian continues the conversation and reports noticing no substitution. Which account best fits?',
+    choices: ['The replacement was encoded accurately but became inaccessible because procedural memory interfered', 'Attention failed to preserve and compare the changed scene representation across the interruption', 'The pedestrian perceived the substitution but suppressed the report through social conformity', 'Sensory adaptation reduced receptor responsiveness because the second person remained in view too long'],
+    rationale: 'Change detection requires attention to relevant details and comparison across successive scene representations. A visual interruption can disrupt that comparison, allowing even substantial changes to go unnoticed despite a strong subjective impression of seeing the scene fully.',
+    feedback: {
+      0: 'Procedural memory supports skills and habits rather than detailed comparison of two visual scenes. The unnoticed substitution is better explained by limits in attention and scene representation.',
+      2: 'Social conformity would require awareness of the change followed by altered public reporting. The pedestrian reports no detection, matching an attentional failure rather than deliberate suppression.',
+      3: 'Sensory adaptation follows sustained stimulation and reduces responsiveness to an unchanging input. A person substitution during an obstruction instead tests whether scene details were attended and compared.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'cognitive-affective-explain-change-blindness-through-attentional-limits', distractorDesign: ['procedural-interference', 'conformity-suppression', 'sensory-adaptation-confusion'],
+  },
+  {
+    id: 'eppp-v3-cognitive-affective-019', expectedAnswerIndex: 3, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Cognitive load theory identifies three types of cognitive load:',
+    prompt: 'An instructor sequences a complex procedure into manageable elements, removes decorative animation, and prompts learners to organize steps into a reusable mental model. Which interpretation best maps these choices to cognitive load theory?',
+    choices: ['They increase sensory registration, suppress rehearsal, and prevent transfer to long-term memory', 'They balance visual, auditory, and motor learning styles for each learner', 'They lower task difficulty, eliminate working-memory limits, and make prior knowledge irrelevant', 'They manage intrinsic complexity, reduce extraneous processing, and support schema construction'],
+    rationale: 'Sequencing can manage intrinsic complexity, removing irrelevant animation reduces extraneous processing, and structured integration can support schema construction. Cognitive load theory emphasizes limited working-memory resources and how instructional design allocates them during learning.',
+    feedback: {
+      0: 'The design aims to preserve useful processing rather than suppress rehearsal or long-term transfer. The three instructional choices concern sources and allocation of working-memory demand.',
+      1: 'Cognitive load theory does not require matching instruction to visual, auditory, or motor learning-style categories. It analyzes task complexity, avoidable design burden, and learning-related processing.',
+      2: 'Segmenting can make complexity manageable, but it does not erase working-memory limits or render prior knowledge irrelevant. Existing schemas strongly affect the intrinsic demand a learner experiences.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'cognitive-affective-map-instructional-design-to-cognitive-load-components', distractorDesign: ['memory-suppression-account', 'learning-styles-confusion', 'working-memory-elimination-claim'],
+  },
+  {
+    id: 'eppp-v3-social-cultural-007', expectedAnswerIndex: 1, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Attribution theory distinguishes between which three dimensions?',
+    prompt: 'After failing an exam, a student says, “I lack ability in this subject, that will not change, and there is little I can do about it.” How would Weiner’s framework classify this attribution?',
+    choices: ['External, unstable, and controllable', 'Internal, stable, and uncontrollable', 'External, stable, and uncontrollable', 'Internal, unstable, and controllable'],
+    rationale: 'Attributing failure to one’s ability locates the cause within the person, treats it as enduring, and frames it as difficult to control. This pattern can lower expectancy for future success and evoke different emotions than effort-based attribution.',
+    feedback: {
+      0: 'An external attribution would place the cause in the situation, while instability would imply likely change. The student instead identifies a personal and enduring limitation.',
+      2: 'The statement does frame the cause as stable and difficult to control, but the proposed cause is personal ability rather than an environmental condition.',
+      3: 'Effort is often treated as a more changeable and controllable internal cause. The student describes ability as enduring and resistant to personal influence.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'social-cultural-classify-achievement-attribution-dimensions', distractorDesign: ['external-unstable-misclassification', 'external-locus-misclassification', 'effort-attribution-confusion'],
+  },
+  {
+    id: 'eppp-v3-social-cultural-009', expectedAnswerIndex: 3, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: 'According to the contact hypothesis, which factor is LEAST important for reducing prejudice?',
+    prompt: 'A school’s intergroup program currently places one group in subordinate roles, has teams compete for separate rewards, and receives little staff endorsement. Which redesign best reflects the conditions proposed to improve intergroup contact?',
+    choices: ['Increase unstructured exposure while retaining the existing status hierarchy and reward system', 'Teach factual information about each group before returning students to separate competitive tasks', 'Assign independent tasks to mixed-group members and compare their individual performance publicly', 'Establish status parity, shared goals, cooperative dependence, and visible institutional support'],
+    rationale: 'Constructive contact is more likely when groups have status parity within the situation, pursue common goals, cooperate, and receive institutional support. Mere exposure can fail or worsen tension when status inequality and competition remain intact.',
+    feedback: {
+      0: 'Exposure by itself does not correct unequal status or competing incentives. Contact under adverse conditions can reinforce existing stereotypes and conflict rather than reduce them.',
+      1: 'Information can supplement a program, but returning students to separation and competition leaves the core contact conditions unaddressed. The theory emphasizes how groups interact during the encounter.',
+      2: 'Independent tasks and public comparison preserve competition among participants. Cooperative interdependence requires members to contribute toward goals they can reach together.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'social-cultural-design-contact-hypothesis-intervention', distractorDesign: ['mere-exposure-under-inequality', 'education-with-separation', 'public-individual-competition'],
+  },
+  {
+    id: 'eppp-v3-social-cultural-005', expectedAnswerIndex: 3, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: 'According to the elaboration likelihood model (Petty & Cacioppo), attitude change through the central route occurs when:',
+    prompt: 'A health agency is addressing an audience that cares deeply about the issue and has enough time and background knowledge to evaluate a proposal. Which message strategy is most likely to produce durable attitude change?',
+    choices: ['Pair the proposal with a well-liked celebrity while keeping its evidence brief', 'Repeat a memorable slogan across many settings to increase familiarity', 'Use attractive imagery and an upbeat soundtrack to create favorable associations', 'Present strong relevant arguments and provide an opportunity for careful scrutiny'],
+    rationale: 'When recipients are motivated and able to think carefully, strong issue-relevant arguments encourage central-route processing. Attitudes formed through such scrutiny tend to persist and predict behavior better than attitudes based mainly on peripheral cues.',
+    feedback: {
+      0: 'A liked spokesperson can serve as a peripheral cue, especially when recipients devote little thought to argument quality. It is less suited to the motivated, capable audience described.',
+      1: 'Repetition can increase familiarity and sometimes liking, but it does not capitalize on the audience’s capacity to evaluate evidence. Durable central-route change depends on argument scrutiny.',
+      2: 'Attractive imagery and music can shape affect through peripheral processes. These cues do not provide the substantive basis expected to sustain attitudes after careful evaluation.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'social-cultural-select-central-route-persuasion-strategy', distractorDesign: ['celebrity-peripheral-cue', 'mere-repetition-cue', 'affective-imagery-cue'],
+  },
+  {
+    id: 'eppp-v3-lifespan-019', expectedAnswerIndex: 0, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: "Ainsworth's Strange Situation procedure was designed to assess:",
+    prompt: 'In a structured separation-and-reunion observation, a 15-month-old becomes distressed when the caregiver leaves, seeks contact at reunion, is readily soothed, and then resumes exploration. Which attachment pattern is most consistent with these observations?',
+    choices: ['Secure attachment', 'Avoidant attachment', 'Resistant or ambivalent attachment', 'Disorganized attachment'],
+    rationale: 'A securely attached infant commonly uses the caregiver as a base for exploration, shows separation distress, seeks contact at reunion, and is comforted sufficiently to resume exploration. Classification relies especially on reunion behavior across the structured episodes.',
+    feedback: {
+      1: 'Avoidant behavior is marked by limited contact seeking and active avoidance or muted response at reunion. This infant approaches the caregiver and uses contact effectively for soothing.',
+      2: 'Resistant behavior often combines intense contact seeking with anger, resistance, or difficulty settling. The child here is readily comforted and returns to exploration.',
+      3: 'Disorganized behavior involves contradictory, disoriented, apprehensive, or poorly organized reunion responses. The described sequence is coherent and uses the caregiver effectively for regulation.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'lifespan-classify-secure-attachment-from-reunion-behavior', distractorDesign: ['avoidant-reunion-pattern', 'resistant-reunion-pattern', 'disorganized-reunion-pattern'],
+  },
+  {
+    id: 'eppp-v3-lifespan-046', expectedAnswerIndex: 3, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Neuronal migration occurs primarily during which period of prenatal development?',
+    prompt: 'Prenatal imaging suggests that newly generated neurons did not reach their expected cortical layers, producing a malformation of cortical organization. During which developmental interval is the implicated migration process most active?',
+    choices: ['During the final month, after the basic cortical layers have formed', 'During postnatal infancy, as sensory experience creates the initial cortical layers', 'During the first two weeks, before formation of the neural tube', 'During approximately the third through fifth months of gestation'],
+    rationale: 'Cortical neurons are generated near the ventricles and migrate toward their eventual positions, with substantial migration occurring during roughly the third through fifth gestational months. Disruption can produce cortical malformations associated with later neurological impairment.',
+    feedback: {
+      0: 'Late gestation includes continued growth, differentiation, and connectivity, but the major movement of newly generated neurons into foundational cortical layers begins considerably earlier.',
+      1: 'Postnatal experience refines synapses and cortical organization, yet the initial migration establishing cortical layers is predominantly prenatal. The malformation described reflects that earlier process.',
+      2: 'The first two weeks precede neural-tube formation and the later production of many cortical neurons. Layer-directed migration cannot be centered before those precursor structures exist.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'lifespan-link-cortical-malformation-to-prenatal-migration-period', distractorDesign: ['late-gestation-timing', 'postnatal-refinement-confusion', 'pre-neural-tube-timing'],
+  },
+  {
+    id: 'eppp-v3-lifespan-006', expectedAnswerIndex: 3, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: "Erikson's stage of 'generativity vs. stagnation' typically occurs during:",
+    prompt: 'A 48-year-old derives meaning from mentoring junior colleagues, supporting community projects, and developing work that will benefit younger people. Which Eriksonian conflict is most directly reflected?',
+    choices: ['Integrity versus despair', 'Identity versus role confusion', 'Intimacy versus isolation', 'Generativity versus stagnation'],
+    rationale: 'Generativity involves investing in people, work, and contributions that extend beyond the self and support succeeding generations. Erikson associated this conflict with middle adulthood, although meaningful generative activity is not confined to rigid age boundaries.',
+    feedback: {
+      0: 'The later-life conflict centers on reviewing one’s life and developing acceptance or regret. The vignette instead focuses on active contribution to future generations.',
+      1: 'The adolescent conflict emphasizes forming a coherent sense of self and direction. This adult’s pattern concerns contribution to others rather than identity formation.',
+      2: 'The early-adult conflict concerns forming close reciprocal relationships. Mentoring and community contribution more directly express investment in people and work that will endure.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'lifespan-identify-generativity-from-middle-adult-contributions', distractorDesign: ['life-review-conflict', 'identity-formation-conflict', 'intimacy-conflict'],
+  },
+  {
+    id: 'eppp-v3-assessment-012', expectedAnswerIndex: 1, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Sensitivity of a diagnostic test refers to:',
+    prompt: 'Among 200 patients independently confirmed to have a disorder, a screening test returns positive results for 180 and negative results for 20. Which performance index is represented by 180 divided by 200?',
+    choices: ['Positive predictive value', 'Sensitivity', 'Specificity', 'Test-retest reliability'],
+    rationale: 'Sensitivity is the proportion of people with the condition who receive a positive result, calculated as true positives divided by true positives plus false negatives. Here, 180 of 200 confirmed cases test positive, yielding 90 percent sensitivity.',
+    feedback: {
+      0: 'Predictive value begins with people who tested positive and asks what proportion truly have the condition. The denominator here instead contains the independently confirmed cases.',
+      2: 'Correct-negative classification is calculated among people who do not have the condition. No disease-free comparison group is described in this calculation.',
+      3: 'Temporal reliability assesses score consistency across administrations. The numerator and denominator here summarize classification against an independent diagnostic standard, not stability over time.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'assessment-calculate-sensitivity-from-classification-counts', distractorDesign: ['predictive-value-denominator-confusion', 'specificity-confusion', 'reliability-confusion'],
+  },
+  {
+    id: 'eppp-v3-assessment-044', expectedAnswerIndex: 1, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: 'A test with a reliability coefficient of .60 is generally considered:',
+    prompt: 'A new measure has an estimated reliability of .60. A team wants to use it both for broad group-level research and for high-stakes decisions about individual patients. Which recommendation is most defensible?',
+    choices: ['Treat the coefficient as excellent because reliability requirements do not vary by use', 'Reserve it for tentative aggregate studies and improve precision before consequential person-level decisions', 'Discard the measure for any purpose because coefficients below 1.00 contain no usable information', 'Use it for individual decisions because validity evidence makes score consistency unnecessary'],
+    rationale: 'A coefficient of .60 indicates substantial measurement error and is generally inadequate for high-stakes individual decisions. Limited group-level research use may sometimes be considered, depending on purpose and other evidence, while development should improve score precision.',
+    feedback: {
+      0: 'Required precision depends on the interpretation and consequences of use. A moderate coefficient cannot be called excellent merely because the same measure is used in different contexts.',
+      2: 'Imperfect reliability does not make scores devoid of information. The relevant judgment weighs precision against the proposed use, with stricter expectations for consequential individual decisions.',
+      3: 'Validity and reliability address related but distinct evidence, and unreliable scores constrain supported interpretation. Consequential individual decisions require adequate precision even when other validity evidence exists.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'assessment-evaluate-reliability-relative-to-score-use', distractorDesign: ['context-free-excellence', 'perfect-reliability-demand', 'validity-replaces-reliability'],
+  },
+  {
+    id: 'eppp-v3-assessment-005', expectedAnswerIndex: 2, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: 'The MCMI-IV (Millon Clinical Multiaxial Inventory) is specifically designed to align with:',
+    prompt: 'An adult outpatient is being evaluated for enduring personality pathology and co-occurring symptom patterns. The psychologist wants an inventory developed for treatment settings and organized around DSM-related personality constructs. Which measure best fits that purpose?',
+    choices: ['A neuropsychological battery emphasizing acquired cognitive impairment', 'A normal-range inventory organized primarily around broad five-factor traits', 'The fourth-edition Millon Clinical Multiaxial Inventory, interpreted with attention to norms and base-rate scores', 'A developmental scale designed to compare childhood milestones with age expectations'],
+    rationale: 'This Millon inventory was developed for treatment populations and assesses personality patterns alongside symptom syndromes using constructs aligned with DSM personality pathology. Interpretation requires appropriate referral questions, relevant base rates, corroborating information, and awareness of response style.',
+    feedback: {
+      0: 'A neuropsychological battery addresses cognitive abilities and brain-behavior functioning. It would not directly meet a referral centered on enduring personality patterns and related clinical syndromes.',
+      1: 'A broad five-factor inventory can describe normal-range personality traits, but it is not specifically organized to assess DSM-related personality pathology in a clinical population.',
+      3: 'Developmental milestone scales assess age-linked acquisition of skills, commonly in children. They do not address adult personality pathology or co-occurring clinical syndrome patterns.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'assessment-select-mcmi-for-clinical-personality-referral', distractorDesign: ['neuropsych-referral-mismatch', 'normal-trait-inventory-mismatch', 'developmental-scale-mismatch'],
+  },
+  {
+    id: 'eppp-v3-intervention-017', expectedAnswerIndex: 3, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Which therapeutic approach explicitly addresses ruptures in the therapeutic alliance?',
+    prompt: 'After a therapist challenges an avoidance pattern, the client becomes quiet, gives minimal answers, and says therapy feels controlling. The therapist names the tension, explores each person’s contribution, and collaboratively renegotiates the task. Which framework most directly guides this response?',
+    choices: ['Rational emotive disputation directed at the client’s irrational demand', 'Classical analytic neutrality while waiting for transference meaning to emerge', 'Behavioral contingency management focused on reinforcing longer verbal responses', 'Safran and Muran’s alliance-rupture identification and repair approach'],
+    rationale: 'Alliance-focused rupture work identifies withdrawal and confrontation markers, invites metacommunication about the therapeutic relationship, and explores the interaction collaboratively. Repair aims to restore negotiation of goals, tasks, and bond while deepening understanding of relational patterns.',
+    feedback: {
+      0: 'Disputing an irrational belief may be useful in another context, but it does not directly address the emerging strain between client and therapist or their shared contribution to it.',
+      1: 'Analytic exploration can examine relational meaning, yet remaining neutral and waiting would miss the active collaborative repair process described. The therapist explicitly addresses the present alliance event.',
+      2: 'Reinforcing verbal participation might increase response length but would not clarify why the client experiences the interaction as controlling. The intervention targets relationship process rather than response frequency.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'intervention-recognize-alliance-rupture-repair-process', distractorDesign: ['belief-disputation-substitution', 'passive-neutrality-substitution', 'verbal-contingency-substitution'],
+  },
+  {
+    id: 'eppp-v3-intervention-075', expectedAnswerIndex: 0, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Acceptance and Commitment Therapy (ACT) is classified as a:',
+    prompt: 'A client avoids valued relationships whenever anxiety appears and treats the thought “I will be rejected” as literal fact. Which intervention plan is most characteristic of Acceptance and Commitment Therapy?',
+    choices: ['Practice defusion and willingness while taking small actions linked to chosen interpersonal values', 'Interpret the thought primarily as a disguised expression of an unconscious developmental conflict', 'Reduce anxiety through repeated exposure while excluding discussion of personal values', 'Replace the thought with a more rational statement and evaluate success by symptom elimination'],
+    rationale: 'ACT seeks psychological flexibility by changing how a person relates to thoughts and feelings while supporting behavior guided by chosen values. Defusion, acceptance, present-moment awareness, and committed action can reduce experiential avoidance even when discomfort remains.',
+    feedback: {
+      1: 'Psychodynamic interpretation may explore unconscious relational patterns, but the vignette highlights fusion, experiential avoidance, values, and committed behavior—the functional targets emphasized by ACT.',
+      2: 'Exposure can be compatible with ACT, but excluding values and framing the work around anxiety reduction misses its central aim of flexible, values-guided action in the presence of discomfort.',
+      3: 'Cognitive restructuring evaluates and modifies thought content, and symptom reduction may be a goal. ACT more often changes the thought’s behavioral influence while orienting action toward values.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'intervention-select-act-for-fusion-and-experiential-avoidance', distractorDesign: ['psychodynamic-interpretation', 'values-free-exposure', 'restructuring-symptom-control'],
+  },
+  {
+    id: 'eppp-v3-intervention-012', expectedAnswerIndex: 1, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Which factor has research consistently shown to be the LEAST important in therapy outcome?',
+    prompt: 'A clinic claims that its branded technique determines nearly the entire outcome of therapy, so alliance quality, therapist effects, client characteristics, and context need little monitoring. Which critique best reflects the broader outcome evidence?',
+    choices: ['Technique has no relevance, so treatment selection and competent delivery can be omitted', 'Specific methods can matter, but outcomes also vary meaningfully with alliance, therapist, client, and setting-related influences', 'Client and therapist factors become important mainly when the selected technique lacks empirical support', 'Alliance ratings directly establish that the relationship caused improvement in each individual case'],
+    rationale: 'Treatment methods can contribute to outcome, but technique does not explain the full variation observed across clients and therapists. Alliance, therapist effects, client characteristics, expectations, context, and competent adaptation remain relevant to monitoring and clinical judgment.',
+    feedback: {
+      0: 'The broader evidence does not make treatment methods irrelevant. Intervention selection, competence, fit, and responsiveness still matter even when technique is not treated as the dominant source of outcome variation.',
+      2: 'Client, therapist, alliance, and contextual influences remain relevant across supported treatments. Their importance is not restricted to situations in which a method lacks empirical support.',
+      3: 'Alliance ratings are associated with outcome, but an association does not establish the causal contribution in every case. Repeated measurement and clinical context still require careful interpretation.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'intervention-evaluate-overclaim-about-technique-specific-effects', distractorDesign: ['technique-irrelevance-overcorrection', 'factors-only-for-unsupported-treatment', 'alliance-causation-overclaim'],
+  },
+  {
+    id: 'eppp-v3-research-007', expectedAnswerIndex: 3, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Chi-square tests are appropriate for:',
+    prompt: 'Researchers classify participants by preferred treatment format (individual, group, or online) and by whether they completed treatment (yes or no). Which analysis evaluates whether the two categorical variables are associated?',
+    choices: ['Multiple regression predicting a continuous criterion from several predictors', 'Pearson correlation estimating a linear relation between two quantitative variables', 'Analysis of variance comparing mean scores across treatment-format groups', 'Chi-square analysis of independence applied to the frequency table'],
+    rationale: 'A chi-square test of independence evaluates whether observed cell frequencies for two categorical variables differ from frequencies expected under independence. The treatment-format and completion categories form a contingency table suited to that analysis.',
+    feedback: {
+      0: 'Multiple regression ordinarily predicts a quantitative outcome and requires a model appropriate to that scale. Completion here is categorical, and the question concerns association in a frequency table.',
+      1: 'Pearson correlation evaluates a linear association between quantitative variables. The named categories do not supply the interval-level scores required for that interpretation.',
+      2: 'Analysis of variance compares means on a quantitative dependent variable across groups. The outcome here is a count within completion categories rather than a continuous score.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'research-select-chi-square-for-two-categorical-variables', distractorDesign: ['continuous-regression-mismatch', 'quantitative-correlation-mismatch', 'mean-comparison-mismatch'],
+  },
+  {
+    id: 'eppp-v3-research-008', expectedAnswerIndex: 1, expectedDifficulty: 'advanced', targetDifficulty: 'advanced',
+    expectedPrompt: 'Criterion contamination is a threat when:',
+    prompt: 'Supervisors receive applicants’ selection-test scores before completing later performance ratings. The test then appears more strongly related to performance than it does when ratings are made by supervisors who were masked to the scores. What threat is most directly illustrated?',
+    choices: ['Restriction of range caused by evaluating applicants whose predictor scores span a broad distribution', 'Criterion contamination caused by predictor knowledge influencing the criterion measure', 'Low statistical power caused by increasing the number of independently rated employees', 'History effects caused by random assignment of applicants to selection conditions'],
+    rationale: 'Criterion contamination occurs when criterion measurement is influenced by information about the predictor or other construct-irrelevant factors. Supervisors’ knowledge of test scores can bias performance ratings and inflate the apparent predictor-criterion relationship.',
+    feedback: {
+      0: 'Restriction of range arises when the observed predictor or criterion values have limited variability, often after selection. The vignette instead manipulates whether raters know predictor scores.',
+      2: 'Larger samples and independent ratings generally improve precision rather than create low power. The change in association tracks access to predictor information, indicating biased criterion measurement.',
+      3: 'History effects involve outside events occurring between observations, and random assignment can help balance such influences. Neither explains why score-informed supervisors produce stronger validity estimates.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'research-identify-criterion-contamination-in-validity-study', distractorDesign: ['range-restriction-confusion', 'power-direction-error', 'history-randomization-confusion'],
+  },
+  {
+    id: 'eppp-v3-research-035', expectedAnswerIndex: 3, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: "A single-subject research design formatted 'A-B-A-B' represents a:",
+    prompt: 'A target behavior is stable during baseline, improves after treatment begins, returns toward baseline when treatment is withdrawn, and improves again when treatment is reinstated. Which design and inference best describe this pattern?',
+    choices: ['A Latin-square design showing that order effects were balanced across groups', 'A multiple-baseline design showing replication across behaviors that began treatment at staggered times', 'A changing-criterion design showing control through successive performance targets', 'A withdrawal or reversal design showing replicated covariation across A and B phases'],
+    rationale: 'An A-B-A-B withdrawal design demonstrates experimental control when behavior changes with treatment introduction, reverses after withdrawal, and changes again after reintroduction. Its use depends on behavior reversibility and the ethical acceptability of withdrawing an effective intervention.',
+    feedback: {
+      0: 'A Latin-square arrangement counterbalances condition order across participants or sequences. The vignette instead follows repeated baseline and treatment phases for a single target behavior.',
+      1: 'A multiple-baseline design staggers intervention across people, settings, or behaviors while avoiding withdrawal. The vignette uses the same behavior and explicitly removes and restores treatment.',
+      2: 'A changing-criterion design shifts performance criteria stepwise and looks for corresponding behavior changes. No graduated targets appear in the described sequence.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'research-infer-control-from-abab-phase-replication', distractorDesign: ['counterbalancing-confusion', 'staggered-baseline-confusion', 'successive-criterion-confusion'],
+  },
+  {
+    id: 'eppp-v3-professional-022', expectedAnswerIndex: 1, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: 'If a psychologist suspects a colleague of an ethics violation, their first step should typically be:',
+    prompt: 'A psychologist learns of a colleague’s apparent minor billing misstatement. No substantial harm is evident, a direct conversation appears feasible, and raising the concern would not disclose protected client information. What is the most appropriate initial response?',
+    choices: ['File a public complaint before determining whether the concern can be corrected informally', 'Discuss the concern directly with the colleague and seek an informal resolution', 'Contact affected clients to investigate the colleague’s conduct independently', 'Take no action because colleagues’ billing practices fall outside ethical responsibility'],
+    rationale: 'When an apparent ethics violation may be resolved informally and doing so respects confidentiality and other rights, direct resolution is generally appropriate. More serious, harmful, unresolved, or unsuitable matters may require referral to an ethics body or authority.',
+    feedback: {
+      0: 'Formal reporting may be warranted for serious harm or when informal efforts are unsuitable or unsuccessful. The facts given support a proportionate confidential conversation as the initial step.',
+      2: 'Contacting another psychologist’s clients could violate privacy, boundaries, and due process while creating a new ethical problem. The concern can be addressed directly using information already available.',
+      3: 'Psychologists have responsibilities when they become aware of possible ethical misconduct. The appropriate response depends on seriousness, confidentiality, available resolution, and applicable reporting obligations.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'professional-apply-conditions-for-informal-ethics-resolution', distractorDesign: ['premature-public-report', 'independent-client-investigation', 'professional-nonresponsibility'],
+  },
+  {
+    id: 'eppp-v3-professional-023', expectedAnswerIndex: 2, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: "When a client presents an imminent risk of suicide, the psychologist's FIRST priority is:",
+    prompt: 'During an outpatient session, a client reports intent to die that evening, names a lethal method, has access to it, and cannot identify a workable safety plan. Which action has priority?',
+    choices: ['Complete routine billing authorization before changing the session plan', 'Finish comprehensive progress documentation while the client waits alone', 'Keep the client supervised and arrange an urgent emergency evaluation at an appropriate level of care', 'Schedule a standard consultation for the following week before deciding whether risk is acute'],
+    rationale: 'A credible near-term plan, intent, and access require prompt protective action. The psychologist should maintain supervision, mobilize emergency evaluation and supports appropriate to the setting, reduce access where feasible, and document and consult as the response unfolds.',
+    feedback: {
+      0: 'Administrative processing does not take precedence over a credible near-term threat to life. Necessary billing tasks can be addressed after protective assessment and disposition are underway.',
+      1: 'Documentation is essential but should occur alongside or after active protection, not while leaving a high-risk client unattended. Safety procedures determine the session’s immediate course.',
+      3: 'Consultation can strengthen decision-making, but delaying action until a routine future meeting is inconsistent with the stated intent, plan, access, and inability to collaborate on safety.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'professional-prioritize-protective-response-to-imminent-suicide-risk', distractorDesign: ['administrative-delay', 'documentation-before-protection', 'deferred-consultation'],
+  },
+  {
+    id: 'eppp-v3-professional-045', expectedAnswerIndex: 0, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Ethical decision-making models typically include all of the following core components EXCEPT:',
+    prompt: 'A psychologist faces a conflict involving confidentiality, potential harm, and competing stakeholder interests. Which approach is least consistent with a structured ethical decision-making model?',
+    choices: ['Treat personal intuition as sufficient and act before reviewing standards or alternatives', 'Define the conflict and gather the clinical, cultural, legal, and situational facts', 'Consult applicable ethics standards, law, professional guidance, and qualified colleagues', 'Compare feasible actions, likely consequences, stakeholder effects, and follow-up needs'],
+    rationale: 'Structured ethical decision-making requires careful fact gathering, identification of competing duties, consultation of standards and law, consideration of stakeholders and consequences, consultation when useful, implementation, documentation, and follow-up. Intuition may alert a clinician but is not sufficient analysis.',
+    feedback: {
+      1: 'Clarifying the conflict and gathering relevant facts are foundational steps because ethical duties and feasible actions depend on clinical, cultural, legal, and contextual details.',
+      2: 'Reviewing standards and law and seeking qualified consultation help identify obligations, ambiguities, and blind spots. Consultation does not transfer responsibility for the final decision.',
+      3: 'Comparing alternatives and their effects helps the psychologist choose, implement, monitor, and document a defensible response. This prospective analysis is central to structured models.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'professional-evaluate-components-of-ethical-decision-model', distractorDesign: ['intuition-as-sufficient', 'fact-gathering-component', 'standards-consultation-component'],
+  },
+];
+
+module.exports = { baselineMetrics, reviewedAt, reviewWave, revisions };

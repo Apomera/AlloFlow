@@ -79,13 +79,13 @@
     "data-help-key": "scaffolds_goal_panel"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-rose-800 flex-grow"
-  }, /*#__PURE__*/React.createElement("strong", null, "UDL Goal:"), " Providing options for Action & Expression. Scaffolding writing helps students organize their thoughts."), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("strong", null, t('about.action_title')), " ", t('about.action_desc')), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-3"
   }, studentWorkStatus !== 'idle' && /*#__PURE__*/React.createElement("div", {
     className: `flex items-center gap-1.5 text-xs font-bold transition-all duration-500 ${studentWorkStatus === 'saving' ? 'text-rose-400' : 'text-green-600'}`
   }, studentWorkStatus === 'saving' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
-    className: "animate-spin"
+    className: "animate-spin motion-reduce:animate-none"
   }), " ", t('status.saving')) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 12
   }), " ", t('status.saved'))), !isTeacherMode && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
@@ -96,7 +96,7 @@
     "aria-label": t('scaffolds.clear_all')
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12
-  }), " Reset"), /*#__PURE__*/React.createElement("button", {
+  }), " ", t('common.reset')), /*#__PURE__*/React.createElement("button", {
     onClick: launchGradingSession,
     "data-help-key": "scaffolds_grading",
     className: `flex items-center gap-1 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 px-3 py-1.5 rounded-full transition-all shadow-sm ${isScaffoldComplete ? 'animate-pulse motion-reduce:animate-none ring-4 ring-rose-300 shadow-lg scale-105' : 'opacity-90'}`,
@@ -225,7 +225,7 @@
     className: "text-xs bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-600 px-3 py-1.5 rounded-full font-bold transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
   }, isGeneratingRubric ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
-    className: "animate-spin"
+    className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(Sparkles, {
     size: 12
   }), generatedContent?.data.rubric ? "Regenerate Rubric" : isIndependentMode ? "Generate Self-Checklist" : "Generate Rubric"), generatedContent?.data.rubric && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
@@ -266,7 +266,7 @@
   }, /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 18,
     className: "text-indigo-600"
-  }), " AI Auto-Grader"), !gradingResult ? /*#__PURE__*/React.createElement("div", {
+  }), " ", t('scaffolds.auto_grader')), !gradingResult ? /*#__PURE__*/React.createElement("div", {
     className: "space-y-3"
   }, /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('dashboard.grading.student_work_input') || 'Paste student work for grading',
@@ -281,7 +281,7 @@
     className: "w-full bg-indigo-600 text-white font-bold py-2 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
   }, isGrading ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 16,
-    className: "animate-spin"
+    className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(Sparkles, {
     size: 16,
     className: "text-yellow-700 fill-current"

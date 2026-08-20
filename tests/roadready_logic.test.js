@@ -329,13 +329,18 @@ describe('physical road layouts', () => {
     const traffic = [{ x: 10, y: 12, heading: Math.PI / 2, laneOffset: -1.5 }];
     RR.alignTrafficToStreamedWorld(world, traffic);
     expect(traffic[0].laneOffset).toBeCloseTo(-1.55, 8);
-    expect(traffic[0].x).toBeCloseTo(46.45, 8);
+    expect(traffic[0]._roadStation).toBe(12);
+    expect(traffic[0].x).toBeCloseTo(48 + traffic[0].laneOffset * Math.cos(heading), 8);
+    expect(traffic[0].y).toBeCloseTo(12 - traffic[0].laneOffset * Math.sin(heading), 8);
+    expect(RR.mainRoadLocalPoint(world, traffic[0].x, traffic[0].y).lateral).toBeCloseTo(traffic[0].laneOffset, 4);
     expect(traffic[0].heading).toBeCloseTo(Math.PI / 2 - heading, 8);
 
     const cyclists = [{ x: 0, y: 12, heading: -Math.PI / 2, type: 'cyclist' }];
     RR.alignCyclistsToStreamedWorld(world, cyclists);
     expect(cyclists[0]._bikeLane).toBeCloseTo(5.8, 8);
-    expect(cyclists[0].x).toBeCloseTo(53.8, 8);
+    expect(cyclists[0].x).toBeCloseTo(48 + cyclists[0]._bikeLane * Math.cos(heading), 8);
+    expect(cyclists[0].y).toBeCloseTo(12 - cyclists[0]._bikeLane * Math.sin(heading), 8);
+    expect(RR.mainRoadLocalPoint(world, cyclists[0].x, cyclists[0].y).lateral).toBeCloseTo(cyclists[0]._bikeLane, 3);
   });
 
   it('changes Free Explore traffic density without resetting nearby or cross-street actors', () => {
@@ -372,8 +377,14 @@ describe('physical road layouts', () => {
     expect(grown.filter(v => !v.crossStreet)).toHaveLength(4);
     for (const vehicle of grown.filter(v => !v.crossStreet && v !== nearby && v !== farA && v !== farB)) {
       expect(Math.hypot(vehicle.x - player.x, vehicle.y - player.y)).toBeGreaterThanOrEqual(24);
-      const expectedCenter = spline.centerAt(vehicle.y);
-      expect(vehicle.x).toBeCloseTo(expectedCenter + vehicle.laneOffset, 6);
+      const station = typeof vehicle._roadStation === 'number'
+        ? vehicle._roadStation : vehicle.y;
+      const expectedPoint = {
+        x: spline.centerAt(station) + vehicle.laneOffset * Math.cos(0.15),
+        y: station - vehicle.laneOffset * Math.sin(0.15),
+      };
+      expect(vehicle.x).toBeCloseTo(expectedPoint.x, 6);
+      expect(vehicle.y).toBeCloseTo(expectedPoint.y, 6);
     }
   });
 
@@ -1745,6 +1756,82 @@ describe('coachTipFor', () => {
     }
     expect(RR.coachTipFor(null).advice.length).toBeGreaterThan(5);
     expect(RR.coachTipFor({ type: 'somethingNew' }).title).toBe('somethingNew');
+  });
+});
+
+describe('rrPracticeFocusFor', () => {
+  it('summarizes the most frequent moments with a rule cue and coaching advice', () => {
+    const focus = RR.rrPracticeFocusFor([
+      { type: 'speedViolation', t: 10, severity: 2, mu: 0.72, postedLimitMph: 25 },
+      { type: 'hardBrake', t: 20, severity: 2, mu: 0.42 },
+      { type: 'speedViolation', t: 30, severity: 3, mu: 0.42, postedLimitMph: 25 },
+      { type: 'speedViolation', t: 40, severity: 2, mu: 0.42, postedLimitMph: 25 },
+      { type: 'newEvent', t: 50, severity: 1 }
+    ], 2);
+    expect(focus).toHaveLength(2);
+    expect(focus[0]).toMatchObject({ type: 'speedViolation', count: 3, label: 'Hold the posted limit' });
+    expect(focus[0].rule).toMatch(/posted limit/);
+    expect(focus[0].advice.length).toBeGreaterThan(20);
+    expect(focus[1].type).toBe('hardBrake');
+    expect(RR.rrPracticeFocusFor([], 3)).toEqual([]);
+    expect(RR.rrPracticeFocusFor([{ type: 'crash' }], 0)).toEqual([]);
+  });
+});
+
+describe('rrRuleOutcomeFor', () => {
+  it('turns rule counters into calm, evidence-backed practice states', () => {
+    const clear = RR.rrRuleOutcomeFor({});
+    expect(clear).toHaveLength(5);
+    expect(clear.every((outcome) => outcome.status === 'clear')).toBe(true);
+    expect(clear[0].evidence).toMatch(/No recorded speed/);
+
+    const outcomes = RR.rrRuleOutcomeFor({
+      speedViolations: 3,
+      secondsOverLimit: 14.6,
+      closeFollows: 7,
+      unsignaledLaneChanges: 1,
+      wrongSideViolations: 1,
+      majorViolations: 2,
+      stops: 2,
+      pedYields: 1,
+      emergencyYields: 1,
+      hardBrakes: 2,
+      jackrabbits: 1,
+      skidSeconds: 2
+    });
+    expect(outcomes.map((outcome) => outcome.status)).toEqual([
+      'priority', 'priority', 'priority', 'priority', 'priority'
+    ]);
+    expect(outcomes[0]).toMatchObject({ label: 'Speed control', count: 3, statusLabel: 'PRACTICE NEXT' });
+    expect(outcomes[0].evidence).toContain('15s over limit');
+    expect(outcomes[3]).toMatchObject({ verified: 4 });
+    expect(outcomes[3].evidence).toContain('2 major hazard-rule events');
+    expect(outcomes[3].evidence).toContain('4 verified stop/yield actions');
+    expect(outcomes[4].action).toMatch(/gradual/);
+    const safeStops = RR.rrRuleOutcomeFor({ stops: 2, pedYields: 1 });
+    expect(safeStops.find((outcome) => outcome.id === 'stopping')).toMatchObject({
+      status: 'clear', verified: 3
+    });
+    expect(safeStops.find((outcome) => outcome.id === 'stopping').evidence).toContain('3 verified stop/yield actions');
+    expect(RR.rrRuleOutcomeFor({ hardBrakes: 1 }).find((outcome) => outcome.id === 'smoothness')).toMatchObject({
+      status: 'review', statusLabel: 'REVIEW'
+    });
+    expect(RR.rrRuleOutcomeFor({ secondsOverLimit: 2.4 }).find((outcome) => outcome.id === 'speed')).toMatchObject({
+      status: 'review', count: 1
+    });
+  });
+});
+
+describe('rrRuleCueFor', () => {
+  it('prioritizes the safest next action across lane, signal, gap, and speed rules', () => {
+    expect(RR.rrRuleCueFor({ laneSide: 'left', speedMph: 25, limitMph: 25 }).kind).toBe('urgent');
+    expect(RR.rrRuleCueFor({ signalState: 'red', signalDistanceFt: 80, speedMph: 25, limitMph: 25 })).toMatchObject({
+      title: 'STOP AHEAD', color: '#ef4444'
+    });
+    expect(RR.rrRuleCueFor({ gapSeconds: 1.5, requiredGapSeconds: 3, speedMph: 25, limitMph: 25 }).title).toBe('ADD FOLLOWING SPACE');
+    expect(RR.rrRuleCueFor({ speedMph: 31, limitMph: 25 }).title).toBe('EASE OFF THE GAS');
+    expect(RR.rrRuleCueFor({ speedMph: 25, limitMph: 25, signalState: 'green_arrow' }).title).toBe('PROTECTED TURN');
+    expect(RR.rrRuleCueFor({ speedMph: 25, limitMph: 25 }).title).toBe('SAFE BUFFER');
   });
 });
 

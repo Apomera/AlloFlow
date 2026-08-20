@@ -39,11 +39,18 @@ describe('Word Sounds review and launcher UX accessibility', () => {
     expect(reviewSource).not.toContain("aria-label={t('common.play')}\n                            onClick={onStartActivity}");
   });
 
-  it('stacks review controls and clearly distinguishes teacher and student launch paths', () => {
+  it('stacks review controls and hides the review path from learners', () => {
     expect(reviewSource).toContain('flex flex-col-reverse sm:flex-row');
     expect(reviewSource).toContain('flex min-w-0 flex-1 flex-wrap');
     expect(launcherSource).toContain('Teacher: Review Words &amp; Audio');
     expect(launcherSource).toContain('Student: Start Practice');
+    expect(launcherSource).toContain('var isTeacherMode = props.isTeacherMode !== false;');
+    expect(launcherSource).toContain('{isTeacherMode && (');
+    expect(launcherSource).toContain("isTeacherMode ? 'Student: Start Practice' : 'Start Activity'");
     expect(launcherSource).toContain('setWordSoundsAutoReview(false)');
+    expect(launcherSource).toContain('Audio ready: {wordSoundsAudioCoverage.ready}/{wordSoundsAudioCoverage.total} words');
+    expect(launcherSource).toContain('Missing: {wordSoundsAudioCoverage.missingWords.slice(0, 5).join(\', \')}');
+    expect(launcherSource).toContain("role=\"status\"");
+    expect(launcherSource).toContain('requestIncompleteAudioConfirmation(wordSoundsAudioCoverage, launchPreparedActivity)');
   });
 });

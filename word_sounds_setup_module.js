@@ -1156,7 +1156,7 @@ const espeakPackPhonemes = async (word, language) => {
     return null;
   }
 };
-const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], onShowReview, onMinimize, onExpand, isProbeMode, probeActivity, probeGradeLevel, probeForm, selectedVoice, setSelectedVoice, isCanvasEnv, ttsSpeed, onRequestKokoroOffer, wordSoundsLanguage, probeStudentNames = [] }) => {
+const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, callGemini, callImagen, callTTS, gradeLevel, t: tProp, preloadedWords = [], onShowReview, onMinimize, onExpand, isProbeMode, probeActivity, probeGradeLevel, probeForm, selectedVoice, setSelectedVoice, isCanvasEnv, ttsSpeed, onRequestKokoroOffer, wordSoundsLanguage, probeStudentNames = [], universalImageStyle = "" }) => {
   const tf = (key, fallback, params) => {
     let v;
     try {
@@ -1267,6 +1267,8 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
     setLessonPlanReorderStatus(`${activityLabel} moved to position ${toIndex + 1} of ${next.length}.`);
   };
   const [imageTheme, setImageTheme] = React.useState("");
+  const [imageThemeMode, setImageThemeMode] = React.useState("inherit");
+  const effectiveImageTheme = imageThemeMode === "override" && imageTheme.trim() ? imageTheme.trim() : String(universalImageStyle || "").trim();
   const [includeAacImages, setIncludeAacImages] = React.useState(false);
   const [aacDefaultOn, setAacDefaultOn] = React.useState(false);
   const [syllableRange, setSyllableRange] = React.useState({ min: 1, max: 4 });
@@ -1882,7 +1884,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
           let imageUrl = null;
           if (callImagen) {
             try {
-              const themePrefix = imageTheme?.trim() ? `${imageTheme.trim()} style, ` : "";
+              const themePrefix = effectiveImageTheme ? `${effectiveImageTheme} style, ` : "";
               const finalPrompt = data.imagePrompt ? `${themePrefix}${data.imagePrompt}` : `${themePrefix}Icon of ${rawWord}, white background`;
               imageUrl = await callImagen(finalPrompt);
               if (!isGenerationActive()) return;
@@ -2009,7 +2011,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
           if (!isGenerationActive()) return;
           if (decodingAssets[word]) continue;
           try {
-            const themePrefix = imageTheme?.trim() ? `${imageTheme.trim()} style, ` : "";
+            const themePrefix = effectiveImageTheme ? `${effectiveImageTheme} style, ` : "";
             const image = await callImagen(`${themePrefix}Simple flat vector icon of "${word}", minimal educational illustration, white background, no text or labels`);
             if (!isGenerationActive()) return;
             if (image) decodingAssets[word] = image;
@@ -2076,7 +2078,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
           if (!isGenerationActive()) return;
           try {
             if (aacAssets[word] || decodingAssets[word]) continue;
-            const themePrefix = imageTheme?.trim() ? `${imageTheme.trim()} style, ` : "";
+            const themePrefix = effectiveImageTheme ? `${effectiveImageTheme} style, ` : "";
             const image = await callImagen(`${themePrefix}Simple flat vector icon of "${word}", minimal educational illustration, white background, no text or labels`);
             if (!isGenerationActive()) return;
             if (image) aacAssets[word] = image;
@@ -2088,6 +2090,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
         }
       }
       const packedTtsAssets = {};
+      const requiredTtsKeys = /* @__PURE__ */ new Set();
       processed.forEach((item) => {
         if (item._ttsAssets) Object.assign(packedTtsAssets, item._ttsAssets);
         delete item._ttsAssets;
@@ -2146,6 +2149,10 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
           tasks.add(`What is the ${index + 1}${index === 0 ? "st" : index === 1 ? "nd" : index === 2 ? "rd" : "th"} sound?`);
         });
         const taskList = [...tasks].filter(Boolean);
+        taskList.forEach((text) => {
+          const key = normalizePackKey(text);
+          if (key) requiredTtsKeys.add(key);
+        });
         setPrewarmTotal((prev) => prev + taskList.length);
         const runTasks = async (list) => Promise.allSettled(list.map(async (text) => {
           if (!isGenerationActive()) throw new Error("Generation canceled");
@@ -2197,11 +2204,13 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
         processed[0]._studentPackVersion = 2;
         processed[0]._ttsCoverage = {
           clips: Object.keys(packedTtsAssets).length,
+          requiredClips: requiredTtsKeys.size,
           wordsWithAudio: processed.filter((it) => it.ttsReady).length,
           words: processed.length,
           rateLimited: ttsGate.rateLimited,
           gaveUp: ttsGate.aborted
         };
+        processed[0]._ttsRequiredKeys = [...requiredTtsKeys];
         processed[0]._ttsAssets = packedTtsAssets;
         processed[0]._decodingAssets = decodingAssets;
         if (Object.keys(aacAssets).length) processed[0]._aacAssets = aacAssets;
@@ -2429,6 +2438,20 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       disabled: includeLessonPlan
     }
   ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2" }, includeLessonPlan ? "\u26A0\uFE0F Controlled by Lesson Plan mode" : orthoSessionGoal > 0 ? t("word_sounds.ortho_activity_hint_on", `Spelling activities begin after sound activities complete (${orthoSessionGoal} items)`) : tf("word_sounds.ortho_activity_hint_off", "Slide right to add spelling practice after phonics activities")))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-4 rounded-xl border border-slate-400 shadow-sm mt-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, tf("word_sounds.image_theme", "Image Style")), /* @__PURE__ */ React.createElement(Palette, { size: 18, className: "text-pink-500" })), /* @__PURE__ */ React.createElement(
+    "select",
+    {
+      "aria-label": "Image style source",
+      value: imageThemeMode,
+      onChange: (e) => {
+        const nextMode = e.target.value;
+        setImageThemeMode(nextMode);
+        if (nextMode === "override" && !imageTheme.trim()) setImageTheme("Simple flat vector art");
+      },
+      className: "w-full p-2 rounded-lg border border-slate-400 text-sm focus:ring-2 focus:ring-pink-400 focus:outline-none"
+    },
+    /* @__PURE__ */ React.createElement("option", { value: "inherit" }, "Use Universal style"),
+    /* @__PURE__ */ React.createElement("option", { value: "override" }, "Override for this resource")
+  ), imageThemeMode === "inherit" && /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2" }, String(universalImageStyle || "").trim() ? `Using Universal style: ${String(universalImageStyle).trim()}` : "No Universal style is set; the app default will be used."), imageThemeMode === "override" && /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.image_theme_input"),
@@ -2437,9 +2460,9 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       value: imageTheme,
       onChange: (e) => setImageTheme(e.target.value),
       placeholder: tf("word_sounds.theme_placeholder", "e.g. cartoon, pixel art, realistic..."),
-      className: "w-full p-2 rounded-lg border border-slate-400 text-sm focus:ring-2 focus:ring-pink-400 focus:outline-none"
+      className: "w-full mt-2 p-2 rounded-lg border border-slate-400 text-sm focus:ring-2 focus:ring-pink-400 focus:outline-none"
     }
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2" }, tf("word_sounds.theme_hint", "Optional: Style for new word images (not glossary)")), /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 mt-3 cursor-pointer" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2" }, "Style changes apply to new Word Sounds images, not Glossary images."), /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 mt-3 cursor-pointer" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "checkbox",

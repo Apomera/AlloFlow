@@ -903,7 +903,7 @@ function UniversalSettingsPanel(props) {
       maxLength: 120,
       className: SIDEBAR_PANEL_UI.control
     }
-  ), /* @__PURE__ */ React.createElement("p", { className: SIDEBAR_PANEL_UI.help }, t("universal.image_style_hint") || "Used for Visuals, Glossary, Timeline and Concept Sort images unless a tool sets its own style.")))));
+  ), /* @__PURE__ */ React.createElement("p", { className: SIDEBAR_PANEL_UI.help }, t("universal.image_style_hint") || "Lesson-wide default for new Visuals, Glossary, Timeline, Concept Sort, and Word Sounds images. Adventure can also choose this style.")))));
 }
 function AdventurePanel(props) {
   const aiTextAvailable = useAiTextAvailable();
@@ -961,6 +961,7 @@ function AdventurePanel(props) {
     socialStoryFocus,
     studentProjectSettings,
     t,
+    universalImageStyle,
     useLowQualityVisuals
   } = props;
   if (!expandedTools || !expandedTools.includes("adventure")) return null;
@@ -1228,7 +1229,7 @@ function AdventurePanel(props) {
       disabled: lockAllAdventureSettings,
       className: "w-4 h-4 text-violet-600 border-slate-300 rounded focus:ring-violet-500 cursor-pointer"
     }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "advConsistentChars", className: "text-xs font-bold text-violet-800 cursor-pointer select-none flex items-center gap-2" }, "\u{1F3AD} ", t("adventure.consistent_characters_label") || "Consistent Characters", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-normal opacity-70 hidden sm:inline" }, t("adventure.consistent_characters_desc") || "Persistent visual cast across scenes"))), /* @__PURE__ */ React.createElement("details", { className: "group/adv-settings" }, /* @__PURE__ */ React.createElement("summary", { className: "flex items-center gap-2 bg-slate-100/50 p-2 rounded border border-slate-400 cursor-pointer select-none hover:bg-slate-100 transition-colors motion-reduce:transition-none list-none" }, /* @__PURE__ */ React.createElement(Settings, { size: 14, className: "text-slate-600" }), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "\u2699\uFE0F ", t("adventure.advanced_settings") || "Advanced Settings"), /* @__PURE__ */ React.createElement(ChevronDown, { size: 12, className: "text-slate-600 ml-auto transition-transform motion-reduce:transition-none group-open/adv-settings:rotate-180" })), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 space-y-1.5 pl-1 animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-indigo-100/50 p-2 rounded border border-indigo-200", "data-help-key": "adventure_art_style" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "advArtStyle", className: "text-xs font-bold text-indigo-800 cursor-pointer select-none flex items-center gap-2 whitespace-nowrap" }, "\u{1F3A8} ", t("adventure.art_style_label") || "Art Style"), /* @__PURE__ */ React.createElement("select", { id: "advArtStyle", value: adventureArtStyle, onChange: (e) => setAdventureArtStyle(e.target.value), disabled: lockAllAdventureSettings || !isTeacherMode && adventurePermissions.allowVisualsToggle === false, className: "flex-1 text-xs px-2 py-1 border border-indigo-600 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400 cursor-pointer" }, /* @__PURE__ */ React.createElement("option", { value: "auto" }, "\u{1F3A8} ", t("adventure.art_auto") || "Auto (default)"), /* @__PURE__ */ React.createElement("option", { value: "storybook" }, "\u{1F4DA} ", t("adventure.art_storybook") || "Storybook"), /* @__PURE__ */ React.createElement("option", { value: "pixel" }, "\u{1F3AE} ", t("adventure.art_pixel") || "Pixel Art"), /* @__PURE__ */ React.createElement("option", { value: "cinematic" }, "\u{1F3AC} ", t("adventure.art_cinematic") || "Cinematic"), /* @__PURE__ */ React.createElement("option", { value: "anime" }, "\u{1F3A8} ", t("adventure.art_anime") || "Anime"), /* @__PURE__ */ React.createElement("option", { value: "crayon" }, "\u{1F58D}\uFE0F ", t("adventure.art_crayon") || "Hand-drawn"), /* @__PURE__ */ React.createElement("option", { value: "custom" }, "\u270F\uFE0F ", t("adventure.art_custom") || "Custom..."))), adventureArtStyle === "custom" && /* @__PURE__ */ React.createElement("input", { type: "text", "aria-label": t("adventure.custom_art_style_placeholder") || "Custom art style", value: adventureCustomArtStyle, onChange: (e) => setAdventureCustomArtStyle(e.target.value), placeholder: t("adventure.custom_art_style_placeholder") || "Describe your art style...", disabled: lockAllAdventureSettings || !isTeacherMode && adventurePermissions.allowVisualsToggle === false, className: "w-full text-xs px-3 py-1.5 border border-indigo-600 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400" }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-purple-100/50 p-2 rounded border border-purple-200", "data-help-key": "adventure_low_quality" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "advConsistentChars", className: "text-xs font-bold text-violet-800 cursor-pointer select-none flex items-center gap-2" }, "\u{1F3AD} ", t("adventure.consistent_characters_label") || "Consistent Characters", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-normal opacity-70 hidden sm:inline" }, t("adventure.consistent_characters_desc") || "Persistent visual cast across scenes"))), /* @__PURE__ */ React.createElement("details", { className: "group/adv-settings" }, /* @__PURE__ */ React.createElement("summary", { className: "flex items-center gap-2 bg-slate-100/50 p-2 rounded border border-slate-400 cursor-pointer select-none hover:bg-slate-100 transition-colors motion-reduce:transition-none list-none" }, /* @__PURE__ */ React.createElement(Settings, { size: 14, className: "text-slate-600" }), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "\u2699\uFE0F ", t("adventure.advanced_settings") || "Advanced Settings"), /* @__PURE__ */ React.createElement(ChevronDown, { size: 12, className: "text-slate-600 ml-auto transition-transform motion-reduce:transition-none group-open/adv-settings:rotate-180" })), /* @__PURE__ */ React.createElement("div", { className: "mt-1.5 space-y-1.5 pl-1 animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-indigo-100/50 p-2 rounded border border-indigo-200", "data-help-key": "adventure_art_style" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "advArtStyle", className: "text-xs font-bold text-indigo-800 cursor-pointer select-none flex items-center gap-2 whitespace-nowrap" }, "\u{1F3A8} ", t("adventure.art_style_label") || "Art Style"), /* @__PURE__ */ React.createElement("select", { id: "advArtStyle", value: adventureArtStyle, onChange: (e) => setAdventureArtStyle(e.target.value), disabled: lockAllAdventureSettings || !isTeacherMode && adventurePermissions.allowVisualsToggle === false, className: "flex-1 text-xs px-2 py-1 border border-indigo-600 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400 cursor-pointer" }, /* @__PURE__ */ React.createElement("option", { value: "universal" }, "Use Universal style"), /* @__PURE__ */ React.createElement("option", { value: "auto" }, "\u{1F3A8} ", t("adventure.art_auto") || "Auto (default)"), /* @__PURE__ */ React.createElement("option", { value: "storybook" }, "\u{1F4DA} ", t("adventure.art_storybook") || "Storybook"), /* @__PURE__ */ React.createElement("option", { value: "pixel" }, "\u{1F3AE} ", t("adventure.art_pixel") || "Pixel Art"), /* @__PURE__ */ React.createElement("option", { value: "cinematic" }, "\u{1F3AC} ", t("adventure.art_cinematic") || "Cinematic"), /* @__PURE__ */ React.createElement("option", { value: "anime" }, "\u{1F3A8} ", t("adventure.art_anime") || "Anime"), /* @__PURE__ */ React.createElement("option", { value: "crayon" }, "\u{1F58D}\uFE0F ", t("adventure.art_crayon") || "Hand-drawn"), /* @__PURE__ */ React.createElement("option", { value: "custom" }, "\u270F\uFE0F ", t("adventure.art_custom") || "Custom..."))), adventureArtStyle === "universal" && /* @__PURE__ */ React.createElement("p", { className: "rounded border border-indigo-200 bg-indigo-50 px-2 py-1.5 text-[11px] text-indigo-800" }, universalImageStyle && universalImageStyle.trim() ? `Using Universal style: ${universalImageStyle.trim()}` : "No Universal style is set; Adventure will use its automatic style."), adventureArtStyle === "custom" && /* @__PURE__ */ React.createElement("input", { type: "text", "aria-label": t("adventure.custom_art_style_placeholder") || "Custom art style", value: adventureCustomArtStyle, onChange: (e) => setAdventureCustomArtStyle(e.target.value), placeholder: t("adventure.custom_art_style_placeholder") || "Describe your art style...", disabled: lockAllAdventureSettings || !isTeacherMode && adventurePermissions.allowVisualsToggle === false, className: "w-full text-xs px-3 py-1.5 border border-indigo-600 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400" }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-purple-100/50 p-2 rounded border border-purple-200", "data-help-key": "adventure_low_quality" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.toggle_use_low_quality_visuals"),
@@ -2952,12 +2953,14 @@ function ImagePanel(props) {
     setVisualStyle,
     t,
     useLowQualityVisuals,
+    universalImageStyle,
     visualCustomInstructions,
     visualCustomStyle,
     visualLayoutMode,
     visualStyle
   } = props;
   if (!expandedTools || !expandedTools.includes("image")) return null;
+  const visualStyleMode = !visualStyle || visualStyle === "Default" ? "inherit" : "override";
   return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsSurface, "data-help-key": "tour-visual-settings" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer select-none" }, /* @__PURE__ */ React.createElement("input", { "aria-label": t("common.toggle"), "data-help-key": "visuals_worksheet_mode", type: "checkbox", checked: fillInTheBlank, onChange: (e) => setFillInTheBlank(e.target.checked), className: SIDEBAR_PANEL_UI.checkbox }), /* @__PURE__ */ React.createElement(PenTool, { size: 12, className: "text-purple-600" }), " ", t("visuals.worksheet_mode")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer select-none" }, /* @__PURE__ */ React.createElement("input", { "aria-label": t("common.toggle"), "data-help-key": "visuals_creative_mode", type: "checkbox", checked: creativeMode, onChange: (e) => setCreativeMode(e.target.checked), className: SIDEBAR_PANEL_UI.checkbox }), /* @__PURE__ */ React.createElement(Palette, { size: 12, className: "text-pink-600" }), " ", t("visuals.enhanced")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer select-none" }, /* @__PURE__ */ React.createElement("input", { "aria-label": t("common.toggle_no_text"), "data-help-key": "visuals_no_text", type: "checkbox", checked: noText, onChange: (e) => setNoText(e.target.checked), className: SIDEBAR_PANEL_UI.checkbox }), /* @__PURE__ */ React.createElement(Ban, { size: 12, className: "text-red-500" }), " ", t("visuals.text_reduced")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer select-none" }, /* @__PURE__ */ React.createElement(
     "input",
     {
@@ -2968,7 +2971,17 @@ function ImagePanel(props) {
       onChange: (e) => setUseLowQualityVisuals(e.target.checked),
       className: SIDEBAR_PANEL_UI.checkbox
     }
-  ), /* @__PURE__ */ React.createElement(MonitorPlay, { size: 12, className: "text-slate-600" }), " ", t("visuals.low_quality_label"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 ml-1" }, t("visuals.low_quality_hint")))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, t("visuals.art_style")), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement(MonitorPlay, { size: 12, className: "text-slate-600" }), " ", t("visuals.low_quality_label"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 ml-1" }, t("visuals.low_quality_hint")))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: SIDEBAR_PANEL_UI.label }, "Image style"), /* @__PURE__ */ React.createElement(
+    "select",
+    {
+      "aria-label": "Image style source",
+      value: visualStyleMode,
+      onChange: (e) => setVisualStyle(e.target.value === "inherit" ? "Default" : "Isometric Diagram"),
+      className: `${SIDEBAR_PANEL_UI.control} text-xs focus-visible:border-cyan-500 focus-visible:ring-cyan-500/20`
+    },
+    /* @__PURE__ */ React.createElement("option", { value: "inherit" }, "Use Universal style"),
+    /* @__PURE__ */ React.createElement("option", { value: "override" }, "Override for this resource")
+  ), visualStyleMode === "inherit" && /* @__PURE__ */ React.createElement("p", { className: SIDEBAR_PANEL_UI.help }, universalImageStyle && universalImageStyle.trim() ? `Using Universal style: ${universalImageStyle.trim()}` : "No Universal style is set; the app default will be used."), visualStyleMode === "override" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: `${SIDEBAR_PANEL_UI.label} mt-2` }, t("visuals.art_style")), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
@@ -2977,7 +2990,6 @@ function ImagePanel(props) {
       onChange: (e) => setVisualStyle(e.target.value),
       className: `${SIDEBAR_PANEL_UI.control} text-xs focus-visible:border-cyan-500 focus-visible:ring-cyan-500/20`
     },
-    /* @__PURE__ */ React.createElement("option", { value: "Default" }, t("visuals.styles.default")),
     /* @__PURE__ */ React.createElement("option", { value: "Isometric Diagram" }, t("visuals.styles.isometric")),
     /* @__PURE__ */ React.createElement("option", { value: "Pixel Art" }, t("visuals.styles.pixel")),
     /* @__PURE__ */ React.createElement("option", { value: "Watercolor" }, t("visuals.styles.watercolor")),
@@ -2997,7 +3009,7 @@ function ImagePanel(props) {
       "aria-label": t("visuals.styles.custom_aria") || "Custom art style description",
       className: `${SIDEBAR_PANEL_UI.control} mt-2 text-xs focus-visible:border-cyan-500 focus-visible:ring-cyan-500/20`
     }
-  )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-slate-700 mb-1" }, "\u{1F3AC} Layout Mode"), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("p", { className: SIDEBAR_PANEL_UI.help }, "Style changes apply to new or regenerated images.")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-slate-700 mb-1" }, "\u{1F3AC} Layout Mode"), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.layout_mode_selection"),
@@ -3400,11 +3412,13 @@ function LessonPlanPanel(props) {
     expandedTools,
     handleGenerateLessonPlan,
     hasSourceOrAnalysis,
+    isParentMode,
     isProcessing,
     lessonCustomAdditions,
     setLessonCustomAdditions,
     t
   } = props;
+  const lessonPlanActionLabel = isParentMode ? t("parent_mode.guide_action") || t("lesson_plan.generate") : t("lesson_plan.generate");
   if (!expandedTools || !expandedTools.includes("lesson-plan")) return null;
   return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: SIDEBAR_PANEL_UI.settingsSurface }, /* @__PURE__ */ React.createElement(
     ResourceCustomInstructions,
@@ -3422,13 +3436,13 @@ function LessonPlanPanel(props) {
     "button",
     {
       type: "button",
-      "aria-label": t("common.generate_lesson_plan"),
+      "aria-label": isParentMode ? lessonPlanActionLabel : t("common.generate_lesson_plan"),
       onClick: handleGenerateLessonPlan,
       disabled: !hasSourceOrAnalysis || isProcessing || !aiTextAvailable,
       "aria-busy": isProcessing,
       className: SIDEBAR_PANEL_UI.primaryAction
     },
-    /* @__PURE__ */ React.createElement("span", { className: "text-sm text-slate-600 group-hover:text-cyan-700 transition-colors motion-reduce:transition-none flex items-center gap-2" }, isProcessing && activeView === "lesson-plan" ? t("lesson_plan.drafting") : t("lesson_plan.generate"), isProcessing && activeView === "lesson-plan" ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin motion-reduce:animate-none" }) : /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-600" })),
+    /* @__PURE__ */ React.createElement("span", { className: "text-sm text-slate-600 group-hover:text-cyan-700 transition-colors motion-reduce:transition-none flex items-center gap-2" }, isProcessing && activeView === "lesson-plan" ? t("lesson_plan.drafting") : lessonPlanActionLabel, isProcessing && activeView === "lesson-plan" ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin motion-reduce:animate-none" }) : /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-yellow-600" })),
     /* @__PURE__ */ React.createElement(ArrowRight, { size: 16, className: "text-slate-600 group-hover:text-cyan-600" })
   ));
 }

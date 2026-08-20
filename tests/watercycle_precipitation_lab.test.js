@@ -185,6 +185,31 @@ describe('Water Cycle Precipitation Lab', () => {
     });
   });
 
+  it('exposes a dedicated 3D cloud chamber without changing the default 2D lab', () => {
+    resetStemLab();
+    loadTool('stem_lab/stem_tool_watercycle.js', 'waterCycle');
+    const html = renderTool('waterCycle', {
+      waterCycle: {
+        wcMode: 'precipHunt',
+        precipHunt: { viewMode: '3d', preset: 'summerStorm' },
+      },
+    });
+    expect(html).toContain('wc-precip-3d-canvas');
+    expect(html).toContain('3D cloud chamber');
+    expect(html).toContain('Nuclei + droplets');
+    expect(html).toContain('0°C layers');
+    expect(html).toContain('Reset the 3D cloud chamber camera');
+
+    WATER_CYCLE_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+      expect(source).toContain("viewMode: '2d'");
+      expect(source).toContain('var precip3dRef = function(canvasEl)');
+      expect(source).toContain('canvasEl._wcPrecip3dCleanup = function()');
+      expect(source).toContain('canvasEl.dataset.precipitationView = \'3d-cloud-chamber\';');
+      expect(source).toContain('precipLineGeometry3d.setDrawRange(0, activeCount3d * 2);');
+    });
+  });
+
   it('labels the expanded controls and dynamic result for assistive technology', () => {
     WATER_CYCLE_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');

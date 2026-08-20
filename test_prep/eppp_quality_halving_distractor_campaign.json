@@ -27,8 +27,8 @@
   "summary": {
     "totalItems": 1500,
     "rewrittenItems": 263,
-    "newlyAppliedItems": 59,
-    "alreadyAppliedItems": 204,
+    "newlyAppliedItems": 73,
+    "alreadyAppliedItems": 190,
     "keyPositionsPreserved": 263,
     "answerPositionCounts": [
       375,
@@ -39,46 +39,46 @@
     "sourceRecordsHydrated": 128,
     "correctedReferenceUrls": 0,
     "metricsBefore": {
-      "uniqueKeyStemLexicalLeakageCandidates": 57,
-      "asymmetricExtremeDistractorCandidates": 116,
-      "advancedDirectRecallCandidates": 4,
-      "semanticConceptDuplicatePairs": 84,
-      "semanticConceptDuplicateClusters": 48
+      "uniqueKeyStemLexicalLeakageCandidates": 49,
+      "asymmetricExtremeDistractorCandidates": 87,
+      "advancedDirectRecallCandidates": 3,
+      "semanticConceptDuplicatePairs": 50,
+      "semanticConceptDuplicateClusters": 35
     },
     "metricsAfter": {
-      "uniqueKeyStemLexicalLeakageCandidates": 55,
-      "asymmetricExtremeDistractorCandidates": 116,
-      "advancedDirectRecallCandidates": 4,
-      "semanticConceptDuplicatePairs": 81,
-      "semanticConceptDuplicateClusters": 45
+      "uniqueKeyStemLexicalLeakageCandidates": 47,
+      "asymmetricExtremeDistractorCandidates": 87,
+      "advancedDirectRecallCandidates": 3,
+      "semanticConceptDuplicatePairs": 47,
+      "semanticConceptDuplicateClusters": 32
     },
     "ceilingStatus": {
       "uniqueKeyStemLexicalLeakageCandidates": {
-        "value": 55,
+        "value": 47,
         "ceiling": 70,
         "met": true,
         "bufferedTarget": 65
       },
       "asymmetricExtremeDistractorCandidates": {
-        "value": 116,
+        "value": 87,
         "ceiling": 147,
         "met": true,
         "bufferedTarget": 140
       },
       "advancedDirectRecallCandidates": {
-        "value": 4,
+        "value": 3,
         "ceiling": 9,
         "met": true,
         "bufferedTarget": 7
       },
       "semanticConceptDuplicatePairs": {
-        "value": 81,
+        "value": 47,
         "ceiling": 120,
         "met": true,
         "bufferedTarget": 110
       },
       "semanticConceptDuplicateClusters": {
-        "value": 45,
+        "value": 32,
         "ceiling": 60,
         "met": true,
         "bufferedTarget": 55
@@ -122,28 +122,28 @@
   },
   "monotonicity": {
     "uniqueKeyStemLexicalLeakageCandidates": {
-      "before": 57,
-      "after": 55,
+      "before": 49,
+      "after": 47,
       "reduction": 2
     },
     "asymmetricExtremeDistractorCandidates": {
-      "before": 116,
-      "after": 116,
+      "before": 87,
+      "after": 87,
       "reduction": 0
     },
     "advancedDirectRecallCandidates": {
-      "before": 4,
-      "after": 4,
+      "before": 3,
+      "after": 3,
       "reduction": 0
     },
     "semanticConceptDuplicatePairs": {
-      "before": 84,
-      "after": 81,
+      "before": 50,
+      "after": 47,
       "reduction": 3
     },
     "semanticConceptDuplicateClusters": {
-      "before": 48,
-      "after": 45,
+      "before": 35,
+      "after": 32,
       "reduction": 3
     }
   },

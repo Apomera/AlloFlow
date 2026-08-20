@@ -130,7 +130,7 @@ array is the resume state).
 - **Teacher-only planning** at launch (`roles` already filters the menu;
   student mode could later get a whitelisted a11y-only plan surface —
   font/ruler/read-aloud chains are genuinely useful for students).
-- **Max 6 steps**, no loops, no plan-within-plan.
+- **Bounded long horizon:** ordinary command chains stay compact, Demo Autopilot may use up to 16 steps, and comprehensive lesson-creation goals may use up to 24 reviewed CommandWorkflow steps. No loops or plan-within-plan.
 - **Destructive commands never auto-run** in "Run all" — they pause the
   run for an individual confirm (rail already exists in `runCommandById`).
 - **Stop button** on the plan card sets an abort flag `runPlan` checks

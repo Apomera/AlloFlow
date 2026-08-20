@@ -52,7 +52,7 @@ describe('Launch-pad language and setup utility accessibility', () => {
     const fourthCard = source.indexOf('id="launch-pad-educator-title"');
     expect(gridEnd).toBeGreaterThan(fourthCard);
     expect(source).toContain('id="launch-pad-offline-voice-title"');
-    expect(source).toContain("voice.preloadWhisper('tiny')");
+    expect(source).toContain("voice.preloadWhisper('tiny', { lang: selectedVoiceLanguageTag() })");
     expect(source).toContain('window.__loadKokoroTTS');
     expect(source).toContain('Download Whisper');
     expect(source).toContain('Download Kokoro');

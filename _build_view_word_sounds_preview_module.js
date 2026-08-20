@@ -22,7 +22,7 @@ const moduleSrc = `/**
  *
  * Extracted from AlloFlowANTI.txt activeView==='word-sounds' && !isWordSoundsMode block.
  * Source range: 27 lines body. The simplest renderer in the project — a launcher
- * card with two buttons (Pre-Activity Review, Launch Word Sounds Studio).
+ * card with an educator-only review button and a learner launch button.
  * The actual modal lives in word_sounds_module.js (separate CDN module).
  */
 (function() {

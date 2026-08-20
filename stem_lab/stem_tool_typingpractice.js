@@ -10,10 +10,9 @@
 
 // ── Festival mode CSS (opt-in high-stim mode) ──
 // Default UX is sensory-friendly (sound + motion are muted by default).
-// Festival mode is the OPPOSITE: rainbow background, all mascots cheering,
-// confetti per word, screen shake on big combo. Designed for ADHD-pattern
-// brains + students who find calm UIs boring. prefers-reduced-motion still
-// caps the shake + sparkle classes (handled by the rule above).
+// Celebration mode is opt-in. Its default is theme-matched and restrained;
+// Maximum preserves the original rainbow, full-cast, high-stim experience.
+// prefers-reduced-motion still caps motion (handled by the rule above).
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('tp-festival-css')) return;
@@ -55,6 +54,10 @@
     '  background-size: 400% 400%;',
     '  animation: tp-fest-rainbow-bg 18s linear infinite;',
     '}',
+    '.tp-fest-shell.tp-fest-themed {',
+    '  background-size: 240% 240%;',
+    '  animation-duration: 28s;',
+    '}',
     '.tp-fest-shake { animation: tp-fest-shake 0.45s ease-in-out; }',
     // Mascot row at the bottom — all 5 visible
     '.tp-fest-mascot-row {',
@@ -80,6 +83,11 @@
     '  animation: tp-fest-streak-pulse 0.6s ease-in-out infinite;',
     '  pointer-events: none;',
     '  text-shadow: 0 1px 2px rgba(0,0,0,0.3);',
+    '}',
+    '.tp-fest-themed .tp-fest-streak-badge {',
+    '  animation: none;',
+    '  font-size: 15px;',
+    '  box-shadow: 0 3px 10px rgba(0,0,0,0.16);',
     '}',
     // Confetti pieces (positioned absolutely by JS)
     '.tp-fest-confetti {',
@@ -392,7 +400,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     audioTheme: 'chime',       // 'chime' (default) | 'soft' | 'mute'
     accentColor: 'blue',       // 'blue' (default) | 'teal' | 'violet' | 'amber' | 'rose'
     theme: 'default',          // named visual theme: default | steampunk | cyberpunk | kawaii | neutral
-    festivalMode: false,       // 🌈 high-stim opt-in mode — all mascots cheer, confetti per word, screen shake on big combo. Default OFF (sensory-friendly). Designed for ADHD-pattern brains.
+    festivalMode: false,       // Opt-in celebration layer. Default OFF (sensory-friendly).
+    festivalIntensity: 'themed', // 'themed' = coherent + theme-matched | 'max' = legacy high-stim festival
+    festivalSoundDensity: 'events', // 'events' = words/milestones/errors | 'keys' = add every correct key
+    festivalVisualDensity: 'events', // 'events' = word + milestone visuals | 'milestones' = milestone visuals only
     // Lifetime totals survive session-array capping, so the IEP report stays
     // accurate for long-term students even after the 200-session cap trims
     // the oldest records.
@@ -611,6 +622,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     return !!(typingPracticeUsableInterruptedDraft(draft) && !typingPracticeInterruptedDraftMatches(draft, drillId, runId));
   }
 
+  var MAX_TYPING_MISTAKE_EVENTS = 500;
+
   function typingPracticeBuildInterruptedDraft(snapshot, reason, now) {
     snapshot = snapshot || {};
     var typedLength = Math.max(0, Number(snapshot.typedLength) || 0);
@@ -629,6 +642,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       target: snapshot.target,
       errorCount: Math.max(0, Number(snapshot.errorCount) || 0),
       errorChars: typingPracticeCloneBackupValue(snapshot.errorChars || {}),
+      mistakeEvents: typingPracticeCloneBackupValue((snapshot.mistakeEvents || []).slice(0, 500)),
       startedAt: Number(snapshot.startTime) || savedAtMs,
       pausedMs: Math.max(0, pausedTotal),
       inputMethods: typingPracticeCloneBackupValue(snapshot.inputMethods || {}),
@@ -2778,10 +2792,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     setTimeout(function() { playTone(safe(base * 1.5),  110, waveType); }, 180);
   }
 
-  // ── 🌈 Festival audio (independent of the user's audioTheme + audioCues
-  // accommodation — by toggling festival mode the student is explicitly
-  // opting INTO sound). All festival sounds are short, kept under -12dB-ish
-  // by the playTone envelope, and skip silently if Web Audio fails. ──
+  // Festival's calmer default follows the active visual theme. The ordinary
+  // audio-cue picker remains independent for non-Festival practice.
+  function typingPracticeFestivalAudioTheme(themeName) {
+    if (themeName === 'steampunk') return 'clack';
+    if (themeName === 'cyberpunk') return 'beep';
+    if (themeName === 'kawaii') return 'pop';
+    if (themeName === 'oceanic') return 'soft';
+    if (themeName === 'neutral') return 'mute';
+    return 'chime';
+  }
+
+  function audioFestivalThemedWord(themeName) {
+    var theme = AUDIO_THEMES[themeName || 'chime'];
+    if (!theme) return;
+    var base = theme.correct.freq;
+    playTone(Math.min(base, 1200), 55, theme.correct.type || 'sine');
+  }
+
+  function audioFestivalThemedMilestone(themeName) {
+    var theme = AUDIO_THEMES[themeName || 'chime'];
+    if (!theme) return;
+    var base = Math.min(theme.correct.freq, 900);
+    var wave = theme.correct.type || 'sine';
+    playTone(base, 75, wave);
+    setTimeout(function() { playTone(Math.min(base * 1.25, 1400), 110, wave); }, 90);
+  }
+
+  // ── 🌈 Maximum Festival audio. Call sites still honor the user's
+  // Audio cues and Mute preferences. Sounds skip silently if Web Audio fails. ──
   // Per-keystroke: tiny pluck. Slight pitch variance per call so rapid
   // typing reads as a melody rather than a metronome.
   function audioFestivalKey() {
@@ -4675,6 +4714,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         // Per-character error counts for this drill (reset on drill entry)
         var errorCharsTuple = useState({});
         var errorChars = errorCharsTuple[0], setErrorChars = errorCharsTuple[1];
+        // Compact position/expected/actual ledger for the end-of-session review.
+        // The uncapped error total remains authoritative if an extreme run
+        // exceeds this storage-safe detail limit.
+        var mistakeEventsRef = useRef([]);
 
         // Per-keystroke timestamps (ms offsets from startTime). Used to compute
         // intra-session pace graph on summary. Uses a ref to avoid one
@@ -4886,6 +4929,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           targetLength: targetLength,
           errorCount: errorCount,
           errorChars: Object.assign({}, errorChars),
+          mistakeEvents: mistakeEventsRef.current.slice(),
           startTime: startTime,
           pausedMs: pausedMs,
           pauseStartedAt: pauseStartedAt,
@@ -4924,6 +4968,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             setStartTime(resumeDraft && Number(resumeDraft.startedAt) > 0 ? Number(resumeDraft.startedAt) : null);
             setErrorCount(resumeDraft ? Math.max(0, Number(resumeDraft.errorCount) || 0) : 0);
             setErrorChars(resumeDraft && resumeDraft.errorChars && typeof resumeDraft.errorChars === 'object' ? Object.assign({}, resumeDraft.errorChars) : {});
+            mistakeEventsRef.current = resumeDraft && Array.isArray(resumeDraft.mistakeEvents) ? resumeDraft.mistakeEvents.slice(0, MAX_TYPING_MISTAKE_EVENTS) : [];
             setLastWasWrong(false);
             setMistakeFeedback(null);
             setPaused(false);
@@ -4962,6 +5007,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               target: targetStr, targetLength: targetLength,
               errorCount: resumeDraft ? Math.max(0, Number(resumeDraft.errorCount) || 0) : 0,
               errorChars: resumeDraft && resumeDraft.errorChars ? Object.assign({}, resumeDraft.errorChars) : {},
+              mistakeEvents: mistakeEventsRef.current.slice(),
               startTime: resumeDraft && Number(resumeDraft.startedAt) > 0 ? Number(resumeDraft.startedAt) : null,
               pausedMs: resumePausedMs, pauseStartedAt: null,
               inputMethods: Object.assign({}, inputMethodCountsRef.current),
@@ -5231,8 +5277,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             var wmMinutes = wmActiveMs / 60000;
             var wmWpm = Math.round((typedLength / 5) / wmMinutes);
             var wmMetric = typingPracticeComputeMetric(typedLength, wmActiveMs, activeTargetLanguage, targetStr);
-            var wmTotalKs = typedLength + errorCount;
-            var wmAcc = wmTotalKs > 0 ? Math.round((typedLength / wmTotalKs) * 100) : 100;
+            var wmAcc = typingPracticeAccuracy(typingPracticeAttemptCount(inputContext.inputGraphemeCounts), errorCount);
             setLastSummary({
               drillId: activeDrill.id,
               drillName: activeDrill.name,
@@ -5245,6 +5290,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               accuracy: wmAcc,
               durationSec: Math.round(wmActiveMs / 1000),
               errors: errorCount,
+              mistakeEvents: mistakeEventsRef.current.slice(),
+              mistakeEventsOmitted: Math.max(0, errorCount - mistakeEventsRef.current.length),
+              practiceMode: state.accommodations.errorTolerant ? 'keep-going' : 'correct-as-you-go',
               charCount: typedLength,
               date: new Date().toISOString(),
               isWarmup: true,
@@ -5279,8 +5327,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var minutes = activeMs / 60000;
           var wpm = Math.round((typedLength / 5) / minutes);
           var sessionMetric = typingPracticeComputeMetric(typedLength, activeMs, activeTargetLanguage, targetStr);
-          var totalKeystrokes = typedLength + errorCount;
-          var accuracy = totalKeystrokes > 0 ? Math.round((typedLength / totalKeystrokes) * 100) : 100;
+          var accuracy = typingPracticeAccuracy(typingPracticeAttemptCount(inputContext.inputGraphemeCounts), errorCount);
           // Compute 10-second-bucket pace (chars-per-10s) for intra-session
           // visualization. Keeps only the bucket counts; ms offsets aren't
           // serialized to save storage for long-term students.
@@ -5306,6 +5353,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             pausedSec: Math.round(pausedTotal / 1000),
             errors: errorCount,
             errorChars: errorChars,  // per-char error map: { 'a': 2, 'd': 1, ... }
+            mistakeEvents: mistakeEventsRef.current.slice(),
+            mistakeEventsOmitted: Math.max(0, errorCount - mistakeEventsRef.current.length),
+            practiceMode: state.accommodations.errorTolerant ? 'keep-going' : 'correct-as-you-go',
             paceBuckets: paceBuckets, // chars typed per 10-second bucket
             charCount: typedLength,
             date: new Date().toISOString(),
@@ -5640,6 +5690,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           if (!result.steps.length) return;
           inputKind = typingPracticeInputKindFromType('', rawText, inputKind) || 'text-input';
           if (!Object.prototype.hasOwnProperty.call(inputMethodCountsRef.current, inputKind)) inputKind = 'text-input';
+          if (result.mistakes && result.mistakes.length && mistakeEventsRef.current.length < MAX_TYPING_MISTAKE_EVENTS) {
+            var availableMistakeSlots = MAX_TYPING_MISTAKE_EVENTS - mistakeEventsRef.current.length;
+            mistakeEventsRef.current = mistakeEventsRef.current.concat(result.mistakes.slice(0, availableMistakeSlots).map(function(item) {
+              return { index: item.index, expected: item.expected, actual: item.actual, attempt: item.attempt, inputKind: inputKind };
+            }));
+          }
           inputMethodCountsRef.current[inputKind] = (inputMethodCountsRef.current[inputKind] || 0) + 1;
           inputMethodGraphemeCountsRef.current[inputKind] = (inputMethodGraphemeCountsRef.current[inputKind] || 0) + result.steps.length;
           var eventTime = Date.now();
@@ -5655,6 +5711,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             typedLength: typingPracticeGraphemes(result.typed).length,
             errorCount: nextErrorCount,
             errorChars: Object.assign({}, nextErrors),
+            mistakeEvents: mistakeEventsRef.current.slice(),
             startTime: nextStartTime,
             inputMethods: Object.assign({}, inputMethodCountsRef.current),
             inputGraphemes: Object.assign({}, inputMethodGraphemeCountsRef.current),
@@ -5679,12 +5736,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             mistakeAnnouncementRef.current = mistakeAnnouncement.next;
             if (mistakeAnnouncement.shouldAnnounce) setMistakeLiveText(mistakeAnnouncement.message);
           }
-          if (state.accommodations.audioCues && lastStep) { if (lastStep.correct) audioCorrect(state.audioTheme); else audioError(state.audioTheme); }
+          if (state.accommodations.audioCues && lastStep) {
+            var themedCelebration = state.festivalMode && (state.festivalIntensity || 'themed') === 'themed';
+            var cueTheme = themedCelebration
+              ? typingPracticeFestivalAudioTheme(state.theme || 'default')
+              : state.audioTheme;
+            // Word completion has its own single themed tone; do not double it
+            // with the ordinary space-key cue.
+            var allowCorrectKeyCue = !themedCelebration || state.festivalSoundDensity === 'keys';
+            if (lastStep.correct && allowCorrectKeyCue && !(themedCelebration && result.lastCompletedRange)) audioCorrect(cueTheme);
+            else if (!lastStep.correct) audioError(cueTheme);
+          }
           if (result.lastCompletedRange) setWordPulse(function(prev) { return { start: result.lastCompletedRange.start, end: result.lastCompletedRange.end, key: prev.key + 1 }; });
           if (state.accommodations.speakWordsOnSpace && result.lastCompletedWord && ctx.callTTS) {
             try { ctx.callTTS(result.lastCompletedWord, null, 1.1, { force: false, language: activeTargetLanguage }).catch(function() {}); } catch (e) {}
           }
-        }, [state.view, drillComplete, targetStr, activeTargetLanguage, typed, startTime, errorCount, errorChars, mistakeFeedback, state.accommodations.errorTolerant, state.accommodations.audioCues, state.accommodations.speakWordsOnSpace, state.audioTheme, paused, pausedMs, pauseStartedAt, sightReadLeft]);
+        }, [state.view, state.festivalMode, state.festivalIntensity, state.festivalSoundDensity, state.theme, drillComplete, targetStr, activeTargetLanguage, typed, startTime, errorCount, errorChars, mistakeFeedback, state.accommodations.errorTolerant, state.accommodations.audioCues, state.accommodations.speakWordsOnSpace, state.audioTheme, paused, pausedMs, pauseStartedAt, sightReadLeft]);
 
         var removeLastTypedCharacter = useCallback(function() {
           if (paused || sightReadLeft > 0) return;
@@ -6098,17 +6165,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   );
                 }),
                 // ── 🌈 Festival mode toggle ──
-                // Opt-in high-stim mode: all 5 mascots cheering, confetti per
-                // word, screen shake on big combos. Default OFF (calm is the
-                // baseline). Sits with the theme swatches because it's a
-                // top-level vibe choice, not a buried setting.
+                // Opt-in celebration layer. The default style follows the
+                // active theme; Maximum Festival remains available in Settings.
                 h('button', {
                   className: 'tp-fest-toggle',
+                  style: state.festivalMode && (state.festivalIntensity || 'themed') === 'themed'
+                    ? { background: 'linear-gradient(90deg, ' + palette.accent + ', ' + palette.success + ')', animation: 'none' }
+                    : undefined,
                   onClick: function() { upd('festivalMode', !state.festivalMode); },
                   'aria-pressed': state.festivalMode ? 'true' : 'false',
-                  'aria-label': state.festivalMode ? 'Festival mode is on. Click to turn off.' : 'Turn on festival mode — all mascots cheer, confetti per word, screen shake on combos. High-stim.',
-                  title: state.festivalMode ? 'Festival mode ON — click to turn off' : 'Festival mode OFF — click for max stim'
-                }, state.festivalMode ? '🌈 Festival ON' : '🌈 Festival')
+                  'aria-label': state.festivalMode ? 'Celebration mode is on. Click to turn off.' : 'Turn on theme-matched celebration mode.',
+                  title: state.festivalMode ? 'Celebration ON — click to turn off' : 'Celebration OFF — click for themed rewards'
+                }, state.festivalMode ? '✨ ' + ((state.festivalIntensity || 'themed') === 'max' ? 'Maximum ON' : 'Themed ON') : '✨ Celebration')
               ),
               // Active theme name + keyboard hint — the text label is the
               // color-independent indicator of which theme is active,
@@ -7793,7 +7861,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           if (acc.highContrast)  activeAccLabels.push('high contrast');
           if (acc.reducedMotion)  activeAccLabels.push('reduced motion');
           if (acc.audioCues)     activeAccLabels.push('audio cues (' + (state.audioTheme || 'chime') + ')');
-          if (acc.errorTolerant) activeAccLabels.push('error-tolerant');
+          if (acc.errorTolerant) activeAccLabels.push('keep going after mistakes');
           if (acc.paceTargetWpm) activeAccLabels.push('pace target ' + acc.paceTargetWpm + ' WPM');
 
           var startNow = function() {
@@ -8054,6 +8122,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 state.iepGoal.targetWpm + ' WPM at ' + state.iepGoal.targetAccuracy + '%'
               ) : null,
 
+              h('div', {
+                role: 'group',
+                'aria-labelledby': 'tp-mistake-mode-title',
+                'aria-describedby': 'tp-mistake-mode-help',
+                style: { marginBottom: '14px', padding: '12px', background: palette.bg, border: '1px solid ' + palette.border, borderRadius: '8px', textAlign: 'left' }
+              },
+                h('div', { id: 'tp-mistake-mode-title', style: { fontSize: '11px', color: palette.text, marginBottom: '3px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 800 } }, 'When a key is wrong'),
+                h('div', { id: 'tp-mistake-mode-help', style: { fontSize: '11px', color: palette.textMute, lineHeight: '1.45', marginBottom: '8px' } }, acc.errorTolerant ? 'Keep going maintains rhythm and reviews every difference at the end.' : 'Correct as you go holds your place until the expected key is entered.'),
+                h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+                  [
+                    { keepGoing: false, label: '↩ Correct as you go' },
+                    { keepGoing: true, label: '🏃 Keep going' }
+                  ].map(function(mode) {
+                    var active = !!acc.errorTolerant === mode.keepGoing;
+                    return h('button', {
+                      key: 'mistake-mode-' + (mode.keepGoing ? 'flow' : 'retry'),
+                      type: 'button',
+                      'aria-pressed': active ? 'true' : 'false',
+                      onClick: function() {
+                        upd('accommodations', Object.assign({}, acc, { errorTolerant: mode.keepGoing }));
+                        setAnnounceText(mode.keepGoing ? 'Keep going selected. Mistakes will advance and appear in the end review.' : 'Correct as you go selected. A mistake will hold the current position for another try.');
+                      },
+                      style: { minHeight: '44px', padding: '8px 12px', borderRadius: '999px', border: '1px solid ' + (active ? palette.accent : palette.border), background: active ? palette.accent : 'transparent', color: active ? (palette.onAccent || '#0f172a') : palette.textDim, fontSize: '11px', fontWeight: active ? 700 : 500, cursor: 'pointer', fontFamily: 'inherit' }
+                    }, mode.label);
+                  })
+                )
+              ),
+
               // Pre-drill quick-toggles: high-frequency accommodations as
               // compact chips so clinicians / students can adjust without
               // round-tripping through the Accommodations page. Tapping a chip
@@ -8087,7 +8183,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     { key: 'highContrast',  spoken: 'High contrast', label: __alloT('stem.typingpractice.contrast', '🌓 Contrast') },
                     { key: 'reducedMotion', spoken: 'Reduce motion', label: __alloT('stem.typingpractice.reduce_motion', '⏸ Motion') },
                     { key: 'audioCues',     spoken: 'Audio cues', label: __alloT('stem.typingpractice.audio', '🔔 Audio') },
-                    { key: 'errorTolerant', spoken: 'Error-tolerant mode', label: __alloT('stem.typingpractice.error_tolerant', '🤝 Error-tolerant') },
                     { key: 'predictiveAssist', spoken: 'Predictive assist', label: __alloT('stem.typingpractice.predict', '🪄 Predict') }
                   ].map(function(opt) {
                     var isOn = !!acc[opt.key];
@@ -9115,6 +9210,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
 
         // ── Festival-mode hooks (top-level so they fire every render, drill view or not) ──
         var festActive = !!state.festivalMode;
+        var festMax = festActive && state.festivalIntensity === 'max';
+        var festAudioTheme = typingPracticeFestivalAudioTheme(state.theme || 'default');
+        var festSoundEnabled = festActive && !!state.accommodations.audioCues && state.audioTheme !== 'mute' && festAudioTheme !== 'mute';
         var festShellRef = useRef(null);
         var festConfettiRef = useRef([]);
         var festSparkleRef = useRef([]);
@@ -9130,27 +9228,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         useEffect(function() {
           if (!festActive) return;
           if (wordPulse.key === 0) return;
-          var palette2 = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#a855f7', '#ec4899'];
+          var festVisualEvents = festMax || (state.festivalVisualDensity || 'events') === 'events';
+          var palette2 = festMax
+            ? ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#a855f7', '#ec4899']
+            : [palette.accent, palette.success, palette.warn, palette.accentDim, palette.textDim];
           var pieces = [];
-          for (var i = 0; i < 14; i++) {
-            pieces.push({
-              key: wordPulse.key + ':' + i + ':' + Date.now(),
-              color: palette2[i % palette2.length],
-              dx: (Math.random() * 200 - 100) + 'px',
-              top: Math.round(80 + Math.random() * 40),
-              left: Math.round(20 + Math.random() * 60)
-            });
+          if (festVisualEvents) {
+            for (var i = 0; i < (festMax ? 14 : 6); i++) {
+              pieces.push({
+                key: wordPulse.key + ':' + i + ':' + Date.now(),
+                color: palette2[i % palette2.length],
+                dx: (Math.random() * 200 - 100) + 'px',
+                top: Math.round(80 + Math.random() * 40),
+                left: Math.round(20 + Math.random() * 60)
+              });
+            }
+            festConfettiRef.current = festConfettiRef.current.concat(pieces);
+            bumpTick();
           }
-          festConfettiRef.current = festConfettiRef.current.concat(pieces);
-          bumpTick();
-          try { audioFestivalWord(); } catch (_) {}
-          setTimeout(function() {
+          if (festSoundEnabled) {
+            try { if (festMax) audioFestivalWord(); else audioFestivalThemedWord(festAudioTheme); } catch (_) {}
+          }
+          if (pieces.length) setTimeout(function() {
             festConfettiRef.current = festConfettiRef.current.filter(function(p) {
               return pieces.indexOf(p) === -1;
             });
             bumpTick();
           }, 1300);
-        }, [festActive, wordPulse.key]);
+        }, [festActive, festMax, festSoundEnabled, festAudioTheme, state.festivalVisualDensity, wordPulse.key]);
 
         useEffect(function() {
           if (!festActive) {
@@ -9162,6 +9267,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             return;
           }
           typedLenRef.current = typed.length;
+          // The themed style keeps the ordinary selected key cue and saves
+          // decorative sparkles for word completion. Maximum retains both.
+          if (!festMax) return;
           var glyphs = ['✨', '⭐', '💫', '✦', '·'];
           var n = 1 + Math.floor(Math.random() * 2);
           var sparkles = [];
@@ -9176,20 +9284,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           }
           festSparkleRef.current = festSparkleRef.current.concat(sparkles);
           bumpTick();
-          try { audioFestivalKey(); } catch (_) {}
+          if (festSoundEnabled) { try { audioFestivalKey(); } catch (_) {} }
           setTimeout(function() {
             festSparkleRef.current = festSparkleRef.current.filter(function(p) {
               return sparkles.indexOf(p) === -1;
             });
             bumpTick();
           }, 700);
-        }, [festActive, typed.length]);
+        }, [festActive, festMax, festSoundEnabled, typed.length]);
 
         useEffect(function() {
           if (!festActive) return;
           if (streak === 0) return;
           var phrase = null;
-          if (streak === 5)        phrase = '🔥 HOT!';
+          if (festMax && streak === 5) phrase = '🔥 HOT!';
           else if (streak === 10)  phrase = '⚡ ON FIRE!';
           else if (streak === 25)  phrase = '💫 UNSTOPPABLE!';
           else if (streak === 50)  phrase = '👑 LEGEND!';
@@ -9202,25 +9310,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           }
           if (streak % 10 === 0) {
             var el = festShellRef.current;
-            if (el) {
+            if (el && festMax) {
               el.classList.add('tp-fest-shake');
               setTimeout(function() { el.classList.remove('tp-fest-shake'); }, 460);
             }
-            try {
-              if (streak >= 100)      { audioFestivalVictory(); audioFestivalAirhorn(); }
+            if (festSoundEnabled) try {
+              if (!festMax) audioFestivalThemedMilestone(festAudioTheme);
+              else if (streak >= 100) { audioFestivalVictory(); audioFestivalAirhorn(); }
               else if (streak >= 50)  { audioFestivalCheer(); audioFestivalBoom(); }
               else if (streak >= 25)  { audioFestivalBassDrop(); audioFestivalPowerUp(); }
               else if (streak >= 10)  { audioFestivalAirhorn(); }
               else                    { audioFestivalCombo(); }
             } catch (_) {}
           }
-          if (phrase) {
+          if (phrase && festMax && festSoundEnabled) {
             try { audioFestivalPartyHorn(); } catch (_) {}
           }
-        }, [festActive, streak]);
+        }, [festActive, festMax, festSoundEnabled, festAudioTheme, streak]);
 
         useEffect(function() {
           if (!festActive) return;
+          if (!festMax && (state.festivalVisualDensity || 'events') === 'milestones') return;
           if (drillComplete || paused) return;
           var cheers = ['YEAH!', 'KEEP GOING!', 'NICE!', 'WOOO!', "LET'S GO!", 'AMAZING!', 'YOU GOT THIS!', 'BOOM!', 'HECK YES!', 'GO GO GO!'];
           var int = setInterval(function() {
@@ -9235,26 +9345,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               festBubbleRef.current = null;
               bumpTick();
             }, 1800);
-          }, 5000);
+          }, festMax ? 5000 : 15000);
           return function() { clearInterval(int); };
-        }, [festActive, drillComplete, paused]);
+        }, [festActive, festMax, state.festivalVisualDensity, drillComplete, paused]);
 
         useEffect(function() {
           if (!festActive) return;
           if (!drillComplete) { setFestFinale(false); return; }
-          var totalKeystrokes = typed.length + errorCount;
-          var acc = totalKeystrokes > 0 ? Math.round((typed.length / totalKeystrokes) * 100) : 0;
+          var acc = typingPracticeAccuracy(typingPracticeAttemptCount(inputMethodGraphemeCountsRef.current), errorCount);
           if (acc >= 100 && !festFinale) {
             setFestFinale(true);
-            try {
-              audioFestivalFinale();
-              setTimeout(function() { try { audioFestivalVictory(); } catch (_) {} }, 250);
-              setTimeout(function() { try { audioFestivalAirhorn(); } catch (_) {} }, 900);
-              setTimeout(function() { try { audioFestivalDing(); } catch (_) {} }, 1700);
+            if (festSoundEnabled) try {
+              if (!festMax) audioCelebrate(festAudioTheme);
+              else {
+                audioFestivalFinale();
+                setTimeout(function() { try { audioFestivalVictory(); } catch (_) {} }, 250);
+                setTimeout(function() { try { audioFestivalAirhorn(); } catch (_) {} }, 900);
+                setTimeout(function() { try { audioFestivalDing(); } catch (_) {} }, 1700);
+              }
             } catch (_) {}
             setTimeout(function() { setFestFinale(false); }, 3000);
           }
-        }, [festActive, drillComplete, typed.length, errorCount]);
+        }, [festActive, festMax, festSoundEnabled, festAudioTheme, drillComplete, typed.length, errorCount]);
 
         // ═════════════════════════════════════════════════════
         // VIEW: DRILL — real typing surface with keystroke capture
@@ -9285,7 +9397,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var minutes = Math.max(activeMs / 60000, 1 / 60);
           var liveWpm = (startTime && typedLength > 0 && activeMs > 0) ? Math.round((typedLength / 5) / minutes) : 0;
           var liveMetric = typingPracticeComputeMetric(typedLength, activeMs, activeTargetLanguage, targetStr);
-          var liveAcc = (typedLength + errorCount) > 0 ? Math.round((typedLength / (typedLength + errorCount)) * 100) : 100;
+          var liveAcc = typingPracticeAccuracy(typingPracticeAttemptCount(inputMethodGraphemeCountsRef.current), errorCount);
           var liveSec = Math.round(activeMs / 1000);
 
           // ── Predictive-assist: how many upcoming chars to highlight ──
@@ -9425,14 +9537,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           }
           return h('div', {
             ref: festShellRef,
-            className: 'tp-battle-stage tp-battle-stage-' + (state.theme || 'default') + ' tp-drill-stage' + (festActive ? ' tp-fest-shell' : '') + (festActive && festFinale ? ' tp-fest-finale-active' : ''),
+            className: 'tp-battle-stage tp-battle-stage-' + (state.theme || 'default') + ' tp-drill-stage' + (festActive ? ' tp-fest-shell' : '') + (festActive && !festMax ? ' tp-fest-themed' : '') + (festActive && festMax && festFinale ? ' tp-fest-finale-active' : ''),
             style: {
               padding: '20px',
               maxWidth: '960px',
               margin: '0 auto',
               color: palette.text,
               fontFamily: fontFamily,
-              background: festActive ? undefined : palette.bg,  // let .tp-fest-shell rainbow show through
+              background: !festActive ? palette.bg : (festMax ? undefined : 'linear-gradient(120deg, ' + palette.bg + ', ' + palette.surface + ', ' + palette.accentDim + ', ' + palette.bg + ')'),
               minHeight: '60vh',
               position: 'relative',
               overflow: 'hidden'
@@ -9454,25 +9566,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               })
             ),
             // ── 🌈 Festival overlay ──
-            // Mounted only when festivalMode is on. Three layers:
-            //   1. All 5 mascots cheering in a row at the bottom.
-            //   2. Big rainbow streak badge top-right when streak ≥ 5.
-            //   3. Live confetti pieces from word-completion bursts.
+            // Themed mode uses one matching mascot and a restrained palette.
+            // Maximum mode keeps the full cast and legacy rainbow treatment.
             festActive ? h('div', {
               key: 'fest-overlay',
               'aria-hidden': 'true',
               style: { position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 1 }
             },
-              // Mascot row — all 5 of them, in combo state
+              // Themed = active mascot only; Maximum = the full cast.
               h('div', { className: 'tp-fest-mascot-row' },
-                ['default', 'steampunk', 'cyberpunk', 'kawaii', 'oceanic'].map(function(themeId) {
+                (festMax ? ['default', 'steampunk', 'cyberpunk', 'kawaii', 'oceanic'] : [state.theme || 'default']).map(function(themeId) {
                   return h('div', { key: 'festmas-' + themeId, style: { width: 64, height: 64 } },
                     renderBattleMascot(themeId, 'combo', { size: 64, label: themeId + ' cheering' })
                   );
                 })
               ),
-              // Streak badge — only at 5+ so it doesn't pop on every keystroke
-              streak >= 5 ? h('div', { className: 'tp-fest-streak-badge' },
+              // Themed waits for a real milestone; Maximum surfaces at 5.
+              streak >= (festMax ? 5 : 10) ? h('div', {
+                className: 'tp-fest-streak-badge',
+                style: festMax ? undefined : { background: 'linear-gradient(135deg, ' + palette.accent + ', ' + palette.success + ')', color: palette.onAccent }
+              },
                 '🔥 ' + streak + ' STREAK'
               ) : null,
               // Confetti pieces (transient — auto-removed after animation)
@@ -9505,7 +9618,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               // at a time; new ones replace old via single-ref state.
               festPhraseRef.current ? h('div', {
                 key: festPhraseRef.current.key,
-                className: 'tp-fest-combo-phrase'
+                className: 'tp-fest-combo-phrase',
+                style: festMax ? undefined : { background: 'linear-gradient(135deg, ' + palette.accent + ', ' + palette.success + ')', WebkitBackgroundClip: 'text', backgroundClip: 'text' }
               }, festPhraseRef.current.text) : null,
               // Mascot speech bubble (random cheer over a random mascot)
               festBubbleRef.current ? h('div', {
@@ -9516,12 +9630,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   // Row uses justify-content: space-around with 5 mascots
                   // padded by 24px. Compute approximate center as a percent.
                   bottom: 84,
-                  left: (10 + festBubbleRef.current.mascotIdx * 20) + '%'
+                  left: festMax ? (10 + festBubbleRef.current.mascotIdx * 20) + '%' : '50%',
+                  borderColor: festMax ? undefined : palette.accent
                 }
               }, festBubbleRef.current.text) : null,
               // Grand finale flash + banner — only during the 3s celebration
-              festFinale ? h('div', { className: 'tp-fest-finale-flash', key: 'fest-finale-flash' }) : null,
-              festFinale ? h('div', { className: 'tp-fest-finale-banner', key: 'fest-finale-banner' }, __alloT('stem.typingpractice.perfect', '✨ PERFECT! ✨')) : null
+              festFinale && festMax ? h('div', { className: 'tp-fest-finale-flash', key: 'fest-finale-flash' }) : null,
+              festFinale ? h('div', {
+                className: 'tp-fest-finale-banner',
+                key: 'fest-finale-banner',
+                style: festMax ? undefined : { background: 'linear-gradient(135deg, ' + palette.accent + ', ' + palette.success + ')', WebkitBackgroundClip: 'text', backgroundClip: 'text' }
+              }, __alloT('stem.typingpractice.perfect', '✨ PERFECT! ✨')) : null
             ) : null,
             // Companion in top-right corner — absolute so it doesn't
             // disturb the existing drill layout. Hidden when neutral
@@ -9942,7 +10061,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             },
               h('div', { 'aria-hidden': 'true', style: { pointerEvents: 'none' } }, chars),
               h('span', { id: 'tp-typing-capture-label', className: 'sr-only', lang: uiLanguage },
-                (paused ? 'Typing paused. Use Resume to continue. ' : sightReadLeft > 0 ? 'Reading time. Typing begins when the countdown ends. ' : 'Typing target ready. ') + (drill.name || 'drill') + '. ' + (state.accommodations.errorTolerant ? 'Error-tolerant mode is on; wrong input advances anyway. ' : '') + 'Physical keyboards, touch keyboards, switch input, paste, and input methods are supported. Press F2 to repeat the next key. Press Escape to open an exit confirmation.'),
+                (paused ? 'Typing paused. Use Resume to continue. ' : sightReadLeft > 0 ? 'Reading time. Typing begins when the countdown ends. ' : 'Typing target ready. ') + (drill.name || 'drill') + '. ' + (state.accommodations.errorTolerant ? 'Keep going is on; mistakes are recorded and reviewed at the end without stopping progress. ' : '') + 'Physical keyboards, touch keyboards, switch input, paste, and input methods are supported. Press F2 to repeat the next key. Press Escape to open an exit confirmation.'),
               h('textarea', {
                 id: 'tp-typing-capture', ref: captureRef, defaultValue: '', rows: 1, inputMode: 'text', autoCapitalize: 'none', autoCorrect: 'off', spellCheck: false,
                 lang: activeTargetLanguage,
@@ -10494,6 +10613,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 renderMetric('Time', formatDuration(s.durationSec), palette, state.theme),
                 renderMetric('Errors', s.errors, palette, state.theme)
               ),
+
+              (s.mistakeEvents && s.mistakeEvents.length > 0) ? (function() {
+                var allMistakes = s.mistakeEvents || [];
+                var mistakeGroups = typingPracticeGroupMistakes(allMistakes);
+                var visibleGroups = mistakeGroups.slice(0, 12);
+                var omitted = Math.max(0, Number(s.mistakeEventsOmitted) || 0);
+                var keepGoingReview = s.practiceMode === 'keep-going';
+                var renderMistakeGroup = function(group, index, prefix) {
+                  return h('li', { key: (prefix || 'mistake-review-') + index, style: { color: palette.textDim, fontSize: '12px', lineHeight: '1.45', marginBottom: '5px' } },
+                    h('strong', { style: { color: palette.text } }, 'Position ' + (group.index + 1) + ': '),
+                    'expected ',
+                    h('kbd', { style: { padding: '1px 5px', border: '1px solid ' + palette.border, borderRadius: '4px', background: palette.surface, color: palette.text, fontFamily: 'ui-monospace, Menlo, monospace' } }, typingPracticeKeyName(group.expected)),
+                    '; entered ',
+                    group.entries.map(function(entry, entryIndex) {
+                      return h('span', { key: 'entered-' + entryIndex },
+                        entryIndex > 0 ? ', ' : '',
+                        h('kbd', { style: { padding: '1px 5px', border: '1px solid ' + palette.danger, borderRadius: '4px', background: palette.surface, color: palette.text, fontFamily: 'ui-monospace, Menlo, monospace' } }, typingPracticeKeyName(entry.actual))
+                      );
+                    }),
+                    group.entries.length > 1 ? ' across ' + group.entries.length + ' attempts' : ''
+                  );
+                };
+                return h('section', {
+                  'aria-labelledby': 'tp-mistake-review-title',
+                  style: { margin: '0 0 20px', padding: '14px 16px', background: palette.bg, border: '1px solid ' + palette.border, borderLeft: '4px solid ' + palette.warn, borderRadius: '10px', textAlign: 'left', position: 'relative', zIndex: 1 }
+                },
+                  h('h3', { id: 'tp-mistake-review-title', style: { margin: '0 0 4px', color: palette.text, fontSize: '14px' } }, 'Mistakes to review · ' + mistakeGroups.length + ' position' + (mistakeGroups.length === 1 ? '' : 's')),
+                  h('p', { style: { margin: '0 0 10px', color: palette.textDim, fontSize: '12px', lineHeight: '1.5' } },
+                    keepGoingReview
+                      ? 'You kept your rhythm. Here is what differed; nothing was hidden or discarded.'
+                      : 'Here are the attempts that differed before you corrected them.'
+                  ),
+                  h('ol', { style: { margin: 0, paddingLeft: '22px', display: 'grid', gap: '7px' } },
+                    visibleGroups.map(function(group, index) { return renderMistakeGroup(group, index, 'mistake-review-'); })
+                  ),
+                  mistakeGroups.length > visibleGroups.length ? h('details', { style: { marginTop: '9px', borderTop: '1px solid ' + palette.border, paddingTop: '5px' } },
+                    h('summary', { style: { minHeight: '44px', display: 'flex', alignItems: 'center', color: palette.accent, fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, 'Show remaining ' + (mistakeGroups.length - visibleGroups.length) + ' position' + (mistakeGroups.length - visibleGroups.length === 1 ? '' : 's')),
+                    h('ol', { start: visibleGroups.length + 1, style: { margin: '4px 0 0', paddingLeft: '22px' } },
+                      mistakeGroups.slice(visibleGroups.length).map(function(group, index) { return renderMistakeGroup(group, index, 'mistake-extra-'); })
+                    )
+                  ) : null,
+                  h('button', {
+                    type: 'button',
+                    onClick: function() {
+                      copyTextToClipboard(typingPracticeMistakeReviewText(s), addToast).then(function(copied) {
+                        setAnnounceText(copied ? 'Mistake review copied to the clipboard.' : 'Mistake review copy failed.');
+                      });
+                    },
+                    style: Object.assign({}, secondaryBtnStyle(palette), { marginTop: '10px', minHeight: '44px', fontSize: '11px', padding: '7px 12px' })
+                  }, '📋 Copy mistake review'),
+                  omitted > 0 ? h('p', { style: { margin: '10px 0 0', color: palette.textMute, fontSize: '11px' } }, omitted + ' more attempt' + (omitted === 1 ? '' : 's') + ' recorded in the total error count.') : null
+                );
+              })() : null,
 
               // 'vs baseline' quiet win chip — shows when the session
               // improved on baseline by ≥2 WPM or ≥2 accuracy points AND
@@ -11586,12 +11758,85 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             ),
             renderToggleRow('High-contrast mode', 'Black / yellow / white palette with maximum contrast.', acc.highContrast, function() { toggle('highContrast', 'High-contrast mode'); }, palette),
             renderToggleRow('Reduce motion', 'Stops decorative animation, moving particles, screen shake, and smooth scrolling inside Typing Lab. Festival Mode stays colorful but still. This works independently of the device setting.', acc.reducedMotion, function() { toggle('reducedMotion', 'Reduce motion'); }, palette),
-            renderToggleRow('Audio cues', 'Soft chime on correct keypress, low tone on errors. Non-alarming.', acc.audioCues, function() { toggle('audioCues', 'Audio cues'); }, palette),
+            h('div', { style: { padding: '12px 0', borderBottom: '1px solid ' + palette.border } },
+              h('div', { id: 'tp-celebration-style-label', style: { fontSize: '14px', fontWeight: 600, color: palette.text, marginBottom: '2px' } }, 'Celebration style'),
+              h('div', { id: 'tp-celebration-style-description', style: { fontSize: '11px', color: palette.textMute, lineHeight: '1.4', marginBottom: '9px' } }, 'Themed is harmonious and follows the active visual theme. Maximum preserves the original rainbow, full-cast, high-stimulation Festival experience. Sounds play only when Audio cues are on.'),
+              h('div', { role: 'group', 'aria-labelledby': 'tp-celebration-style-label', 'aria-describedby': 'tp-celebration-style-description', style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+                [
+                  { id: 'off', label: 'Off' },
+                  { id: 'themed', label: '✨ Themed' },
+                  { id: 'max', label: '🌈 Maximum' }
+                ].map(function(opt) {
+                  var active = opt.id === 'off' ? !state.festivalMode : state.festivalMode && (state.festivalIntensity || 'themed') === opt.id;
+                  return h('button', {
+                    key: 'celebration-' + opt.id,
+                    type: 'button',
+                    'aria-pressed': active ? 'true' : 'false',
+                    onClick: function() {
+                      if (opt.id === 'off') upd('festivalMode', false);
+                      else updMulti({ festivalMode: true, festivalIntensity: opt.id });
+                      setAnnounceText('Celebration style set to ' + opt.label.replace(/^[^A-Za-z]+/, '') + '.');
+                    },
+                    style: { padding: '7px 12px', minHeight: '44px', borderRadius: '999px', border: '1px solid ' + (active ? palette.accent : palette.border), background: active ? palette.accent : 'transparent', color: active ? (palette.onAccent || '#0f172a') : palette.textDim, fontSize: '12px', fontWeight: active ? 700 : 500, cursor: 'pointer', fontFamily: 'inherit' }
+                  }, opt.label);
+                })
+              )
+            ),
+            state.festivalMode && (state.festivalIntensity || 'themed') === 'themed' ? h('div', { style: { padding: '12px 0', borderBottom: '1px solid ' + palette.border } },
+              h('div', { id: 'tp-celebration-sound-label', style: { fontSize: '14px', fontWeight: 600, color: palette.text, marginBottom: '2px' } }, 'Themed celebration sounds'),
+              h('div', { id: 'tp-celebration-sound-description', style: { fontSize: '11px', color: palette.textMute, lineHeight: '1.4', marginBottom: '9px' } }, 'Events only is the quieter default: words, milestones, and mistakes. Every key adds a soft correct-key cue. Audio cues must also be on.'),
+              h('div', { role: 'group', 'aria-labelledby': 'tp-celebration-sound-label', 'aria-describedby': 'tp-celebration-sound-description', style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+                [
+                  { id: 'events', label: '🎵 Events only' },
+                  { id: 'keys', label: '⌨ Every key' }
+                ].map(function(opt) {
+                  var active = (state.festivalSoundDensity || 'events') === opt.id;
+                  return h('button', {
+                    key: 'celebration-sound-' + opt.id,
+                    type: 'button',
+                    'aria-pressed': active ? 'true' : 'false',
+                    onClick: function() {
+                      upd('festivalSoundDensity', opt.id);
+                      setAnnounceText('Themed celebration sounds set to ' + (opt.id === 'events' ? 'events only.' : 'every key.'));
+                    },
+                    style: { padding: '7px 12px', minHeight: '44px', borderRadius: '999px', border: '1px solid ' + (active ? palette.accent : palette.border), background: active ? palette.accent : 'transparent', color: active ? (palette.onAccent || '#0f172a') : palette.textDim, fontSize: '12px', fontWeight: active ? 700 : 500, cursor: 'pointer', fontFamily: 'inherit' }
+                  }, opt.label);
+                })
+              )
+            ) : null,
+            state.festivalMode && (state.festivalIntensity || 'themed') === 'themed' ? h('div', { style: { padding: '12px 0', borderBottom: '1px solid ' + palette.border } },
+              h('div', { id: 'tp-celebration-visual-label', style: { fontSize: '14px', fontWeight: 600, color: palette.text, marginBottom: '2px' } }, 'Themed celebration visuals'),
+              h('div', { id: 'tp-celebration-visual-description', style: { fontSize: '11px', color: palette.textMute, lineHeight: '1.4', marginBottom: '9px' } }, 'Events adds a small word-completion burst and occasional cheer. Milestones only keeps the mascot still until a streak or completion milestone.'),
+              h('div', { role: 'group', 'aria-labelledby': 'tp-celebration-visual-label', 'aria-describedby': 'tp-celebration-visual-description', style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+                [
+                  { id: 'events', label: '✨ Words + milestones' },
+                  { id: 'milestones', label: '🌿 Milestones only' }
+                ].map(function(opt) {
+                  var active = (state.festivalVisualDensity || 'events') === opt.id;
+                  return h('button', {
+                    key: 'celebration-visual-' + opt.id,
+                    type: 'button',
+                    'aria-pressed': active ? 'true' : 'false',
+                    onClick: function() {
+                      upd('festivalVisualDensity', opt.id);
+                      setAnnounceText('Themed celebration visuals set to ' + (opt.id === 'events' ? 'words and milestones.' : 'milestones only.'));
+                    },
+                    style: { padding: '7px 12px', minHeight: '44px', borderRadius: '999px', border: '1px solid ' + (active ? palette.accent : palette.border), background: active ? palette.accent : 'transparent', color: active ? (palette.onAccent || '#0f172a') : palette.textDim, fontSize: '12px', fontWeight: active ? 700 : 500, cursor: 'pointer', fontFamily: 'inherit' }
+                  }, opt.label);
+                })
+              )
+            ) : null,
+            renderToggleRow('Audio cues', 'Feedback sounds for correct input and mistakes. Themed Celebration can limit correct cues to words and milestones.', acc.audioCues, function() { toggle('audioCues', 'Audio cues'); }, palette),
             renderToggleRow('Speak words as you type', 'After each space, the tool reads the just-completed word aloud. Supports listening + reading practice and screen-free typing. Requires the hub\'s text-to-speech to be available.', acc.speakWordsOnSpace, function() { toggle('speakWordsOnSpace', 'Speak words as you type'); }, palette),
             renderToggleRow('Companion mascot in drills', 'Shows the active theme\'s mascot (Pip, Cogsworth, Vex, Mochi, or Inko) in the corner of the drill view. Reacts to clean keystreaks (excited), errors (worried), and completion (celebration). Off by default — some students find peripheral motion distracting; others want a quiet companion through practice.', acc.showCompanion, function() { toggle('showCompanion', 'Companion mascot in drills'); }, palette),
 
+            acc.audioCues && state.audioTheme !== 'mute' && state.festivalMode && (state.festivalIntensity || 'themed') === 'themed' ? h('div', {
+              role: 'note',
+              style: { padding: '10px 12px', margin: '8px 0', border: '1px solid ' + palette.border, borderLeft: '3px solid ' + palette.accent, borderRadius: '7px', color: palette.textDim, fontSize: '11px', lineHeight: '1.45' }
+            }, 'Sound family is matched to the visual theme: ' + typingPracticeFestivalAudioTheme(state.theme || 'default') + '. Choose a different visual theme to change the celebration sound family.') : null,
+
             // Audio theme picker — only visible when audio cues are on.
-            acc.audioCues ? h('div', {
+            acc.audioCues && (!(state.festivalMode && (state.festivalIntensity || 'themed') === 'themed') || state.audioTheme === 'mute') ? h('div', {
               role: 'group',
               'aria-labelledby': 'tp-sound-theme-label',
               style: { padding: '10px 0 14px 0', borderBottom: '1px solid ' + palette.border, display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }
@@ -11629,7 +11874,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 }, themeLabel);
               })
             ) : null,
-            renderToggleRow('Error-tolerant mode', 'Errors don\'t block progress — the target advances with the correct character so you keep going.', acc.errorTolerant, function() { toggle('errorTolerant', 'Error-tolerant mode'); }, palette),
+            renderToggleRow('Keep going after mistakes', 'Maintains typing flow after a wrong key, records what differed, and reviews mistakes at the end.', acc.errorTolerant, function() { toggle('errorTolerant', 'Keep going after mistakes'); }, palette),
             renderToggleRow('Predictive assist', 'Shows the next 1–3 characters with a soft highlight so emerging typists can plan the next move. Auto-fades as your accuracy on this drill improves.', acc.predictiveAssist, function() { toggle('predictiveAssist', 'Predictive assist'); }, palette),
             renderToggleRow('🎨 Story mode (illustrate passages)', 'After you finish a personalized-passage drill, offer a button to illustrate the passage with an AI-generated image. Educational-illustration style, student-friendly. Off by default.', acc.storyModeImage, function() { toggle('storyModeImage', 'Story mode'); }, palette),
             renderToggleRow('🎨 Prompt mode (art from custom drills)', 'After you finish a custom-drill session, your drill text becomes an AI image prompt. Drill again and the image refines via image-to-image — typing becomes the brushstroke. Off by default.', acc.promptModeImage, function() { toggle('promptModeImage', 'Prompt mode'); }, palette),
@@ -13563,6 +13808,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   d.inputMethods && d.inputMethods.length ? h('div', { style: { color: palette.textMute, fontSize: '11px', marginBottom: '4px' } },
                     'Input: ' + d.inputMethods.join(', ')
                   ) : null,
+                  d.practiceMode ? h('div', { style: { color: palette.textMute, fontSize: '11px', marginBottom: '4px' } },
+                    'Mistake response: ' + (d.practiceMode === 'keep-going' ? 'Keep going' : 'Correct as you go')
+                  ) : null,
+                  d.mistakeEvents && d.mistakeEvents.length ? (function() {
+                    var detailGroups = typingPracticeGroupMistakes(d.mistakeEvents);
+                    var visibleDetailGroups = detailGroups.slice(0, 20);
+                    var renderDetailMistake = function(group, index, prefix) {
+                      return h('li', { key: (prefix || 'detail-mistake-') + index, style: { marginBottom: '4px' } },
+                        'Position ' + (group.index + 1) + ': expected ' + typingPracticeKeyName(group.expected) + '; entered ' + group.entries.map(function(entry) { return typingPracticeKeyName(entry.actual); }).join(', ')
+                      );
+                    };
+                    return h('details', { style: { margin: '8px 0', padding: '8px 10px', border: '1px solid ' + palette.border, borderRadius: '7px' } },
+                      h('summary', { style: { minHeight: '44px', display: 'flex', alignItems: 'center', color: palette.accent, fontSize: '11px', fontWeight: 700, cursor: 'pointer' } },
+                        'Review ' + detailGroups.length + ' mistake position' + (detailGroups.length === 1 ? '' : 's')
+                      ),
+                      h('ol', { style: { margin: '4px 0 0', paddingLeft: '20px', color: palette.textDim, fontSize: '11px' } },
+                        visibleDetailGroups.map(function(group, index) { return renderDetailMistake(group, index, 'detail-mistake-'); })
+                      ),
+                      detailGroups.length > visibleDetailGroups.length ? h('details', { style: { marginTop: '7px', borderTop: '1px solid ' + palette.border, paddingTop: '4px' } },
+                        h('summary', { style: { minHeight: '44px', display: 'flex', alignItems: 'center', color: palette.accent, fontSize: '10px', fontWeight: 700, cursor: 'pointer' } },
+                          'Show remaining ' + (detailGroups.length - visibleDetailGroups.length) + ' position' + (detailGroups.length - visibleDetailGroups.length === 1 ? '' : 's')
+                        ),
+                        h('ol', { start: visibleDetailGroups.length + 1, style: { margin: '4px 0 0', paddingLeft: '20px', color: palette.textDim, fontSize: '11px' } },
+                          detailGroups.slice(visibleDetailGroups.length).map(function(group, index) { return renderDetailMistake(group, index, 'detail-extra-mistake-'); })
+                        )
+                      ) : null,
+                      h('button', {
+                        type: 'button',
+                        onClick: function() {
+                          copyTextToClipboard(typingPracticeMistakeReviewText(d), addToast).then(function(copied) {
+                            setAnnounceText(copied ? 'Mistake review copied to the clipboard.' : 'Mistake review copy failed.');
+                          });
+                        },
+                        style: Object.assign({}, secondaryBtnStyle(palette), { marginTop: '8px', minHeight: '44px', fontSize: '10px', padding: '6px 10px' })
+                      }, '📋 Copy mistake review')
+                    );
+                  })() : null,
                   d.measurementComparable === false ? h('div', { role: 'note', style: { color: palette.warn, fontSize: '11px', fontWeight: 600, marginBottom: '4px' } },
                     'Assisted practice - excluded from comparative performance metrics'
                   ) : null,
@@ -16697,6 +16979,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     };
   }
 
+  function typingPracticeAttemptCount(inputGraphemeCounts) {
+    var counts = inputGraphemeCounts && typeof inputGraphemeCounts === 'object' ? inputGraphemeCounts : {};
+    return Object.keys(counts).reduce(function(total, key) {
+      return total + Math.max(0, Number(counts[key]) || 0);
+    }, 0);
+  }
+
+  function typingPracticeAccuracy(attemptCount, errorCount) {
+    var attempts = Math.max(0, Number(attemptCount) || 0);
+    var errors = Math.max(0, Number(errorCount) || 0);
+    if (attempts <= 0) return 100;
+    var correct = Math.max(0, attempts - errors);
+    return Math.max(0, Math.min(100, Math.round((correct / attempts) * 100)));
+  }
+
+  function typingPracticeGroupMistakes(events) {
+    var groups = [];
+    var byIndex = {};
+    (Array.isArray(events) ? events : []).forEach(function(event) {
+      if (!event || !Number.isFinite(Number(event.index))) return;
+      var index = Math.max(0, Math.floor(Number(event.index)));
+      var key = String(index);
+      if (!byIndex[key]) {
+        byIndex[key] = { index: index, expected: event.expected, entries: [] };
+        groups.push(byIndex[key]);
+      }
+      byIndex[key].entries.push({
+        actual: event.actual,
+        attempt: Math.max(1, Number(event.attempt) || 1),
+        inputKind: event.inputKind || ''
+      });
+    });
+    return groups;
+  }
+
+  function typingPracticeMistakeReviewText(session) {
+    session = session || {};
+    var groups = typingPracticeGroupMistakes(session.mistakeEvents || []);
+    var lines = [
+      'Typing mistake review',
+      'Practice mode: ' + (session.practiceMode === 'keep-going' ? 'Keep going' : 'Correct as you go'),
+      'Total errors: ' + Math.max(0, Number(session.errors) || 0),
+      'Positions reviewed: ' + groups.length
+    ];
+    groups.forEach(function(group) {
+      lines.push('Position ' + (group.index + 1) + ': expected ' + typingPracticeKeyName(group.expected) + '; entered ' + group.entries.map(function(entry) {
+        return typingPracticeKeyName(entry.actual);
+      }).join(', '));
+    });
+    var omitted = Math.max(0, Number(session.mistakeEventsOmitted) || 0);
+    if (omitted > 0) lines.push('Additional attempts retained only in the total error count: ' + omitted);
+    return lines.join('\n');
+  }
+
   function typingPracticeApplyTextInput(target, typed, input, options) {
     options = options || {};
     var targetChars = typingPracticeGraphemes(target);
@@ -16705,7 +17041,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     var errorTolerant = !!options.errorTolerant;
     var streak = Math.max(0, Number(options.streak) || 0);
     var feedback = options.feedback || null;
-    var steps = [], errorsByCharacter = {}, lastCompletedWord = '', lastCompletedRange = null;
+    var steps = [], mistakes = [], errorsByCharacter = {}, lastCompletedWord = '', lastCompletedRange = null;
     var errorCount = 0, advancedCount = 0;
     for (var i = 0; i < inputChars.length && typedChars.length < targetChars.length; i++) {
       var actual = inputChars[i], index = typedChars.length, expected = targetChars[index];
@@ -16717,6 +17053,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         var errorKey = expected && expected !== ' ' ? typingPracticeNormalizeText(expected).toLocaleLowerCase() : '';
         if (errorKey) errorsByCharacter[errorKey] = (errorsByCharacter[errorKey] || 0) + 1;
         feedback = { expected: expected, actual: actual, advanced: errorTolerant, index: index, attempt: feedback && feedback.index === index ? feedback.attempt + 1 : 1 };
+        mistakes.push({ index: index, expected: expected, actual: actual, attempt: feedback.attempt });
         if (errorTolerant) typedChars.push(expected);
       }
       if (advanced) {
@@ -16729,7 +17066,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       }
       steps.push({ expected: expected, actual: actual, correct: correct, advanced: advanced, index: index });
     }
-    return { typed: typedChars.join(''), typedLength: typedChars.length, targetLength: targetChars.length, steps: steps, errorCount: errorCount, errorsByCharacter: errorsByCharacter, advancedCount: advancedCount, streak: streak, feedback: feedback, lastWasWrong: steps.length ? !steps[steps.length - 1].correct : false, lastCompletedWord: lastCompletedWord, lastCompletedRange: lastCompletedRange };
+    return { typed: typedChars.join(''), typedLength: typedChars.length, targetLength: targetChars.length, steps: steps, mistakes: mistakes, errorCount: errorCount, errorsByCharacter: errorsByCharacter, advancedCount: advancedCount, streak: streak, feedback: feedback, lastWasWrong: steps.length ? !steps[steps.length - 1].correct : false, lastCompletedWord: lastCompletedWord, lastCompletedRange: lastCompletedRange };
   }
 
   function typingPracticeTargetCue(target, index) {
@@ -16748,7 +17085,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     var expected = typingPracticeKeyName(feedback.expected);
     var actual = typingPracticeKeyName(feedback.actual);
     var message = 'Expected ' + expected + '; you pressed ' + actual + '. ';
-    if (feedback.advanced) message += 'Error-tolerant mode moved ahead with ' + expected + '.';
+    if (feedback.advanced) message += 'Keep going moved ahead and saved this difference for the end review.';
     else message += 'Try ' + expected + ' again.';
     if (!feedback.advanced && feedback.attempt > 1) {
       message += ' Attempt ' + feedback.attempt + ' at this character.';
@@ -17936,7 +18273,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
       return s;
     };
-    var headers = ['date', 'drill_id', 'drill_name', 'wpm', 'metric_value', 'metric_unit', 'accuracy_pct', 'duration_sec', 'paused_sec', 'errors', 'chars_typed', 'accommodations_used', 'input_methods', 'primary_input_method', 'measurement_comparable', 'metric_comparable', 'measurement_note', 'tag', 'is_new_best', 'is_baseline', 'mastery_advanced', 'new_mastery_level', 'reflection', 'error_chars', 'note', 'input_event_counts', 'input_grapheme_counts', 'measurement_exclusion_reasons'];
+    var headers = ['date', 'drill_id', 'drill_name', 'wpm', 'metric_value', 'metric_unit', 'accuracy_pct', 'duration_sec', 'paused_sec', 'errors', 'practice_mode', 'mistake_events_json', 'mistake_events_omitted', 'chars_typed', 'accommodations_used', 'input_methods', 'primary_input_method', 'measurement_comparable', 'metric_comparable', 'measurement_note', 'tag', 'is_new_best', 'is_baseline', 'mastery_advanced', 'new_mastery_level', 'reflection', 'error_chars', 'note', 'input_event_counts', 'input_grapheme_counts', 'measurement_exclusion_reasons'];
     var rows = sessions.map(function(s) {
       // Serialize per-char errors as "a:2|d:1|k:3" for compact CSV consumption
       var errorChars = s.errorChars ? Object.keys(s.errorChars).map(function(k) {
@@ -17944,7 +18281,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       }).join('|') : '';
       return [
         s.date, s.drillId, s.drillName, s.wpm, (s.metricValue == null ? s.wpm : s.metricValue), s.metricUnit || 'WPM', s.accuracy,
-        s.durationSec, (s.pausedSec || 0), s.errors, s.charCount,
+        s.durationSec, (s.pausedSec || 0), s.errors,
+        s.practiceMode || '', JSON.stringify(s.mistakeEvents || []), (s.mistakeEventsOmitted || 0),
+        s.charCount,
         (s.accommodationsUsed || []).join('|'),
         (s.inputMethods || []).join('|'),
         s.primaryInputMethod || '',

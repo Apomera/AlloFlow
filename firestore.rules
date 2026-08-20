@@ -135,16 +135,52 @@ service cloud.firestore {
           // Collaborative escape room: team progress is SHARED game state by
           // design (non-PII enums/ids, session-scoped) — any roster member
           // may update their team's progress; team-slot claims are per-uid.
-          return resource.data.get('escapeRoomState', {})
+          let oldEscape = resource.data.get('escapeRoomState', {});
+          let nextEscape = request.resource.data.get('escapeRoomState', {});
+          let changedEscape = oldEscape.diff(nextEscape).affectedKeys();
+          let oldAll = oldEscape.get('teamProgress', {}).get('All', {});
+          let nextAll = nextEscape.get('teamProgress', {}).get('All', {});
+          let changedAll = oldAll.diff(nextAll).affectedKeys();
+          let nextAction = nextAll.get('questActions', {}).get(request.auth.uid, {});
+          return oldEscape
               .diff(request.resource.data.get('escapeRoomState', {}))
               .affectedKeys().hasOnly(['teamProgress', 'teams'])
             && (
-              !('teams' in resource.data.get('escapeRoomState', {})
-                  .diff(request.resource.data.get('escapeRoomState', {}))
-                  .affectedKeys())
-              || resource.data.get('escapeRoomState', {}).get('teams', {})
-                  .diff(request.resource.data.get('escapeRoomState', {}).get('teams', {}))
-                  .affectedKeys().hasOnly([request.auth.uid])
+              oldEscape.get('mode', '') != 'concept-quest'
+              || !('teamProgress' in changedEscape)
+              || (
+                changedAll.hasOnly(['questVotes', 'questActions', 'questRoles'])
+                && (!('questVotes' in changedAll)
+                  || (oldAll.get('questVotes', {}).diff(nextAll.get('questVotes', {})).affectedKeys().hasOnly([request.auth.uid])
+                    && nextAll.get('questVotes', {}).get(request.auth.uid, '') is string
+                    && nextAll.get('questVotes', {}).get(request.auth.uid, '').matches('^room-[1-8]$')))
+                && (!('questRoles' in changedAll)
+                  || (oldAll.get('questRoles', {}).diff(nextAll.get('questRoles', {})).affectedKeys().hasOnly([request.auth.uid])
+                    && nextAll.get('questRoles', {}).get(request.auth.uid, '') in ['analyst', 'explainer', 'connector', 'investigator']))
+                && (!('questActions' in changedAll)
+                  || (oldAll.get('questActions', {}).diff(nextAll.get('questActions', {})).affectedKeys().hasOnly([request.auth.uid])
+                    && nextAction is map
+                    && nextAction.keys().hasOnly(['abilityId', 'roleId', 'answerIndex', 'submittedAt', 'supportId', 'supportTargetUid'])
+                    && nextAction.get('abilityId', '') in ['analyze', 'explain', 'connect', 'question']
+                    && nextAction.get('roleId', '') in ['', 'analyst', 'explainer', 'connector', 'investigator']
+                    && nextAction.get('supportId', '') in ['', 'clarify', 'guard', 'encourage']
+                    && nextAction.get('supportTargetUid', '') is string
+                    && ((nextAction.get('supportId', '') == '' && nextAction.get('supportTargetUid', '') == '')
+                      || (nextAction.get('supportId', '') != ''
+                        && nextAction.get('supportTargetUid', '').matches('^[A-Za-z0-9_-]{1,128}$')
+                        && nextAction.get('supportTargetUid', '') != request.auth.uid))
+                    && nextAction.get('answerIndex', -1) is int
+                    && nextAction.get('answerIndex', -1) >= 0
+                    && nextAction.get('answerIndex', -1) <= 5
+                    && nextAction.get('submittedAt', 0) is number
+                    && nextAction.get('submittedAt', 0) > 0))
+              )
+            )
+            && (
+              !('teams' in changedEscape)
+              || (oldEscape.get('teams', {}).diff(nextEscape.get('teams', {})).affectedKeys().hasOnly([request.auth.uid])
+                && (oldEscape.get('mode', '') != 'concept-quest'
+                  || nextEscape.get('teams', {}).get(request.auth.uid, '') == 'All'))
             );
         }
 

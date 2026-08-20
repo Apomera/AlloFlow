@@ -6,6 +6,22 @@
 const babel = require('@babel/core');
 const fs = require('fs');
 
+function writeIfChanged(file, contents) {
+  if (fs.existsSync(file) && fs.readFileSync(file, 'utf8') === contents) return;
+  let lastError = null;
+  for (let attempt = 0; attempt < 8; attempt++) {
+    try {
+      fs.writeFileSync(file, contents, 'utf8');
+      return;
+    } catch (error) {
+      lastError = error;
+      if (!['EBUSY', 'EPERM', 'UNKNOWN'].includes(error && error.code)) throw error;
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 40 * (attempt + 1));
+    }
+  }
+  throw lastError;
+}
+
 const source = fs.readFileSync('view_adventure_source.jsx', 'utf-8');
 
 const result = babel.transformSync(source, {
@@ -93,6 +109,6 @@ const moduleSrc = `/**
 })();
 `;
 
-fs.writeFileSync('view_adventure_module.js', moduleSrc);
-fs.writeFileSync('desktop/web-app/public/view_adventure_module.js', moduleSrc);
+writeIfChanged('view_adventure_module.js', moduleSrc);
+writeIfChanged('desktop/web-app/public/view_adventure_module.js', moduleSrc);
 console.log('Wrote view_adventure_module.js (' + moduleSrc.length + ' bytes)');

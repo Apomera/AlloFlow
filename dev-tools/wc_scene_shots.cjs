@@ -170,6 +170,7 @@ const SHOTS = [
   ['08-preciplab-rain-light', { wcMode: 'precipHunt' }, false],
   ['09-preciplab-storm-dark', { wcMode: 'precipHunt', precipHunt: { preset: 'summerStorm', moisture: 94, tempC: -6, midLevelTempC: 8, lowLevelHumidity: 82, surfaceTempC: 28, wind: 22, windDirection: 'east', updraft: 78, cloudDepth: 11, terrain: 'plains' } }, true],
   ['10-preciplab-snow-light', { wcMode: 'precipHunt', precipHunt: { preset: 'mountainSnow', moisture: 88, tempC: -16, midLevelTempC: -10, lowLevelHumidity: 76, surfaceTempC: -5, wind: 20, windDirection: 'east', updraft: 58, cloudDepth: 8, terrain: 'mountains' } }, false],
+  ['10b-preciplab-3d-storm-light', { wcMode: 'precipHunt', precipHunt: { viewMode: '3d', preset: 'summerStorm', moisture: 94, tempC: -6, midLevelTempC: 8, lowLevelHumidity: 82, surfaceTempC: 28, wind: 22, windDirection: 'east', updraft: 78, cloudDepth: 11, terrain: 'plains' } }, false],
   // 3D journey. journeyActive + journeyState mirror openPrecipitationIn3d().
   ['11-journey3d-evaporating', { journeyView: '3d', journeyActive: true, journeyState: 'evaporating', journeyPaused: false, activeStage: 'evaporation' }, false],
   ['12-journey3d-precipitating', { journeyView: '3d', journeyActive: true, journeyState: 'precipitating', journeyPaused: false, activeStage: 'precipitation' }, false],
@@ -209,6 +210,7 @@ const SHOTS = [
 const MOBILE_SHOTS = [
   ['M1-explorer-light', {}, false],
   ['M2-preciplab-light', { wcMode: 'precipHunt' }, false],
+  ['M2b-preciplab-3d-light', { wcMode: 'precipHunt', precipHunt: { viewMode: '3d', preset: 'summerStorm', moisture: 94, tempC: -6, midLevelTempC: 8, lowLevelHumidity: 82, surfaceTempC: 28, wind: 22, windDirection: 'east', updraft: 78, cloudDepth: 11, terrain: 'plains' } }, false],
   ['M3-steward-review-light', { wcMode: 'steward', steward: wsReview }, false],
 ];
 
@@ -262,9 +264,9 @@ const MOBILE_SHOTS = [
     // canvas: engineState stays 'loading' if THREE is missing, and a lost
     // context photographs as a plausible-looking blank.
     let glNote = '';
-    if (label.indexOf('journey3d') !== -1) {
+    if (label.indexOf('journey3d') !== -1 || label.indexOf('preciplab-3d') !== -1) {
       const gl = await pg.evaluate(() => {
-        const c = document.querySelector('canvas.wc-journey-3d');
+        const c = document.querySelector('canvas.wc-journey-3d, canvas.wc-precip-3d-canvas');
         if (!c) return { ok: false, why: 'no 3D canvas in DOM' };
         const ctx = c.getContext('webgl2') || c.getContext('webgl');
         if (!ctx) return { ok: false, why: 'canvas has no GL context', state: c.dataset.engineState };

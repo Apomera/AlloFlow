@@ -1,0 +1,301 @@
+'use strict';
+
+const reviewedAt = '2026-08-20';
+const reviewWave = 'eppp-native-quality-wave-30';
+const baselineMetrics = Object.freeze({
+  distractor: { totalItems: 1500, warningOnly: true, forbiddenAggregateChoices: 0, uniqueKeyStemLexicalLeakageCandidates: 51, asymmetricExtremeDistractorCandidates: 90, advancedDirectRecallCandidates: 4, semanticConceptDuplicatePairs: 60, semanticConceptDuplicateClusters: 37, editorialAnchorsWithActiveWarnings: 1, editorialAnchorsWithNoCurrentWarning: 9, priorityDocketItems: 20 },
+  feedback: { totalItems: 1500, totalIncorrectOptions: 4500, itemsWithWarnings: 546, incorrectOptionsWithWarnings: 1530, insufficientDetailOptions: 626, genericTemplateOptions: 845, choiceRestatementOptions: 318, fullKeyEchoOptions: 113, priorityDocketItems: 100 },
+});
+
+const revisions = [
+  {
+    id: 'eppp-v3-biological-001', expectedAnswerIndex: 0, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'The corpus callosum connects:',
+    prompt: 'After a surgical disconnection, information presented to one visual field is difficult to name with the opposite hand, while each hemisphere can still process some input. Which pathway was interrupted?',
+    choices: ['The major commissural tract linking homologous regions of the cerebral hemispheres', 'The projection tract linking the cerebrum with the cerebellar cortex', 'The pathway carrying signals between the thalamus and hypothalamus', 'The association fibers linking nearby frontal and parietal regions'],
+    rationale: 'The corpus callosum is the largest commissural tract and connects homologous cortical regions across the cerebral hemispheres. Disconnection can impair transfer of information between hemispheres while leaving many within-hemisphere functions intact.',
+    feedback: {
+      1: 'Cerebellar connections support coordination and motor learning, but they do not explain a split-brain pattern involving transfer between cerebral hemispheres.',
+      2: 'Thalamic and hypothalamic pathways support relay, autonomic, and endocrine functions. They are not the principal commissural route disrupted in a split-brain procedure.',
+      3: 'Association fibers connect regions within one hemisphere or nearby networks. The clinical clue concerns communication across hemispheres, which requires a commissural tract.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'biological-localize-interhemispheric-transfer-deficit-to-corpus-callosum', distractorDesign: ['cerebellar-projection-confusion', 'diencephalic-pathway-confusion', 'intrahemispheric-association-confusion'],
+  },
+  {
+    id: 'eppp-v3-biological-002', expectedAnswerIndex: 1, expectedDifficulty: 'advanced', targetDifficulty: 'advanced',
+    expectedPrompt: 'The default mode network (DMN) is most active during:',
+    prompt: 'During a quiet rest period, a person shifts into autobiographical reflection and spontaneous thoughts about future plans; activity decreases when the person performs a demanding externally focused task. Which network pattern is most consistent?',
+    choices: ['A task-positive network engaged by sustained external monitoring and response selection', 'Default mode network supporting internally directed and self-referential mentation', 'A primary motor network organizing vigorous movement and proprioceptive feedback', 'An early visual network encoding retinal input before conscious interpretation'],
+    rationale: 'The default mode network is relatively engaged during wakeful rest, autobiographical reflection, mind-wandering, and other internally directed thought. It often decreases during demanding externally focused tasks, though networks interact dynamically rather than switching as a simple binary.',
+    feedback: {
+      0: 'Task-positive systems support externally directed attention and demanding goal performance. The vignette describes the contrasting internally focused state during rest.',
+      2: 'Motor networks support movement and proprioception, neither of which explains autobiographical reflection and future-oriented thought during quiet rest.',
+      3: 'Early visual networks encode incoming visual signals. The reported shift concerns internally generated thought rather than retinal analysis.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'biological-infer-default-mode-network-from-resting-self-referential-thought', distractorDesign: ['task-positive-network-confusion', 'motor-network-confusion', 'visual-network-confusion'],
+  },
+  {
+    id: 'eppp-v3-biological-003', expectedAnswerIndex: 2, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Epigenetics in psychology refers to:',
+    prompt: 'Chronic stress is associated with methylation changes near a gene involved in stress regulation, altering how strongly the gene is expressed while the DNA letters remain unchanged. What process is illustrated?',
+    choices: ['Consumer genetic screening used to estimate inherited psychiatric risk', 'A mutation that changes the nucleotide sequence of a gene', 'An environmentally influenced change in gene expression that preserves the underlying sequence', 'A twin-comparison method for estimating heritability through family resemblance'],
+    rationale: 'Epigenetic mechanisms alter gene regulation, such as through DNA methylation or histone modification, while leaving the underlying nucleotide sequence intact. Environmental experiences can influence these marks, although their persistence and inheritance depend on the mechanism and context.',
+    feedback: {
+      0: 'Genetic screening measures or estimates variants; it does not itself describe an environmentally associated change in gene regulation.',
+      1: 'A mutation changes the nucleotide sequence itself. The vignette explicitly describes altered expression with the underlying DNA sequence preserved.',
+      3: 'Twin designs estimate genetic and environmental contributions by comparing relatives. They do not name the molecular regulation process described in the vignette.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'biological-distinguish-epigenetic-regulation-from-sequence-mutation', distractorDesign: ['genetic-screening-confusion', 'mutation-confusion', 'behavioral-genetics-confusion'],
+  },
+  {
+    id: 'eppp-v3-cognitive-affective-023', expectedAnswerIndex: 3, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'The phenomenon where people are more likely to recall the first and last items in a list is known as:',
+    prompt: 'In a word-list task, participants remember several early words and several words presented at the end, while middle-list recall is weaker. Which memory pattern best describes this U-shaped result?',
+    choices: ['Spacing effect produced by distributing practice opportunities across time', 'Recency effect limited to the final items still active in short-term memory', 'Primacy effect produced by enhanced rehearsal of early items', 'Position-based memory effect combining early-item and late-item advantages'],
+    rationale: 'This U-shaped position effect includes a primacy advantage for early items and a recency advantage for late items. A single primacy or recency label would capture only part of the result.',
+    feedback: {
+      0: 'Spacing concerns the timing of study repetitions and can improve learning, but it does not label a U-shaped position-based recall pattern.',
+      1: 'Recency explains better memory for final items, often supported by short-term availability, but it does not account for the early-item advantage.',
+      2: 'Primacy explains enhanced recall for early items through rehearsal and longer-term encoding. The described result also contains a late-item advantage.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'cognitive-affective-identify-position-based-recall-pattern-from-data', distractorDesign: ['spacing-effect-confusion', 'recency-partial-account', 'primacy-partial-account'],
+  },
+  {
+    id: 'eppp-v3-cognitive-affective-037', expectedAnswerIndex: 0, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: "According to Zajonc's theory of social facilitation, the presence of others enhances performance on:",
+    prompt: 'A skilled pianist performs a familiar piece more accurately when an audience is present, but makes more errors while learning an unfamiliar complex piece under observation. Which prediction fits social facilitation theory?',
+    choices: ['Presence of others can improve well-learned performance when the dominant response is correct', 'Presence of others improves performance across simple, complex, and novel tasks alike', 'Presence of others mainly improves creative problem solving that has no practiced response', 'Presence of others improves unfamiliar complex performance by reducing arousal'],
+    rationale: 'Zajonc proposed that an audience increases arousal, which strengthens dominant responses. This can help well-learned tasks when the dominant response is correct, but can impair novel or complex tasks when the dominant response is incorrect.',
+    feedback: {
+      1: 'The theory predicts task-dependent effects rather than a uniform benefit. An audience can impair unfamiliar or complex performance when the dominant response is not yet correct.',
+      2: 'Creative tasks often involve novel responses, so increased arousal may hinder rather than help. The key distinction is practice level and response dominance.',
+      3: 'The presence of an audience is theorized to increase arousal, not reduce it. Reduced errors for the familiar piece reflect a practiced dominant response.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'cognitive-affective-apply-social-facilitation-to-practice-level', distractorDesign: ['uniform-benefit-claim', 'creativity-benefit-claim', 'arousal-reduction-claim'],
+  },
+  {
+    id: 'eppp-v3-cognitive-affective-038', expectedAnswerIndex: 1, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Tversky and Kahneman showed that people often estimate the probability of an event happening based on how easily examples of that event come to mind. This is known as:',
+    prompt: 'After repeated news coverage of shark attacks, a traveler judges swimming as more dangerous than driving despite being shown population-level risk data. Which heuristic best explains the judgment?',
+    choices: ['Representativeness heuristic based on resemblance to a typical event', 'Availability heuristic based on the ease of recalling vivid examples', 'Anchoring and adjustment based on an initial numerical estimate', 'Confirmation bias based on seeking evidence that supports a prior belief'],
+    rationale: 'The availability heuristic uses the ease with which examples come to mind as a cue for frequency or probability. Vivid, heavily publicized events can therefore feel more common or likely than base-rate data indicates.',
+    feedback: {
+      0: 'Representativeness concerns similarity to a prototype or category. The traveler’s judgment is driven by memorable examples rather than resemblance to a typical event.',
+      2: 'Anchoring begins with an initial value and adjusts from it. No initial numerical estimate is the salient source of the traveler’s risk judgment.',
+      3: 'Confirmation bias involves preferentially seeking or interpreting supporting information. The vignette emphasizes how easily dramatic examples are recalled.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'cognitive-affective-recognize-availability-heuristic-from-media-salience', distractorDesign: ['representativeness-confusion', 'anchoring-confusion', 'confirmation-confusion'],
+  },
+  {
+    id: 'eppp-b008-social-2', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'A voter assumes that most other people share the voter’s own uncommon policy preference. This most directly illustrates:',
+    prompt: 'A person who favors an uncommon policy predicts that a majority of neighbors privately agree, even though a local survey shows the preference is rare. Which social-cognitive bias is illustrated?',
+    choices: ['Pluralistic ignorance in which people misread others’ private beliefs from public behavior', 'Outgroup homogeneity in which members of another group seem unusually similar', 'False consensus in which people overestimate how widely their own view is shared', 'Social facilitation in which an audience changes performance on a task'],
+    rationale: 'The false-consensus effect is the tendency to overestimate how common one’s own beliefs, choices, or behaviors are among other people. The person projects a personal preference onto the broader community despite contrary survey evidence.',
+    feedback: {
+      0: 'Pluralistic ignorance involves privately rejecting a norm while assuming others accept it, often because public behavior is misread. The person here projects a personal view outward.',
+      1: 'Outgroup homogeneity concerns perceiving members of another group as more alike than they are. The vignette concerns estimating agreement with one’s own view.',
+      3: 'Social facilitation concerns audience effects on performance and arousal. It does not explain an inflated estimate of how many people share a belief.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'social-cultural-identify-false-consensus-from-preference-projection', distractorDesign: ['pluralistic-ignorance-confusion', 'outgroup-homogeneity-confusion', 'social-facilitation-confusion'],
+  },
+  {
+    id: 'eppp-v3-social-cultural-018', expectedAnswerIndex: 1, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: "The 'bystander effect' (Latane and Darley) demonstrated that a witness to an emergency is less likely to intervene when there are many other witnesses present. The primary psychological mechanism explaining this is:",
+    prompt: 'In a simulated emergency, a person hesitates because several nearby observers remain still and the person assumes someone else will call for help. Which mechanism most directly explains the delay?',
+    choices: ['Hostile attribution bias that interprets others’ behavior as intentionally threatening', 'Diffusion of responsibility that spreads perceived obligation across bystanders', 'Deindividuation that reduces self-awareness through anonymity and arousal', 'Group polarization that shifts private attitudes toward a more extreme position'],
+    rationale: 'Diffusion of responsibility reduces each bystander’s felt personal obligation when others are present. Ambiguity and pluralistic ignorance can also contribute, but the direct mechanism in the vignette is distributed responsibility.',
+    feedback: {
+      0: 'Hostile attribution involves interpreting ambiguous behavior as hostile. The person is not assigning threatening intent; the hesitation concerns who is responsible for acting.',
+      2: 'Deindividuation involves reduced self-awareness and accountability in groups. It can affect behavior in some settings, but responsibility diffusion more directly explains this emergency delay.',
+      3: 'Group polarization concerns movement toward more extreme group judgments after discussion. It does not describe distributing an emergency response obligation across witnesses.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'social-cultural-explain-bystander-delay-through-diffusion-of-responsibility', distractorDesign: ['hostile-attribution-confusion', 'deindividuation-confusion', 'group-polarization-confusion'],
+  },
+  {
+    id: 'eppp-v3-social-cultural-033', expectedAnswerIndex: 1, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: "A manager attributes an employee's lateness to laziness rather than traffic. This best illustrates:",
+    prompt: 'A supervisor explains an employee’s repeated lateness as a stable personality flaw, even after learning that a transit shutdown affected the commute. Which attributional bias is most apparent?',
+    choices: ['Self-serving bias that protects the evaluator’s own performance image', 'Fundamental attribution error that overweights disposition and underweights situation', 'Actor-observer effect in which the same person explains their own behavior situationally', 'Just-world reasoning that assumes outcomes reflect deserved moral character'],
+    rationale: 'The fundamental attribution error is the tendency to overemphasize dispositional explanations for another person’s behavior while underemphasizing situational constraints. The supervisor discounts the transit disruption and infers laziness.',
+    feedback: {
+      0: 'Self-serving bias protects one’s own self-image by attributing successes internally and setbacks externally. The vignette concerns explaining another person’s conduct.',
+      2: 'The actor-observer effect contrasts explanations for one’s own versus another’s behavior. No comparison between actor and observer perspectives is given; the supervisor’s disposition-focused judgment is central.',
+      3: 'Just-world reasoning links outcomes to deservingness and moral order. The supervisor may imply blame, but the specific error is discounting the situational transit disruption.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'social-cultural-identify-fundamental-attribution-error-in-supervision', distractorDesign: ['self-serving-confusion', 'actor-observer-confusion', 'just-world-confusion'],
+  },
+  {
+    id: 'eppp-v3-lifespan-010', expectedAnswerIndex: 3, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: "Assimilation in Piaget's theory means:",
+    prompt: 'A toddler who knows the word “dog” calls a goat and a sheep “dog” when first encountering them. Which Piagetian process best describes fitting new examples into a familiar schema?',
+    choices: ['Acquiring a new symbolic system through formal instruction', 'Changing a schema because incoming information cannot fit the current organization', 'Building a physiological brain structure through maturation and experience', 'Extending a learned category to unfamiliar animals'],
+    rationale: 'Assimilation occurs when new information is interpreted through an existing schema, as when a child applies a familiar animal label too broadly. Accommodation would involve changing the schema to distinguish the new examples.',
+    feedback: {
+      0: 'Learning a new symbolic system is broader than the process described. The child is using an existing animal schema rather than creating a wholly new system.',
+      1: 'Changing an existing schema to handle information that does not fit is accommodation. The child initially preserves the familiar schema and applies it broadly.',
+      2: 'Brain maturation can support cognitive development, but it is not the Piagetian information-processing term illustrated by the child’s labeling behavior.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'lifespan-distinguish-assimilation-from-accommodation-in-schema-use', distractorDesign: ['symbolic-learning-confusion', 'accommodation-confusion', 'maturation-confusion'],
+  },
+  {
+    id: 'eppp-v3-lifespan-021', expectedAnswerIndex: 2, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Object permanence, according to Piaget, is fully developed by approximately:',
+    prompt: 'A child searches for a toy after watching it move behind several screens and can mentally track a displacement that is no longer visible. Around which period does this ability become well established in Piaget’s account?',
+    choices: ['Around four months, before sustained intentional search develops', 'Around eight to twelve months, when early search errors are still common', 'Around eighteen to twenty-four months, when hidden movement can be represented', 'Around three years, after the preoperational period is well underway'],
+    rationale: 'Piaget placed fully developed object permanence around eighteen to twenty-four months, when toddlers can represent objects and invisible displacements mentally. Earlier search behavior emerges gradually and can include the A-not-B error.',
+    feedback: {
+      0: 'At four months, infants show developing visual and sensorimotor skills but do not reliably represent hidden objects through complex displacements.',
+      1: 'Search begins during the first year, but errors such as A-not-B indicate that object representation is still developing rather than fully established.',
+      3: 'Three-year-olds are already well into symbolic and preoperational thought. Piaget located robust invisible-displacement representation earlier, near the end of the sensorimotor period.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'lifespan-link-invisible-displacement-to-object-permanence-timing', distractorDesign: ['early-infancy-timing', 'emerging-search-timing', 'preoperational-timing'],
+  },
+  {
+    id: 'eppp-v3-lifespan-026', expectedAnswerIndex: 3, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: "Marcia's identity status of 'moratorium' is characterized by:",
+    prompt: 'A college student actively compares career paths and political commitments, discusses alternatives with mentors, and has not yet chosen a stable direction. Which identity status best fits?',
+    choices: ['Foreclosure involving firm commitment adopted before broad exploration', 'Achievement involving exploration followed by a stable commitment', 'Diffusion involving little exploration and little commitment', 'Moratorium involving active exploration while commitment remains unsettled'],
+    rationale: 'Moratorium describes active exploration without a settled commitment. The person is engaged in identity work and considering alternatives; identity achievement would require exploration followed by a more stable choice.',
+    feedback: {
+      0: 'Foreclosure involves commitment made with limited exploration, often adopting expectations from authority figures. The student is actively comparing alternatives.',
+      1: 'Achievement follows meaningful exploration with a relatively stable commitment. The student has not yet chosen a settled direction.',
+      2: 'Diffusion involves low exploration and low commitment. The student’s sustained comparison and discussion show active exploration.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'lifespan-classify-marcia-moratorium-from-active-exploration', distractorDesign: ['foreclosure-confusion', 'achievement-confusion', 'diffusion-confusion'],
+  },
+  {
+    id: 'eppp-v3-assessment-008', expectedAnswerIndex: 1, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: 'The Beck Depression Inventory-II (BDI-II) is classified as a:',
+    prompt: 'A clinician asks an adult to rate recent sadness, sleep, appetite, and energy so mood-related concerns can be tracked across treatment sessions. Which type of measure is being used?',
+    choices: ['Projective personality test requiring interpretation of ambiguous stimuli', 'Self-report inventory for rating depressive symptoms', 'Structured clinical interview administered through standardized diagnostic questions', 'Neuropsychological test assessing memory, attention, and executive functioning'],
+    rationale: 'The BDI-II is a self-report inventory in which respondents rate depressive symptoms over a recent period. It can support screening and severity tracking but does not replace diagnostic assessment or measure personality structure.',
+    feedback: {
+      0: 'Projective tests use ambiguous stimuli to elicit material for interpretive analysis. The described ratings are direct reports of symptom severity.',
+      2: 'A structured interview uses an examiner’s standardized questions and follow-up judgments. The BDI-II is completed by the respondent as a symptom inventory.',
+      3: 'Neuropsychological tests sample cognitive functioning such as memory and attention. The described items concern mood and vegetative symptoms.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'assessment-classify-bdi-as-self-report-symptom-inventory', distractorDesign: ['projective-measure-confusion', 'interview-measure-confusion', 'neuropsych-measure-confusion'],
+  },
+  {
+    id: 'eppp-v3-assessment-018', expectedAnswerIndex: 3, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Response sets in assessment include all EXCEPT:',
+    prompt: 'A validity review distinguishes systematic answering styles from variance that reflects the intended trait. Which finding is not a response set?',
+    choices: ['Acquiescence, in which a respondent tends to endorse statements', 'Socially desirable responding, in which a respondent presents favorably', 'Random responding, in which answers lack consistent relation to item content', 'The desired signal tied to the measured attribute'],
+    rationale: 'Response sets are systematic tendencies that bias answers across item content, such as acquiescence, social desirability, or random responding. Construct-relevant variance is the desired signal related to the intended attribute, not a response bias.',
+    feedback: {
+      0: 'Acquiescence is a response style involving a tendency to agree or endorse, potentially regardless of item content. It is a classic response-set concern.',
+      1: 'Social desirability shapes answers toward favorable self-presentation and can distort interpretation. It is a systematic response tendency rather than construct signal.',
+      2: 'Random responding produces unreliable answers that are weakly related to content. It is treated as a response-style problem even though it lacks a stable direction.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'assessment-distinguish-response-sets-from-construct-relevant-variance', distractorDesign: ['acquiescence-example', 'social-desirability-example', 'random-response-example'],
+  },
+  {
+    id: 'eppp-v3-assessment-027', expectedAnswerIndex: 0, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: 'When the base rate of a condition is very low, even a good screening test will produce:',
+    prompt: 'A condition affects 1% of a population. A screening test has strong sensitivity and specificity, yet most positive results in a mass screening program are later found to be false alarms. Which concept explains this outcome?',
+    choices: ['A high false-alarm count because low prevalence limits predictive value', 'Perfect classification because high-quality tests overcome population prevalence', 'No errors because a screening test with strong accuracy is definitive', 'Very few false negatives because prevalence determines sensitivity directly'],
+    rationale: 'When prevalence is low, even a test with good sensitivity and specificity can yield many false positives relative to true positives. The positive predictive value depends strongly on the condition’s base rate and the test’s likelihood ratios.',
+    feedback: {
+      1: 'High sensitivity and specificity improve classification but do not erase the mathematical effect of a rare condition. Predictive value still depends on prevalence.',
+      2: 'Screening tests are not definitive and retain false positives and false negatives. Low prevalence makes the positive predictive value especially vulnerable.',
+      3: 'Sensitivity is the true-positive rate among people who have the condition; prevalence does not determine it directly. The vignette concerns the proportion of positive screens that are true.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'assessment-apply-base-rate-effect-to-positive-predictive-value', distractorDesign: ['perfect-test-overclaim', 'error-free-screening-claim', 'sensitivity-prevalence-confusion'],
+  },
+  {
+    id: 'eppp-v3-intervention-001', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Lithium is the first-line pharmacological treatment for:',
+    prompt: 'A patient with recurrent manic episodes needs maintenance treatment that also has evidence for reducing suicide risk. The prescriber discusses serum monitoring and kidney and thyroid follow-up. Which medication best fits?',
+    choices: ['A stimulant or nonstimulant regimen for attention-deficit/hyperactivity disorder', 'An SSRI antidepressant regimen for major depressive disorder', 'Lithium as a mood stabilizer for bipolar I disorder', 'An SSRI, SNRI, or buspirone regimen for generalized anxiety disorder'],
+    rationale: 'Lithium is a mood stabilizer used in bipolar I disorder for acute mania and maintenance, with evidence for reducing suicide risk. Its narrow therapeutic range requires laboratory monitoring and attention to renal and thyroid effects.',
+    feedback: {
+      0: 'Attention-deficit/hyperactivity disorder is treated with stimulant or selected nonstimulant medications, not lithium. The manic history and monitoring plan point to mood stabilization.',
+      1: 'Antidepressants can treat depressive disorders but do not account for recurrent mania and may require caution in bipolar illness. Lithium directly addresses the stated maintenance goal.',
+      3: 'Anxiolytic regimens target generalized anxiety symptoms. They do not provide the mood-stabilizing and suicide-risk evidence relevant to recurrent mania.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'intervention-select-lithium-for-bipolar-maintenance-and-risk-reduction', distractorDesign: ['adhd-medication-mismatch', 'unipolar-depression-mismatch', 'anxiety-medication-mismatch'],
+  },
+  {
+    id: 'eppp-v3-intervention-003', expectedAnswerIndex: 0, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Client-centered therapy (Rogers) requires three core conditions:',
+    prompt: 'A therapist conveys genuine presence, accurately understands the client’s frame of reference, and maintains nonpossessive acceptance while the client explores difficult experience. Which conditions are represented?',
+    choices: ['Congruence, empathic attunement, and unconditional positive regard', 'Free association, transference interpretation, and dream analysis', 'Behavioral assignments, exposure practice, and formal thought records', 'Interpretive confrontation, directive teaching, and symptom monitoring'],
+    rationale: 'Rogers identified congruence or genuineness, empathic understanding, and unconditional positive regard as core conditions of client-centered therapy. The therapist’s stance supports exploration rather than imposing an interpretive or directive agenda.',
+    feedback: {
+      1: 'Interpretive work with free association, transference, and dreams is associated with psychoanalytic approaches. It does not describe the relational conditions emphasized here.',
+      2: 'Assignments, exposure, and thought records are structured cognitive-behavioral methods. The vignette focuses on therapist presence and acceptance rather than technique practice.',
+      3: 'Directive teaching and confrontation are not the defining stance of client-centered therapy. The therapist facilitates exploration through empathic, genuine, accepting contact.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'intervention-recognize-rogerian-core-conditions-in-therapist-stance', distractorDesign: ['psychoanalytic-method-set', 'cognitive-behavioral-method-set', 'directive-therapy-set'],
+  },
+  {
+    id: 'eppp-v3-intervention-050', expectedAnswerIndex: 2, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Which is NOT considered an evidence-based treatment for PTSD?',
+    prompt: 'A clinician reviews cognitive processing therapy, EMDR, prolonged exposure, and a traditional free-association method when selecting care for trauma symptoms. Which candidate has the weakest status as an established treatment?',
+    choices: ['Cognitive Processing Therapy with structured trauma-related cognitive work', 'Eye Movement Desensitization and Reprocessing with trauma-focused processing', 'Psychoanalytic free association as a standalone clinical option', 'Prolonged Exposure with systematic therapeutic confrontation of avoided memories'],
+    rationale: 'Cognitive processing therapy, EMDR, and prolonged exposure have substantial evidence and guideline support for PTSD. Traditional psychoanalytic free association alone is not an established first-line PTSD protocol in the same evidence-based sense.',
+    feedback: {
+      0: 'Cognitive processing therapy is a trauma-focused treatment with evidence for PTSD and targets interpretations that maintain distress. It is not the unsupported option.',
+      1: 'EMDR is included in major evidence-based PTSD treatment guidance, with structured procedures for trauma processing and bilateral stimulation.',
+      3: 'Prolonged exposure has a substantial PTSD evidence base and uses structured exposure to trauma memories and avoided situations. It is not the weakly supported option.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'intervention-compare-evidence-status-of-ptsd-treatments', distractorDesign: ['cpt-evidence-confusion', 'emdr-evidence-confusion', 'prolonged-exposure-evidence-confusion'],
+  },
+  {
+    id: 'eppp-b003-research-1', expectedAnswerIndex: 0, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: "A researcher measures the same participants' cognitive performance annually for ten years. Which design is being used?",
+    prompt: 'Researchers assess the same adults’ memory every year for a decade to model individual change and differences in aging. Which design best describes this plan?',
+    choices: ['Longitudinal design with repeated observations of the same participants', 'Cross-sectional design comparing different age groups at one assessment occasion', 'Posttest group design measuring outcomes after a single intervention', 'Case-control design sampling people based on a prior outcome'],
+    rationale: 'A longitudinal design repeatedly measures the same participants over time, allowing researchers to study individual change and temporal ordering. Cross-sectional designs instead compare people at one occasion.',
+    feedback: {
+      1: 'Cross-sectional research compares different people or groups at one time rather than tracking the same participants across a decade.',
+      2: 'A posttest-only design concerns an intervention and a single outcome assessment. The defining feature here is repeated measurement over time.',
+      3: 'Case-control sampling begins with an outcome and compares prior exposures. The study described follows a defined group through repeated cognitive assessments.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'research-classify-longitudinal-design-from-repeated-person-level-measures', distractorDesign: ['cross-sectional-confusion', 'posttest-design-confusion', 'case-control-confusion'],
+  },
+  {
+    id: 'eppp-v3-research-005', expectedAnswerIndex: 1, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'A quasi-experimental design differs from a true experiment primarily because it:',
+    prompt: 'A school district introduces a new curriculum in one intact school and compares outcomes with another school, but administrators do not randomly assign students to schools. What feature makes this quasi-experimental?',
+    choices: ['It lacks a formal hypothesis about relations among variables', 'It lacks random assignment to the manipulated conditions', 'It lacks a measurable dependent variable recorded by researchers', 'It uses qualitative interviews rather than quantitative observations'],
+    rationale: 'Quasi-experiments can include a deliberate intervention and a measurable outcome but lack random assignment to conditions. Pre-existing group differences can therefore threaten causal interpretation even when outcomes are compared systematically.',
+    feedback: {
+      0: 'Quasi-experiments can test explicit hypotheses about manipulated conditions and outcomes. The distinguishing limitation is allocation rather than hypothesis formation.',
+      2: 'A quasi-experiment still measures outcomes; the absence of random assignment is what limits equivalence between groups and causal confidence.',
+      3: 'Quasi-experiments may use quantitative, qualitative, or mixed methods. Method format does not define the design as quasi-experimental.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'research-identify-quasi-experiment-through-nonrandomized-intervention', distractorDesign: ['hypothesis-misconception', 'outcome-measurement-misconception', 'method-format-misconception'],
+  },
+  {
+    id: 'eppp-v3-research-012', expectedAnswerIndex: 1, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'A within-subjects (repeated measures) design:',
+    prompt: 'Each participant completes a memory task after caffeine, placebo, and no-drink conditions, with the order counterbalanced. Which design feature is present?',
+    choices: ['Different participants are assigned to each condition', 'The same participants are tested across each condition', 'Order effects cannot be addressed in this type of design', 'The design often needs more participants than a between-subjects study'],
+    rationale: 'A within-subjects design exposes each participant to every condition, allowing each person to serve as a control for stable individual differences. Counterbalancing can reduce order effects, although carryover remains a design consideration.',
+    feedback: {
+      0: 'Different participants per condition describes a between-subjects design. The vignette explicitly repeats the conditions within each participant.',
+      2: 'Within-subjects studies can address order effects through counterbalancing, randomization, washout periods, or modeling carryover when appropriate.',
+      3: 'Repeated-measures designs often require fewer participants because each person contributes data to multiple conditions. Sample size still depends on power and design assumptions.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'research-recognize-within-subjects-design-and-counterbalancing', distractorDesign: ['between-subjects-confusion', 'order-effect-overclaim', 'sample-size-overclaim'],
+  },
+  {
+    id: 'eppp-v3-professional-046', expectedAnswerIndex: 1, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Under FERPA, parents have the right to:',
+    prompt: 'A school psychologist receives a parent’s request to review records documenting the parent’s minor child’s educational evaluation. The child is not yet 18 and has not enrolled in college. Which general FERPA principle is most relevant?',
+    choices: ['Parents may access a psychologist’s separate private psychotherapy notes depending on record type', 'Parents generally may inspect their underage student’s education records subject to applicable exceptions', 'Parents may access records of an adult college student in the absence of consent or an applicable exception', 'Parents may publish protected student records because access permits public disclosure'],
+    rationale: 'FERPA generally gives parents rights to inspect and review their minor child’s education records, subject to statutory exceptions and school procedures. Rights typically transfer to the student at age 18 or upon postsecondary enrollment.',
+    feedback: {
+      0: 'Education-record access does not authorize access to a clinician’s separate psychotherapy notes, which are treated differently from records maintained for educational purposes.',
+      2: 'FERPA rights generally transfer to the student at age 18 or upon college enrollment, subject to limited exceptions. A parent’s prior role does not create unlimited adult access.',
+      3: 'Inspection rights do not authorize public disclosure. Education records remain subject to privacy protections and permitted-use rules.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'professional-apply-ferpa-parent-access-to-minor-education-records', distractorDesign: ['psychotherapy-notes-confusion', 'adult-student-access-confusion', 'access-disclosure-confusion'],
+  },
+  {
+    id: 'eppp-v3-professional-059', expectedAnswerIndex: 2, expectedDifficulty: 'foundation', targetDifficulty: 'intermediate',
+    expectedPrompt: 'Informed consent must include all of the following EXCEPT:',
+    prompt: 'During an informed-consent review, the clinician explains treatment purpose, likely risks and benefits, alternatives, fees, and the client’s right to stop. Which item does not ordinarily belong as a required consent element?',
+    choices: ['The nature and purpose of the proposed treatment', 'Potential risks, benefits, and reasonable alternatives', 'The therapist’s personal therapy history and private clinical experiences', 'The client’s freedom to ask questions and withdraw from treatment'],
+    rationale: 'Informed consent addresses the proposed service, foreseeable risks and benefits, alternatives, fees or limits, confidentiality, and the client’s voluntary choice. A therapist’s personal therapy history is not a required disclosure and may create boundary concerns.',
+    feedback: {
+      0: 'Explaining the nature and purpose of treatment helps the client make an informed and voluntary decision. It is a standard consent element.',
+      1: 'Risks, benefits, and alternatives are central to meaningful consent because they allow the client to weigh options and foreseeable consequences.',
+      3: 'Voluntary participation includes opportunities for questions and the ability to decline or stop services, subject to clearly explained practical limits.',
+    }, cognitiveProcess: 'analysis', learningObjectiveId: 'professional-distinguish-required-consent-information-from-self-disclosure', distractorDesign: ['treatment-purpose-element', 'risk-benefit-element', 'withdrawal-element'],
+  },
+  {
+    id: 'eppp-v3-professional-063', expectedAnswerIndex: 2, expectedDifficulty: 'intermediate', targetDifficulty: 'intermediate',
+    expectedPrompt: 'A psychologist declines a qualified client solely because of the client’s religion. Which standard is most directly implicated?',
+    prompt: 'A psychologist refuses to provide services to an otherwise qualified prospective client solely because the client practices a particular religion. Which APA Ethics Code standard is most directly implicated?',
+    choices: ['Standard 6.05 concerning barter with clients or patients', 'Standard 9.10 concerning explaining assessment results', 'Standard 3.01 concerning unfair discrimination', 'Standard 5.01 concerning false or deceptive statements'],
+    rationale: 'APA Ethics Code Standard 3.01 prohibits unfair discrimination in professional activities on the basis of protected and other status-related characteristics identified by the Code. Religion-based exclusion is directly implicated by this standard.',
+    feedback: {
+      0: 'Barter concerns exchanging services or goods instead of fees. Nothing in the vignette concerns payment arrangements.',
+      1: 'Explaining assessment results is a communication obligation after evaluation. The concern here is discriminatory refusal of professional service.',
+      3: 'False or deceptive statements concern misleading professional claims or representations. The facts instead identify exclusion based on religion.',
+    }, cognitiveProcess: 'application', learningObjectiveId: 'professional-identify-apa-standard-301-unfair-discrimination', distractorDesign: ['barter-standard-confusion', 'assessment-results-confusion', 'deception-standard-confusion'],
+  },
+];
+
+module.exports = { baselineMetrics, reviewedAt, reviewWave, revisions };

@@ -38,8 +38,8 @@ function mount(element) {
 function makeStatefulHost(overrides) {
   return function StatefulHost() {
     const [activity, setActivity] = React.useState(overrides.wordSoundsActivity);
-    const [word, setWord] = React.useState(null);
-    const [phonemes, setPhonemes] = React.useState(null);
+    const [word, setWord] = React.useState(overrides.currentWordSoundsWord ?? null);
+    const [phonemes, setPhonemes] = React.useState(overrides.wordSoundsPhonemes ?? null);
     const [feedback, setFeedback] = React.useState(null);
     const [score, setScore] = React.useState({ correct: 0, total: 0, streak: 0 });
     const [preloaded, setPreloaded] = React.useState(overrides.wsPreloadedWords);
@@ -105,6 +105,100 @@ afterEach(() => {
 });
 
 describe('live-session push: student lands in the activity, not the review panel', () => {
+  it('silently preflights prepared clips and reports ready before entry', async () => {
+    const originalAudio = globalThis.Audio;
+    class PlayableAudio {
+      constructor(src = '') { this.src = src; }
+      canPlayType() { return 'probably'; }
+      load() { if (this.src) Promise.resolve().then(() => this.onloadedmetadata?.()); }
+      play() { return Promise.resolve(); }
+      pause() {}
+      removeAttribute(name) { if (name === 'src') this.src = ''; }
+    }
+    globalThis.Audio = window.Audio = PlayableAudio;
+    try {
+      const calls = [];
+      const statuses = [];
+      const Host = makeStatefulHost(studentPushOverrides(calls, {
+        onPreparedAudioStatus: (report) => statuses.push(report),
+      }));
+      const { host } = mount(React.createElement(Host));
+      await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
+      expect(statuses.map((report) => report.status)).toContain('checking');
+      expect(statuses.at(-1)).toMatchObject({ status: 'ready', ready: 1, total: 1, failed: 0 });
+      expect(host.querySelector('[data-testid="word-sounds-audio-unavailable"]')).toBeFalsy();
+      expect(calls).toEqual([]);
+    } finally {
+      globalThis.Audio = window.Audio = originalAudio;
+    }
+  });
+
+  it('reports progressive clip counts and binds every status to the assignment nonce', async () => {
+    const originalAudio = globalThis.Audio;
+    let created = 0;
+    class StaggeredAudio {
+      constructor(src = '') { this.src = src; this.index = created++; }
+      canPlayType() { return 'probably'; }
+      load() {
+        if (!this.src) return;
+        setTimeout(() => this.onloadedmetadata?.(), this.index % 2 === 0 ? 0 : 25);
+      }
+      play() { Promise.resolve().then(() => this.onended?.()); return Promise.resolve(); }
+      pause() {}
+      removeAttribute(name) { if (name === 'src') this.src = ''; }
+    }
+    globalThis.Audio = window.Audio = StaggeredAudio;
+    try {
+      const calls = [];
+      const statuses = [];
+      const packItem = makePackItem();
+      packItem._ttsRequiredKeys = ['cat', 'dog'];
+      packItem._ttsAssets = {
+        cat: { mime: 'audio/mpeg', base64: 'QUJDRA==' },
+        dog: { mime: 'audio/mpeg', base64: 'RUZHSA==' },
+      };
+      const Host = makeStatefulHost(studentPushOverrides(calls, {
+        wsPreloadedWords: [{ ...packItem, _audioRequested: false }],
+        preparedAudioDeliveryAt: 4242,
+        onPreparedAudioStatus: (report) => statuses.push(report),
+      }));
+      mount(React.createElement(Host));
+      await act(async () => { await new Promise((r) => setTimeout(r, 70)); });
+      expect(statuses).toContainEqual(expect.objectContaining({ status: 'checking', ready: 1, total: 2, failed: 0, deliveryAt: 4242 }));
+      expect(statuses.at(-1)).toMatchObject({ status: 'ready', ready: 2, total: 2, failed: 0, deliveryAt: 4242 });
+    } finally {
+      globalThis.Audio = window.Audio = originalAudio;
+    }
+  });
+
+  it('holds entry and reports an unsupported prepared format', async () => {
+    const originalAudio = globalThis.Audio;
+    class UnsupportedAudio {
+      constructor(src = '') { this.src = src; }
+      canPlayType() { return ''; }
+      load() {}
+      play() { return Promise.resolve(); }
+      pause() {}
+      removeAttribute(name) { if (name === 'src') this.src = ''; }
+    }
+    globalThis.Audio = window.Audio = UnsupportedAudio;
+    try {
+      const calls = [];
+      const statuses = [];
+      const Host = makeStatefulHost(studentPushOverrides(calls, {
+        onPreparedAudioStatus: (report) => statuses.push(report),
+      }));
+      const { host } = mount(React.createElement(Host));
+      await act(async () => { await new Promise((r) => setTimeout(r, 50)); });
+      expect(statuses.at(-1)).toMatchObject({ status: 'unsupported', ready: 0, total: 1, failed: 1 });
+      expect(host.querySelector('[data-testid="word-sounds-audio-unavailable"]')).toBeTruthy();
+      expect(host.textContent).toContain('This audio format is not supported');
+      expect(calls).toEqual([]);
+    } finally {
+      globalThis.Audio = window.Audio = originalAudio;
+    }
+  });
+
   it('practice push (no sequence): playable board renders, review panel does not', async () => {
     const calls = [];
     const Host = makeStatefulHost(studentPushOverrides(calls));
@@ -130,6 +224,38 @@ describe('live-session push: student lands in the activity, not the review panel
     expect(calls).toEqual([]);
     expect(host.innerHTML).not.toContain('REVIEW_PANEL_RENDERED');
     expect(host.innerHTML.length).toBeGreaterThan(200);
+  });
+
+  it('holds a pack-only student on a clear recovery screen when prepared audio is missing', async () => {
+    const calls = [];
+    const packItem = makePackItem();
+    delete packItem._ttsAssets;
+    const Host = makeStatefulHost(studentPushOverrides(calls, {
+      wsPreloadedWords: [{ ...packItem, _audioRequested: false }],
+      onPreparedAudioRetry: async (coverage) => {
+        calls.push({ retry: coverage });
+        return true;
+      },
+    }));
+    const { host } = mount(React.createElement(Host));
+
+    expect(host.querySelector('[data-testid="word-sounds-audio-preparing"]')).toBeTruthy();
+    expect(host.innerHTML).not.toContain('REVIEW_PANEL_RENDERED');
+    await act(async () => { await new Promise((r) => setTimeout(r, 1300)); });
+
+    expect(calls).toEqual([]);
+    expect(host.querySelector('[data-testid="word-sounds-audio-unavailable"]')).toBeTruthy();
+    expect(host.textContent).toContain('Ask your teacher to prepare the missing audio and resend this activity.');
+    expect(host.innerHTML).not.toContain('REVIEW_PANEL_RENDERED');
+
+    const checkAgain = Array.from(host.querySelectorAll('button')).find((button) => button.textContent.trim() === 'Ask teacher to resend');
+    expect(checkAgain).toBeTruthy();
+    await act(async () => { checkAgain.click(); await Promise.resolve(); });
+    expect(host.querySelector('[data-testid="word-sounds-audio-preparing"]')).toBeTruthy();
+    expect(calls).toHaveLength(1);
+    expect(calls[0].retry).toMatchObject({ ready: 0, total: 1, missing: 1 });
+    await act(async () => { await new Promise((r) => setTimeout(r, 1300)); });
+    expect(host.textContent).toContain('Request sent');
   });
 
   it('teacher launch (initialShowReviewPanel: true) still opens the review panel', async () => {

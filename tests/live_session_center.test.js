@@ -14,10 +14,16 @@ import { resolve } from 'node:path';
 
 const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
 const polling = readFileSync(resolve(process.cwd(), 'live_polling_module.js'), 'utf8');
+const uiStrings = readFileSync(resolve(process.cwd(), 'ui_strings.js'), 'utf8');
 
-describe('Live Session Center dock (teacher)', () => {
+describe('Live Dashboard dock (teacher)', () => {
   it('mounts one dock that launches poll, quick check and pictionary', () => {
-    expect(anti).toContain("t('live_dock.title') || 'Live Session Center'");
+    expect(anti).toContain("t('live_dock.title') || 'Live Dashboard'");
+    expect(anti).toContain("t('live_dock.call_vote') || 'Vote on outcomes'");
+    expect(anti).toContain("t('live_dock.poll') || 'Poll'");
+    expect(anti).toContain("t('live_dock.quick_check') || 'Check understanding'");
+    expect(uiStrings).toContain('"teacher_paced": "Teacher-led"');
+    expect(uiStrings).toContain('"start_tooltip": "Teach live or open the Live Dashboard"');
     expect(anti).toContain('setLivePollPreset(null); setShowLivePollingPanel(true); setShowLiveDock(false);');
     expect(anti).toContain("t('live_dock.quick_check')");
     expect(anti).toContain('setShowPictionaryHost(true); setShowLiveDock(false);');
@@ -84,10 +90,13 @@ describe('per-student resource send (#9)', () => {
   it('teacher handler writes id + consume-once nonce, and clears with null', () => {
     const idx = anti.indexOf('const handleSetStudentResource');
     expect(idx).toBeGreaterThan(-1);
-    const block = anti.slice(idx, idx + 900);
+    // Keep enough context for optional pre-send safety checks that may be
+    // added before the bounded session-document write.
+    const block = anti.slice(idx, idx + 1600);
     expect(block).toContain('roster.${uid}.resourceId');
     expect(block).toContain('roster.${uid}.resourceAt');
-    expect(block).toContain('resourceId ? Date.now() : null');
+    expect(block).toContain('Number.isFinite(requestedResourceAt) && requestedResourceAt > 0 ? requestedResourceAt : Date.now()');
+    expect(block).toContain('updates[`roster.${uid}.wsProgress`] = options.wsProgress');
   });
 
   it('individual override outranks group (sync) and is consume-once (student-paced)', () => {

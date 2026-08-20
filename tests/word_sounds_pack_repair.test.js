@@ -221,6 +221,8 @@ describe('one rate limit no longer costs the whole pack', () => {
     // A pack that lost its audio looks identical to a complete one from the
     // outside; this is the only place the difference is knowable.
     expect(SOURCE).toMatch(/_ttsCoverage = \{/);
+    expect(SOURCE).toMatch(/requiredClips: requiredTtsKeys\.size/);
+    expect(SOURCE).toMatch(/_ttsRequiredKeys = \[\.\.\.requiredTtsKeys\]/);
     expect(SOURCE).toMatch(/wordsWithAudio: processed\.filter\(\(it\) => it\.ttsReady\)\.length/);
     expect(SOURCE).toMatch(/rateLimited: ttsGate\.rateLimited/);
     expect(SOURCE).toMatch(/gaveUp: ttsGate\.aborted/);

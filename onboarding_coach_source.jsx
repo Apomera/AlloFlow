@@ -282,7 +282,7 @@ function OnboardingCoach(props) {
     }).catch(function (e) {
       setInFlight(false);
       abortRef.current = null;
-      setCoachError({ reason: 'network', answer: 'Something went wrong. Try again.' });
+      setCoachError({ reason: 'network', answer: t('common.generic_error') });
     });
   };
 

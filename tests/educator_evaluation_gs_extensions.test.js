@@ -150,17 +150,21 @@ describe('released summary sharing and receipts', () => {
     const harness = repositoryFixture();
     expect(rateAndRelease(harness, 't1', { d1: 3, d2: 2, d3: 2, d4: 3 }).ok).toBe(true);
     harness.setActiveEmail(EVALUATOR);
-    const shared = harness.invoke('sharePortalReleasedEvaluation', { teacherId: 't1' });
+    const review = harness.invoke('reviewPortalReleasedEvaluationShare', { teacherId: 't1' });
+    const shared = harness.invoke('sharePortalReleasedEvaluation', { teacherId: 't1', reviewToken: review.review.token });
     return { harness, shared };
   };
 
   it('shares a Docs file view-only with the educator and persists the pointer through commit', () => {
     const { harness, shared } = releaseAndShare();
     expect(shared.ok).toBe(true);
+    expect(shared.created).toBe(true);
+    expect(shared.recoveryPending).toBe(false);
     expect(shared.url.startsWith('https://docs.google.com/')).toBe(true);
     expect(shared.sharedWith).toBe(TEACHER_ONE);
     const docFile = [...harness.driveFiles.values()].find((file) => file.viewers.includes(TEACHER_ONE));
     expect(docFile).toBeTruthy();
+    expect(docFile.viewers).toContain(EVALUATOR);
     // the regression that motivated this suite: the pointer must SURVIVE the
     // stored-workspace sanitizer and come back on the next read
     harness.setActiveEmail(TEACHER_ONE);
@@ -168,6 +172,79 @@ describe('released summary sharing and receipts', () => {
     expect(boot.workspace.teachers.find((item) => item.id === 't1').releasedDoc.url).toBe(shared.url);
     // no email was sent by sharing itself (content-free notices are separate)
     expect(harness.sentMail).toEqual([]);
+  });
+
+  it('requires a single-use review token and verifies the same document on re-share', () => {
+    const { harness, shared } = releaseAndShare();
+    const originalDocumentCount = harness.documents.length;
+    const noReview = harness.invokeError('sharePortalReleasedEvaluation', { teacherId: 't1' });
+    expect(String(noReview.message || noReview).toLowerCase()).toContain('review');
+    const review = harness.invoke('reviewPortalReleasedEvaluationShare', { teacherId: 't1' });
+    expect(review.review.action).toBe('verify_existing');
+    expect(review.review.recipient).toBe(TEACHER_ONE);
+    const verified = harness.invoke('sharePortalReleasedEvaluation', { teacherId: 't1', reviewToken: review.review.token });
+    expect(verified.idempotent).toBe(true);
+    expect(verified.doc.id).toBe(shared.doc.id);
+    expect(harness.documents).toHaveLength(originalDocumentCount);
+    const reused = harness.invokeError('sharePortalReleasedEvaluation', { teacherId: 't1', reviewToken: review.review.token });
+    expect(String(reused.message || reused)).toContain('expired or was already used');
+  });
+
+  it('makes an unavailable-file replacement explicit and retains superseded history', () => {
+    const { harness, shared } = releaseAndShare();
+    harness.driveFiles.get(shared.doc.id).setTrashed(true);
+    const review = harness.invoke('reviewPortalReleasedEvaluationShare', { teacherId: 't1' });
+    expect(review.review.action).toBe('replace_unavailable');
+    const replacement = harness.invoke('sharePortalReleasedEvaluation', { teacherId: 't1', reviewToken: review.review.token });
+    expect(replacement.created).toBe(true);
+    expect(replacement.doc.id).not.toBe(shared.doc.id);
+    const boot = harness.invoke('bootstrap');
+    const pointer = boot.workspace.teachers.find((item) => item.id === 't1').releasedDoc;
+    expect(pointer.id).toBe(replacement.doc.id);
+    expect(pointer.history).toHaveLength(1);
+    expect(pointer.history[0]).toMatchObject({ id: shared.doc.id, status: 'superseded_unavailable' });
+  });
+
+  it('refuses to change from verify to replace after the disclosure review', () => {
+    const { harness, shared } = releaseAndShare();
+    const review = harness.invoke('reviewPortalReleasedEvaluationShare', { teacherId: 't1' });
+    expect(review.review.action).toBe('verify_existing');
+    harness.driveFiles.get(shared.doc.id).setTrashed(true);
+    const stale = harness.invokeError('sharePortalReleasedEvaluation', { teacherId: 't1', reviewToken: review.review.token });
+    expect(String(stale.message || stale)).toContain('changed after review');
+    expect(harness.documents).toHaveLength(1);
+  });
+
+  it('trashes a new document and leaves no pointer when Drive access fails before commit', () => {
+    const harness = repositoryFixture();
+    expect(rateAndRelease(harness, 't1', { d1: 3, d2: 2, d3: 2, d4: 3 }).ok).toBe(true);
+    harness.setActiveEmail(EVALUATOR);
+    const review = harness.invoke('reviewPortalReleasedEvaluationShare', { teacherId: 't1' });
+    harness.setFailAddViewer(true);
+    const failed = harness.invokeError('sharePortalReleasedEvaluation', { teacherId: 't1', reviewToken: review.review.token });
+    expect(String(failed.message || failed)).toContain('Injected Drive viewer failure');
+    const createdId = harness.documents[0].id;
+    expect(harness.driveFiles.get(createdId).trashed).toBe(true);
+    expect(harness.driveFiles.get(createdId).viewers).toEqual([]);
+    harness.setFailAddViewer(false);
+    const boot = harness.invoke('bootstrap');
+    expect(boot.workspace.teachers.find((item) => item.id === 't1').releasedDoc).toBeNull();
+  });
+
+  it('surfaces an administrator health warning when automatic cleanup cannot be confirmed', () => {
+    const harness = repositoryFixture();
+    expect(rateAndRelease(harness, 't1', { d1: 3, d2: 2, d3: 2, d4: 3 }).ok).toBe(true);
+    harness.setActiveEmail(EVALUATOR);
+    const review = harness.invoke('reviewPortalReleasedEvaluationShare', { teacherId: 't1' });
+    harness.setFailAddViewer(true);
+    harness.setFailTrash(true);
+    const failed = harness.invokeError('sharePortalReleasedEvaluation', { teacherId: 't1', reviewToken: review.review.token });
+    expect(String(failed.message || failed)).toContain('automatic Drive cleanup could not be confirmed');
+    harness.setFailAddViewer(false);
+    harness.setFailTrash(false);
+    harness.setActiveEmail(ADMIN);
+    const health = harness.invoke('getPortalSetupHealth');
+    expect(health.checks.releasedSummaryRecoveryRequired).toBe(true);
   });
 
   it('refuses to share before finalization and refuses teachers outright', () => {
@@ -215,7 +292,8 @@ describe('released summary sharing and receipts', () => {
     expect(bright.ok).toBe(true);
     expect(rateAndRelease(harness, 't1', { d1: 3, d2: 2, d3: 2, d4: 3 }).ok).toBe(true);
     harness.setActiveEmail(EVALUATOR);
-    expect(harness.invoke('sharePortalReleasedEvaluation', { teacherId: 't1' }).ok).toBe(true);
+    const review = harness.invoke('reviewPortalReleasedEvaluationShare', { teacherId: 't1' });
+    expect(harness.invoke('sharePortalReleasedEvaluation', { teacherId: 't1', reviewToken: review.review.token }).ok).toBe(true);
     const text = harness.documents[0].texts.join('\n');
     expect(text.indexOf('Your strengths')).toBeGreaterThan(-1);
     expect(text.indexOf('Your strengths')).toBeLessThan(text.indexOf('Growth focus'));

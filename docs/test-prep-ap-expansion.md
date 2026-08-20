@@ -1,6 +1,6 @@
 # Test Prep Hub broad AP expansion plan
 
-Last reviewed: 2026-07-29  
+Last reviewed: 2026-08-20
 Status: Maintained direction; this plan does not make any AP pack official, released, or College Board endorsed.  
 Companion: [Test Prep Hub legacy-parity and reuse audit](test-prep-legacy-parity.md)
 
@@ -10,17 +10,17 @@ Preserve broad AP preparation as a Test Prep Hub expansion opportunity, but begi
 
 ## Implemented internal foundation
 
-As of 2026-07-29, the repository has an explicit three-category pack registry, a generated CDN manifest, and one lazy AP Psychology vertical slice. The internal pilot contains 20 original selected-response items across the five current units; a native five-chapter library with 15 sections, 15 flashcards, 10 memory aids, and five original accessible diagram placements; and separate original AAQ- and EBQ-style planning workshops that are explicitly unscored.
+As of 2026-08-20, the repository has an explicit three-category pack registry, a generated CDN manifest, and one lazy AP Psychology vertical slice. The internal pilot contains 500 original selected-response items across the five current units, arranged as 25 balanced 20-item banks with 100 items per unit and coverage across all 37 framework topics; a native five-chapter library with 15 sections, 15 flashcards, 10 memory aids, and five original accessible diagram placements; and separate original AAQ- and EBQ-style planning workshops that are explicitly unscored.
 
 The AP assets are not embedded in the size-limited Hub bundle and do not use the legacy `*_pack.json` pipeline. The manifest-aware catalog keeps bundled public packs usable while it loads or if it fails, displays lazy-pack metadata without prefetching content, and downloads a lazy pack only after activation. The AP entry requires both internal-QA mode and an exact pack-ID allowlist; it remains hidden on ordinary mounts even after a prior QA session registered it.
 
-The canonical build mirrors the pack, library, native QA report, and manifest to the deploy tree, validates byte parity, and binds each asset with SHA-256; the runtime verifies exact asset bytes before parsing. These hashes detect drift relative to the retrieved manifest, not coordinated replacement of both manifest and asset, which would require a signed manifest or separately pinned verification key. Deterministic QA currently reports zero structural findings and zero diagram-coverage advisories. The item bank's answer-transition dominance is 36.8%, its longest same-key run is one, its keyed/distractor median-length ratio is 0.978, and severe length-cue, categorical, lexical, and feedback-restatement advisories are zero.
+The canonical build mirrors the pack, library, native QA report, and manifest to the deploy tree, validates byte parity, and binds each asset with SHA-256; the runtime verifies exact asset bytes before parsing. These hashes detect drift relative to the retrieved manifest, not coordinated replacement of both manifest and asset, which would require a signed manifest or separately pinned verification key. Deterministic QA currently reports zero structural findings and zero diagram-coverage advisories. The 500-item bank has exact 325/125/50 Practice 1/2/3 allocation, 125 keys in each answer position, a 28.1% dominant answer-transition rate, a longest same-key run of five, a 0.988 keyed/distractor mean-length ratio, zero severe length cues, zero exact or near-duplicate prompt pairs, 42 categorical-cue advisories, and two lexical-cue advisories queued for human review.
 
 Internal visibility is a product and release gate, not confidentiality or authentication. Because these files are in the repository and on a public CDN, their contents must always be safe to treat as publicly retrievable; no secure questions, secrets, or personally identifiable information belong in them.
 
 The shared Hub now supports hands-free question, option, feedback, and navigation narration; bounded voice commands; guarded AI clarification; and quiet prewarming of the next three questions when configured TTS is available and data-saver mode is not active. Essential-visual or explicitly incompatible content cannot claim complete hands-free access without a declared accessible equivalent, and the UI states that configured speech/AI processing may be local or remote and that learners should not speak PII.
 
-This is architecture and automated content-QA progress, not a release decision. AP subject-expert, rights, independent accessibility, hands-free production, field-testing, and psychometric gates remain closed. The current engine supports the pilot multiple-choice items; the workshops are planning/self-check resources only.
+This is architecture and automated content-QA progress, not a release decision. AP subject-expert, rights, independent accessibility, hands-free production, field-testing, and psychometric gates remain closed. The current engine supports the 500 pilot multiple-choice items; the workshops are planning/self-check resources only.
 
 ## Market hypothesis
 

@@ -24,9 +24,11 @@ describe('Study Timer modal accessibility', () => {
     expect(source).toContain('aria-live="off"');
     expect(source).toContain('role="progressbar"');
     expect(source).toContain('aria-valuenow={completionPercent}');
-    expect(source).toContain('aria-valuetext={`${completionPercent}% complete`}');
+    expect(source).toContain("const completionLabel = `${completionPercent}% · ${t('common.progress')}`");
+    expect(source).toContain('aria-valuetext={completionLabel}');
     expect(source).toContain('role="status" aria-live="polite" aria-atomic="true"');
     expect(source).toContain('{timerStatus}');
+    expect(source).not.toContain('% complete');
   });
 
   it('associates the task label and exposes control state accurately', () => {

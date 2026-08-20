@@ -23,6 +23,7 @@ The panel gathers the settings that would otherwise repeat in every tool.
 | **Student interests** | Adds a theme or context to examples. | Word problems, scenarios, and prompts. |
 | **Depth of Knowledge** | Sets the level of thinking the task should demand. | Question stems and task verbs. |
 | **Emoji** | Adds emoji as visual cues in generated material. | Glossary terms, headings, and directions. |
+| **Image style** | Sets the lesson-wide visual default for resources that create images. | Visuals, Glossary, Timeline, Concept Sort, Word Sounds, and Adventure when it uses the Universal style. |
 
 Each control tells you how many kinds of resource actually use it. Read that number before you spend time on a setting. Some controls reach almost everything; others reach two or three tools.
 
@@ -41,6 +42,12 @@ So if a pack looks inconsistent:
 3. Regenerate that resource, or regenerate the pack, so every part shares one setting.
 
 This is worth checking before you conclude a tool got something wrong. A mismatched pack is usually a settings history problem, not a generation problem.
+
+## Set image style once unless a resource needs an exception
+
+Use **Image style** in Universal Settings to keep one lesson visually coherent. Visuals, Glossary, and Word Sounds begin on **Use Universal style**; their own preset and custom-style controls appear only after you choose **Override for this resource**. Timeline and Concept Sort use the Universal style directly. Adventure keeps story-specific presets, with **Use Universal style** available when continuity matters more than a separate story look.
+
+Choose an override for an instructional reason—for example, a simple line-drawing style for a worksheet that must photocopy clearly—not merely because the same selector is visible. Return the resource to **Use Universal style** when the exception is no longer needed. A change affects new or regenerated images; it does not restyle images that already exist.
 
 ## Choose a grade level honestly
 

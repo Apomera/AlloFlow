@@ -35,8 +35,12 @@ Every step is expanded with cautions in "Install and bootstrap" below.
 
 ## Released evaluation summaries (educator's copy)
 
-When an educator's cycle is finalized, an evaluator or administrator can click
-**"Share released summary to educator's Drive"** in the portal. The server
+When an educator's cycle is finalized, an evaluator or administrator first
+clicks **"Review & share released summary"**. A server-generated review names
+the exact educator member account, finalization time, intended access, and
+whether the operation will create, verify, or replace a document. Nothing is
+shared until the evaluator checks the disclosure confirmation. The short-lived
+review token is actor-, record-, recipient-, and revision-bound. The server
 then:
 
 - generates a plain-language, strengths-first Google Doc summary (strengths
@@ -47,15 +51,23 @@ then:
 - files it in a `Released evaluations` subfolder of the repository (the
   central folder itself stays unshared);
 - shares that single file **view-only** with the educator's active district
-  member account — Drive sharing sends no email, so the content-free portal
-  notification remains the only email pathway;
+  member account and, when needed, the initiating evaluator so the portal's
+  open-document action matches its access claim. This action does not send the
+  separate content-free portal notice; Google may still surface Drive access in
+  its own activity or notification interfaces;
 - stamps the educator record (`releasedDoc`) and the audit log
   (`RELEASED_DOC_SHARED`). The pointer is server-owned: client saves can
   never set or clear it.
 
 The document states explicitly that the portal remains the authoritative
-record. Re-sharing after corrections creates a new document and a new audit
-event; nothing is edited in place.
+record. A later **Review released-summary access** operation verifies or
+restores permissions on the same immutable document instead of creating a
+duplicate. A replacement is generated only when the recorded file is
+unavailable; the old pointer is retained in superseded history. If a new-file
+operation fails before commit, the server removes the new viewers and trashes
+the uncommitted file. An unconfirmed cleanup or workspace commit sets
+`EE_RELEASE_RECOVERY_REQUIRED`, appears in Setup health, and must be resolved
+before another attempt.
 
 Related behaviors added alongside:
 
@@ -68,7 +80,8 @@ Related behaviors added alongside:
   event. It is labeled a LINK click; Drive cannot report actual reading.
 - **Setup health** — administrators get a read-only portal card running the
   bootstrap verifications (domain, deployment URL, folder access, workspace
-  integrity, member counts, educators lacking accounts or assignments)
+  integrity, unresolved release/rollover recovery, deployment-owner continuity,
+  member counts, educators lacking accounts or assignments)
   without opening the script editor. Counts only; never member emails.
 - **Deep-linked notices** — content-free notification emails now link to
   `?view=overview&teacher=<id>`: opaque identifiers only, useless without an
@@ -205,13 +218,17 @@ member and assignment must reference an ID declared in `teachers`; setup fails
 closed on a missing reference. IDs are opaque application identifiers, not
 emails or employee numbers.
 
-To add staff later, an authorized administrator must first create the
-educator's cycle/profile in the portal's **Staff** area and record its opaque
-educator ID. District IT can then call `adminUpsertMember({...})` and
-`adminUpsertAssignment({...})` from a reviewed admin setup function using that
-ID. Those helpers fail closed when the educator record does not already exist.
-Re-running `setupEvaluationRepository` does not add `teachers` to an existing
-workspace, and there is deliberately no arbitrary table-edit endpoint.
+To add staff later, an authorized administrator first creates the educator's
+cycle/profile in the portal's **Staff** area. Then open **Setup -> District
+operations center** to create or update the managed account and evaluator
+assignment. Each change shows a server-generated review, expires after ten
+minutes, and requires an explicit legitimate-educational-interest
+acknowledgment. The lower-level `adminUpsertMember({...})` and
+`adminUpsertAssignment({...})` functions remain available to district IT for
+reviewed automation, but routine administration no longer requires editing a
+temporary Apps Script function. Re-running `setupEvaluationRepository` does
+not add `teachers` to an existing workspace, and there is deliberately no
+arbitrary table-edit endpoint.
 
 4. Deploy -> New deployment -> **Web app**. Confirm **Execute as: Me** (the
    district deployment owner) and **Who has access: users in your domain**.
@@ -251,14 +268,74 @@ The private Drive folder also contains `workspace.json` and an internal
 | `Audit` | server events chained by previous-row hash |
 | `Snapshots` | immutable finalized rating values used for longitudinal/cohort statistics |
 
-### Annual-cycle limitation
+### District operations center
 
-The current pilot can display immutable prior-cycle snapshots that were seeded
-or already recorded, but it has no controlled annual rollover operation. It
-does not yet close one academic year, create the next cycle, carry forward the
-approved roster, and preserve assignments as one administrator-controlled
-transaction. Do not represent this pilot as operational multi-year cycle
-management until that rollover workflow is built and tested.
+The administrator-only operations center in **Setup** replaces the routine
+"open Apps Script and run a helper" path for recurring work. It provides four
+review-before-confirm workflows:
+
+1. **Accounts and evaluator assignments.** Load the current authorized
+   directory, enter a managed-domain member or educator/evaluator assignment,
+   review the exact normalized values, confirm legitimate educational
+   interest, and apply. A stale or already-used review cannot be replayed.
+   Bootstrap administrators cannot be deactivated or demoted, and at least one
+   active administrator is always required.
+2. **Annual cycle due-date schedule.** Choose a date, optional exact building
+   filter, and either missing dates or all open cycles. Review the affected
+   count and sample first. Inactive and finalized educators are always skipped;
+   a workspace change invalidates the review.
+3. **Audited private exports.** Choose roster/status CSV, one educator's full
+   portal record, or a full repository backup; record a specific authorized
+   purpose; review the scope; and acknowledge district destination, retention,
+   legal-hold, and official-record procedures. The server creates a private
+   file in `Authorized exports`, re-reads and hashes it, and records the action
+   in the canonical audit. Creating the file neither shares it nor makes it the
+   official record.
+4. **Archive inventory and restore rehearsal.** Re-verify annual archives,
+   compare archived and current counts/revisions, and create a separate private
+   restore candidate in `Restore rehearsals`. A rehearsal never writes to or
+   replaces the live workspace. District IT must inspect and test the candidate
+   under its approved recovery procedure before any real recovery decision.
+
+All four workflows derive the acting identity on the server. Review tokens are
+actor-bound, single-use, state-bound, and valid for ten minutes. The controls
+do not replace district approval, records custody, incident response, or a
+tested backup/restore plan.
+
+### Annual rollover and continuity
+
+The Setup tab now provides an administrator-only, archive-first annual rollover.
+It is deliberately staged and recoverable rather than described as an atomic
+transaction:
+
+1. `reviewPortalAnnualRollover({nextAcademicYear})` validates an exactly
+   one-year advance, reads the current revision, counts active/finalized/open
+   cycles and current records, and returns a ten-minute actor/revision/count-bound
+   review token. No Drive or workspace data changes during review.
+2. The administrator confirms district custody (backup/restore, retention,
+   legal hold, official-record handoff, and owner responsibility) and separately
+   acknowledges any open cycles. The server rejects missing acknowledgments.
+3. `performPortalAnnualRollover(...)` creates a private JSON file in the
+   repository's `Annual archives` subfolder, re-reads it, and verifies both the
+   archive content and embedded workspace hash before any active-state write.
+4. The active workspace advances one year. Roster/profile identities,
+   membership, evaluator assignments, immutable `cycleSnapshots`, and audit
+   history are retained. Due dates, cycle status, current ratings/scores,
+   released-document pointers, educator statements, walkthroughs, formal
+   observations, SPMs, and comments are reset for clean new-year cycles.
+5. Existing released Google Docs are **never deleted or unshared** by rollover.
+   Their old pointers and complete current-year context remain in the verified
+   archive; the documents remain subject to district retention/legal-hold rules.
+
+If archive creation succeeds but the active commit is not confirmed,
+`EE_ROLLOVER_RECOVERY_REQUIRED` blocks another review. Setup health names the
+condition. `reconcilePortalAnnualRollover()` re-verifies the exact archive and
+then clears the block only when it can prove either (a) the reviewed new-year
+commit exists, or (b) the old revision/year is completely unchanged. Any mixed
+state remains blocked for manual district-IT recovery. The operation does not
+transfer Apps Script or Drive ownership, choose a retention period, satisfy a
+legal hold, or copy records into an official HR/records system; those remain
+district-controlled procedures.
 
 Sheet protection prevents ordinary edits through the Spreadsheet UI, and the
 files are set private. The deployment owner and Workspace administrators still
@@ -279,21 +356,60 @@ The HTML portal uses `google.script.run`:
   `saveWorkspace(...)` -> `{ok, workspace, revision, version}` or a conflict
 - `sendPortalNotification({teacherId, target:'teacher'|'evaluator'})`
 - `getPortalCohortStats({teacherId, metric, from?, to?})`
-- `sharePortalReleasedEvaluation({teacherId})` -> `{ok, doc:{id, url,
-  sharedAt}}`. Evaluator or admin only, and only after the educator's cycle is
-  finalized. Builds the strengths-first summary Doc in the private "Released
-  evaluations" folder and adds the educator as a VIEWER of that one file. It is
-  idempotent: a second call returns the existing document rather than making a
-  duplicate. Drive sharing sends no email of its own, so the notification stays
-  content-free.
+- `reviewPortalReleasedEvaluationShare({teacherId})` -> `{ok, review:{token,
+  expiresAt, educatorName, recipient, finalizedAt, action, ...}}`. Read-only;
+  evaluator or admin only. The token expires after ten minutes and is bound to
+  the authenticated actor and current repository revision.
+- `sharePortalReleasedEvaluation({teacherId, reviewToken})` -> `{ok, status,
+  doc:{id, url, sharedAt}, access, created, idempotent, recoveryPending,
+  auditPending, separatePortalNoticeSent:false}`. Evaluator or admin only, and
+  only after finalization plus a current disclosure review. It grants verified
+  VIEWER access to the educator (and the initiating evaluator when needed).
+  Repeating the reviewed workflow verifies the existing file rather than making
+  a duplicate. A missing recorded file is replaced with superseded history;
+  uncommitted new files are quarantined on failure.
 - `recordReleasedSummaryOpened({teacherId})` -> `{ok, openedAt}` or
   `{skipped:true}`. The educator's own open receipt; an evaluator calling it is
   skipped rather than recorded, and a second open does not overwrite the first.
 - `getPortalSetupHealth()` -> `{ok, checks:[...]}`. Read-only deployment
   self-check for the Setup tab: domain lock, repository spreadsheet and
-  workspace files, membership, and evaluator assignments. It reports counts and
-  configured/not-configured status only; it returns no records and no
-  identities beyond the caller's own.
+  workspace files, ownership continuity, release/rollover recovery, membership,
+  and evaluator assignments. It reports counts and configured/not-configured
+  status only; it returns no records and no identities beyond the caller's own.
+- `getPortalAdminOperations()` -> `{ok, directory:{revision, academicYear,
+  educators, members, assignments}}`. Admin only. Supplies the current
+  authorized directory for the operations center.
+- `reviewPortalDirectoryChange({kind:'member'|'assignment', candidate})` ->
+  `{ok, review:{token, expiresAt, kind, action, current, candidate}}`; then
+  `performPortalDirectoryChange({reviewToken, acknowledgeImpact:true})` applies
+  the exact reviewed, still-current change and adds a canonical audit entry.
+- `reviewPortalCycleSchedule({dueDate, applyTo:'missing'|'all_open', building?})`
+  -> `{ok, review:{token, affectedEducators, skippedFinalized, sample, ...}}`;
+  then `performPortalCycleSchedule({reviewToken, acknowledgeImpact:true})`
+  commits the reviewed schedule through the revisioned workspace path.
+- `reviewPortalDistrictExport({scope:'status_csv'|'educator_record'|
+  'repository_backup', teacherId?, purpose})` -> a read-only scope/purpose
+  review; then `performPortalDistrictExport({reviewToken,
+  acknowledgePolicy:true})` creates and verifies a private Drive export and
+  audits its creation.
+- `getPortalAnnualArchives()` -> `{ok, archives:[...]}`. Admin only; lists up
+  to 100 files in the repository's annual-archive folder with a fresh embedded
+  workspace-hash verdict.
+- `reviewPortalArchiveRestoreRehearsal({archiveId})` -> an archived-versus-live
+  counts and revision review; then `performPortalArchiveRestoreRehearsal({
+  reviewToken, acknowledgeNoLiveRestore:true})` creates a verified private
+  candidate without changing the live workspace.
+- `reviewPortalAnnualRollover({nextAcademicYear})` -> `{ok, review:{token,
+  expiresAt, currentAcademicYear, nextAcademicYear, counts, ...}}`. Admin only
+  and read-only. The requested year must be the immediately following `YYYY-YY`
+  year; the token is bound to actor, revision, year, and current counts.
+- `performPortalAnnualRollover({reviewToken, acknowledgeArchive,
+  acknowledgeOpenCycles})` -> `{ok, status, archive, fromAcademicYear,
+  toAcademicYear, counts, recoveryPending}`. Admin only. It verifies a private
+  archive before resetting active cycles and never deletes released documents.
+- `reconcilePortalAnnualRollover()` -> `{ok, status:'none'|'completed'|
+  'archive_only', ...}` when the server can prove a safe recovery state. Admin
+  only. An ambiguous or invalid archive remains blocked for manual recovery.
 
 `recordType` is one of `walkthrough`, `formal_observation`, or `spm`.
 Two-way comments and all current lifecycle milestones use the canonical,
@@ -301,9 +417,11 @@ locked, revisioned `saveWorkspace` mutation path; duplicate message/receipt
 mutation RPCs are intentionally not public. Supported cohort metrics are
 `finalScore`, `d1`, `d2`, `d3`, and `d4`.
 
-Browser downloads, imports, and reset are disabled for every portal role in
-this pilot. Enable remote export only after the LEA approves an export policy
-and an audited server export method records the actor, scope, purpose, and time.
+Direct browser downloads, imports, and reset remain disabled for every portal
+role. An administrator can instead use the reviewed server-side export workflow
+in **Setup -> District operations center** after the LEA approves the purpose,
+destination, retention, legal-hold, and official-record handoff. Evaluators and
+educators cannot create district exports.
 
 `doPost` is intentionally non-mutating and always returns
 `method_not_allowed`; the portal uses same-deployment `google.script.run` RPCs.

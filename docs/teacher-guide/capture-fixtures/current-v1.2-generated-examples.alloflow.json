@@ -1,0 +1,622 @@
+{
+  "mode": "teacher",
+  "captureFixture": {
+    "name": "Current v1.2 generated examples",
+    "purpose": "Reproducible, non-PII manual screenshot capture",
+    "topic": "Photosynthesis",
+    "gradeLevel": "5th Grade",
+    "language": "English",
+    "created": "2026-08-20"
+  },
+  "history": [
+    {
+      "id": "manual-v12-analysis",
+      "type": "analysis",
+      "title": "Photosynthesis Source Analysis",
+      "meta": "5th Grade · English · manual capture fixture",
+      "timestamp": "2026-08-20T15:00:00.000Z",
+      "data": {
+        "originalText": "Plants use sunlight, water, and carbon dioxide to make sugar through photosynthesis. Chlorophyll captures light energy in the leaves. Roots absorb water from the soil, while tiny openings in leaves take in carbon dioxide. The plant stores some sugar and releases oxygen into the air.",
+        "concepts": ["photosynthesis", "energy transfer", "plant structures", "matter cycling"],
+        "readingLevel": {
+          "range": "Grade 5",
+          "explanation": "Short sentences and explicit cause-and-effect relationships support upper-elementary readers."
+        }
+      },
+      "config": {
+        "gradeLevel": "5th Grade",
+        "language": "English"
+      }
+    },
+    {
+      "id": "manual-v12-glossary",
+      "type": "glossary",
+      "title": "Photosynthesis Vocabulary",
+      "meta": "8 terms · 5th Grade · English",
+      "timestamp": "2026-08-20T15:01:00.000Z",
+      "data": [
+        {
+          "entryId": "glossary-photosynthesis",
+          "term": "photosynthesis",
+          "def": "The process plants use to make sugar from light, water, and carbon dioxide.",
+          "tier": "Domain-Specific",
+          "emoji": "🌿",
+          "example": "Photosynthesis lets a plant store the Sun's energy in sugar."
+        },
+        {
+          "entryId": "glossary-chlorophyll",
+          "term": "chlorophyll",
+          "def": "The green material in leaves that captures light energy.",
+          "tier": "Domain-Specific",
+          "emoji": "🍃",
+          "example": "Chlorophyll makes most leaves look green."
+        },
+        {
+          "entryId": "glossary-carbon-dioxide",
+          "term": "carbon dioxide",
+          "def": "A gas from the air that plants use to build sugar.",
+          "tier": "Domain-Specific",
+          "emoji": "☁️",
+          "example": "Leaves take in carbon dioxide through tiny openings."
+        },
+        {
+          "entryId": "glossary-oxygen",
+          "term": "oxygen",
+          "def": "A gas released by plants during photosynthesis and used by many living things.",
+          "tier": "Domain-Specific",
+          "emoji": "💨",
+          "example": "The plant releases oxygen into the air."
+        },
+        {
+          "entryId": "glossary-glucose",
+          "term": "glucose",
+          "def": "A simple sugar plants make and use for energy and growth.",
+          "tier": "Domain-Specific",
+          "emoji": "🧊",
+          "example": "A plant can store glucose for later."
+        },
+        {
+          "entryId": "glossary-absorb",
+          "term": "absorb",
+          "def": "To take in or soak up a substance or energy.",
+          "tier": "Academic",
+          "emoji": "💧",
+          "example": "Roots absorb water from the soil."
+        },
+        {
+          "entryId": "glossary-release",
+          "term": "release",
+          "def": "To let something move out or become available.",
+          "tier": "Academic",
+          "emoji": "↗️",
+          "example": "Leaves release oxygen into the air."
+        },
+        {
+          "entryId": "glossary-energy",
+          "term": "energy",
+          "def": "The ability to cause change or make things happen.",
+          "tier": "Academic",
+          "emoji": "☀️",
+          "example": "Sunlight provides energy for photosynthesis."
+        }
+      ],
+      "config": {
+        "gradeLevel": "5th Grade",
+        "selectedLanguages": [],
+        "includeEtymology": false
+      }
+    },
+    {
+      "id": "manual-v12-outline",
+      "type": "outline",
+      "title": "Photosynthesis Concept Map",
+      "meta": "Key Concept Map · 5th Grade",
+      "timestamp": "2026-08-20T15:02:00.000Z",
+      "data": {
+        "main": "Photosynthesis",
+        "structureType": "Key Concept Map",
+        "branches": [
+          {
+            "title": "Inputs",
+            "items": ["sunlight", "water", "carbon dioxide"],
+            "connections": []
+          },
+          {
+            "title": "Plant Parts",
+            "items": ["leaves", "roots", "chlorophyll"],
+            "connections": []
+          },
+          {
+            "title": "Process",
+            "items": ["capture light", "combine matter", "store energy"],
+            "connections": []
+          },
+          {
+            "title": "Outputs",
+            "items": ["glucose", "oxygen"],
+            "connections": []
+          }
+        ]
+      },
+      "config": {
+        "gradeLevel": "5th Grade",
+        "outlineType": "Key Concept Map"
+      }
+    },
+    {
+      "id": "manual-v12-anchor-chart",
+      "type": "anchor-chart",
+      "title": "How Plants Make Food",
+      "meta": "5th Grade · process",
+      "timestamp": "2026-08-20T15:03:00.000Z",
+      "data": {
+        "title": "How Plants Make Food",
+        "chartType": "process",
+        "sections": [
+          {
+            "id": "anchor-1",
+            "label": "1. Capture Light",
+            "bullets": ["Chlorophyll in leaves captures sunlight.", "Light supplies the energy for the process."],
+            "iconPrompt": "sunlight shining on a green leaf",
+            "iconUrl": ""
+          },
+          {
+            "id": "anchor-2",
+            "label": "2. Take In Water",
+            "bullets": ["Roots absorb water from the soil.", "The stem carries water to the leaves."],
+            "iconPrompt": "plant roots absorbing water",
+            "iconUrl": ""
+          },
+          {
+            "id": "anchor-3",
+            "label": "3. Take In Gas",
+            "bullets": ["Tiny openings in leaves take in carbon dioxide.", "Carbon dioxide provides carbon for sugar."],
+            "iconPrompt": "leaf taking in carbon dioxide",
+            "iconUrl": ""
+          },
+          {
+            "id": "anchor-4",
+            "label": "4. Build Sugar",
+            "bullets": ["The plant combines water and carbon dioxide.", "Light energy is stored in glucose."],
+            "iconPrompt": "simple glucose molecule inside leaf",
+            "iconUrl": ""
+          },
+          {
+            "id": "anchor-5",
+            "label": "5. Release Oxygen",
+            "bullets": ["Oxygen leaves through openings in the leaf.", "The plant uses or stores the sugar it made."],
+            "iconPrompt": "oxygen bubbles leaving a leaf",
+            "iconUrl": ""
+          }
+        ],
+        "lessonRef": {
+          "sourceTextSnippet": "Plants use sunlight, water, and carbon dioxide to make sugar through photosynthesis.",
+          "generatedAt": "2026-08-20T15:03:00.000Z",
+          "gradeLevel": "5th Grade",
+          "language": "English"
+        }
+      },
+      "config": {
+        "gradeLevel": "5th Grade",
+        "chartType": "process"
+      }
+    },
+    {
+      "id": "manual-v12-activities",
+      "type": "brainstorm",
+      "title": "Photosynthesis Activity Ideas",
+      "meta": "3 activity ideas · 5th Grade",
+      "timestamp": "2026-08-20T15:04:00.000Z",
+      "data": [
+        {
+          "title": "Build-a-Leaf Relay",
+          "description": "Teams carry input cards—sunlight, water, and carbon dioxide—to a leaf model, then trade them for glucose and oxygen output cards. Students narrate each exchange using the process vocabulary.",
+          "connection": "Makes the movement of matter and transfer of energy visible and physical.",
+          "guide": "Place input cards at three stations. Require the runner to explain what each input contributes before receiving an output card.",
+          "worksheet": "Draw the leaf station. Label each input and output. In two sentences, explain where the energy begins and where it is stored."
+        },
+        {
+          "title": "Sunlight Investigation",
+          "description": "Compare two identical plants or leaf samples placed in different light conditions. Students predict, observe, and record evidence over several days.",
+          "connection": "Connects the abstract role of sunlight to observable changes in living plants.",
+          "guide": "Keep water, plant type, and container size the same. Discuss why a fair test changes only one variable.",
+          "worksheet": "Write your prediction, record one observation each day, and use evidence to explain whether light affected the plant."
+        },
+        {
+          "title": "Photosynthesis Comic Strip",
+          "description": "Students create a six-panel comic that follows a water droplet and carbon dioxide molecule as they enter a plant, become part of sugar, and release oxygen.",
+          "connection": "Uses narrative and drawing to reinforce sequence, plant structures, and conservation of matter.",
+          "guide": "Require every panel to include one accurate science label and one cause-and-effect caption.",
+          "worksheet": "Plan six panels: roots, stem, leaf, chlorophyll, glucose, and oxygen. Add arrows to show movement."
+        }
+      ],
+      "config": {
+        "gradeLevel": "5th Grade",
+        "activityMode": "ideas"
+      }
+    },
+    {
+      "id": "manual-v12-persona",
+      "type": "persona",
+      "title": "Photosynthesis Interview Candidates",
+      "meta": "3 interview candidates · 5th Grade",
+      "timestamp": "2026-08-20T15:05:00.000Z",
+      "data": [
+        {
+          "id": "persona-ingenhousz",
+          "name": "Jan Ingenhousz",
+          "role": "Scientist who studied plants and light",
+          "year": "1779",
+          "context": "Ingenhousz tested plants in light and darkness. His observations helped show that green plant parts release oxygen when light is available.",
+          "visualDescription": "Eighteenth-century scientist in a study beside glass jars and leafy plants, educational portrait",
+          "greeting": "Welcome to my plant laboratory. What would you like to investigate about light and leaves?",
+          "suggestedQuestions": ["What did you change in your experiment?", "What evidence showed light mattered?", "Why did green leaves matter?"]
+        },
+        {
+          "id": "persona-plant-cell",
+          "name": "A Leaf Cell",
+          "role": "A microscopic guide inside a leaf",
+          "year": "Inside a living leaf",
+          "context": "This fictional guide can explain how chloroplasts capture light and how water and carbon dioxide become sugar and oxygen.",
+          "visualDescription": "Friendly scientifically accurate plant cell with chloroplasts, classroom diagram style",
+          "greeting": "You are now inside a leaf. Ask me how the materials around us help the plant make food.",
+          "suggestedQuestions": ["Where does the water come from?", "What does chlorophyll do?", "Where is energy stored?"]
+        },
+        {
+          "id": "persona-gardener",
+          "name": "School Garden Scientist",
+          "role": "Plant-growth investigator",
+          "year": "Today",
+          "context": "A school garden scientist uses fair tests to study how light, water, and carbon dioxide affect plant growth and health.",
+          "visualDescription": "Diverse elementary school garden scientist holding a clipboard beside raised beds, bright documentary illustration",
+          "greeting": "I have several plant investigations underway. Which variable should we examine first?",
+          "suggestedQuestions": ["How do you design a fair test?", "What observations do you record?", "How can a plant show it needs more light?"]
+        }
+      ],
+      "config": {
+        "gradeLevel": "5th Grade",
+        "language": "English",
+        "personaSource": {
+          "topic": "Photosynthesis",
+          "excerpt": "Plants use sunlight, water, and carbon dioxide to make sugar through photosynthesis."
+        }
+      }
+    },
+    {
+      "id": "manual-v12-concept-sort",
+      "type": "concept-sort",
+      "title": "Photosynthesis Concept Sort",
+      "meta": "3 categories · 12 cards · text-only",
+      "timestamp": "2026-08-20T15:06:00.000Z",
+      "data": {
+        "categories": [
+          {"id": "c1", "label": "Inputs", "color": "bg-indigo-500"},
+          {"id": "c2", "label": "Plant Structures", "color": "bg-emerald-500"},
+          {"id": "c3", "label": "Outputs", "color": "bg-amber-500"}
+        ],
+        "items": [
+          {"id": "i1", "content": "sunlight", "categoryId": "c1"},
+          {"id": "i2", "content": "water", "categoryId": "c1"},
+          {"id": "i3", "content": "carbon dioxide", "categoryId": "c1"},
+          {"id": "i4", "content": "light energy", "categoryId": "c1"},
+          {"id": "i5", "content": "roots", "categoryId": "c2"},
+          {"id": "i6", "content": "stem", "categoryId": "c2"},
+          {"id": "i7", "content": "leaves", "categoryId": "c2"},
+          {"id": "i8", "content": "chlorophyll", "categoryId": "c2"},
+          {"id": "i9", "content": "glucose", "categoryId": "c3"},
+          {"id": "i10", "content": "oxygen", "categoryId": "c3"},
+          {"id": "i11", "content": "stored chemical energy", "categoryId": "c3"},
+          {"id": "i12", "content": "sugar for growth", "categoryId": "c3"}
+        ]
+      },
+      "config": {
+        "gradeLevel": "5th Grade",
+        "conceptItemCount": 12,
+        "includeVisuals": false
+      }
+    },
+    {
+      "id": "manual-v12-dbq",
+      "type": "dbq",
+      "title": "How Scientists Explained Photosynthesis",
+      "meta": "3 documents · 4 rubric criteria",
+      "timestamp": "2026-08-20T15:07:00.000Z",
+      "data": {
+        "title": "How Scientists Explained Photosynthesis",
+        "historicalContext": "For centuries, people wondered how plants gained mass and stayed alive. Scientists gradually used controlled observations to show that plants take in matter from water and air and use light energy to make sugar.",
+        "documents": [
+          {
+            "id": "A",
+            "title": "Document A: Van Helmont's Willow Tree",
+            "documentType": "primary",
+            "source": "Adapted classroom account of Jan Baptista van Helmont's experiment, 1600s",
+            "sourceUrl": "",
+            "excerpt": "Van Helmont planted a young willow tree in a measured amount of dry soil. For five years he added only water. The tree gained a great deal of mass, while the soil's mass changed very little. He concluded that much of the new plant material came from water, although later scientists showed that carbon dioxide from the air also supplied matter.",
+            "happPrompts": {
+              "historical": "What did people know about plant growth in the 1600s?",
+              "audience": "Who might learn from this experiment?",
+              "purpose": "Why did Van Helmont measure both the tree and the soil?",
+              "pointOfView": "How did the evidence shape his conclusion?"
+            },
+            "sourcingQuestions": ["Which parts of the investigation were measured?"],
+            "analysisQuestions": ["What did the evidence support, and what important input was still missing from the explanation?"],
+            "sentenceStarters": ["The measurements show...", "The conclusion was incomplete because..."]
+          },
+          {
+            "id": "B",
+            "title": "Document B: Priestley's Sealed Jar",
+            "documentType": "primary",
+            "source": "Adapted classroom account of Joseph Priestley's experiments, 1770s",
+            "sourceUrl": "",
+            "excerpt": "Priestley observed that a flame soon went out in a sealed jar. A mouse also could not survive for long in the same closed air. When he placed a green plant in the jar and waited, the air could again support a flame. The plant had changed the air, but the exact role of light was not yet clear.",
+            "happPrompts": {
+              "historical": "What tools were available to study gases in the 1770s?",
+              "audience": "Who would be interested in evidence about air?",
+              "purpose": "Why compare jars with and without a plant?",
+              "pointOfView": "What could Priestley observe directly, and what did he infer?"
+            },
+            "sourcingQuestions": ["What comparison made this a useful investigation?"],
+            "analysisQuestions": ["How does this evidence connect plants to oxygen?"],
+            "sentenceStarters": ["Document B provides evidence that...", "The plant changed the air because..."]
+          },
+          {
+            "id": "C",
+            "title": "Document C: Ingenhousz Tests Light",
+            "documentType": "primary",
+            "source": "Adapted classroom account of Jan Ingenhousz's experiments, 1779",
+            "sourceUrl": "",
+            "excerpt": "Ingenhousz placed aquatic plants in clear containers and compared what happened in sunlight and darkness. In light, bubbles formed around the green parts of the plants. In darkness, the bubbles stopped. He concluded that light was necessary for green plants to release the gas that later scientists identified as oxygen.",
+            "happPrompts": {
+              "historical": "How did this experiment build on earlier work about plants and air?",
+              "audience": "Who could repeat these observations?",
+              "purpose": "Why compare light and darkness?",
+              "pointOfView": "How did visible bubbles influence the conclusion?"
+            },
+            "sourcingQuestions": ["What was the independent variable in this investigation?"],
+            "analysisQuestions": ["Why are the results stronger because both light and darkness were tested?"],
+            "sentenceStarters": ["The light condition showed...", "The comparison supports the claim that..."]
+          }
+        ],
+        "corroborationClaims": [
+          {
+            "claim": "Plants gain matter from sources beyond the soil.",
+            "supportingDocs": ["A", "B", "C"],
+            "challengingDocs": [],
+            "guideQuestion": "How does each document add a different part of the explanation?"
+          },
+          {
+            "claim": "Light is necessary for plants to release oxygen.",
+            "supportingDocs": ["C"],
+            "challengingDocs": ["B"],
+            "guideQuestion": "Why could Document B not fully support this claim until Document C was considered?"
+          }
+        ],
+        "synthesisPrompt": "Using evidence from at least two documents, explain how scientific understanding of photosynthesis changed as investigators tested water, air, and light.",
+        "thesisStarter": "Scientists learned that plants make food by ___ because Documents ___ and ___ show ___.",
+        "rubric": [
+          {"criteria": "Claim", "1": "No clear claim", "2": "Basic claim", "3": "Clear claim", "4": "Precise claim that explains change over time"},
+          {"criteria": "Evidence", "1": "No document evidence", "2": "Mentions one document", "3": "Uses two documents", "4": "Integrates evidence from three documents"},
+          {"criteria": "Reasoning", "1": "Restates evidence", "2": "Gives a partial explanation", "3": "Connects evidence to the claim", "4": "Explains how the documents build on one another"},
+          {"criteria": "Organization", "1": "Ideas are difficult to follow", "2": "Some logical order", "3": "Clear beginning, middle, and end", "4": "Transitions make the explanation easy to follow"}
+        ],
+        "teacherNotes": "Preview the difference between observation and inference. Let students annotate each document before opening the corroboration section."
+      },
+      "config": {
+        "gradeLevel": "5th Grade",
+        "language": "English"
+      }
+    },
+    {
+      "id": "manual-v12-quiz",
+      "type": "quiz",
+      "title": "Photosynthesis Check for Understanding",
+      "meta": "5 questions · mixed response types · 5th Grade",
+      "timestamp": "2026-08-20T15:08:00.000Z",
+      "data": {
+        "title": "Photosynthesis Check for Understanding",
+        "mode": "exit-ticket",
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "Which material enters a plant through its roots?",
+            "options": ["water", "oxygen", "sugar", "sunlight"],
+            "correctAnswer": "water",
+            "explanation": "Roots absorb water from the soil.",
+            "dok": "DOK 1"
+          },
+          {
+            "type": "mcq",
+            "question": "What is chlorophyll's main role in photosynthesis?",
+            "options": ["capturing light energy", "absorbing water", "releasing sugar", "building roots"],
+            "correctAnswer": "capturing light energy",
+            "explanation": "Chlorophyll captures the light energy used to build sugar.",
+            "dok": "DOK 1"
+          },
+          {
+            "type": "multi-select",
+            "question": "Which two substances are products of photosynthesis?",
+            "options": ["glucose", "oxygen", "water", "carbon dioxide"],
+            "correctAnswers": ["glucose", "oxygen"],
+            "explanation": "Photosynthesis makes glucose and releases oxygen.",
+            "dok": "DOK 2"
+          },
+          {
+            "type": "short-answer",
+            "question": "A plant receives water and carbon dioxide but stays in darkness. Explain what will happen to photosynthesis.",
+            "expectedAnswer": "Photosynthesis will slow greatly or stop because the plant lacks the light energy needed to build glucose.",
+            "rubric": "State that light is required and connect light to energy for making glucose.",
+            "dok": "DOK 2"
+          },
+          {
+            "type": "answer-evidence",
+            "question": "What best explains why bubbles appeared around an aquatic plant only in light?",
+            "answerOptions": ["The plant released oxygen during photosynthesis.", "The plant absorbed oxygen from the water.", "The water began boiling.", "The plant stopped using energy."],
+            "correctAnswer": 0,
+            "evidencePrompt": "Choose the observation that best supports your answer.",
+            "evidenceOptions": ["Bubbles formed near green plant parts in light but stopped in darkness.", "The container was made of glass.", "The plant was placed in water.", "The room was quiet."],
+            "correctEvidence": 0,
+            "explanation": "The controlled comparison links oxygen bubbles to light-dependent photosynthesis.",
+            "dok": "DOK 3"
+          }
+        ],
+        "reflections": [
+          {"prompt": "Which part of photosynthesis is easiest for you to explain, and which part needs another example?"}
+        ]
+      },
+      "config": {
+        "gradeLevel": "5th Grade",
+        "quizMode": "exit-ticket",
+        "scoringPolicy": {
+          "accuracy": true,
+          "confidence": false,
+          "partialCredit": true,
+          "writtenResponseMode": "teacher-review"
+        }
+      }
+    },
+    {
+      "id": "manual-v12-word-sounds",
+      "type": "word-sounds",
+      "title": "Short-A Word Sounds Practice",
+      "meta": "4 prepared words · counting and blending",
+      "timestamp": "2026-08-20T15:09:00.000Z",
+      "configSummary": "Short-a CVC words · Grade 1",
+      "lessonPlanSequence": ["counting", "segmentation", "blending", "rhyming"],
+      "sessionConfig": {
+        "language": "English",
+        "gradeLevel": "1st Grade",
+        "wordCount": 4
+      },
+      "data": [
+        {
+          "id": "ws-cat",
+          "term": "cat",
+          "word": "cat",
+          "targetWord": "cat",
+          "displayWord": "cat",
+          "phonemes": ["k", "a", "t"],
+          "phonemeCount": 3,
+          "graphemes": ["c", "a", "t"],
+          "syllables": ["cat"],
+          "rhymes": ["hat", "bat", "mat"],
+          "rhymeWord": "hat",
+          "rhymeDistractors": ["dog", "sun", "bed"],
+          "blendingDistractors": ["cot", "cut", "bat"],
+          "firstSound": "k",
+          "lastSound": "t",
+          "familyEnding": "-at",
+          "familyMembers": ["hat", "bat", "mat"],
+          "definition": "a small pet",
+          "activityItems": {
+            "counting": {"options": [1, 2, 3, 4], "answer": 3},
+            "segmentation": {"chips": [{"id": "c1", "phoneme": "k", "type": "correct", "isDistractor": false}, {"id": "c2", "phoneme": "a", "type": "correct", "isDistractor": false}, {"id": "c3", "phoneme": "t", "type": "correct", "isDistractor": false}], "slotCount": 3},
+            "blending": {"options": ["cat", "cot", "cut", "bat"], "answer": "cat"},
+            "rhyming": {"options": ["hat", "dog", "sun", "bed"], "answer": "hat"}
+          }
+        },
+        {
+          "id": "ws-map",
+          "term": "map",
+          "word": "map",
+          "targetWord": "map",
+          "displayWord": "map",
+          "phonemes": ["m", "a", "p"],
+          "phonemeCount": 3,
+          "graphemes": ["m", "a", "p"],
+          "syllables": ["map"],
+          "rhymes": ["cap", "tap", "nap"],
+          "rhymeWord": "cap",
+          "rhymeDistractors": ["dog", "sun", "bed"],
+          "blendingDistractors": ["mop", "mat", "cap"],
+          "firstSound": "m",
+          "lastSound": "p",
+          "familyEnding": "-ap",
+          "familyMembers": ["cap", "tap", "nap"],
+          "definition": "a drawing that shows places",
+          "activityItems": {
+            "counting": {"options": [1, 2, 3, 4], "answer": 3},
+            "blending": {"options": ["map", "mop", "mat", "cap"], "answer": "map"},
+            "rhyming": {"options": ["cap", "dog", "sun", "bed"], "answer": "cap"}
+          }
+        },
+        {
+          "id": "ws-sun",
+          "term": "sun",
+          "word": "sun",
+          "targetWord": "sun",
+          "displayWord": "sun",
+          "phonemes": ["s", "u", "n"],
+          "phonemeCount": 3,
+          "graphemes": ["s", "u", "n"],
+          "syllables": ["sun"],
+          "rhymes": ["fun", "run", "bun"],
+          "rhymeWord": "fun",
+          "rhymeDistractors": ["cat", "dog", "bed"],
+          "blendingDistractors": ["sin", "son", "run"],
+          "firstSound": "s",
+          "lastSound": "n",
+          "familyEnding": "-un",
+          "familyMembers": ["fun", "run", "bun"],
+          "definition": "the star that gives Earth light",
+          "activityItems": {
+            "counting": {"options": [1, 2, 3, 4], "answer": 3},
+            "blending": {"options": ["sun", "sin", "son", "run"], "answer": "sun"},
+            "rhyming": {"options": ["fun", "cat", "dog", "bed"], "answer": "fun"}
+          }
+        },
+        {
+          "id": "ws-bed",
+          "term": "bed",
+          "word": "bed",
+          "targetWord": "bed",
+          "displayWord": "bed",
+          "phonemes": ["b", "e", "d"],
+          "phonemeCount": 3,
+          "graphemes": ["b", "e", "d"],
+          "syllables": ["bed"],
+          "rhymes": ["red", "fed", "sled"],
+          "rhymeWord": "red",
+          "rhymeDistractors": ["cat", "sun", "dog"],
+          "blendingDistractors": ["bad", "bid", "red"],
+          "firstSound": "b",
+          "lastSound": "d",
+          "familyEnding": "-ed",
+          "familyMembers": ["red", "fed", "sled"],
+          "definition": "a place to sleep",
+          "activityItems": {
+            "counting": {"options": [1, 2, 3, 4], "answer": 3},
+            "blending": {"options": ["bed", "bad", "bid", "red"], "answer": "bed"},
+            "rhyming": {"options": ["red", "cat", "sun", "dog"], "answer": "red"}
+          }
+        }
+      ],
+      "config": {
+        "gradeLevel": "1st Grade",
+        "language": "English"
+      }
+    },
+    {
+      "id": "official-text-adaptation-fixture",
+      "type": "simplified",
+      "title": "Photosynthesis - Grade 5 adaptation",
+      "meta": "Official tutorial fixture · Grade 5 · English",
+      "timestamp": "2026-08-20T15:10:00.000Z",
+      "data": "## Photosynthesis\n\nPlants make their own food. Leaves capture energy from sunlight. Roots bring in water, and leaves take in carbon dioxide from the air. The plant uses these materials to make sugar for energy. Oxygen is released back into the air.",
+      "targetGradeLevel": "5th Grade",
+      "config": {
+        "gradeLevel": "5th Grade",
+        "language": "English",
+        "source": "official-tutorial"
+      }
+    }
+  ],
+  "wordSoundsState": {
+    "history": [],
+    "families": {},
+    "audioLibrary": {},
+    "badges": [],
+    "phonemeMastery": {},
+    "dailyProgress": {"date": "Thu Aug 20 2026", "completed": 0, "goalMet": false},
+    "confusionPatterns": {}
+  }
+}

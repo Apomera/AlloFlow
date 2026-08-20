@@ -30,7 +30,7 @@ beforeAll(() => {
   expect(result.status, result.stderr || result.stdout).toBe(0);
   reportText = fs.readFileSync(reportPath, 'utf8');
   report = JSON.parse(reportText);
-});
+}, 120000);
 
 describe('AP Psychology deterministic QA report', () => {
   it('is byte-stable when the reviewed inputs have not changed', () => {
@@ -83,14 +83,20 @@ describe('AP Psychology deterministic QA report', () => {
 
   it('records the exact pilot blueprint, practice, key, feedback, and originality metrics', () => {
     expect(report.metrics.blueprint.unitItemCounts).toEqual({
-      'biological-bases-of-behavior': 4,
-      cognition: 4,
-      'development-and-learning': 4,
-      'social-psychology-and-personality': 4,
-      'mental-and-physical-health': 4,
+      'biological-bases-of-behavior': 100,
+      cognition: 100,
+      'development-and-learning': 100,
+      'social-psychology-and-personality': 100,
+      'mental-and-physical-health': 100,
     });
-    expect(report.metrics.sciencePractices.itemCounts).toEqual({ P1: 13, P2: 5, P3: 2, P4: 0 });
-    expect(report.metrics.answerKeys.itemCounts).toEqual({ 0: 5, 1: 5, 2: 5, 3: 5 });
+    expect(report.metrics.blueprint.itemCount).toBe(500);
+    expect(report.metrics.blueprint.bankCount).toBe(25);
+    expect(report.metrics.blueprint.bankSize).toBe(20);
+    expect(Object.entries(report.metrics.blueprint.minimumTopicCoverage).every(
+      ([topicId, minimum]) => report.metrics.blueprint.topicItemCounts[topicId] >= minimum,
+    )).toBe(true);
+    expect(report.metrics.sciencePractices.itemCounts).toEqual({ P1: 325, P2: 125, P3: 50, P4: 0 });
+    expect(report.metrics.answerKeys.itemCounts).toEqual({ 0: 125, 1: 125, 2: 125, 3: 125 });
     const expectedOrderedKeys = pack.items.map((item) => item.answerIndex);
     const expectedTransitionDeltas = expectedOrderedKeys
       .slice(1)
@@ -121,20 +127,20 @@ describe('AP Psychology deterministic QA report', () => {
     );
     expect(transitionAdvisories).toHaveLength(sequence.dominantTransitionRate > 0.6 ? 1 : 0);
     expect(report.metrics.itemQuality).toMatchObject({
-      completeOptionFeedbackItems: 20,
-      editorialDeclarationItems: 20,
-      sourceCompleteItems: 20,
-      rightsBoundaryItems: 20,
-      accessibilityBoundaryItems: 20,
-      expertGateItems: 20,
-      psychometricBoundaryItems: 20,
+      completeOptionFeedbackItems: 500,
+      editorialDeclarationItems: 500,
+      sourceCompleteItems: 500,
+      rightsBoundaryItems: 500,
+      accessibilityBoundaryItems: 500,
+      expertGateItems: 500,
+      psychometricBoundaryItems: 500,
       severeKeyedLengthCueItems: 0,
     });
     expect(report.metrics.itemQuality.keyedToDistractorMeanRatio).toBeGreaterThanOrEqual(0.8);
     expect(report.metrics.itemQuality.keyedToDistractorMeanRatio).toBeLessThanOrEqual(1.25);
     expect(report.metrics.promptOriginality.exactDuplicateGroups).toEqual([]);
     expect(report.metrics.promptOriginality.nearDuplicatePairs).toEqual([]);
-    expect(report.items).toHaveLength(20);
+    expect(report.items).toHaveLength(500);
     expect(report.items.every((item) => item.automatedStatus === 'pass')).toBe(true);
     const categoricalAdvisoryIds = new Set(
       report.editorialReviewQueue.advisories

@@ -42,7 +42,12 @@ const PLAN_STEPS = [
 
 const makeCtx = (over = {}) => Object.assign({
   hasActiveBlueprint: true,
+  hasSourceOrAnalysis: true,
   runBlueprint: vi.fn(),
+  startLessonFlow: vi.fn(),
+  planFullPack: vi.fn(async () => true),
+  generateFullPack: vi.fn(async () => true),
+  fullPackPlanReady: false,
   rebuildBlueprintStep: vi.fn(() => ({ ok: true })),
   blueprintStepList: () => PLAN_STEPS,
   lessonTemplateNames: () => [{ id: 't1', name: 'Vocabulary-first' }, { id: 't2', name: 'Close reading' }],
@@ -55,10 +60,21 @@ const visible = (ctx) => (AC.buildAlloCommands(ctx, { includeGated: true }) || [
   .map((c) => c.id);
 
 describe('the commands exist and are gated', () => {
-  it('registers all three', () => {
-    for (const id of ['run_lesson_blueprint', 'rebuild_lesson_step', 'apply_lesson_template']) {
+  it('registers blueprint entry, execution, rebuild, template, and Full Pack commands', () => {
+    for (const id of ['start_lesson_blueprint', 'run_lesson_blueprint', 'rebuild_lesson_step', 'apply_lesson_template', 'plan_full_pack', 'generate_full_pack']) {
       expect(find(makeCtx(), id), id).toBeTruthy();
     }
+  });
+
+  it('allows plan-only Full Pack previews in demos but gates generation and Auto-Fill', () => {
+    expect(AC.getCommandContract('plan_full_pack')).toMatchObject({
+      demoSafe: true,
+      interaction: 'automatic',
+      requires: ['source'],
+      produces: ['full-pack-plan'],
+    });
+    expect(AC.getCommandContract('generate_full_pack')).toMatchObject({ demoSafe: false, interaction: 'guided', terminal: true });
+    expect(AC.getCommandContract('start_lesson_blueprint')).toMatchObject({ demoSafe: false, interaction: 'guided', terminal: true });
   });
 
   it('hides execute and rebuild when there is no plan', () => {
@@ -134,6 +150,23 @@ describe('running them', () => {
     const ctx = makeCtx();
     expect(String(find(ctx, 'apply_lesson_template').run(ctx, { name: 'nope' }))).toMatch(/could not find/i);
   });
+
+  it('opens the production Auto-Fill lesson flow', () => {
+    const ctx = makeCtx();
+    const out = find(ctx, 'start_lesson_blueprint').run(ctx, { topic: 'weather', grade: '4' });
+    expect(ctx.startLessonFlow).toHaveBeenCalledWith({ topic: 'weather', grade: '4' });
+    expect(String(out)).toMatch(/blueprint mode is open/i);
+  });
+
+  it('prepares a Full Pack plan and generates only after the plan is ready', async () => {
+    const planning = makeCtx();
+    expect(String(await find(planning, 'plan_full_pack').runAsync(planning))).toMatch(/plan ready/i);
+    expect(planning.planFullPack).toHaveBeenCalledOnce();
+
+    const ready = makeCtx({ fullPackPlanReady: true });
+    expect(String(await find(ready, 'generate_full_pack').runAsync(ready))).toMatch(/generating the reviewed/i);
+    expect(ready.generateFullPack).toHaveBeenCalledOnce();
+  });
 });
 
 // ── Host capability wiring ──
@@ -143,7 +176,7 @@ const HOSTS = ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt', 'desk
 describe('host exposes the capabilities the commands gate on', () => {
   it.each(HOSTS)('%s wires every capability', (file) => {
     const src = read(file);
-    for (const cap of ['hasActiveBlueprint', 'runBlueprint', 'rebuildBlueprintStep',
+    for (const cap of ['hasActiveBlueprint', 'runBlueprint', 'planFullPack', 'fullPackPlanReady', 'generateFullPack', 'rebuildBlueprintStep',
                        'blueprintStepList', 'lessonTemplateNames', 'applyLessonTemplateByName']) {
       expect(src, cap).toContain(cap + ':');
     }
@@ -163,7 +196,7 @@ describe('commands module copy-sync', () => {
   it.each(['allo_commands_source.jsx', 'allo_commands_module.js',
            'desktop/web-app/public/allo_commands_module.js'])('%s carries the commands', (file) => {
     const src = read(file);
-    for (const id of ['run_lesson_blueprint', 'rebuild_lesson_step', 'apply_lesson_template']) {
+    for (const id of ['start_lesson_blueprint', 'run_lesson_blueprint', 'plan_full_pack', 'generate_full_pack', 'rebuild_lesson_step', 'apply_lesson_template']) {
       expect(src, id).toContain(id);
     }
   });

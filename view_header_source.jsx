@@ -420,11 +420,31 @@ function HeaderBar(props) {
   const selectedReadingThemeLabel = t('header.' + selectedReadingThemeKey)
     || readingThemeFallbackLabels[readingTheme]
     || readingThemeFallbackLabels.default;
+  const readingThemeOrder = ['default', 'warm', 'sepia', 'dark', 'highContrast', 'blue', 'green', 'rose', 'dyslexia', 'dim'];
+  const handleReadingThemeKeyDown = (event, currentTheme) => {
+    const key = event.key;
+    if (!['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'].includes(key)) return;
+    event.preventDefault();
+    const index = Math.max(0, readingThemeOrder.indexOf(currentTheme));
+    const nextIndex = key === 'Home'
+      ? 0
+      : key === 'End'
+        ? readingThemeOrder.length - 1
+        : (index + (key === 'ArrowRight' || key === 'ArrowDown' ? 1 : -1) + readingThemeOrder.length) % readingThemeOrder.length;
+    const next = readingThemeOrder[nextIndex];
+    setReadingTheme(next);
+    if (typeof window !== 'undefined' && typeof document !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
+      window.requestAnimationFrame(() => {
+        const target = document.querySelector(`[data-reading-theme-option="${next}"]`);
+        if (target && typeof target.focus === 'function') target.focus();
+      });
+    }
+  };
   const piiWarningText = t('header.pii_warning');
   const compactRoleLabel = isIndependentMode
     ? (t('roles.independent') || 'Independent Learner')
     : isParentMode
-      ? (t('roles.parent') || 'Parent')
+      ? (t('parent_mode.label') || t('roles.parent') || 'Family Mode')
       : isTeacherMode
         ? (t('roles.teacher') || 'Teacher')
         : (t('roles.student') || 'Student');
@@ -434,8 +454,11 @@ function HeaderBar(props) {
   // (switching a parent to the student dashboard is an unverified behavior
   // change — W3's call, left alone).
   const dashboardNavLabel = isParentMode
-    ? (t('dashboard.title_parent') || 'Family Dashboard')
+    ? (t('parent_mode.dashboard_title') || t('dashboard.title_parent') || 'Family Dashboard')
     : (t('dashboard.title') || 'Dashboard');
+  const parentProgressLabel = isParentMode
+    ? (t('parent_mode.progress_label') || t('common.assessment_center') || 'Child Progress')
+    : (t('common.assessment_center') || 'Assessment Center');
   const compactViewFallback = String(activeView || '')
     .replace(/[-_]+/g, ' ')
     .replace(/\b\w/g, char => char.toUpperCase());
@@ -816,32 +839,42 @@ function HeaderBar(props) {
                                             <div>
                                                 <div className="flex justify-between items-center mb-2">
                                                     <label className={`text-xs font-bold flex items-center gap-1 ${_skin.label}`}>{t('settings.reading_theme') || '🎨 Reading Theme'}</label>
-                                                    <span className={`text-[11px] font-mono ${_skin.chip} px-1.5 py-0.5 rounded`}>{selectedReadingThemeLabel}</span>
+                                                    <span aria-live="polite" className={`text-[11px] font-mono ${_skin.chip} px-1.5 py-0.5 rounded`}>{selectedReadingThemeLabel}</span>
                                                 </div>
-                                                <p className={`text-[11px] ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'} mb-2`}>{t('settings.reading_theme_desc') || 'Background & text color for all content views'}</p>
+                                                <p className={`text-[11px] ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'} mb-2`}>{t('settings.reading_theme_desc') || 'Background & text color for all content views'} {t('settings.reading_theme_scope') || 'Changes lesson colors only; your app theme stays the same.'}</p>
                                                 <div className="grid grid-cols-5 gap-1.5" role="radiogroup" aria-label={t('header.reading_theme_aria') || 'Reading theme'}>
                                                     {[
-                                                        { id: 'default', label: t('header.reading_theme_default') || 'Default', bg: '#ffffff', fg: '#1e293b', border: '#e2e8f0', emoji: '○' },
-                                                        { id: 'warm', label: t('header.reading_theme_warm') || 'Warm', bg: '#fdcba5', fg: '#432714', border: '#f97e1f', emoji: '☀️' },
-                                                        { id: 'sepia', label: t('header.reading_theme_sepia') || 'Sepia', bg: '#d1bfa9', fg: '#2a1f13', border: '#b48950', emoji: '📜' },
-                                                        { id: 'dark', label: t('header.reading_theme_dark') || 'Dark', bg: '#1a1a2e', fg: '#e2e8f0', border: '#334155', emoji: '🌙' },
-                                                        { id: 'highContrast', label: t('header.reading_theme_contrast') || 'Contrast', bg: '#000000', fg: '#ffff00', border: '#ffff00', emoji: '◼️' },
-                                                        { id: 'blue', label: t('header.reading_theme_blue') || 'Blue', bg: '#b9dbf4', fg: '#16304b', border: '#4aa9ed', emoji: '💧' },
-                                                        { id: 'green', label: t('header.reading_theme_green') || 'Green', bg: '#caeccf', fg: '#123f21', border: '#34c548', emoji: '🌿' },
-                                                        { id: 'rose', label: t('header.reading_theme_rose') || 'Rose', bg: '#f9c8d8', fg: '#561530', border: '#f877a2', emoji: '🌸' },
-                                                        { id: 'dyslexia', label: t('header.reading_theme_easy_read') || 'Easy Read', bg: '#f4ebbe', fg: '#3f3b31', border: '#cfb017', emoji: '🔤' },
-                                                        { id: 'dim', label: t('header.reading_theme_dim') || 'Dim', bg: '#adb3bd', fg: '#000000', border: '#7486a4', emoji: '🌫️' },
+                                                        { id: 'default', label: t('header.reading_theme_default') || 'Default', bg: '#ffffff', fg: '#1e293b', border: '#64748b', focus: '#4f46e5', emoji: '○' },
+                                                        { id: 'warm', label: t('header.reading_theme_warm') || 'Warm', bg: '#fdcba5', fg: '#432714', border: '#a85b2f', focus: '#1d4ed8', emoji: '☀️' },
+                                                        { id: 'sepia', label: t('header.reading_theme_sepia') || 'Sepia', bg: '#d1bfa9', fg: '#2a1f13', border: '#7f5e3d', focus: '#174ea6', emoji: '📜' },
+                                                        { id: 'dark', label: t('header.reading_theme_dark') || 'Dark', bg: '#1a1a2e', fg: '#e2e8f0', border: '#7979ab', focus: '#fbbf24', emoji: '🌙' },
+                                                        { id: 'highContrast', label: t('header.reading_theme_contrast') || 'Contrast', bg: '#000000', fg: '#ffff00', border: '#ffff00', focus: '#ffff00', emoji: '◼️' },
+                                                        { id: 'blue', label: t('header.reading_theme_blue') || 'Blue', bg: '#b9dbf4', fg: '#16304b', border: '#3b78a5', focus: '#174ea6', emoji: '💧' },
+                                                        { id: 'green', label: t('header.reading_theme_green') || 'Green', bg: '#caeccf', fg: '#123f21', border: '#3b7f4c', focus: '#1455a5', emoji: '🌿' },
+                                                        { id: 'rose', label: t('header.reading_theme_rose') || 'Rose', bg: '#f9c8d8', fg: '#561530', border: '#a7476b', focus: '#174ea6', emoji: '🌸' },
+                                                        { id: 'dyslexia', label: t('header.reading_theme_easy_read') || 'Easy Read', bg: '#f4ebbe', fg: '#3f3b31', border: '#8d7621', focus: '#174ea6', emoji: '🔤' },
+                                                        { id: 'dim', label: t('header.reading_theme_dim') || 'Dim', bg: '#adb3bd', fg: '#000000', border: '#46505d', focus: '#1d4ed8', emoji: '🌫️' },
                                                     ].map(function(th) {
                                                         var isActive = readingTheme === th.id;
                                                         return <button type="button" key={th.id}
                                                             role="radio" aria-checked={isActive} aria-label={th.label}
+                                                            aria-posinset={readingThemeOrder.indexOf(th.id) + 1}
+                                                            aria-setsize={10}
+                                                            tabIndex={isActive ? 0 : -1}
+                                                            data-reading-theme-option={th.id}
                                                             onClick={() => setReadingTheme(th.id)}
+                                                            onKeyDown={(event) => handleReadingThemeKeyDown(event, th.id)}
                                                             title={th.label}
-                                                            className={`flex flex-col items-center gap-0.5 p-1.5 rounded-lg transition-all border-2 cursor-pointer ${isActive ? 'ring-2 ring-indigo-500 ring-offset-1 scale-105' : 'hover:scale-105'}`}
-                                                            style={{ background: th.bg, color: th.fg, borderColor: isActive ? '#6366f1' : th.border }}
+                                                            className={`allo-reading-theme-swatch flex flex-col items-center gap-0.5 p-1.5 rounded-lg transition-all border-2 cursor-pointer ${isActive ? 'scale-105' : 'hover:scale-105'}`}
+                                                            style={{
+                                                                '--allo-reading-swatch-bg': th.bg,
+                                                                '--allo-reading-swatch-fg': th.fg,
+                                                                '--allo-reading-swatch-border': th.border,
+                                                                '--allo-reading-swatch-focus': th.focus,
+                                                            }}
                                                         >
                                                             <span className="text-sm leading-none">{th.emoji}</span>
-                                                            <span className="text-[11px] font-bold leading-none" style={{ color: th.fg }}>{th.label}</span>
+                                                            <span className="text-[11px] font-bold leading-none">{th.label}</span>
                                                         </button>;
                                                     })}
                                                 </div>
@@ -1002,7 +1035,7 @@ function HeaderBar(props) {
                                                 )}
                                                 <div className="flex gap-2 mt-3">
                                                     <div className="flex-1">
-                                                        <label className={`text-[11px] uppercase font-bold ${_skin.label} block mb-1`}>Speed: {voiceSpeed}x</label>
+                                                        <label className={`text-[11px] uppercase font-bold ${_skin.label} block mb-1`}>{t('header.voice_speed') || 'Speed'}: {voiceSpeed}x</label>
                                                         <input aria-label={t('common.range_slider')}
                                                             type="range"
                                                             min="0.5"
@@ -1015,7 +1048,7 @@ function HeaderBar(props) {
                                                         />
                                                     </div>
                                                     <div className="flex-1">
-                                                        <label className={`text-[11px] uppercase font-bold ${_skin.label} block mb-1`}>Volume: {Math.round(voiceVolume * 100)}%</label>
+                                                        <label className={`text-[11px] uppercase font-bold ${_skin.label} block mb-1`}>{t('header.voice_volume') || 'Volume'}: {Math.round(voiceVolume * 100)}%</label>
                                                         <input aria-label={t('common.range_slider')}
                                                             type="range"
                                                             min="0"
@@ -1028,6 +1061,18 @@ function HeaderBar(props) {
                                                         />
                                                     </div>
                                                 </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const testVoice = typeof window !== 'undefined' && window.__alloTestVoice;
+                                                        if (typeof testVoice === 'function') testVoice();
+                                                    }}
+                                                    disabled={!(typeof window !== 'undefined' && typeof window.__alloTestVoice === 'function')}
+                                                    className={`mt-3 w-full min-h-9 rounded-lg border px-3 py-2 text-xs font-bold ${_skin.surface} ${_skin.action} disabled:opacity-50 disabled:cursor-not-allowed`}
+                                                    aria-label={t('header.voice_test_aria') || 'Test the selected voice and audio output'}
+                                                >
+                                                    {t('header.voice_test') || 'Test voice'}
+                                                </button>
                                                 <p className={`text-[11px] ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'} mt-2 italic leading-tight`}>
                                                     {t('settings.voice.helper')}
                                                 </p>
@@ -1425,10 +1470,10 @@ function HeaderBar(props) {
                             <button type="button"
                                 onClick={() => setShowClassAnalytics(true)}
                                 className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm flex items-center gap-2 transition-colors text-xs border border-white/10 hover:border-white/30 ring-1 ring-violet-400/40"
-                                title={t('common.assessment_center') || 'Assessment Center'}
+                                title={parentProgressLabel}
                                 data-help-key="header_analytics"
                             >
-                                <ClipboardList size={14} /> <span className="hidden lg:inline">{t('common.assessment_center') || 'Assessment Center'}</span>
+                                <ClipboardList size={14} /> <span className="hidden lg:inline">{parentProgressLabel}</span>
                             </button>
                         </div>
                             )}

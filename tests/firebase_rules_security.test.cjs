@@ -110,6 +110,46 @@ const assetPath = (id) => "artifacts/" + appId + "/public/data/session_assets/" 
       "quizState.teams": {},
     }));
 
+    await assertSucceeds(setDoc(doc(hostDb, sessionPath("QUEST")), {
+      hostId: "host-user",
+      createdAt: new Date(),
+      mode: "sync",
+      roster: {},
+      escapeRoomState: {
+        mode: "concept-quest",
+        isActive: true,
+        teams: {},
+        teamProgress: { All: { questVotes: {}, questActions: {}, questRoles: {} } },
+        conceptQuest: { currentRoomId: "room-1", phase: "explore" },
+      },
+    }));
+    const questRef = doc(guestDb, sessionPath("QUEST"));
+    await assertSucceeds(updateDoc(questRef, { "escapeRoomState.teams.guest-user": "All" }));
+    await assertSucceeds(updateDoc(questRef, {
+      "escapeRoomState.teamProgress.All.questVotes.guest-user": "room-2",
+      "escapeRoomState.teamProgress.All.questRoles.guest-user": "connector",
+    }));
+    await assertSucceeds(updateDoc(questRef, {
+      "escapeRoomState.teamProgress.All.questActions.guest-user": {
+        abilityId: "connect", roleId: "connector", answerIndex: 1, submittedAt: Date.now(),
+        supportId: "guard", supportTargetUid: "classmate-user",
+      },
+    }));
+    await assertFails(updateDoc(questRef, { "escapeRoomState.teamProgress.All.questVotes.stranger-user": "room-2" }));
+    await assertFails(updateDoc(questRef, { "escapeRoomState.teamProgress.All.questRoles.guest-user": "boss" }));
+    await assertFails(updateDoc(questRef, {
+      "escapeRoomState.teamProgress.All.questActions.guest-user": {
+        abilityId: "connect", roleId: "connector", answerIndex: 99, submittedAt: Date.now(),
+      },
+    }));
+    await assertFails(updateDoc(questRef, {
+      "escapeRoomState.teamProgress.All.questActions.guest-user": {
+        abilityId: "connect", roleId: "connector", answerIndex: 1, submittedAt: Date.now(),
+        supportId: "guard", supportTargetUid: "guest-user",
+      },
+    }));
+    await assertFails(updateDoc(questRef, { "escapeRoomState.conceptQuest.phase": "complete" }));
+
     const now = Date.now();
     const orphan = {
       kind: "sessionImage",

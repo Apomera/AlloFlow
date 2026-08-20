@@ -3,7 +3,7 @@
   "librarySchemaVersion": 1,
   "libraryId": "ap-psychology-pilot-learning-library",
   "packId": "ap-psychology-pilot",
-  "version": "0.1.1-internal-preview",
+  "version": "0.2.0-internal-preview",
   "title": "AP Psychology Independent Pilot Learning Library",
   "description": "A compact, independently authored preview covering all five units in the Fall 2025 AP Psychology Framework V.1, with original study aids and clearly unscored AAQ-style and EBQ-style planning workshops.",
   "status": "preview",
@@ -18,7 +18,7 @@
     "clarificationsImplemented": "October 2025",
     "examFormatReferenceYear": 2026,
     "targetExamYear": null,
-    "lastVerifiedAt": "2026-07-29",
+    "lastVerifiedAt": "2026-08-20",
     "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
     "clarificationsUrl": "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description-clarifications.pdf",
     "officialExamUrl": "https://apcentral.collegeboard.org/courses/ap-psychology/exam",
@@ -51,7 +51,8 @@
     "fieldTesting": "not-started",
     "psychometricCalibration": "not-started",
     "cedAndPolicyReverification": "required-before-release",
-    "releaseEligible": false
+    "releaseEligible": false,
+    "internalStructuralValidation": "passed-2026-08-20"
   },
   "expertReviewGate": {
     "requiredRole": "Independent educator or faculty reviewer with current AP Psychology course and assessment expertise",

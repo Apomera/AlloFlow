@@ -22,35 +22,35 @@ describe('AP Psychology independent pilot', () => {
     expect(pack.schemaVersion).toBe(1);
     expect(pack.itemSchemaVersion).toBe(2);
     expect(pack.status).toBe('preview');
-    expect(pack.items).toHaveLength(20);
+    expect(pack.items).toHaveLength(500);
     expect(pack.domains).toHaveLength(5);
     expect(new Set(pack.domains.map((domain) => domain.id)).size).toBe(5);
 
     for (const domain of pack.domains) {
       expect(domain.officialWeightMin).toBe(0.15);
       expect(domain.officialWeightMax).toBe(0.25);
-      expect(domain.itemCount).toBe(4);
-      expect(itemCountsByDomain[domain.id]).toBe(4);
+      expect(domain.itemCount).toBe(100);
+      expect(itemCountsByDomain[domain.id]).toBe(100);
     }
     expect(pack.domains.reduce((sum, domain) => sum + domain.weight, 0)).toBeCloseTo(1, 10);
   });
 
   it('holds the pilot science-practice and answer-position distributions exactly', () => {
-    expect(countsBy(pack.items.map((item) => item.practiceId))).toEqual({ P1: 13, P2: 5, P3: 2 });
+    expect(countsBy(pack.items.map((item) => item.practiceId))).toEqual({ P1: 325, P2: 125, P3: 50 });
     expect(pack.practiceDistribution).toMatchObject({
-      'P1-concept-application': 13,
-      'P2-research-methods-and-design': 5,
-      'P3-data-interpretation': 2,
+      'P1-concept-application': 325,
+      'P2-research-methods-and-design': 125,
+      'P3-data-interpretation': 50,
       'P4-argumentation': 0,
     });
 
     expect(countsBy(pack.items.map((item) => String(item.answerIndex)))).toEqual({
-      0: 5,
-      1: 5,
-      2: 5,
-      3: 5,
+      0: 125,
+      1: 125,
+      2: 125,
+      3: 125,
     });
-    expect(pack.answerPositionDistribution).toEqual({ 0: 5, 1: 5, 2: 5, 3: 5 });
+    expect(pack.answerPositionDistribution).toEqual({ 0: 125, 1: 125, 2: 125, 3: 125 });
   });
 
   it('provides one best answer and substantive option-specific feedback for every item', () => {

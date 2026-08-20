@@ -59,6 +59,16 @@ describe('EPPP 1,500-item editorial replay orchestration', () => {
       'runDistractorHalvingCampaign',
       './audit_eppp_option_feedback.cjs',
       'runFeedbackHalvingCampaign',
+      './repair_eppp_native_quality_wave_25.cjs',
+      './repair_eppp_native_quality_wave_26.cjs',
+      './repair_eppp_native_quality_wave_27.cjs',
+      './repair_eppp_native_quality_wave_28.cjs',
+      './repair_eppp_native_quality_wave_29.cjs',
+      './repair_eppp_native_quality_wave_30.cjs',
+      './repair_eppp_native_quality_wave_31.cjs',
+      './repair_eppp_native_quality_wave_32.cjs',
+      './repair_eppp_native_quality_wave_33.cjs',
+      './repair_eppp_native_quality_wave_34.cjs',
       './normalize_eppp_native_unicode.cjs',
       './audit_eppp_distractor_quality.cjs',
       './audit_eppp_option_feedback.cjs',
@@ -76,12 +86,22 @@ describe('EPPP 1,500-item editorial replay orchestration', () => {
     ]);
   });
 
-  it('covers native waves 07 through 23 on both the full and 1,500-item fast paths', () => {
+  it('covers native waves 07 through 23 plus post-campaign waves 25 through 34 on both replay paths', () => {
     const latestCalls = collectReplayCalls(extractArrowBody(buildSource, 'runLatestEditorialReplay'));
     const coveredWaves = latestCalls
       .map((call) => call.match(/repair_eppp_native_quality_wave_(0[7-9]|1[0-9]|2[0-3])\.cjs$/)?.[1])
       .filter(Boolean);
     expect(coveredWaves).toEqual(['07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23']);
+    expect(latestCalls).toContain('./repair_eppp_native_quality_wave_25.cjs');
+    expect(latestCalls).toContain('./repair_eppp_native_quality_wave_26.cjs');
+    expect(latestCalls).toContain('./repair_eppp_native_quality_wave_27.cjs');
+    expect(latestCalls).toContain('./repair_eppp_native_quality_wave_28.cjs');
+    expect(latestCalls).toContain('./repair_eppp_native_quality_wave_29.cjs');
+    expect(latestCalls).toContain('./repair_eppp_native_quality_wave_30.cjs');
+    expect(latestCalls).toContain('./repair_eppp_native_quality_wave_31.cjs');
+    expect(latestCalls).toContain('./repair_eppp_native_quality_wave_32.cjs');
+    expect(latestCalls).toContain('./repair_eppp_native_quality_wave_33.cjs');
+    expect(latestCalls).toContain('./repair_eppp_native_quality_wave_34.cjs');
     expect(buildSource).toMatch(
       /if\(existingBank\.length===1500&&existingBank\.filter[\s\S]*?\)\{\s*runLatestEditorialReplay\(\);/,
     );

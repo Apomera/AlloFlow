@@ -874,6 +874,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                          )}
                      </div>
                      <div className="w-full">
+                         <div className="mb-2 flex flex-wrap items-center justify-center gap-2 text-xs font-bold"><span className="rounded-full bg-red-950 px-2 py-1 text-red-200">Phase: {bossStats.phaseName || 'Watchful'}</span><span className="rounded-full bg-yellow-950 px-2 py-1 text-yellow-200">Mastery streak: {bossStats.masteryStreak || 0}</span>{bossStats.lastComboBonus > 0 && <span className="rounded-full bg-purple-950 px-2 py-1 text-purple-200">⚡ Combo +{bossStats.lastComboBonus}</span>}</div>
                          <div className="flex justify-between text-xs font-bold text-slate-300 mb-1 uppercase tracking-wider">
                              <span>{bossStats.name || "Boss"} HP</span>
                              <span>{Math.round(bossStats.currentHP)} / {bossStats.maxHP}</span>
@@ -911,6 +912,8 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                                  {t('quiz.boss.counter_attack_msg', { damage: bossStats.lastClassDamage })}
                              </div>
                          )}
+                         {bossStats.gmEvent && <p role="status" aria-live="polite" className="mt-2 rounded-lg border border-amber-400/40 bg-amber-950/70 p-2 text-center text-xs font-bold text-amber-100">🎲 Teacher GM: {bossStats.gmEvent}</p>}
+                         {phase === 'revealed' && bossStats.roundFeedback && <details className="mt-2 rounded-lg bg-slate-800 p-2 text-left text-xs text-slate-200"><summary className="cursor-pointer font-bold">Round concept recap · {bossStats.roundFeedback.accuracy}% accuracy</summary>{bossStats.roundFeedback.explanation ? <p className="mt-1">{bossStats.roundFeedback.explanation}</p> : <p className="mt-1">Discuss which evidence made the strongest answer work.</p>}</details>}
                      </div>
                 </div>
             )}
@@ -1170,8 +1173,8 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                                 <div className="uppercase tracking-widest text-xs opacity-90 mb-1 font-medium">{t('quiz.result_label')}</div>
                                 {mode === 'boss-battle' ? (
                                     isCorrect
-                                        ? t('quiz.status.result_hit', { damage: 10 })
-                                        : t('quiz.status.result_miss', { hp: 5 })
+                                        ? t('quiz.status.result_hit', { damage: bossStats?.lastDamage || 0 })
+                                        : t('quiz.status.result_miss', { hp: bossStats?.lastClassDamage || 0 })
                                 ) : mode === 'team-showdown' ? (
                                     isCorrect
                                         ? t('quiz.status.result_correct')
@@ -1490,6 +1493,7 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceA
                 <Heart size={32} />
             </div>
             <span className="font-bold text-slate-700 group-hover:text-orange-700">{t('roles.parent')}</span>
+            <span className="text-[11px] leading-tight text-slate-500 text-center max-w-[13rem]">{t('parent_mode.role_description') || 'Support learning at home with family-friendly tools.'}</span>
             {lastTimeBadge('parent')}
         </button>
         <button

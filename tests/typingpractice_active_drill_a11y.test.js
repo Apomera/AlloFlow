@@ -47,7 +47,7 @@ describe('Typing Practice active drill accessibility', () => {
     expect(mistakeMessage({ expected: 'a', actual: 's', advanced: false, attempt: 1 }))
       .toBe('Expected A; you pressed S. Try A again.');
     expect(mistakeMessage({ expected: ' ', actual: 'x', advanced: true, attempt: 1 }))
-      .toBe('Expected space; you pressed X. Error-tolerant mode moved ahead with space.');
+      .toBe('Expected space; you pressed X. Keep going moved ahead and saved this difference for the end review.');
     expect(mistakeMessage({ expected: 'a', actual: 's', advanced: false, attempt: 3 }))
       .toContain('Attempt 3 at this character.');
   });

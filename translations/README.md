@@ -24,6 +24,32 @@ catalog (`catalog/`), reused for translations.
    found, placeholder mismatch, still-Spanglish, no-op) stay in `pending/` flagged "needs review".
 4. **Deploy.** The corrections ship with the next `deploy.sh` like any other lang-pack change.
 
+## AlloBot hand-translation batches
+
+AlloBot tips and completion messages are maintained as two namespaces in
+`ui_strings.js` (`tips.*` and `bot_events.*`). The catalog currently contains
+319 strings, including 116 strings with runtime placeholders. Reviewed hand
+translations can be merged with the stricter AlloBot contract:
+
+```bash
+node dev-tools/i18n/apply_allobot_hand_translations.cjs translations/pending/allobot-<batch>.json --dry-run
+node dev-tools/i18n/apply_allobot_hand_translations.cjs translations/pending/allobot-<batch>.json
+npm run verify:allobot-i18n -- --gate
+```
+
+The payload is keyed by language slug and dotted AlloBot key. The contract
+rejects unknown keys, placeholder drift, exact English copies, and pre-existing
+drift in the AlloBot namespaces. It writes each AlloBot value to both pack trees
+while preserving unrelated staged differences and existing values unless
+`--replace` is explicitly supplied. This is a
+review gate: it does not silently fill missing language values with English.
+
+The current reviewed pass covers all 63 language packs (319/319 AlloBot keys
+per pack). Long-tail packs use the hand-authored phrase sets in
+`dev-tools/i18n/generate_allobot_hand_packs.cjs`; the generated payloads remain
+in `translations/pending/` so language reviewers can refine individual wording
+without losing placeholder or root/public parity checks.
+
 ## Record shape (`translations/pending/<ts>-<lang>-<keyslug>.json`)
 
 ```json

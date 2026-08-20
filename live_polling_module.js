@@ -203,6 +203,36 @@
     for (let n = scale.min; n <= scale.max && out.length < 21; n++) out.push(n);
     return out;
   };
+  const LIVE_POLL_PROMPT_MAX_LENGTH = 500;
+  const LIVE_POLL_CHOICE_MAX_LENGTH = 180;
+  const LIVE_POLL_MAX_CHOICES = 12;
+  const normalizeLivePollChoices = (value) => {
+    const seen = new Set();
+    const rawChoices = Array.isArray(value) ? value : String(value || '').split(/\r?\n/);
+    return rawChoices.map((choice) => {
+      let normalized = choice == null ? '' : String(choice);
+      try { if (typeof normalized.normalize === 'function') normalized = normalized.normalize('NFKC'); } catch (err) {}
+      return normalized.replace(/\s+/g, ' ').trim().slice(0, LIVE_POLL_CHOICE_MAX_LENGTH).trim();
+    }).filter((choice) => {
+      const key = choice.toLocaleLowerCase();
+      if (!choice || seen.has(key) || seen.size >= LIVE_POLL_MAX_CHOICES) return false;
+      seen.add(key);
+      return true;
+    });
+  };
+  const validateLivePollComposer = (config) => {
+    const source = config && typeof config === 'object' ? config : {};
+    const type = ['rating', 'mcq', 'freetext', 'wordcloud'].indexOf(source.type) >= 0 ? source.type : 'rating';
+    const prompt = normalizeBoundedText(source.prompt, LIVE_POLL_PROMPT_MAX_LENGTH);
+    const options = type === 'mcq' ? normalizeLivePollChoices(source.options) : [];
+    const audienceCount = Math.max(0, Math.floor(Number(source.audienceCount) || 0));
+    const reasons = [];
+    if (source.activePoll) reasons.push('active-poll');
+    if (!prompt) reasons.push('prompt-required');
+    if (audienceCount < 1) reasons.push('audience-required');
+    if (type === 'mcq' && options.length < 2) reasons.push('mcq-options');
+    return { ready: reasons.length === 0, reasons: reasons, type: type, prompt: prompt, options: options, audienceCount: audienceCount };
+  };
   const upsertLiveGuest = (guestList, uid, codename) => {
     if (!uid) return Array.isArray(guestList) ? guestList.slice() : [];
     const guests = Array.isArray(guestList) ? guestList : [];
@@ -230,23 +260,209 @@
     return term;
   };
   const wordCloudTermKey = (value) => normalizeWordCloudTerm(value).toLowerCase();
-  const buildWordCloudItems = (responseList, moderationByKey) => {
+  const buildWordCloudItems = (responseList, moderationByKey, aliasesByKey) => {
     const responses = uniqueResponsesForSummary(responseList);
     const moderation = moderationByKey && typeof moderationByKey === 'object' ? moderationByKey : {};
+    const aliases = aliasesByKey && typeof aliasesByKey === 'object' ? aliasesByKey : {};
     const buckets = Object.create(null);
     responses.forEach((entry) => {
-      const label = normalizeWordCloudTerm(entry && entry.response);
+      const originalLabel = normalizeWordCloudTerm(entry && entry.response);
+      const originalKey = wordCloudTermKey(originalLabel);
+      if (!originalKey) return;
+      const aliasLabel = normalizeWordCloudTerm(aliases[originalKey]);
+      const label = aliasLabel || originalLabel;
       const key = wordCloudTermKey(label);
       if (!key) return;
-      if (!buckets[key]) buckets[key] = { value: key, label: label, count: 0 };
+      if (!buckets[key]) buckets[key] = { value: key, label: label, count: 0, sourceKeys: [] };
       buckets[key].count += 1;
+      if (buckets[key].sourceKeys.indexOf(originalKey) < 0) buckets[key].sourceKeys.push(originalKey);
     });
     return Object.keys(buckets).map((key) => {
-      const status = moderation[key] === 'approved' || moderation[key] === 'hidden'
-        ? moderation[key]
-        : 'pending';
-      return Object.assign({}, buckets[key], { status: status });
+      const sourceKeys = buckets[key].sourceKeys || [];
+      let status = moderation[key];
+      if (status !== 'approved' && status !== 'hidden') {
+        const sourceStatuses = sourceKeys.map((sourceKey) => moderation[sourceKey]);
+        status = sourceStatuses.indexOf('hidden') >= 0
+          ? 'hidden'
+          : sourceStatuses.length > 0 && sourceStatuses.every((value) => value === 'approved')
+            ? 'approved'
+            : 'pending';
+      }
+      const item = Object.assign({}, buckets[key], { status: status });
+      if (sourceKeys.length <= 1 && sourceKeys[0] === key) delete item.sourceKeys;
+      return item;
     }).sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+  };
+  const WORD_CLOUD_MODERATION_FILTERS = ['all', 'pending', 'approved', 'hidden'];
+  const filterWordCloudModerationItems = (items, config) => {
+    const source = config && typeof config === 'object' ? config : {};
+    const status = WORD_CLOUD_MODERATION_FILTERS.indexOf(source.status) >= 0 ? source.status : 'all';
+    const query = String(source.query == null ? '' : source.query).trim().slice(0, 80).toLocaleLowerCase();
+    return (Array.isArray(items) ? items : []).filter(function (item) {
+      if (!item || (status !== 'all' && item.status !== status)) return false;
+      if (!query) return true;
+      const searchable = [item.label, item.value].concat(Array.isArray(item.sourceKeys) ? item.sourceKeys : []);
+      return searchable.some(function (value) { return String(value || '').toLocaleLowerCase().indexOf(query) >= 0; });
+    });
+  };
+  const stableWordCloudColor = (value) => {
+    const colors = ['#1d4ed8', '#7c3aed', '#0f766e', '#be123c', '#b45309', '#0369a1'];
+    const key = wordCloudTermKey(value);
+    let hash = 0;
+    for (let index = 0; index < key.length; index += 1) hash = ((hash * 31) + key.charCodeAt(index)) >>> 0;
+    return colors[hash % colors.length];
+  };
+  const stableWordCloudSize = (count, maxCount) => {
+    const safeCount = Math.max(1, Number(count) || 1);
+    const safeMax = Math.max(safeCount, Number(maxCount) || 1);
+    const strength = Math.log1p(safeCount) / Math.log1p(safeMax);
+    return (0.9 + (strength * 1.25)).toFixed(2) + 'rem';
+  };
+  const liveActivityKindLabel = (kind) => {
+    const key = String(kind || '').toLowerCase();
+    const labels = {
+      rating: 'Rating poll', multiple_choice: 'Multiple choice', free_response: 'Free response', free_text: 'Free response',
+      word_cloud: 'Word cloud', feedback_response: 'Feedback response', quiz: 'Live quiz',
+      concept_pictionary: 'Concept Pictionary', pictionary: 'Concept Pictionary', sketch_response: 'Sketch response', session_qa: 'Live Q&A',
+      concept_quest: 'Concept Quest', adventure: 'Adventure mode'
+    };
+    return labels[key] || (key ? key.replace(/_/g, ' ') : 'No live activity');
+  };
+  const buildLiveStudentActivityRows = (config) => {
+    const source = config && typeof config === 'object' ? config : {};
+    const roster = source.roster && typeof source.roster === 'object' ? source.roster : {};
+    const guests = Array.isArray(source.guests) ? source.guests : [];
+    const groups = source.groups && typeof source.groups === 'object' ? source.groups : {};
+    const resources = Array.isArray(source.resources) ? source.resources : [];
+    const snapshots = (Array.isArray(source.activitySnapshots) ? source.activitySnapshots : [])
+      .filter((item) => item && typeof item === 'object')
+      .slice(-60)
+      .sort((a, b) => (Number(b.updatedAt) || 0) - (Number(a.updatedAt) || 0));
+    const activePoll = source.activePoll && typeof source.activePoll === 'object' ? source.activePoll : null;
+    const audience = Array.isArray(source.activeParticipantUids) ? source.activeParticipantUids.map(String) : [];
+    const responses = uniqueResponsesForSummary(source.responses);
+    const responseStatuses = source.responseStatuses && typeof source.responseStatuses === 'object' ? source.responseStatuses : {};
+    const uidSet = new Set(Object.keys(roster).map(String));
+    guests.forEach((guest) => { if (guest && guest.uid) uidSet.add(String(guest.uid)); });
+    audience.forEach((uid) => uidSet.add(uid));
+    return Array.from(uidSet).slice(0, 250).map((uid) => {
+      const rosterEntry = roster[uid] && typeof roster[uid] === 'object' ? roster[uid] : {};
+      const guest = guests.find((item) => item && String(item.uid) === uid) || {};
+      let activity = 'No live activity';
+      let status = guest.uid ? 'ready' : 'offline';
+      let updatedAt = 0;
+      let progressDetail = '';
+      if (activePoll && audience.indexOf(uid) >= 0) {
+        const entry = responses.find((item) => item && String(item.uid) === uid);
+        const rawStatus = responseStatuses[uid];
+        activity = liveActivityKindLabel(activePoll.type === 'mcq' ? 'multiple_choice' : activePoll.type === 'freetext' ? 'free_response' : activePoll.type === 'wordcloud' ? 'word_cloud' : activePoll.type);
+        status = entry && clampInt(entry.attempt, 1, 1, 2) > 1 ? 'revised'
+          : entry ? 'submitted'
+            : rawStatus === 'drafting' || rawStatus === 'editing' ? 'working'
+              : rawStatus === 'withdrawn' ? 'withdrawn' : 'waiting';
+        updatedAt = Number((entry && entry.timestamp) || activePoll.startedAt) || 0;
+      } else {
+        const snapshotForUid = function (item) {
+          const participants = item.participantStatus && typeof item.participantStatus === 'object' ? item.participantStatus : {};
+          const snapshotAudience = Array.isArray(item.audienceUids) ? item.audienceUids.map(String) : [];
+          return Object.prototype.hasOwnProperty.call(participants, uid) || snapshotAudience.indexOf(uid) >= 0;
+        };
+        const activeSnapshot = snapshots.find((item) => ['collecting', 'paused', 'review'].indexOf(item.phase) >= 0 && snapshotForUid(item));
+        const group = rosterEntry.groupId && groups[rosterEntry.groupId] && typeof groups[rosterEntry.groupId] === 'object' ? groups[rosterEntry.groupId] : {};
+        const targetId = normalizeBoundedText(rosterEntry.resourceId || group.resourceId, LIVE_POLLING_AUDIENCE_ID_MAX_LENGTH);
+        const targetAt = Number(rosterEntry.resourceId ? rosterEntry.resourceAt : group.resourceAt) || 0;
+        const resource = targetId && resources.find((item) => item && String(item.id) === targetId);
+        const statusMatchesAssignment = targetAt > 0 && Number(rosterEntry.viewingResourceAt) === targetAt;
+        const deliveryStatus = statusMatchesAssignment ? rosterEntry.viewingResourceStatus : null;
+        const opened = !!(targetId && rosterEntry.viewingResourceId === targetId && (statusMatchesAssignment || Number(rosterEntry.viewingAt) >= targetAt));
+        if (activeSnapshot) {
+          const candidateStatus = activeSnapshot.participantStatus && activeSnapshot.participantStatus[uid];
+          activity = liveActivityKindLabel(activeSnapshot.kind || activeSnapshot.family);
+          status = ['waiting', 'working', 'submitted', 'revised', 'complete', 'withdrawn'].indexOf(candidateStatus) >= 0 ? candidateStatus : 'waiting';
+          updatedAt = Number(activeSnapshot.updatedAt) || 0;
+        } else if (targetId) {
+          activity = normalizeBoundedText(resource && (resource.title || resource.label), 96)
+            || (resource ? liveActivityKindLabel(resource.type) : 'Assigned resource')
+            || 'Assigned resource';
+          status = deliveryStatus === 'failed' ? 'failed'
+            : deliveryStatus === 'loading' ? 'working'
+              : rosterEntry.wsProgress && rosterEntry.wsProgress.done ? 'complete'
+                : opened ? 'opened' : 'waiting';
+          if (rosterEntry.wsProgress && Number(rosterEntry.wsProgress.total) > 0) {
+            progressDetail = Math.max(0, Number(rosterEntry.wsProgress.correct) || 0) + '/' + Math.max(0, Number(rosterEntry.wsProgress.total) || 0);
+          }
+          updatedAt = Number(rosterEntry.viewingAt || rosterEntry.resourceAt || group.resourceAt) || 0;
+        } else {
+          const snapshot = snapshots.find(snapshotForUid);
+          if (!snapshot) return {
+            uid: uid,
+            name: normalizeBoundedText(guest.codename || rosterEntry.name || 'Student', 80) || 'Student',
+            groupId: normalizeBoundedText(rosterEntry.groupId, LIVE_POLLING_AUDIENCE_ID_MAX_LENGTH) || '',
+            connected: !!guest.uid,
+            activity: activity,
+            status: status,
+            progressDetail: progressDetail,
+            updatedAt: updatedAt,
+          };
+          const candidateStatus = snapshot.participantStatus && snapshot.participantStatus[uid];
+          activity = liveActivityKindLabel(snapshot.kind || snapshot.family);
+          status = ['waiting', 'working', 'submitted', 'revised', 'complete', 'withdrawn'].indexOf(candidateStatus) >= 0 ? candidateStatus : 'waiting';
+          updatedAt = Number(snapshot.updatedAt) || 0;
+        }
+      }
+      return {
+        uid: uid,
+        name: normalizeBoundedText(guest.codename || rosterEntry.name || 'Student', 80) || 'Student',
+        groupId: normalizeBoundedText(rosterEntry.groupId, LIVE_POLLING_AUDIENCE_ID_MAX_LENGTH) || '',
+        connected: !!guest.uid,
+        activity: activity,
+        status: status,
+        progressDetail: progressDetail,
+        updatedAt: updatedAt,
+      };
+    }).sort((a, b) => a.name.localeCompare(b.name));
+  };
+  const LIVE_STUDENT_ACTIVITY_FILTERS = ['all', 'in-progress', 'finished', 'attention', 'offline'];
+  const LIVE_STUDENT_ACTIVITY_SORTS = ['attention', 'name'];
+  const liveStudentActivityMatchesFilter = (row, filter) => {
+    const selected = LIVE_STUDENT_ACTIVITY_FILTERS.indexOf(filter) >= 0 ? filter : 'all';
+    if (selected === 'all') return true;
+    if (selected === 'offline') return !row.connected;
+    if (selected === 'in-progress') return ['working', 'opened', 'ready'].indexOf(row.status) >= 0;
+    if (selected === 'finished') return ['submitted', 'revised', 'complete'].indexOf(row.status) >= 0;
+    return ['failed', 'withdrawn', 'waiting'].indexOf(row.status) >= 0;
+  };
+  const summarizeLiveStudentActivityRows = (rows) => {
+    const safeRows = Array.isArray(rows) ? rows : [];
+    return LIVE_STUDENT_ACTIVITY_FILTERS.reduce((summary, filter) => {
+      summary[filter] = filter === 'all'
+        ? safeRows.length
+        : safeRows.filter((row) => row && liveStudentActivityMatchesFilter(row, filter)).length;
+      return summary;
+    }, {});
+  };
+  const filterLiveStudentActivityRows = (rows, config) => {
+    const source = config && typeof config === 'object' ? config : {};
+    const filter = LIVE_STUDENT_ACTIVITY_FILTERS.indexOf(source.filter) >= 0 ? source.filter : 'all';
+    const sort = LIVE_STUDENT_ACTIVITY_SORTS.indexOf(source.sort) >= 0 ? source.sort : 'name';
+    const query = normalizeBoundedText(source.query, 80).toLocaleLowerCase();
+    const groups = source.groups && typeof source.groups === 'object' ? source.groups : {};
+    const filtered = (Array.isArray(rows) ? rows : []).filter((row) => {
+      if (!row || !liveStudentActivityMatchesFilter(row, filter)) return false;
+      if (!query) return true;
+      const group = row.groupId && groups[row.groupId] && typeof groups[row.groupId] === 'object' ? groups[row.groupId] : {};
+      return [row.name, row.activity, row.status, row.progressDetail, row.groupId, group.name]
+        .some((value) => String(value || '').toLocaleLowerCase().indexOf(query) >= 0);
+    });
+    const attentionRank = { failed: 0, withdrawn: 1, waiting: 2, working: 3, opened: 4, ready: 4, submitted: 5, revised: 5, complete: 5 };
+    return filtered.slice().sort(function (a, b) {
+      if (sort === 'attention') {
+        const aRank = !a.connected ? -1 : (Object.prototype.hasOwnProperty.call(attentionRank, a.status) ? attentionRank[a.status] : 3);
+        const bRank = !b.connected ? -1 : (Object.prototype.hasOwnProperty.call(attentionRank, b.status) ? attentionRank[b.status] : 3);
+        if (aRank !== bRank) return aRank - bRank;
+      }
+      return String(a.name || '').localeCompare(String(b.name || ''));
+    });
   };
   const FEEDBACK_RESPONSE_MAX_LENGTH = 2300;
   const FEEDBACK_CRITERIA_MAX_LENGTH = 1200;
@@ -888,7 +1104,8 @@
       });
     } else if (poll && poll.type === 'wordcloud') {
       const moderation = options && options.wordCloudModeration;
-      const terms = buildWordCloudItems(responses, moderation);
+      const aliases = options && options.wordCloudAliases;
+      const terms = buildWordCloudItems(responses, moderation, aliases);
       const approved = terms.filter((item) => item.status === 'approved');
       summary.items = approved.map((item) => ({
         value: item.value,
@@ -1397,7 +1614,7 @@
               }
             } else if (parsed && parsed.type === 'responseStatus' && parsed.payload) {
               if (this.activePoll && parsed.payload.pollId === this.activePoll.id && this._isUidInActiveAudience(uid)) {
-                const status = parsed.payload.status === 'submitted' || parsed.payload.status === 'editing'
+                const status = parsed.payload.status === 'submitted' || parsed.payload.status === 'editing' || parsed.payload.status === 'withdrawn'
                   ? parsed.payload.status
                   : 'drafting';
                 this.onResponseStatus(uid, codename, {
@@ -1909,6 +2126,7 @@
         timestamp: Date.now(),
       };
       if (meta && meta.attempt != null) payload.attempt = clampInt(meta.attempt, 1, 1, 2);
+      if (meta && meta.withdrawn === true) payload.withdrawn = true;
       try {
         this.dc.send(JSON.stringify({ type: 'response', payload: payload }));
         return true;
@@ -1920,7 +2138,7 @@
 
     sendResponseStatus(pollId, status, attempt) {
       if (!this.dc || this.dc.readyState !== 'open' || !pollId) return false;
-      const safeStatus = status === 'submitted' || status === 'editing' ? status : 'drafting';
+      const safeStatus = status === 'submitted' || status === 'editing' || status === 'withdrawn' ? status : 'drafting';
       try {
         this.dc.send(JSON.stringify({ type: 'responseStatus', payload: {
           pollId: pollId,
@@ -2165,21 +2383,21 @@
     const safeItems = Array.isArray(items) ? items.filter((item) => item && item.label) : [];
     if (!safeItems.length) return null;
     const maxCount = Math.max.apply(null, safeItems.map((item) => Number(item.count) || 1));
-    const colors = ['#1d4ed8', '#7c3aed', '#0f766e', '#be123c', '#b45309', '#0369a1'];
     return ce('div', {
       role: 'list',
       'aria-label': ariaLabel || tr('Word cloud'),
+      'data-word-cloud-layout': 'stable',
       style: { display: 'flex', alignItems: 'center', justifyContent: 'center', alignContent: 'center', flexWrap: 'wrap', gap: '0.45rem 0.8rem', minHeight: 110, padding: '0.8rem', background: 'white', border: '1px solid #dbeafe', borderRadius: 10 }
     }, safeItems.map(function (item, index) {
       const count = Math.max(1, Number(item.count) || 1);
       const strength = count / maxCount;
-      const size = (0.88 + (strength * 1.45)).toFixed(2) + 'rem';
+      const size = stableWordCloudSize(count, maxCount);
       return ce('span', {
         key: String(item.value || item.label || index),
         role: 'listitem',
         'aria-label': item.label + ': ' + count,
         title: item.label + ' — ' + count,
-        style: { color: colors[index % colors.length], fontSize: size, fontWeight: strength >= 0.75 ? 850 : 700, lineHeight: 1.05, overflowWrap: 'anywhere' }
+        style: { color: stableWordCloudColor(item.value || item.label), fontSize: size, fontWeight: strength >= 0.75 ? 850 : 700, lineHeight: 1.05, overflowWrap: 'anywhere' }
       }, item.label, count > 1 ? ce('small', { 'aria-hidden': 'true', style: { marginLeft: 3, fontSize: '0.55em', opacity: 0.7 } }, '×' + count) : null);
     }));
   };
@@ -2392,6 +2610,7 @@
     const resources = Array.isArray(props.resources) ? props.resources : [];
     const roster = props.roster && typeof props.roster === 'object' ? props.roster : {};
     const sessionGroups = props.sessionGroups && typeof props.sessionGroups === 'object' ? props.sessionGroups : {};
+    const activitySnapshots = Array.isArray(props.activitySnapshots) ? props.activitySnapshots : [];
     const onSendToStudent = typeof props.onSendToStudent === 'function' ? props.onSendToStudent : null;
     const onSendToGroup = typeof props.onSendToGroup === 'function' ? props.onSendToGroup : null;
     // Optional consumer bridge for contextual workflows such as Adventure
@@ -2424,9 +2643,12 @@
     const groupNameTriggerRef = R.useRef(null);
     const groupNameDialogRef = R.useRef(null);
     const groupNameCancelRef = R.useRef(null);
+    const endPollDialogRef = R.useRef(null);
+    const endPollCancelRef = R.useRef(null);
     const alloSheetDialogRef = R.useRef(null);
     const alloSheetInitialRef = R.useRef(null);
     const [pendingGroupName, setPendingGroupName] = R.useState(null);
+    const [pendingEndAction, setPendingEndAction] = R.useState(null);
     const [guests, setGuests] = R.useState([]);
     const [responses, setResponses] = R.useState({});
     const [pollType, setPollType] = R.useState('rating');
@@ -2461,12 +2683,23 @@
     }, [props.sessionGroups]);
     const [newGroupName, setNewGroupName] = R.useState('');
     const [showRoutingPanel, setShowRoutingPanel] = R.useState(false);
+    const [studentActivityFilter, setStudentActivityFilter] = R.useState('all');
+    const [studentActivitySort, setStudentActivitySort] = R.useState('attention');
+    const [studentActivityQuery, setStudentActivityQuery] = R.useState('');
+    const [studentActivityExpanded, setStudentActivityExpanded] = R.useState(true);
+    const [composerExpanded, setComposerExpanded] = R.useState(true);
     // routingByPoll: { pollId: { uid: groupId } } — used both to suppress
     // duplicate routing on re-submission and to compute aggregates.
     const [routingByPoll, setRoutingByPoll] = R.useState({});
     // Word-cloud terms are held locally until the teacher explicitly approves
     // or hides them. Only approved anonymous aggregates are ever shared.
     const [wordCloudModerationByPoll, setWordCloudModerationByPoll] = R.useState({});
+    // Teacher-local aliases let synonymous terms be renamed or merged before
+    // any anonymous aggregate is revealed. Raw student terms remain local.
+    const [wordCloudAliasesByPoll, setWordCloudAliasesByPoll] = R.useState({});
+    const [wordCloudRenameDrafts, setWordCloudRenameDrafts] = R.useState({});
+    const [wordCloudModerationFilter, setWordCloudModerationFilter] = R.useState('all');
+    const [wordCloudModerationQuery, setWordCloudModerationQuery] = R.useState('');
     // Standard free-text responses stay teacher-private until explicitly
     // approved for a bounded anonymous showcase.
     const [freeTextModerationByPoll, setFreeTextModerationByPoll] = R.useState({});
@@ -2504,7 +2737,10 @@
       routingByPollRef.current = {};
       setGuests([]); setActivePoll(null); setActiveParticipantUids([]);
       setResponses({}); setRoutingByPoll({});
-      setWordCloudModerationByPoll({}); setFreeTextModerationByPoll({});
+      setStudentActivityFilter('all'); setStudentActivitySort('attention'); setStudentActivityQuery('');
+      setStudentActivityExpanded(true); setComposerExpanded(true);
+      setWordCloudModerationByPoll({}); setWordCloudAliasesByPoll({}); setWordCloudRenameDrafts({});
+      setWordCloudModerationFilter('all'); setWordCloudModerationQuery(''); setFreeTextModerationByPoll({});
       setPeerShowcaseRound(null); setPeerVotesByRound({});
       setResponseStatusByPoll({}); setFeedbackByPoll({}); setFeedbackBusyByPoll({});
       setFeedbackBulkBusy(false); setLastSharedResultsAt(null);
@@ -2513,6 +2749,7 @@
         setSessionQaState(createSessionQaState({ enabled: sessionQaOptIn }));
         setSessionQaSortMode('latest');
         setCompletedPolls([]);
+        setPendingEndAction(null);
         setAlloSheetReviewOpen(false);
         setAlloSheetFeedback({ kind: '', text: '' });
       }
@@ -2540,7 +2777,7 @@
       routingByPollRef.current = {};
       setActivePoll(null); setActiveParticipantUids([]);
       setResponses({}); setRoutingByPoll({});
-      setWordCloudModerationByPoll({}); setFreeTextModerationByPoll({});
+      setWordCloudModerationByPoll({}); setWordCloudAliasesByPoll({}); setWordCloudRenameDrafts({}); setFreeTextModerationByPoll({});
       setPeerShowcaseRound(null); setPeerVotesByRound({});
       setResponseStatusByPoll({}); setFeedbackByPoll({}); setFeedbackBusyByPoll({});
       setFeedbackBulkBusy(false); setLastSharedResultsAt(null);
@@ -2608,6 +2845,20 @@
         },
         onResponse: function (uid, codename, payload) {
           if (!isCurrentTransport()) return;
+          if (payload.withdrawn === true) {
+            setResponses(function (prev) {
+              const next = Object.assign({}, prev);
+              next[payload.pollId] = (next[payload.pollId] || []).filter(function (entry) { return entry && entry.uid !== uid; });
+              return next;
+            });
+            setResponseStatusByPoll(function (prev) {
+              const next = Object.assign({}, prev);
+              next[payload.pollId] = Object.assign({}, next[payload.pollId] || {}, { [uid]: 'withdrawn' });
+              return next;
+            });
+            setLastSharedResultsAt(null);
+            return;
+          }
           // Auto-route via teacher-authored rules. Reads latest activePoll
           // via ref so rule changes between broadcasts are honored. Writes
           // only the resulting groupId to Firestore (Tier-1 allowlisted);
@@ -2645,12 +2896,12 @@
               : upsertPollResponse(next[payload.pollId], entry);
             return next;
           });
+          setResponseStatusByPoll(function (prev) {
+            const next = Object.assign({}, prev);
+            next[payload.pollId] = Object.assign({}, next[payload.pollId] || {}, { [uid]: 'submitted' });
+            return next;
+          });
           if (isFeedbackPoll(poll)) {
-            setResponseStatusByPoll(function (prev) {
-              const next = Object.assign({}, prev);
-              next[payload.pollId] = Object.assign({}, next[payload.pollId] || {}, { [uid]: 'submitted' });
-              return next;
-            });
             if (clampInt(payload.attempt, 1, 1, 2) > 1) {
               setFeedbackByPoll(function (prev) {
                 const next = Object.assign({}, prev);
@@ -2805,20 +3056,23 @@
     };
 
     const broadcast = function () {
-      if (!hostRef.current || !pollPrompt.trim()) return;
+      if (!hostRef.current || !composerValidation.ready) {
+        if (activePoll) jumpToLiveWorkspaceSection('active');
+        return;
+      }
       const validRules = selectLivePollingRoutingRules(composerRules, routingGroups);
       const startedAt = Date.now();
       const poll = {
         id: 'poll-' + startedAt,
         startedAt: startedAt,
         type: pollType,
-        prompt: pollPrompt.trim(),
+        prompt: composerValidation.prompt,
         options: pollType === 'mcq'
-          ? pollOptions.split('\n').map(function (s) { return s.trim(); }).filter(Boolean)
+          ? composerValidation.options
           : null,
         routingRules: (pollType === 'rating' || pollType === 'mcq') ? validRules : [],
         scale: pollType === 'rating' ? buildRatingScale(ratingMin, ratingMax, ratingLabels) : null,
-        afterSubmitMode: pollType === 'freetext' && feedbackEnabled ? 'wait' : afterSubmitMode,
+        afterSubmitMode: (pollType === 'freetext' && feedbackEnabled) || pollType === 'wordcloud' ? 'wait' : afterSubmitMode,
         feedback: {
           enabled: pollType === 'freetext' && feedbackEnabled,
           criteria: normalizeBoundedText(feedbackCriteria, FEEDBACK_CRITERIA_MAX_LENGTH),
@@ -2848,8 +3102,10 @@
       setFeedbackByPoll(function (prev) { const n = Object.assign({}, prev); n[poll.id] = {}; return n; });
       setFeedbackBusyByPoll(function (prev) { const n = Object.assign({}, prev); n[poll.id] = {}; return n; });
       setLastSharedResultsAt(null);
+      setComposerExpanded(false);
+      if (typeof setTimeout === 'function') setTimeout(function () { jumpToLiveWorkspaceSection('active'); }, 0);
     };
-    const closePoll = function () {
+    const closePoll = function (closePanelAfter) {
       if (!hostRef.current || !activePoll) return;
       const closedAt = Date.now();
       const responsesForPoll = uniqueResponsesForSummary(responses[activePoll.id] || []);
@@ -2864,6 +3120,49 @@
       setActivePoll(null);
       setPeerShowcaseRound(null);
       setActiveParticipantUids([]);
+      setComposerExpanded(true);
+      setPendingEndAction(null);
+      if (closePanelAfter && typeof setTimeout === 'function') setTimeout(onClose, 0);
+    };
+    const requestClosePoll = function () {
+      if (!activePoll) return;
+      setPendingEndAction('poll');
+    };
+    const requestPanelClose = function () {
+      if (activePoll) setPendingEndAction('panel');
+      else onClose();
+    };
+    const cancelPendingEnd = function () { setPendingEndAction(null); };
+    const confirmPendingEnd = function () {
+      const closePanelAfter = pendingEndAction === 'panel';
+      if (!activePoll) {
+        setPendingEndAction(null);
+        if (closePanelAfter) onClose();
+        return;
+      }
+      closePoll(closePanelAfter);
+    };
+    const reuseCompletedPoll = function (entry) {
+      if (activePoll || !entry || !entry.poll) return;
+      const poll = entry.poll;
+      const type = ['rating', 'mcq', 'freetext', 'wordcloud'].indexOf(poll.type) >= 0 ? poll.type : 'rating';
+      setPollType(type);
+      setPollPrompt(normalizeBoundedText(poll.prompt, LIVE_POLL_PROMPT_MAX_LENGTH));
+      if (type === 'mcq') setPollOptions(normalizeLivePollChoices(poll.options || []).join('\n'));
+      if (type === 'rating') {
+        const scale = normalizeRatingScale(poll);
+        setRatingMin(scale.min);
+        setRatingMax(scale.max);
+        setRatingLabels(Object.keys(scale.labels).map(function (key) { return key + ' = ' + scale.labels[key]; }).join('\n'));
+      }
+      const feedback = normalizeFeedbackConfig(poll);
+      setFeedbackEnabled(feedback.enabled);
+      setFeedbackCriteria(feedback.criteria || '');
+      setAfterSubmitMode(poll.afterSubmitMode === 'wait' ? 'wait' : 'dismiss');
+      setAudienceMode('class');
+      setAudienceId('');
+      setComposerExpanded(true);
+      jumpToLiveWorkspaceSection('create');
     };
 
     const currentAlloSheetSnapshot = function () {
@@ -2985,8 +3284,9 @@
       });
 
       const moderation = wordCloudModerationByPoll[activePoll.id] || {};
+      const aliases = wordCloudAliasesByPoll[activePoll.id] || {};
       const wordCloudItems = activePoll.type === 'wordcloud'
-        ? buildWordCloudItems(responseEntries, moderation)
+        ? buildWordCloudItems(responseEntries, moderation, aliases)
         : [];
       const moderationCounts = wordCloudItems.reduce(function (out, item) {
         out[item.status] = (out[item.status] || 0) + item.count;
@@ -3046,11 +3346,12 @@
       };
       lastActivitySnapshotRef.current = snapshot;
       onActivitySnapshot(snapshot);
-    }, [hostTransportActive, sessionCode, activePoll, activeParticipantUids, guests, responses, responseStatusByPoll, feedbackByPoll, wordCloudModerationByPoll, freeTextModerationByPoll, peerShowcaseRound, peerVotesByRound, lastSharedResultsAt, sessionQaState, onActivitySnapshot]);
+    }, [hostTransportActive, sessionCode, activePoll, activeParticipantUids, guests, responses, responseStatusByPoll, feedbackByPoll, wordCloudModerationByPoll, wordCloudAliasesByPoll, freeTextModerationByPoll, peerShowcaseRound, peerVotesByRound, lastSharedResultsAt, sessionQaState, onActivitySnapshot]);
 
-    useLivePollingDialogFocus(hostDialogRef, isOpen, onClose, hostCloseRef);
+    useLivePollingDialogFocus(hostDialogRef, isOpen, requestPanelClose, hostCloseRef);
     useLivePollingDialogFocus(alloSheetDialogRef, alloSheetReviewOpen, closeAlloSheetReview, alloSheetInitialRef);
     useLivePollingDialogFocus(groupNameDialogRef, pendingGroupName !== null, cancelPendingGroupName, groupNameCancelRef);
+    useLivePollingDialogFocus(endPollDialogRef, pendingEndAction !== null, cancelPendingEnd, endPollCancelRef);
 
     if (!isOpen) return null;
     const activeParticipantUidSet = new Set(activeParticipantUids.map(function (uid) { return String(uid); }));
@@ -3064,11 +3365,18 @@
     const responseGoal = Math.max(responseGoalBase, uniqueActiveResponses.length, 1);
     const responsePercent = activePoll ? Math.min(100, Math.round((uniqueActiveResponses.length / responseGoal) * 100)) : 0;
     const activeWordCloudModeration = activePoll ? (wordCloudModerationByPoll[activePoll.id] || {}) : {};
+    const activeWordCloudAliases = activePoll ? (wordCloudAliasesByPoll[activePoll.id] || {}) : {};
     const wordCloudTermsForActive = activePoll && activePoll.type === 'wordcloud'
-      ? buildWordCloudItems(uniqueActiveResponses, activeWordCloudModeration)
+      ? buildWordCloudItems(uniqueActiveResponses, activeWordCloudModeration, activeWordCloudAliases)
       : [];
+    const visibleWordCloudTerms = filterWordCloudModerationItems(wordCloudTermsForActive, {
+      status: wordCloudModerationFilter,
+      query: wordCloudModerationQuery,
+    });
+    const visiblePendingWordCloudTerms = visibleWordCloudTerms.filter(function (item) { return item.status === 'pending'; });
     const summaryForActive = activePoll ? buildPollResultsSummary(activePoll, uniqueActiveResponses, activeParticipantUids.length, {
-      wordCloudModeration: activeWordCloudModeration
+      wordCloudModeration: activeWordCloudModeration,
+      wordCloudAliases: activeWordCloudAliases
     }) : null;
     const canShareActiveResults = !!(!activeFeedbackConfig.enabled && summaryForActive && (
       activePoll.type === 'wordcloud'
@@ -3092,6 +3400,46 @@
         responseEntry: activeResponses.find(function (entry) { return entry.uid === uid; }) || null,
       };
     }) : [];
+    const studentActivityRows = buildLiveStudentActivityRows({
+      roster: roster,
+      guests: guests,
+      groups: sessionGroups,
+      resources: resources,
+      activitySnapshots: activitySnapshots,
+      activePoll: activePoll,
+      activeParticipantUids: activeParticipantUids,
+      responses: activeResponses,
+      responseStatuses: feedbackStatusForActive,
+    });
+    const studentActivityCounts = studentActivityRows.reduce(function (out, row) {
+      out[row.status] = (out[row.status] || 0) + 1;
+      return out;
+    }, {});
+    const studentActivitySummary = summarizeLiveStudentActivityRows(studentActivityRows);
+    const visibleStudentActivityRows = filterLiveStudentActivityRows(studentActivityRows, {
+      filter: studentActivityFilter,
+      sort: studentActivitySort,
+      query: studentActivityQuery,
+      groups: sessionGroups,
+    });
+    const jumpToLiveWorkspaceSection = function (sectionId) {
+      if (!sectionId || !hostDialogRef.current) return;
+      if (sectionId === 'students') setStudentActivityExpanded(true);
+      if (sectionId === 'create') setComposerExpanded(true);
+      const root = hostDialogRef.current;
+      const focusSection = function () {
+        const target = root.querySelector('[data-live-workspace-section="' + sectionId + '"]');
+        if (!target) return;
+        let reducedMotion = false;
+        try { reducedMotion = !!window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (err) {}
+        if (typeof target.scrollIntoView === 'function') {
+          try { target.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' }); } catch (err) { try { target.scrollIntoView(); } catch (scrollErr) {} }
+        }
+        try { target.focus({ preventScroll: true }); } catch (err) { try { target.focus(); } catch (focusErr) {} }
+      };
+      if (typeof setTimeout === 'function') setTimeout(focusSection, 0);
+      else focusSection();
+    };
     const wordCloudStatusCounts = wordCloudTermsForActive.reduce(function (out, item) {
       out[item.status] += item.count;
       return out;
@@ -3105,17 +3453,47 @@
       });
       setLastSharedResultsAt(null);
     };
-    const approvePendingWordCloudTerms = function () {
+    const setVisiblePendingWordCloudTermsStatus = function (status) {
       if (!activePoll || activePoll.type !== 'wordcloud') return;
+      if (status !== 'approved' && status !== 'hidden') return;
       setWordCloudModerationByPoll(function (prev) {
         const next = Object.assign({}, prev);
         const forPoll = Object.assign({}, next[activePoll.id] || {});
-        wordCloudTermsForActive.forEach(function (item) {
-          if (item.status === 'pending') forPoll[item.value] = 'approved';
+        visiblePendingWordCloudTerms.forEach(function (item) {
+          forPoll[item.value] = status;
         });
         next[activePoll.id] = forPoll;
         return next;
       });
+      setLastSharedResultsAt(null);
+    };
+    const renameWordCloudTerm = function (key) {
+      if (!activePoll || activePoll.type !== 'wordcloud' || !key) return;
+      const label = normalizeWordCloudTerm(wordCloudRenameDrafts[key]);
+      if (!label) return;
+      const targetKey = wordCloudTermKey(label);
+      setWordCloudAliasesByPoll(function (prev) {
+        const next = Object.assign({}, prev);
+        next[activePoll.id] = Object.assign({}, next[activePoll.id] || {}, { [key]: label });
+        return next;
+      });
+      setWordCloudModerationByPoll(function (prev) {
+        const next = Object.assign({}, prev);
+        const forPoll = Object.assign({}, next[activePoll.id] || {});
+        if (forPoll[key] && !forPoll[targetKey]) forPoll[targetKey] = forPoll[key];
+        next[activePoll.id] = forPoll;
+        return next;
+      });
+      setLastSharedResultsAt(null);
+    };
+    const resetWordCloudAliases = function () {
+      if (!activePoll || activePoll.type !== 'wordcloud') return;
+      setWordCloudAliasesByPoll(function (prev) {
+        const next = Object.assign({}, prev);
+        delete next[activePoll.id];
+        return next;
+      });
+      setWordCloudRenameDrafts({});
       setLastSharedResultsAt(null);
     };
     const activeFreeTextModeration = activePoll ? (freeTextModerationByPoll[activePoll.id] || {}) : {};
@@ -3268,7 +3646,21 @@
       sessionGroupEntries
     );
     const broadcastTargetCount = composerAudienceUids.length;
-    const broadcastDisabled = !pollPrompt.trim() || broadcastTargetCount === 0;
+    const composerValidation = validateLivePollComposer({
+      type: pollType,
+      prompt: pollPrompt,
+      options: pollOptions,
+      audienceCount: broadcastTargetCount,
+      activePoll: !!activePoll,
+    });
+    const broadcastDisabled = !composerValidation.ready;
+    const composerValidationMessage = function (reason) {
+      if (reason === 'active-poll') return tr('End the active poll before broadcasting another.');
+      if (reason === 'prompt-required') return tr('Add a poll prompt.');
+      if (reason === 'audience-required') return tr('Choose at least one connected student.');
+      if (reason === 'mcq-options') return tr('Add at least two different choices.');
+      return tr('Review the poll setup.');
+    };
     const setSessionQaLocked = function (locked) {
       if (hostRef.current) hostRef.current.setSessionQaSubmissionsLocked(locked);
     };
@@ -3332,29 +3724,144 @@
           'aria-modal': 'true',
           'aria-labelledby': 'live-polling-host-title',
           'aria-describedby': 'live-polling-host-description',
-          'aria-hidden': (pendingGroupName !== null || alloSheetReviewOpen) ? 'true' : undefined,
-          inert: (pendingGroupName !== null || alloSheetReviewOpen) ? '' : undefined,
-          style: { background: 'white', maxWidth: 720, width: '100%', maxHeight: '90vh', overflow: 'auto', borderRadius: 12, padding: '1.25rem', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }
+          'aria-hidden': (pendingGroupName !== null || pendingEndAction !== null || alloSheetReviewOpen) ? 'true' : undefined,
+          inert: (pendingGroupName !== null || pendingEndAction !== null || alloSheetReviewOpen) ? '' : undefined,
+          style: { background: 'white', maxWidth: 1180, width: '96vw', maxHeight: '94vh', overflow: 'auto', borderRadius: 14, padding: '1.25rem', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }
         },
-        ce('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' } },
-          ce('h2', { id: 'live-polling-host-title', style: { margin: 0, fontSize: '1.15rem', color: '#0f172a' } }, tr('Live Polling —') + ' ', ce('span', { style: { fontFamily: 'monospace', color: '#1e3a8a' } }, sessionCode)),
+        ce('div', { style: { position: 'sticky', top: '-1.25rem', zIndex: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap', margin: '-1.25rem -1.25rem 0.75rem', padding: '0.9rem 1.25rem', background: 'rgba(255,255,255,0.97)', borderBottom: '1px solid #e2e8f0', borderRadius: '14px 14px 0 0', boxShadow: '0 4px 12px rgba(15,23,42,0.06)' } },
+          ce('h2', { id: 'live-polling-host-title', style: { margin: 0, fontSize: '1.15rem', color: '#0f172a' } }, tr('Live Polling —') + ' ', ce('span', { style: { fontFamily: 'monospace', color: '#1e3a8a' } }, sessionCode), activePoll ? ce('span', { style: { display: 'inline-block', marginLeft: 8, padding: '0.18rem 0.42rem', borderRadius: 999, background: '#dcfce7', color: '#166534', fontSize: '0.66rem', verticalAlign: 'middle' } }, tr('Poll live')) : null),
+          ce('select', {
+            defaultValue: '',
+            onChange: function (event) { jumpToLiveWorkspaceSection(event.target.value); event.target.value = ''; },
+            'aria-label': tr('Jump to live session section'),
+            style: { minHeight: 44, padding: '0.4rem 2rem 0.4rem 0.6rem', border: '1px solid #94a3b8', borderRadius: 6, background: 'white', color: '#0f172a', fontWeight: 750, fontSize: '0.76rem' }
+          },
+            ce('option', { value: '', disabled: true }, tr('Jump to...')),
+            ce('option', { value: 'students' }, tr('Students and progress')),
+            sessionQaOptIn ? ce('option', { value: 'questions' }, tr('Live Q&A')) : null,
+            ce('option', { value: 'create' }, tr('Create poll')),
+            ce('option', { value: 'active', disabled: !activePoll }, activePoll ? tr('Active poll') + ' (' + uniqueActiveResponses.length + '/' + responseGoalBase + ')' : tr('No active poll')),
+            completedPolls.length ? ce('option', { value: 'recent' }, tr('Recent polls') + ' (' + completedPolls.length + ')') : null
+          ),
           ce('button', { type: 'button', onClick: openAlloSheetReview, disabled: !activePoll && completedPolls.length === 0, 'aria-label': tr('Review Live Polling aggregates in AlloSheet'), style: { minHeight: 44, padding: '0.4rem 0.7rem', border: '1px solid #2563eb', borderRadius: 6, background: 'white', color: '#1d4ed8', cursor: (!activePoll && completedPolls.length === 0) ? 'default' : 'pointer', fontWeight: 800, fontSize: '0.76rem' } }, tr('Open in AlloSheet')),
-                    ce('button', { ref: hostCloseRef, type: 'button', onClick: onClose, style: { minWidth: 44, minHeight: 44, background: '#f1f5f9', border: 'none', padding: '0.4rem 0.8rem', borderRadius: 6, cursor: 'pointer', fontWeight: 600 } }, tr('Close'))
+                    ce('button', { ref: hostCloseRef, type: 'button', onClick: requestPanelClose, style: { minWidth: 44, minHeight: 44, background: '#f1f5f9', border: 'none', padding: '0.4rem 0.8rem', borderRadius: 6, cursor: 'pointer', fontWeight: 600 } }, tr('Close'))
         ),
         ce('p', { id: 'live-polling-host-description', style: { fontSize: '0.85rem', color: '#475569', margin: '0 0 0.75rem 0' } }, tr('Connected:') + ' ',
           ce('strong', null, guests.length), ' ' + (guests.length === 1 ? tr('guest') : tr('guests')),
           guests.length > 0 ? ' (' + guests.map(function (g) { return g.codename; }).join(', ') + ')' : ''
         ),
-        sessionQaOptIn ? ce(SessionQaHostPanel, {
+        ce('section', { 'aria-labelledby': 'live-student-activity-title', 'data-live-workspace-section': 'students', tabIndex: -1, style: { scrollMarginTop: 76, marginBottom: '0.85rem', padding: '0.75rem', border: '1px solid #bfdbfe', borderRadius: 10, background: '#eff6ff' } },
+          ce('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, flexWrap: 'wrap' } },
+            ce('div', null,
+              ce('h3', { id: 'live-student-activity-title', style: { margin: 0, color: '#1e3a8a', fontSize: '0.95rem' } }, tr('Student activity status')),
+              ce('p', { style: { margin: '0.2rem 0 0', color: '#475569', fontSize: '0.72rem', lineHeight: 1.4 } }, tr('See each learner’s current live activity and completion state. Response content stays out of this named view.'))
+            ),
+            ce('div', { style: { display: 'flex', gap: 5, flexWrap: 'wrap', fontSize: '0.69rem', fontWeight: 850 } },
+              ['working', 'opened', 'complete', 'submitted', 'revised', 'failed', 'withdrawn', 'waiting'].map(function (status) {
+                const count = studentActivityCounts[status] || 0;
+                if (!count) return null;
+                return ce('span', { key: status, style: { padding: '0.2rem 0.45rem', borderRadius: 999, background: status === 'submitted' || status === 'revised' || status === 'complete' || status === 'opened' ? '#dcfce7' : status === 'working' ? '#fef3c7' : status === 'withdrawn' || status === 'failed' ? '#fee2e2' : 'white', color: status === 'submitted' || status === 'revised' || status === 'complete' || status === 'opened' ? '#166534' : status === 'working' ? '#92400e' : status === 'withdrawn' || status === 'failed' ? '#991b1b' : '#475569', border: '1px solid #cbd5e1' } }, count + ' ' + tr(status));
+              })
+            ),
+            ce('button', {
+              type: 'button',
+              onClick: function () { setStudentActivityExpanded(function (value) { return !value; }); },
+              'aria-expanded': studentActivityExpanded,
+              'aria-controls': 'live-student-activity-details',
+              style: { minHeight: 40, padding: '0.38rem 0.62rem', border: '1px solid #93c5fd', borderRadius: 7, background: 'white', color: '#1d4ed8', fontWeight: 850, cursor: 'pointer', fontSize: '0.72rem' }
+            }, studentActivityExpanded ? tr('Hide details') : tr('Show details'))
+          ),
+          ce('div', { id: 'live-student-activity-details', hidden: !studentActivityExpanded },
+          studentActivityRows.length ? ce('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(112px, 1fr))', gap: 6, marginTop: 9 }, role: 'group', 'aria-label': tr('Filter student activity') },
+            [
+              { id: 'all', label: tr('All students') },
+              { id: 'in-progress', label: tr('In progress') },
+              { id: 'finished', label: tr('Finished') },
+              { id: 'attention', label: tr('Needs attention') },
+              { id: 'offline', label: tr('Offline') },
+            ].map(function (option) {
+              const selected = studentActivityFilter === option.id;
+              return ce('button', {
+                key: option.id,
+                type: 'button',
+                onClick: function () { setStudentActivityFilter(option.id); },
+                'aria-pressed': selected,
+                style: { minHeight: 44, padding: '0.42rem 0.5rem', border: '1px solid ' + (selected ? '#1d4ed8' : '#bfdbfe'), borderRadius: 8, background: selected ? '#1d4ed8' : 'white', color: selected ? 'white' : '#1e3a8a', textAlign: 'left', cursor: 'pointer' }
+              },
+                ce('strong', { style: { display: 'block', fontSize: '1rem', lineHeight: 1.1, fontVariantNumeric: 'tabular-nums' } }, studentActivitySummary[option.id] || 0),
+                ce('span', { style: { display: 'block', marginTop: 2, fontSize: '0.68rem', fontWeight: 800 } }, option.label)
+              );
+            })
+          ) : null,
+          studentActivityRows.length ? ce('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 8, marginTop: 8 } },
+            ce('label', { style: { display: 'block', color: '#334155', fontSize: '0.7rem', fontWeight: 800 } },
+              tr('Find a student, activity, or group'),
+              ce('input', {
+                type: 'search',
+                value: studentActivityQuery,
+                onChange: function (event) { setStudentActivityQuery(normalizeBoundedText(event.target.value, 80)); },
+                placeholder: tr('Search live activity'),
+                'aria-label': tr('Find a student, activity, or group'),
+                style: { display: 'block', width: '100%', boxSizing: 'border-box', marginTop: 3, minHeight: 44, padding: '0.45rem 0.6rem', border: '1px solid #93c5fd', borderRadius: 7, background: 'white', color: '#0f172a' }
+              })
+            ),
+            ce('label', { style: { display: 'block', color: '#334155', fontSize: '0.7rem', fontWeight: 800 } },
+              tr('Sort students'),
+              ce('select', {
+                value: studentActivitySort,
+                onChange: function (event) { setStudentActivitySort(LIVE_STUDENT_ACTIVITY_SORTS.indexOf(event.target.value) >= 0 ? event.target.value : 'attention'); },
+                'aria-label': tr('Sort student activity'),
+                style: { display: 'block', width: '100%', boxSizing: 'border-box', marginTop: 3, minHeight: 44, padding: '0.45rem 0.6rem', border: '1px solid #93c5fd', borderRadius: 7, background: 'white', color: '#0f172a', fontWeight: 750 }
+              },
+                ce('option', { value: 'attention' }, tr('Needs attention first')),
+                ce('option', { value: 'name' }, tr('Student name'))
+              )
+            )
+          ) : null,
+          visibleStudentActivityRows.length ? ce('div', { role: 'region', 'aria-label': tr('Scrollable live student activity table'), tabIndex: 0, style: { marginTop: 8, maxHeight: 250, overflow: 'auto', border: '1px solid #dbeafe', borderRadius: 8, background: 'white' } },
+            ce('table', { 'aria-label': tr('Live student activity status'), style: { width: '100%', minWidth: 620, borderCollapse: 'collapse', fontSize: '0.75rem' } },
+              ce('thead', null, ce('tr', { style: { position: 'sticky', top: 0, zIndex: 1, background: '#f8fafc', color: '#334155', textAlign: 'left' } },
+                ce('th', { scope: 'col', style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #e2e8f0' } }, tr('Student')),
+                ce('th', { scope: 'col', style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #e2e8f0' } }, tr('Connection')),
+                ce('th', { scope: 'col', style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #e2e8f0' } }, tr('Current activity')),
+                ce('th', { scope: 'col', style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #e2e8f0' } }, tr('Progress'))
+              )),
+              ce('tbody', null, visibleStudentActivityRows.map(function (row) {
+                const group = row.groupId && sessionGroups[row.groupId];
+                return ce('tr', { key: row.uid },
+                  ce('th', { scope: 'row', style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #f1f5f9', color: '#0f172a', textAlign: 'left' } }, row.name, group ? ce('span', { style: { display: 'block', color: '#64748b', fontSize: '0.65rem', fontWeight: 600 } }, group.name || row.groupId) : null),
+                  ce('td', { style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #f1f5f9', color: row.connected ? '#166534' : '#64748b', fontWeight: 750 } }, row.connected ? tr('Connected') : tr('Offline')),
+                  ce('td', { style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #f1f5f9', color: '#334155' } }, tr(row.activity)),
+                  ce('td', { style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #f1f5f9' } },
+                    ce('span', { style: { display: 'inline-block', padding: '0.18rem 0.42rem', borderRadius: 999, background: row.status === 'submitted' || row.status === 'revised' || row.status === 'complete' || row.status === 'opened' ? '#dcfce7' : row.status === 'working' ? '#fef3c7' : row.status === 'withdrawn' || row.status === 'failed' ? '#fee2e2' : '#f1f5f9', color: row.status === 'submitted' || row.status === 'revised' || row.status === 'complete' || row.status === 'opened' ? '#166534' : row.status === 'working' ? '#92400e' : row.status === 'withdrawn' || row.status === 'failed' ? '#991b1b' : '#475569', fontWeight: 850 } }, tr(row.status)),
+                    row.progressDetail ? ce('span', { style: { display: 'block', marginTop: 2, color: '#64748b', fontSize: '0.66rem', fontVariantNumeric: 'tabular-nums' } }, row.progressDetail + ' ' + tr('completed')) : null
+                  )
+                );
+              }))
+            )
+          ) : ce('p', { style: { margin: '0.6rem 0 0', color: '#64748b', fontSize: '0.75rem' } }, studentActivityRows.length ? tr('No students match this activity filter.') : tr('Students will appear here when they join the session.'))
+          )
+        ),
+        sessionQaOptIn ? ce('div', { 'data-live-workspace-section': 'questions', tabIndex: -1, style: { scrollMarginTop: 76 } }, ce(SessionQaHostPanel, {
           state: sessionQaState,
           sortMode: sessionQaSortMode,
           onSortMode: setSessionQaSortMode,
           onSetLocked: setSessionQaLocked,
           onModerate: moderateSessionQa,
           onFeature: featureSessionQa,
-        }) : null,
-        ce('div', { style: { background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: '0.75rem', marginBottom: '0.75rem' } },
-          ce('h3', { style: { margin: '0 0 0.5rem 0', fontSize: '0.95rem' } }, tr('Create poll')),
+        })) : null,
+        ce('div', { 'data-live-workspace-section': 'create', tabIndex: -1, style: { scrollMarginTop: 76, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: '0.75rem', marginBottom: '0.75rem' } },
+          ce('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: composerExpanded ? '0.5rem' : 0 } },
+            ce('h3', { style: { margin: 0, fontSize: '0.95rem' } }, tr('Create poll')),
+            ce('button', {
+              type: 'button',
+              onClick: function () { setComposerExpanded(function (value) { return !value; }); },
+              'aria-expanded': composerExpanded,
+              'aria-controls': 'live-poll-composer-details',
+              style: { minHeight: 40, padding: '0.38rem 0.62rem', border: '1px solid #cbd5e1', borderRadius: 7, background: 'white', color: '#334155', fontWeight: 850, cursor: 'pointer', fontSize: '0.72rem' }
+            }, composerExpanded ? tr('Collapse') : tr('Compose a poll'))
+          ),
+          composerExpanded ? ce('div', { id: 'live-poll-composer-details' },
           ce('div', { style: { display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
             ['rating', 'mcq', 'freetext', 'wordcloud'].map(function (t) {
               return ce('button', {
@@ -3363,7 +3870,7 @@
               }, t === 'rating' ? tr('Rating 1–5') : t === 'mcq' ? tr('Multiple choice') : t === 'wordcloud' ? tr('Word cloud') : tr('Free text'));
             })
           ),
-          ce('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 7, marginBottom: 8, padding: '0.55rem', border: '1px solid #cbd5e1', borderRadius: 7, background: '#fff' } },
+          ce('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 7, marginBottom: 8, padding: '0.55rem', border: '1px solid #cbd5e1', borderRadius: 7, background: '#fff' } },
             ce('label', { style: { color: '#475569', fontWeight: 700, fontSize: '0.72rem' } },
               tr('Audience'),
               ce('select', {
@@ -3404,7 +3911,8 @@
               audienceMode ? tr('All connected students') : tr('Choose a valid audience before broadcasting.')
             )
           ),
-          ce('input', { type: 'text', value: pollPrompt, onChange: function (e) { setPollPrompt(e.target.value); }, placeholder: tr('Poll prompt'), 'aria-label': tr('Poll prompt'), style: { width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: 6, marginBottom: 8, boxSizing: 'border-box' } }),
+          ce('input', { type: 'text', value: pollPrompt, maxLength: LIVE_POLL_PROMPT_MAX_LENGTH, onChange: function (e) { setPollPrompt(e.target.value); }, placeholder: tr('Poll prompt'), 'aria-label': tr('Poll prompt'), 'aria-describedby': 'live-poll-prompt-count', style: { width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: 6, boxSizing: 'border-box' } }),
+          ce('div', { id: 'live-poll-prompt-count', style: { margin: '2px 0 8px', color: '#64748b', fontSize: '0.66rem', textAlign: 'right', fontVariantNumeric: 'tabular-nums' } }, Math.min(pollPrompt.length, LIVE_POLL_PROMPT_MAX_LENGTH) + ' / ' + LIVE_POLL_PROMPT_MAX_LENGTH),
           pollType === 'wordcloud' ? ce('p', { style: { margin: '0 0 8px 0', padding: '0.45rem 0.55rem', borderRadius: 6, background: '#fff7ed', color: '#9a3412', fontSize: '0.75rem', lineHeight: 1.4 } }, tr('Student terms stay on this teacher device until you approve them. Only approved anonymous totals can be revealed.')) : null,
           pollType === 'freetext' ? ce('div', { style: { marginBottom: 8, padding: '0.55rem', border: '1px solid #c7d2fe', background: feedbackEnabled ? '#eef2ff' : 'white', borderRadius: 7 } },
             ce('label', { style: { display: 'flex', alignItems: 'center', gap: 7, color: '#312e81', fontSize: '0.8rem', fontWeight: 800 } },
@@ -3419,7 +3927,7 @@
               ce('p', { style: { margin: 0, color: '#4f46e5', fontSize: '0.7rem', fontWeight: 700 } }, tr('Private drafting, teacher-reviewed feedback, and targeted follow-up resources.'))
             ) : null
           ) : null,
-          pollType === 'rating' ? ce('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8, marginBottom: 8 } },
+          pollType === 'rating' ? ce('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8, marginBottom: 8 } },
             ce('label', { style: { fontSize: '0.75rem', color: '#475569', fontWeight: 700 } }, tr('Scale starts'),
               ce('input', { type: 'number', value: ratingMin, min: 0, max: 19, onChange: function (e) { setRatingMin(clampInt(e.target.value, 1, 0, 19)); }, 'aria-label': tr('Rating scale minimum'), style: { display: 'block', marginTop: 3, width: '100%', padding: '0.4rem', border: '1px solid #cbd5e1', borderRadius: 6, boxSizing: 'border-box' } })
             ),
@@ -3430,7 +3938,10 @@
               ce('textarea', { value: ratingLabels, onChange: function (e) { setRatingLabels(e.target.value); }, 'aria-label': tr('Rating labels'), placeholder: '1 = Not yet\n5 = Very well', rows: 3, style: { display: 'block', marginTop: 3, width: '100%', padding: '0.45rem', border: '1px solid #cbd5e1', borderRadius: 6, boxSizing: 'border-box', fontFamily: 'inherit', fontSize: '0.8rem' } })
             )
           ) : null,
-          pollType === 'mcq' ? ce('textarea', { value: pollOptions, onChange: function (e) { setPollOptions(e.target.value); }, 'aria-label': tr('Choices (one per line)'), placeholder: tr('One choice per line'), rows: 4, style: { width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: 6, marginBottom: 8, boxSizing: 'border-box', fontFamily: 'inherit' } }) : null,
+          pollType === 'mcq' ? ce('div', { style: { marginBottom: 8 } },
+            ce('textarea', { value: pollOptions, maxLength: (LIVE_POLL_CHOICE_MAX_LENGTH + 1) * LIVE_POLL_MAX_CHOICES, onChange: function (e) { setPollOptions(e.target.value); }, 'aria-label': tr('Choices (one per line)'), 'aria-describedby': 'live-poll-choice-count', placeholder: tr('One choice per line'), rows: 4, style: { width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: 6, boxSizing: 'border-box', fontFamily: 'inherit' } }),
+            ce('div', { id: 'live-poll-choice-count', style: { marginTop: 2, color: composerValidation.options.length >= 2 ? '#166534' : '#b45309', fontSize: '0.66rem', textAlign: 'right', fontWeight: 750 } }, composerValidation.options.length + ' / ' + LIVE_POLL_MAX_CHOICES + ' ' + tr('different choices'))
+          ) : null,
           pollType === 'freetext' && feedbackEnabled ? ce('p', { style: { margin: '0 0 8px 0', color: '#475569', fontSize: '0.72rem' } }, tr('The response remains open while the teacher reviews and sends feedback.')) : ce('label', { style: { display: 'block', fontSize: '0.75rem', color: '#475569', fontWeight: 700, marginBottom: 8 } }, tr('After a student submits'),
             ce('select', { value: afterSubmitMode, onChange: function (e) { setAfterSubmitMode(e.target.value); }, 'aria-label': tr('After submit behavior'), style: { display: 'block', marginTop: 3, width: '100%', padding: '0.45rem', border: '1px solid #cbd5e1', borderRadius: 6, background: 'white', color: '#0f172a' } },
               ce('option', { value: 'dismiss' }, tr('Dismiss poll on their device')),
@@ -3516,9 +4027,15 @@
               style: { marginTop: composerRules.length > 0 ? 6 : 0, padding: '0.35rem 0.7rem', borderRadius: 4, border: '1px dashed ' + (routingGroups.length === 0 ? '#cbd5e1' : '#1e3a8a'), background: 'white', color: routingGroups.length === 0 ? '#94a3b8' : '#1e3a8a', cursor: routingGroups.length === 0 ? 'default' : 'pointer', fontWeight: 700, fontSize: '0.75rem' }
             }, tr('+ Add rule'))
           ) : null,
-          ce('button', { onClick: broadcast, disabled: broadcastDisabled, style: { padding: '0.5rem 1rem', borderRadius: 6, border: 'none', background: broadcastDisabled ? '#cbd5e1' : '#1e3a8a', color: 'white', cursor: broadcastDisabled ? 'default' : 'pointer', fontWeight: 700 } }, tr('Broadcast to') + ' ' + broadcastTargetCount + ' ' + (broadcastTargetCount === 1 ? tr('guest') : tr('guests')))
+          ce('div', { id: 'live-poll-composer-readiness', role: 'status', 'aria-live': 'polite', style: { marginBottom: 7, padding: '0.45rem 0.55rem', borderRadius: 7, background: composerValidation.ready ? '#f0fdf4' : '#fff7ed', border: '1px solid ' + (composerValidation.ready ? '#bbf7d0' : '#fed7aa'), color: composerValidation.ready ? '#166534' : '#9a3412', fontSize: '0.72rem', lineHeight: 1.4 } },
+            composerValidation.ready
+              ? tr('Ready to broadcast to') + ' ' + broadcastTargetCount + ' ' + (broadcastTargetCount === 1 ? tr('student') : tr('students')) + '.'
+              : composerValidation.reasons.map(composerValidationMessage).join(' ')
+          ),
+          ce('button', { onClick: broadcast, disabled: broadcastDisabled, 'aria-describedby': 'live-poll-composer-readiness', style: { minHeight: 44, padding: '0.5rem 1rem', borderRadius: 6, border: 'none', background: broadcastDisabled ? '#cbd5e1' : '#1e3a8a', color: 'white', cursor: broadcastDisabled ? 'default' : 'pointer', fontWeight: 700 } }, activePoll ? tr('Finish active poll first') : tr('Broadcast to') + ' ' + broadcastTargetCount + ' ' + (broadcastTargetCount === 1 ? tr('guest') : tr('guests')))
+          ) : null
         ),
-        activePoll ? ce('div', { style: { border: '1px solid #c7d2fe', background: '#eef2ff', borderRadius: 8, padding: '0.75rem' } },
+        activePoll ? ce('div', { 'data-live-workspace-section': 'active', tabIndex: -1, style: { scrollMarginTop: 76, border: '1px solid #c7d2fe', background: '#eef2ff', borderRadius: 8, padding: '0.75rem' } },
           ce('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 } },
             ce('div', null,
               ce('div', { style: { fontSize: '0.75rem', color: '#1e3a8a', fontWeight: 700, textTransform: 'uppercase' } }, activePoll.type),
@@ -3526,7 +4043,7 @@
             ),
             ce('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' } },
               !activeFeedbackConfig.enabled ? ce('button', { onClick: shareResults, disabled: !canShareActiveResults, style: { padding: '0.35rem 0.7rem', borderRadius: 6, border: '1px solid ' + (!canShareActiveResults ? '#cbd5e1' : '#2563eb'), background: 'white', color: !canShareActiveResults ? '#94a3b8' : '#1d4ed8', cursor: !canShareActiveResults ? 'default' : 'pointer', fontWeight: 700, fontSize: '0.8rem' } }, activePoll.type === 'wordcloud' ? (lastSharedResultsAt ? tr('Reveal updated word cloud') : tr('Reveal approved word cloud')) : (lastSharedResultsAt ? tr('Share updated results') : tr('Share anonymous results'))) : null,
-              ce('button', { onClick: closePoll, style: { padding: '0.35rem 0.7rem', borderRadius: 6, border: '1px solid #b91c1c', background: 'white', color: '#b91c1c', cursor: 'pointer', fontWeight: 700, fontSize: '0.8rem' } }, tr('Close poll'))
+              ce('button', { onClick: requestClosePoll, style: { minHeight: 40, padding: '0.35rem 0.7rem', borderRadius: 6, border: '1px solid #b91c1c', background: 'white', color: '#b91c1c', cursor: 'pointer', fontWeight: 700, fontSize: '0.8rem' } }, tr('End poll'))
             )
           ),
           ce('div', { style: { marginTop: '0.6rem', fontSize: '0.85rem' } },
@@ -3557,11 +4074,12 @@
                 ce('div', { style: { fontSize: '0.74rem', color: '#9a3412', fontWeight: 800, textTransform: 'uppercase' } }, tr('Teacher review')),
                 ce('div', { style: { marginTop: 2, fontSize: '0.75rem', color: '#475569' } }, tr('Hold, approve, or hide each normalized term before revealing the cloud.'))
               ),
-              ce('button', {
-                onClick: approvePendingWordCloudTerms,
-                disabled: wordCloudStatusCounts.pending === 0,
-                style: { padding: '0.35rem 0.65rem', borderRadius: 6, border: '1px solid ' + (wordCloudStatusCounts.pending === 0 ? '#cbd5e1' : '#15803d'), background: 'white', color: wordCloudStatusCounts.pending === 0 ? '#94a3b8' : '#166534', cursor: wordCloudStatusCounts.pending === 0 ? 'default' : 'pointer', fontWeight: 800, fontSize: '0.75rem' }
-              }, tr('Approve all pending'))
+              ce('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                Object.keys(activeWordCloudAliases).length ? ce('button', {
+                  onClick: resetWordCloudAliases,
+                  style: { minHeight: 44, padding: '0.35rem 0.65rem', borderRadius: 6, border: '1px solid #94a3b8', background: 'white', color: '#475569', cursor: 'pointer', fontWeight: 800, fontSize: '0.75rem' }
+                }, tr('Reset term groups')) : null
+              )
             ),
             ce('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', fontSize: '0.72rem', fontWeight: 700 } },
               ce('span', { style: { color: '#9a3412' } }, tr('Held:') + ' ' + wordCloudStatusCounts.pending),
@@ -3569,12 +4087,77 @@
               ce('span', { style: { color: '#64748b' } }, tr('Hidden:') + ' ' + wordCloudStatusCounts.hidden)
             ),
             summaryForActive.items.length > 0 ? renderWordCloudItems(summaryForActive.items, tr('Approved word cloud preview')) : ce('p', { style: { margin: 0, padding: '0.55rem', borderRadius: 6, background: '#f8fafc', color: '#64748b', fontSize: '0.78rem' } }, wordCloudTermsForActive.length > 0 ? tr('No terms are approved yet. Review the held terms below.') : tr('Waiting for student terms.')),
-            wordCloudTermsForActive.length > 0 ? ce('div', { role: 'list', 'aria-label': tr('Word cloud moderation'), style: { display: 'flex', flexDirection: 'column', gap: 5, maxHeight: 230, overflow: 'auto' } },
-              wordCloudTermsForActive.map(function (item) {
-                return ce('div', { key: item.value, role: 'listitem', style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 8, alignItems: 'center', padding: '0.4rem 0.5rem', background: 'white', border: '1px solid #e2e8f0', borderRadius: 6 } },
+            wordCloudTermsForActive.length > 0 ? ce('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 7 } },
+              ce('div', { role: 'group', 'aria-label': tr('Filter word cloud moderation'), style: { display: 'flex', gap: 5, flexWrap: 'wrap', gridColumn: '1 / -1' } },
+                [
+                  { id: 'all', label: tr('All') },
+                  { id: 'pending', label: tr('Held') },
+                  { id: 'approved', label: tr('Approved') },
+                  { id: 'hidden', label: tr('Hidden') },
+                ].map(function (option) {
+                  const selected = wordCloudModerationFilter === option.id;
+                  const count = option.id === 'all' ? wordCloudTermsForActive.length : wordCloudTermsForActive.filter(function (item) { return item.status === option.id; }).length;
+                  return ce('button', {
+                    key: option.id,
+                    type: 'button',
+                    onClick: function () { setWordCloudModerationFilter(option.id); },
+                    'aria-pressed': selected,
+                    style: { minHeight: 44, padding: '0.35rem 0.65rem', borderRadius: 999, border: '1px solid ' + (selected ? '#9a3412' : '#fed7aa'), background: selected ? '#9a3412' : 'white', color: selected ? 'white' : '#9a3412', cursor: 'pointer', fontWeight: 850, fontSize: '0.72rem' }
+                  }, option.label + ' (' + count + ')');
+                })
+              ),
+              ce('label', { style: { color: '#475569', fontWeight: 800, fontSize: '0.7rem' } },
+                tr('Find a submitted term'),
+                ce('input', {
+                  type: 'search',
+                  value: wordCloudModerationQuery,
+                  maxLength: 80,
+                  onChange: function (event) { setWordCloudModerationQuery(event.target.value.slice(0, 80)); },
+                  placeholder: tr('Search terms or grouped variants'),
+                  'aria-label': tr('Find a submitted word cloud term'),
+                  style: { display: 'block', width: '100%', minHeight: 44, boxSizing: 'border-box', marginTop: 3, padding: '0.4rem 0.55rem', border: '1px solid #fed7aa', borderRadius: 7, background: 'white', color: '#0f172a' }
+                })
+              ),
+              ce('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'flex-end' } },
+                ce('button', {
+                  type: 'button',
+                  onClick: function () { setVisiblePendingWordCloudTermsStatus('approved'); },
+                  disabled: visiblePendingWordCloudTerms.length === 0,
+                  style: { minHeight: 44, flex: '1 1 145px', padding: '0.35rem 0.65rem', borderRadius: 6, border: '1px solid ' + (visiblePendingWordCloudTerms.length ? '#15803d' : '#cbd5e1'), background: 'white', color: visiblePendingWordCloudTerms.length ? '#166534' : '#94a3b8', cursor: visiblePendingWordCloudTerms.length ? 'pointer' : 'default', fontWeight: 850, fontSize: '0.72rem' }
+                }, tr('Approve visible held') + ' (' + visiblePendingWordCloudTerms.length + ')'),
+                ce('button', {
+                  type: 'button',
+                  onClick: function () { setVisiblePendingWordCloudTermsStatus('hidden'); },
+                  disabled: visiblePendingWordCloudTerms.length === 0,
+                  style: { minHeight: 44, flex: '1 1 145px', padding: '0.35rem 0.65rem', borderRadius: 6, border: '1px solid ' + (visiblePendingWordCloudTerms.length ? '#64748b' : '#cbd5e1'), background: 'white', color: visiblePendingWordCloudTerms.length ? '#475569' : '#94a3b8', cursor: visiblePendingWordCloudTerms.length ? 'pointer' : 'default', fontWeight: 850, fontSize: '0.72rem' }
+                }, tr('Hide visible held') + ' (' + visiblePendingWordCloudTerms.length + ')')
+              )
+            ) : null,
+            visibleWordCloudTerms.length > 0 ? ce('div', { role: 'list', 'aria-label': tr('Word cloud moderation'), style: { display: 'flex', flexDirection: 'column', gap: 5, maxHeight: 280, overflow: 'auto' } },
+              visibleWordCloudTerms.map(function (item) {
+                return ce('div', { key: item.value, role: 'listitem', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, alignItems: 'center', padding: '0.4rem 0.5rem', background: 'white', border: '1px solid #e2e8f0', borderRadius: 6 } },
                   ce('span', { style: { minWidth: 0, overflowWrap: 'anywhere', fontSize: '0.82rem' } },
                     ce('strong', null, item.label),
-                    ce('span', { style: { marginLeft: 6, color: '#64748b', fontSize: '0.72rem' } }, '×' + item.count)
+                    ce('span', { style: { marginLeft: 6, color: '#64748b', fontSize: '0.72rem' } }, '×' + item.count),
+                    item.sourceKeys && item.sourceKeys.length > 1 ? ce('span', { style: { display: 'block', marginTop: 2, color: '#7c3aed', fontSize: '0.66rem', fontWeight: 800 } }, item.sourceKeys.length + ' ' + tr('terms grouped')) : null
+                  ),
+                  ce('div', { style: { display: 'flex', gap: 5, minWidth: 0 } },
+                    ce('input', {
+                      type: 'text',
+                      value: Object.prototype.hasOwnProperty.call(wordCloudRenameDrafts, item.value) ? wordCloudRenameDrafts[item.value] : item.label,
+                      maxLength: WORD_CLOUD_MAX_LENGTH,
+                      onChange: function (event) { const value = event.target.value; setWordCloudRenameDrafts(function (prev) { return Object.assign({}, prev, { [item.value]: value }); }); },
+                      onKeyDown: function (event) { if (event.key === 'Enter') { event.preventDefault(); renameWordCloudTerm(item.value); } },
+                      'aria-label': tr('Rename or group') + ' ' + item.label,
+                      style: { width: '100%', minWidth: 0, padding: '0.3rem 0.4rem', border: '1px solid #cbd5e1', borderRadius: 5, fontSize: '0.75rem' }
+                    }),
+                    ce('button', {
+                      type: 'button',
+                      onClick: function () { renameWordCloudTerm(item.value); },
+                      disabled: !normalizeWordCloudTerm(Object.prototype.hasOwnProperty.call(wordCloudRenameDrafts, item.value) ? wordCloudRenameDrafts[item.value] : item.label),
+                      title: tr('Use the same label on multiple terms to merge them'),
+                      style: { padding: '0.3rem 0.5rem', border: '1px solid #7c3aed', borderRadius: 5, background: 'white', color: '#6d28d9', fontWeight: 800, fontSize: '0.7rem', cursor: 'pointer' }
+                    }, tr('Apply'))
                   ),
                   ce('select', {
                     value: item.status,
@@ -3588,7 +4171,7 @@
                   )
                 );
               })
-            ) : null
+            ) : wordCloudTermsForActive.length > 0 ? ce('p', { role: 'status', style: { margin: 0, padding: '0.55rem', borderRadius: 6, background: '#fff7ed', color: '#9a3412', fontSize: '0.76rem', fontWeight: 750 } }, tr('No submitted terms match this moderation filter.')) : null
           ) : null,
           !activeFeedbackConfig.enabled && activePoll.type !== 'wordcloud' && summaryForActive && summaryForActive.items && summaryForActive.items.length > 0 ? ce('div', { style: { marginTop: 10, background: 'rgba(255,255,255,0.72)', border: '1px solid #dbeafe', borderRadius: 8, padding: '0.55rem', display: 'flex', flexDirection: 'column', gap: 6 } },
             ce('div', { style: { fontSize: '0.74rem', color: '#1e3a8a', fontWeight: 800, textTransform: 'uppercase' } }, tr('Anonymous summary')),
@@ -3734,9 +4317,52 @@
               );
             })
           ) : null
-        ) : ce('p', { style: { fontSize: '0.8rem', color: '#64748b', marginTop: 0 } }, tr('No active poll. Compose above and broadcast to start.'))
+        ) : ce('p', { style: { fontSize: '0.8rem', color: '#64748b', marginTop: 0 } }, tr('No active poll. Compose above and broadcast to start.')),
+        completedPolls.length ? ce('section', { 'data-live-workspace-section': 'recent', tabIndex: -1, 'aria-labelledby': 'live-recent-polls-title', style: { scrollMarginTop: 76, marginTop: '0.8rem', padding: '0.7rem', border: '1px solid #e2e8f0', borderRadius: 9, background: '#f8fafc' } },
+          ce('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
+            ce('h3', { id: 'live-recent-polls-title', style: { margin: 0, color: '#0f172a', fontSize: '0.9rem' } }, tr('Recent polls')),
+            ce('span', { style: { color: '#64748b', fontSize: '0.68rem', fontWeight: 750 } }, tr('Teacher-authored prompts and aggregate counts only'))
+          ),
+          ce('div', { role: 'list', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 6, marginTop: 7 } },
+            completedPolls.slice(-6).reverse().map(function (entry) {
+              const poll = entry && entry.poll ? entry.poll : {};
+              const responseCount = uniqueResponsesForSummary(entry.responses || []).length;
+              const audienceCount = Math.max(0, Number(entry.audienceCount) || 0);
+              return ce('div', { key: poll.id || String(entry.endedAt), role: 'listitem', style: { minWidth: 0, padding: '0.55rem', border: '1px solid #cbd5e1', borderRadius: 7, background: 'white' } },
+                ce('div', { style: { color: '#475569', fontSize: '0.65rem', fontWeight: 850, textTransform: 'uppercase' } }, tr(poll.type || 'poll')),
+                ce('div', { title: poll.prompt || '', style: { marginTop: 2, color: '#0f172a', fontSize: '0.76rem', fontWeight: 750, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, poll.prompt || tr('Untitled poll')),
+                ce('div', { style: { marginTop: 4, color: '#64748b', fontSize: '0.68rem', fontVariantNumeric: 'tabular-nums' } }, responseCount + ' / ' + audienceCount + ' ' + tr('responded')),
+                ce('button', { type: 'button', disabled: !!activePoll, onClick: function () { reuseCompletedPoll(entry); }, style: { width: '100%', minHeight: 40, marginTop: 6, padding: '0.35rem 0.55rem', border: '1px solid #2563eb', borderRadius: 6, background: 'white', color: activePoll ? '#94a3b8' : '#1d4ed8', cursor: activePoll ? 'default' : 'pointer', fontWeight: 850, fontSize: '0.7rem' } }, activePoll ? tr('Finish active poll first') : tr('Use again'))
+              );
+            })
+          )
+        ) : null
       )
     ),
+
+    pendingEndAction !== null ? ce('div', {
+      role: 'presentation',
+      onMouseDown: function (event) { if (event.target === event.currentTarget) cancelPendingEnd(); },
+      style: { position: 'fixed', inset: 0, zIndex: 10002, background: 'rgba(15,23,42,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }
+    },
+      ce('div', {
+        ref: endPollDialogRef,
+        tabIndex: -1,
+        role: 'alertdialog',
+        'aria-modal': 'true',
+        'aria-labelledby': 'live-polling-end-title',
+        'aria-describedby': 'live-polling-end-summary live-polling-end-guidance',
+        style: { width: '100%', maxWidth: 500, maxHeight: 'calc(100dvh - 2rem)', overflowY: 'auto', background: 'white', border: '2px solid #f59e0b', borderRadius: 12, padding: '1.25rem', boxShadow: '0 24px 64px rgba(0,0,0,0.4)' }
+      },
+        ce('h2', { id: 'live-polling-end-title', style: { margin: '0 0 0.65rem', color: '#78350f', fontSize: '1.1rem' } }, pendingEndAction === 'panel' ? tr('End poll and close the dashboard?') : tr('End this poll?')),
+        ce('p', { id: 'live-polling-end-summary', style: { margin: '0 0 0.55rem', color: '#1e293b', lineHeight: 1.5 } }, ce('strong', null, uniqueActiveResponses.length + ' / ' + responseGoalBase), ' ' + tr('students responded.') + (lastSharedResultsAt ? ' ' + tr('Anonymous results were shared.') : ' ' + tr('Results have not been shared.'))),
+        ce('p', { id: 'live-polling-end-guidance', style: { margin: '0 0 1rem', color: '#475569', lineHeight: 1.5, fontSize: '0.84rem' } }, tr('Ending saves this poll in Recent Polls for review or reuse. Students can no longer submit to it.')),
+        ce('div', { style: { display: 'flex', justifyContent: 'flex-end', gap: 10, flexWrap: 'wrap' } },
+          ce('button', { ref: endPollCancelRef, type: 'button', onClick: cancelPendingEnd, style: { minHeight: 44, padding: '0.6rem 0.9rem', border: '1px solid #94a3b8', borderRadius: 7, background: 'white', color: '#334155', cursor: 'pointer', fontWeight: 800 } }, tr('Keep poll open')),
+          ce('button', { type: 'button', onClick: confirmPendingEnd, style: { minHeight: 44, padding: '0.6rem 0.9rem', border: '1px solid #b45309', borderRadius: 7, background: '#b45309', color: 'white', cursor: 'pointer', fontWeight: 850 } }, pendingEndAction === 'panel' ? tr('End poll and close') : tr('End poll'))
+        )
+      )
+    ) : null,
 
     pendingGroupName !== null ? ce('div', {
       role: 'presentation',
@@ -3780,6 +4406,7 @@
     const sessionQaOptIn = props.enableSessionQa === true;
     const enabled = !!(sessionCode && userUid && props.enabled && hostActive !== false);
     const guestRef = R.useRef(null);
+    const pollDialogRef = R.useRef(null);
     const [activePoll, setActivePoll] = R.useState(null);
     const [submitted, setSubmitted] = R.useState(false);
     const [responseValue, setResponseValue] = R.useState('');
@@ -4197,6 +4824,8 @@
       );
     };
 
+    const pollDialogVisible = !!(enabled && activePoll && !peerVoteResults && !peerShowcase && !sharedResults && !sessionQaViewOpen);
+    useLivePollingDialogFocus(pollDialogRef, pollDialogVisible, function () {}, null);
     if (!enabled) return null;
     if (peerVoteResults) return renderPeerVoteResults(peerVoteResults);
     if (peerShowcase) return renderPeerShowcase(peerShowcase);
@@ -4212,7 +4841,15 @@
       : activePoll.type === 'wordcloud'
         ? !!normalizeWordCloudTerm(responseValue)
         : !!String(responseValue || '').trim();
-    const canSubmit = !submitted && !!guestRef.current && hasResponse;
+    const submissionTransportReady = connectionState === 'connected' || connectionState === 'failed';
+    const canSubmit = !submitted && !!guestRef.current && hasResponse && submissionTransportReady;
+    const submitButtonLabel = connectionState === 'failed'
+      ? tr('Download response for teacher')
+      : connectionState === 'reconnecting'
+        ? tr('Reconnecting - keep editing')
+        : connectionState === 'connecting'
+          ? tr('Connecting...')
+          : feedbackConfig.enabled && currentAttempt > 1 ? tr('Submit revision') : tr('Submit response');
     const submit = function () {
       if (!canSubmit) return;
       let payload;
@@ -4229,8 +4866,8 @@
       };
       const sent = guestRef.current.sendResponse(activePoll.id, payload, feedbackConfig.enabled ? { attempt: currentAttempt } : null);
       if (sent) {
+        setSubmittedResponse(payload);
         if (feedbackConfig.enabled) {
-          setSubmittedResponse(payload);
           setStudentFeedback(null);
           guestRef.current.sendResponseStatus(activePoll.id, 'submitted', currentAttempt);
           statusSentRef.current = activePoll.id + ':' + currentAttempt + ':submitted';
@@ -4254,12 +4891,18 @@
     };
 
     return ce('div', {
+      ref: pollDialogRef,
+      tabIndex: -1,
       role: 'dialog', 'aria-modal': 'true', 'aria-label': tr('Poll:') + ' ' + activePoll.prompt,
       style: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.55)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }
     },
-      ce('div', { style: { background: 'white', maxWidth: 520, width: '100%', borderRadius: 12, padding: '1.25rem', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' } },
+      ce('div', { style: { background: 'white', maxWidth: 520, width: '100%', maxHeight: 'calc(100dvh - 2rem)', overflowY: 'auto', boxSizing: 'border-box', borderRadius: 12, padding: '1.25rem', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' } },
         ce('div', { style: { fontSize: '0.75rem', color: '#1e3a8a', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 } }, feedbackConfig.enabled ? tr('Feedback response') + ' · ' + tr('Attempt') + ' ' + currentAttempt : (activePoll.type === 'rating' && ratingScale ? tr('rating') + ' ' + ratingScale.min + '-' + ratingScale.max : activePoll.type)),
         ce('h2', { style: { margin: '0 0 0.55rem 0', fontSize: '1.15rem', color: '#0f172a' } }, activePoll.prompt),
+        ce('div', { role: 'status', 'aria-live': 'polite', style: { display: 'flex', alignItems: 'center', gap: 6, margin: '0 0 0.75rem', padding: '0.42rem 0.55rem', borderRadius: 7, background: connectionState === 'connected' ? '#f0fdf4' : connectionState === 'failed' ? '#fef2f2' : '#fff7ed', border: '1px solid ' + (connectionState === 'connected' ? '#bbf7d0' : connectionState === 'failed' ? '#fecaca' : '#fed7aa'), color: connectionState === 'connected' ? '#166534' : connectionState === 'failed' ? '#991b1b' : '#9a3412', fontSize: '0.72rem', fontWeight: 800 } },
+          ce('span', { 'aria-hidden': 'true' }, connectionState === 'connected' ? '●' : connectionState === 'failed' ? '!' : '↻'),
+          connectionState === 'connected' ? tr('Connected - response ready to send') : connectionState === 'failed' ? tr('Direct connection unavailable - download fallback ready') : connectionState === 'reconnecting' ? tr('Reconnecting - your draft stays here') : tr('Connecting - your draft stays here')
+        ),
         feedbackConfig.enabled && feedbackConfig.criteria ? ce('div', { style: { margin: '0 0 0.8rem 0', padding: '0.55rem', background: '#f8fafc', borderLeft: '3px solid #6366f1', borderRadius: 6, color: '#475569', fontSize: '0.76rem', lineHeight: 1.4 } },
           ce('strong', { style: { display: 'block', color: '#312e81', fontSize: '0.68rem', textTransform: 'uppercase', marginBottom: 2 } }, tr('Success criteria')),
           feedbackConfig.criteria
@@ -4281,6 +4924,33 @@
           }, tr('Revise using this feedback')) : studentFeedback ? ce('p', { style: { margin: '0.55rem 0 0 0', fontSize: '0.75rem', fontWeight: 700 } }, tr('Feedback cycle complete.')) : null
         ) : ce('div', { style: { padding: '0.75rem', background: '#dcfce7', color: '#166534', borderRadius: 8, fontWeight: 600 } },
           ce('div', null, tr('Response sent. Waiting for the teacher to close this poll.')),
+          activePoll.type === 'wordcloud' ? ce('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 6, marginTop: 8 } },
+            ce('button', {
+              type: 'button',
+              onClick: function () {
+                setResponseValue(submittedResponse);
+                setSubmitted(false);
+                statusSentRef.current = '';
+                if (guestRef.current) guestRef.current.sendResponseStatus(activePoll.id, 'editing', currentAttempt);
+              },
+              style: { minHeight: 44, padding: '0.45rem 0.65rem', borderRadius: 6, border: '1px solid #2563eb', background: 'white', color: '#1d4ed8', cursor: 'pointer', fontWeight: 800 }
+            }, tr('Revise term')),
+            ce('button', {
+              type: 'button',
+              onClick: function () {
+                if (!guestRef.current || !guestRef.current.sendResponse(activePoll.id, '', { withdrawn: true })) {
+                  setSubmitNotice(tr('Reconnect to withdraw your term.'));
+                  return;
+                }
+                guestRef.current.sendResponseStatus(activePoll.id, 'withdrawn', currentAttempt);
+                setSubmitted(false);
+                setResponseValue('');
+                setSubmittedResponse('');
+                setSubmitNotice(tr('Your term was withdrawn. You may submit another.'));
+              },
+              style: { minHeight: 44, padding: '0.45rem 0.65rem', borderRadius: 6, border: '1px solid #b91c1c', background: 'white', color: '#b91c1c', cursor: 'pointer', fontWeight: 800 }
+            }, tr('Withdraw term'))
+          ) : null,
           ce('button', { onClick: function () { setActivePoll(null); setSubmitted(false); setResponseValue(''); studentPollIdRef.current = null; }, style: { marginTop: 8, padding: '0.45rem 0.8rem', borderRadius: 6, border: '1px solid #86efac', background: 'white', color: '#166534', cursor: 'pointer', fontWeight: 800, width: '100%' } }, tr('Hide while waiting'))
         )) :
           activePoll.type === 'rating' ? ce('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', alignItems: 'stretch', flexWrap: 'wrap', margin: '1rem 0' } },
@@ -4303,7 +4973,7 @@
             ce('p', { style: { margin: '0.35rem 0 0 0', color: '#64748b', fontSize: '0.72rem' } }, tr('Your term is held for teacher review before it can appear in the class word cloud.'))
           ) :
           ce('textarea', { value: responseValue, maxLength: feedbackConfig.enabled ? FEEDBACK_RESPONSE_MAX_LENGTH : undefined, onChange: function (e) { setResponseValue(e.target.value); }, 'aria-label': tr('Your response'), placeholder: feedbackConfig.enabled && currentAttempt > 1 ? tr('Revise your response using the feedback') : tr('Type your response'), rows: 5, style: { width: '100%', padding: '0.6rem', border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', boxSizing: 'border-box', margin: '0 0 1rem 0' } }),
-        submitted ? null : ce('button', { onClick: submit, disabled: !canSubmit, style: { padding: '0.6rem 1.2rem', borderRadius: 6, border: 'none', background: canSubmit ? '#1e3a8a' : '#cbd5e1', color: 'white', cursor: canSubmit ? 'pointer' : 'default', fontWeight: 700, width: '100%' } }, feedbackConfig.enabled && currentAttempt > 1 ? tr('Submit revision') : tr('Submit response')),
+        submitted ? null : ce('button', { onClick: submit, disabled: !canSubmit, style: { minHeight: 48, padding: '0.6rem 1.2rem', borderRadius: 6, border: 'none', background: canSubmit ? (connectionState === 'failed' ? '#b45309' : '#1e3a8a') : '#cbd5e1', color: 'white', cursor: canSubmit ? 'pointer' : 'default', fontWeight: 800, width: '100%' } }, submitButtonLabel),
         sessionQaOptIn && sessionQaState && sessionQaState.enabled ? ce('button', {
           type: 'button',
           onClick: function () { setSessionQaViewOpen(true); setSessionQaNotice(null); },
@@ -4326,11 +4996,25 @@
     matchesPredicate: matchesPredicate,
     isAbilityTieredName: isAbilityTieredName,
     buildRatingScale: buildRatingScale,
+    normalizeLivePollChoices: normalizeLivePollChoices,
+    validateLivePollComposer: validateLivePollComposer,
+    LIVE_POLL_PROMPT_MAX_LENGTH: LIVE_POLL_PROMPT_MAX_LENGTH,
+    LIVE_POLL_CHOICE_MAX_LENGTH: LIVE_POLL_CHOICE_MAX_LENGTH,
+    LIVE_POLL_MAX_CHOICES: LIVE_POLL_MAX_CHOICES,
     normalizeRatingScale: normalizeRatingScale,
     buildPollResultsSummary: buildPollResultsSummary,
     buildLivePollingAlloSheetEnvelope: buildLivePollingAlloSheetEnvelope,
     normalizeWordCloudTerm: normalizeWordCloudTerm,
     buildWordCloudItems: buildWordCloudItems,
+    filterWordCloudModerationItems: filterWordCloudModerationItems,
+    WORD_CLOUD_MODERATION_FILTERS: WORD_CLOUD_MODERATION_FILTERS,
+    stableWordCloudColor: stableWordCloudColor,
+    stableWordCloudSize: stableWordCloudSize,
+    buildLiveStudentActivityRows: buildLiveStudentActivityRows,
+    summarizeLiveStudentActivityRows: summarizeLiveStudentActivityRows,
+    filterLiveStudentActivityRows: filterLiveStudentActivityRows,
+    LIVE_STUDENT_ACTIVITY_FILTERS: LIVE_STUDENT_ACTIVITY_FILTERS,
+    LIVE_STUDENT_ACTIVITY_SORTS: LIVE_STUDENT_ACTIVITY_SORTS,
     renderWordCloudItems: renderWordCloudItems,
     WORD_CLOUD_MAX_LENGTH: WORD_CLOUD_MAX_LENGTH,
     normalizeFeedbackConfig: normalizeFeedbackConfig,

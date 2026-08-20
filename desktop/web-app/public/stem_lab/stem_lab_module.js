@@ -1958,6 +1958,7 @@
         // feature in this module already self-disables through its `callGemini`
         // guard; the pill is the one honest indicator that explains why.
         onOpenAiSetup,
+        onUseArtwork,
         theme: _themeProp,
         activeSessionCode,
         studentNickname,
@@ -5240,6 +5241,12 @@
                 desc: 'Visual block coding with turtle graphics. Learn sequencing, loops, and conditionals. Toggle between blocks and text code.',
                 color: 'indigo', ready: true
               },
+              {
+                id: 'trajectoryComputing', icon: '\uD83D\uDDA5\uFE0F', label: 'Trajectory Computing Lab',
+                desc: 'Calculate a flight path by hand, debug FORTRAN-style code, sequence punch cards, run a batch job, and independently verify the machine result.',
+                aliases: ['human computers', 'FORTRAN', 'punch cards', 'coding history', 'trajectory'],
+                color: 'emerald', ready: true
+              },
               { id: 'gameStudio', icon: '🎮', label: 'Game Studio', desc: 'Design, build, and test your own games with a visual coding interface.', color: 'purple', ready: true },
               { id: 'appLab', icon: '\uD83D\uDCF1', label: 'AppLab: AI App Generator', desc: 'Describe what you want and AI generates a complete interactive mini-app. Science demos, visualizations, calculators, and educational tools \u2014 created from your imagination.', color: 'violet', ready: true },
               { id: 'logicLab', icon: '\uD83E\uDDE9', label: 'Logic Lab', desc: 'Logic gates, truth tables, and Boolean algebra puzzles.', color: 'indigo', ready: true },
@@ -6975,6 +6982,7 @@
             machineLab: true,
             // Engineering & CS
             archStudio: true, bridgeLab: true, circuit: true, codingPlayground: true,
+            trajectoryComputing: true,
             cyberDefense: true, magnetism: true, semiconductor: true,
             // Aug 2026: City Planning Lab — settlement-scale design under conflicting
             // constraints, with a deliberately un-modelled contested tier.
@@ -7249,6 +7257,9 @@
                 if (srMsg) announceToSR(srMsg);
               }
             }),
+            // Art Studio can hand a static canvas result to a host destination
+            // without coupling the plugin to Page Designer or Visual Supports.
+            onUseArtwork: typeof onUseArtwork === 'function' ? onUseArtwork : null,
             // _deferSafe wrap: awardStemXP calls setStemXP (parent useState).
             awardXP: typeof awardStemXP === 'function' ? _deferSafe(awardStemXP) : function() {},
             getXP: typeof getStemXP === 'function' ? getStemXP : function() { return 0; },

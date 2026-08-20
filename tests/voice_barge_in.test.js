@@ -106,7 +106,9 @@ describe('the watcher only runs while a reply is playing', () => {
       ctx: window.AudioContext,
     };
     window.SpeechRecognition = FakeRec;
-    const speak = vi.fn();
+    const speak = vi.fn((utterance) => {
+      if (utterance && typeof utterance.onstart === 'function') utterance.onstart();
+    });
     window.speechSynthesis = { speak, cancel: vi.fn() };
     window.SpeechSynthesisUtterance = function (text) { this.text = text; };
     window._kokoroTTS = undefined;
@@ -225,15 +227,48 @@ it('cuts the reply when the user actually talks over it', async () => {
       await flush();
 
       expect(lease, 'external speech acquired deference').toBeTruthy();
+      expect(typeof lease.start, 'surface can report actual playback start').toBe('function');
       expect(rec.stop, 'command recognition stopped during narration').toHaveBeenCalled();
       expect(h.getUserMedia, 'barge-in remains available').toHaveBeenCalled();
       expect(loop.getState().speaking).toBe(true);
+      expect(lease.start()).toBe(true);
 
       expect(lease.end()).toBe(true);
       expect(rec.start, 'command recognition resumed after narration').toHaveBeenCalled();
       expect(h.tracks[0].stop, 'barge watcher released with narration').toHaveBeenCalled();
       expect(stopExternal, 'normal completion does not stop the surface').not.toHaveBeenCalled();
       expect(loop.getState().speaking).toBe(false);
+      loop.stop();
+    } finally { h.restore(); }
+  });
+
+  it('reports external narration as preparing until the surface confirms playback', async () => {
+    const h = harness();
+    const updates = [];
+    let coordinatorLeaseActive = true;
+    const voiceCoordinator = {
+      acquireVoiceSession: vi.fn(() => ({
+        update: (detail) => { updates.push(detail); return true; },
+        isActive: () => coordinatorLeaseActive,
+        release: () => { coordinatorLeaseActive = false; return true; },
+      })),
+    };
+    try {
+      const loop = AC.createVoiceLoop(
+        () => ({ addToast: vi.fn(), setVoiceActive: vi.fn() }),
+        { voiceCoordinator },
+      );
+      loop.start();
+      const lease = loop.beginExternalSpeech(vi.fn(), {
+        source: 'read-this-page',
+        message: 'Reading page content aloud.',
+      });
+
+      expect(updates.at(-1)).toMatchObject({ state: 'processing', message: 'Preparing spoken content.' });
+      expect(updates.some((item) => item.state === 'speaking')).toBe(false);
+      expect(lease.start()).toBe(true);
+      expect(updates.at(-1)).toMatchObject({ state: 'speaking', message: 'Reading page content aloud.' });
+      lease.end();
       loop.stop();
     } finally { h.restore(); }
   });

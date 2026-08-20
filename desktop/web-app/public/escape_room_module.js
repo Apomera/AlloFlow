@@ -394,6 +394,20 @@ inputText.substring(0, 6000) + '\n' +
       return { valid: true, counts: counts };
     };
 
+    var createLiveTeamProgress = function() {
+      return {
+        solvedPuzzles: [],
+        isEscaped: false,
+        lives: 3,
+        maxLives: 3,
+        wrongAttempts: 0,
+        streak: 0,
+        isGameOver: false,
+        hintsRemaining: 3,
+        revealedHints: {}
+      };
+    };
+
     var launchCollaborativeEscapeRoom = async function() {
       var state = getState();
       var inputText = state.inputText;
@@ -489,12 +503,14 @@ inputText.substring(0, 6000) + '\n' +
                 objects: data.objects,
                 teams: {},
                 teamProgress: {
-                  Red: { solvedPuzzles: [], isEscaped: false },
-                  Blue: { solvedPuzzles: [], isEscaped: false },
-                  Green: { solvedPuzzles: [], isEscaped: false },
-                  Yellow: { solvedPuzzles: [], isEscaped: false }
+                  Red: createLiveTeamProgress(),
+                  Blue: createLiveTeamProgress(),
+                  Green: createLiveTeamProgress(),
+                  Yellow: createLiveTeamProgress()
                 },
                 timeRemaining: 300,
+                isGameOver: false,
+                isPaused: false,
                 startedAt: Date.now(),
                 hostId: (user && user.uid) || null
               }
@@ -518,6 +534,74 @@ inputText.substring(0, 6000) + '\n' +
         warnLog('Collaborative escape room failed:', e);
         addToast(t('errors.generation_failed'), 'error');
         setState.setEscapeRoomState(function(prev) { return Object.assign({}, prev, { isActive: false, isGenerating: false }); });
+      }
+    };
+
+    // ── launchConceptQuest ──
+    // Concept Quest deliberately reuses the escapeRoomState/teamProgress live
+    // envelope. Firestore and the Google Mailbox adapter therefore transport
+    // identical state and participant writes without a second backend path.
+    var launchConceptQuest = async function() {
+      var state = getState();
+      var activeSessionCode = state.activeSessionCode;
+      var activeSessionAppId = state.activeSessionAppId;
+      var generatedContent = state.generatedContent;
+      var user = state.user;
+      if (!activeSessionCode) {
+        addToast(t('errors.no_session') || 'Start a live session first.', 'error');
+        return;
+      }
+      var questEngine = window.AlloModules && window.AlloModules.ConceptQuestEngine;
+      if (!questEngine || typeof questEngine.createSession !== 'function') {
+        addToast('Concept Quest is still loading. Try again in a moment.', 'error');
+        return;
+      }
+      var data = generatedContent && generatedContent.data || {};
+      var questions = Array.isArray(data.questions) ? data.questions : [];
+      var title = data.title || generatedContent && generatedContent.title || 'Concept Quest';
+      var quest = questEngine.createSession({
+        title: title + ': Concept Quest',
+        objective: 'Navigate together, use lesson concepts as abilities, and defeat the final misconception.',
+        questions: questions
+      });
+      var allProgress = createLiveTeamProgress();
+      allProgress.questVotes = {};
+      allProgress.questActions = {};
+      allProgress.questRoles = {};
+      allProgress.isEscaped = false;
+      try {
+        if (doc && db && updateDoc) {
+          var sessionRef = doc(db, 'artifacts', activeSessionAppId, 'public', 'data', 'sessions', activeSessionCode);
+          await updateDoc(sessionRef, {
+            'escapeRoomState': {
+              mode: 'concept-quest',
+              isActive: true,
+              isCoopMode: true,
+              isPaused: false,
+              isGameOver: false,
+              room: { theme: quest.title, description: quest.objective },
+              puzzles: [],
+              objects: [],
+              teams: {},
+              teamProgress: { All: allProgress },
+              conceptQuest: quest,
+              timeRemaining: 0,
+              startedAt: Date.now(),
+              hostId: user && user.uid || null
+            }
+          });
+        }
+        setState.setEscapeRoomState(function(prev) {
+          return Object.assign({}, prev, {
+            mode: 'concept-quest', isActive: true, isGenerating: false,
+            room: { theme: quest.title, description: quest.objective }, conceptQuest: quest
+          });
+        });
+        playSound('correct');
+        addToast('Concept Quest launched. You are the co-GM.', 'success');
+      } catch (e) {
+        warnLog('Concept Quest launch failed:', e);
+        addToast(t('errors.generation_failed') || 'Concept Quest could not launch.', 'error');
       }
     };
 
@@ -1151,6 +1235,7 @@ inputText.substring(0, 6000) + '\n' +
     return {
       generateEscapeRoom: generateEscapeRoom,
       launchCollaborativeEscapeRoom: launchCollaborativeEscapeRoom,
+      launchConceptQuest: launchConceptQuest,
       endCollaborativeEscapeRoom: endCollaborativeEscapeRoom,
       handlePuzzleSolved: handlePuzzleSolved,
       handleSelectObject: handleSelectObject,

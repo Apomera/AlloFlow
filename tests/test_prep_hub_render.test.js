@@ -69,6 +69,7 @@ afterAll(() => {
   window.fetch = originalFetch;
 });
 
+
 afterEach(() => {
   if (root) { act(() => root.unmount()); root = null; }
   if (host) { host.remove(); host = null; }
@@ -173,6 +174,29 @@ async function expectNoAxeViolations(label) {
 }
 
 describe('Test Prep Hub render flow', () => {
+  it('keeps an iPhone-style native picker open across host callback rerenders', async () => {
+    const firstClose = vi.fn();
+    const latestClose = vi.fn();
+    await mount({ onClose: firstClose });
+
+    const dialog = host.querySelector('[role="dialog"]');
+    expect(dialog).toBeTruthy();
+    const focusSpy = vi.spyOn(dialog, 'focus');
+
+    await act(async () => {
+      root.render(React.createElement(Component, { isOpen: true, onClose: latestClose }));
+    });
+
+    // Programmatic refocus dismisses Safari's native select sheet. A new host
+    // callback must update Escape handling without restarting modal focus.
+    expect(focusSpy).not.toHaveBeenCalled();
+    await act(async () => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+    });
+    expect(firstClose).not.toHaveBeenCalled();
+    expect(latestClose).toHaveBeenCalledTimes(1);
+  });
+
   it('renders the pack catalog and an accessible practice screen', async () => {
     await mount();
 
@@ -1467,4 +1491,3 @@ describe('Test Prep Hub render flow', () => {
   }, 30_000);
 
 });
-

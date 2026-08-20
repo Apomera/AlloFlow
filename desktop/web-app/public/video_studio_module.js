@@ -2610,7 +2610,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   // step is excluded because it is still running in AlloFlow's background;
   // ordinary failures/stops keep the first unfinished step for a safe retry.
   function vsDemoContinuationPlan(steps, response) {
-    var list = (Array.isArray(steps) ? steps : []).slice(0, 8);
+    var list = (Array.isArray(steps) ? steps : []).slice(0, 16);
     var r = response || {};
     var rawCompleted = Number(r.completed);
     var completed = isFinite(rawCompleted) ? Math.floor(rawCompleted) : 0;
@@ -3403,7 +3403,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         };
         Promise.resolve().then(function () { return planFn(String(dpReq.goal || '').slice(0, 300), { signal: planController ? planController.signal : null, requestId: planState.id }); }).then(function (out) {
           if (planState.cancelled || demoPlanRef.current !== planState) { releasePlan(); return; }
-          var steps = (out && Array.isArray(out.steps)) ? out.steps.slice(0, 8).map(function (s) {
+          var steps = (out && Array.isArray(out.steps)) ? out.steps.slice(0, 16).map(function (s) {
             return { commandId: String((s && s.commandId) || '').slice(0, 60), params: (s && s.params && typeof s.params === 'object') ? s.params : {}, paramNames: Array.isArray(s && s.paramNames) ? s.paramNames.slice(0, 8).map(function (p) { return String(p).slice(0, 40); }) : [], why: String((s && s.why) || '').slice(0, 120), label: String((s && s.label) || (s && s.commandId) || '').slice(0, 90) };
           }).filter(function (s) { return s.commandId; }) : [];
           dpRespond({ steps: steps });
@@ -3429,7 +3429,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         var dsDetailMap = { short: '6-12 words', standard: '10-18 words', detailed: '16-26 words' };
         var dsStyle = Object.prototype.hasOwnProperty.call(dsStyleMap, dsReq.style) ? dsReq.style : 'teacher';
         var dsDetail = Object.prototype.hasOwnProperty.call(dsDetailMap, dsReq.detail) ? dsReq.detail : 'standard';
-        var dsSteps = (Array.isArray(dsReq.steps) ? dsReq.steps : []).slice(0, 8).map(function (s, index) {
+        var dsSteps = (Array.isArray(dsReq.steps) ? dsReq.steps : []).slice(0, 16).map(function (s, index) {
           var params = {};
           if (s && s.params && typeof s.params === 'object' && !Array.isArray(s.params)) {
             Object.keys(s.params).slice(0, 8).forEach(function (key) {
@@ -3495,7 +3495,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         };
         var validateFn = propsRef.current.onValidateDemoPlan;
         if (typeof validateFn !== 'function') { dvRespond({ error: 'demo-validator-unavailable' }); return; }
-        var dvSteps = (Array.isArray(dvReq.steps) ? dvReq.steps : []).slice(0, 8).map(function (s) {
+        var dvSteps = (Array.isArray(dvReq.steps) ? dvReq.steps : []).slice(0, 16).map(function (s) {
           var params = {};
           if (s && s.params && typeof s.params === 'object') {
             Object.keys(s.params).slice(0, 8).forEach(function (k) {
@@ -3507,7 +3507,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           return { commandId: String((s && s.commandId) || '').slice(0, 60), params: params, why: String((s && s.why) || '').slice(0, 120) };
         }).filter(function (s) { return s.commandId; });
         Promise.resolve().then(function () { return validateFn(dvSteps); }).then(function (report) {
-          var items = (report && Array.isArray(report.items) ? report.items : []).slice(0, 8).map(function (item) {
+          var items = (report && Array.isArray(report.items) ? report.items : []).slice(0, 16).map(function (item) {
             var contract = item && item.contract && typeof item.contract === 'object' ? item.contract : {};
             return {
               commandId: String((item && item.commandId) || '').slice(0, 60),
@@ -3572,7 +3572,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         // Steps are re-clamped here and re-validated against the live
         // registry inside runPlan (unknown ids fail the step) — the popup
         // can only ever pick from what the registry offers.
-        var drSteps = (Array.isArray(drReq.steps) ? drReq.steps : []).slice(0, 8).map(function (s) {
+        var drSteps = (Array.isArray(drReq.steps) ? drReq.steps : []).slice(0, 16).map(function (s) {
           var params = {};
           if (s && s.params && typeof s.params === 'object') {
             Object.keys(s.params).slice(0, 8).forEach(function (k) {
@@ -3659,7 +3659,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         if (typeof auditGemini !== 'function') { daRespond({ error: 'AI is not connected right now' }); return; }
         var auditGoal = String(daReq.goal || '').slice(0, 300).trim();
         if (!auditGoal) { daRespond({ error: 'no goal to audit' }); return; }
-        var auditSteps = (Array.isArray(daReq.steps) ? daReq.steps : []).slice(0, 8).map(function (s) {
+        var auditSteps = (Array.isArray(daReq.steps) ? daReq.steps : []).slice(0, 16).map(function (s) {
           return {
             label: String((s && s.label) || (s && s.commandId) || '').slice(0, 90),
             outcome: String((s && s.outcome) || 'unknown').slice(0, 40)

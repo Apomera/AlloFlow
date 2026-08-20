@@ -60,6 +60,16 @@ const runLatestEditorialReplay=()=>{
   runDistractorHalvingCampaign();
   runReplayScript('./audit_eppp_option_feedback.cjs');
   runFeedbackHalvingCampaign();
+  runReplayScript('./repair_eppp_native_quality_wave_25.cjs');
+  runReplayScript('./repair_eppp_native_quality_wave_26.cjs');
+  runReplayScript('./repair_eppp_native_quality_wave_27.cjs');
+  runReplayScript('./repair_eppp_native_quality_wave_28.cjs');
+  runReplayScript('./repair_eppp_native_quality_wave_29.cjs');
+  runReplayScript('./repair_eppp_native_quality_wave_30.cjs');
+  runReplayScript('./repair_eppp_native_quality_wave_31.cjs');
+  runReplayScript('./repair_eppp_native_quality_wave_32.cjs');
+  runReplayScript('./repair_eppp_native_quality_wave_33.cjs');
+  runReplayScript('./repair_eppp_native_quality_wave_34.cjs');
   runReplayScript('./normalize_eppp_native_unicode.cjs').run({write:true});
   runReplayScript('./audit_eppp_distractor_quality.cjs');
   runReplayScript('./audit_eppp_option_feedback.cjs');

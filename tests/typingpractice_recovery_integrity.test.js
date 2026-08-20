@@ -104,6 +104,7 @@ describe('Typing Practice recovery integrity', () => {
       targetLength: 9,
       errorCount: 3,
       errorChars: { j: 2, k: 1 },
+      mistakeEvents: [{ index: 4, expected: 'j', actual: 'h', attempt: 1 }],
       startTime: 1_000,
       pausedMs: 500,
       pauseStartedAt: 9_500,
@@ -117,6 +118,7 @@ describe('Typing Practice recovery integrity', () => {
       typed: 'asdf',
       errorCount: 3,
       errorChars: { j: 2, k: 1 },
+      mistakeEvents: [{ index: 4, expected: 'j', actual: 'h', attempt: 1 }],
       inputMethods: { keyboard: 4, ime: 1 },
       pausedMs: 1_000,
       reason: 'pagehide',
@@ -124,8 +126,10 @@ describe('Typing Practice recovery integrity', () => {
     });
 
     latestSnapshot.errorChars.j = 99;
+    latestSnapshot.mistakeEvents[0].actual = 'x';
     latestSnapshot.inputMethods.keyboard = 99;
     expect(saved.errorChars.j).toBe(2);
+    expect(saved.mistakeEvents[0].actual).toBe('h');
     expect(saved.inputMethods.keyboard).toBe(4);
     expect(buildDraft({ ...latestSnapshot, isWarmup: true }, 'pagehide', 10_000)).toBeNull();
     expect(buildDraft({ ...latestSnapshot, drillComplete: true }, 'pagehide', 10_000)).toBeNull();

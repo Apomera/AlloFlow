@@ -84,6 +84,13 @@ describe('Machine Lab: the camera is reachable without a mouse', () => {
     expect(html).toContain('aria-label="Reset the view"');
   });
 
+  it('offers the same camera controls on the 3D test range lane', () => {
+    const html = renderTool('machineLab', state({ view: 'range' }));
+    expect(html).toContain('data-ml-orbitable="true"');
+    expect(html).toContain('aria-label="Camera for the 3D range lane"');
+    expect(html).toContain('aria-label="Toggle full screen for the 3D range lane. Press Escape to leave full screen."');
+  });
+
   it('groups them with a name, so they are not seven loose glyph buttons', () => {
     const html = renderTool('machineLab', state({ view: 'build' }));
     expect(html).toMatch(/role="group" aria-label="Camera for the [^"]+"/);
@@ -95,6 +102,30 @@ describe('Machine Lab: the camera is reachable without a mouse', () => {
     const strip = html.slice(idx, idx + 1600);
     expect((strip.match(/<button/g) || []).length).toBeGreaterThanOrEqual(7);
     expect(strip).not.toContain('role="button"');
+  });
+});
+
+describe('Machine Lab: the workshop camera feels direct without losing alternatives', () => {
+  it('exposes side and close-up presets as labelled native buttons', () => {
+    const html = renderTool('machineLab', state({ view: 'machines', bench: 'lever' }));
+    expect(html).toContain('aria-label="Show the machine from the side"');
+    expect(html).toContain('aria-label="Show a close three-quarter view"');
+    expect(html).toContain('>Side</button>');
+    expect(html).toContain('>Close</button>');
+  });
+
+  it('marks the 3D workshop as orbitable and explains the equivalent controls', () => {
+    const html = renderTool('machineLab', state({ view: 'machines', bench: 'lever' }));
+    expect(html).toContain('data-ml-orbitable="true"');
+    expect(html).toContain('Drag scene or use:');
+    expect(html).toContain('camera buttons and panels below provide complete keyboard and numeric equivalents');
+  });
+
+  it('keeps touch reserved for page scrolling while supporting mouse and pen drag', () => {
+    const text = fs.readFileSync(path.resolve(process.cwd(), FILE), 'utf8');
+    expect(text).toContain("ev.pointerType === 'touch'");
+    expect(text).toContain('onPointerDown: beginShopOrbit');
+    expect(text).toContain('onPointerCancel: endShopOrbit');
   });
 });
 

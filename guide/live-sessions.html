@@ -17,6 +17,7 @@
         <span>AlloFlow Teacher Guide</span>
       </a>
       <nav class="utility-nav" aria-label="Guide utilities">
+        <a href="../manuals.html">All manuals and guides</a>
         <a href="../launch.html">Open AlloFlow</a>
         <a href="tool-reference.html">Guide tool reference</a>
         <a href="../tools.html">Find a tool</a>
@@ -76,14 +77,14 @@
             <dd>Before, during, and after class</dd>
           </div>
         </dl>
-        <p class="chapter-meta">Chapter 8 of 24 · Verified <time datetime="2026-08-16">2026-08-16</time></p>
+        <p class="chapter-meta">Chapter 8 of 24 · Verified <time datetime="2026-08-20">2026-08-20</time></p>
         <nav class="section-nav" aria-labelledby="section-nav-title">
           <p id="section-nav-title" class="section-nav__title">On this page</p>
           <ol>
             <li><a href="#decide-whether-live-delivery-fits">Decide whether live delivery fits</a></li>
             <li><a href="#prepare-before-students-join">Prepare before students join</a></li>
             <li><a href="#start-the-session-and-admit-the-class">Start the session and admit the class</a></li>
-            <li><a href="#use-the-live-session-center">Use the Live Session Center</a></li>
+            <li><a href="#use-the-live-dashboard">Use the Live Dashboard</a></li>
             <li><a href="#route-resources-without-exposing-needs">Route resources without exposing needs</a></li>
             <li><a href="#facilitate-live-activities">Facilitate live activities</a></li>
             <li><a href="#read-activity-pulse-and-other-live-evidence">Read Activity Pulse and other live evidence</a></li>
@@ -148,7 +149,7 @@
 </ul>
 <p>Use a homework link, accessible document, learning-management assignment, or other asynchronous route when students need flexible timing, the connection is unreliable, or the work should not depend on everyone being online at once.</p>
 <h3 id="choose-the-pacing-mode">Choose the pacing mode</h3>
-<p>The <strong>Live Session Center</strong> can toggle between two pacing approaches.</p>
+<p>The <strong>Live Dashboard</strong> can toggle between two pacing approaches.</p>
 <div class="table-scroll" role="region" aria-label="Choose the pacing mode table" tabindex="0">
 <table>
 <thead>
@@ -160,7 +161,7 @@
 </thead>
 <tbody>
 <tr>
-<td><strong>Teacher-paced</strong></td>
+<td><strong>Teacher-led</strong></td>
 <td>The class follows the teacher's current resource; useful for modeling, discussion, and coordinated transitions.</td>
 <td>Announce each change, watch delivery status, and allow enough time for assistive technology and reading.</td>
 </tr>
@@ -172,7 +173,7 @@
 </tbody>
 </table>
 </div>
-<p>Switch deliberately. A whole-class presentation or follow-up may require Teacher-paced mode, while independent work may be less disruptive in Student-paced mode. Tell students before changing the mode so a screen transition does not feel like lost work.</p>
+<p>Switch deliberately. A whole-class presentation or follow-up may require Teacher-led mode, while independent work may be less disruptive in Student-paced mode. Tell students before changing the mode so a screen transition does not feel like lost work.</p>
 <h2 id="prepare-before-students-join">Prepare before students join</h2>
 <h3 id="build-the-resource-set">Build the resource set</h3>
 <p>Complete the workflow in <a href="prepare-a-lesson.html">Prepare a lesson</a>. Keep the live resource set small enough to navigate while teaching. A useful sequence is:</p>
@@ -185,6 +186,9 @@
 <li>Follow-up, revision, or exit prompt.</li>
 </ol>
 <p>Open every student-facing resource once. Remove teacher notes and answer keys. If the workspace marks an item as teacher-only, do not try to send it to students.</p>
+<h3 id="import-an-existing-lesson-deck">Import an existing lesson deck</h3>
+<p>Use <strong>Import lesson deck</strong> in the Source panel to bring in material from another presentation tool. A PowerPoint <code>.pptx</code> is the best choice: it opens in Page Designer as editable slides and preserves supported text, pictures, alt text, and layout. A PDF opens in the document pipeline and is better treated as visual source material.</p>
+<p>Curipod, Nearpod, Pear Deck, and similar tools do not place their proprietary polls, response data, drawing prompts, or AI-feedback behavior inside an exported PowerPoint or PDF. After importing, review every slide and recreate the intended interactions as AlloFlow activities. For Google Slides or Keynote, export a <code>.pptx</code> first when possible.</p>
 <h3 id="rehearse-the-join-and-delivery-path">Rehearse the join and delivery path</h3>
 <p>Before class:</p>
 <ul>
@@ -212,23 +216,23 @@
 <p>Write the fallback task where students can see it. Decide whether the session code may be projected and hide any roster or teacher-only material before sharing your screen. Have headphones available for audio supports when possible, and avoid starting every student's read-aloud at the same time.</p>
 <h2 id="start-the-session-and-admit-the-class">Start the session and admit the class</h2>
 <h3 id="1-start-from-the-teacher-workspace">1. Start from the teacher workspace</h3>
-<p>Use the available <strong>Live Session</strong> or class-session control in the header or delivery workflow. Choose the session options shown in your deployment. Once a session is active, the <strong>Live Session Center</strong> becomes available to the teacher.</p>
+<p>Use <strong>Teach live</strong> in the header or delivery workflow. Choose the connection options shown in your deployment. Once a session is active, the <strong>Live Dashboard</strong> becomes available to the teacher.</p>
 <p>Open the session-code or projection view and verify that it shows only information students should see. Keep the teacher workspace on a non-projected screen if possible.</p>
 <h3 id="2-have-students-join">2. Have students join</h3>
 <p>Students open the school's approved AlloFlow student link, choose the student role if prompted, and enter the session code and approved name or codename. The precise sequence can vary by deployment.</p>
 <p>Ask students to stop after they reach the waiting or first-resource screen. This creates a clean point for checking the roster before instruction begins.</p>
 <h3 id="3-confirm-presence">3. Confirm presence</h3>
-<p>In the <strong>Live Session Center</strong>, compare the visible roster with the students who should be present. Look for duplicate or unexpected codenames. A connected indicator or recent check-in is useful operational information, but it does not prove attention or understanding.</p>
+<p>In the <strong>Live Dashboard</strong>, compare the visible roster with the students who should be present. Look for duplicate or unexpected codenames. A connected indicator or recent check-in is useful operational information, but it does not prove attention or understanding.</p>
 <p>If an unknown participant appears, pause before sharing material. Use the session controls available to remove or resolve the entry, and change the session if required by school procedure.</p>
 <h3 id="4-send-a-low-risk-test">4. Send a low-risk test</h3>
 <p>Open the first student-facing resource and send or present it. Ask students for a simple confirmation, then inspect delivery status. Resolve a failed or pending device before launching a timed activity.</p>
-<h2 id="use-the-live-session-center">Use the Live Session Center</h2>
+<h2 id="use-the-live-dashboard">Use the Live Dashboard</h2>
 <p>The center groups the main controls under <strong>Run</strong>, <strong>Guide</strong>, and <strong>Signals</strong>. Labels and available activities may vary with loaded modules and deployment settings.</p>
 <h3 id="run">Run</h3>
 <p>Use <strong>Run</strong> for student interactions and the prepared lesson sequence. Current workspaces may include:</p>
 <ul>
 <li>A live lesson run panel with resources, audiences, presenter cues, and activity snapshots.</li>
-<li><strong>Quick Check</strong> for a fast continuum such as confused to ready.</li>
+<li><strong>Check understanding</strong> for a fast continuum such as confused to ready.</li>
 <li><strong>Word Cloud</strong> for short contributions.</li>
 <li>Open response or feedback activities.</li>
 <li>Moderated live questions and answers when the teacher enables them.</li>
@@ -241,7 +245,7 @@
 <ul>
 <li>Presenter cues attached to a lesson step.</li>
 <li>A class timer or focused display.</li>
-<li>The Teacher-paced and Student-paced toggle.</li>
+<li>The Teacher-led and Student-paced toggle.</li>
 <li><strong>Groups</strong> and audience management.</li>
 <li>Other session guidance configured for the lesson.</li>
 </ul>
@@ -280,11 +284,11 @@
 <p>Status does not show whether the student read, understood, or completed the resource. Ask for evidence rather than inferring learning from a green indicator.</p>
 <p>Individual and group targets can take precedence over the whole-class resource. If a student appears “stuck” on a different item, check for an individual or group assignment and use the available release control before sending the class resource again.</p>
 <h3 id="change-pace-carefully">Change pace carefully</h3>
-<p>In Teacher-paced mode, changing the current class resource can move connected student devices and may affect devices that reconnect while it remains current. Give a spoken and visible transition cue first.</p>
-<p>In Student-paced mode, a whole-class follow pointer may not behave like a synchronized presentation. Use explicit directions and targeted sends as needed, then verify the result on the student device. If a prepared whole-class follow-up reports that Teacher-paced mode is required, switch modes only after warning the class.</p>
+<p>In Teacher-led mode, changing the current class resource can move connected student devices and may affect devices that reconnect while it remains current. Give a spoken and visible transition cue first.</p>
+<p>In Student-paced mode, a whole-class follow pointer may not behave like a synchronized presentation. Use explicit directions and targeted sends as needed, then verify the result on the student device. If a prepared whole-class follow-up reports that Teacher-led mode is required, switch modes only after warning the class.</p>
 <h2 id="facilitate-live-activities">Facilitate live activities</h2>
-<h3 id="quick-check">Quick Check</h3>
-<p>Use <strong>Quick Check</strong> for a decision you are prepared to make. Ask one focused question such as “How ready are you to explain the relationship?” Display what each response option means, allow a short wait, and decide in advance what will happen at each pattern of responses.</p>
+<h3 id="check-understanding">Check understanding</h3>
+<p>Use <strong>Check understanding</strong> for a decision you are prepared to make. Ask one focused question such as “How ready are you to explain the relationship?” Display what each response option means, allow a short wait, and decide in advance what will happen at each pattern of responses.</p>
 <p>Do not use confidence as a substitute for knowledge. Pair it with a prompt, example, or subsequent evidence task when accuracy matters.</p>
 <h3 id="word-cloud">Word Cloud</h3>
 <p>Use <strong>Word Cloud</strong> for short, non-sensitive contributions: a key term, observation, prediction, or theme. Tell students not to enter names or private stories. Review or moderate responses before displaying them when the interface offers that control. A word's visual prominence represents frequency, not importance or correctness.</p>
@@ -366,7 +370,7 @@
   </div>
   <footer class="site-footer">
     <p>Teacher guidance, not a substitute for district policy or professional judgment.</p>
-    <p>Guide version 2026.08 &#183; Content verified <time datetime="2026-08-16">2026-08-16</time>.</p>
+    <p>Guide version 2026.08 &#183; Content verified <time datetime="2026-08-20">2026-08-20</time>.</p>
   </footer>
 
   <script src="guide-search.js" defer></script>

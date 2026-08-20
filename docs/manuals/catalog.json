@@ -1,0 +1,157 @@
+{
+  "schemaVersion": 1,
+  "updated": "2026-08-20",
+  "publicHub": "manuals.html",
+  "statusDefinitions": {
+    "available": "Publicly linked and maintained",
+    "planned": "Named future guide; not presented as available"
+  },
+  "items": [
+    {
+      "id": "teacher-guide",
+      "title": "AlloFlow Teacher Guide",
+      "href": "guide/index.html",
+      "format": "searchable web guide",
+      "audiences": ["educators", "families", "multilingual", "specialists", "leaders"],
+      "canonicalSource": "docs/teacher-guide/guide.json",
+      "status": "available",
+      "lastVerified": "2026-08-20"
+    },
+    {
+      "id": "complete-user-manual",
+      "title": "Complete User Manual",
+      "href": "https://github.com/Apomera/AlloFlow/blob/main/AlloFlow%20Complete%20User%20Manual.md",
+      "format": "generated Markdown",
+      "audiences": ["educators", "families", "multilingual", "specialists", "leaders"],
+      "canonicalSource": "docs/teacher-guide/guide.json",
+      "status": "available",
+      "lastVerified": "2026-08-20"
+    },
+    {
+      "id": "offline-print-guide",
+      "title": "Offline / Print Edition",
+      "href": "guide/offline.html",
+      "format": "single-page HTML",
+      "audiences": ["educators", "families", "multilingual", "specialists", "leaders"],
+      "canonicalSource": "docs/teacher-guide/guide.json",
+      "status": "available",
+      "lastVerified": "2026-08-20"
+    },
+    {
+      "id": "quick-reference",
+      "title": "Quick Reference",
+      "href": "guide/quick-reference.html",
+      "format": "web chapter",
+      "audiences": ["educators", "families", "multilingual", "specialists", "leaders"],
+      "canonicalSource": "docs/teacher-guide/chapters/18-quick-reference.md",
+      "status": "available",
+      "lastVerified": "2026-08-20"
+    },
+    {
+      "id": "evaluation-manual",
+      "title": "Educator Growth & Evaluation Manual",
+      "href": "educator-evaluation-manual.html",
+      "format": "illustrated HTML manual",
+      "audiences": ["educators", "specialists", "leaders"],
+      "canonicalSource": "educator-evaluation-manual.html",
+      "status": "available",
+      "lastVerified": "2026-08-20"
+    },
+    {
+      "id": "dynamic-assessment-guide",
+      "title": "Dynamic Assessment Studio Guide",
+      "href": "docs/dynamic_assessment_guide.html",
+      "format": "HTML guide",
+      "audiences": ["multilingual", "specialists", "leaders"],
+      "canonicalSource": "docs/dynamic_assessment_guide.md",
+      "status": "available",
+      "lastVerified": "2026-08-20"
+    },
+    {
+      "id": "school-leaders-guide",
+      "title": "School Leaders Guide",
+      "href": "guide/for-school-leaders.html",
+      "format": "web chapter",
+      "audiences": ["leaders"],
+      "canonicalSource": "docs/teacher-guide/chapters/20-for-school-leaders.md",
+      "status": "available",
+      "lastVerified": "2026-08-20"
+    },
+    {
+      "id": "it-guide",
+      "title": "IT Department Guide",
+      "href": "guide/for-your-it-department.html",
+      "format": "web chapter",
+      "audiences": ["leaders"],
+      "canonicalSource": "docs/teacher-guide/chapters/17-for-your-it-department.md",
+      "status": "available",
+      "lastVerified": "2026-08-20"
+    },
+    {
+      "id": "accessibility-guide",
+      "title": "Accessibility and UDL Guide",
+      "href": "guide/accessibility-and-udl.html",
+      "format": "web chapter",
+      "audiences": ["educators", "families", "multilingual", "specialists", "leaders"],
+      "canonicalSource": "docs/teacher-guide/chapters/04-accessibility-and-udl.md",
+      "status": "available",
+      "lastVerified": "2026-08-20"
+    },
+    {
+      "id": "remediation-guide",
+      "title": "Accessibility Remediation",
+      "href": "remediation.html",
+      "format": "workflow overview",
+      "audiences": ["educators", "specialists", "leaders"],
+      "canonicalSource": "remediation.html",
+      "status": "available",
+      "lastVerified": "2026-08-20"
+    },
+    {
+      "id": "family-mode-guide",
+      "title": "Family Mode Guide",
+      "href": "guide/family-mode.html",
+      "format": "web chapter",
+      "audiences": ["families", "educators"],
+      "canonicalSource": "docs/teacher-guide/chapters/16-family-mode.md",
+      "status": "available",
+      "lastVerified": "2026-08-20"
+    },
+    {
+      "id": "multilingual-support-guide",
+      "title": "Multilingual Learner Support Path",
+      "href": "guide/accessibility-and-udl.html#vocabulary-language-and-translation",
+      "format": "curated web path",
+      "audiences": ["educators", "families", "multilingual", "specialists"],
+      "canonicalSource": "docs/teacher-guide/chapters/04-accessibility-and-udl.md",
+      "status": "available",
+      "lastVerified": "2026-08-20"
+    },
+    {
+      "id": "sel-educator-guide",
+      "title": "SEL Hub Educator Guide",
+      "href": "https://github.com/Apomera/AlloFlow/blob/main/sel_hub/FOR_EDUCATORS.md",
+      "format": "Markdown responsible-use guide",
+      "audiences": ["educators", "families", "specialists", "leaders"],
+      "canonicalSource": "sel_hub/FOR_EDUCATORS.md",
+      "status": "available",
+      "lastVerified": "2026-08-20"
+    },
+    {
+      "id": "parent-caregiver-manual",
+      "title": "Parent and Caregiver Manual",
+      "format": "future audience manual",
+      "audiences": ["families"],
+      "currentPath": "guide/family-mode.html",
+      "status": "planned"
+    },
+    {
+      "id": "multilingual-learner-manual",
+      "title": "Multilingual Learner Implementation Guide",
+      "format": "future audience manual",
+      "audiences": ["multilingual", "educators", "specialists"],
+      "currentPath": "guide/accessibility-and-udl.html#vocabulary-language-and-translation",
+      "status": "planned"
+    }
+  ]
+}

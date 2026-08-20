@@ -479,7 +479,7 @@ describe('Test Prep manifest-aware catalog UI', () => {
     expect(card).toBeTruthy();
     expect(card.textContent).toContain('Unreleased');
     expect(card.textContent).toContain('explicitly allowlisted review session');
-    expect(Array.from(card.querySelectorAll('dd')).map((node) => node.textContent)).toEqual(['5', '20']);
+    expect(Array.from(card.querySelectorAll('dd')).map((node) => node.textContent)).toEqual(['5', '500']);
     expect(card.textContent).toContain(apEntry.disclaimer);
     expect(requestedExactPack(qaRequestedUrls, 'ap_psychology_pilot')).toEqual([]);
 
@@ -523,8 +523,8 @@ describe('Test Prep manifest-aware catalog UI', () => {
     });
     await act(async () => { findButton('Start targeted set').click(); });
     await waitUntil(
-      () => host.textContent.includes('Question 1 of 13'),
-      'Expected normalized AP P1 targeting to select the 13 P1 items.',
+      () => host.textContent.includes('Question 1 of 20'),
+      'Expected the bounded targeted-practice set to select 20 of the 325 P1 items.',
     );
     expect(host.textContent).toContain('Targeted practice: Concept Understanding');
     expect(requestedExactPack(qaRequestedUrls, 'ap_psychology_pilot_learning_library')).toHaveLength(1);
