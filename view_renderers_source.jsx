@@ -1122,6 +1122,11 @@ const renderOutlineContent = (deps) => {
             const setA = branches[0] || { title: 'Set A', items: [] };
             const setB = branches[1] || { title: 'Set B', items: [] };
             const shared = branches[2] || { title: 'Shared / Overlap', items: [] };
+            const vennItemCount = vennGameData.setA.length + vennGameData.setB.length + vennGameData.shared.length;
+            const isVennGameReady = vennGameData.setA.length > 0
+                && vennGameData.setB.length > 0
+                && vennGameData.shared.length > 0
+                && vennItemCount >= 4;
             const isNonEnglish = leveledTextLanguage !== 'English';
             const showEnglish = !isNonEnglish || outlineTranslationMode === 'bilingual';
             const renderVennItems = (items, items_en, branchIndex) => {
@@ -1286,11 +1291,22 @@ const renderOutlineContent = (deps) => {
                         </div>
                         <button
                             aria-label={t('common.start_game')}
-                            className="w-full py-4 bg-indigo-600 text-white rounded-xl font-black text-xl shadow-lg hover:bg-indigo-700 hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
-                            onClick={handleSetIsVennPlayingToTrue}
+                            disabled={!isVennGameReady}
+                            aria-describedby={!isVennGameReady ? 'venn-game-readiness' : undefined}
+                            className="w-full py-4 bg-indigo-600 text-white rounded-xl font-black text-xl shadow-lg hover:bg-indigo-700 hover:scale-[1.02] transition-all flex items-center justify-center gap-2 disabled:bg-slate-400 disabled:cursor-not-allowed disabled:hover:scale-100"
+                            onClick={() => {
+                                if (!isVennGameReady) return;
+                                handleSetIsVennPlayingToTrue();
+                                _broadcastInteractiveOrganizer('venn', { gameData: vennGameData });
+                            }}
                         >
                             <Gamepad2 size={24} className="fill-current text-yellow-700"/> {t('concept_map.venn.start_game')}
                         </button>
+                        {!isVennGameReady && (
+                            <p id="venn-game-readiness" role="status" className="mt-3 text-center text-sm font-bold text-amber-800">
+                                Add at least one card to each region and four cards total before starting the student activity.
+                            </p>
+                        )}
                     </div>
                 );
             }
@@ -2491,7 +2507,8 @@ const renderOutlineContent = (deps) => {
                                 _broadcastInteractiveOrganizer('palacerecall');
                             }}
                             onRecallClose={() => {
-                                if (!isTeacherMode && setIsInteractivePalaceRecall) setIsInteractivePalaceRecall(false);
+                                if (setIsInteractivePalaceRecall) setIsInteractivePalaceRecall(false);
+                                if (isTeacherMode) _broadcastInteractiveOrganizer(null);
                             }}
                         />
                     </ErrorBoundary>
@@ -2523,7 +2540,8 @@ const renderOutlineContent = (deps) => {
                                 _broadcastInteractiveOrganizer('strandchallenge3d');
                             }}
                             onChallengeClose={() => {
-                                if (!isTeacherMode && setIsInteractiveStrandChallenge) setIsInteractiveStrandChallenge(false);
+                                if (setIsInteractiveStrandChallenge) setIsInteractiveStrandChallenge(false);
+                                if (isTeacherMode) _broadcastInteractiveOrganizer(null);
                             }}
                         />
                     </ErrorBoundary>

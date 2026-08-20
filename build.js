@@ -1188,6 +1188,15 @@ const PLUGIN_FILES = [
     'translate_loader.js',
     'dictionary_loader.js',
     'sd_turbo_loader.js',
+    // AlloHaven Arcade modes are lazy-loaded with pluginCdnBase. Keep local
+    // desktop builds self-contained so live classroom activities do not depend
+    // on the public CDN (and so a freshly built palace can be QA'd before push).
+    'arcade_mode_sage_launcher.js',
+    'arcade_mode_boss_encounter.js',
+    'arcade_mode_realm_builder.js',
+    'arcade_mode_concept_atlas.js',
+    'arcade_mode_modelun.js',
+    'arcade_mode_concept_pictionary.js',
     'stem_lab/stem_tool_machinelab.js',
     'stem_lab/stem_tool_arccity.js',
     'stem_lab/stem_tool_dna.js',

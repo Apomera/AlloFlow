@@ -52,6 +52,7 @@ function OutlineView(props) {
   var handleRemoveFromMapList = props.handleRemoveFromMapList;
   var handleInitializeMap = props.handleInitializeMap;
   var handleInitializeVenn = props.handleInitializeVenn;
+  var broadcastInteractiveOrganizer = props.broadcastInteractiveOrganizer;
   var handleNodeChange = props.handleNodeChange;
   var handleNodeDelete = props.handleNodeDelete;
   var handleAddNode = props.handleAddNode;
@@ -94,6 +95,7 @@ function OutlineView(props) {
                                             if (isInteractiveVenn || isVennPlaying) {
                                                 setIsInteractiveVenn(false);
                                                 setIsVennPlaying(false);
+                                                if (typeof broadcastInteractiveOrganizer === 'function') broadcastInteractiveOrganizer(null);
                                             } else {
                                                 handleInitializeVenn();
                                             }

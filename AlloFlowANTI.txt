@@ -113,6 +113,20 @@ function _alloLanConfig() {
   _alloLanCfgCache.cfg = cfg;
   return cfg;
 }
+function _alloLanBridgeUser() {
+  if (!_alloLanConfig()) return null;
+  var storageKey = 'alloflow_lan_participant_uid';
+  var uid = '';
+  try { uid = String(window.sessionStorage.getItem(storageKey) || ''); } catch (_) {}
+  if (!/^lan-[a-z0-9_-]{6,80}$/i.test(uid)) {
+    var isStudent = false;
+    try { isStudent = new URLSearchParams(window.location.search || '').has('allo_lan_join'); } catch (_) {}
+    uid = 'lan-' + (isStudent ? 'student-' : 'teacher-')
+      + Math.random().toString(36).slice(2, 10);
+    try { window.sessionStorage.setItem(storageKey, uid); } catch (_) {}
+  }
+  return { uid: uid, isAnonymous: true, __alloLanUser: true, getIdToken: async () => '' };
+}
 function _alloLanRefFromDocArgs(args) {
   if (!_alloLanConfig() || args.length !== 7) return null;
   if (args[1] !== 'artifacts' || args[3] !== 'public' || args[4] !== 'data') return null;
@@ -2396,6 +2410,8 @@ async function _alloEnsureAuthenticatedUser() {
     error.code = 'allo/qr-firebase-handoff-missing';
     throw error;
   }
+  const lanUser = _alloLanBridgeUser();
+  if (lanUser) return lanUser;
   if (_alloFirebaseIsPlaceholder) {
     // Mailbox-bridged sessions need no Firebase: the unified join/session
     // flows run on the bridge's synthetic identity (backend-free shell).
@@ -2425,6 +2441,8 @@ async function _alloEnsureAuthenticatedUser() {
   try {
     return await attempt;
   } catch (authError) {
+    const lanUser = _alloLanBridgeUser();
+    if (lanUser) return lanUser;
     // A mailbox session must not die on a broken Firebase project: fall back
     // to the bridge's synthetic identity while one is installed.
     const mbUser = _alloMbBridgeUser();
@@ -17945,12 +17963,41 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [isInteractiveStrandChallenge, setIsInteractiveStrandChallenge] = useState(false);
   const [isInteractivePalaceRecall, setIsInteractivePalaceRecall] = useState(false);
 
+  // Venn live-session payloads are bounded before entering Tier-1 session state.
+  const normalizeInteractiveVennGameData = useCallback((rawData) => {
+    const source = rawData && typeof rawData === 'object' ? rawData : {};
+    const normalizeItems = (items) => (Array.isArray(items) ? items : [])
+      .slice(0, 40)
+      .map(item => {
+        const value = typeof item === 'object' && item ? item : { text: item };
+        const text = String(value.text || '').replace(/\s+/g, ' ').trim().slice(0, 300);
+        const translated = value.translation;
+        const translation = translated == null
+          ? null
+          : String(translated).replace(/\s+/g, ' ').trim().slice(0, 300) || null;
+        return text ? { text, translation } : null;
+      })
+      .filter(Boolean);
+    return {
+      setA: normalizeItems(source.setA),
+      setB: normalizeItems(source.setB),
+      shared: normalizeItems(source.shared),
+    };
+  }, []);
+
+  const isPlayableInteractiveVennData = useCallback((data) => {
+    const normalized = normalizeInteractiveVennGameData(data);
+    const total = normalized.setA.length + normalized.setB.length + normalized.shared.length;
+    return normalized.setA.length > 0 && normalized.setB.length > 0 && normalized.shared.length > 0 && total >= 4;
+  }, [normalizeInteractiveVennGameData]);
+
   // ── Cross-device sync for teacher-armed organizer interactive mode ──
   // Writes go to sessionDoc.interactiveOrganizer (Tier-1). Students subscribe
   // via sessionData and get armed when armedAt changes. Dismissing locally
   // does NOT re-arm because lastSeenInteractiveArmRef tracks the last armedAt
   // the student has already reacted to.
   const lastSeenInteractiveArmRef = useRef(null);
+  const interactiveOrganizerWriteQueueRef = useRef(Promise.resolve());
   const _interactiveOrganizerSetters = {
     venn: setIsInteractiveVenn,
     tchart: setIsInteractiveTChart,
@@ -17966,15 +18013,29 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     strandchallenge3d: setIsInteractiveStrandChallenge,
     palacerecall: setIsInteractivePalaceRecall,
   };
-  const broadcastInteractiveOrganizer = useCallback(async (type) => {
+  const broadcastInteractiveOrganizer = useCallback(async (type, activityConfig = null) => {
     if (!isTeacherMode || !activeSessionCode) return;
+    const previousWrite = interactiveOrganizerWriteQueueRef.current;
+    let releaseWrite;
+    interactiveOrganizerWriteQueueRef.current = new Promise(resolve => { releaseWrite = resolve; });
+    await previousWrite.catch(() => {});
     try {
       const targetAppId = activeSessionAppId || appId;
       const sessionRef = doc(db, 'artifacts', targetAppId, 'public', 'data', 'sessions', activeSessionCode);
-      const payload = type ? { interactiveOrganizer: { type: type, armedAt: Date.now() } } : { interactiveOrganizer: null };
+      let interactiveOrganizer = type ? { type: type, armedAt: Date.now() } : null;
+      if (type === 'venn') {
+        const gameData = normalizeInteractiveVennGameData(activityConfig?.gameData);
+        if (!isPlayableInteractiveVennData(gameData)) throw new Error('Venn activity setup is incomplete.');
+        interactiveOrganizer = { ...interactiveOrganizer, gameData };
+      }
+      const payload = { interactiveOrganizer };
       await window.__alloWriteToSession(sessionRef, payload);
-    } catch (e) { try { warnLog('interactiveOrganizer sync failed:', e); } catch(_) {} }
-  }, [isTeacherMode, activeSessionCode, activeSessionAppId, appId]);
+    } catch (e) {
+      try { warnLog('interactiveOrganizer sync failed:', e); } catch(_) {}
+    } finally {
+      releaseWrite();
+    }
+  }, [isTeacherMode, activeSessionCode, activeSessionAppId, appId, normalizeInteractiveVennGameData, isPlayableInteractiveVennData]);
   useEffect(() => {
     if (isTeacherMode) return;
     const remote = sessionData?.interactiveOrganizer;
@@ -17986,12 +18047,18 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     }
     // Only react when this is a NEW arm (different armedAt). If the student already
     // dismissed this same arm event, don't re-arm — wait for the teacher to cycle.
-    if (remote.armedAt === lastSeenInteractiveArmRef.current) return;
-    lastSeenInteractiveArmRef.current = remote.armedAt;
-    Object.values(_interactiveOrganizerSetters).forEach(setter => setter(false));
-    const setter = _interactiveOrganizerSetters[remote.type];
-    if (setter) setter(true);
-  }, [sessionData?.interactiveOrganizer?.type, sessionData?.interactiveOrganizer?.armedAt, isTeacherMode]);
+      if (remote.armedAt === lastSeenInteractiveArmRef.current) return;
+      lastSeenInteractiveArmRef.current = remote.armedAt;
+      Object.values(_interactiveOrganizerSetters).forEach(setter => setter(false));
+      if (remote.type === 'venn') {
+        const syncedGameData = normalizeInteractiveVennGameData(remote.gameData);
+        if (!isPlayableInteractiveVennData(syncedGameData)) return;
+        setVennGameData(syncedGameData);
+      }
+      const setter = _interactiveOrganizerSetters[remote.type];
+      if (setter) setter(true);
+    }, [sessionData?.interactiveOrganizer?.type, sessionData?.interactiveOrganizer?.armedAt, isTeacherMode,
+        normalizeInteractiveVennGameData, isPlayableInteractiveVennData]);
 
   useEffect(() => {
       if (generatedContent?.type === 'outline' && generatedContent?.data) {
@@ -18190,9 +18257,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           setB: mapItems(branches[1]?.items, branches[1]?.items_en),
           shared: mapItems(branches[2]?.items, branches[2]?.items_en)
       });
-      setIsInteractiveVenn(true);
-      if (!isTeacherMode) setIsVennPlaying(true);
-      broadcastInteractiveOrganizer('venn');
+        setIsInteractiveVenn(true);
+        if (!isTeacherMode) setIsVennPlaying(true);
+        else broadcastInteractiveOrganizer(null);
   };
   const handleAddVennItem = (category) => {
       const text = vennInputs[category]?.trim();
@@ -50091,7 +50158,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     isConceptMapReady, isChallengeActive, mapAddInput,
                     setIsInteractiveMap, setIsInteractiveVenn, setIsVennPlaying, setMapAddInput,
                     handleGenerate, handleToggleIsEditingOutline,
-                    handleInitializeVenn, handleInitializeMap,
+                    handleInitializeVenn, handleInitializeMap, broadcastInteractiveOrganizer,
                     handleAddToMapList, handleRemoveFromMapList,
                     renderInteractiveMap, renderOutlineContent,
                     addToast, handleConceptSpacePersist

@@ -48,6 +48,20 @@ function _alloLanConfig() {
   _alloLanCfgCache.cfg = cfg;
   return cfg;
 }
+function _alloLanBridgeUser() {
+  if (!_alloLanConfig()) return null;
+  var storageKey = 'alloflow_lan_participant_uid';
+  var uid = '';
+  try { uid = String(window.sessionStorage.getItem(storageKey) || ''); } catch (_) {}
+  if (!/^lan-[a-z0-9_-]{6,80}$/i.test(uid)) {
+    var isStudent = false;
+    try { isStudent = new URLSearchParams(window.location.search || '').has('allo_lan_join'); } catch (_) {}
+    uid = 'lan-' + (isStudent ? 'student-' : 'teacher-')
+      + Math.random().toString(36).slice(2, 10);
+    try { window.sessionStorage.setItem(storageKey, uid); } catch (_) {}
+  }
+  return { uid: uid, isAnonymous: true, __alloLanUser: true, getIdToken: async () => '' };
+}
 function _alloLanRefFromDocArgs(args) {
   if (!_alloLanConfig() || args.length !== 7) return null;
   if (args[1] !== 'artifacts' || args[3] !== 'public' || args[4] !== 'data') return null;
